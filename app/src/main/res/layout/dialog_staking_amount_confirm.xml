@@ -78,7 +78,7 @@
                     android:fontFamily="@font/inter_medium"
                     android:textColor="@color/text"
                     android:textSize="12sp"
-                    tools:text="Lilico"/>
+                    tools:text="Flow Ref"/>
 
                 <TextView
                     android:layout_width="wrap_content"

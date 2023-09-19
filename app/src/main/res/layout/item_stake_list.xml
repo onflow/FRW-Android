@@ -38,7 +38,7 @@
                 android:textColor="@color/text"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                tools:text="Lilico"/>
+                tools:text="Flow Ref"/>
 
             <TextView
                 android:id="@+id/provider_rate"
@@ -52,7 +52,7 @@
                 android:textColor="@color/stake"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                tools:text="Lilico"/>
+                tools:text="Flow Ref"/>
 
             <View
                 android:layout_width="0dp"
