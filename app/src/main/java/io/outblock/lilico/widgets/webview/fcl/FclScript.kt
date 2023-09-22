@@ -34,7 +34,7 @@ private val FCL_AUTHN_RESPONSE = """
             "f_type": "Service",
             "f_vsn": "1.0.0",
             "type": "authn",
-            "uid": "fcw#authn",
+            "uid": "frw#authn",
             "endpoint": "ext:0x000",
             "id": "$ADDRESS_REPLACEMENT",
             "identity": {
@@ -44,7 +44,7 @@ private val FCL_AUTHN_RESPONSE = """
               "f_type": "ServiceProvider",
               "f_vsn": "1.0.0",
               "address": "$ADDRESS_REPLACEMENT",
-              "name": "Flow Core Wallet"
+              "name": "Flow Reference Wallet"
             }
           },
           $PRE_AUTHZ_REPLACEMENT
@@ -54,7 +54,7 @@ private val FCL_AUTHN_RESPONSE = """
             "f_type": "Service",
             "f_vsn": "1.0.0",
             "type": "authz",
-            "uid": "fcw#authz",
+            "uid": "frw#authz",
             "endpoint": "ext:0x000",
             "method": "EXT/RPC",
             "identity": {
@@ -74,7 +74,7 @@ private val FCL_AUTHN_RESPONSE_USER_SIGNATURE = """
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "user-signature",
-        "uid": "fcw#user-signature",
+        "uid": "frw#user-signature",
         "endpoint": "chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html",
         "method": "EXT/RPC"
     },
@@ -85,7 +85,7 @@ private val FCL_AUTHN_RESPONSE_ACCOUNT_PROOF = """
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "account-proof",
-        "uid": "fcw#account-proof",
+        "uid": "frw#account-proof",
         "endpoint": "chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html",
         "method": "EXT/RPC",
         "data": {
@@ -133,7 +133,7 @@ private val FCL_PRE_AUTHZ_RESPONSE = """
                 "f_type": "Service",
                 "f_vsn": "1.0.0",
                 "type": "authz",
-                "uid": "fcw#authz",
+                "uid": "frw#authz",
                 "endpoint": "chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html",
                 "method": "EXT/RPC",
                 "identity": {
@@ -146,7 +146,7 @@ private val FCL_PRE_AUTHZ_RESPONSE = """
                     "f_type": "Service",
                     "f_vsn": "1.0.0",
                     "type": "authz",
-                    "uid": "fcw#authz",
+                    "uid": "frw#authz",
                     "endpoint": "chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html",
                     "method": "EXT/RPC",
                     "identity": {
@@ -160,7 +160,7 @@ private val FCL_PRE_AUTHZ_RESPONSE = """
                     "f_type": "Service",
                     "f_vsn": "1.0.0",
                     "type": "authz",
-                    "uid": "fcw#authz",
+                    "uid": "frw#authz",
                     "endpoint": "chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html",
                     "method": "EXT/RPC",
                     "identity": {
@@ -203,7 +203,7 @@ fun generateFclExtensionInject(): String {
           f_type: 'Service',
           f_vsn: '1.0.0',
           type: 'authn',
-          uid: 'Flow Core Wallet',
+          uid: 'Flow Reference Wallet',
           endpoint: 'chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html',
           method: 'EXT/RPC',
           id: 'hpclkefagolihohboafpheddmmgdffjm',
@@ -212,7 +212,7 @@ fun generateFclExtensionInject(): String {
           },
           provider: {
             address: '$address',
-            name: 'Flow Core Wallet',
+            name: 'Flow Reference Wallet',
             icon: 'https://lilico.app/fcw-logo.png',
             description: 'Digital wallet created for everyone.',
           }
@@ -271,7 +271,7 @@ private suspend fun generateAuthnPreAuthz(): String {
                 "f_type": "Service",
                 "f_vsn": "1.0.0",
                 "type": "pre-authz",
-                "uid": "fcw#pre-authz",
+                "uid": "frw#pre-authz",
                 "endpoint": "android://pre-authz.lilico.app",
                 "method": "EXT/RPC",
                 "data": {

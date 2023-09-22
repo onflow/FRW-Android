@@ -16,7 +16,7 @@ fun dispatchScanResult(context: Context, str: String) {
         return
     }
 
-    if ((text.startsWith("wc:") || text.startsWith("lilico://wc?") || text.startsWith("fcw://wc?"))
+    if ((text.startsWith("wc:") || text.startsWith("lilico://wc?") || text.startsWith("frw://wc?"))
         && AppConfig.walletConnectEnable()) {
         val wcUri = if (text.startsWith("wc:")) {
             text

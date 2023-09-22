@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">Flow Core</string>
+    <string name="app_name">Flow Ref</string>
+    <string name="app_short_name">Flow Reference</string>
+    <string name="app_full_name">Flow Reference Wallet</string>
     <string name="next">Next</string>
     <string name="username">Username</string>
     <string name="username_too_short">Too short</string>
@@ -13,8 +15,8 @@
     <string name="create_password">Create Password</string>
     <string name="enter_your_password">Enter your password</string>
     <string name="enter_your_password_again">Please enter your password again</string>
-    <string name="password_check">I understand Flow Core can not recover this password.</string>
-    <string name="cloud_password_tip">Flow Core uses this password to encrypt your backup.</string>
+    <string name="password_check">I understand Flow Reference Wallet can not recover this password .</string>
+    <string name="cloud_password_tip">Flow Reference Wallet uses this password to encrypt your backup.</string>
     <string name="password">Password</string>
     <string name="password_verify_format">Enter at least 8 characters</string>
     <string name="password_verify_no_number">At least 1 character</string>
@@ -81,8 +83,7 @@
     <string name="biometrics">Biometrics</string>
     <string name="legal_information">Legal \nInformation</string>
     <string name="legal">Legal</string>
-    <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Core
-        Wallet.</string>
+    <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Reference Wallet.</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -116,8 +117,7 @@
     <string name="logout">Logout</string>
     <string name="edit_avatar">Edit avatar</string>
     <string name="edit">Edit</string>
-    <string name="settings_visible_desc">Other Flow Core users cannot search for your username
-        .</string>
+    <string name="settings_visible_desc">Other Flow Ref users cannot search for your username .</string>
     <string name="visible">Visible</string>
     <string name="invisible">Invisible</string>
     <string name="private_str">Private</string>
@@ -222,7 +222,7 @@
     <string name="recovery_purchase_tips">Write down or copy these words in the right order and save them somewhere safe.</string>
     <string name="open_in_browser">Open in browser</string>
     <string name="pending_transaction">Pending Transaction</string>
-    <string name="welcome_to_lilico">Welcome to Flow Core!</string>
+    <string name="welcome_to_lilico">Welcome to Flow Reference Wallet!</string>
     <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
@@ -242,7 +242,7 @@
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
     <string name="not_logged_in_toast">You are not logged in to the wallet</string>
     <string name="free_gas_fee">Free gas fee</string>
-    <string name="free_gas_fee_desc">Allow flow core to pay the gas fee for all my transactions
+    <string name="free_gas_fee_desc">Allow Flow Ref to pay the gas fee for all my transactions
         .</string>
     <string name="file_picker_title">Select File</string>
     <string name="transaction_fee">Transaction fee</string>
@@ -254,7 +254,7 @@
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Wallet</string>
     <string name="reset_wallet_confirm_title">Are you sure you want to reset your wallet?</string>
-    <string name="reset_wallet_tips">Removing the wallet from Flow Core does not remove the wallet
+    <string name="reset_wallet_tips">Removing the wallet from Flow Reference Wallet does not remove the wallet
         from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.</string>
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
@@ -268,7 +268,6 @@
     <string name="guide_title_4">Explore\nyour favourite site</string>
     <string name="guide_desc_4">Share excellent NFT collections with friends</string>
     <string name="import_wallet">Import Wallet</string>
-    <string name="flow_core">Flow Core</string>
     <string name="welcome_desc">Provide More About The Security</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
@@ -276,7 +275,6 @@
     <string name="claim_free_domain">Claim for your <font color='#32E355'>FREE</font> Lilico domain!</string>
     <string name="claim_free_domain_at_lilico">Claim <font color='#32E355'>Free</font> Domain\nAt Lilico</string>
     <string name="free_domain">Free Domain</string>
-    <string name="lilico">Flow Core</string>
     <string name="things_you_should_know">Things You Should Know</string>
     <string name="claim_domain_desc_1">Free lilico domain help you find each other easier on chain.</string>
     <string name="claim_domain_desc_2">An Inbox system will help you send tokens and NFT to your friend without enable vault.</string>
@@ -343,7 +341,7 @@
     <string name="flow_available_num">%1$s Flow available</string>
     <string name="flow_available">Flow available</string>
     <string name="flow_coin_name">Flow</string>
-    <string name="on_lilico_only">On Flow Core Only</string>
+    <string name="on_lilico_only">On Flow Ref Only</string>
     <string name="confirm_your_stake">Confirm Your Stake</string>
     <string name="confirm_your_unstake">Confirm Your Unstake</string>
     <string name="staking">Staking</string>
@@ -392,7 +390,7 @@
     <string name="create_account">Create Account</string>
     <string name="suggest_to_backup">Suggest to Backup</string>
     <string name="link_account">Link Account</string>
-    <string name="link_account_desc">We would like to link your %1$s account to your Flow Core account</string>
+    <string name="link_account_desc">We would like to link your %1$s account to your Flow Ref account</string>
     <string name="hold_to_link">Hold to Link</string>
     <string name="work_in_progress">Work in Progress</string>
     <string name="account_linking">Account Linking</string>
@@ -411,8 +409,8 @@
     <string name="unlink_account_desc">Unlink your account, the main wallet will not have any access to this account anymore.</string>
     <string name="hold_to_unlink">Hold to unlink</string>
     <string name="this_app_would_like_to">This App would like to</string>
-    <string name="link_account_tips_1">Delegate account to your flow core wallet</string>
-    <string name="link_account_tips_2">Flow core wallet will manage linked account</string>
+    <string name="link_account_tips_1">Delegate account to your Flow Reference Wallet</string>
+    <string name="link_account_tips_2">Flow Reference Wallet will manage linked account</string>
     <string name="root_detected">Root Detected</string>
     <string name="root_detected_desc">Your keychain is exposing in threats.\nPlease make sure it’s your movement and improve the safety of your account.</string>
     <string name="things_you_need_to_know">Things you need to know</string>
@@ -439,8 +437,8 @@
     <string name="network_error_dialog_desc">This action will change your current network from the %1$s to the %2$s.</string>
     <string name="switch_network">Switch Network</string>
     <string name="new_feature_title_1">Notification of Digital Assets</string>
-    <string name="new_feature_desc_1">Lilico will notify you when your digital assets has moved.</string>
-    <string name="new_feature_desc2">Now you can add multiple accounts in your lilico app, by switching account from the side menu or profile.</string>
+    <string name="new_feature_desc_1">Flow Ref will notify you when your digital assets has moved.</string>
+    <string name="new_feature_desc2">Now you can add multiple accounts in your Flow Reference Wallet app, by switching account from the side menu or profile.</string>
     <string name="get_started">Get Started</string>
     <string name="notification_request_title">Turn On Push Notifications</string>
     <string name="notification_request_desc">Get notified when your transfers, swaps, and approvals complete.</string>
@@ -452,5 +450,5 @@
     <string name="no_linked_account">No Linked Account</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
-    <string name="inaccessible_token_tip">Flow Core doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
+    <string name="inaccessible_token_tip">Flow Reference Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
 </resources>
