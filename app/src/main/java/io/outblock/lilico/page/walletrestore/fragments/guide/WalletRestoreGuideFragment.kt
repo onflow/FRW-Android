@@ -56,7 +56,7 @@ class WalletRestoreGuideFragment : Fragment() {
                     return@setOnClickListener
                 }
                 driveRestore.setProgressVisible(true)
-                GoogleDriveAuthActivity.restoreMnemonic(requireContext())
+                GoogleDriveAuthActivity.restoreMnemonicWithSignOut(requireContext())
             }
             mnemonicRestore.setOnClickListener { pageViewModel.changeStep(WALLET_RESTORE_STEP_MNEMONIC) }
         }

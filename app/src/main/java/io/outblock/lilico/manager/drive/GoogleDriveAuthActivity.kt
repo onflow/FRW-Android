@@ -28,6 +28,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
 
     private val password by lazy { intent.getStringExtra(EXTRA_PASSWORD)!! }
     private val isRestore by lazy { intent.getBooleanExtra(EXTRA_RESTORE, false) }
+    private val isRestoreWithSignOut by lazy { intent.getBooleanExtra(EXTRA_RESTORE_WITH_SIGN_OUT, false) }
     private val isDeleteBackup by lazy { intent.getBooleanExtra(EXTRA_DELETE_BACKUP, false) }
 
     private var mClient: GoogleSignInClient? = null
@@ -43,10 +44,14 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             .build()
         mClient = GoogleSignIn.getClient(this, signInOptions)
 
-        mClient?.let {
-            logd(TAG, "startActivityForResult")
-            // The result of the sign-in Intent is handled in onActivityResult.
-            startActivityForResult(it.signInIntent, REQUEST_CODE_SIGN_IN)
+        if (isRestoreWithSignOut) {
+            signOutAndSignInAgain()
+        } else {
+            mClient?.let {
+                logd(TAG, "startActivityForResult")
+                // The result of the sign-in Intent is handled in onActivityResult.
+                startActivityForResult(it.signInIntent, REQUEST_CODE_SIGN_IN)
+            }
         }
     }
 
@@ -116,7 +121,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             try {
                 when {
                     isDeleteBackup -> deleteMnemonicFromGoogleDrive(googleDriveService)
-                    isRestore -> restoreMnemonicFromGoogleDrive(googleDriveService)
+                    isRestore || isRestoreWithSignOut -> restoreMnemonicFromGoogleDrive(googleDriveService)
                     else -> uploadMnemonicToGoogleDrive(googleDriveService, password)
                 }
                 finish()
@@ -142,6 +147,8 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
 
         private const val EXTRA_RESTORE = "extra_restore"
 
+        private const val EXTRA_RESTORE_WITH_SIGN_OUT = "extra_restore_with_sign_out"
+
         private const val EXTRA_DELETE_BACKUP = "extra_delete_backup"
 
         fun uploadMnemonic(context: Context, password: String) {
@@ -153,6 +160,12 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         fun restoreMnemonic(context: Context) {
             context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
                 putExtra(EXTRA_RESTORE, true)
+            })
+        }
+
+        fun restoreMnemonicWithSignOut(context: Context) {
+            context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
+                putExtra(EXTRA_RESTORE_WITH_SIGN_OUT, true)
             })
         }
 
