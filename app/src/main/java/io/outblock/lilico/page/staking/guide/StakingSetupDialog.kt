@@ -29,6 +29,9 @@ class StakingSetupDialog : BottomSheetDialogFragment() {
             sendButton.setOnProcessing {
                 setup()
             }
+            closeButton.setOnClickListener {
+                dismissAllowingStateLoss()
+            }
         }
     }
 

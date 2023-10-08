@@ -19,6 +19,8 @@ import io.outblock.lilico.page.staking.amount.dialog.StakingAmountConfirmModel
 import io.outblock.lilico.page.staking.amount.model.StakingAmountModel
 import io.outblock.lilico.utils.*
 import io.outblock.lilico.utils.extensions.*
+import java.text.NumberFormat
+import java.util.Locale
 
 @SuppressLint("SetTextI18n")
 class StakingAmountPresenter(
@@ -110,6 +112,9 @@ class StakingAmountPresenter(
         } else if (amount > balance()) {
             binding.button.setText(R.string.insufficient_balance)
             binding.button.isEnabled = false
+        } else if (amount < 50) {
+            binding.button.setText(R.string.minimum_required)
+            binding.button.isEnabled = false
         } else {
             binding.button.setText(R.string.next)
             binding.button.isEnabled = true
@@ -124,7 +129,14 @@ class StakingAmountPresenter(
 
     private fun balance() = viewModel.balanceLiveData.value ?: 0.0f
 
-    private fun amount() = binding.inputView.text.toString().toSafeFloat()
+    private fun amount(): Float {
+        val userInputString = binding.inputView.text.toString().trim()
+        if (userInputString.isBlank()) {
+            return 0f
+        }
+        val numberFormat = NumberFormat.getInstance(Locale.getDefault())
+        return numberFormat.parse(binding.inputView.text.toString())?.toFloat() ?: 0f
+    }
 
     private fun setupToolbar() {
         binding.toolbar.navigationIcon?.mutate()?.setTint(R.color.neutrals1.res2color())

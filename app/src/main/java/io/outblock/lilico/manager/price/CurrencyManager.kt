@@ -3,7 +3,7 @@ package io.outblock.lilico.manager.price
 import com.google.gson.annotations.SerializedName
 import io.outblock.lilico.cache.currencyCache
 import io.outblock.lilico.network.ApiService
-import io.outblock.lilico.network.retrofitWithHost
+import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.profile.subpage.currency.model.Currency
 import io.outblock.lilico.page.profile.subpage.currency.model.findCurrencyFromFlag
 import io.outblock.lilico.utils.getCurrencyFlag
@@ -54,11 +54,12 @@ object CurrencyManager {
 
     private fun fetchInternal(flag: String) {
         ioScope {
-            val response = retrofitWithHost("https://api.exchangerate.host").create(ApiService::class.java).currency(findCurrencyFromFlag(flag).name)
-            if (response.result > 0) {
-                currencyMap[flag] = response.result
+            val service = retrofit().create(ApiService::class.java)
+            val response = service.currency(findCurrencyFromFlag(flag).name)
+            if (response.data.result > 0) {
+                currencyMap[flag] = response.data.result
                 currencyCache().cache(CurrencyCache(currencyMap.map { CurrencyPrice(it.key, it.value) }))
-                dispatchListener(flag, response.result)
+                dispatchListener(flag, response.data.result)
             }
         }
     }

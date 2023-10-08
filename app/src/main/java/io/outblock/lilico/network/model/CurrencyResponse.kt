@@ -4,10 +4,11 @@ package io.outblock.lilico.network.model
 import com.google.gson.annotations.SerializedName
 
 data class CurrencyResponse(
-    @SerializedName("date")
-    val date: String,
-    @SerializedName("historical")
-    val historical: Boolean,
+    @SerializedName("data")
+    val data: CurrencyData,
+)
+
+data class CurrencyData(
     @SerializedName("result")
     val result: Float,
     @SerializedName("success")
