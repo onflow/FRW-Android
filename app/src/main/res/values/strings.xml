@@ -163,6 +163,7 @@
     <string name="to">To</string>
     <string name="amount_confirmation">Amount Confirmation</string>
     <string name="insufficient_balance">Insufficient balance</string>
+    <string name="minimum_required">Minimum 50 Flows</string>
     <string name="copy_address_toast">Address copied to clipboard</string>
     <string name="shared_via">Shared via</string>
     <string name="send_nft">Send NFT</string>

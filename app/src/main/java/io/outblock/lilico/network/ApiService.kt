@@ -167,8 +167,7 @@ interface ApiService {
     ): SwapEstimateResponse
 
 
-    // https://api.exchangerate.host/convert?from=USD&to=EUR
-    @GET("/convert?from=USD")
+    @GET("/v1/crypto/exchange?from=USD")
     suspend fun currency(
         @Query("to") to: String,
     ): CurrencyResponse
