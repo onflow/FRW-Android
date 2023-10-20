@@ -11,9 +11,7 @@ import kotlinx.coroutines.delay
 import java.lang.ref.WeakReference
 import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.concurrent.timer
 
 
 object WalletFetcher {
