@@ -1,6 +1,5 @@
 package io.outblock.lilico.page.profile.subpage.wallet.childaccountdetail
 
-import io.outblock.lilico.manager.childaccount.ChildAccount
 import io.outblock.lilico.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT
 import io.outblock.lilico.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID
 import io.outblock.lilico.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS

@@ -39,10 +39,17 @@ internal class WalletConnectDelegate : SignInterface.WalletDelegate {
         isConnected = false
     }
 
+    override fun onSessionExtend(session: Sign.Model.Session) {
+        logd(TAG, "onSessionExtend() extendedSession:${Gson().toJson(session)}")
+    }
+
     /**
      * Triggered when wallet receives the session proposal sent by a Dapp
      */
-    override fun onSessionProposal(sessionProposal: Sign.Model.SessionProposal) {
+    override fun onSessionProposal(
+        sessionProposal: Sign.Model.SessionProposal,
+        verifyContext: Sign.Model.VerifyContext
+    ) {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
         val activity = BaseActivity.getCurrentActivity() ?: return
         uiScope {
@@ -63,7 +70,10 @@ internal class WalletConnectDelegate : SignInterface.WalletDelegate {
     /**
      * Triggered when a Dapp sends SessionRequest to sign a transaction or a message
      */
-    override fun onSessionRequest(sessionRequest: Sign.Model.SessionRequest) {
+    override fun onSessionRequest(
+        sessionRequest: Sign.Model.SessionRequest,
+        verifyContext: Sign.Model.VerifyContext
+    ) {
         logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
         logd(TAG, "onSessionRequest() sessionRequest:$sessionRequest")
         ioScope { sessionRequest.toWcRequest().dispatch() }

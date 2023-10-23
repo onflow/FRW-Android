@@ -288,7 +288,7 @@
             app:cardElevation="3dp"
             app:defaultText="@string/hold_to_confirm"
             app:layout_constraintTop_toBottomOf="@id/content_wrapper"
-            app:processingText="@string/transition_is_processing"
+            app:processingText="@string/transaction_is_processing"
             app:rippleColor="@color/primary10"/>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

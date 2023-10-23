@@ -70,7 +70,6 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
         }
         contact ?: return
         ioScope {
-            val wallet = WalletManager.wallet() ?: return@ioScope
             val nft = this@NftSendAddressDialog.nft ?: return@ioScope
             uiScope {
                 val activity = requireActivity()
@@ -80,7 +79,7 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
                     NftSendModel(
                         nft = nft,
                         target = contact,
-                        fromAddress = wallet.wallets?.first()?.blockchain?.first()?.address.orEmpty(),
+                        fromAddress = WalletManager.selectedWalletAddress(),
                     )
                 ).show(activity.supportFragmentManager, "")
             }

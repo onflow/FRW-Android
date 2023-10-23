@@ -15,6 +15,7 @@ import io.outblock.lilico.manager.coin.TokenStateChangeListener
 import io.outblock.lilico.manager.coin.TokenStateManager
 import io.outblock.lilico.manager.price.CurrencyManager
 import io.outblock.lilico.manager.price.CurrencyUpdateListener
+import io.outblock.lilico.manager.staking.StakingInfoUpdateListener
 import io.outblock.lilico.manager.staking.StakingManager
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
@@ -34,7 +35,7 @@ import io.outblock.lilico.utils.updateAccountTransactionCountLocal
 import io.outblock.lilico.utils.viewModelIOScope
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate, TokenStateChangeListener, CurrencyUpdateListener {
+class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate, TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
 
@@ -48,6 +49,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         CoinRateManager.addListener(this)
         BalanceManager.addListener(this)
         CurrencyManager.addCurrencyUpdateListener(this)
+        StakingManager.addStakingInfoUpdateListener(this)
     }
 
     fun load() {
@@ -91,6 +93,15 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             dataListLiveData.postValue(dataList)
             loadCoinList()
         }
+    }
+
+    override fun onStakingInfoUpdate() {
+        val flow = dataList.firstOrNull { it.coin.isFlowCoin() } ?: return
+        dataList[dataList.indexOf(flow)] = flow.copy(
+            isStaked = StakingManager.isStaked(),
+            stakeAmount = StakingManager.stakingCount()
+        )
+        dataListLiveData.value = dataList
     }
 
     fun onBalanceHideStateUpdate() {
@@ -154,7 +165,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         val oldItem = dataList.firstOrNull { it.coin.symbol == balance.symbol } ?: return
         val item = oldItem.copy(balance = balance.balance)
         dataList[dataList.indexOf(oldItem)] = item
-        checkStakingUpdate()
         dataListLiveData.value = dataList
         updateWalletHeader()
     }
@@ -166,7 +176,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         val oldItem = dataList.firstOrNull { it.coin.symbol == coin.symbol } ?: return
         val item = oldItem.copy(coinRate = rate)
         dataList[dataList.indexOf(oldItem)] = item
-        checkStakingUpdate()
         dataListLiveData.value = dataList
         updateWalletHeader()
     }
@@ -182,16 +191,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         }
     }
 
-    private fun checkStakingUpdate() {
-        val flow = dataList.firstOrNull { it.coin.isFlowCoin() } ?: return
-        dataList[dataList.indexOf(flow)] = flow.copy(
-            isStaked = StakingManager.isStaked(),
-            stakeAmount = StakingManager.stakingCount()
-        )
-    }
-
     companion object {
         private val TAG = WalletFragmentViewModel::class.java.simpleName
     }
+
 
 }

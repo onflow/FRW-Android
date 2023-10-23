@@ -13,7 +13,7 @@ import io.outblock.lilico.wallet.toAddress
 
 class ReceiveViewModel : ViewModel() {
 
-    private val size by lazy { ScreenUtils.getScreenWidth() - (61 * 2).dp2px().toInt() }
+    private val size by lazy { ScreenUtils.getScreenWidth() - (30 * 2).dp2px().toInt() }
 
     val qrcodeLiveData = MutableLiveData<Bitmap>()
     val walletLiveData = MutableLiveData<ReceiveData>()

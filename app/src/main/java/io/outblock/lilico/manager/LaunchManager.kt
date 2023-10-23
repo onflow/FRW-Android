@@ -34,7 +34,6 @@ object LaunchManager {
     fun init(application: Application) {
         application.startServiceSafe(Intent(application, MessagingService::class.java))
         PageLifecycleObserver.init(application)
-        AppLifecycleObserver.observe()
         safeRun { System.loadLibrary("TrustWalletCore") }
         ioScope {
             safeRun { EnvKey.init() }
@@ -51,6 +50,7 @@ object LaunchManager {
             safeRun { readCache(application) }
             safeRun { runCompatibleScript() }
         }
+        AppLifecycleObserver.observe()
     }
 
     private fun asyncInit() {

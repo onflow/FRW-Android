@@ -66,7 +66,7 @@ fun cadenceQueryDomainByAddressFind(address: String): FlowScriptResponse? {
 
 fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
     logd(TAG, "cadenceCheckTokenEnabled() address:${coin.address()}")
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return null
+    val walletAddress = WalletManager.selectedWalletAddress()
     val result = coin.formatCadence(CADENCE_CHECK_TOKEN_IS_ENABLED).executeCadence {
         arg { address(walletAddress) }
     }
@@ -76,12 +76,14 @@ fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
 
 fun cadenceCheckTokenListEnabled(coins: List<FlowCoin>): List<Boolean>? {
     logd(TAG, "cadenceCheckTokenListEnabled()")
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return null
+    val walletAddress = WalletManager.selectedWalletAddress()
 
-    val tokenImports = coins.map { it.formatCadence("import <Token> from <TokenAddress>") }
+    val filterCoinList = coins.filter { it.address().isNotEmpty() }
+
+    val tokenImports = filterCoinList.map { it.formatCadence("import <Token> from <TokenAddress>") }
         .joinToString("\r\n") { it }
 
-    val tokenFunctions = coins.map {
+    val tokenFunctions = filterCoinList.map {
         it.formatCadence(
             """
         pub fun check<Token>Vault(address: Address) : Bool {
@@ -97,7 +99,7 @@ fun cadenceCheckTokenListEnabled(coins: List<FlowCoin>): List<Boolean>? {
         )
     }.joinToString("\r\n") { it }
 
-    val tokenCalls = coins.map {
+    val tokenCalls = filterCoinList.map {
         it.formatCadence(
             """
         check<Token>Vault(address: address)
@@ -125,7 +127,7 @@ fun cadenceCheckTokenListEnabled(coins: List<FlowCoin>): List<Boolean>? {
 }
 
 fun cadenceQueryTokenBalance(coin: FlowCoin): Float? {
-    val walletAddress = WalletManager.selectedWalletAddress()?.toAddress() ?: return 0f
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     logd(TAG, "cadenceQueryTokenBalance()")
     val result = coin.formatCadence(CADENCE_GET_BALANCE).executeCadence {
         arg { address(walletAddress) }
@@ -153,7 +155,7 @@ suspend fun cadenceTransferToken(coin: FlowCoin, toAddress: String, amount: Doub
 
 fun cadenceNftCheckEnabled(nft: NftCollection): Boolean? {
     logd(TAG, "cadenceNftCheckEnabled() nft:${nft.name}")
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return null
+    val walletAddress = WalletManager.selectedWalletAddress()
     logd(TAG, "cadenceNftCheckEnabled() walletAddress:${walletAddress}")
     val result = nft.formatCadence(CADENCE_NFT_CHECK_ENABLED).executeCadence {
         arg { address(walletAddress) }
@@ -172,7 +174,7 @@ suspend fun cadenceNftEnabled(nft: NftCollection): String? {
 fun cadenceNftListCheckEnabled(nfts: List<NftCollection>): List<Boolean>? {
     logd(TAG, "cadenceNftListCheckEnabled()")
     if (nfts.isEmpty()) return emptyList()
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return null
+    val walletAddress = WalletManager.selectedWalletAddress()
 
     val tokenImports = nfts.map { nft -> nft.formatCadence("import <Token> from <TokenAddress>") }
         .joinToString("\r\n") { it }

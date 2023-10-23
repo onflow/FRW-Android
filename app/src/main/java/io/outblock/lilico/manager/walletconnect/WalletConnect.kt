@@ -4,7 +4,6 @@ import android.app.Application
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
 import com.walletconnect.android.relay.ConnectionType
-import com.walletconnect.android.relay.RelayClient
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import io.outblock.lilico.manager.env.EnvKey
@@ -27,11 +26,11 @@ class WalletConnect {
 
     init {
         GlobalScope.launch {
-            RelayClient.isConnectionAvailable.collect { isConnected ->
+            CoreClient.Relay.isConnectionAvailable.collect { isConnected ->
                 logd(TAG, "RelayClient connect change:$isConnected")
                 if (!isConnected) {
                     safeRun {
-                        RelayClient.connect { error: Core.Model.Error -> logw(TAG, "RelayClient connect error: $error") }
+                        CoreClient.Relay.connect { error: Core.Model.Error -> logw(TAG, "RelayClient connect error: $error") }
                     }
                 }
             }
@@ -39,11 +38,11 @@ class WalletConnect {
     }
 
     fun pair(uri: String) {
-        logd(TAG, "RelayClient isConnectionAvailable :${RelayClient.isConnectionAvailable.value}")
-        if (!RelayClient.isConnectionAvailable.value) {
+        logd(TAG, "RelayClient isConnectionAvailable :${CoreClient.Relay.isConnectionAvailable.value}")
+        if (!CoreClient.Relay.isConnectionAvailable.value) {
             var job: kotlinx.coroutines.Job? = null
             job = ioScope {
-                RelayClient.isConnectionAvailable.collect { isConnected ->
+                CoreClient.Relay.isConnectionAvailable.collect { isConnected ->
                     if (isConnected) {
                         delay(1000)
                         logd(TAG, "Pair on connected")
@@ -106,7 +105,7 @@ private fun setup(application: Application) {
     SignClient.initialize(
         Sign.Params.Init(core = CoreClient),
         onSuccess = {
-            RelayClient.connect { error: Core.Model.Error ->
+            CoreClient.Relay.connect { error: Core.Model.Error ->
                 logw(TAG, "RelayClient connect error: $error")
             }
         }

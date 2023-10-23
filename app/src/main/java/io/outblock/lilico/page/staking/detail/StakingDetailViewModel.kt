@@ -29,6 +29,8 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
     val dataLiveData = MutableLiveData<StakingDetailModel>()
 
+    private var detailModel = StakingDetailModel()
+
     init {
         BalanceManager.addListener(this)
         CoinRateManager.addListener(this)
@@ -37,10 +39,12 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
     fun load(provider: StakingProvider) {
         ioScope {
-            updateLiveData(data().apply {
-                currency = selectedCurrency()
+            detailModel = detailModel.copy(
+                currency = selectedCurrency(),
                 stakingNode = StakingManager.stakingInfo().nodes.first { it.nodeID == provider.id }
-            })
+            )
+
+            updateLiveData(detailModel)
 
             val coin = FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW) ?: return@ioScope
 
@@ -54,24 +58,34 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         CADENCE_CLAIM_REWARDS.rewardsAction(provider)
     }
 
-    fun restakeRewards(provider: StakingProvider) {
+    fun reStakeRewards(provider: StakingProvider) {
         CADENCE_RESTAKE_REWARDS.rewardsAction(provider)
     }
 
-    fun claimUnstaked(provider: StakingProvider) {
+    fun claimUnStaked(provider: StakingProvider) {
         CADENCE_STAKING_UNSATKED_CLAIM.rewardsAction(provider)
     }
 
-    fun restakeUnstaked(provider: StakingProvider) {
+    fun reStakeUnStaked(provider: StakingProvider) {
         CADENCE_STAKING_UNSATKED_RESTAKE.rewardsAction(provider)
     }
 
     private fun String.rewardsAction(provider: StakingProvider, isUnStaked: Boolean = false) {
         ioScope {
 
+            val amount = if (isUnStaked) {
+                StakingManager.rawStakingInfo()?.first { it.nodeID == provider.id }?.tokensUnstaked
+            } else {
+                StakingManager.rawStakingInfo()?.first { it.nodeID == provider.id }?.tokensRewarded
+            } ?: 0.0
+
+            if (amount <= 0) {
+                return@ioScope
+            }
+
             var delegatorId = provider.delegatorId()
             if (delegatorId == null) {
-                createStakingDelegatorId(provider)
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -80,17 +94,14 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
                 return@ioScope
             }
 
-            val amount = if (isUnStaked) {
-                StakingManager.rawStakingInfo()?.first { it.nodeID == provider.id }?.tokensUnstaked
-            } else StakingManager.rawStakingInfo()?.first { it.nodeID == provider.id }?.tokensRewarded
-            val txid = transactionByMainWallet {
+            val txId = transactionByMainWallet {
                 arg { string(provider.id) }
                 arg { uint32(delegatorId) }
-                arg { ufix64(amount ?: 0.0) }
+                arg { ufix64(amount) }
             }
 
             val transactionState = TransactionState(
-                transactionId = txid!!,
+                transactionId = txId!!,
                 time = System.currentTimeMillis(),
                 state = FlowTransactionStatus.PENDING.num,
                 type = TransactionState.TYPE_TRANSACTION_DEFAULT,
@@ -104,18 +115,18 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
         if (coin.isFlowCoin()) {
             logd("xxx", "balance:${balance.balance}")
-            updateLiveData(data().apply { this.balance = balance.balance })
+            detailModel = detailModel.copy(balance = balance.balance)
+            updateLiveData(detailModel)
         }
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
         logd("xxx", "price:${price}")
         if (coin.isFlowCoin()) {
-            updateLiveData(data().apply { this.coinRate = price })
+            detailModel = detailModel.copy(coinRate = price)
+            updateLiveData(detailModel)
         }
     }
-
-    private fun data() = (dataLiveData.value ?: StakingDetailModel()).copy()
 
     private fun updateLiveData(data: StakingDetailModel) {
         uiScope {

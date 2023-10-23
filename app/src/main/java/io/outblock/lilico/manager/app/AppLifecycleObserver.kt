@@ -4,7 +4,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.walletconnect.android.Core
-import com.walletconnect.android.relay.RelayClient
+import com.walletconnect.android.CoreClient
 import io.outblock.lilico.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import io.outblock.lilico.page.profile.subpage.wallet.queryStorageInfo
 import io.outblock.lilico.utils.logd
@@ -28,11 +28,11 @@ class AppLifecycleObserver : DefaultLifecycleObserver {
         isForeground = true
         checkMeowDomainClaimed()
         queryStorageInfo()
-        safeRun {
-            RelayClient.connect { error: Core.Model.Error ->
-                logw(TAG, "RelayClient connect error: $error")
-            }
-        }
+//        safeRun {
+//            CoreClient.Relay.connect { error: Core.Model.Error ->
+//                logw(TAG, "RelayClient connect error: $error")
+//            }
+//        }
     }
 
     private fun onAppToBackground() {

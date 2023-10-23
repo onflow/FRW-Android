@@ -35,7 +35,6 @@ object BalanceManager {
 
     fun getBalanceByCoin(coin: FlowCoin) {
         logd(TAG, "getBalanceByCoin:${coin.symbol}")
-        balanceList.firstOrNull { it.symbol == coin.symbol }?.let { dispatchListeners(coin, it.balance) }
         fetch(coin)
     }
 

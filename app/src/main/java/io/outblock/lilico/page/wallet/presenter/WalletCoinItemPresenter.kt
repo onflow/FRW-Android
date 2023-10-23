@@ -8,11 +8,9 @@ import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.base.recyclerview.BaseViewHolder
 import io.outblock.lilico.databinding.LayoutWalletCoinItemBinding
 import io.outblock.lilico.manager.coin.FlowCoin
-import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.page.profile.subpage.wallet.ChildAccountCollectionManager
 import io.outblock.lilico.page.token.detail.TokenDetailActivity
 import io.outblock.lilico.page.wallet.model.WalletCoinItemModel
-import io.outblock.lilico.utils.extensions.gone
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.formatNum
 import io.outblock.lilico.utils.formatPrice

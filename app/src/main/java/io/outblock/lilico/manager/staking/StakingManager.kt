@@ -11,9 +11,10 @@ import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.logv
+import io.outblock.lilico.utils.uiScope
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
-import java.math.BigDecimal
+import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -35,6 +36,8 @@ object StakingManager {
 
     private val delegatorIds = ConcurrentHashMap<String, Int>()
 
+    private val listeners = mutableListOf<WeakReference<StakingInfoUpdateListener>>()
+
     fun init() {
         ioScope {
             val cache = stakingCache().read()
@@ -43,6 +46,10 @@ object StakingManager {
             apyYear = cache?.apyYear ?: apyYear
             isSetup = cache?.isSetup ?: isSetup
         }
+    }
+
+    fun addStakingInfoUpdateListener(listener: StakingInfoUpdateListener) {
+        listeners.add(WeakReference(listener))
     }
 
     fun stakingInfo() = stakingInfo
@@ -77,6 +84,7 @@ object StakingManager {
             stakingInfo = queryStakingInfo() ?: stakingInfo
             refreshDelegatorInfo()
             cache()
+            dispatchListener()
         }
     }
 
@@ -120,19 +128,26 @@ object StakingManager {
     }
 
     private fun queryStakingInfo(): StakingInfo? {
-        val address = WalletManager.selectedWalletAddress() ?: return null
+        val address = WalletManager.selectedWalletAddress()
 
         return runCatching {
             val response = CADENCE_QUERY_STAKE_INFO.executeCadence {
                 arg { address(address) }
             }
-            rawStakingInfo =  response?.decode<List<RawStakingNode>>() ?: emptyList<RawStakingNode>()
+            rawStakingInfo =  response?.decode<List<RawStakingNode>>() ?: emptyList()
             val text = String(response!!.bytes)
             logv(TAG, "queryStakingInfo response:$text")
             parseStakingInfoResult(text)
         }.onFailure {
             println(it)
         }.getOrNull()
+    }
+
+    private fun dispatchListener() {
+        uiScope {
+            listeners.forEach { it.get()?.onStakingInfoUpdate() }
+            listeners.removeAll { it.get() == null }
+        }
     }
 
 }
@@ -146,16 +161,16 @@ private fun queryStakingApy(cadence: String): Float? {
     }.getOrNull()
 }
 
-suspend fun createStakingDelegatorId(provider: StakingProvider) = suspendCoroutine { continuation ->
+suspend fun createStakingDelegatorId(provider: StakingProvider, amount: Double) = suspendCoroutine { continuation ->
     runCatching {
         runBlocking {
             logd(TAG, "createStakingDelegatorId providerId：${provider.id}")
-            val txid = CADENCE_CREATE_STAKE_DELEGATOR_ID.transactionByMainWallet {
+            val txId = CADENCE_CREATE_STAKE_DELEGATOR_ID.transactionByMainWallet {
                 arg { string(provider.id) }
-                arg { ufix64Safe(BigDecimal(0.000)) }
+                arg { ufix64Safe(amount) }
             }
-            logd(TAG, "createStakingDelegatorId txid：$txid")
-            TransactionStateWatcher(txid!!).watch { result ->
+            logd(TAG, "createStakingDelegatorId txId：$txId")
+            TransactionStateWatcher(txId!!).watch { result ->
                 if (result.isExecuteFinished()) {
                     continuation.resume(true)
                 }
@@ -171,9 +186,9 @@ private suspend fun setupStaking(callback: () -> Unit) {
             callback.invoke()
             return
         }
-        val txid = CADENCE_SETUP_STAKING.transactionByMainWallet {} ?: return
-        logd(TAG, "setupStaking txid:$txid")
-        TransactionStateWatcher(txid).watch { result ->
+        val txId = CADENCE_SETUP_STAKING.transactionByMainWallet {} ?: return
+        logd(TAG, "setupStaking txId:$txId")
+        TransactionStateWatcher(txId).watch { result ->
             if (result.isExecuteFinished()) {
                 logd(TAG, "setupStaking finish")
                 callback.invoke()
@@ -185,7 +200,7 @@ private suspend fun setupStaking(callback: () -> Unit) {
 private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
     logd(TAG, "getDelegatorInfo start")
     runCatching {
-        val address = WalletManager.selectedWalletAddress()!!
+        val address = WalletManager.selectedWalletAddress()
         val response = CADENCE_GET_DELEGATOR_INFO.executeCadence {
             arg { address(address) }
         }!!
@@ -197,10 +212,14 @@ private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
 @WorkerThread
 private fun checkHasBeenSetup(): Boolean {
     return runCatching {
-        val address = WalletManager.selectedWalletAddress()!!
+        val address = WalletManager.selectedWalletAddress()
         val response = CADENCE_CHECK_IS_STAKING_SETUP.executeCadence { arg { address(address) } }
         response?.parseBool(false) ?: false
     }.getOrElse { false }
+}
+
+interface StakingInfoUpdateListener {
+    fun onStakingInfoUpdate()
 }
 
 data class StakingInfo(

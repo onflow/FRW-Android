@@ -11,7 +11,7 @@ import io.outblock.lilico.utils.isDeveloperModeEnable
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.uiScope
 
-private var network = if (isDev()) NETWORK_TESTNET else NETWORK_TESTNET
+private var network = if (isDev()) NETWORK_TESTNET else NETWORK_MAINNET
 private var isDeveloperMode = false
 
 fun refreshChainNetwork(callback: (() -> Unit)? = null) {
