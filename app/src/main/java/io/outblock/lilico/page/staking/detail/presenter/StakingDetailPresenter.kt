@@ -40,9 +40,9 @@ class StakingDetailPresenter(
             stakeButton.setOnClickListener { StakingAmountActivity.launch(activity, provider) }
             unstakeButton.setOnClickListener { StakingAmountActivity.launch(activity, provider, isUnstake = true) }
             header.claimButton.setOnClickListener { viewModel.claimRewards(provider) }
-            header.restakeButton.setOnClickListener { viewModel.restakeRewards(provider) }
-            unstakedWrapper.claimButton.setOnClickListener { viewModel.claimUnstaked(provider) }
-            unstakedWrapper.restakeButton.setOnClickListener { viewModel.restakeUnstaked(provider) }
+            header.restakeButton.setOnClickListener { viewModel.reStakeRewards(provider) }
+            unstakedWrapper.claimButton.setOnClickListener { viewModel.claimUnStaked(provider) }
+            unstakedWrapper.restakeButton.setOnClickListener { viewModel.reStakeUnStaked(provider) }
         }
         setupToolbar()
     }

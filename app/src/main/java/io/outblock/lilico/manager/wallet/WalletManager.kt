@@ -76,7 +76,7 @@ object WalletManager {
         val pref = selectedWalletAddress
         val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null
         if (isExist) {
-            return pref.orEmpty()
+            return pref
         }
 
         return wallet()?.walletAddress().orEmpty().apply {

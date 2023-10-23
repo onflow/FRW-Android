@@ -23,6 +23,7 @@ import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
 import io.outblock.lilico.utils.*
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.setVisible
+import io.outblock.lilico.utils.extensions.toSafeDouble
 import io.outblock.lilico.widgets.ButtonState
 import kotlinx.coroutines.delay
 
@@ -74,7 +75,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
                 uiScope { safeRun { dismiss() } }
                 return@ioScope
             }
-            val isSuccess = if (data.isUnstake) unstake(data.provider) else stake(data.provider)
+            val isSuccess = if (data.isUnstake) unStake(data.provider) else stake(data.provider)
             safeRun {
                 if (isSuccess) {
                     requireActivity().finish()
@@ -89,8 +90,9 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
     private suspend fun stake(provider: StakingProvider): Boolean {
         try {
             var delegatorId = provider.delegatorId()
+            val amount = data.amount
             if (delegatorId == null) {
-                createStakingDelegatorId(provider)
+                createStakingDelegatorId(provider, amount.toSafeDouble())
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -98,13 +100,13 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txid = CADENCE_STAKE_FLOW.transactionByMainWallet {
+            val txId = CADENCE_STAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
-                arg { ufix64Safe(data.amount) }
+                arg { ufix64Safe(amount) }
             }
             val transactionState = TransactionState(
-                transactionId = txid!!,
+                transactionId = txId!!,
                 time = System.currentTimeMillis(),
                 state = FlowTransactionStatus.PENDING.num,
                 type = TransactionState.TYPE_STAKE_FLOW,
@@ -118,11 +120,12 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
         }
     }
 
-    private suspend fun unstake(provider: StakingProvider): Boolean {
+    private suspend fun unStake(provider: StakingProvider): Boolean {
         try {
             var delegatorId = provider.delegatorId()
+            val amount = data.amount
             if (delegatorId == null) {
-                createStakingDelegatorId(provider)
+                createStakingDelegatorId(provider, amount.toSafeDouble())
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -130,13 +133,13 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txid = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
+            val txId = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
-                arg { ufix64Safe(data.amount) }
+                arg { ufix64Safe(amount) }
             }
             val transactionState = TransactionState(
-                transactionId = txid!!,
+                transactionId = txId!!,
                 time = System.currentTimeMillis(),
                 state = FlowTransactionStatus.PENDING.num,
                 type = TransactionState.TYPE_STAKE_FLOW,

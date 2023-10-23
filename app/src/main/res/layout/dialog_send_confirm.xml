@@ -381,5 +381,5 @@
         android:layout_marginTop="50dp"
         app:defaultText="@string/hold_to_send"
         app:layout_constraintTop_toBottomOf="@id/content_wrapper"
-        app:processingText="@string/transition_is_processing"/>
+        app:processingText="@string/transaction_is_processing"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

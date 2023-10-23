@@ -139,7 +139,6 @@ class SendAmountPresenter(
 
     private fun showSendDialog() {
         ioScope {
-            val wallet = WalletManager.wallet() ?: return@ioScope
             val inputAmount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeFloat()
             val rate = (balance()?.coinRate ?: 0f) * CurrencyManager.currencyPrice()
             val amount = if (viewModel.currentCoin() == selectedCurrency().flag) inputAmount / rate else inputAmount
@@ -149,7 +148,7 @@ class SendAmountPresenter(
                         amount = amount,
                         coinSymbol = if (viewModel.currentCoin() == selectedCurrency().flag) viewModel.convertCoin() else viewModel.currentCoin(),
                         target = viewModel.contact(),
-                        fromAddress = wallet.wallets?.first()?.blockchain?.first()?.address.orEmpty(),
+                        fromAddress = WalletManager.selectedWalletAddress(),
                     )
                 ).show(activity.supportFragmentManager, "")
             }

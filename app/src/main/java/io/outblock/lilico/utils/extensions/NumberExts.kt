@@ -1,5 +1,7 @@
 package io.outblock.lilico.utils.extensions
 
+import java.math.BigDecimal
+
 fun Int?.orZero() = this ?: 0
 
 fun Double?.orZero() = this ?: 0.0
@@ -28,4 +30,8 @@ fun String?.toSafeFloat(default: Float = 0f): Float {
     }
 
     return this.toFloatOrNull() ?: default
+}
+
+fun Float.toSafeDouble(): Double {
+    return BigDecimal(this.toString()).toDouble()
 }
