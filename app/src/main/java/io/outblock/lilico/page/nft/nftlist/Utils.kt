@@ -97,7 +97,7 @@ fun nftWalletAddress(): String {
 //    if (BuildConfig.DEBUG) {
 //        return "0x95601dba5c2506eb"
 //    }
-    return WalletManager.selectedWalletAddress().orEmpty()
+    return WalletManager.selectedWalletAddress()
 }
 
 fun Nft.isDomain() = media?.firstOrNull { it.uri.contains("flowns.org") && it.uri.contains(".meow") } != null

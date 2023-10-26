@@ -77,6 +77,11 @@ object BalanceManager {
             }
         }
     }
+
+    fun clear() {
+        balanceList.clear()
+        cache.clear()
+    }
 }
 
 interface OnBalanceUpdate {

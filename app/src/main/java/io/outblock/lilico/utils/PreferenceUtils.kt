@@ -112,7 +112,7 @@ fun setBackupGoogleDrive(isBackuped: Boolean = true) {
     edit { dataStore.edit { it[KEY_BACKUP_GOOGLE_DRIVE] = isBackuped } }
 }
 
-suspend fun isDeveloperModeEnable(): Boolean = dataStore.data.map { it[KEY_DEVELOPER_MODE_ENABLE] ?: isDev() }.first()
+suspend fun isDeveloperModeEnable(): Boolean = dataStore.data.map { it[KEY_DEVELOPER_MODE_ENABLE] ?: isDev() || isTesting() }.first()
 
 fun setDeveloperModeEnable(isEnable: Boolean) {
     edit { dataStore.edit { it[KEY_DEVELOPER_MODE_ENABLE] = isEnable } }

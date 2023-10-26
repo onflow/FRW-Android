@@ -23,7 +23,6 @@ import io.outblock.lilico.utils.setRegistered
 import io.outblock.lilico.utils.toast
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.wallet.Wallet
-import io.outblock.lilico.wallet.WalletStore
 import io.outblock.lilico.wallet.getPublicKey
 import io.outblock.lilico.wallet.sign
 
@@ -39,11 +38,15 @@ object AccountManager {
     fun add(account: Account) {
         accounts.removeAll { it.userInfo.username == account.userInfo.username }
         accounts.add(account)
-        accounts.forEach { it.isActive = it == account }
+        accounts.forEach {
+            it.isActive = it == account
+        }
         accountsCache().cache(Accounts().apply { addAll(accounts) })
     }
 
-    fun get() = accounts.toList().firstOrNull { it.isActive }
+    fun get(): Account? {
+        return accounts.toList().firstOrNull { it.isActive }
+    }
 
     fun userInfo() = get()?.userInfo
 

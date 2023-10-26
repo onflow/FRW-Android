@@ -25,6 +25,10 @@ class NftListRequester {
     fun cacheCollections() = cache().collection().read()?.collections?.sort()
 
     suspend fun requestCollection(): List<NftCollectionWrapper>? {
+        val address = nftWalletAddress()
+        if (address.isEmpty()) {
+            return emptyList()
+        }
         val collectionResponse = service.nftCollectionsOfAccount(nftWalletAddress())
         if (collectionResponse.status > 200) {
             throw Exception("request nft list error: $collectionResponse")

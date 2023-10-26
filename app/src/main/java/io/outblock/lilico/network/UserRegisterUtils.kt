@@ -13,10 +13,11 @@ import io.outblock.lilico.firebase.messaging.uploadPushToken
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.BalanceManager
-import io.outblock.lilico.manager.coin.FlowCoinListManager
 import io.outblock.lilico.manager.coin.TokenStateManager
 import io.outblock.lilico.manager.nft.NftCollectionStateManager
+import io.outblock.lilico.manager.staking.StakingManager
 import io.outblock.lilico.manager.transaction.TransactionStateManager
+import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.RegisterRequest
 import io.outblock.lilico.network.model.RegisterResponse
@@ -55,7 +56,6 @@ suspend fun registerOutblock(
 
                     val service = retrofit().create(ApiService::class.java)
                     AccountManager.add(Account(userInfo = service.userInfo().data))
-
                     continuation.resume(true)
                 } else {
                     resumeAccount()
@@ -151,12 +151,13 @@ private suspend fun resumeAccount() {
 suspend fun clearUserCache() {
     clearCacheDir()
     setMeowDomainClaimed(false)
-    TokenStateManager.reload()
-    delay(100)
-    FlowCoinListManager.reload()
-    NftCollectionStateManager.reload()
+    TokenStateManager.clear()
+    WalletManager.clear()
+    NftCollectionStateManager.clear()
     TransactionStateManager.reload()
-    BalanceManager.reload()
+//    FlowCoinListManager.reload()
+    BalanceManager.clear()
+    StakingManager.clear()
     updateAccountTransactionCountLocal(0)
     delay(1000)
 }

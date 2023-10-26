@@ -28,8 +28,8 @@ private const val LIMIT = 30
 class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
     private var contractId: String? = null
 
-    val transactionCountLiveData = MutableLiveData<Int>()
-    val transferCountLiveData = MutableLiveData<Int>()
+    val transactionCountLiveData = MutableLiveData<Int?>()
+    val transferCountLiveData = MutableLiveData<Int?>()
 
     val transactionListLiveData = MutableLiveData<List<Any>>()
     val transferListLiveData = MutableLiveData<List<Any>>()
@@ -83,7 +83,10 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         transferCountLiveData.postValue(getAccountTransferCount())
 
         val service = retrofit().create(ApiService::class.java)
-        val walletAddress = WalletManager.selectedWalletAddress() ?: return
+        val walletAddress = WalletManager.selectedWalletAddress()
+        if (walletAddress.isEmpty()) {
+            return
+        }
         val resp = if (isQueryByToken()) {
             service.getTransferRecordByToken(walletAddress, contractId!!, limit = LIMIT)
         } else {
@@ -92,7 +95,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         val transfers = resp.data?.transactions.orEmpty()
         val data = mutableListOf<Any>().apply { addAll(transfers) }
         if ((resp.data?.total ?: 0) > LIMIT) {
-            data.add(TransactionViewMoreModel(WalletManager.selectedWalletAddress()!!))
+            data.add(TransactionViewMoreModel(walletAddress))
         }
 
         transferListLiveData.postValue(data)

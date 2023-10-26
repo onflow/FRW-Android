@@ -12,6 +12,9 @@ import kotlinx.serialization.Serializable
 fun queryStorageInfo() {
     ioScope {
         val address = WalletManager.selectedWalletAddress()
+        if (address.isEmpty()) {
+            return@ioScope
+        }
         val response = CADENCE_QUERY_STORAGE_INFO.executeCadence {
             arg { address(address) }
         }

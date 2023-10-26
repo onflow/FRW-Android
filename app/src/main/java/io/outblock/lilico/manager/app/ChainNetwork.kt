@@ -8,11 +8,12 @@ import io.outblock.lilico.utils.cpuScope
 import io.outblock.lilico.utils.getChainNetworkPreference
 import io.outblock.lilico.utils.isDev
 import io.outblock.lilico.utils.isDeveloperModeEnable
+import io.outblock.lilico.utils.isTesting
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.uiScope
 
-private var network = if (isDev()) NETWORK_TESTNET else NETWORK_MAINNET
-private var isDeveloperMode = false
+private var network = if (isDev() || isTesting()) NETWORK_TESTNET else NETWORK_MAINNET
+private var isDeveloperMode = isDev() || isTesting()
 
 fun refreshChainNetwork(callback: (() -> Unit)? = null) {
     cpuScope {
@@ -29,6 +30,7 @@ suspend fun refreshChainNetworkSync() {
 }
 
 fun chainNetwork() = network
+fun isDeveloperMode() = isDeveloperMode
 
 fun isMainnet() = network == NETWORK_MAINNET
 fun isTestnet() = network == NETWORK_TESTNET

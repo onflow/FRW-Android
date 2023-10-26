@@ -27,10 +27,10 @@ class WalletConnect {
     init {
         GlobalScope.launch {
             CoreClient.Relay.isConnectionAvailable.collect { isConnected ->
-                logd(TAG, "RelayClient connect change:$isConnected")
+                logd(TAG, "CoreClient.Relay connect change:$isConnected")
                 if (!isConnected) {
                     safeRun {
-                        CoreClient.Relay.connect { error: Core.Model.Error -> logw(TAG, "RelayClient connect error: $error") }
+                        CoreClient.Relay.connect { error: Core.Model.Error -> logw(TAG, "CoreClient.Relay connect error: $error") }
                     }
                 }
             }
@@ -38,7 +38,7 @@ class WalletConnect {
     }
 
     fun pair(uri: String) {
-        logd(TAG, "RelayClient isConnectionAvailable :${CoreClient.Relay.isConnectionAvailable.value}")
+        logd(TAG, "CoreClient.Relay isConnectionAvailable :${CoreClient.Relay.isConnectionAvailable.value}")
         if (!CoreClient.Relay.isConnectionAvailable.value) {
             var job: kotlinx.coroutines.Job? = null
             job = ioScope {
@@ -106,7 +106,7 @@ private fun setup(application: Application) {
         Sign.Params.Init(core = CoreClient),
         onSuccess = {
             CoreClient.Relay.connect { error: Core.Model.Error ->
-                logw(TAG, "RelayClient connect error: $error")
+                logw(TAG, "CoreClient.Relay connect error: $error")
             }
         }
     ) {

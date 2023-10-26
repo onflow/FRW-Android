@@ -22,9 +22,11 @@ import io.outblock.lilico.manager.app.NETWORK_NAME_SANDBOX
 import io.outblock.lilico.manager.app.NETWORK_NAME_TESTNET
 import io.outblock.lilico.manager.app.chainNetWorkString
 import io.outblock.lilico.manager.app.doNetworkChangeTask
+import io.outblock.lilico.manager.app.isDeveloperMode
 import io.outblock.lilico.manager.app.networkId
 import io.outblock.lilico.manager.app.refreshChainNetworkSync
 import io.outblock.lilico.manager.wallet.WalletManager
+import io.outblock.lilico.network.clearUserCache
 import io.outblock.lilico.network.model.UserInfoData
 import io.outblock.lilico.network.model.WalletData
 import io.outblock.lilico.utils.Env
@@ -34,7 +36,6 @@ import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.ioScope
-import io.outblock.lilico.utils.isDeveloperModeEnable
 import io.outblock.lilico.utils.loadAvatar
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.utils.updateChainNetworkPreference
@@ -97,7 +98,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList() {
             val wallets = WalletManager.wallet()?.wallets ?: return@uiScope
             val list = mutableListOf<WalletData?>().apply {
                 add(wallets.firstOrNull { it.network() == NETWORK_NAME_MAINNET })
-                if (isDeveloperModeEnable()) {
+                if (isDeveloperMode()) {
                     add(wallets.firstOrNull { it.network() == NETWORK_NAME_TESTNET })
                     add(wallets.firstOrNull { it.network() == NETWORK_NAME_SANDBOX })
                 }
@@ -201,6 +202,7 @@ private fun View.setupWalletItem(
                     delay(200)
                     refreshChainNetworkSync()
                     doNetworkChangeTask()
+                    clearUserCache()
                     uiScope {
                         MainActivity.relaunch(Env.getApp())
                     }

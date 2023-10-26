@@ -2,7 +2,7 @@ package io.outblock.lilico.manager.walletconnect
 
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignInterface
+import com.walletconnect.sign.client.SignClient
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.manager.walletconnect.model.toWcRequest
 import io.outblock.lilico.utils.ioScope
@@ -14,7 +14,7 @@ import io.outblock.lilico.widgets.webview.fcl.model.FclDialogModel
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
-internal class WalletConnectDelegate : SignInterface.WalletDelegate {
+internal class WalletConnectDelegate : SignClient.WalletDelegate {
 
     private var isConnected = false
 

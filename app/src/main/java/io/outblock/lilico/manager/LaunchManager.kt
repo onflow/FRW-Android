@@ -41,10 +41,10 @@ object LaunchManager {
         }
         refreshChainNetwork {
             safeRun { WalletConnect.init(application) }
+            safeRun { initFirebaseConfig() }
             safeRun { FlowApi.refreshConfig() }
             safeRun { asyncInit() }
             safeRun { firebaseInitialize(application) }
-            safeRun { initFirebaseConfig() }
             safeRun { setNightMode() }
             safeRun { runWorker(application) }
             safeRun { readCache(application) }

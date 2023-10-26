@@ -34,7 +34,7 @@ class DeveloperModePresenter(
     init {
         uiScope {
             with(binding) {
-                val isDeveloperModeEnable = isDeveloperModeEnable()
+                val isDeveloperModeEnable = isDeveloperMode()
                 val isSandboxEnabled = isSandboxEnabled()
                 developerModePreference.setChecked(isDeveloperModeEnable)
 

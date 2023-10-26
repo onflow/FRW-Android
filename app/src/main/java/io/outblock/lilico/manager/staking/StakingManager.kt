@@ -69,9 +69,6 @@ object StakingManager {
     fun apyYear() = apyYear
 
     fun isStaked(): Boolean {
-        if (stakingInfo.nodes.isEmpty()) {
-            refresh()
-        }
         return stakingCount() > 0.0f
     }
 
@@ -148,6 +145,11 @@ object StakingManager {
             listeners.forEach { it.get()?.onStakingInfoUpdate() }
             listeners.removeAll { it.get() == null }
         }
+    }
+
+    fun clear() {
+        stakingCache().clear()
+        stakingInfo = StakingInfo()
     }
 
 }

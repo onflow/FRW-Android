@@ -22,7 +22,12 @@ class NftGridRequester {
     suspend fun request(): NftList {
         resetOffset()
         dataList.clear()
-        val response = service.nftList(nftWalletAddress(), offset, limit)
+        val address = nftWalletAddress()
+        if (address.isEmpty()) {
+            count = 0
+            return NftList()
+        }
+        val response = service.nftList(address, offset, limit)
         if (response.status > 200) {
             throw Exception("request grid list error: $response")
         }
@@ -45,6 +50,11 @@ class NftGridRequester {
 
     suspend fun nextPage(): NftList {
         if (isLoadMoreRequesting) throw RuntimeException("load more is running")
+
+        val address = nftWalletAddress()
+        if (address.isEmpty()) {
+            return NftList()
+        }
 
         isLoadMoreRequesting = true
         offset += limit
