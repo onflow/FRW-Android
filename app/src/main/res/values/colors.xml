@@ -214,6 +214,9 @@
     <color name="accent_blue">#579AF2</color>
     <color name="accent_green">#41CC5D</color>
     <color name="accent_gray">#8C9BAB</color>
+    <color name="accent_red">#E54040</color>
+    <color name="accent_quote_up_opacity">#1441CC5D</color>
+    <color name="accent_quote_down_opacity">#14E54040</color>
     <color name="profile_card_background">#FAFAFA</color>
     <color name="profile_card_divider">#FFFFFF</color>
     <color name="welcome_page_text">#000000</color>

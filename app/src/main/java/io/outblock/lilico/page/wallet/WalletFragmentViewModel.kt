@@ -82,8 +82,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         viewModelIOScope(this) { loadTransactionCount() }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
-        updateCoinRate(coin, price)
+    override fun onCoinRateUpdate(coin: FlowCoin, price: Float, quoteChange: Float) {
+        updateCoinRate(coin, price, quoteChange)
     }
 
     override fun onCurrencyUpdate(flag: String, price: Float) {
@@ -169,12 +169,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         updateWalletHeader()
     }
 
-    private fun updateCoinRate(coin: FlowCoin, price: Float? = null, forceRate: Float? = null) {
+    private fun updateCoinRate(coin: FlowCoin, price: Float? = null, quoteChange: Float, forceRate: Float? = null) {
         val rate = (price ?: forceRate) ?: 0f
-        logd(TAG, "updateCoinRate ${coin.symbol}:$rate")
+        logd(TAG, "updateCoinRate ${coin.symbol}:$rate:$quoteChange")
 
         val oldItem = dataList.firstOrNull { it.coin.symbol == coin.symbol } ?: return
-        val item = oldItem.copy(coinRate = rate)
+        val item = oldItem.copy(coinRate = rate, quoteChange = quoteChange)
         dataList[dataList.indexOf(oldItem)] = item
         dataListLiveData.value = dataList
         updateWalletHeader()

@@ -10,8 +10,10 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import io.outblock.lilico.base.fragment.BaseFragment
 import io.outblock.lilico.databinding.FragmentWalletBinding
+import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.page.dialog.common.BackupTipsDialog
 import io.outblock.lilico.page.scan.dispatchScanResult
+import io.outblock.lilico.page.wallet.model.WalletCoinItemModel
 import io.outblock.lilico.page.wallet.model.WalletFragmentModel
 import io.outblock.lilico.page.wallet.presenter.WalletFragmentPresenter
 import io.outblock.lilico.page.wallet.presenter.WalletHeaderPlaceholderPresenter
@@ -31,6 +33,8 @@ class WalletFragment : BaseFragment() {
     private lateinit var headerPlaceholderPresenter: WalletHeaderPlaceholderPresenter
 
     private lateinit var barcodeLauncher: ActivityResultLauncher<ScanOptions>
+
+    private var isBackupShown = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,16 +56,33 @@ class WalletFragment : BaseFragment() {
         binding.scanButton.setOnClickListener { barcodeLauncher.launch() }
 
         viewModel = ViewModelProvider(requireActivity())[WalletFragmentViewModel::class.java].apply {
-            dataListLiveData.observe(viewLifecycleOwner) { presenter.bind(WalletFragmentModel(data = it)) }
+            dataListLiveData.observe(viewLifecycleOwner) {
+                presenter.bind(WalletFragmentModel(data = it))
+                checkBackUp(it)
+            }
             headerLiveData.observe(viewLifecycleOwner) { headerModel ->
                 headerPresenter.bind(headerModel)
                 headerPlaceholderPresenter.bind(headerModel == null)
             }
         }
+    }
 
+    private fun checkBackUp(coinList: List<WalletCoinItemModel>) {
+        if (isBackupShown || WalletManager.isChildAccountSelected()) {
+            return
+        }
+        isBackupShown = true
         uiScope {
             if (!isBackupGoogleDrive() && !isBackupManually()) {
-                BackupTipsDialog.show(childFragmentManager)
+                val sumCoin = coinList.map { it.balance }.sum()
+                if (sumCoin > 0.001f) {
+                    isBackupShown = true
+                    BackupTipsDialog.show(childFragmentManager)
+                } else {
+                    isBackupShown = false
+                }
+            } else {
+                isBackupShown = false
             }
         }
     }

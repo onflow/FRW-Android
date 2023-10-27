@@ -1,6 +1,7 @@
 package io.outblock.lilico.page.wallet.presenter
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.View
 import com.bumptech.glide.Glide
 import io.outblock.lilico.R
@@ -11,6 +12,7 @@ import io.outblock.lilico.manager.coin.FlowCoin
 import io.outblock.lilico.page.profile.subpage.wallet.ChildAccountCollectionManager
 import io.outblock.lilico.page.token.detail.TokenDetailActivity
 import io.outblock.lilico.page.wallet.model.WalletCoinItemModel
+import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.formatNum
 import io.outblock.lilico.utils.formatPrice
@@ -35,6 +37,11 @@ class WalletCoinItemPresenter(
                 coinBalancePrice.text = (model.balance * model.coinRate).formatPrice(includeSymbol = true)
             }
             coinPrice.text = model.coinRate.formatPrice(includeSymbol = true)
+            val isRise = model.quoteChange >= 0
+            tvQuoteChange.backgroundTintList =
+                ColorStateList.valueOf(if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color())
+            tvQuoteChange.setTextColor(if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color())
+            tvQuoteChange.text = (if(isRise) "+" else "-") + "${model.quoteChange.formatNum(2)}%"
             bindStaking(model)
             bindAccessible(model.coin)
             view.setOnClickListener { TokenDetailActivity.launch(view.context, model.coin) }
@@ -57,6 +64,7 @@ class WalletCoinItemPresenter(
             setStakingVisible(false)
         }
         binding.coinPrice.setVisible(accessible)
+        binding.tvQuoteChange.setVisible(accessible)
         binding.tvInaccessibleTag.setVisible(accessible.not())
     }
 

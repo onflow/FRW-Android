@@ -33,10 +33,10 @@ object WalletManager {
     fun wallet() = AccountManager.get()?.wallet
 
     fun isChildAccountSelected(): Boolean {
-        if (wallet()?.wallets.isNullOrEmpty()) {
+        val wallets = wallet()?.wallets
+        if (wallets.isNullOrEmpty()) {
             return false
         }
-        val wallets = wallet()?.wallets ?: return false
         return wallets.firstOrNull { it.address() == selectedWalletAddress } == null
     }
 
@@ -104,12 +104,16 @@ object WalletManager {
         childAccountMap = mapOf()
     }
 
-    //todo 需要对应网络的地址，可尝试拿去当前网络的 wallet() 去 refresh
     private fun refreshChildAccount(wallet: WalletListData) {
-        childAccountMap = wallet.wallets?.associate {
-            it.address().orEmpty() to ChildAccountList(it.address().orEmpty())
-        }.orEmpty().filter {
-            it.key.isNotBlank()
+//        To be optimized getAllWalletChildAccount with each chain id
+//        childAccountMap = wallet.wallets?.associate {
+//            it.address().orEmpty() to ChildAccountList(it.address().orEmpty())
+//        }.orEmpty().filter {
+//            it.key.isNotBlank()
+//        }
+        // get current wallet child account
+        wallet.walletAddress()?.let {
+            childAccountMap = mapOf(it to ChildAccountList(it))
         }
     }
 }
