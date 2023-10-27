@@ -2,6 +2,7 @@ package io.outblock.lilico.page.profile
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.app.isTestnet
 import io.outblock.lilico.network.ApiService
@@ -27,6 +28,9 @@ class ProfileFragmentViewModel : ViewModel() {
     }
 
     private suspend fun requestUserInfo() {
+        if (isAnonymousSignIn()) {
+            return
+        }
         AccountManager.userInfo()?.let { profileLiveData.postValue(it) }
 
         try {

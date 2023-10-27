@@ -32,8 +32,13 @@ object WalletManager {
 
     fun wallet() = AccountManager.get()?.wallet
 
-    fun isChildAccountSelected() =
-        if (wallet()?.wallets.isNullOrEmpty()) false else wallet()?.wallets?.firstOrNull { it.address() == selectedWalletAddress } == null
+    fun isChildAccountSelected(): Boolean {
+        val wallets = wallet()?.wallets
+        if (wallets.isNullOrEmpty()) {
+            return false
+        }
+        return wallets.firstOrNull { it.address() == selectedWalletAddress } == null
+    }
 
     fun childAccountList(walletAddress: String? = null): ChildAccountList? {
         val address = (walletAddress ?: wallet()?.walletAddress()) ?: return null
@@ -94,11 +99,21 @@ object WalletManager {
         )
     }
 
+    fun clear() {
+        selectedWalletAddress = ""
+        childAccountMap = mapOf()
+    }
+
     private fun refreshChildAccount(wallet: WalletListData) {
-        childAccountMap = wallet.wallets?.associate {
-            it.address().orEmpty() to ChildAccountList(it.address().orEmpty())
-        }.orEmpty().filter {
-            it.key.isNotBlank()
+//        To be optimized getAllWalletChildAccount with each chain id
+//        childAccountMap = wallet.wallets?.associate {
+//            it.address().orEmpty() to ChildAccountList(it.address().orEmpty())
+//        }.orEmpty().filter {
+//            it.key.isNotBlank()
+//        }
+        // get current wallet child account
+        wallet.walletAddress()?.let {
+            childAccountMap = mapOf(it to ChildAccountList(it))
         }
     }
 }

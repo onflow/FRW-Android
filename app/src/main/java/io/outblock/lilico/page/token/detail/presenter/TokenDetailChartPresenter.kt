@@ -76,7 +76,7 @@ class TokenDetailChartPresenter(
     @SuppressLint("SetTextI18n")
     private fun updateSummary(summary: CryptowatchSummaryData.Result) {
         with(binding) {
-            priceView.text = "${summary.price.last.formatPrice(includeSymbol = true)}"
+            priceView.text = summary.price.last.formatPrice(includeSymbol = true)
 
             val isRise = summary.price.change.percentage >= 0
             quoteChangeWrapper.setVisible()

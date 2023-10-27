@@ -2,7 +2,9 @@ package io.outblock.lilico.page.main.presenter
 
 import android.content.Context
 import android.view.View
+import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
+import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -11,7 +13,6 @@ import io.outblock.lilico.R
 import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.databinding.LayoutMainDrawerLayoutBinding
 import io.outblock.lilico.manager.account.AccountManager
-import io.outblock.lilico.manager.account.AccountWalletManager
 import io.outblock.lilico.manager.account.OnWalletDataUpdate
 import io.outblock.lilico.manager.account.WalletFetcher
 import io.outblock.lilico.manager.childaccount.ChildAccount
@@ -26,12 +27,14 @@ import io.outblock.lilico.page.main.refreshWalletList
 import io.outblock.lilico.page.nft.nftlist.utils.NftCache
 import io.outblock.lilico.page.scan.dispatchScanResult
 import io.outblock.lilico.utils.ScreenUtils
+import io.outblock.lilico.utils.extensions.dp2px
 import io.outblock.lilico.utils.findActivity
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.launch
 import io.outblock.lilico.utils.loadAvatar
 import io.outblock.lilico.utils.registerBarcodeLauncher
 import io.outblock.lilico.utils.uiScope
+import io.outblock.lilico.widgets.ProgressDialog
 import org.joda.time.format.ISODateTimeFormat
 
 class DrawerLayoutPresenter(
@@ -42,6 +45,7 @@ class DrawerLayoutPresenter(
     private lateinit var barcodeLauncher: ActivityResultLauncher<ScanOptions>
 
     private val activity by lazy { findActivity(drawer) as FragmentActivity }
+    private val progressDialog by lazy { ProgressDialog(activity) }
 
     init {
         drawer.addDrawerListener(DrawerListener())
@@ -53,16 +57,38 @@ class DrawerLayoutPresenter(
 
         with(binding) {
             scanItem.setOnClickListener { launchClick { barcodeLauncher.launch() } }
-            importWalletItem.setOnClickListener { }
-            createWalletItem.setOnClickListener { }
             accountSwitchButton.setOnClickListener { AccountSwitchDialog.show(activity.supportFragmentManager) }
         }
         bindData()
+        bindAccountData()
         binding.refreshWalletList()
         barcodeLauncher = activity.registerBarcodeLauncher { result -> dispatchScanResult(activity, result.orEmpty()) }
 
         ChildAccountList.addAccountUpdateListener(this)
         WalletFetcher.addListener(this)
+    }
+
+    private fun bindAccountData() {
+        binding.llAccountLayout.removeAllViews()
+        val list = AccountManager.list().filter { it.isActive.not() }
+        list.take(2).forEach { account ->
+            binding.llAccountLayout.addView(ImageFilterView(activity).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    44.dp2px().toInt(),
+                    28.dp2px().toInt()
+                )
+                setPadding(8.dp2px().toInt(), 0, 8.dp2px().toInt(), 0)
+                setOnClickListener {
+                    progressDialog.show()
+                    AccountManager.switch(account) {
+                        uiScope {
+                            progressDialog.dismiss()
+                        }
+                    }
+                }
+                loadAvatar(account.userInfo.avatar)
+            })
+        }
     }
 
     override fun bind(model: MainDrawerLayoutModel) {

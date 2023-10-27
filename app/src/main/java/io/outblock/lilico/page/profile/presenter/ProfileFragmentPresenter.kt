@@ -189,6 +189,9 @@ class ProfileFragmentPresenter(
 
     private fun updateWalletConnectSessionCount() {
         ioScope {
+            if (WalletConnect.isInitialized().not()) {
+                return@ioScope
+            }
             val count = WalletConnect.get().sessionCount()
             uiScope {
                 binding.group1.walletConnectPreference.setMarkText(if (count == 0) "" else "$count")

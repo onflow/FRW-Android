@@ -17,7 +17,6 @@ import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.setRegistered
-import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.wallet.Wallet
 import io.outblock.lilico.wallet.getPublicKey
 import io.outblock.lilico.wallet.sign
@@ -71,9 +70,8 @@ fun requestWalletRestoreLogin(mnemonic: String, callback: (isSuccess: Boolean, r
                                 setRegistered()
                                 Wallet.store().reset(mnemonic)
                                 ioScope {
-                                    clearUserCache()
-//                                    AccountManager.init()
                                     AccountManager.add(Account(userInfo = service.userInfo().data))
+                                    clearUserCache()
                                     callback.invoke(true, null)
                                 }
                             } else {

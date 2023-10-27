@@ -28,9 +28,9 @@ object TokenStateManager {
         ioScope { fetchStateSync() }
     }
 
-    fun fetchStateSync() {
+    private fun fetchStateSync() {
         val coinList = FlowCoinListManager.coinList()
-        val isEnableList = cadenceCheckTokenListEnabled(FlowCoinListManager.coinList())
+        val isEnableList = cadenceCheckTokenListEnabled(coinList)
         if (coinList.size != isEnableList?.size) {
             logw(TAG, "fetch error")
             return
@@ -74,6 +74,11 @@ object TokenStateManager {
             listeners.removeAll { it.get() == null }
             listeners.toList().forEach { it.get()?.onTokenStateChange(coin, isEnable) }
         }
+    }
+
+    fun clear() {
+        tokenStateList.clear()
+        tokenStateCache().clear()
     }
 }
 

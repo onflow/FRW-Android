@@ -11,4 +11,5 @@ data class WalletCoinItemModel(
     val currency: String,
     val isStaked: Boolean = false,
     val stakeAmount: Float,
+    val quoteChange: Float = 0f,
 )

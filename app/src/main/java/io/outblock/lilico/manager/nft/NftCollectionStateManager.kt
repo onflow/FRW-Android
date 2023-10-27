@@ -82,6 +82,11 @@ object NftCollectionStateManager {
             listeners.toList().forEach { it.get()?.onNftCollectionStateChange(collection, isEnable) }
         }
     }
+
+    fun clear() {
+        tokenStateList.clear()
+        nftCollectionStateCache().clear()
+    }
 }
 
 interface NftCollectionStateChangeListener {
