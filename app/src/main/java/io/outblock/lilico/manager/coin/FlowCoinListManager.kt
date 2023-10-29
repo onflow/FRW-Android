@@ -27,7 +27,6 @@ object FlowCoinListManager {
                 coinList.clear()
                 coinList.addAll(list.filter { it.address().isNotBlank() })
             }
-            TokenStateManager.fetchState()
         }
     }
 
@@ -36,6 +35,7 @@ object FlowCoinListManager {
     fun getCoin(symbol: String) = coinList.firstOrNull { it.symbol.lowercase() == symbol.lowercase() }
 
     fun getEnabledCoinList() = coinList.toList().filter { TokenStateManager.isTokenAdded(it.address()) }
+
 }
 
 @Parcelize

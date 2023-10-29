@@ -56,11 +56,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         viewModelIOScope(this) {
             logd(TAG, "view model load")
             loadWallet()
-            loadCoinList()
-            loadTransactionCount()
             CurrencyManager.fetch()
-            StakingManager.refresh()
-            ChildAccountCollectionManager.loadChildAccountTokenList()
         }
     }
 
@@ -69,7 +65,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         if (dataList.isEmpty()) {
             loadCoinList()
         }
-        TokenStateManager.fetchState()
+        viewModelIOScope(this) {
+            TokenStateManager.fetchState()
+            loadTransactionCount()
+            StakingManager.refresh()
+            ChildAccountCollectionManager.loadChildAccountTokenList()
+        }
     }
 
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
@@ -77,7 +78,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         updateCoinBalance(balance)
     }
 
-    override fun onTokenStateChange(coin: FlowCoin, isEnable: Boolean) {
+    override fun onTokenStateChange() {
         loadCoinList()
         viewModelIOScope(this) { loadTransactionCount() }
     }
@@ -91,7 +92,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val currency = selectedCurrency()
             dataList.forEachIndexed { index, item -> dataList[index] = item.copy(currency = currency.flag) }
             dataListLiveData.postValue(dataList)
-            loadCoinList()
         }
     }
 
@@ -116,6 +116,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private suspend fun loadWallet() {
         if (WalletManager.wallet() == null) {
             headerLiveData.postValue(null)
+        } else {
+            updateWalletHeader(WalletManager.wallet())
         }
         WalletFetcher.fetch()
     }
@@ -127,9 +129,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val isHideBalance = isHideWalletBalance()
             val currency = getCurrencyFlag()
             uiScope {
-                val newCoin = coinList.filter { coin -> dataList.firstOrNull { it.coin.symbol == coin.symbol } == null }
-                if (newCoin.isNotEmpty()) {
-                    dataList.addAll(newCoin.map {
+                val coinToAdd = coinList.filter { coin -> dataList.none { it.coin.symbol == coin.symbol } }
+                val coinToRemove = dataList.filter { coin -> coinList.none {it.symbol == coin.coin.symbol} }
+                if (coinToAdd.isNotEmpty() || coinToRemove.isNotEmpty()) {
+                    dataList.addAll(coinToAdd.map {
                         WalletCoinItemModel(
                             it, it.address(), 0f,
                             0f, isHideBalance = isHideBalance, currency = currency,
@@ -137,7 +140,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                             stakeAmount = StakingManager.stakingCount(),
                         )
                     })
-                    logd(TAG, "loadCoinList newCoin:${newCoin.map { it.symbol }}")
+                    dataList.removeAll(coinToRemove.toSet())
+                    logd(TAG, "loadCoinList addCoin:${coinToAdd.map { it.symbol }}")
+                    logd(TAG, "loadCoinList removeCoin:${coinToRemove.map { it.coin.symbol }}")
                     logd(TAG, "loadCoinList dataList:${dataList.map { it.coin.symbol }}")
                     dataListLiveData.postValue(dataList)
                     updateWalletHeader(count = coinList.size)

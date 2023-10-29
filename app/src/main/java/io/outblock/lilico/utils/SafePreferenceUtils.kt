@@ -1,11 +1,10 @@
 package io.outblock.lilico.utils
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.annotation.WorkerThread
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 /**
  * Crypto SharedPreferences
@@ -21,13 +20,18 @@ private const val KEY_WALLET_STORE_NAME_AES_KEY = "key_wallet_store_name_aes_key
 private const val KEY_AES_LOCAL_CODE = "key_aes_local_code"
 
 private val preference by lazy {
-    EncryptedSharedPreferences.create(
-        Env.getApp(),
-        "safe_preference",
-        MasterKey.Builder(Env.getApp()).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-    )
+    try {
+        EncryptedSharedPreferences.create(
+            Env.getApp(),
+            "safe_preference",
+            MasterKey.Builder(Env.getApp()).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+        )
+    } catch (e: Exception) {
+        Env.getApp().getSharedPreferences("safe_backup_preference", Context.MODE_PRIVATE)
+    }
+
 }
 
 fun storeWalletPassword(key: String) {

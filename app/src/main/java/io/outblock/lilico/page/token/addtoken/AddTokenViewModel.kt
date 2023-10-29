@@ -110,7 +110,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
         }
     }
 
-    override fun onTokenStateChange(coin: FlowCoin, isEnable: Boolean) {
+    override fun onTokenStateChange() {
         onTransactionStateChange()
     }
 }

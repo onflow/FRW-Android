@@ -25,7 +25,6 @@ object BalanceManager {
         ioScope {
             balanceList.clear()
             balanceList.addAll(cache.read()?.data ?: emptyList())
-            refresh()
         }
     }
 

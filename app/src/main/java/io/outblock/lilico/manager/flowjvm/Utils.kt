@@ -16,6 +16,9 @@ import io.outblock.lilico.manager.config.NftCollection
 import io.outblock.lilico.manager.config.NftCollectionConfig
 import io.outblock.lilico.manager.flowjvm.model.FlowAddressListResult
 import io.outblock.lilico.manager.flowjvm.model.FlowBoolListResult
+import io.outblock.lilico.manager.flowjvm.model.FlowBoolResult
+import io.outblock.lilico.manager.flowjvm.model.FlowSearchAddressResult
+import io.outblock.lilico.manager.flowjvm.model.FlowStringResult
 import io.outblock.lilico.manager.flowjvm.transaction.AsArgument
 import io.outblock.lilico.network.model.Nft
 import io.outblock.lilico.utils.logd
@@ -25,8 +28,8 @@ import java.util.Locale
 internal fun FlowScriptResponse.parseSearchAddress(): String? {
     // {"type":"Optional","value":{"type":"Address","value":"0x5d2cd5bf303468fa"}}
     return try {
-        val json = Gson().fromJson<Map<String, Any>>(String(bytes), object : TypeToken<Map<String, Any>>() {}.type)
-        (json["value"] as Map<*, *>)["value"].toString()
+        val result = Gson().fromJson(String(bytes), FlowSearchAddressResult::class.java)
+        result.value.value
     } catch (e: Exception) {
         return null
     }
@@ -35,8 +38,8 @@ internal fun FlowScriptResponse.parseSearchAddress(): String? {
 internal fun FlowScriptResponse.parseBool(default: Boolean = false): Boolean? {
     // {"type":"Bool","value":false}
     return try {
-        val json = Gson().fromJson<Map<String, Any>>(String(bytes), object : TypeToken<Map<String, Any>>() {}.type)
-        (json["value"] as? Boolean) ?: default
+        val result = Gson().fromJson(String(bytes), FlowBoolResult::class.java)
+        result.value
     } catch (e: Exception) {
         return default
     }
@@ -56,8 +59,8 @@ internal fun FlowScriptResponse?.parseFloat(default: Float = 0f): Float {
     // {"type":"UFix64","value":"12.34"}
     this ?: return default
     return try {
-        val json = Gson().fromJson<Map<String, String>>(String(bytes), object : TypeToken<Map<String, String>>() {}.type)
-        (json["value"]?.toFloatOrNull()) ?: default
+        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
+        (result.value.toFloatOrNull()) ?: default
     } catch (e: Exception) {
         return default
     }

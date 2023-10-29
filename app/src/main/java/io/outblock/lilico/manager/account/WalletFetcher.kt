@@ -21,11 +21,8 @@ object WalletFetcher {
 
     private val apiService by lazy { retrofit().create(ApiService::class.java) }
 
-    suspend fun fetch(useCache: Boolean = true) {
+    suspend fun fetch() {
         ioScope {
-            if (useCache) {
-                WalletManager.wallet()?.let { dispatchListeners(it) }
-            }
             var dataReceived = false
             var firstAttempt = true
             var timer: Timer? = null
