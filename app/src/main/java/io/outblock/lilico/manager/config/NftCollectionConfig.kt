@@ -54,7 +54,6 @@ object NftCollectionConfig {
         ioScope {
             config.clear()
             config.addAll(loadFromCache())
-            NftCollectionStateManager.fetchState()
             val response = retrofitApi().create(ApiService::class.java).nftCollections()
             if (response.data.isNotEmpty()) {
                 config.clear()

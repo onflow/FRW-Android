@@ -13,6 +13,7 @@ import io.outblock.lilico.firebase.messaging.uploadPushToken
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.BalanceManager
+import io.outblock.lilico.manager.coin.FlowCoinListManager
 import io.outblock.lilico.manager.coin.TokenStateManager
 import io.outblock.lilico.manager.nft.NftCollectionStateManager
 import io.outblock.lilico.manager.staking.StakingManager
@@ -155,7 +156,7 @@ suspend fun clearUserCache() {
     WalletManager.clear()
     NftCollectionStateManager.clear()
     TransactionStateManager.reload()
-//    FlowCoinListManager.reload()
+    FlowCoinListManager.reload()
     BalanceManager.clear()
     StakingManager.clear()
     updateAccountTransactionCountLocal(0)

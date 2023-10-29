@@ -28,7 +28,6 @@ object CoinRateManager {
     fun init() {
         ioScope {
             coinRateMap = ConcurrentHashMap<String, CoinRate>(cache.read()?.data.orEmpty())
-            refresh()
         }
     }
 

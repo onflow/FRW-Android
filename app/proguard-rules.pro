@@ -56,6 +56,12 @@
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
+-keep class com.google.gson.reflect.TypeToken {*;}
+
+## @Serializable data class
+-keep class com.example.** {
+    @kotlinx.serialization.Serializable *;
+}
 
 # Prevent R8 from leaving Data object members always null
 -keepclassmembers,allowobfuscation class * {
@@ -84,8 +90,6 @@
 -keep class net.sqlcipher.** {*;}
 
 -keep public enum io.outblock.lilico.page.profile.subpage.currency.model.Currency.** {*;}
-
--keep public enum io.outblock.lilico.page.profile.subpage.wallet.StorageInfo.** {*;}
 
 -keep public enum io.outblock.lilico.page.profile.subpage.currency.model.Currency$** {
   **[] $VALUES;

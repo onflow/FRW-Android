@@ -40,10 +40,8 @@ object TokenStateManager {
             val oldState = tokenStateList.firstOrNull { it.symbol == coin.symbol }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address(), isEnable))
-            if (oldState?.isAdded != isEnable) {
-                dispatchListeners(coin, isEnable)
-            }
         }
+        dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
 
@@ -54,7 +52,7 @@ object TokenStateManager {
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address(), isEnable))
             if (oldState?.isAdded != isEnable) {
-                dispatchListeners(coin, isEnable)
+                dispatchListeners()
             }
         }
         if (cache) {
@@ -68,11 +66,10 @@ object TokenStateManager {
         uiScope { this.listeners.add(WeakReference(callback)) }
     }
 
-    private fun dispatchListeners(coin: FlowCoin, isEnable: Boolean) {
-        logd(TAG, "${coin.name} isEnable:$isEnable")
+    private fun dispatchListeners() {
         uiScope {
             listeners.removeAll { it.get() == null }
-            listeners.toList().forEach { it.get()?.onTokenStateChange(coin, isEnable) }
+            listeners.toList().forEach { it.get()?.onTokenStateChange() }
         }
     }
 
@@ -83,7 +80,7 @@ object TokenStateManager {
 }
 
 interface TokenStateChangeListener {
-    fun onTokenStateChange(coin: FlowCoin, isEnable: Boolean)
+    fun onTokenStateChange()
 }
 
 class TokenStateCache(

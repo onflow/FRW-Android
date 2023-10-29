@@ -20,6 +20,7 @@ import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.page.profile.subpage.currency.model.selectedCurrency
 import io.outblock.lilico.page.staking.detail.model.StakingDetailModel
 import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
+import io.outblock.lilico.utils.extensions.toSafeDouble
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.uiScope
@@ -74,18 +75,18 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         ioScope {
 
             val amount = if (isUnStaked) {
-                StakingManager.rawStakingInfo()?.first { it.nodeID == provider.id }?.tokensUnstaked
+                StakingManager.stakingNode(provider)?.tokensUnstaked
             } else {
-                StakingManager.rawStakingInfo()?.first { it.nodeID == provider.id }?.tokensRewarded
-            } ?: 0.0
+                StakingManager.stakingNode(provider)?.tokensRewarded
+            } ?: 0.0f
 
-            if (amount <= 0) {
+            if (amount <= 0.0f) {
                 return@ioScope
             }
 
             var delegatorId = provider.delegatorId()
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount)
+                createStakingDelegatorId(provider, amount.toSafeDouble())
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -97,7 +98,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
             val txId = transactionByMainWallet {
                 arg { string(provider.id) }
                 arg { uint32(delegatorId) }
-                arg { ufix64(amount) }
+                arg { ufix64Safe(amount) }
             }
 
             val transactionState = TransactionState(
