@@ -28,6 +28,7 @@ import io.outblock.lilico.utils.formatNum
 import io.outblock.lilico.utils.formatPrice
 import io.outblock.lilico.utils.getQuoteMarket
 import io.outblock.lilico.utils.uiScope
+import kotlin.math.absoluteValue
 
 
 class TokenDetailChartPresenter(
@@ -84,7 +85,7 @@ class TokenDetailChartPresenter(
                 ColorStateList.valueOf(if (isRise) R.color.quote_up_opacity.res2color() else R.color.quote_down_opacity.res2color())
             quoteChangeIconView.setImageResource(if (isRise) R.drawable.ic_triangle_up else R.drawable.ic_triangle_down)
             quoteChangeView.setTextColor(if (isRise) R.color.quote_up.res2color() else R.color.quote_down.res2color())
-            quoteChangeView.text = "${summary.price.change.percentage.formatNum(2)}%"
+            quoteChangeView.text = "${summary.price.change.percentage.absoluteValue.formatNum(2)}%"
         }
     }
 
