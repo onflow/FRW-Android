@@ -41,7 +41,7 @@ class WalletCoinItemPresenter(
             tvQuoteChange.backgroundTintList =
                 ColorStateList.valueOf(if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color())
             tvQuoteChange.setTextColor(if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color())
-            tvQuoteChange.text = (if(isRise) "+" else "-") + "${model.quoteChange.formatNum(2)}%"
+            tvQuoteChange.text = (if(isRise) "+" else "") + "${model.quoteChange.formatNum(2)}%"
             bindStaking(model)
             bindAccessible(model.coin)
             view.setOnClickListener { TokenDetailActivity.launch(view.context, model.coin) }
