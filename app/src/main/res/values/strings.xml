@@ -401,6 +401,8 @@
     <string name="link_account_success_desc">Now you can find your child account under side menu</string>
     <string name="try_it_again">Try it again</string>
     <string name="linked_account">Linked Account</string>
+    <string name="devices">Devices</string>
+    <string name="device_info">Device Info</string>
 
     <string name="default_child_account_name">Linked Account</string>
     <string name="description">Description</string>
@@ -452,4 +454,17 @@
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
     <string name="inaccessible_token_tip">Flow Reference Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
+    <string name="account_keys">Account Keys</string>
+    <string name="key_revoke">Revoke</string>
+    <string name="curve">Curve</string>
+    <string name="hash">Hash</string>
+    <string name="sequence_number">Sequence Number</string>
+    <string name="hold_to_revoke">Hold to Revoke</string>
+    <string name="revoke_tip">Once you revoke this key, \n there is no way to re-activate this key.</string>
+    <string name="revoke_title">Are you sure you want to \n revoke this key?</string>
+    <string name="revoke_failed">Revoke Failed</string>
+    <string name="device_application">Application</string>
+    <string name="device_ip_address">IP Address</string>
+    <string name="device_location">Location</string>
+    <string name="device_entry_date">Entry Date</string>
 </resources>

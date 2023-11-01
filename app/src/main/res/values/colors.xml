@@ -215,6 +215,7 @@
     <color name="accent_green">#41CC5D</color>
     <color name="accent_gray">#8C9BAB</color>
     <color name="accent_red">#E54040</color>
+    <color name="accent_orange">#FF8A00</color>
     <color name="accent_quote_up_opacity">#1441CC5D</color>
     <color name="accent_quote_down_opacity">#14E54040</color>
     <color name="profile_card_background">#FAFAFA</color>
@@ -223,7 +224,16 @@
     <color name="drawer_item_background">#F4F4F7</color>
     <color name="inaccessible_tag_background_gray">#408C9BAB</color>
     <color name="inaccessible_tag_background">#40FCE9E1</color>
+    
+    <color name="bg_1">#FAFAFA</color>
+    <color name="bg_2">#F0F0F0</color>
+    <color name="bg_3">#E5E5E5</color>
 
+    <color name="text_white">#FFFFFF</color>
+    <color name="text_1">#000000</color>
+    <color name="text_2">#CC000000</color>
     <color name="text_3">#4D000000</color>
+    <color name="text_4">#1A000000</color>
+    <color name="text_5">#E6FFFFFF</color>
 
 </resources>

@@ -12,6 +12,7 @@ import io.outblock.lilico.firebase.auth.signInAnonymously
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
+import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.UserInfoData
 import io.outblock.lilico.network.model.WalletListData
 import io.outblock.lilico.network.retrofit
@@ -106,10 +107,17 @@ object AccountManager {
             callback(false)
             return
         }
+        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
         val service = retrofit().create(ApiService::class.java)
-        val resp = service.login(mapOf("public_key" to wallet.getPublicKey(), "signature" to wallet.sign(
-            getFirebaseJwt()
-        )))
+        val resp = service.login(
+            mapOf(
+                "signature" to wallet.sign(
+                    getFirebaseJwt()
+                ),
+                "account_key" to AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+                "device_info" to deviceInfoRequest
+            )
+        )
         if (resp.data?.customToken.isNullOrBlank()) {
             callback(false)
             return
@@ -125,6 +133,7 @@ object AccountManager {
             }
         }
     }
+
     private suspend fun setToAnonymous(): Boolean {
         if (!isAnonymousSignIn()) {
             Firebase.auth.signOut()

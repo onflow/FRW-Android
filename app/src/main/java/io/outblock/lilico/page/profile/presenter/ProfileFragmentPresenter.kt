@@ -29,6 +29,7 @@ import io.outblock.lilico.page.profile.subpage.developer.DeveloperModeActivity
 import io.outblock.lilico.page.profile.subpage.theme.ThemeSettingActivity
 import io.outblock.lilico.page.profile.subpage.wallet.WalletSettingActivity
 import io.outblock.lilico.page.profile.subpage.wallet.account.ChildAccountsActivity
+import io.outblock.lilico.page.profile.subpage.wallet.device.DevicesActivity
 import io.outblock.lilico.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import io.outblock.lilico.page.security.SecuritySettingActivity
 import io.outblock.lilico.utils.extensions.isVisible
@@ -84,6 +85,9 @@ class ProfileFragmentPresenter(
 
         binding.group1.walletConnectPreference.setOnClickListener {
             WalletConnectSessionActivity.launch(context)
+        }
+        binding.group1.selfDevices.setOnClickListener {
+            DevicesActivity.launch(context)
         }
 
         binding.group2.currencyPreference.setOnClickListener { CurrencyListActivity.launch(context) }
