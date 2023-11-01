@@ -23,6 +23,7 @@ object WalletFetcher {
 
     suspend fun fetch() {
         ioScope {
+//            WalletManager.wallet()?.let { dispatchListeners(it) }
             var dataReceived = false
             var firstAttempt = true
             var timer: Timer? = null

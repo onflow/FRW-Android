@@ -65,11 +65,11 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         if (dataList.isEmpty()) {
             loadCoinList()
         }
-        viewModelIOScope(this) {
-            TokenStateManager.fetchState()
+        TokenStateManager.fetchState()
+        StakingManager.refresh()
+        ChildAccountCollectionManager.loadChildAccountTokenList()
+        ioScope {
             loadTransactionCount()
-            StakingManager.refresh()
-            ChildAccountCollectionManager.loadChildAccountTokenList()
         }
     }
 
