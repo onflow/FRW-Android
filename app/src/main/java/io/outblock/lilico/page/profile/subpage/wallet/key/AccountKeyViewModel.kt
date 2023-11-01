@@ -33,7 +33,6 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
                 keyListLiveData.postValue(emptyList())
                 return@viewModelIOScope
             }
-            getKeyDeviceList()
             uiScope {
                 keyList.addAll(account.keys.map {
                     AccountKey(
