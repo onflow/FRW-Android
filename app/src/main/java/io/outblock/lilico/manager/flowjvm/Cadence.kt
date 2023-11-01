@@ -926,7 +926,7 @@ const val CADENCE_EDIT_CHILD_ACCOUNT = """
 """
 
 const val CADENCE_REVOKE_ACCOUNT_KEY = """
-    transaction(indexId: UInt32) {
+    transaction(indexId: Int) {
         prepare(signer: AuthAccount) {
             // Get a key from an auth account.
             let keyA = signer.keys.revoke(keyIndex: indexId)

@@ -28,7 +28,7 @@ interface ApiService {
     suspend fun searchUser(@Query("keyword") keyword: String): SearchUserResponse
 
     @POST("/v3/login")
-    suspend fun login(@Body params: Map<String, Any?>): LoginResponse
+    suspend fun login(@Body params: LoginRequest): LoginResponse
 
     @GET("/v1/account/info")
     suspend fun getAddressInfo(@Query("address") address: String): AddressInfoResponse

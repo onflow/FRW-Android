@@ -235,5 +235,6 @@
     <color name="text_3">#4D000000</color>
     <color name="text_4">#1A000000</color>
     <color name="text_5">#E6FFFFFF</color>
+    <color name="line_light">#0A000000</color>
 
 </resources>

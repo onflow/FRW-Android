@@ -50,7 +50,7 @@ class AccountKeyActivity : BaseActivity()  {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        title = R.string.linked_account.res2String()
+        title = R.string.account_keys.res2String()
     }
 
     companion object {

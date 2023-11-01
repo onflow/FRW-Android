@@ -19,7 +19,7 @@ object AccountKeyManager {
         try {
             revokingIndexId = indexId
             val txId = CADENCE_REVOKE_ACCOUNT_KEY.transactionByMainWallet {
-                arg { uint32(indexId) }
+                arg { int(indexId) }
             }
             val transactionState = TransactionState(
                 transactionId = txId!!,

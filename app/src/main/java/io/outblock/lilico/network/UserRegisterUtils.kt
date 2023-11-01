@@ -21,6 +21,7 @@ import io.outblock.lilico.manager.staking.StakingManager
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.model.AccountKey
+import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.model.RegisterRequest
 import io.outblock.lilico.network.model.RegisterResponse
 import io.outblock.lilico.page.walletrestore.firebaseLogin
@@ -138,13 +139,15 @@ private suspend fun resumeAccount() {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val wallet = Wallet.store().wallet()
     val service = retrofit().create(ApiService::class.java)
-    val resp = service.login(mapOf(
-        "signature" to wallet.sign(
-            getFirebaseJwt()
-        ),
-        "account_key" to AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
-        "device_info" to deviceInfoRequest
-    ))
+    val resp = service.login(
+        LoginRequest(
+            signature = wallet.sign(
+                getFirebaseJwt()
+            ),
+            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+            deviceInfo = deviceInfoRequest
+        )
+    )
     if (resp.data?.customToken.isNullOrBlank()) {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return

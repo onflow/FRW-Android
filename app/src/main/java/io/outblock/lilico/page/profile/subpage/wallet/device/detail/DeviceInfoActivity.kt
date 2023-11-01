@@ -1,5 +1,6 @@
 package io.outblock.lilico.page.profile.subpage.wallet.device.detail
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -18,7 +19,9 @@ import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivityDeviceInfoBinding
 import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceModel
 import io.outblock.lilico.utils.extensions.res2String
+import io.outblock.lilico.utils.formatGMTToDate
 import io.outblock.lilico.utils.isNightMode
+import org.joda.time.DateTimeUtils
 
 
 class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback {
@@ -38,20 +41,21 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback {
         binding.root.addStatusBarTopPadding()
         setupToolbar()
 
-        val mapFragment = supportFragmentManager.findFragmentById(R.id.mv_map) as SupportMapFragment
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
         (intent.getParcelableExtra(EXTRA_DEVICE_MODEL) as? DeviceModel)?.let { bindDevice(it) }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun bindDevice(deviceModel: DeviceModel) {
         this.deviceModel = deviceModel
         with(binding) {
             tvDeviceName.text = deviceModel.device_name
-            ppDeviceApplication.setDesc(deviceModel.user_agent)
-            ppDeviceIp.setDesc(deviceModel.ip)
-            ppDeviceLocation.setDesc(deviceModel.city + ", " + deviceModel.country)
-            ppDeviceEntry.setDesc(deviceModel.created_at)
+            tvDeviceApplication.text = deviceModel.user_agent
+            tvDeviceIp.text = deviceModel.ip
+            tvDeviceLocation.text = deviceModel.city + ", " + deviceModel.countryCode
+            tvDeviceDate.text = formatGMTToDate(deviceModel.updated_at)
         }
     }
 
@@ -67,7 +71,7 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        title = R.string.linked_account.res2String()
+        title = R.string.device_info.res2String()
     }
 
     companion object {

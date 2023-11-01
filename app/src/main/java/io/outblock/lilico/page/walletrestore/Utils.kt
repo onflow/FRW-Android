@@ -14,6 +14,7 @@ import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
 import io.outblock.lilico.network.model.AccountKey
+import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
@@ -64,12 +65,12 @@ fun requestWalletRestoreLogin(
                     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
                     val resp = service.login(
-                        mapOf(
-                            "signature" to wallet.sign(
+                        LoginRequest(
+                            signature = wallet.sign(
                                 getFirebaseJwt()
                             ),
-                            "account_key" to AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
-                            "device_info" to deviceInfoRequest
+                            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+                            deviceInfo = deviceInfoRequest
                         )
                     )
                     if (resp.data?.customToken.isNullOrBlank()) {

@@ -10,6 +10,7 @@ import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.page.profile.subpage.wallet.device.detail.DeviceInfoActivity
 import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceModel
 import io.outblock.lilico.utils.findActivity
+import io.outblock.lilico.utils.formatGMTToDate
 
 
 class DeviceInfoPresenter(private val view: View) : BaseViewHolder(view),
@@ -23,12 +24,13 @@ class DeviceInfoPresenter(private val view: View) : BaseViewHolder(view),
         with(binding) {
             ivDeviceType.setImageResource(R.drawable.ic_device_type_phone)
             tvDeviceName.text = model.device_name
-            tvDeviceOs.text = model.district
-            tvDeviceLocation.text = model.city + ", " + model.country + if (isCurrentDevice) {
-                model.created_at
-            } else {
-                "Online"
-            }
+            tvDeviceOs.text = model.user_agent
+            tvDeviceLocation.text = model.city + ", " + model.countryCode + " " +
+                    if (isCurrentDevice) {
+                        "Online"
+                    } else {
+                        formatGMTToDate(model.updated_at)
+                    }
             ivDeviceMark.setImageResource(
                 if (isCurrentDevice) {
                     R.drawable.ic_circle_right_green
