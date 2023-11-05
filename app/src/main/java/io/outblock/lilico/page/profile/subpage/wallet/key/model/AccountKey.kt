@@ -15,5 +15,5 @@ data class AccountKey(
     val revoked: Boolean = false,
     val isRevoking: Boolean = false,
     val isCurrentDevice: Boolean = false,
-    val deviceName: String,
+    var deviceName: String,
 )

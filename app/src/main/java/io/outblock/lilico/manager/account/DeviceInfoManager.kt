@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Build
 import android.provider.Settings
 import io.outblock.lilico.R
+import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.model.DeviceInfoRequest
 import io.outblock.lilico.network.model.LocationInfo
+import io.outblock.lilico.network.model.UpdateDeviceParams
 import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.utils.Env
 import io.outblock.lilico.utils.extensions.res2String
@@ -43,10 +45,34 @@ object DeviceInfoManager {
         }
     }
 
+    suspend fun updateDeviceInfo() {
+        if (isAnonymousSignIn()) {
+            return
+        }
+        try {
+            val service = retrofit().create(ApiService::class.java)
+            service.updateDeviceInfo(UpdateDeviceParams(currentDeviceId))
+        } catch (e: Exception) {
+            loge(e)
+        }
+    }
+
     private fun LocationInfo.createDeviceInfo(): DeviceInfoRequest {
         return DeviceInfoRequest(
-            this.city, this.country, this.countryCode,
-            currentDeviceId, "", "", 0.0, 0.0, deviceName, "", "", "1", userAgent, ""
+            this.city,
+            this.country,
+            this.countryCode,
+            currentDeviceId,
+            this.query,
+            this.isp,
+            this.lat,
+            this.lon,
+            deviceName,
+            this.org,
+            this.regionName,
+            "1",
+            userAgent,
+            this.zip,
         )
     }
 }

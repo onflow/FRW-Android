@@ -10,7 +10,10 @@ import io.outblock.lilico.manager.transaction.OnTransactionStateChange
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
+import io.outblock.lilico.network.ApiService
+import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.profile.subpage.wallet.key.model.AccountKey
+import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.utils.viewModelIOScope
 import io.outblock.lilico.wallet.getPublicKey
@@ -36,20 +39,46 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
             uiScope {
                 keyList.addAll(account.keys.map {
                     AccountKey(
-                        it.id, it.publicKey, it.signAlgo, it.hashAlgo, it.weight,
+                        it.id,
+                        it.publicKey,
+                        it.signAlgo,
+                        it.hashAlgo,
+                        it.weight,
                         it.sequenceNumber,
-                        it.revoked, isRevoking = false, isCurrentDevice = isCurrentDevice(it.publicKey),
+                        it.revoked,
+                        isRevoking = false,
+                        isCurrentDevice = isCurrentDevice(it.publicKey),
                         deviceName = ""
                     )
                 })
                 keyListLiveData.postValue(keyList)
+                loadDeviceInfo()
             }
         }
     }
 
+    private fun loadDeviceInfo() {
+        ioScope {
+            val service = retrofit().create(ApiService::class.java)
+            val response = service.getKeyDeviceInfo()
+            val keyDeviceInfo = response.data.result ?: emptyList()
+            uiScope {
+                keyList.forEach { accountKey ->
+                    keyDeviceInfo.find { it.pubKey?.publicKey == accountKey.publicKey.base16Value }
+                        ?.let {
+                            accountKey.deviceName = it.device?.device_name ?: ""
+                        }
+                }
+                keyListLiveData.value = keyList
+            }
+        }
+
+    }
+
     override fun onTransactionStateChange() {
         val transactionList = TransactionStateManager.getTransactionStateList()
-        val transaction = transactionList.firstOrNull { it.type == TransactionState.TYPE_REVOKE_KEY }
+        val transaction =
+            transactionList.firstOrNull { it.type == TransactionState.TYPE_REVOKE_KEY }
         transaction?.let { state ->
             keyList.firstOrNull { it.id == AccountKeyManager.getRevokingIndexId() }?.let { key ->
                 keyList[keyList.indexOf(key)] = key.copy(

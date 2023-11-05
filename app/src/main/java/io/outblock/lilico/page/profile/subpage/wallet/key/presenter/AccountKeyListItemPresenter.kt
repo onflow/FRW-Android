@@ -32,12 +32,12 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             if (model.isCurrentDevice) {
                 labelText = "Current Device"
                 labelColor = R.color.accent_blue.res2color()
-            } else if (model.isRevoking) {
-                labelText = "Revoking..."
-                labelColor = R.color.accent_orange.res2color()
             } else if (model.revoked) {
                 labelText = "Revoked"
                 labelColor = R.color.accent_red.res2color()
+            } else if (model.isRevoking) {
+                labelText = "Revoking..."
+                labelColor = R.color.accent_orange.res2color()
             } else {
                 labelText = model.deviceName
                 labelColor = R.color.text_3.res2color()

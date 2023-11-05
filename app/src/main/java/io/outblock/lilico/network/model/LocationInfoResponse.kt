@@ -21,6 +21,45 @@ data class DeviceListResponse(
     val status: Int?
 )
 
+data class KeyDeviceInfoResponse(
+    @SerializedName("data")
+    val data: Data,
+    @SerializedName("message")
+    val message: String?,
+    @SerializedName("status")
+    val status: Int?
+) {
+    data class Data(
+        @SerializedName("result")
+        val result: List<KeyDeviceInfo>?,
+    )
+}
+
+data class KeyDeviceInfo(
+    @SerializedName("device")
+    val device: DeviceModel?,
+    @SerializedName("pubkey")
+    val pubKey: KeyModel?
+) {
+    data class KeyModel(
+        @SerializedName("hash_algo")
+        val hashAlgo: Int,
+        @SerializedName("name")
+        val name: String,
+        @SerializedName("public_key")
+        val publicKey: String,
+        @SerializedName("sign_algo")
+        val signAlgo: String,
+        @SerializedName("weight")
+        val weight: String,
+    )
+}
+
+data class UpdateDeviceParams(
+    @SerializedName("device_id")
+    val deviceId: String
+)
+
 data class LocationInfo(
     @SerializedName("as")
     val asValue: String,

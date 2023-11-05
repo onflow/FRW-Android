@@ -25,7 +25,7 @@ class DeviceInfoPresenter(private val view: View) : BaseViewHolder(view),
             ivDeviceType.setImageResource(R.drawable.ic_device_type_phone)
             tvDeviceName.text = model.device_name
             tvDeviceOs.text = model.user_agent
-            tvDeviceLocation.text = model.city + ", " + model.countryCode + " " +
+            tvDeviceLocation.text = model.city + ", " + model.countryCode + " · " +
                     if (isCurrentDevice) {
                         "Online"
                     } else {
