@@ -9,6 +9,7 @@ import io.outblock.lilico.cache.CacheManager
 import io.outblock.lilico.firebase.auth.getFirebaseJwt
 import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.firebase.auth.signInAnonymously
+import io.outblock.lilico.firebase.messaging.uploadPushToken
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
@@ -18,8 +19,10 @@ import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.main.MainActivity
 import io.outblock.lilico.page.walletrestore.firebaseLogin
 import io.outblock.lilico.utils.Env
+import io.outblock.lilico.utils.getUploadedAddressSet
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.setRegistered
+import io.outblock.lilico.utils.setUploadedAddressSet
 import io.outblock.lilico.utils.toast
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.wallet.Wallet
@@ -28,11 +31,13 @@ import io.outblock.lilico.wallet.sign
 
 object AccountManager {
     private val accounts = mutableListOf<Account>()
+    private var uploadedAddressSet = mutableSetOf<String>()
 
     fun init() {
         accounts.clear()
         accountsCache().read()?.let { accounts.addAll(it) }
         WalletManager.walletUpdate()
+        uploadedAddressSet = getUploadedAddressSet().toMutableSet()
     }
 
     fun add(account: Account) {
@@ -55,10 +60,25 @@ object AccountManager {
         accountsCache().cache(Accounts().apply { addAll(accounts) })
     }
 
+
     fun updateWalletInfo(wallet: WalletListData) {
         list().firstOrNull { it.userInfo.username == wallet.username }?.wallet = wallet
         accountsCache().cache(Accounts().apply { addAll(accounts) })
         WalletManager.walletUpdate()
+        uploadPushToken()
+    }
+
+    fun isAddressUploaded(address: String): Boolean {
+        return uploadedAddressSet.contains(address)
+    }
+
+    fun addressUploaded(address: String) {
+        if (uploadedAddressSet.size >= 20) {
+            val oldestAddress = uploadedAddressSet.first()
+            uploadedAddressSet.remove(oldestAddress)
+        }
+        uploadedAddressSet.add(address)
+        setUploadedAddressSet(uploadedAddressSet)
     }
 
     fun list() = accounts.toList()

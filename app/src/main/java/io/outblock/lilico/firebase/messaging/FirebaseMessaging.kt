@@ -14,6 +14,7 @@ import com.google.firebase.messaging.ktx.messaging
 import com.google.gson.Gson
 import io.outblock.lilico.R
 import io.outblock.lilico.firebase.auth.isAnonymousSignIn
+import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.retrofitWithHost
@@ -39,7 +40,6 @@ fun getFirebaseMessagingToken() {
         val token = task.result
         logd(TAG, "token:$token")
         updatePushToken(token)
-        uploadPushToken()
     }
 }
 
@@ -64,10 +64,14 @@ fun parseFirebaseMessaging(message: RemoteMessage) {
     sendNotification(message)
 }
 
-fun uploadPushToken() {
+fun uploadPushToken(isNewToken: Boolean = false) {
     ioScope {
         val token = getPushToken()
-        if (token.isEmpty() || isAnonymousSignIn()) {
+        val address = WalletManager.selectedWalletAddress()
+        if (token.isEmpty() || isAnonymousSignIn() || address.isEmpty()) {
+            return@ioScope
+        }
+        if (isNewToken.not() && AccountManager.isAddressUploaded(address)) {
             return@ioScope
         }
         val retrofit =
@@ -75,7 +79,7 @@ fun uploadPushToken() {
         val service = retrofit.create(ApiService::class.java)
         val params = mapOf(
             "token" to getPushToken(),
-            "address" to WalletManager.selectedWalletAddress(),
+            "address" to address,
         )
         logd(TAG, "uploadPushToken => params:$params")
 
@@ -83,7 +87,7 @@ fun uploadPushToken() {
 
         logd(TAG, resp)
         if (resp.status == 200) {
-            updatePushToken("")
+            AccountManager.addressUploaded(address)
         }
     }
 }

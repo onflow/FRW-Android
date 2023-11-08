@@ -9,7 +9,6 @@ import io.outblock.lilico.firebase.auth.firebaseCustomLogin
 import io.outblock.lilico.firebase.auth.getFirebaseJwt
 import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.firebase.auth.signInAnonymously
-import io.outblock.lilico.firebase.messaging.uploadPushToken
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.BalanceManager
@@ -50,7 +49,6 @@ suspend fun registerOutblock(
         registerOutblockUserInternal(username) { isSuccess, wallet ->
             ioScope {
                 if (isSuccess) {
-                    uploadPushToken()
                     createWalletFromServer()
                     Wallet.store().reset(wallet.mnemonic())
                     setRegistered()

@@ -13,7 +13,7 @@ import io.outblock.lilico.utils.logd
 private const val TAG = "Firebase"
 
 fun firebaseInformationCheck() {
-    uploadPushToken()
+    uploadPushToken(isNewToken = true)
 }
 
 fun firebaseInitialize(application: Application) {

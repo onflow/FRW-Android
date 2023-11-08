@@ -21,7 +21,7 @@ class MessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         ioScope {
             updatePushToken(token)
-            uploadPushToken()
+            uploadPushToken(isNewToken = true)
         }
     }
 

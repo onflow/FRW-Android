@@ -59,7 +59,7 @@ private val KEY_SANDBOX_ENABLED = booleanPreferencesKey("KEY_SANDBOX_ENABLED")
 
 private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
 private const val KEY_IS_NOTIFICATION_PERMISSION_CHECKED = "KEY_IS_NOTIFICATION_PERMISSION_CHECKED"
-
+private const val KEY_TOKEN_UPLOADED_ADDRESS_SET = "KEY_TOKEN_UPLOADED_ADDRESS_SET"
 private val scope = CoroutineScope(Dispatchers.IO)
 
 private val sharedPreferencesTraditional by lazy { Env.getApp().getSharedPreferences(PREFERENCE_TRADITIONAL, Context.MODE_PRIVATE) }
@@ -249,6 +249,14 @@ fun getSelectedWalletAddress(): String? {
 
 fun updateSelectedWalletAddress(address: String) {
     sharedPreferencesTraditional.edit().putString(KEY_SELECTED_WALLET_ADDRESS, address).apply()
+}
+
+fun setUploadedAddressSet(addressSet: Set<String>) {
+    sharedPreferencesTraditional.edit().putStringSet(KEY_TOKEN_UPLOADED_ADDRESS_SET, addressSet).apply()
+}
+
+fun getUploadedAddressSet(): Set<String> {
+    return sharedPreferencesTraditional.getStringSet(KEY_TOKEN_UPLOADED_ADDRESS_SET, setOf()) ?: setOf()
 }
 
 private fun edit(unit: suspend () -> Unit) {
