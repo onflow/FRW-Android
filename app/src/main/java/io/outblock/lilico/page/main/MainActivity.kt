@@ -11,6 +11,7 @@ import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivityMainBinding
 import io.outblock.lilico.firebase.firebaseInformationCheck
 import io.outblock.lilico.manager.account.AccountWalletManager
+import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.page.dialog.common.RootDetectedDialog
 import io.outblock.lilico.page.guide.GuideActivity
 import io.outblock.lilico.page.main.model.MainContentModel
@@ -19,6 +20,7 @@ import io.outblock.lilico.page.main.presenter.DrawerLayoutPresenter
 import io.outblock.lilico.page.main.presenter.MainContentPresenter
 import io.outblock.lilico.page.others.NotificationPermissionActivity
 import io.outblock.lilico.page.window.WindowFrame
+import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.isGuidePageShown
 import io.outblock.lilico.utils.isNewVersion
 import io.outblock.lilico.utils.isNightMode

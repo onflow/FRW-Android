@@ -14,6 +14,7 @@ import io.outblock.lilico.databinding.ActivityWalletSettingBinding
 import io.outblock.lilico.page.profile.subpage.claimdomain.ClaimDomainActivity
 import io.outblock.lilico.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import io.outblock.lilico.page.profile.subpage.wallet.dialog.WalletResetConfirmDialog
+import io.outblock.lilico.page.profile.subpage.wallet.key.AccountKeyActivity
 import io.outblock.lilico.page.security.recovery.SecurityPrivateKeyActivity
 import io.outblock.lilico.page.security.recovery.SecurityRecoveryActivity
 import io.outblock.lilico.page.security.securityOpen
@@ -56,6 +57,10 @@ class WalletSettingActivity : BaseActivity() {
                 securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
             }
 
+            accountKey.setOnClickListener {
+                securityOpen(AccountKeyActivity.launchIntent(this@WalletSettingActivity))
+            }
+
             uiScope { freeGasPreference.setChecked(isFreeGasPreferenceEnable()) }
             freeGasPreference.setOnCheckedChangeListener { uiScope { setFreeGasPreferenceEnable(it) } }
 
@@ -72,7 +77,7 @@ class WalletSettingActivity : BaseActivity() {
             ioScope {
                 val storageInfo = storageInfoCache().read() ?: return@ioScope
                 uiScope {
-                    group3.setVisible(true)
+                    group4.setVisible(true)
                     val progress = storageInfo.used.toFloat() / storageInfo.capacity
                     storageInfoUsed.text = (progress * 100).formatNum(3) + "%"
                     storageInfoCount.text = getString(

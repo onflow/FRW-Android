@@ -317,6 +317,15 @@
             android:name=".page.others.NotificationPermissionActivity"
             android:screenOrientation="portrait"/>
 
+        <activity android:name=".page.profile.subpage.wallet.key.AccountKeyActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".page.profile.subpage.wallet.device.DevicesActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".page.profile.subpage.wallet.device.detail.DeviceInfoActivity"
+            android:screenOrientation="portrait"/>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="@string/file_provider_authorities"
@@ -352,6 +361,9 @@
         <meta-data
             android:name="com.google.ar.core"
             android:value="required"/>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_api_key" />
     </application>
 
 </manifest>

@@ -10,8 +10,11 @@ import io.outblock.lilico.firebase.auth.getFirebaseJwt
 import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
+import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
+import io.outblock.lilico.network.model.AccountKey
+import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
@@ -46,7 +49,10 @@ private val WALLET_STEP_ROOT_ID = mapOf(
 
 fun getRootIdByStep(step: Int) = WALLET_STEP_ROOT_ID[step]!!
 
-fun requestWalletRestoreLogin(mnemonic: String, callback: (isSuccess: Boolean, reason: Int?) -> Unit) {
+fun requestWalletRestoreLogin(
+    mnemonic: String,
+    callback: (isSuccess: Boolean, reason: Int?) -> Unit
+) {
     ioScope {
         val wallet = HDWallet(mnemonic, "")
 
@@ -56,8 +62,17 @@ fun requestWalletRestoreLogin(mnemonic: String, callback: (isSuccess: Boolean, r
             }
             runBlocking {
                 val catching = runCatching {
+                    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
-                    val resp = service.login(mapOf("public_key" to wallet.getPublicKey(), "signature" to wallet.sign(getFirebaseJwt())))
+                    val resp = service.login(
+                        LoginRequest(
+                            signature = wallet.sign(
+                                getFirebaseJwt()
+                            ),
+                            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+                            deviceInfo = deviceInfoRequest
+                        )
+                    )
                     if (resp.data?.customToken.isNullOrBlank()) {
                         if (resp.status == 404) {
                             callback.invoke(false, ERROR_ACCOUNT_NOT_FOUND)

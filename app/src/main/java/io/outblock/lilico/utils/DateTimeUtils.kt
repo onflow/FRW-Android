@@ -17,6 +17,18 @@ fun Long.formatDate(format: String = "yyyy-MM-dd HH:mm"): String {
     return SimpleDateFormat(format).format(this)
 }
 
+fun formatGMTToDate(inputDate: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+        val outputFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.US)
+
+        val date = inputFormat.parse(inputDate)
+        date?.let { outputFormat.format(it) } ?: inputDate
+    } catch (e: Exception) {
+        e.printStackTrace()
+        inputDate
+    }
+}
 
 fun isToday(ts: Long): Boolean {
     if (Math.abs(System.currentTimeMillis() - ts) > DateUtils.DAY_IN_MILLIS) {

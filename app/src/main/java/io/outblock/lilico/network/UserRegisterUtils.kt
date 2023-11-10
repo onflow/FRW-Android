@@ -12,6 +12,7 @@ import io.outblock.lilico.firebase.auth.signInAnonymously
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.BalanceManager
+import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.manager.coin.FlowCoinListManager
 import io.outblock.lilico.manager.coin.TokenStateManager
 import io.outblock.lilico.manager.nft.NftCollectionStateManager
@@ -19,6 +20,7 @@ import io.outblock.lilico.manager.staking.StakingManager
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.model.AccountKey
+import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.model.RegisterRequest
 import io.outblock.lilico.network.model.RegisterResponse
 import io.outblock.lilico.page.walletrestore.firebaseLogin
@@ -104,11 +106,14 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 }
 
 private suspend fun registerServer(username: String, wallet: HDWallet): RegisterResponse {
+    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
     val user = service.register(
         RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true))
+            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+            deviceInfo = deviceInfoRequest
+
         )
     )
     logd(TAG, user.toString())
@@ -129,9 +134,18 @@ private suspend fun resumeAccount() {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return
     }
+    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val wallet = Wallet.store().wallet()
     val service = retrofit().create(ApiService::class.java)
-    val resp = service.login(mapOf("public_key" to wallet.getPublicKey(), "signature" to wallet.sign(getFirebaseJwt())))
+    val resp = service.login(
+        LoginRequest(
+            signature = wallet.sign(
+                getFirebaseJwt()
+            ),
+            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+            deviceInfo = deviceInfoRequest
+        )
+    )
     if (resp.data?.customToken.isNullOrBlank()) {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return

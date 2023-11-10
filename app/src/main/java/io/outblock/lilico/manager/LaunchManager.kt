@@ -7,6 +7,7 @@ import io.outblock.lilico.firebase.config.initFirebaseConfig
 import io.outblock.lilico.firebase.firebaseInitialize
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.BalanceManager
+import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.manager.app.AppLifecycleObserver
 import io.outblock.lilico.manager.app.PageLifecycleObserver
 import io.outblock.lilico.manager.app.refreshChainNetwork
@@ -55,6 +56,7 @@ object LaunchManager {
 
     private fun asyncInit() {
         ioScope {
+            DeviceInfoManager.updateDeviceInfo()
         }
     }
 

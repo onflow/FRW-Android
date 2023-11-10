@@ -8,4 +8,7 @@ data class RegisterRequest(
 
     @SerializedName("account_key")
     val accountKey: AccountKey,
+
+    @SerializedName("device_info")
+    val deviceInfo: DeviceInfoRequest?
 )

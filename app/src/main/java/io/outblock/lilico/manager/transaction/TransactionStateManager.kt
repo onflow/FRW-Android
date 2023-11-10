@@ -205,6 +205,8 @@ data class TransactionState(
         const val TYPE_CLAIM_DOMAIN = 7
 
         const val TYPE_STAKE_FLOW = 8
+
+        const val TYPE_REVOKE_KEY = 9
     }
 
     fun coinData() = Gson().fromJson(data, TransactionModel::class.java)

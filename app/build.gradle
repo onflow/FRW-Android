@@ -151,6 +151,7 @@ dependencies {
     implementation('com.google.apis:google-api-services-drive:v3-rev110-1.23.0') {
         exclude group: 'com.google.guava'
     }
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
     /** Google Drive **/
 
     /** ARCore **/
@@ -199,6 +200,7 @@ dependencies {
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
     implementation 'io.github.h07000223:flycoTabLayout:3.0.0'
+    implementation 'com.chauthai.swipereveallayout:swipe-reveal-layout:1.4.1'
     implementation 'jp.wasabeef:glide-transformations:4.3.0'
 
     implementation 'com.sackcentury:shinebutton:1.0.0'

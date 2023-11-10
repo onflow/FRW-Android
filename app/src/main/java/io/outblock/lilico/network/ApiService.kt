@@ -6,7 +6,7 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    @POST("/v1/register")
+    @POST("/v3/register")
     suspend fun register(@Body param: RegisterRequest): RegisterResponse
 
     @POST("/v1/user/address")
@@ -27,8 +27,8 @@ interface ApiService {
     @GET("/v1/user/search")
     suspend fun searchUser(@Query("keyword") keyword: String): SearchUserResponse
 
-    @POST("/v2/login")
-    suspend fun login(@Body params: Map<String, String>): LoginResponse
+    @POST("/v3/login")
+    suspend fun login(@Body params: LoginRequest): LoginResponse
 
     @GET("/v1/account/info")
     suspend fun getAddressInfo(@Query("address") address: String): AddressInfoResponse
@@ -175,4 +175,16 @@ interface ApiService {
     @POST("/v1/user/address/sandboxnet")
     suspend fun enableSandboxNet(
     ): SandboxEnableResponse
+
+    @GET("/v1/user/location")
+    suspend fun getDeviceLocation(): LocationInfoResponse
+
+    @GET("/v1/user/device")
+    suspend fun getDeviceList(): DeviceListResponse
+
+    @GET("/v1/user/keys")
+    suspend fun getKeyDeviceInfo(): KeyDeviceInfoResponse
+
+    @POST("/v1/user/device")
+    suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): String
 }
