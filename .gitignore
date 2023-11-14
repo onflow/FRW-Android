@@ -1,4 +1,4 @@
-`*.iml
+*.iml
 .gradle
 /local.properties
 /.idea/caches/build_file_checksums.ser

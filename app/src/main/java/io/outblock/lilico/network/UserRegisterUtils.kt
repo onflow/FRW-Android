@@ -1,9 +1,12 @@
 package io.outblock.lilico.network
 
+import android.util.Base64
 import android.widget.Toast
+import com.google.common.io.BaseEncoding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import com.nftco.flow.sdk.bytesToHex
 import io.outblock.lilico.R
 import io.outblock.lilico.firebase.auth.firebaseCustomLogin
 import io.outblock.lilico.firebase.auth.getFirebaseJwt
@@ -35,8 +38,13 @@ import io.outblock.lilico.wallet.Wallet
 import io.outblock.lilico.wallet.createWalletFromServer
 import io.outblock.lilico.wallet.getPublicKey
 import io.outblock.lilico.wallet.sign
+import io.outblock.wallet.KeyManager
+import io.outblock.wallet.SignatureManager
 import kotlinx.coroutines.delay
+import org.bouncycastle.util.BigIntegers.asUnsignedByteArray
 import wallet.core.jni.HDWallet
+import java.security.PublicKey
+import java.security.interfaces.ECPublicKey
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -108,16 +116,25 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 private suspend fun registerServer(username: String, wallet: HDWallet): RegisterResponse {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
+    val keyPair = KeyManager.generateKeyWithPrefix("test_user")
+    val publicKey = formatPublicKey(keyPair.public)
     val user = service.register(
         RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+            accountKey = AccountKey(publicKey = publicKey),
             deviceInfo = deviceInfoRequest
 
         )
     )
     logd(TAG, user.toString())
     return user
+}
+
+fun formatPublicKey(publicKey: PublicKey?): String {
+    return (publicKey as? ECPublicKey)?.w?.let {
+        val bytes = asUnsignedByteArray(it.affineX) + asUnsignedByteArray(it.affineY)
+        BaseEncoding.base16().lowerCase().encode(bytes)
+    } ?: ""
 }
 
 private suspend fun setToAnonymous(): Boolean {
@@ -137,12 +154,16 @@ private suspend fun resumeAccount() {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val wallet = Wallet.store().wallet()
     val service = retrofit().create(ApiService::class.java)
+    val publicKey = KeyManager.getPublicKeyByPrefix("test_user")
+    val privateKey = KeyManager.getPrivateKeyByPrefix("test_user")
+    if (privateKey == null) {
+        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+        return
+    }
     val resp = service.login(
         LoginRequest(
-            signature = wallet.sign(
-                getFirebaseJwt()
-            ),
-            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+            signature = SignatureManager.sign(privateKey, getFirebaseJwt()).bytesToHex(),
+            accountKey = AccountKey(publicKey = formatPublicKey(publicKey)),
             deviceInfo = deviceInfoRequest
         )
     )

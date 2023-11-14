@@ -3,6 +3,7 @@ package io.outblock.lilico.page.walletrestore
 import androidx.annotation.WorkerThread
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.nftco.flow.sdk.bytesToHex
 import io.outblock.lilico.R
 import io.outblock.lilico.firebase.auth.deleteAnonymousUser
 import io.outblock.lilico.firebase.auth.firebaseCustomLogin
@@ -13,6 +14,7 @@ import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
+import io.outblock.lilico.network.formatPublicKey
 import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.retrofit
@@ -23,6 +25,8 @@ import io.outblock.lilico.utils.setRegistered
 import io.outblock.lilico.wallet.Wallet
 import io.outblock.lilico.wallet.getPublicKey
 import io.outblock.lilico.wallet.sign
+import io.outblock.wallet.KeyManager
+import io.outblock.wallet.SignatureManager
 import kotlinx.coroutines.runBlocking
 import wallet.core.jni.HDWallet
 
@@ -63,13 +67,17 @@ fun requestWalletRestoreLogin(
             runBlocking {
                 val catching = runCatching {
                     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+                    val publicKey = KeyManager.getPublicKeyByPrefix("test_user")
+                    val privateKey = KeyManager.getPrivateKeyByPrefix("test_user")
+                    if (privateKey == null) {
+                        callback.invoke(false, ERROR_UID)
+                        return@runBlocking
+                    }
                     val service = retrofit().create(ApiService::class.java)
                     val resp = service.login(
                         LoginRequest(
-                            signature = wallet.sign(
-                                getFirebaseJwt()
-                            ),
-                            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+                            signature = SignatureManager.sign(privateKey, getFirebaseJwt()).bytesToHex(),
+                            accountKey = AccountKey(publicKey = formatPublicKey(publicKey)),
                             deviceInfo = deviceInfoRequest
                         )
                     )
