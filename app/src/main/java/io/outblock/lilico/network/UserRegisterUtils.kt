@@ -6,6 +6,7 @@ import com.google.common.io.BaseEncoding
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import com.nftco.flow.sdk.DomainTag.normalize
 import com.nftco.flow.sdk.bytesToHex
 import io.outblock.lilico.R
 import io.outblock.lilico.firebase.auth.firebaseCustomLogin
@@ -43,6 +44,7 @@ import io.outblock.wallet.SignatureManager
 import kotlinx.coroutines.delay
 import org.bouncycastle.util.BigIntegers.asUnsignedByteArray
 import wallet.core.jni.HDWallet
+import wallet.core.jni.Hash
 import java.security.PublicKey
 import java.security.interfaces.ECPublicKey
 import kotlin.coroutines.resume
@@ -137,6 +139,10 @@ fun formatPublicKey(publicKey: PublicKey?): String {
     } ?: ""
 }
 
+fun formatSignData(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): ByteArray {
+    return Hash.sha256(domainTag + text.encodeToByteArray())
+}
+
 private suspend fun setToAnonymous(): Boolean {
     if (!isAnonymousSignIn()) {
         Firebase.auth.signOut()
@@ -162,7 +168,7 @@ private suspend fun resumeAccount() {
     }
     val resp = service.login(
         LoginRequest(
-            signature = SignatureManager.sign(privateKey, getFirebaseJwt()).bytesToHex(),
+            signature = SignatureManager.signData(privateKey, formatSignData(getFirebaseJwt())).bytesToHex(),
             accountKey = AccountKey(publicKey = formatPublicKey(publicKey)),
             deviceInfo = deviceInfoRequest
         )

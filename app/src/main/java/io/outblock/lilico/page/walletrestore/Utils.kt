@@ -15,6 +15,7 @@ import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
 import io.outblock.lilico.network.formatPublicKey
+import io.outblock.lilico.network.formatSignData
 import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.retrofit
@@ -76,7 +77,7 @@ fun requestWalletRestoreLogin(
                     val service = retrofit().create(ApiService::class.java)
                     val resp = service.login(
                         LoginRequest(
-                            signature = SignatureManager.sign(privateKey, getFirebaseJwt()).bytesToHex(),
+                            signature = SignatureManager.signData(privateKey, formatSignData(getFirebaseJwt())).bytesToHex(),
                             accountKey = AccountKey(publicKey = formatPublicKey(publicKey)),
                             deviceInfo = deviceInfoRequest
                         )
