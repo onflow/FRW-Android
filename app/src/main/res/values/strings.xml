@@ -269,6 +269,7 @@
     <string name="guide_title_4">Explore\nyour favourite site</string>
     <string name="guide_desc_4">Share excellent NFT collections with friends</string>
     <string name="import_wallet">Import Wallet</string>
+    <string name="sync_wallet">Sync Wallet</string>
     <string name="welcome_desc">Provide More About The Security</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
@@ -467,4 +468,6 @@
     <string name="device_ip_address">IP Address</string>
     <string name="device_location">Location</string>
     <string name="device_entry_date">Entry Date</string>
+    <string name="login_with_registered_account">Enter the Registered Account</string>
+    <string name="or">Or</string>
 </resources>

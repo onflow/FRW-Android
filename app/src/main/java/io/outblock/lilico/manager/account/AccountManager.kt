@@ -14,10 +14,9 @@ import io.outblock.lilico.firebase.messaging.uploadPushToken
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
-import io.outblock.lilico.network.formatPublicKey
-import io.outblock.lilico.network.formatSignData
 import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.LoginRequest
+import io.outblock.lilico.network.model.LoginResponse
 import io.outblock.lilico.network.model.UserInfoData
 import io.outblock.lilico.network.model.WalletListData
 import io.outblock.lilico.network.retrofit
@@ -34,7 +33,8 @@ import io.outblock.lilico.wallet.Wallet
 import io.outblock.lilico.wallet.getPublicKey
 import io.outblock.lilico.wallet.sign
 import io.outblock.wallet.KeyManager
-import io.outblock.wallet.SignatureManager
+import io.outblock.wallet.WalletCoreSigner
+import io.outblock.wallet.toFormatString
 
 object AccountManager {
     private val accounts = mutableListOf<Account>()
@@ -128,26 +128,42 @@ object AccountManager {
             callback(false)
             return
         }
-        val wallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
-        if (wallet == null) {
-            callback(false)
-            return
-        }
         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-        val publicKey = KeyManager.getPublicKeyByPrefix("test_user")
-        val privateKey = KeyManager.getPrivateKeyByPrefix("test_user")
-        if (privateKey == null) {
-            callback(false)
-            return
-        }
         val service = retrofit().create(ApiService::class.java)
-        val resp = service.login(
-            LoginRequest(
-                signature = SignatureManager.signData(privateKey, formatSignData(getFirebaseJwt())).bytesToHex(),
-                accountKey = AccountKey(publicKey = formatPublicKey(publicKey)),
-                deviceInfo = deviceInfoRequest
+        val prefix = account.prefix
+        val resp: LoginResponse
+        if (prefix == null) {
+            val wallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
+            if (wallet == null) {
+                callback(false)
+                return
+            }
+            resp = service.login(
+                LoginRequest(
+                    signature = wallet.sign(
+                        getFirebaseJwt()
+                    ),
+                    accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+                    deviceInfo = deviceInfoRequest
+                )
             )
-        )
+        } else {
+            val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
+            val privateKey = KeyManager.getPrivateKeyByPrefix(prefix)
+            if (publicKey == null || privateKey == null) {
+                callback(false)
+                return
+            }
+            resp = service.login(
+                LoginRequest(
+                    signature = WalletCoreSigner(privateKey).signAsUser(
+                        getFirebaseJwt().encodeToByteArray()
+                    ).bytesToHex(),
+                    accountKey = AccountKey(publicKey = publicKey.toFormatString()),
+                    deviceInfo = deviceInfoRequest
+                )
+            )
+        }
         if (resp.data?.customToken.isNullOrBlank()) {
             callback(false)
             return
@@ -155,7 +171,9 @@ object AccountManager {
         firebaseLogin(resp.data?.customToken!!) { isSuccess ->
             if (isSuccess) {
                 setRegistered()
-                Wallet.store().resume()
+                if (prefix == null) {
+                    Wallet.store().resume()
+                }
                 callback(true)
             } else {
                 callback(false)
@@ -182,6 +200,8 @@ data class Account(
     var isActive: Boolean = false,
     @SerializedName("wallet")
     var wallet: WalletListData? = null,
+    @SerializedName("prefix")
+    var prefix: String? = null,
 )
 
 class Accounts : ArrayList<Account>()

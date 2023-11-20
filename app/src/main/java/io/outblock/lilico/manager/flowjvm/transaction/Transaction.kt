@@ -2,8 +2,15 @@ package io.outblock.lilico.manager.flowjvm.transaction
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.*
-import com.nftco.flow.sdk.crypto.Crypto
+import com.nftco.flow.sdk.DomainTag
+import com.nftco.flow.sdk.FlowAddress
+import com.nftco.flow.sdk.FlowArgument
+import com.nftco.flow.sdk.FlowId
+import com.nftco.flow.sdk.FlowSignature
+import com.nftco.flow.sdk.FlowTransaction
+import com.nftco.flow.sdk.bytesToHex
+import com.nftco.flow.sdk.flowTransaction
+import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.config.isGasFree
 import io.outblock.lilico.manager.flowjvm.FlowApi
@@ -12,9 +19,11 @@ import io.outblock.lilico.manager.flowjvm.valueString
 import io.outblock.lilico.network.functions.FUNCTION_SIGN_AS_PAYER
 import io.outblock.lilico.network.functions.executeHttpFunction
 import io.outblock.lilico.utils.logd
+import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.vibrateTransaction
-import io.outblock.lilico.wallet.getPrivateKey
 import io.outblock.lilico.wallet.toAddress
+import io.outblock.wallet.KeyManager
+import io.outblock.wallet.WalletCoreSigner
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Provider
 import java.security.Security
@@ -24,7 +33,7 @@ private const val TAG = "FlowTransaction"
 suspend fun sendTransaction(
     builder: TransactionBuilder.() -> Unit,
 ): String {
-    updateSecurityProvider()
+//    updateSecurityProvider()
 
     logd(TAG, "sendTransaction prepare")
     val voucher = prepare(TransactionBuilder().apply { builder(this) })
@@ -47,15 +56,20 @@ suspend fun sendTransaction(
     return txID.bytes.bytesToHex()
 }
 
+//todo key index
 private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
-    return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
-        payerAddress,
-        keyIndex = 0,
-        Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(getPrivateKey(), SignatureAlgorithm.ECDSA_SECP256k1),
-            hashAlgo = HashAlgorithm.SHA2_256
+    try {
+        return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
+            payerAddress,
+            keyIndex = 0,
+            WalletCoreSigner(
+                privateKey = KeyManager.getPrivateKeyByPrefix(AccountManager.get()?.prefix ?: "")
+            )
         )
-    )
+    } catch (e: Exception) {
+        loge(e)
+        throw e
+    }
 }
 
 private suspend fun FlowTransaction.addFreeGasEnvelope(): FlowTransaction {
@@ -161,7 +175,7 @@ fun Voucher.toFlowTransaction(): FlowTransaction {
                     signature(
                         FlowAddress(sig.address),
                         sig.keyId ?: 0,
-                        FlowSignature(sig.sig.orEmpty())
+                        FlowSignature(sig.sig)
                     )
                 }
             }
@@ -173,7 +187,7 @@ fun Voucher.toFlowTransaction(): FlowTransaction {
                     signature(
                         FlowAddress(sig.address),
                         sig.keyId ?: 0,
-                        FlowSignature(sig.sig.orEmpty())
+                        FlowSignature(sig.sig)
                     )
                 }
             }
@@ -184,9 +198,8 @@ fun Voucher.toFlowTransaction(): FlowTransaction {
         tx = tx.addPayloadSignature(
             FlowAddress(proposalKey.address.orEmpty()),
             keyIndex = proposalKey.keyId ?: 0,
-            Crypto.getSigner(
-                privateKey = Crypto.decodePrivateKey(getPrivateKey(), SignatureAlgorithm.ECDSA_SECP256k1),
-                hashAlgo = HashAlgorithm.SHA2_256
+            WalletCoreSigner(
+                privateKey = KeyManager.getPrivateKeyByPrefix(AccountManager.get()?.prefix ?: "")
             ),
         )
     }

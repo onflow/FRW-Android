@@ -1,6 +1,5 @@
 package io.outblock.lilico.network
 
-import android.util.Base64
 import android.widget.Toast
 import com.google.common.io.BaseEncoding
 import com.google.firebase.auth.ktx.auth
@@ -25,6 +24,7 @@ import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.LoginRequest
+import io.outblock.lilico.network.model.LoginResponse
 import io.outblock.lilico.network.model.RegisterRequest
 import io.outblock.lilico.network.model.RegisterResponse
 import io.outblock.lilico.page.walletrestore.firebaseLogin
@@ -40,11 +40,11 @@ import io.outblock.lilico.wallet.createWalletFromServer
 import io.outblock.lilico.wallet.getPublicKey
 import io.outblock.lilico.wallet.sign
 import io.outblock.wallet.KeyManager
-import io.outblock.wallet.SignatureManager
+import io.outblock.wallet.WalletCoreSigner
+import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
 import org.bouncycastle.util.BigIntegers.asUnsignedByteArray
-import wallet.core.jni.HDWallet
-import wallet.core.jni.Hash
+import java.security.MessageDigest
 import java.security.PublicKey
 import java.security.interfaces.ECPublicKey
 import kotlin.coroutines.resume
@@ -58,15 +58,19 @@ suspend fun registerOutblock(
     username: String,
 ) = suspendCoroutine { continuation ->
     ioScope {
-        registerOutblockUserInternal(username) { isSuccess, wallet ->
+        registerOutblockUserInternal(username) { isSuccess, prefix ->
             ioScope {
                 if (isSuccess) {
                     createWalletFromServer()
-                    Wallet.store().reset(wallet.mnemonic())
                     setRegistered()
 
                     val service = retrofit().create(ApiService::class.java)
-                    AccountManager.add(Account(userInfo = service.userInfo().data))
+                    AccountManager.add(
+                        Account(
+                            userInfo = service.userInfo().data,
+                            prefix = prefix
+                        )
+                    )
                     continuation.resume(true)
                 } else {
                     resumeAccount()
@@ -79,25 +83,25 @@ suspend fun registerOutblock(
 
 private suspend fun registerOutblockUserInternal(
     username: String,
-    callback: (isSuccess: Boolean, wallet: HDWallet) -> Unit,
+    callback: (isSuccess: Boolean, prefix: String) -> Unit,
 ) {
-    val wallet = HDWallet(128, "")
+    val prefix = generatePrefix(username)
     if (!setToAnonymous()) {
         resumeAccount()
-        callback.invoke(false, wallet)
+        callback.invoke(false, prefix)
         return
     }
 
-    val user = registerServer(username, wallet)
+    val user = registerServer(username, prefix)
 
     if (user.status > 400) {
-        callback(false, wallet)
+        callback(false, prefix)
         return
     }
 
     logd(TAG, "start delete user")
     registerFirebase(user) { isSuccess ->
-        callback.invoke(isSuccess, wallet)
+        callback.invoke(isSuccess, prefix)
     }
 }
 
@@ -115,21 +119,26 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
     }
 }
 
-private suspend fun registerServer(username: String, wallet: HDWallet): RegisterResponse {
+private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
-    val keyPair = KeyManager.generateKeyWithPrefix("test_user")
-    val publicKey = formatPublicKey(keyPair.public)
+    val keyPair = KeyManager.generateKeyWithPrefix(prefix)
     val user = service.register(
         RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = publicKey),
+            accountKey = AccountKey(publicKey = keyPair.public.toFormatString()),
             deviceInfo = deviceInfoRequest
-
         )
     )
     logd(TAG, user.toString())
     return user
+}
+
+fun generatePrefix(text: String): String {
+    val timestamp = System.currentTimeMillis().toString()
+    val combinedInput = "${text}_$timestamp"
+    val bytes = MessageDigest.getInstance("SHA-256").digest(combinedInput.toByteArray())
+    return bytes.joinToString("") { "%02x".format(it) }
 }
 
 fun formatPublicKey(publicKey: PublicKey?): String {
@@ -140,7 +149,7 @@ fun formatPublicKey(publicKey: PublicKey?): String {
 }
 
 fun formatSignData(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): ByteArray {
-    return Hash.sha256(domainTag + text.encodeToByteArray())
+    return domainTag + text.encodeToByteArray()
 }
 
 private suspend fun setToAnonymous(): Boolean {
@@ -158,21 +167,37 @@ private suspend fun resumeAccount() {
         return
     }
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-    val wallet = Wallet.store().wallet()
     val service = retrofit().create(ApiService::class.java)
-    val publicKey = KeyManager.getPublicKeyByPrefix("test_user")
-    val privateKey = KeyManager.getPrivateKeyByPrefix("test_user")
-    if (privateKey == null) {
-        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
-        return
-    }
-    val resp = service.login(
-        LoginRequest(
-            signature = SignatureManager.signData(privateKey, formatSignData(getFirebaseJwt())).bytesToHex(),
-            accountKey = AccountKey(publicKey = formatPublicKey(publicKey)),
-            deviceInfo = deviceInfoRequest
+    val prefix = AccountManager.get()?.prefix
+    val resp: LoginResponse
+    if (prefix == null) {
+        val wallet = Wallet.store().wallet()
+        resp = service.login(
+            LoginRequest(
+                signature = wallet.sign(
+                    getFirebaseJwt()
+                ),
+                accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+                deviceInfo = deviceInfoRequest
+            )
         )
-    )
+    } else {
+        val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
+        val privateKey = KeyManager.getPrivateKeyByPrefix(prefix)
+        if (privateKey == null || publicKey == null) {
+            toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+            return
+        }
+        resp = service.login(
+            LoginRequest(
+                signature = WalletCoreSigner(privateKey).signAsUser(
+                    getFirebaseJwt().encodeToByteArray()
+                ).bytesToHex(),
+                accountKey = AccountKey(publicKey = publicKey.toFormatString()),
+                deviceInfo = deviceInfoRequest
+            )
+        )
+    }
     if (resp.data?.customToken.isNullOrBlank()) {
         toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
         return
@@ -180,7 +205,9 @@ private suspend fun resumeAccount() {
     firebaseLogin(resp.data?.customToken!!) { isSuccess ->
         if (isSuccess) {
             setRegistered()
-            Wallet.store().resume()
+            if (prefix == null) {
+                Wallet.store().resume()
+            }
         } else {
             toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
             return@firebaseLogin
