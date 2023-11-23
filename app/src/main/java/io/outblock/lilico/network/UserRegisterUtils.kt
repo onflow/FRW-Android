@@ -71,6 +71,7 @@ suspend fun registerOutblock(
                             prefix = prefix
                         )
                     )
+                    AccountManager.updateUserKeyIndex(service.userInfo().data.username, prefix)
                     continuation.resume(true)
                 } else {
                     resumeAccount()

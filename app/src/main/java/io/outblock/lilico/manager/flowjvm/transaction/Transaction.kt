@@ -56,12 +56,11 @@ suspend fun sendTransaction(
     return txID.bytes.bytesToHex()
 }
 
-//todo key index
 private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
     try {
         return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
             payerAddress,
-            keyIndex = 0,
+            keyIndex = AccountManager.get()?.keyIndex ?: 0,
             WalletCoreSigner(
                 privateKey = KeyManager.getPrivateKeyByPrefix(AccountManager.get()?.prefix ?: "")
             )

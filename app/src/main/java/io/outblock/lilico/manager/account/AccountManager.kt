@@ -4,6 +4,7 @@ import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.annotations.SerializedName
+import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
 import io.outblock.lilico.R
 import io.outblock.lilico.cache.CacheManager
@@ -11,6 +12,7 @@ import io.outblock.lilico.firebase.auth.getFirebaseJwt
 import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.firebase.auth.signInAnonymously
 import io.outblock.lilico.firebase.messaging.uploadPushToken
+import io.outblock.lilico.manager.flowjvm.lastBlockAccount
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
@@ -62,11 +64,23 @@ object AccountManager {
 
     fun userInfo() = get()?.userInfo
 
+    fun updateUserKeyIndex(username: String, prefix: String) {
+        ioScope {
+            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+            if (account == null || account.keys.isEmpty()) {
+                return@ioScope
+            }
+            val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
+            val index = account.keys.find { it.publicKey.base16Value == publicKey.toFormatString() }?.id ?: 0
+            list().firstOrNull { it.userInfo.username == username }?.keyIndex = index
+            accountsCache().cache(Accounts().apply { addAll(accounts) })
+        }
+    }
+
     fun updateUserInfo(userInfo: UserInfoData) {
         list().firstOrNull { it.userInfo.username == userInfo.username }?.userInfo = userInfo
         accountsCache().cache(Accounts().apply { addAll(accounts) })
     }
-
 
     fun updateWalletInfo(wallet: WalletListData) {
         list().firstOrNull { it.userInfo.username == wallet.username }?.wallet = wallet
@@ -202,6 +216,8 @@ data class Account(
     var wallet: WalletListData? = null,
     @SerializedName("prefix")
     var prefix: String? = null,
+    @SerializedName("keyIndex")
+    var keyIndex: Int = 0
 )
 
 class Accounts : ArrayList<Account>()
