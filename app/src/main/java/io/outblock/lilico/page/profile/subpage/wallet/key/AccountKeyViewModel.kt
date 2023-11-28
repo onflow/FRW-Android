@@ -6,6 +6,7 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowPublicKey
 import io.outblock.lilico.manager.account.AccountKeyManager
 import io.outblock.lilico.manager.flowjvm.lastBlockAccount
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.transaction.OnTransactionStateChange
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
@@ -16,7 +17,6 @@ import io.outblock.lilico.page.profile.subpage.wallet.key.model.AccountKey
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.utils.viewModelIOScope
-import io.outblock.lilico.wallet.getPublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 
@@ -92,7 +92,8 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     private fun isCurrentDevice(publicKey: FlowPublicKey): Boolean {
-        return getPublicKey() == publicKey.base16Value
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+        return cryptoProvider?.getPublicKey() == publicKey.base16Value
     }
 
 }

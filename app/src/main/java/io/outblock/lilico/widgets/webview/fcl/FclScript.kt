@@ -4,8 +4,7 @@ import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.hexToBytes
 import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.config.isGasFree
-import io.outblock.lilico.wallet.hdWallet
-import io.outblock.lilico.wallet.signData
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.wallet.toAddress
 import io.outblock.lilico.widgets.webview.fcl.model.FclAuthnResponse
 
@@ -221,8 +220,10 @@ fun generateFclExtensionInject(): String {
 }
 
 suspend fun fclAuthnResponse(fcl: FclAuthnResponse, address: String): String {
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+
     val accountProofSign = if (!fcl.body.nonce.isNullOrBlank()) {
-        hdWallet().signData(fcl.encodeAccountProof(address))
+        cryptoProvider.signData(fcl.encodeAccountProof(address))
     } else ""
 
     return fclAuthnResponseWithAccountProofSign(accountProofSign, fcl.body.nonce, address)
@@ -259,9 +260,11 @@ fun fclAuthzResponse(address: String, signature: String, keyId: Int? = 0): Strin
 
 fun fclSignMessageResponse(message: String?, address: String): String {
     val messageBytes = message?.hexToBytes() ?: throw IllegalArgumentException("Message is empty")
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalArgumentException("Crypto Provider is null")
+
     return FCL_SIGN_MESSAGE_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
-        .replace(SIGNATURE_REPLACEMENT, hdWallet().signData(DomainTag.USER_DOMAIN_TAG + messageBytes))
+        .replace(SIGNATURE_REPLACEMENT, cryptoProvider.signData(DomainTag.USER_DOMAIN_TAG + messageBytes))
 }
 
 private suspend fun generateAuthnPreAuthz(): String {

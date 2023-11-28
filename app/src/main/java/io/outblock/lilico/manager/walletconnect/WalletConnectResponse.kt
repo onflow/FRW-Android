@@ -4,10 +4,9 @@ import androidx.annotation.WorkerThread
 import com.nftco.flow.sdk.FlowAddress
 import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.flowjvm.lastBlockAccountKeyId
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.walletconnect.model.WalletConnectMethod
-import io.outblock.lilico.wallet.hdWallet
 import io.outblock.lilico.wallet.removeAddressPrefix
-import io.outblock.lilico.wallet.signData
 import io.outblock.lilico.wallet.toAddress
 import io.outblock.lilico.widgets.webview.fcl.encodeAccountProof
 
@@ -121,7 +120,9 @@ private fun preAuthz(): String {
 
 private fun accountProof(address: String, nonce: String?, appIdentifier: String?): String {
     if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) return ""
-    val accountProofSign = hdWallet().signData(encodeAccountProof(address, nonce, appIdentifier, includeDomainTag = true))
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+    val accountProofSign = cryptoProvider.signData(encodeAccountProof(address, nonce, appIdentifier,
+        includeDomainTag = true))
     return """
     {
         "f_type": "Service",

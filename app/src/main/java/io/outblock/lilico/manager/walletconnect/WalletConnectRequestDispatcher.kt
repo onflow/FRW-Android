@@ -19,6 +19,7 @@ import io.outblock.lilico.manager.flowjvm.lastBlockAccountKeyId
 import io.outblock.lilico.manager.flowjvm.transaction.PayerSignable
 import io.outblock.lilico.manager.flowjvm.transaction.SignPayerResponse
 import io.outblock.lilico.manager.flowjvm.transaction.Signable
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.manager.walletconnect.model.Identity
 import io.outblock.lilico.manager.walletconnect.model.PollingData
@@ -37,8 +38,6 @@ import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.logw
 import io.outblock.lilico.utils.safeRun
 import io.outblock.lilico.utils.uiScope
-import io.outblock.lilico.wallet.hdWallet
-import io.outblock.lilico.wallet.signData
 import io.outblock.lilico.widgets.webview.fcl.dialog.FclSignMessageDialog
 import io.outblock.lilico.widgets.webview.fcl.dialog.authz.FclAuthzDialog
 import io.outblock.lilico.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
@@ -68,7 +67,7 @@ suspend fun WCRequest.dispatch() {
 }
 
 private fun WCRequest.respondAuthn() {
-    val address = WalletManager.selectedWalletAddress() ?: return
+    val address = WalletManager.selectedWalletAddress()
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
     val services = walletConnectAuthnServiceResponse(address, signable.data?.get("nonce"), signable.data?.get("appIdentifier"), isFromFclSdk())
@@ -89,6 +88,7 @@ private suspend fun WCRequest.respondAuthz() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
     val message = signable.message ?: return
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -108,8 +108,8 @@ private suspend fun WCRequest.respondAuthz() {
 
         FclAuthzDialog.observe { isApprove ->
             ioScope {
-                val address = WalletManager.selectedWalletAddress() ?: return@ioScope
-                val signature = hdWallet().signData(message.hexToBytes())
+                val address = WalletManager.selectedWalletAddress()
+                val signature = cryptoProvider.signData(message.hexToBytes())
                 val keyId = FlowAddress(address).lastBlockAccountKeyId()
 
                 if (isApprove) approve(fclAuthzResponse(address, signature, keyId)) else reject()
@@ -122,7 +122,7 @@ private suspend fun WCRequest.respondAuthz() {
 
 
 private fun WCRequest.respondPreAuthz() {
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return
+    val walletAddress = WalletManager.selectedWalletAddress()
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
     val response = PollingResponse(
         status = ResponseStatus.APPROVED,
@@ -153,7 +153,7 @@ private fun WCRequest.respondPreAuthz() {
 
 private suspend fun WCRequest.respondUserSign() {
     val activity = topActivity() ?: return
-    val address = WalletManager.selectedWalletAddress() ?: return
+    val address = WalletManager.selectedWalletAddress()
     val param = gson().fromJson<List<SignableMessage>>(params, object : TypeToken<List<SignableMessage>>() {}.type)?.firstOrNull()
     val message = param?.message ?: return
     uiScope {
@@ -214,7 +214,8 @@ private suspend fun WCRequest.respondSignProposer() {
 
     logd(TAG, "respondSignProposer param:${params}")
     val signable = params.toSignables(gson())
-    val address = WalletManager.selectedWalletAddress() ?: return
+    val address = WalletManager.selectedWalletAddress()
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
 
     val data = FclDialogModel(
         title = metaData?.name,
@@ -239,7 +240,7 @@ private suspend fun WCRequest.respondSignProposer() {
                 data = PollingData(
                     address = address,
                     keyId = 0,
-                    signature = hdWallet().signData(signable?.message!!.hexToBytes())
+                    signature = cryptoProvider.signData(signable?.message!!.hexToBytes())
                 )
             )
             approve(gson().toJson(response))

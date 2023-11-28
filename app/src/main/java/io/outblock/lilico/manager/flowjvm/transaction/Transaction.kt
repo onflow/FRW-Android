@@ -16,14 +16,13 @@ import io.outblock.lilico.manager.config.isGasFree
 import io.outblock.lilico.manager.flowjvm.FlowApi
 import io.outblock.lilico.manager.flowjvm.toAsArgument
 import io.outblock.lilico.manager.flowjvm.valueString
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.network.functions.FUNCTION_SIGN_AS_PAYER
 import io.outblock.lilico.network.functions.executeHttpFunction
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.vibrateTransaction
 import io.outblock.lilico.wallet.toAddress
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.WalletCoreSigner
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Provider
 import java.security.Security
@@ -57,13 +56,12 @@ suspend fun sendTransaction(
 }
 
 private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw Exception("Crypto Provider is null")
     try {
         return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
             payerAddress,
             keyIndex = AccountManager.get()?.keyIndex ?: 0,
-            WalletCoreSigner(
-                privateKey = KeyManager.getPrivateKeyByPrefix(AccountManager.get()?.prefix ?: "")
-            )
+            cryptoProvider.getSigner()
         )
     } catch (e: Exception) {
         loge(e)
@@ -194,12 +192,12 @@ fun Voucher.toFlowTransaction(): FlowTransaction {
     }
 
     if (tx.payloadSignatures.isEmpty()) {
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return tx
+
         tx = tx.addPayloadSignature(
             FlowAddress(proposalKey.address.orEmpty()),
             keyIndex = proposalKey.keyId ?: 0,
-            WalletCoreSigner(
-                privateKey = KeyManager.getPrivateKeyByPrefix(AccountManager.get()?.prefix ?: "")
-            ),
+            cryptoProvider.getSigner(),
         )
     }
 

@@ -7,10 +7,7 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.cadence.TYPE_STRING
-import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.flowTransaction
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.config.AppConfig
@@ -22,6 +19,7 @@ import io.outblock.lilico.manager.flowjvm.transaction.Singature
 import io.outblock.lilico.manager.flowjvm.transaction.Voucher
 import io.outblock.lilico.manager.flowjvm.transaction.encodeTransactionPayload
 import io.outblock.lilico.manager.flowjvm.transaction.updateSecurityProvider
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
@@ -31,7 +29,6 @@ import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.utils.viewModelIOScope
-import io.outblock.lilico.wallet.getPrivateKey
 import io.outblock.lilico.wallet.toAddress
 
 class ClaimDomainViewModel : ViewModel() {
@@ -66,6 +63,8 @@ class ClaimDomainViewModel : ViewModel() {
         val walletAddress = WalletManager.selectedWalletAddress().toAddress()
         val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress))
             ?: throw RuntimeException("get wallet account error")
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw RuntimeException("get " +
+                "account error")
         return flowTransaction {
             script { prepare.cadence!! }
 
@@ -92,10 +91,7 @@ class ClaimDomainViewModel : ViewModel() {
                 signature(
                     FlowAddress(walletAddress),
                     account.keys.first().id,
-                    Crypto.getSigner(
-                        privateKey = Crypto.decodePrivateKey(getPrivateKey(), SignatureAlgorithm.ECDSA_SECP256k1),
-                        hashAlgo = HashAlgorithm.SHA2_256
-                    ),
+                    cryptoProvider.getSigner(),
                 )
             }
         }.buildPayerSignable()
