@@ -276,6 +276,7 @@
                 <data android:scheme="http"/>
                 <data android:scheme="https"/>
                 <data android:scheme="lilico"/>
+                <data android:host="wc"/>
                 <data android:host="link.lilico.app"/>
                 <data android:host="frw-link.lilico.app"/>
             </intent-filter>
