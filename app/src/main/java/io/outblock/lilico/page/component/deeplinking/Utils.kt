@@ -11,11 +11,6 @@ import java.net.URLDecoder
 private const val TAG = "DeepLinkingDispatch"
 
 fun dispatchDeepLinking(uri: Uri) {
-    val host = uri.host ?: return
-    if (!host.contains("lilico.app")) {
-        return
-    }
-
     ioScope { dispatchWalletConnect(uri) }
 }
 
