@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import io.outblock.lilico.databinding.FragmentWalletUnregisteredBinding
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.page.wallet.adapter.WalletAccountAdapter
+import io.outblock.lilico.page.wallet.sync.WalletSyncActivity
 import io.outblock.lilico.page.walletcreate.WalletCreateActivity
 import io.outblock.lilico.page.walletrestore.WalletRestoreActivity
 import io.outblock.lilico.utils.extensions.dp2px
@@ -52,6 +53,7 @@ class WalletUnregisteredFragment : Fragment() {
             }
             createButton.setOnClickListener { WalletCreateActivity.launch(requireContext()) }
             importButton.setOnClickListener { WalletRestoreActivity.launch(requireContext()) }
+            syncButton.setOnClickListener { WalletSyncActivity.launch(requireContext()) }
         }
     }
 }

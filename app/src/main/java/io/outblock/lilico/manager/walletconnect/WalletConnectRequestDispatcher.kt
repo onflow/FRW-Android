@@ -13,6 +13,7 @@ import com.nftco.flow.sdk.hexToBytes
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import io.outblock.lilico.base.activity.BaseActivity
+import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.app.AppLifecycleObserver
 import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.flowjvm.lastBlockAccountKeyId
@@ -26,11 +27,14 @@ import io.outblock.lilico.manager.walletconnect.model.PollingData
 import io.outblock.lilico.manager.walletconnect.model.PollingResponse
 import io.outblock.lilico.manager.walletconnect.model.ResponseStatus
 import io.outblock.lilico.manager.walletconnect.model.Service
+import io.outblock.lilico.manager.walletconnect.model.WCAccountRequest
 import io.outblock.lilico.manager.walletconnect.model.WCRequest
 import io.outblock.lilico.manager.walletconnect.model.WalletConnectMethod
+import io.outblock.lilico.manager.walletconnect.model.walletConnectWalletInfoResponse
 import io.outblock.lilico.network.functions.FUNCTION_SIGN_AS_PAYER
 import io.outblock.lilico.network.functions.executeHttpFunction
 import io.outblock.lilico.page.main.MainActivity
+import io.outblock.lilico.page.wallet.confirm.WalletConfirmationDialog
 import io.outblock.lilico.utils.Env
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
@@ -63,7 +67,39 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.USER_SIGNATURE.value -> respondUserSign()
         WalletConnectMethod.SIGN_PAYER.value -> respondSignPayer()
         WalletConnectMethod.SIGN_PROPOSER.value -> respondSignProposer()
+        WalletConnectMethod.ACCOUNT_INFO.value -> respondAccountInfo()
+        WalletConnectMethod.ADD_DEVICE_KEY.value -> respondAddDeviceKey()
     }
+}
+
+private suspend fun WCRequest.respondAddDeviceKey() {
+    val activity = topActivity() ?: return
+    val request = Gson().fromJson(params, WCAccountRequest::class.java)
+    val accountInfo = request.data
+    WalletConfirmationDialog.show(activity, requestId, topic, Gson().toJson(accountInfo) ?: "")
+}
+
+private fun WCRequest.respondAccountInfo() {
+    val account = AccountManager.get() ?: return
+    val uid = account.wallet?.id
+    if (uid.isNullOrBlank()) {
+        return
+    }
+    val response = Sign.Params.Response(
+        sessionTopic = topic,
+        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(
+            requestId, walletConnectWalletInfoResponse(
+                uid,
+                account.userInfo.avatar,
+                account.userInfo.username,
+                WalletManager.selectedWalletAddress())
+        )
+    )
+    logd(TAG, "respondAccountInfo:\n$response")
+
+    SignClient.respond(response, onSuccess = { success ->
+        logd(TAG, "success:${success}")
+    }) { error -> loge(error.throwable) }
 }
 
 private fun WCRequest.respondAuthn() {

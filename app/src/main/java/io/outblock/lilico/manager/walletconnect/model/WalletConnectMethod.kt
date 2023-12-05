@@ -8,4 +8,6 @@ enum class WalletConnectMethod(val value: String) {
     SIGN_PROPOSER("flow_sign_proposer"),
     USER_SIGNATURE("flow_user_sign"),
     ACCOUNT_PROOF("flow_account_proof"),
+    ACCOUNT_INFO("frw_account_info"),
+    ADD_DEVICE_KEY("frw_add_device_key"),
 }

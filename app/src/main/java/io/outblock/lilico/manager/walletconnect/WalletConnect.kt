@@ -114,6 +114,7 @@ private fun setup(application: Application) {
     }
 
     SignClient.setWalletDelegate(WalletConnectDelegate())
+    SignClient.setDappDelegate(WalletDappDelegate())
 
 //    RelayClient.connect { error -> logw(TAG, "connect error:$error") }
 }

@@ -91,7 +91,7 @@ private suspend fun registerOutblockUserInternal(
         callback(false, prefix)
         return
     }
-
+    logd(TAG, "SYNC Register userId:::${user.data.uid}")
     logd(TAG, "start delete user")
     registerFirebase(user) { isSuccess ->
         callback.invoke(isSuccess, prefix)

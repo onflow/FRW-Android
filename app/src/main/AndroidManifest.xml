@@ -89,6 +89,13 @@
             android:windowSoftInputMode="adjustResize"/>
 
         <activity
+            android:name=".page.wallet.sync.WalletSyncActivity"
+            android:launchMode="singleTop"/>
+
+        <activity android:name=".page.wallet.confirm.WalletConfirmActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name=".page.nft.nftdetail.NftDetailActivity"
             android:screenOrientation="portrait"/>
         <activity
