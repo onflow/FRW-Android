@@ -127,6 +127,14 @@
             android:screenOrientation="portrait"/>
 
         <activity
+            android:name="io.outblock.lilico.page.backup.WalletBackupActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name="io.outblock.lilico.page.backup.multibackup.MultiBackupActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name=".page.profile.subpage.backup.BackupManuallyActivity"
             android:screenOrientation="portrait"/>
         <activity

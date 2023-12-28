@@ -479,4 +479,15 @@
     <string name="wallet_confirmation">Wallet Confirmation</string>
     <string name="loading">Loading</string>
     <string name="loading_desc">It might take a while, please do not exit...</string>
+    <string name="create_device_backup">Create Device Backup</string>
+    <string name="google_backup_note">Note: Your Google Drive Backup will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="create_multi_backup">Create Multi-Backup</string>
+    <string name="multi_backup">Multi-Backup</string>
+    <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
+    <string name="multi_backup_note">Note: All Your Backup will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="registration_key_list">Registration KeyList</string>
+    <string name="upload_backup">Upload Backup</string>
+    <string name="backup_completed">Backup Completed</string>
+    <string name="ok">OK</string>
 </resources>

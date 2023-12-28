@@ -11,6 +11,7 @@ import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.walletconnect.WalletConnect
 import io.outblock.lilico.network.model.UserInfoData
 import io.outblock.lilico.page.address.AddressBookActivity
+import io.outblock.lilico.page.backup.WalletBackupActivity
 import io.outblock.lilico.page.dialog.accounts.AccountSwitchDialog
 import io.outblock.lilico.page.inbox.InboxActivity
 import io.outblock.lilico.page.main.HomeTab
@@ -72,7 +73,7 @@ class ProfileFragmentPresenter(
         binding.actionGroup.walletButton.setOnClickListener { WalletSettingActivity.launch(context) }
         binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
-        binding.group0.backupPreference.setOnClickListener { BackupSettingActivity.launch(context) }
+        binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }
         binding.group0.securityPreference.setOnClickListener {
             SecuritySettingActivity.launch(context)
         }
