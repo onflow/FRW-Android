@@ -30,6 +30,10 @@ class BackupStartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         with(binding) {
+            btnNext.setVisible(false)
+            btnNext.setOnClickListener {
+                backupViewModel.startBackup()
+            }
             oiGoogleDrive.setOnClickListener {
                 backupViewModel.selectOption(BackupOption.BACKUP_WITH_GOOGLE_DRIVE) { isSelected ->
                     oiGoogleDrive.changeItemStatus(isSelected)
@@ -46,11 +50,6 @@ class BackupStartFragment : Fragment() {
     }
 
     private fun checkBackupValid() {
-        with(binding.btnNext) {
-            setVisible(backupViewModel.isBackupValid())
-            setOnClickListener {
-                backupViewModel.startBackup()
-            }
-        }
+        binding.btnNext.setVisible(backupViewModel.isBackupValid())
     }
 }

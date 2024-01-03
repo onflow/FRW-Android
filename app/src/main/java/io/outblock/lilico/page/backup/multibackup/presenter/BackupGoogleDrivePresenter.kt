@@ -33,6 +33,10 @@ class BackupGoogleDrivePresenter(
         with(binding) {
             clStatusLayout.visibility = View.GONE
             btnNext.setOnClickListener {
+                if (btnNext.isProgressVisible()) {
+                    return@setOnClickListener
+                }
+                btnNext.setProgressVisible(true)
                 when (currentState) {
                     BackupGoogleDriveState.CREATE_BACKUP -> viewModel.createBackup()
                     BackupGoogleDriveState.UPLOAD_BACKUP -> {
@@ -51,10 +55,13 @@ class BackupGoogleDrivePresenter(
 
     @SuppressLint("SetTextI18n")
     override fun bind(model: BackupGoogleDriveState) {
+        currentState = model
         with(binding) {
+            btnNext.setProgressVisible(false)
             when (model) {
                 BackupGoogleDriveState.CREATE_BACKUP -> {
-                    tvOptionTitle.text = "Backup " + backupViewModel.getCurrentIndex() + ": " + "Google Drive Backup"
+                    tvOptionTitle.text = "Backup " + (backupViewModel.getCurrentIndex() + 1) + ":" +
+                            " Google Drive Backup"
                     clStatusLayout.visibility = View.GONE
                     btnNext.text = "Create Backup"
                 }

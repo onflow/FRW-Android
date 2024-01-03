@@ -181,7 +181,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
         val transaction =
             transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
-            if (state.isSealed()) {
+            if (state.isSuccess()) {
                 accountInfo?.let {
                     syncAccountInfo(it) { isSyncSuccess ->
                         if (isSyncSuccess) {

@@ -16,7 +16,7 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_gravity="center"
-            android:src=""/>
+            android:src="@drawable/ic_backup_google_drive"/>
     </FrameLayout>
 
     <ImageView

@@ -88,7 +88,7 @@ class BackupGoogleDriveViewModel : ViewModel() {
 
     fun uploadToGoogleDrive(context: Context) {
         val mnemonic = backupCryptoProvider?.getMnemonic() ?: throw RuntimeException("Mnemonic cannot be null")
-        GoogleDriveAuthActivity.backupMnemonic(context, mnemonic)
+        GoogleDriveAuthActivity.multiBackupMnemonic(context, mnemonic)
     }
 
     override fun onCleared() {

@@ -13,8 +13,6 @@ import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.page.backup.multibackup.model.BackupGoogleDriveState
 import io.outblock.lilico.page.backup.multibackup.presenter.BackupGoogleDrivePresenter
 import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
-import io.outblock.lilico.page.backup.multibackup.viewmodel.MultiBackupViewModel
-import io.outblock.lilico.utils.toast
 
 
 class BackupGoogleDriveFragment : Fragment(), OnTransactionStateChange {
@@ -41,6 +39,7 @@ class BackupGoogleDriveFragment : Fragment(), OnTransactionStateChange {
             }
         }
         TransactionStateManager.addOnTransactionStateChange(this)
+        presenter.bind(BackupGoogleDriveState.CREATE_BACKUP)
     }
 
     override fun onTransactionStateChange() {
@@ -48,7 +47,7 @@ class BackupGoogleDriveFragment : Fragment(), OnTransactionStateChange {
         val transaction =
             transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
-            if (state.isSealed()) {
+            if (state.isSuccess()) {
                 viewModel.uploadToGoogleDrive(this.requireContext())
             }
         }

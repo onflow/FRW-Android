@@ -490,4 +490,17 @@
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
+    <string name="import_wallet_note">Restore wallet from your backup history.</string>
+    <string name="from_device_backup">From Device Backup</string>
+    <string name="from_device_backup_note">Mobile or Extension Devices</string>
+    <string name="from_multi_backup">From Multi Backup</string>
+    <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
+    <string name="from_recovery_phrase">From Recovery Phrase (Old)</string>
+    <string name="from_recovery_phrase_note">The difference between 2ofN version</string>
+    <string name="multi_restore">Multi-Restore</string>
+    <string name="multi_restore_title">From Multi-Backup</string>
+    <string name="multi_restore_note">Please Select 2 or More Backup Options</string>
+    <string name="connect_to_google_drive">Connect to Google Drive</string>
+    <string name="connect_google_drive">Connect Google Drive</string>
+    <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
 </resources>

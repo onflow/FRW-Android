@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_restore_completed"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_1">
+
+    <ImageView
+        android:id="@+id/iv_option_icon_first"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="86dp"
+        android:src="@drawable/ic_backup_google_drive"
+        app:layout_constraintEnd_toStartOf="@id/iv_option_icon_plus"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:id="@+id/iv_option_icon_plus"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginHorizontal="16dp"
+        android:src="@drawable/icon_backup_option_plus"
+        app:layout_constraintBottom_toBottomOf="@id/iv_option_icon_first"
+        app:layout_constraintEnd_toStartOf="@id/iv_option_icon_second"
+        app:layout_constraintStart_toEndOf="@id/iv_option_icon_first"
+        app:layout_constraintTop_toTopOf="@id/iv_option_icon_first"/>
+
+    <ImageView
+        android:id="@+id/iv_option_icon_second"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="86dp"
+        android:src="@drawable/ic_backup_recovery_phrase"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_option_icon_plus"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_option_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center_horizontal"
+        android:text="@string/prepared_to_restore_wallet"
+        android:textColor="@color/text_1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/iv_option_icon_first"/>
+
+    <TextView
+        android:id="@+id/tv_option_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="44dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center_horizontal"
+        android:lineSpacingMultiplier="1.1"
+        android:text="@string/google_backup_note"
+        android:textColor="@color/accent_gray"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_option_title"/>
+
+    <io.outblock.lilico.widgets.LoadingMaterialButton
+        android:id="@+id/btn_next"
+        style="@style/Button"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="@dimen/activity_padding"
+        android:layout_marginBottom="@dimen/wallet_create_button_margin"
+        android:text="@string/restore_wallet"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

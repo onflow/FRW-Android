@@ -6,6 +6,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.api.services.drive.Drive
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.walletconnect.android.internal.common.crypto.sha256
 import io.outblock.lilico.BuildConfig
 import io.outblock.lilico.firebase.auth.firebaseUid
 import io.outblock.lilico.manager.account.AccountManager
@@ -21,6 +22,9 @@ private const val TAG = "GoogleDriveBackupUtils"
 private const val FILE_NAME = "outblock_google_backup"
 
 private val AES_KEY by lazy { EnvKey.get("DRIVE_AES_KEY") }
+private val AES_PASSWORD by lazy {
+    sha256(AES_KEY.toByteArray())
+}
 
 const val ACTION_GOOGLE_DRIVE_UPLOAD_FINISH = "ACTION_GOOGLE_DRIVE_UPLOAD_FINISH"
 const val ACTION_GOOGLE_DRIVE_DELETE_FINISH = "ACTION_GOOGLE_DRIVE_DELETE_FINISH"
@@ -90,7 +94,7 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 signAlgo = provider.getSignatureAlgorithm().index,
                 hashAlgo = provider.getHashAlgorithm().index,
                 updateTime = System.currentTimeMillis(),
-                data = aesEncrypt(AES_KEY, message = provider.getMnemonic())
+                data = aesEncrypt(AES_PASSWORD, AES_PASSWORD, message = provider.getMnemonic())
             )
         )
     } else {
@@ -98,12 +102,12 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
         exist.signAlgo = provider.getSignatureAlgorithm().index
         exist.hashAlgo = provider.getHashAlgorithm().index
         exist.updateTime = System.currentTimeMillis()
-        exist.data = aesEncrypt(AES_KEY, message = provider.getMnemonic())
+        exist.data = aesEncrypt(AES_PASSWORD, AES_PASSWORD, message = provider.getMnemonic())
     }
 }
 
 @WorkerThread
-fun restoreMnemonicFromGoogleDrive(driveService: Drive) {
+fun restoreFromGoogleDrive(driveService: Drive) {
     try {
         logd(TAG, "restoreMnemonicFromGoogleDrive")
         val data = existingData(driveService)
@@ -119,7 +123,7 @@ fun restoreMnemonicFromGoogleDrive(driveService: Drive) {
 
 
 @WorkerThread
-fun deleteMnemonicFromGoogleDrive(driveService: Drive) {
+fun deleteFromGoogleDrive(driveService: Drive) {
     try {
         logd(TAG, "deleteMnemonicFromGoogleDrive")
         val driveServiceHelper = DriveServerHelper(driveService)
@@ -142,6 +146,13 @@ fun deleteMnemonicFromGoogleDrive(driveService: Drive) {
         sendDeleteCallback(false)
         throw e
     }
+}
+
+fun decryptMnemonic(data: String?): String {
+    if (data == null) {
+        return ""
+    }
+    return aesDecrypt(AES_PASSWORD, AES_PASSWORD, data)
 }
 
 private fun sendCallback(isSuccess: Boolean) {

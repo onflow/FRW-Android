@@ -6,13 +6,12 @@ import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
+import io.outblock.lilico.manager.flowjvm.transaction.updateSecurityProvider
 import io.outblock.wallet.CryptoProvider
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
-import wallet.core.jni.Hash
 
-
-class BackupCryptoProvider(private val wallet: HDWallet): CryptoProvider {
+class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
 
     fun getMnemonic(): String {
         return wallet.mnemonic()
@@ -28,25 +27,19 @@ class BackupCryptoProvider(private val wallet: HDWallet): CryptoProvider {
         return publicKey.removePrefix("04")
     }
 
-    private fun getPrivateKey(): String {
-        return wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH).data().bytesToHex()
-    }
-
     override fun getUserSignature(jwt: String): String {
         return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
     }
 
     override fun signData(data: ByteArray): String {
-        val privateKey = wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH)
-        val hashedData = Hash.sha256(data)
-        val signature = privateKey.sign(hashedData, Curve.NIST256P1).dropLast(1).toByteArray()
-        return signature.bytesToHex()
+        return getSigner().sign(data).bytesToHex()
     }
 
     override fun getSigner(): Signer {
+        updateSecurityProvider()
         return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(
-                getPrivateKey(),
+                wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH).data().bytesToHex(),
                 getSignatureAlgorithm()
             ),
             hashAlgo = getHashAlgorithm()

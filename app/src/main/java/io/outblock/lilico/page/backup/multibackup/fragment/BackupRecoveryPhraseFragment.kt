@@ -57,7 +57,7 @@ class BackupRecoveryPhraseFragment : Fragment(), OnTransactionStateChange {
     private fun initPhrases() {
         with(binding.mnemonicContainer) {
             setVisible()
-            adapter = this.adapter
+            adapter = this@BackupRecoveryPhraseFragment.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
         }
@@ -66,8 +66,8 @@ class BackupRecoveryPhraseFragment : Fragment(), OnTransactionStateChange {
             viewModel.copyMnemonic()
         }
         with(binding.btnNext) {
-            setProgressVisible(true)
             setOnClickListener {
+                setProgressVisible(true)
                 viewModel.uploadToChainAndSync()
             }
         }
@@ -79,7 +79,7 @@ class BackupRecoveryPhraseFragment : Fragment(), OnTransactionStateChange {
         val transaction =
             transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
-            if (state.isSealed()) {
+            if (state.isSuccess()) {
                 viewModel.syncKeyInfo()
             }
         }

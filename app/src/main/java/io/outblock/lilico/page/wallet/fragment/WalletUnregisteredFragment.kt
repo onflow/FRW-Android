@@ -12,10 +12,9 @@ import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.page.wallet.adapter.WalletAccountAdapter
 import io.outblock.lilico.page.wallet.sync.WalletSyncActivity
 import io.outblock.lilico.page.walletcreate.WalletCreateActivity
-import io.outblock.lilico.page.walletrestore.WalletRestoreActivity
+import io.outblock.lilico.page.restore.WalletRestoreActivity
 import io.outblock.lilico.utils.extensions.dp2px
 import io.outblock.lilico.utils.extensions.gone
-import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.extensions.visible
 
 class WalletUnregisteredFragment : Fragment() {

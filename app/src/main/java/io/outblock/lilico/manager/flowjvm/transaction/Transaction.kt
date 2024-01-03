@@ -23,6 +23,7 @@ import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.vibrateTransaction
 import io.outblock.lilico.wallet.toAddress
+import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Provider
 import java.security.Security
@@ -47,6 +48,37 @@ suspend fun sendTransaction(
         logd(TAG, "sendTransaction sign envelope")
         tx = tx.addLocalSignatures()
     }
+
+    logd(TAG, "sendTransaction to flow chain")
+    val txID = FlowApi.get().sendTransaction(tx)
+    logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
+    vibrateTransaction()
+    return txID.bytes.bytesToHex()
+}
+
+suspend fun sendTransactionWithMultiSignature(
+    builder: TransactionBuilder.() -> Unit,
+    providers: List<CryptoProvider>
+): String {
+    logd(TAG, "sendTransaction prepare")
+    val voucher = prepare(TransactionBuilder().apply { builder(this) })
+
+    logd(TAG, "sendTransaction build flow transaction")
+    var tx = voucher.toFlowTransaction()
+
+    providers.forEachIndexed { index, cryptoProvider ->
+        tx = tx.addPayloadSignature(
+            tx.proposalKey.address,
+            keyIndex = index + 1,
+            cryptoProvider.getSigner()
+        )
+    }
+
+    if (tx.envelopeSignatures.isEmpty() && isGasFree()) {
+        logd(TAG, "sendTransaction request free gas envelope")
+        tx = tx.addFreeGasEnvelope()
+    }
+
 
     logd(TAG, "sendTransaction to flow chain")
     val txID = FlowApi.get().sendTransaction(tx)

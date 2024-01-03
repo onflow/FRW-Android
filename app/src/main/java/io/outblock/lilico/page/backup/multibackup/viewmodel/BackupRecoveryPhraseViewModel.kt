@@ -20,6 +20,8 @@ import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.textToClipboard
 import io.outblock.lilico.utils.toast
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import wallet.core.jni.HDWallet
 
 
@@ -33,13 +35,15 @@ class BackupRecoveryPhraseViewModel : ViewModel() {
     fun loadMnemonic() {
         ioScope {
             val str = backupCryptoProvider.getMnemonic()
-            val list = str.split(" ").mapIndexed { index, s -> MnemonicModel(index + 1, s) }
-            val result = mutableListOf<MnemonicModel>()
-            (0 until list.size / 2).forEach { i ->
-                result.add(list[i])
-                result.add(list[i + list.size / 2])
+            withContext(Dispatchers.Main) {
+                val list = str.split(" ").mapIndexed { index, s -> MnemonicModel(index + 1, s) }
+                val result = mutableListOf<MnemonicModel>()
+                (0 until list.size / 2).forEach { i ->
+                    result.add(list[i])
+                    result.add(list[i + list.size / 2])
+                }
+                mnemonicListLiveData.value = result
             }
-            mnemonicListLiveData.postValue(result)
         }
     }
 
