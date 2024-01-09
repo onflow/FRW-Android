@@ -15,7 +15,6 @@ import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.manager.backup.BackupCryptoProvider
 import io.outblock.lilico.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import io.outblock.lilico.manager.flowjvm.CadenceArgumentsBuilder
-import io.outblock.lilico.manager.flowjvm.FlowApi
 import io.outblock.lilico.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import io.outblock.lilico.manager.flowjvm.ufix64Safe
 import io.outblock.lilico.manager.transaction.OnTransactionStateChange
@@ -25,7 +24,8 @@ import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
 import io.outblock.lilico.network.generatePrefix
 import io.outblock.lilico.network.model.AccountKey
-import io.outblock.lilico.network.model.AccountSyncRequest
+import io.outblock.lilico.network.model.AccountKeySignature
+import io.outblock.lilico.network.model.AccountSignRequest
 import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.main.MainActivity
@@ -103,7 +103,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         return false
     }
 
-    fun addCompleteOption() {
+    private fun addCompleteOption() {
         if (optionList.lastOrNull() != RestoreOption.RESTORE_COMPLETED) {
             optionList.remove(RestoreOption.RESTORE_COMPLETED)
             optionList.add(RestoreOption.RESTORE_COMPLETED)
@@ -155,10 +155,20 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             try {
                 val cryptoProvider = KeyStoreCryptoProvider(KeyManager.getCurrentPrefix())
                 val service = retrofit().create(ApiService::class.java)
-                val resp = service.syncAccount(
-                    AccountSyncRequest(
+                val providers = mnemonicList.map {
+                    BackupCryptoProvider(HDWallet(it, ""))
+                }
+                val resp = service.signAccount(
+                    AccountSignRequest(
                         AccountKey(publicKey = cryptoProvider.getPublicKey()),
-                        DeviceInfoManager.getDeviceInfoRequest()
+                        providers.map {
+                            val jwt = getFirebaseJwt()
+                            AccountKeySignature(
+                                publicKey = it.getPublicKey(),
+                                signMessage = jwt,
+                                signature = it.getUserSignature(jwt)
+                            )
+                        }.toList()
                     )
                 )
                 if (resp.status == 200) {
@@ -258,7 +268,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         restoreAddress = address
     }
 
-    suspend fun String.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+    private suspend fun String.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val providers = mnemonicList.map {
             BackupCryptoProvider(HDWallet(it, ""))

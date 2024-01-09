@@ -64,9 +64,9 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
             val keyDeviceInfo = response.data.result ?: emptyList()
             uiScope {
                 keyList.forEach { accountKey ->
-                    keyDeviceInfo.find { it.pubKey?.publicKey == accountKey.publicKey.base16Value }
+                    keyDeviceInfo.find { it.pubKey.publicKey == accountKey.publicKey.base16Value }
                         ?.let {
-                            accountKey.deviceName = it.device?.device_name ?: ""
+                            accountKey.deviceName = it.backupInfo?.name ?: it.device?.device_name ?: ""
                         }
                 }
                 keyListLiveData.value = keyList
@@ -78,7 +78,7 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
     override fun onTransactionStateChange() {
         val transactionList = TransactionStateManager.getTransactionStateList()
         val transaction =
-            transactionList.firstOrNull { it.type == TransactionState.TYPE_REVOKE_KEY }
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_REVOKE_KEY }
         transaction?.let { state ->
             keyList.firstOrNull { it.id == AccountKeyManager.getRevokingIndexId() }?.let { key ->
                 keyList[keyList.indexOf(key)] = key.copy(

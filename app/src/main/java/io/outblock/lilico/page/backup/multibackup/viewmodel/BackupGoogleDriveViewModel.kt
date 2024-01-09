@@ -16,23 +16,28 @@ import io.outblock.lilico.manager.drive.GoogleDriveAuthActivity
 import io.outblock.lilico.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import io.outblock.lilico.manager.flowjvm.transactionByMainWallet
 import io.outblock.lilico.manager.flowjvm.ufix64Safe
+import io.outblock.lilico.manager.transaction.OnTransactionStateChange
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.model.AccountKey
 import io.outblock.lilico.network.model.AccountSyncRequest
+import io.outblock.lilico.network.model.BackupInfoRequest
 import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.backup.multibackup.model.BackupGoogleDriveState
+import io.outblock.lilico.page.backup.model.BackupType
 import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
 import io.outblock.lilico.utils.Env
 import io.outblock.lilico.utils.ioScope
 import wallet.core.jni.HDWallet
 
 
-class BackupGoogleDriveViewModel : ViewModel() {
+class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
 
     val backupStateLiveData = MutableLiveData<BackupGoogleDriveState>()
+    val uploadMnemonicLiveData = MutableLiveData<String>()
     private var backupCryptoProvider: BackupCryptoProvider? = null
+    private var currentTxId: String? = null
 
     private val uploadReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent?) {
@@ -48,6 +53,7 @@ class BackupGoogleDriveViewModel : ViewModel() {
     }
 
     init {
+        TransactionStateManager.addOnTransactionStateChange(this)
         LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
             uploadReceiver, IntentFilter(
                 ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
@@ -77,6 +83,7 @@ class BackupGoogleDriveViewModel : ViewModel() {
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
+                    currentTxId = txId
                     TransactionStateManager.newTransaction(transactionState)
                     pushBubbleStack(transactionState)
                 } catch (e: Exception) {
@@ -84,11 +91,6 @@ class BackupGoogleDriveViewModel : ViewModel() {
                 }
             }
         }
-    }
-
-    fun uploadToGoogleDrive(context: Context) {
-        val mnemonic = backupCryptoProvider?.getMnemonic() ?: throw RuntimeException("Mnemonic cannot be null")
-        GoogleDriveAuthActivity.multiBackupMnemonic(context, mnemonic)
     }
 
     override fun onCleared() {
@@ -110,7 +112,11 @@ class BackupGoogleDriveViewModel : ViewModel() {
                                 hashAlgo = it.getHashAlgorithm().index,
                                 weight = it.getKeyWeight()
                             ),
-                            deviceInfo
+                            deviceInfo,
+                            BackupInfoRequest(
+                                name = BackupType.GOOGLE_DRIVE.displayName,
+                                type = BackupType.GOOGLE_DRIVE.index
+                            )
                         )
                     )
                     if (resp.status == 200) {
@@ -121,6 +127,18 @@ class BackupGoogleDriveViewModel : ViewModel() {
                 } catch (e: Exception) {
                     backupStateLiveData.postValue(BackupGoogleDriveState.NETWORK_ERROR)
                 }
+            }
+        }
+    }
+
+    override fun onTransactionStateChange() {
+        val transactionList = TransactionStateManager.getTransactionStateList()
+        val transaction =
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
+        transaction?.let { state ->
+            if (currentTxId == state.transactionId && state.isSuccess()) {
+                val mnemonic = backupCryptoProvider?.getMnemonic() ?: throw RuntimeException("Mnemonic cannot be null")
+                uploadMnemonicLiveData.postValue(mnemonic)
             }
         }
     }

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import io.outblock.lilico.databinding.FragmentBackupGoogleDriveBinding
+import io.outblock.lilico.manager.drive.GoogleDriveAuthActivity
 import io.outblock.lilico.manager.transaction.OnTransactionStateChange
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
@@ -15,7 +16,7 @@ import io.outblock.lilico.page.backup.multibackup.presenter.BackupGoogleDrivePre
 import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
 
 
-class BackupGoogleDriveFragment : Fragment(), OnTransactionStateChange {
+class BackupGoogleDriveFragment : Fragment() {
 
     private lateinit var binding: FragmentBackupGoogleDriveBinding
     private lateinit var presenter: BackupGoogleDrivePresenter
@@ -37,21 +38,11 @@ class BackupGoogleDriveFragment : Fragment(), OnTransactionStateChange {
             backupStateLiveData.observe(viewLifecycleOwner) {
                 presenter.bind(it)
             }
-        }
-        TransactionStateManager.addOnTransactionStateChange(this)
-        presenter.bind(BackupGoogleDriveState.CREATE_BACKUP)
-    }
-
-    override fun onTransactionStateChange() {
-        val transactionList = TransactionStateManager.getTransactionStateList()
-        val transaction =
-            transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
-        transaction?.let { state ->
-            if (state.isSuccess()) {
-                viewModel.uploadToGoogleDrive(this.requireContext())
+            uploadMnemonicLiveData.observe(viewLifecycleOwner) {
+                presenter.uploadMnemonic(it)
             }
         }
+        presenter.bind(BackupGoogleDriveState.CREATE_BACKUP)
     }
-
 
 }

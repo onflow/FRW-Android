@@ -483,6 +483,8 @@
     <string name="google_backup_note">Note: Your Google Drive Backup will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="create_multi_backup">Create Multi-Backup</string>
     <string name="multi_backup">Multi-Backup</string>
+    <string name="device_backup">Device Backup</string>
+    <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
     <string name="multi_backup_note">Note: All Your Backup will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
@@ -503,4 +505,5 @@
     <string name="connect_to_google_drive">Connect to Google Drive</string>
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
+    <string name="view_all">View All</string>
 </resources>

@@ -8,9 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import io.outblock.lilico.databinding.FragmentBackupRecoveryPhraseBinding
-import io.outblock.lilico.manager.transaction.OnTransactionStateChange
-import io.outblock.lilico.manager.transaction.TransactionState
-import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupRecoveryPhraseViewModel
 import io.outblock.lilico.page.backup.multibackup.viewmodel.MultiBackupViewModel
 import io.outblock.lilico.page.walletcreate.fragments.mnemonic.MnemonicAdapter
@@ -18,7 +15,7 @@ import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.widgets.itemdecoration.GridSpaceItemDecoration
 
 
-class BackupRecoveryPhraseFragment : Fragment(), OnTransactionStateChange {
+class BackupRecoveryPhraseFragment : Fragment() {
 
     private lateinit var binding: FragmentBackupRecoveryPhraseBinding
     private lateinit var viewModel: BackupRecoveryPhraseViewModel
@@ -50,7 +47,6 @@ class BackupRecoveryPhraseFragment : Fragment(), OnTransactionStateChange {
             }
 
         }
-        TransactionStateManager.addOnTransactionStateChange(this)
         initPhrases()
     }
 
@@ -72,16 +68,5 @@ class BackupRecoveryPhraseFragment : Fragment(), OnTransactionStateChange {
             }
         }
         viewModel.loadMnemonic()
-    }
-
-    override fun onTransactionStateChange() {
-        val transactionList = TransactionStateManager.getTransactionStateList()
-        val transaction =
-            transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
-        transaction?.let { state ->
-            if (state.isSuccess()) {
-                viewModel.syncKeyInfo()
-            }
-        }
     }
 }

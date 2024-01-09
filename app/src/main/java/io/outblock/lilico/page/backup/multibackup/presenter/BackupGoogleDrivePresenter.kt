@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import io.outblock.lilico.R
 import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.databinding.FragmentBackupGoogleDriveBinding
+import io.outblock.lilico.manager.drive.GoogleDriveAuthActivity
 import io.outblock.lilico.page.backup.multibackup.model.BackupGoogleDriveState
 import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
 import io.outblock.lilico.page.backup.multibackup.viewmodel.MultiBackupViewModel
@@ -107,5 +108,9 @@ class BackupGoogleDrivePresenter(
                 }
             }
         }
+    }
+
+    fun uploadMnemonic(mnemonic: String) {
+        GoogleDriveAuthActivity.multiBackupMnemonic(fragment.requireContext(), mnemonic)
     }
 }

@@ -4,18 +4,21 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivityWalletBackupBinding
-import io.outblock.lilico.page.backup.multibackup.MultiBackupActivity
-import io.outblock.lilico.page.profile.subpage.about.AboutActivity
+import io.outblock.lilico.page.backup.presenter.WalletBackupPresenter
+import io.outblock.lilico.page.backup.viewmodel.WalletBackupViewModel
 import io.outblock.lilico.utils.isNightMode
 
 
 class WalletBackupActivity: BaseActivity() {
 
     private lateinit var binding: ActivityWalletBackupBinding
+    private lateinit var viewModel: WalletBackupViewModel
+    private lateinit var presenter: WalletBackupPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,14 +26,15 @@ class WalletBackupActivity: BaseActivity() {
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
 
-        with(binding) {
-            cvCreateDeviceBackup.setOnClickListener {
-
+        presenter = WalletBackupPresenter(this, binding)
+        viewModel = ViewModelProvider(this)[WalletBackupViewModel::class.java].apply {
+            backupListLiveData.observe(this@WalletBackupActivity) {
+                presenter.bindBackupList(it)
             }
-
-            cvCreateMultiBackup.setOnClickListener {
-                MultiBackupActivity.launch(this@WalletBackupActivity)
+            devicesLiveData.observe(this@WalletBackupActivity) {
+                presenter.bindDeviceList(it)
             }
+            loadData()
         }
         setupToolbar()
     }

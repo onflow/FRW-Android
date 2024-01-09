@@ -6,12 +6,15 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.api.services.drive.Drive
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.nftco.flow.sdk.FlowAddress
 import com.walletconnect.android.internal.common.crypto.sha256
 import io.outblock.lilico.BuildConfig
 import io.outblock.lilico.firebase.auth.firebaseUid
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.drive.DriveServerHelper
 import io.outblock.lilico.manager.env.EnvKey
+import io.outblock.lilico.manager.flowjvm.lastBlockAccount
+import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.utils.Env
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.loge
@@ -19,7 +22,7 @@ import io.outblock.lilico.utils.secret.aesDecrypt
 import io.outblock.lilico.utils.secret.aesEncrypt
 
 private const val TAG = "GoogleDriveBackupUtils"
-private const val FILE_NAME = "outblock_google_backup"
+private const val FILE_NAME = "outblock_multi_backup"
 
 private val AES_KEY by lazy { EnvKey.get("DRIVE_AES_KEY") }
 private val AES_PASSWORD by lazy {
@@ -82,6 +85,8 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
     val account = AccountManager.get() ?: throw RuntimeException("Account cannot be null")
     val wallet = account.wallet ?: throw RuntimeException("Wallet cannot be null")
     val exist = data.firstOrNull { it.userId == wallet.id }
+    val blockAccount = FlowAddress(wallet.walletAddress().orEmpty()).lastBlockAccount()
+    val keyIndex = blockAccount?.keys?.findLast { provider.getPublicKey() == it.publicKey.base16Value }?.id
     if (exist == null) {
         data.add(
             0,
@@ -93,6 +98,7 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 publicKey = provider.getPublicKey(),
                 signAlgo = provider.getSignatureAlgorithm().index,
                 hashAlgo = provider.getHashAlgorithm().index,
+                keyIndex = keyIndex ?: 0,
                 updateTime = System.currentTimeMillis(),
                 data = aesEncrypt(AES_PASSWORD, AES_PASSWORD, message = provider.getMnemonic())
             )
@@ -101,6 +107,7 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
         exist.publicKey = provider.getPublicKey()
         exist.signAlgo = provider.getSignatureAlgorithm().index
         exist.hashAlgo = provider.getHashAlgorithm().index
+        exist.keyIndex = keyIndex ?: 0
         exist.updateTime = System.currentTimeMillis()
         exist.data = aesEncrypt(AES_PASSWORD, AES_PASSWORD, message = provider.getMnemonic())
     }

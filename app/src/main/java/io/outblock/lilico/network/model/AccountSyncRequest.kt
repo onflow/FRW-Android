@@ -8,5 +8,8 @@ data class AccountSyncRequest(
     val accountKey: AccountKey,
 
     @SerializedName("device_info")
-    val deviceInfo: DeviceInfoRequest?
+    val deviceInfo: DeviceInfoRequest? = null,
+
+    @SerializedName("backup_info")
+    val backupInfo: BackupInfoRequest? = null
 )

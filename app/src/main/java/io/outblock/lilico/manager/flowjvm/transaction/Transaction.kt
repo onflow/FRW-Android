@@ -3,6 +3,7 @@ package io.outblock.lilico.manager.flowjvm.transaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.DomainTag
+import com.nftco.flow.sdk.FlowAccountKey
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowId
@@ -61,15 +62,22 @@ suspend fun sendTransactionWithMultiSignature(
     providers: List<CryptoProvider>
 ): String {
     logd(TAG, "sendTransaction prepare")
-    val voucher = prepare(TransactionBuilder().apply { builder(this) })
+    val transBuilder = TransactionBuilder().apply { builder(this) }
+    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")
+    val restoreProposalKey = account.keys.first { providers.first().getPublicKey() == it.publicKey.base16Value }
+    val voucher = prepareWithMultiSignature(
+        walletAddress = account.address.base16Value,
+        restoreProposalKey = restoreProposalKey,
+        builder = transBuilder,
+    )
 
     logd(TAG, "sendTransaction build flow transaction")
     var tx = voucher.toFlowTransaction()
 
-    providers.forEachIndexed { index, cryptoProvider ->
+    providers.forEach { cryptoProvider ->
         tx = tx.addPayloadSignature(
             tx.proposalKey.address,
-            keyIndex = index + 1,
+            keyIndex = account.keys.first { cryptoProvider.getPublicKey() == it.publicKey.base16Value }.id,
             cryptoProvider.getSigner()
         )
     }
@@ -127,6 +135,28 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
             address = account.address.base16Value,
             keyId = account.keys.first().id,
             sequenceNum = account.keys.first().sequenceNumber,
+        ),
+        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+    )
+}
+
+private suspend fun prepareWithMultiSignature(
+    walletAddress: String,
+    restoreProposalKey: FlowAccountKey,
+    builder: TransactionBuilder
+): Voucher {
+    logd(TAG, "prepare builder:$builder")
+
+    return Voucher(
+        arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },
+        cadence = builder.script,
+        computeLimit = builder.limit ?: 9999,
+        payer = builder.payer
+            ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress),
+        proposalKey = ProposalKey(
+            address = walletAddress,
+            keyId = restoreProposalKey.id,
+            sequenceNum = restoreProposalKey.sequenceNumber,
         ),
         refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
     )
@@ -259,7 +289,10 @@ private fun AsArgument.toBytes(): ByteArray {
 private fun AsArgument.isObjectValue(): Boolean {
     // is map or list
     return runCatching {
-        Gson().fromJson<Map<String, Any>>(value.toString(), object : TypeToken<Map<String, Any>>() {}.type)
+        Gson().fromJson<Map<String, Any>>(
+            value.toString(),
+            object : TypeToken<Map<String, Any>>() {}.type
+        )
     }.getOrNull() != null || runCatching {
         Gson().fromJson<List<Any>>(value.toString(), object : TypeToken<List<Any>>() {}.type)
     }.getOrNull() != null

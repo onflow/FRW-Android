@@ -33,6 +33,9 @@ interface ApiService {
     @POST("/v3/sync")
     suspend fun syncAccount(@Body params: AccountSyncRequest): CommonResponse
 
+    @POST("/v3/signed")
+    suspend fun signAccount(@Body params: AccountSignRequest): CommonResponse
+
     @GET("/v1/account/info")
     suspend fun getAddressInfo(@Query("address") address: String): AddressInfoResponse
 

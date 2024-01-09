@@ -20,6 +20,8 @@ class BackupItem(
     var signAlgo: Int,
     @SerializedName("hashAlgo")
     var hashAlgo: Int,
+    @SerializedName("keyIndex")
+    var keyIndex: Int,
     @SerializedName("updateTime")
     var updateTime: Long,
     @SerializedName("data")
