@@ -1,41 +1,38 @@
-package io.outblock.lilico.page.restore
+package io.outblock.lilico.page.backup.device
 
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.result.ActivityResultLauncher
+import com.journeyapps.barcodescanner.ScanOptions
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
-import io.outblock.lilico.databinding.ActivityWalletRestoreBinding
-import io.outblock.lilico.page.restore.multirestore.MultiRestoreActivity
-import io.outblock.lilico.page.wallet.sync.WalletSyncActivity
+import io.outblock.lilico.databinding.ActivityCreateDeviceBackupBinding
+import io.outblock.lilico.page.scan.dispatchScanResult
 import io.outblock.lilico.utils.isNightMode
+import io.outblock.lilico.utils.launch
+import io.outblock.lilico.utils.registerBarcodeLauncher
 
 
-class WalletRestoreActivity : BaseActivity() {
+class CreateDeviceBackupActivity: BaseActivity() {
 
-    private lateinit var binding: ActivityWalletRestoreBinding
+    private lateinit var binding: ActivityCreateDeviceBackupBinding
+
+    private lateinit var barcodeLauncher: ActivityResultLauncher<ScanOptions>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityWalletRestoreBinding.inflate(layoutInflater)
+        barcodeLauncher = registerBarcodeLauncher { result -> dispatchScanResult(this, result.orEmpty()) }
+        binding = ActivityCreateDeviceBackupBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
 
-        with(binding) {
-            llImportFromDevice.setOnClickListener {
-                WalletSyncActivity.launch(this@WalletRestoreActivity)
-            }
-
-            llImportFromBackup.setOnClickListener {
-                MultiRestoreActivity.launch(this@WalletRestoreActivity)
-            }
-
-            llImportFromRecoveryPhrase.setOnClickListener {
-                io.outblock.lilico.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
-            }
+        binding.llScan.setOnClickListener {
+            barcodeLauncher.launch()
         }
+
         setupToolbar()
     }
 
@@ -51,12 +48,11 @@ class WalletRestoreActivity : BaseActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        title = ""
     }
 
     companion object {
         fun launch(context: Context) {
-            context.startActivity(Intent(context, WalletRestoreActivity::class.java))
+            context.startActivity(Intent(context, CreateDeviceBackupActivity::class.java))
         }
     }
 }

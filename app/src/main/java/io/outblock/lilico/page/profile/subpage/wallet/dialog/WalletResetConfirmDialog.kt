@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.outblock.lilico.databinding.DialogResetWalletConfirmBinding
 import io.outblock.lilico.manager.wallet.WalletManager
-import io.outblock.lilico.page.walletrestore.WalletRestoreActivity
+import io.outblock.lilico.page.restore.WalletRestoreActivity
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.uiScope
 

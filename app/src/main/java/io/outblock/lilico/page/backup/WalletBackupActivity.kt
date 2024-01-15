@@ -34,9 +34,13 @@ class WalletBackupActivity: BaseActivity() {
             devicesLiveData.observe(this@WalletBackupActivity) {
                 presenter.bindDeviceList(it)
             }
-            loadData()
         }
         setupToolbar()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadData()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -2,6 +2,7 @@ package io.outblock.lilico.page.profile.presenter
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.TransitionManager
+import com.instabug.library.Instabug
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import io.outblock.lilico.R
 import io.outblock.lilico.base.presenter.BasePresenter
@@ -104,8 +105,9 @@ class ProfileFragmentPresenter(
             )
         }
 
-        binding.group4.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
-        binding.group5.switchAccountPreference.setOnClickListener {
+        binding.group4.bugReport.setOnClickListener { Instabug.show() }
+        binding.group5.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
+        binding.group6.switchAccountPreference.setOnClickListener {
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
 
@@ -149,13 +151,8 @@ class ProfileFragmentPresenter(
 
     private fun updatePreferenceState() {
         ioScope {
-            val isBackupGoogleDrive = isBackupGoogleDrive()
             val isSignIn = isRegistered()
             uiScope {
-                with(binding.group0.backupPreference) {
-                    setStateVisible(isBackupGoogleDrive)
-                    setDesc(R.string.manually.res2String())
-                }
                 with(binding) {
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)

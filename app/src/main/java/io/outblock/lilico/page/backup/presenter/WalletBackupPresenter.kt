@@ -4,6 +4,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import io.outblock.lilico.databinding.ActivityWalletBackupBinding
 import io.outblock.lilico.page.backup.BackupListAdapter
 import io.outblock.lilico.page.backup.WalletBackupActivity
+import io.outblock.lilico.page.backup.device.CreateDeviceBackupActivity
 import io.outblock.lilico.page.backup.multibackup.MultiBackupActivity
 import io.outblock.lilico.utils.extensions.setVisible
 
@@ -26,7 +27,7 @@ class WalletBackupPresenter(
         }
         with(binding) {
             cvCreateDeviceBackup.setOnClickListener {
-
+                CreateDeviceBackupActivity.launch(activity)
             }
             cvCreateMultiBackup.setOnClickListener {
                 MultiBackupActivity.launch(activity)

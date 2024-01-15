@@ -24,7 +24,12 @@ class WalletRestoreActivity : BaseActivity() {
         contentPresenter = WalletRestoreContentPresenter(this, binding)
 
         viewModel = ViewModelProvider(this)[WalletRestoreViewModel::class.java].apply {
-            onStepChangeLiveData.observe(this@WalletRestoreActivity, { contentPresenter.bind(WalletRestoreContentModel(changeStep = it)) })
+            onStepChangeLiveData.observe(this@WalletRestoreActivity) {
+                contentPresenter.bind(
+                    WalletRestoreContentModel(changeStep = it)
+                )
+            }
+            changeStep(WALLET_RESTORE_STEP_MNEMONIC)
         }
 
         setupToolbar()

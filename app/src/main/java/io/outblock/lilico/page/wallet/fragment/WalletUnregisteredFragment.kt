@@ -52,7 +52,6 @@ class WalletUnregisteredFragment : Fragment() {
             }
             createButton.setOnClickListener { WalletCreateActivity.launch(requireContext()) }
             importButton.setOnClickListener { WalletRestoreActivity.launch(requireContext()) }
-            syncButton.setOnClickListener { WalletSyncActivity.launch(requireContext()) }
         }
     }
 }

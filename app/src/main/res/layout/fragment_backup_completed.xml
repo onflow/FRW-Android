@@ -22,6 +22,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginHorizontal="16dp"
+        android:visibility="gone"
         android:src="@drawable/icon_backup_option_plus"
         app:layout_constraintTop_toTopOf="@id/iv_option_icon_first"
         app:layout_constraintBottom_toBottomOf="@id/iv_option_icon_first"
@@ -34,6 +35,7 @@
         android:layout_height="80dp"
         android:layout_marginTop="86dp"
         android:src="@drawable/ic_backup_recovery_phrase"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/iv_option_icon_plus"
         app:layout_constraintTop_toTopOf="parent"/>

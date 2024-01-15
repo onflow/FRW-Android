@@ -12,6 +12,7 @@ import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.retrofit
+import io.outblock.lilico.page.backup.BackupListManager
 import io.outblock.lilico.page.backup.model.BackupKey
 import io.outblock.lilico.page.backup.model.BackupListTitle
 import io.outblock.lilico.utils.uiScope
@@ -34,7 +35,7 @@ class WalletBackupViewModel: ViewModel(), OnTransactionStateChange {
 
     fun loadData() {
         loadBackupList()
-//        loadDevices()
+        loadDevices()
     }
 
     private fun loadBackupList() {
@@ -43,23 +44,25 @@ class WalletBackupViewModel: ViewModel(), OnTransactionStateChange {
             val response = service.getKeyDeviceInfo()
             val backupKeyList = response.data.result?.filter { it.backupInfo != null }
             if (backupKeyList.isNullOrEmpty()) {
+                BackupListManager.clear()
                 backupListLiveData.postValue(emptyList())
                 return@viewModelIOScope
             }
             val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
             uiScope {
                 val keys = account?.keys ?: emptyList()
-                backupList.addAll(
-                    backupKeyList.mapNotNull { info ->
-                        keys.lastOrNull { info.pubKey.publicKey == it.publicKey.base16Value && it.revoked.not() }?.let {
-                            BackupKey(
-                                it.id,
-                                info,
-                                isRevoking = false
-                            )
-                        }
+                val keyList = backupKeyList.mapNotNull { info ->
+                    keys.lastOrNull { info.pubKey.publicKey == it.publicKey.base16Value && it.revoked.not() }?.let {
+                        BackupKey(
+                            it.id,
+                            info,
+                            isRevoking = false
+                        )
                     }
-                )
+                }
+                BackupListManager.setBackupTypeList(keyList)
+                backupList.clear()
+                backupList.addAll(keyList)
                 if (backupList.size > 0) {
                     backupList.add(0, BackupListTitle.MULTI_BACKUP)
                 }

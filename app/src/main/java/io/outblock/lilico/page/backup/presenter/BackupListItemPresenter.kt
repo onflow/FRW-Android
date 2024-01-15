@@ -6,6 +6,7 @@ import androidx.fragment.app.FragmentActivity
 import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.base.recyclerview.BaseViewHolder
 import io.outblock.lilico.databinding.LayoutBackupInfoItemBinding
+import io.outblock.lilico.page.backup.BackupDetailActivity
 import io.outblock.lilico.page.backup.model.BackupKey
 import io.outblock.lilico.page.backup.model.BackupType
 import io.outblock.lilico.page.profile.subpage.wallet.key.AccountKeyRevokeDialog
@@ -29,8 +30,8 @@ class BackupListItemPresenter(private val view: View) : BaseViewHolder(view),
                 tvBackupOs.text = it.user_agent
                 tvBackupLocation.text = it.city + ", " + it.countryCode + " · " + formatGMTToDate(it.updated_at)
             }
-            clBackupLayout.setOnClickListener {
-//                BackupInfoActivity.launch(view.context, model)
+            clBackupContentLayout.setOnClickListener {
+                BackupDetailActivity.launch(view.context, model)
             }
             tvDelete.setOnClickListener {
                 if (model.isRevoking) {

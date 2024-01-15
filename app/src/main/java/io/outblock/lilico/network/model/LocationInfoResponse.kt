@@ -51,9 +51,9 @@ data class KeyDeviceInfo(
         @SerializedName("public_key")
         val publicKey: String,
         @SerializedName("sign_algo")
-        val signAlgo: String,
+        val signAlgo: Int,
         @SerializedName("weight")
-        val weight: String,
+        val weight: Int,
     )
 }
 

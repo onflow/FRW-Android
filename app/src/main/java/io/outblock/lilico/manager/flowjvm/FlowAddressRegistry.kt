@@ -28,6 +28,6 @@ internal class FlowAddressRegistry {
     fun addressRegistry() = AddressRegistry().apply {
         register(NETWORK_MAINNET)
         register(NETWORK_TESTNET)
-        register(NETWORK_SANDBOX)
+//        register(NETWORK_SANDBOX)
     }
 }

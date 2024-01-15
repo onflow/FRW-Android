@@ -2,6 +2,7 @@ package io.outblock.lilico.page.backup.multibackup.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import io.outblock.lilico.page.backup.BackupListManager
 import io.outblock.lilico.page.backup.multibackup.model.BackupOption
 import io.outblock.lilico.page.backup.multibackup.model.BackupOptionModel
 
@@ -29,7 +30,7 @@ class MultiBackupViewModel : ViewModel() {
     }
 
     fun isBackupValid(): Boolean {
-        return optionList.size >= 2
+        return optionList.size + BackupListManager.backupCount() >= 2
     }
 
     fun startBackup() {

@@ -33,6 +33,7 @@
         </FrameLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_backup_content_layout"
             android:layout_width="match_parent"
             android:layout_height="98dp"
             android:background="@drawable/bg_round_16dp"

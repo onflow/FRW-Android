@@ -4,7 +4,9 @@ import android.view.View
 import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.base.recyclerview.BaseViewHolder
 import io.outblock.lilico.databinding.LayoutBackupTitleItemBinding
+import io.outblock.lilico.page.backup.device.CreateDeviceBackupActivity
 import io.outblock.lilico.page.backup.model.BackupListTitle
+import io.outblock.lilico.page.backup.multibackup.MultiBackupActivity
 import io.outblock.lilico.page.profile.subpage.wallet.device.DevicesActivity
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
@@ -25,6 +27,13 @@ class BackupListTitlePresenter(private val view: View) : BaseViewHolder(view),
             configureAction(model == BackupListTitle.OTHER_DEVICES)
             tvViewAll.setOnClickListener {
                 DevicesActivity.launch(view.context)
+            }
+            ivAdd.setOnClickListener {
+                if (model == BackupListTitle.DEVICE_BACKUP) {
+                    CreateDeviceBackupActivity.launch(view.context)
+                } else if (model == BackupListTitle.MULTI_BACKUP) {
+                    MultiBackupActivity.launch(view.context)
+                }
             }
         }
     }

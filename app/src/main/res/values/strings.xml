@@ -506,4 +506,12 @@
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
+    <string name="create_device_backup_title">Scan to Sync Extension Wallet</string>
+    <string name="create_device_backup_note">Scan QR code shown by the Flow Reference Browser extension to sync your wallet.</string>
+    <string name="scan_desktop_device">Scan Desktop Device</string>
+    <string name="backup_detail">Backup Detail</string>
+    <string name="backup_info">Backup Info</string>
+    <string name="key_location">Key Location</string>
+    <string name="delete_backup">Delete Backup</string>
+    <string name="bug_report">Bug Report</string>
 </resources>

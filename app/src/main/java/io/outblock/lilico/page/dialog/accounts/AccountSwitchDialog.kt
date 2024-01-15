@@ -10,9 +10,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import io.outblock.lilico.databinding.DialogAccountSwitchBinding
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.page.dialog.accounts.adapter.AccountListAdapter
+import io.outblock.lilico.page.restore.WalletRestoreActivity
 import io.outblock.lilico.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import io.outblock.lilico.page.walletcreate.WalletCreateActivity
-import io.outblock.lilico.page.walletrestore.WalletRestoreActivity
 
 class AccountSwitchDialog : BottomSheetDialogFragment() {
 
