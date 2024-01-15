@@ -58,20 +58,6 @@ object AccountManager {
 
     fun userInfo() = get()?.userInfo
 
-    fun updateUserKeyIndex(username: String, prefix: String) {
-        ioScope {
-            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
-            if (account == null || account.keys.isEmpty()) {
-                return@ioScope
-            }
-            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
-            val publicKey = cryptoProvider.getPublicKey()
-            val index = account.keys.find { it.publicKey.base16Value == publicKey }?.id ?: 0
-            list().firstOrNull { it.userInfo.username == username }?.keyIndex = index
-            accountsCache().cache(Accounts().apply { addAll(accounts) })
-        }
-    }
-
     fun updateUserInfo(userInfo: UserInfoData) {
         list().firstOrNull { it.userInfo.username == userInfo.username }?.userInfo = userInfo
         accountsCache().cache(Accounts().apply { addAll(accounts) })
@@ -80,6 +66,7 @@ object AccountManager {
     fun updateWalletInfo(wallet: WalletListData) {
         list().firstOrNull { it.userInfo.username == wallet.username }?.wallet = wallet
         accountsCache().cache(Accounts().apply { addAll(accounts) })
+        updateKeyIndex(wallet.username)
         WalletManager.walletUpdate()
         uploadPushToken()
     }
@@ -129,6 +116,20 @@ object AccountManager {
                 onFinish()
             }
 
+        }
+    }
+
+    private fun updateKeyIndex(username: String) {
+        ioScope {
+            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+            if (account == null || account.keys.isEmpty()) {
+                return@ioScope
+            }
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
+            val publicKey = cryptoProvider.getPublicKey()
+            val index = account.keys.find { it.publicKey.base16Value == publicKey }?.id ?: 0
+            list().firstOrNull { it.userInfo.username == username }?.keyIndex = index
+            accountsCache().cache(Accounts().apply { addAll(accounts) })
         }
     }
 

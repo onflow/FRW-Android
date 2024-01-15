@@ -116,7 +116,10 @@ interface ApiService {
     // @doc https://docs.cryptowat.ch/rest-api/
     // @example https://api.cryptowat.ch/markets/binance/btcusdt/price
     @GET("/v1/crypto/map")
-    suspend fun price(@Query("provider") market: String, @Query("pair") coinPair: String): CryptowatchPriceResponse
+    suspend fun price(
+        @Query("provider") market: String,
+        @Query("pair") coinPair: String
+    ): CryptowatchPriceResponse
 
     // @doc https://docs.cryptowat.ch/rest-api/markets/ohlc
     // @example https://api.cryptowat.ch/markets/binance/btcusdt/ohlc
@@ -132,11 +135,17 @@ interface ApiService {
 
     // @example https://api.cryptowat.ch/markets/binance/flowusdt/summary
     @GET("/v1/crypto/summary")
-    suspend fun summary(@Query("provider") market: String, @Query("pair") coinPair: String): CryptowatchSummaryResponse
+    suspend fun summary(
+        @Query("provider") market: String,
+        @Query("pair") coinPair: String
+    ): CryptowatchSummaryResponse
 
-    @POST("/v1/account/query")
-    @JvmSuppressWildcards
-    suspend fun flowScanQuery(@Body params: String): String
+    @GET("/v2/account/query")
+    suspend fun flowScanQuery(
+        @Query("address") walletAddress: String,
+        @Query("limit") limit: Int = 25,
+        @Query("after") after: String = "",
+    ): TransferCountResponse
 
     @GET("/v1/flowns/prepare")
     suspend fun claimDomainPrepare(): ClaimDomainPrepareResponse

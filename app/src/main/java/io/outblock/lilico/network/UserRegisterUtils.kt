@@ -32,7 +32,7 @@ import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.setMeowDomainClaimed
 import io.outblock.lilico.utils.setRegistered
 import io.outblock.lilico.utils.toast
-import io.outblock.lilico.utils.updateAccountTransactionCountLocal
+import io.outblock.lilico.utils.updateAccountTransferCount
 import io.outblock.lilico.wallet.Wallet
 import io.outblock.lilico.wallet.createWalletFromServer
 import io.outblock.wallet.KeyManager
@@ -63,7 +63,6 @@ suspend fun registerOutblock(
                             prefix = prefix
                         )
                     )
-                    AccountManager.updateUserKeyIndex(service.userInfo().data.username, prefix)
                     continuation.resume(true)
                 } else {
                     resumeAccount()
@@ -195,6 +194,6 @@ suspend fun clearUserCache() {
     BalanceManager.clear()
     StakingManager.clear()
     CryptoProviderManager.clear()
-    updateAccountTransactionCountLocal(0)
+    updateAccountTransferCount(0)
     delay(1000)
 }

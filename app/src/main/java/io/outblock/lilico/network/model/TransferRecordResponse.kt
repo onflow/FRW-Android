@@ -20,8 +20,35 @@ data class TransferRecordResponse(
         val total: Int?,
         @SerializedName("transactions")
         val transactions: List<TransferRecord>?
-    ) {
+    )
+}
 
+data class TransferCountResponse(
+    @SerializedName("data")
+    val data: Data?,
+    @SerializedName("message")
+    val message: String?,
+    @SerializedName("status")
+    val status: Int?
+) {
+    data class Data(
+        @SerializedName("data")
+        val data: ParticipationData?,
+    ) {
+        data class ParticipationData(
+            @SerializedName("participations_aggregate")
+            val participationAggregate: ParticipationAggregate?
+        ) {
+            data class ParticipationAggregate(
+                @SerializedName("aggregate")
+                val aggregate: Aggregate?
+            ) {
+                data class Aggregate(
+                    @SerializedName("count")
+                    val count: Int
+                )
+            }
+        }
     }
 }
 

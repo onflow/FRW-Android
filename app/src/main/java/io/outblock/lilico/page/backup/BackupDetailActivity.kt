@@ -46,7 +46,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
         super.onCreate(savedInstanceState)
         TransactionStateManager.addOnTransactionStateChange(this)
         binding = ActivityBackupDetailBinding.inflate(layoutInflater)
-        UltimateBarX.with(this).fitWindow(false).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
+        setContentView(binding.root)
         setupToolbar()
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment

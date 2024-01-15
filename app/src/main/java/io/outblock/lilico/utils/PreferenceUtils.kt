@@ -44,7 +44,6 @@ private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
 private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
-private val KEY_ACCOUNT_TRANSACTION_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSACTION_COUNT")
 private val KEY_ACCOUNT_TRANSFER_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSFER_COUNT")
 private const val KEY_IS_GUIDE_PAGE_SHOWN = "KEY_IS_GUIDE_PAGE_SHOWN"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
@@ -167,12 +166,6 @@ suspend fun isFreeGasPreferenceEnable(): Boolean = dataStore.data.map { it[KEY_F
 
 suspend fun setFreeGasPreferenceEnable(isEnable: Boolean) {
     dataStore.edit { it[KEY_FREE_GAS_ENABLE] = isEnable }
-}
-
-suspend fun getAccountTransactionCountLocal(): Int = dataStore.data.map { it[KEY_ACCOUNT_TRANSACTION_COUNT] ?: 0 }.first()
-
-suspend fun updateAccountTransactionCountLocal(count: Int) {
-    dataStore.edit { it[KEY_ACCOUNT_TRANSACTION_COUNT] = count }
 }
 
 suspend fun getAccountTransferCount(): Int = dataStore.data.map { it[KEY_ACCOUNT_TRANSFER_COUNT] ?: 0 }.first()

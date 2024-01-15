@@ -3,6 +3,7 @@ package io.outblock.lilico.page.walletrestore
 import androidx.annotation.WorkerThread
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.nftco.flow.sdk.FlowAddress
 import io.outblock.lilico.R
 import io.outblock.lilico.firebase.auth.deleteAnonymousUser
 import io.outblock.lilico.firebase.auth.firebaseCustomLogin
@@ -11,7 +12,10 @@ import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.DeviceInfoManager
+import io.outblock.lilico.manager.flowjvm.lastBlockAccount
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.key.HDWalletCryptoProvider
+import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
 import io.outblock.lilico.network.model.AccountKey

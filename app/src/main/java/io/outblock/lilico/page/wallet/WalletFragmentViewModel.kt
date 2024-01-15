@@ -25,13 +25,13 @@ import io.outblock.lilico.page.profile.subpage.currency.model.selectedCurrency
 import io.outblock.lilico.page.profile.subpage.wallet.ChildAccountCollectionManager
 import io.outblock.lilico.page.wallet.model.WalletCoinItemModel
 import io.outblock.lilico.page.wallet.model.WalletHeaderModel
-import io.outblock.lilico.utils.getAccountTransactionCountLocal
+import io.outblock.lilico.utils.getAccountTransferCount
 import io.outblock.lilico.utils.getCurrencyFlag
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.isHideWalletBalance
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.uiScope
-import io.outblock.lilico.utils.updateAccountTransactionCountLocal
+import io.outblock.lilico.utils.updateAccountTransferCount
 import io.outblock.lilico.utils.viewModelIOScope
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -156,12 +156,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private suspend fun loadTransactionCount() {
         val count = flowScanAccountTransferCountQuery() + TransactionStateManager.getProcessingTransaction().size
-        val localCount = getAccountTransactionCountLocal()
+        val localCount = getAccountTransferCount()
         if (count < localCount) {
             logd(TAG, "loadTransactionCount remote count < local count:$count < $localCount")
             return
         }
-        updateAccountTransactionCountLocal(count)
+        updateAccountTransferCount(count)
         updateWalletHeader()
     }
 
@@ -191,7 +191,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             headerLiveData.postValue(header.copy().apply {
                 balance = dataList.toList().map { it.balance * it.coinRate }.sum()
                 count?.let { coinCount = it }
-                transactionCount = getAccountTransactionCountLocal()
+                transactionCount = getAccountTransferCount()
             })
         }
     }

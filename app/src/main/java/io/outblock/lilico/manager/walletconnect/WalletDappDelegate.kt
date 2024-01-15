@@ -174,7 +174,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                         AccountManager.add(
                                             Account(
                                                 userInfo = service.userInfo().data,
-                                                prefix = prefix
+                                                prefix = prefix,
                                             )
                                         )
                                         clearUserCache()

@@ -55,6 +55,7 @@ class TransferRecordItemPresenter(
         statusView.text = transfer.status
     }
 
+    @SuppressLint("StringFormatInvalid")
     private fun ItemTransferRecordBinding.bindAddress(transfer: TransferRecord) {
         val str = if (transfer.transferType == TRANSFER_TYPE_SEND) {
             view.context.getString(R.string.to_address, transfer.receiver)
