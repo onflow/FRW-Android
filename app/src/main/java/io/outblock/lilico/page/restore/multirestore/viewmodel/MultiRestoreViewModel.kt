@@ -1,5 +1,6 @@
 package io.outblock.lilico.page.restore.multirestore.viewmodel
 
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.ktx.auth
@@ -7,6 +8,7 @@ import com.google.firebase.ktx.Firebase
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
+import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.firebase.auth.getFirebaseJwt
 import io.outblock.lilico.manager.account.Account
@@ -20,6 +22,7 @@ import io.outblock.lilico.manager.flowjvm.ufix64Safe
 import io.outblock.lilico.manager.transaction.OnTransactionStateChange
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
+import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.clearUserCache
 import io.outblock.lilico.network.generatePrefix
@@ -126,6 +129,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun restoreWallet() {
+        if (WalletManager.wallet()?.walletAddress() == restoreAddress) {
+            toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
+            val activity = BaseActivity.getCurrentActivity() ?: return
+            activity.finish()
+            return
+        }
         ioScope {
             try {
                 val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))

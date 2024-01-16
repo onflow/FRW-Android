@@ -514,4 +514,7 @@
     <string name="key_location">Key Location</string>
     <string name="delete_backup">Delete Backup</string>
     <string name="bug_report">Bug Report</string>
+    <string name="wallet_already_logged_in">This wallet is already logged in</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="add_other_device">Add Other Device</string>
 </resources>

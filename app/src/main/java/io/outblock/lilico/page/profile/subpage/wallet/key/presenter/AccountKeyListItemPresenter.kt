@@ -14,7 +14,6 @@ import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.findActivity
 import io.outblock.lilico.utils.toast
-import java.util.Locale
 
 class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view),
     BasePresenter<AccountKey> {

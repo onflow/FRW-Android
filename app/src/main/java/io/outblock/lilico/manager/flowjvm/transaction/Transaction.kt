@@ -72,7 +72,7 @@ suspend fun sendTransactionWithMultiSignature(
     )
 
     logd(TAG, "sendTransaction build flow transaction")
-    var tx = voucher.toFlowTransaction()
+    var tx = voucher.toFlowMultiTransaction()
 
     providers.forEach { cryptoProvider ->
         tx = tx.addPayloadSignature(
@@ -201,6 +201,33 @@ fun FlowTransaction.buildPayerSignable(): PayerSignable? {
 
 fun FlowTransaction.encodeTransactionPayload(): String {
     return (DomainTag.TRANSACTION_DOMAIN_TAG + canonicalPayload).bytesToHex()
+}
+
+fun Voucher.toFlowMultiTransaction(): FlowTransaction {
+    val transaction = this
+    return flowTransaction {
+        script { transaction.cadence.orEmpty() }
+
+        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { FlowArgument(it) }.toMutableList()
+
+        referenceBlockId = FlowId(transaction.refBlock.orEmpty())
+
+        gasLimit = computeLimit ?: 9999
+
+        proposalKey {
+            address = FlowAddress(transaction.proposalKey.address.orEmpty())
+            keyIndex = transaction.proposalKey.keyId ?: 0
+            sequenceNumber = transaction.proposalKey.sequenceNum ?: 0
+        }
+
+        if (transaction.authorizers.isNullOrEmpty()) {
+            authorizers(mutableListOf(FlowAddress(transaction.proposalKey.address.orEmpty())))
+        } else {
+            authorizers(transaction.authorizers.map { FlowAddress(it) }.toMutableList())
+        }
+
+        payerAddress = FlowAddress(transaction.payer.orEmpty())
+    }
 }
 
 fun Voucher.toFlowTransaction(): FlowTransaction {

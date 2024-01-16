@@ -41,6 +41,18 @@
         app:layout_constraintTop_toBottomOf="@id/tv_multi_backup_note"
         app:option_item_icon="@drawable/ic_backup_google_drive"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/inter"
+        android:textSize="14sp"
+        android:textColor="@color/text_2"
+        android:text="@string/google_drive"
+        app:layout_constraintTop_toBottomOf="@id/oi_google_drive"
+        app:layout_constraintStart_toStartOf="@id/oi_google_drive"
+        app:layout_constraintEnd_toEndOf="@id/oi_google_drive"/>
+
     <io.outblock.lilico.page.backup.multibackup.view.BackupOptionItem
         android:id="@+id/oi_recovery_phrase"
         android:layout_width="110dp"
@@ -49,6 +61,18 @@
         app:layout_constraintStart_toEndOf="@id/oi_google_drive"
         app:layout_constraintTop_toTopOf="@id/oi_google_drive"
         app:option_item_icon="@drawable/ic_backup_recovery_phrase"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/inter"
+        android:textSize="14sp"
+        android:textColor="@color/text_2"
+        android:text="@string/recovery_phrase"
+        app:layout_constraintTop_toBottomOf="@id/oi_recovery_phrase"
+        app:layout_constraintStart_toStartOf="@id/oi_recovery_phrase"
+        app:layout_constraintEnd_toEndOf="@id/oi_recovery_phrase"/>
 
     <io.outblock.lilico.widgets.LoadingMaterialButton
         android:id="@+id/btn_next"
