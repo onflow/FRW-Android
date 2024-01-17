@@ -13,7 +13,9 @@ import io.outblock.lilico.page.profile.subpage.wallet.key.model.AccountKey
 import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.findActivity
+import io.outblock.lilico.utils.textToClipboard
 import io.outblock.lilico.utils.toast
+import io.outblock.lilico.wallet.Wallet
 
 class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view),
     BasePresenter<AccountKey> {
@@ -77,6 +79,10 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
                 AccountKeyRevokeDialog.show(
                     findActivity(view) as FragmentActivity, model.id
                 )
+            }
+            ivKeyCopy.setOnClickListener {
+                textToClipboard(model.publicKey.base16Value)
+                toast(msgRes = R.string.copied_to_clipboard)
             }
         }
     }

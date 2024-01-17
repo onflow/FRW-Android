@@ -48,7 +48,7 @@
                 app:layout_constraintEnd_toEndOf="@id/cv_title_card"
                 app:layout_constraintStart_toStartOf="@id/cv_title_card"
                 app:layout_constraintTop_toBottomOf="@id/cv_title_card"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <ImageView
                     android:id="@+id/iv_key_public"
@@ -73,8 +73,10 @@
 
                 <ImageView
                     android:id="@+id/iv_key_copy"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="0dp"
                     android:src="@drawable/ic_key_list_copy"
                     app:layout_constraintBottom_toBottomOf="@id/iv_key_public"
                     app:layout_constraintEnd_toEndOf="parent"
