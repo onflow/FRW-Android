@@ -4,14 +4,12 @@ import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowAddress
 import io.outblock.lilico.R
 import io.outblock.lilico.cache.CacheManager
 import io.outblock.lilico.firebase.auth.getFirebaseJwt
 import io.outblock.lilico.firebase.auth.isAnonymousSignIn
 import io.outblock.lilico.firebase.auth.signInAnonymously
 import io.outblock.lilico.firebase.messaging.uploadPushToken
-import io.outblock.lilico.manager.flowjvm.lastBlockAccount
 import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
@@ -66,7 +64,6 @@ object AccountManager {
     fun updateWalletInfo(wallet: WalletListData) {
         list().firstOrNull { it.userInfo.username == wallet.username }?.wallet = wallet
         accountsCache().cache(Accounts().apply { addAll(accounts) })
-        updateKeyIndex(wallet.username)
         WalletManager.walletUpdate()
         uploadPushToken()
     }
@@ -116,20 +113,6 @@ object AccountManager {
                 onFinish()
             }
 
-        }
-    }
-
-    private fun updateKeyIndex(username: String) {
-        ioScope {
-            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
-            if (account == null || account.keys.isEmpty()) {
-                return@ioScope
-            }
-            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
-            val publicKey = cryptoProvider.getPublicKey()
-            val index = account.keys.find { it.publicKey.base16Value == publicKey }?.id ?: 0
-            list().firstOrNull { it.userInfo.username == username }?.keyIndex = index
-            accountsCache().cache(Accounts().apply { addAll(accounts) })
         }
     }
 
@@ -193,9 +176,7 @@ data class Account(
     @SerializedName("wallet")
     var wallet: WalletListData? = null,
     @SerializedName("prefix")
-    var prefix: String? = null,
-    @SerializedName("keyIndex")
-    var keyIndex: Int = 0
+    var prefix: String? = null
 )
 
 class Accounts : ArrayList<Account>()

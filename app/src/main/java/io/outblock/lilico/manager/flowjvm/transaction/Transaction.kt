@@ -98,9 +98,10 @@ suspend fun sendTransactionWithMultiSignature(
 private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw Exception("Crypto Provider is null")
     try {
+        // if user pay the gas, payer.address == proposal.address, payer.keyIndex == proposalKeyIndex
         return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
             payerAddress,
-            keyIndex = AccountManager.get()?.keyIndex ?: 0,
+            keyIndex = proposalKey.keyIndex,
             cryptoProvider.getSigner()
         )
     } catch (e: Exception) {
@@ -126,6 +127,11 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
     logd(TAG, "prepare builder:$builder")
     val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(builder.walletAddress?.toAddress().orEmpty()))
         ?: throw RuntimeException("get wallet account error")
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+        ?: throw RuntimeException("get account error")
+    val currentKey =
+        account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
+            ?: throw RuntimeException("get account key error")
     return Voucher(
         arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },
         cadence = builder.script,
@@ -133,8 +139,8 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
         payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress),
         proposalKey = ProposalKey(
             address = account.address.base16Value,
-            keyId = account.keys.first().id,
-            sequenceNum = account.keys.first().sequenceNumber,
+            keyId = currentKey.id,
+            sequenceNum = currentKey.sequenceNumber,
         ),
         refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
     )

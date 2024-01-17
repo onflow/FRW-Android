@@ -63,8 +63,11 @@ class ClaimDomainViewModel : ViewModel() {
         val walletAddress = WalletManager.selectedWalletAddress().toAddress()
         val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress))
             ?: throw RuntimeException("get wallet account error")
-        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw RuntimeException("get " +
-                "account error")
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            ?: throw RuntimeException("get account error")
+        val currentKey =
+            account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
+                ?: throw RuntimeException("get account key error")
         return flowTransaction {
             script { prepare.cadence!! }
 
@@ -79,8 +82,8 @@ class ClaimDomainViewModel : ViewModel() {
 
             proposalKey {
                 address = FlowAddress(walletAddress)
-                keyIndex = account.keys.first().id
-                sequenceNumber = account.keys.first().sequenceNumber
+                keyIndex = currentKey.id
+                sequenceNumber = currentKey.sequenceNumber
             }
 
             authorizers(listOf(walletAddress, prepare.lilicoServerAddress!!, prepare.flownsServerAddress!!).map { FlowAddress(it) }.toMutableList())
@@ -90,7 +93,7 @@ class ClaimDomainViewModel : ViewModel() {
             addPayloadSignatures {
                 signature(
                     FlowAddress(walletAddress),
-                    account.keys.first().id,
+                    currentKey.id,
                     cryptoProvider.getSigner(),
                 )
             }
