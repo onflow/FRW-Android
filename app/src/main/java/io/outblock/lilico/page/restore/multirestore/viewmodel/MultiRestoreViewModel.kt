@@ -155,6 +155,9 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 pushBubbleStack(transactionState)
             } catch (e: Exception) {
                 loge(e)
+                toast(msgRes = R.string.restore_failed, duration = Toast.LENGTH_LONG)
+                val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+                activity.finish()
             }
         }
     }
