@@ -61,6 +61,7 @@ suspend fun sendTransactionWithMultiSignature(
     builder: TransactionBuilder.() -> Unit,
     providers: List<CryptoProvider>
 ): String {
+    updateSecurityProvider()
     logd(TAG, "sendTransaction prepare")
     val transBuilder = TransactionBuilder().apply { builder(this) }
     val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")

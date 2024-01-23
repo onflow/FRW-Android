@@ -36,7 +36,7 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     }
 
     override fun getSigner(): Signer {
-        updateSecurityProvider()
+//        updateSecurityProvider()
         return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(
                 wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH).data().bytesToHex(),

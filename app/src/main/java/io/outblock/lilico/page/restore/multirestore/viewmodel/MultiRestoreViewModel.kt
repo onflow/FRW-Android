@@ -135,6 +135,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             activity.finish()
             return
         }
+        val account = AccountManager.list().firstOrNull { it.wallet?.walletAddress() == restoreAddress }
+        if (account != null) {
+            AccountManager.switch(account){}
+            return
+        }
         ioScope {
             try {
                 val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
