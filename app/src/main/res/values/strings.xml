@@ -77,7 +77,7 @@
     <string name="your_phrase">your phrase</string>
     <string name="create_wallet">Create Wallet</string>
     <string name="cancel">Cancel</string>
-    <string name="username_format_wrong">"Your username can only contain letters, numbers and '_'"</string>
+    <string name="username_format_wrong">"Your username can only contain letters and numbers"</string>
     <string name="encrypt_backup">Encrypt Backup</string>
     <string name="done">Done</string>
     <string name="biometrics">Biometrics</string>

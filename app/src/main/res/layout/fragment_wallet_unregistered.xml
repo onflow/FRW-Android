@@ -30,9 +30,9 @@
             android:layout_marginTop="16dp"
             android:fontFamily="@font/montsettat"
             android:gravity="center"
-            android:text="@string/app_short_name"
+            android:text="@string/app_full_name"
             android:textColor="@color/text_2"
-            android:textSize="30sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@id/desc_view"
             app:layout_constraintTop_toBottomOf="@id/ifv_logo"/>
