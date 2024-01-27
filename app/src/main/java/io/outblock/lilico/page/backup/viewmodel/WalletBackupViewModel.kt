@@ -42,7 +42,7 @@ class WalletBackupViewModel: ViewModel(), OnTransactionStateChange {
         viewModelIOScope(this) {
             val service = retrofit().create(ApiService::class.java)
             val response = service.getKeyDeviceInfo()
-            val backupKeyList = response.data.result?.filter { it.backupInfo != null }
+            val backupKeyList = response.data.result?.filter { it.backupInfo != null && it.backupInfo.type >= 0}
             if (backupKeyList.isNullOrEmpty()) {
                 BackupListManager.clear()
                 backupListLiveData.postValue(emptyList())

@@ -1,3 +1,3 @@
 rootProject.name = "FlowRef"
 include ':app', ':wallet'
-project(':wallet').projectDir = new File('../Flow-Wallet-Core/Android/wallet')
+project(':wallet').projectDir = new File('../Flow-Wallet-Kit/Android/wallet')

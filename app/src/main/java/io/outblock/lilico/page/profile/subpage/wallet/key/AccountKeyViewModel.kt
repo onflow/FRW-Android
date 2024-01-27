@@ -66,7 +66,7 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
                 keyList.forEach { accountKey ->
                     keyDeviceInfo.find { it.pubKey.publicKey == accountKey.publicKey.base16Value }
                         ?.let {
-                            accountKey.deviceName = it.backupInfo?.name ?: it.device?.device_name ?: ""
+                            accountKey.deviceName = it.backupInfo?.name.takeIf { name -> !name.isNullOrEmpty() } ?: it.device?.device_name ?: ""
                         }
                 }
                 keyListLiveData.value = keyList

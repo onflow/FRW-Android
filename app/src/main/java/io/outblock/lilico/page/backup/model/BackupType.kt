@@ -18,7 +18,7 @@ enum class BackupType(val index: Int, val displayName: String, val iconRes: Int)
 
         @JvmStatic
         fun getBackupIcon(type: Int): Int {
-            return values().firstOrNull { it.index == type }?.iconRes ?: -1
+            return values().firstOrNull { it.index == type }?.iconRes ?: R.drawable.ic_settings_backup
         }
 
         @JvmStatic
