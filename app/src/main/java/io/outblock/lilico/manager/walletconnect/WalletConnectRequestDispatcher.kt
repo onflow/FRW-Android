@@ -16,7 +16,7 @@ import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.app.AppLifecycleObserver
 import io.outblock.lilico.manager.config.AppConfig
-import io.outblock.lilico.manager.flowjvm.lastBlockAccountKeyId
+import io.outblock.lilico.manager.flowjvm.currentKeyId
 import io.outblock.lilico.manager.flowjvm.transaction.PayerSignable
 import io.outblock.lilico.manager.flowjvm.transaction.SignPayerResponse
 import io.outblock.lilico.manager.flowjvm.transaction.Signable
@@ -106,7 +106,11 @@ private fun WCRequest.respondAuthn() {
     val address = WalletManager.selectedWalletAddress()
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
-    val services = walletConnectAuthnServiceResponse(address, signable.data?.get("nonce"), signable.data?.get("appIdentifier"), isFromFclSdk())
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+    val keyId = cryptoProvider?.let {
+        FlowAddress(address).currentKeyId(it.getPublicKey())
+    } ?: 0
+    val services = walletConnectAuthnServiceResponse(address, keyId, signable.data?.get("nonce"), signable.data?.get("appIdentifier"), isFromFclSdk())
     val response = Sign.Params.Response(
         sessionTopic = topic,
         jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services.responseParse(this))
@@ -146,7 +150,7 @@ private suspend fun WCRequest.respondAuthz() {
             ioScope {
                 val address = WalletManager.selectedWalletAddress()
                 val signature = cryptoProvider.signData(message.hexToBytes())
-                val keyId = FlowAddress(address).lastBlockAccountKeyId()
+                val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
 
                 if (isApprove) approve(fclAuthzResponse(address, signature, keyId)) else reject()
                 uiScope { FclAuthzDialog.dismiss() }
