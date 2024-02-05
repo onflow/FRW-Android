@@ -33,7 +33,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
 
     val mnemonicListLiveData = MutableLiveData<List<MnemonicModel>>()
 
-    private val backupCryptoProvider: BackupCryptoProvider = BackupCryptoProvider(HDWallet(128, ""))
+    private val backupCryptoProvider: BackupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
 
     private var currentTxId: String? = null
 

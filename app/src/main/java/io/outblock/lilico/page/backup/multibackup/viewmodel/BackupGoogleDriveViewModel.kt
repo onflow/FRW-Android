@@ -62,7 +62,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun createBackup() {
-        backupCryptoProvider = BackupCryptoProvider(HDWallet(128, ""))
+        backupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
         backupStateLiveData.postValue(BackupGoogleDriveState.UPLOAD_BACKUP)
     }
 
