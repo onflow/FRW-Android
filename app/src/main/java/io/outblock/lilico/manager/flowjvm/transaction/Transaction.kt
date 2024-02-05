@@ -314,6 +314,16 @@ fun updateSecurityProvider() {
     Security.insertProviderAt(BouncyCastleProvider(), 1)
 }
 
+/**
+ * fix: java.security.NoSuchProviderException: no such provider: BC
+ */
+fun checkSecurityProvider() {
+    val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
+    if (provider == null) {
+        Security.addProvider(BouncyCastleProvider())
+    }
+}
+
 private fun AsArgument.toBytes(): ByteArray {
     return if (isObjectValue()) {
         """{"type":"$type","value":${value}}""".toByteArray()

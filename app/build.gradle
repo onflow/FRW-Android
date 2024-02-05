@@ -55,10 +55,11 @@ android {
             minifyEnabled true
             shrinkResources true
             multiDexEnabled false
-            debuggable false
+            debuggable true
             applicationIdSuffix = ".dev"
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            matchingFallbacks = ['debug', 'qa', 'release']
         }
 
         release {

@@ -517,6 +517,9 @@
     <string name="wallet_already_logged_in">This wallet is already logged in</string>
     <string name="google_drive">Google Drive</string>
     <string name="add_other_device">Add Other Device</string>
-    <string name="restore_failed">Restore failed. Ensure backup options belong to the same
+    <string name="restore_failed">Restore failed. Please try again later.</string>
+    <string name="restore_failed_option">Restore failed. Ensure backup options belong to the same
         wallet.</string>
+    <string name="revoke_device">Revoke Device</string>
+    <string name="revoke_device_failed">Cannot revoke current device.</string>
 </resources>

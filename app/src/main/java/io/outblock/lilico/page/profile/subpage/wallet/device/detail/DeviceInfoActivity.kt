@@ -12,15 +12,23 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.nftco.flow.sdk.FlowAddress
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivityDeviceInfoBinding
+import io.outblock.lilico.manager.flowjvm.lastBlockAccount
+import io.outblock.lilico.manager.wallet.WalletManager
+import io.outblock.lilico.network.ApiService
+import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceModel
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.formatGMTToDate
+import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.isNightMode
+import io.outblock.lilico.utils.toast
+import io.outblock.lilico.utils.uiScope
 import org.joda.time.DateTimeUtils
 
 
@@ -30,7 +38,6 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback {
 
     private var deviceModel: DeviceModel? = null
     private lateinit var mMap: GoogleMap
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +63,40 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback {
             tvDeviceIp.text = deviceModel.ip
             tvDeviceLocation.text = deviceModel.city + ", " + deviceModel.countryCode
             tvDeviceDate.text = formatGMTToDate(deviceModel.updated_at)
+
+            btnRevoke.setOnClickListener {
+                if (btnRevoke.isProgressVisible()) {
+                    return@setOnClickListener
+                }
+                btnRevoke.setProgressVisible(true)
+                revokeLastKeyOfDevice(deviceModel.id)
+            }
+        }
+    }
+
+    private fun revokeLastKeyOfDevice(deviceId: String) {
+        //fetch keys from service and chain
+        ioScope {
+            val service = retrofit().create(ApiService::class.java)
+            val response = service.getKeyDeviceInfo()
+            val keyDeviceInfo = response.data.result ?: emptyList()
+//            uiScope {
+//                keyList.forEach { accountKey ->
+//                    keyDeviceInfo.find { it.pubKey.publicKey == accountKey.publicKey.base16Value }
+//                        ?.let {
+//                            accountKey.deviceName = it.backupInfo?.name.takeIf { name -> !name.isNullOrEmpty() } ?: it.device?.device_name ?: ""
+//                        }
+//                }
+//                keyListLiveData.value = keyList
+//            }
+            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+//            if (account == null || account.keys.isEmpty()) {
+//                toast(msgRes = R.string.revoke_device_failed)
+//                binding.btnRevoke.setProgressVisible(false)
+//                return@ioScope
+//            }
+            val keys = account?.keys ?: emptyList()
+            keyDeviceInfo.map { it.device?.id == deviceId }.map {  }
         }
     }
 

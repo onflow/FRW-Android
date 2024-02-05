@@ -22,7 +22,6 @@ import io.outblock.lilico.page.profile.model.ProfileFragmentModel
 import io.outblock.lilico.page.profile.subpage.about.AboutActivity
 import io.outblock.lilico.page.profile.subpage.accountsetting.AccountSettingActivity
 import io.outblock.lilico.page.profile.subpage.avatar.ViewAvatarActivity
-import io.outblock.lilico.page.profile.subpage.backup.BackupSettingActivity
 import io.outblock.lilico.page.profile.subpage.claimdomain.MeowDomainClaimedStateChangeListener
 import io.outblock.lilico.page.profile.subpage.claimdomain.observeMeowDomainClaimedStateChange
 import io.outblock.lilico.page.profile.subpage.currency.CurrencyListActivity
@@ -41,7 +40,6 @@ import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.getCurrencyFlag
 import io.outblock.lilico.utils.getNotificationSettingIntent
 import io.outblock.lilico.utils.ioScope
-import io.outblock.lilico.utils.isBackupGoogleDrive
 import io.outblock.lilico.utils.isMeowDomainClaimed
 import io.outblock.lilico.utils.isNightMode
 import io.outblock.lilico.utils.isNotificationPermissionGrand

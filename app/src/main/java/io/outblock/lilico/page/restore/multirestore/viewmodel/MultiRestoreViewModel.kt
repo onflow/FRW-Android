@@ -61,6 +61,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private var restoreUserName = ""
     private var restoreAddress = ""
     private val mnemonicList = mutableListOf<String>()
+    private var currentTxId: String? = null
 
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
@@ -156,11 +157,16 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                     data = ""
                 )
+                currentTxId = txId
                 TransactionStateManager.newTransaction(transactionState)
                 pushBubbleStack(transactionState)
             } catch (e: Exception) {
                 loge(e)
-                toast(msgRes = R.string.restore_failed, duration = Toast.LENGTH_LONG)
+                if (e is NoSuchElementException) {
+                    toast(msgRes = R.string.restore_failed_option, duration = Toast.LENGTH_LONG)
+                } else {
+                    toast(msgRes = R.string.restore_failed, duration = Toast.LENGTH_LONG)
+                }
                 val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
                 activity.finish()
             }
@@ -233,11 +239,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                         if (resp.data?.customToken.isNullOrBlank()) {
-                            if (resp.status == 404) {
-                                callback.invoke(false)
-                            } else {
-                                callback.invoke(false)
-                            }
+                            callback.invoke(false)
                         } else {
                             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
                                 if (isSuccess) {
@@ -305,12 +307,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     override fun onTransactionStateChange() {
         val transactionList = TransactionStateManager.getTransactionStateList()
         val transaction =
-            transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
-            if (state.isSuccess()) {
+            if (currentTxId == state.transactionId && state.isSuccess()) {
                 syncAccountInfo()
             }
         }
     }
-
 }

@@ -46,6 +46,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
     private val requestId by lazy { arguments?.getLong(EXTRA_REQUEST_ID) ?: 0L }
     private lateinit var binding: DialogWalletConfirmationBinding
     private var accountInfo: WCAccountInfo? = null
+    private var currentTxId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -138,6 +139,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
                 type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                 data = ""
             )
+            currentTxId = txId
             TransactionStateManager.newTransaction(transactionState)
             pushBubbleStack(transactionState)
             return true
@@ -179,9 +181,9 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
     override fun onTransactionStateChange() {
         val transactionList = TransactionStateManager.getTransactionStateList()
         val transaction =
-            transactionList.firstOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
-            if (state.isSuccess()) {
+            if (currentTxId == state.transactionId && state.isSuccess()) {
                 accountInfo?.let {
                     syncAccountInfo(it) { isSyncSuccess ->
                         if (isSyncSuccess) {

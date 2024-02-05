@@ -53,7 +53,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             .build()
         mClient = GoogleSignIn.getClient(this, signInOptions)
 
-        if (isRestoreWithSignOut || isMultiRestoreWithSignOut) {
+        if (isRestoreWithSignOut || isMultiRestoreWithSignOut || isMultiBackup) {
             signOutAndSignInAgain()
         } else {
             mClient?.let {
