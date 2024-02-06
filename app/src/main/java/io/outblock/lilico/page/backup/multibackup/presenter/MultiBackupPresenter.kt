@@ -8,7 +8,7 @@ import io.outblock.lilico.R
 import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.page.backup.multibackup.MultiBackupActivity
 import io.outblock.lilico.page.backup.multibackup.fragment.BackupCompletedFragment
-import io.outblock.lilico.page.backup.multibackup.fragment.BackupGoogleDriveFragment
+import io.outblock.lilico.page.backup.multibackup.fragment.BackupGoogleDriveWithPinFragment
 import io.outblock.lilico.page.backup.multibackup.fragment.BackupRecoveryPhraseFragment
 import io.outblock.lilico.page.backup.multibackup.fragment.BackupStartFragment
 import io.outblock.lilico.page.backup.multibackup.model.BackupOption
@@ -29,7 +29,7 @@ class MultiBackupPresenter(private val activity: MultiBackupActivity) :
         val transition = createTransition(currentModel, model)
         val fragment = when (model.option) {
             BackupOption.BACKUP_START -> BackupStartFragment()
-            BackupOption.BACKUP_WITH_GOOGLE_DRIVE -> BackupGoogleDriveFragment()
+            BackupOption.BACKUP_WITH_GOOGLE_DRIVE -> BackupGoogleDriveWithPinFragment()
             BackupOption.BACKUP_WITH_RECOVERY_PHRASE -> BackupRecoveryPhraseFragment()
             BackupOption.BACKUP_COMPLETED -> BackupCompletedFragment()
         }

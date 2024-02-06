@@ -12,7 +12,6 @@ import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.manager.backup.BackupCryptoProvider
 import io.outblock.lilico.manager.drive.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
 import io.outblock.lilico.manager.drive.EXTRA_SUCCESS
-import io.outblock.lilico.manager.drive.GoogleDriveAuthActivity
 import io.outblock.lilico.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import io.outblock.lilico.manager.flowjvm.transactionByMainWallet
 import io.outblock.lilico.manager.flowjvm.ufix64Safe
@@ -139,6 +138,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
             if (currentTxId == state.transactionId && state.isSuccess()) {
                 val mnemonic = backupCryptoProvider?.getMnemonic() ?: throw RuntimeException("Mnemonic cannot be null")
                 uploadMnemonicLiveData.postValue(mnemonic)
+                currentTxId = null
             }
         }
     }

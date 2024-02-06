@@ -11,9 +11,9 @@ import io.outblock.lilico.databinding.FragmentBackupGoogleDriveBinding
 import io.outblock.lilico.manager.drive.GoogleDriveAuthActivity
 import io.outblock.lilico.page.backup.multibackup.model.BackupGoogleDriveState
 import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
-import io.outblock.lilico.page.backup.multibackup.viewmodel.MultiBackupViewModel
+import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
 import io.outblock.lilico.utils.extensions.res2color
-import io.outblock.lilico.utils.ioScope
+import io.outblock.lilico.utils.getPinCode
 
 class BackupGoogleDrivePresenter(
     private val fragment: Fragment,
@@ -24,8 +24,8 @@ class BackupGoogleDrivePresenter(
         ViewModelProvider(fragment)[BackupGoogleDriveViewModel::class.java]
     }
 
-    private val backupViewModel by lazy {
-        ViewModelProvider(fragment.requireActivity())[MultiBackupViewModel::class.java]
+    private val withPinViewModel by lazy {
+        ViewModelProvider(fragment.requireParentFragment())[BackupGoogleDriveWithPinViewModel::class.java]
     }
 
     private var currentState = BackupGoogleDriveState.CREATE_BACKUP
@@ -48,7 +48,7 @@ class BackupGoogleDrivePresenter(
                     }
                     BackupGoogleDriveState.REGISTRATION_KEY_LIST -> viewModel.registrationKeyList()
                     BackupGoogleDriveState.NETWORK_ERROR -> viewModel.registrationKeyList()
-                    BackupGoogleDriveState.BACKUP_SUCCESS -> backupViewModel.toNext()
+                    BackupGoogleDriveState.BACKUP_SUCCESS -> withPinViewModel.backupFinish()
                 }
             }
         }
@@ -61,7 +61,7 @@ class BackupGoogleDrivePresenter(
             btnNext.setProgressVisible(false)
             when (model) {
                 BackupGoogleDriveState.CREATE_BACKUP -> {
-                    tvOptionTitle.text = "Backup " + (backupViewModel.getCurrentIndex() + 1) + ":" +
+                    tvOptionTitle.text = "Backup " + (withPinViewModel.getCurrentIndex() + 1) + ":" +
                             " Google Drive Backup"
                     clStatusLayout.visibility = View.GONE
                     btnNext.text = "Create Backup"
@@ -111,6 +111,10 @@ class BackupGoogleDrivePresenter(
     }
 
     fun uploadMnemonic(mnemonic: String) {
+        if (getPinCode().isBlank()) {
+            withPinViewModel.backToPinCode()
+            return
+        }
         GoogleDriveAuthActivity.multiBackupMnemonic(fragment.requireContext(), mnemonic)
     }
 }

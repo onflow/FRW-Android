@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="@string/restore_mnemonic_tip"
+                android:text="@string/multi_restore_mnemonic_tip"
                 android:textColor="@color/text_light"
                 android:textSize="14sp"
                 app:layout_constraintTop_toBottomOf="@id/title_1"/>

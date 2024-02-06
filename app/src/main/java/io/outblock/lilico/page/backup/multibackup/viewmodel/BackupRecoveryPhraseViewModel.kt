@@ -51,6 +51,9 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                     result.add(list[i])
                     result.add(list[i + list.size / 2])
                 }
+                if (result.size < list.size) {
+                    result.add(list.last())
+                }
                 mnemonicListLiveData.value = result
             }
         }
@@ -88,7 +91,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
-    fun syncKeyInfo() {
+    private fun syncKeyInfo() {
         ioScope {
             backupCryptoProvider.let {
                 try {
@@ -123,6 +126,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
             transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
             if (currentTxId == state.transactionId && state.isSuccess()) {
+                currentTxId = null
                 syncKeyInfo()
             }
         }

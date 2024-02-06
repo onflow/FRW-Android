@@ -185,6 +185,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
         transaction?.let { state ->
             if (currentTxId == state.transactionId && state.isSuccess()) {
                 accountInfo?.let {
+                    currentTxId = null
                     syncAccountInfo(it) { isSyncSuccess ->
                         if (isSyncSuccess) {
                             sendWCResponse()

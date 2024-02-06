@@ -8,7 +8,7 @@ import io.outblock.lilico.R
 import io.outblock.lilico.base.presenter.BasePresenter
 import io.outblock.lilico.page.restore.multirestore.MultiRestoreActivity
 import io.outblock.lilico.page.restore.multirestore.fragment.RestoreCompletedFragment
-import io.outblock.lilico.page.restore.multirestore.fragment.RestoreGoogleDriveFragment
+import io.outblock.lilico.page.restore.multirestore.fragment.RestoreGoogleDriveWithPinFragment
 import io.outblock.lilico.page.restore.multirestore.fragment.RestoreRecoveryPhraseFragment
 import io.outblock.lilico.page.restore.multirestore.fragment.RestoreStartFragment
 import io.outblock.lilico.page.restore.multirestore.model.RestoreOption
@@ -28,7 +28,7 @@ class MultiRestorePresenter(private val activity: MultiRestoreActivity): BasePre
         val transition = createTransition(currentModel, model)
         val fragment = when (model.option) {
             RestoreOption.RESTORE_START -> RestoreStartFragment()
-            RestoreOption.RESTORE_FROM_GOOGLE_DRIVE -> RestoreGoogleDriveFragment()
+            RestoreOption.RESTORE_FROM_GOOGLE_DRIVE -> RestoreGoogleDriveWithPinFragment()
             RestoreOption.RESTORE_FROM_RECOVERY_PHRASE -> RestoreRecoveryPhraseFragment()
             RestoreOption.RESTORE_COMPLETED -> RestoreCompletedFragment()
         }

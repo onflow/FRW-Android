@@ -37,9 +37,10 @@
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
-    <string name="check_pin_tip">There’s no Restore PIN button. Please make sure you can remember your PIN.</string>
+    <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="secret_key_name" translatable="false">biometric_sample_encryption_key</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
+    <string name="backup_pin_tip">So we will secure your backup with your PIN.</string>
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="finish">Finish</string>
     <string name="create">Create</string>
@@ -70,6 +71,8 @@
     <string name="wrong_password">wrong password</string>
     <string name="word_not_found">Opps, word not found.</string>
     <string name="restore_mnemonic_tip">This is a 12 word phrase you were given when you created your previous wallet.</string>
+    <string name="multi_restore_mnemonic_tip">This is a 15 word phrase you were given when you
+        created your previous wallet.</string>
     <string name="restore_with_mnemonic">Sign in with \nRecovery Phrase</string>
     <string name="restore_mnemonic_hint">Enter the Recovery Phrase</string>
     <string name="account_not_found">Account not Found</string>
@@ -125,7 +128,11 @@
     <string name="reset_pin_code">Reset PIN Code</string>
     <string name="private_key">Private Key</string>
     <string name="verify_pin_code">Verify PIN Code</string>
-    <string name="enter_current_pin_code">Please enter current pin code</string>
+    <string name="verify_pin">Verify PIN</string>
+    <string name="verify_pin_tip">So we will secure your backup with PIN code.</string>
+    <string name="enter_verify_pin_tip">Please enter the PIN when you create this backup.</string>
+    <string name="verify_pin_code_error">Please confirm the correct PIN entered.</string>
+    <string name="enter_current_pin_code">Please enter current PIN code</string>
     <string name="do_not_share_secret">Do not share your secret phrase!</string>
     <string name="do_not_share_secret_desc">If someone has your secret phrase, they will have full control of your wallet.</string>
     <string name="security">Security</string>

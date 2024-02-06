@@ -63,6 +63,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private val mnemonicList = mutableListOf<String>()
     private var currentTxId: String? = null
 
+    private var pinCode = ""
+
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
     }
@@ -73,6 +75,14 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     fun getCurrentIndex(): Int {
         return currentIndex
+    }
+
+    fun setPinCode(code: String) {
+        this.pinCode = code
+    }
+
+    fun getPinCode(): String {
+        return this.pinCode
     }
 
     fun changeOption(option: RestoreOption, index: Int) {
@@ -310,6 +320,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
             if (currentTxId == state.transactionId && state.isSuccess()) {
+                currentTxId = null
                 syncAccountInfo()
             }
         }

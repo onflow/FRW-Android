@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.findFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,17 +30,23 @@ import io.outblock.lilico.manager.backup.decryptMnemonic
 import io.outblock.lilico.manager.drive.EXTRA_CONTENT
 import io.outblock.lilico.manager.drive.GoogleDriveAuthActivity
 import io.outblock.lilico.page.restore.multirestore.viewmodel.MultiRestoreViewModel
+import io.outblock.lilico.page.restore.multirestore.viewmodel.RestoreGoogleDriveWithPinViewModel
 import io.outblock.lilico.utils.extensions.dp2px
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.findActivity
 import io.outblock.lilico.utils.toast
 import io.outblock.lilico.widgets.itemdecoration.ColorDividerItemDecoration
+import wallet.core.jni.HDWallet
 
 
 class RestoreGoogleDriveFragment: Fragment() {
     private lateinit var binding: FragmentRestoreGoogleDriveBinding
     private val restoreViewModel by lazy {
-        ViewModelProvider(requireActivity())[MultiRestoreViewModel::class.java]
+        ViewModelProvider(requireParentFragment().requireActivity())[MultiRestoreViewModel::class.java]
+    }
+
+    private val withPinViewModel by lazy {
+        ViewModelProvider(requireParentFragment())[RestoreGoogleDriveWithPinViewModel::class.java]
     }
 
     private val googleDriveRestoreReceiver by lazy {
@@ -52,18 +59,25 @@ class RestoreGoogleDriveFragment: Fragment() {
                     if (data.size > 1) {
                         showAccountList(data)
                     } else {
-                        val model = data.firstOrNull()
-                        if (model == null) {
-                            onRestoreEmpty()
-                            return
+                        try {
+                            val model = data.firstOrNull()
+                            if (model == null) {
+                                onRestoreEmpty()
+                                return
+                            }
+                            restoreViewModel.addWalletInfo(model.userName, model.address)
+                            val mnemonic = decryptMnemonic(model.data, restoreViewModel.getPinCode())
+                            if (mnemonic.isEmpty()) {
+                                onRestoreEmpty()
+                                return
+                            }
+                            // check mnemonic
+                            HDWallet(mnemonic, "")
+                            restoreViewModel.addMnemonicToTransaction(mnemonic)
+                        } catch (e: Exception) {
+                            toast(msgRes = R.string.verify_pin_code_error)
+                            withPinViewModel.backToPinCode()
                         }
-                        restoreViewModel.addWalletInfo(model.userName, model.address)
-                        val mnemonic = decryptMnemonic(model.data)
-                        if (mnemonic.isEmpty()) {
-                            onRestoreEmpty()
-                            return
-                        }
-                        restoreViewModel.addMnemonicToTransaction(mnemonic)
                     }
                 }
             }
@@ -136,11 +150,23 @@ private class MultiAccountPresenter(private val view: View) : BaseViewHolder(vie
         ViewModelProvider(findActivity(view) as FragmentActivity)[MultiRestoreViewModel::class.java]
     }
 
+    private val withPinViewModel by lazy {
+        ViewModelProvider(view.findFragment())[RestoreGoogleDriveWithPinViewModel::class.java]
+    }
+
     override fun bind(model: BackupItem) {
         view.findViewById<TextView>(R.id.username).text = model.userName
         view.setOnClickListener {
-            restoreViewModel.addWalletInfo(model.userName, model.address)
-            restoreViewModel.addMnemonicToTransaction(decryptMnemonic(model.data))
+            try {
+                restoreViewModel.addWalletInfo(model.userName, model.address)
+                val mnemonic = decryptMnemonic(model.data, restoreViewModel.getPinCode())
+                // check mnemonic
+                HDWallet(mnemonic, "")
+                restoreViewModel.addMnemonicToTransaction(mnemonic)
+            } catch (e: Exception) {
+                toast(msgRes = R.string.verify_pin_code_error)
+                withPinViewModel.backToPinCode()
+            }
         }
     }
 }

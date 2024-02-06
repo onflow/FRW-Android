@@ -16,6 +16,7 @@ import io.outblock.lilico.manager.env.EnvKey
 import io.outblock.lilico.manager.flowjvm.lastBlockAccount
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.utils.Env
+import io.outblock.lilico.utils.getPinCode
 import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.secret.aesDecrypt
@@ -36,7 +37,10 @@ const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
 
 @WorkerThread
-suspend fun uploadGoogleDriveBackup(driveService: Drive, backupCryptoProvider: BackupCryptoProvider) {
+suspend fun uploadGoogleDriveBackup(
+    driveService: Drive,
+    backupCryptoProvider: BackupCryptoProvider
+) {
     try {
         val driveServiceHelper = DriveServerHelper(driveService)
         val data = existingData(driveService).toMutableList()
@@ -44,7 +48,16 @@ suspend fun uploadGoogleDriveBackup(driveService: Drive, backupCryptoProvider: B
             driveServiceHelper.createFile(FILE_NAME)
         }
         addData(data, backupCryptoProvider)
-        driveServiceHelper.writeStringToFile(FILE_NAME, "\"${aesEncrypt(AES_KEY, message = Gson().toJson(data))}\"")
+        driveServiceHelper.writeStringToFile(
+            FILE_NAME,
+            "\"${
+                aesEncrypt(
+                    key = AES_KEY,
+                    iv = AES_PASSWORD,
+                    message = Gson().toJson(data),
+                )
+            }\"",
+        )
 
         if (BuildConfig.DEBUG) {
             val readText = driveServiceHelper.readFile(driveServiceHelper.getFileId(FILE_NAME)!!)
@@ -72,7 +85,7 @@ private fun existingData(driveService: Drive): List<BackupItem> {
         logd(TAG, "existingData fileId:$fileId")
         val content = driveServiceHelper.readFile(fileId).second.trim { it == '"' }
         logd(TAG, "existingData content:$content")
-        val json = aesDecrypt(AES_KEY, message = content)
+        val json = aesDecrypt(key = AES_KEY, iv = AES_PASSWORD, message = content)
         logd(TAG, "existingData:$json")
         Gson().fromJson(json, object : TypeToken<List<BackupItem>>() {}.type)
     } catch (e: Exception) {
@@ -86,7 +99,10 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
     val wallet = account.wallet ?: throw RuntimeException("Wallet cannot be null")
     val exist = data.firstOrNull { it.userId == wallet.id }
     val blockAccount = FlowAddress(wallet.walletAddress().orEmpty()).lastBlockAccount()
-    val keyIndex = blockAccount?.keys?.findLast { provider.getPublicKey() == it.publicKey.base16Value }?.id
+    val keyIndex =
+        blockAccount?.keys?.findLast { provider.getPublicKey() == it.publicKey.base16Value }?.id
+    val aesKey = sha256(getPinCode().toByteArray())
+    val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
     if (exist == null) {
         data.add(
             0,
@@ -100,7 +116,7 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 hashAlgo = provider.getHashAlgorithm().index,
                 keyIndex = keyIndex ?: 0,
                 updateTime = System.currentTimeMillis(),
-                data = aesEncrypt(AES_PASSWORD, AES_PASSWORD, message = provider.getMnemonic())
+                data = aesEncrypt(key = aesKey, iv = aesIv, message = provider.getMnemonic())
             )
         )
     } else {
@@ -109,7 +125,7 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
         exist.hashAlgo = provider.getHashAlgorithm().index
         exist.keyIndex = keyIndex ?: 0
         exist.updateTime = System.currentTimeMillis()
-        exist.data = aesEncrypt(AES_PASSWORD, AES_PASSWORD, message = provider.getMnemonic())
+        exist.data = aesEncrypt(key = aesKey, iv = aesIv, message = provider.getMnemonic())
     }
 }
 
@@ -118,9 +134,10 @@ fun restoreFromGoogleDrive(driveService: Drive) {
     try {
         logd(TAG, "restoreMnemonicFromGoogleDrive")
         val data = existingData(driveService)
-        LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
-            putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
-        })
+        LocalBroadcastManager.getInstance(Env.getApp())
+            .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
+                putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
+            })
     } catch (e: Exception) {
         loge(e)
         sendCallback(false)
@@ -139,11 +156,18 @@ fun deleteFromGoogleDrive(driveService: Drive) {
             data.removeIf { it.userId == firebaseUid() }
 
             driveServiceHelper.writeStringToFile(
-                FILE_NAME, "\"${aesEncrypt(
-                    AES_KEY, message = Gson().toJson(data))}\"")
+                FILE_NAME, "\"${
+                    aesEncrypt(
+                        key = AES_KEY,
+                        iv = AES_PASSWORD,
+                        message = Gson().toJson(data)
+                    )
+                }\""
+            )
 
             if (BuildConfig.DEBUG) {
-                val readText = driveServiceHelper.readFile(driveServiceHelper.getFileId(FILE_NAME)!!)
+                val readText =
+                    driveServiceHelper.readFile(driveServiceHelper.getFileId(FILE_NAME)!!)
                 logd(TAG, "readText:$readText")
             }
         }
@@ -155,21 +179,25 @@ fun deleteFromGoogleDrive(driveService: Drive) {
     }
 }
 
-fun decryptMnemonic(data: String?): String {
+fun decryptMnemonic(data: String?, pinCode: String): String {
     if (data == null) {
         return ""
     }
-    return aesDecrypt(AES_PASSWORD, AES_PASSWORD, data)
+    val aesKey = sha256(pinCode.toByteArray())
+    val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
+    return aesDecrypt(aesKey, aesIv, data)
 }
 
 private fun sendCallback(isSuccess: Boolean) {
-    LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_UPLOAD_FINISH).apply {
-        putExtra(EXTRA_SUCCESS, isSuccess)
-    })
+    LocalBroadcastManager.getInstance(Env.getApp())
+        .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_UPLOAD_FINISH).apply {
+            putExtra(EXTRA_SUCCESS, isSuccess)
+        })
 }
 
 private fun sendDeleteCallback(isSuccess: Boolean) {
-    LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_DELETE_FINISH).apply {
-        putExtra(EXTRA_SUCCESS, isSuccess)
-    })
+    LocalBroadcastManager.getInstance(Env.getApp())
+        .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_DELETE_FINISH).apply {
+            putExtra(EXTRA_SUCCESS, isSuccess)
+        })
 }
