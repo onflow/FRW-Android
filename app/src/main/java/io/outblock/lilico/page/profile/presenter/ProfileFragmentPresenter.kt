@@ -103,9 +103,9 @@ class ProfileFragmentPresenter(
             )
         }
 
-        binding.group4.bugReport.setOnClickListener { Instabug.show() }
-        binding.group5.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
-        binding.group6.switchAccountPreference.setOnClickListener {
+        binding.group3.bugReport.setOnClickListener { Instabug.show() }
+        binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
+        binding.group4.switchAccountPreference.setOnClickListener {
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
 

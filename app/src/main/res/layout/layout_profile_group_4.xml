@@ -11,12 +11,11 @@
     app:layout_constraintTop_toBottomOf="@id/group3">
 
     <io.outblock.lilico.page.profile.widget.ProfilePreference
-        android:id="@+id/bug_report"
+        android:id="@+id/switch_account_preference"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:isArrowVisible="true"
-        app:icon="@drawable/ic_settings_bug"
-        app:title="@string/bug_report"/>
+        app:icon="@drawable/ic_settings_switch_account"
+        app:title="@string/switch_account"/>
 
 
 </com.google.android.material.card.MaterialCardView>
