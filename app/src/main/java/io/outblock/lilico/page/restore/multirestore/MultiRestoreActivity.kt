@@ -32,22 +32,11 @@ class MultiRestoreActivity: BaseActivity() {
         setupToolbar()
     }
 
-    override fun onBackPressed() {
-        if (restoreViewModel.handleBackPressed()) {
-            return
-        }
-        super.onBackPressed()
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                if (restoreViewModel.handleBackPressed()) {
-                    return true
-                }
                 finish()
             }
-
             else -> super.onOptionsItemSelected(item)
         }
         return true

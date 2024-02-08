@@ -12,7 +12,7 @@ import io.outblock.lilico.page.backup.model.BackupKey
 import io.outblock.lilico.page.backup.model.BackupListTitle
 import io.outblock.lilico.page.backup.presenter.BackupListItemPresenter
 import io.outblock.lilico.page.backup.presenter.BackupListTitlePresenter
-import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceModel
+import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceKeyModel
 import io.outblock.lilico.page.profile.subpage.wallet.device.presenter.DeviceInfoPresenter
 
 class BackupListAdapter : BaseAdapter<Any>(diffUtils) {
@@ -21,7 +21,7 @@ class BackupListAdapter : BaseAdapter<Any>(diffUtils) {
         return when (getItem(position)) {
             is BackupListTitle -> TYPE_TITLE
             is BackupKey -> TYPE_BACKUP
-            is DeviceModel -> TYPE_DEVICE
+            is DeviceKeyModel -> TYPE_DEVICE
             else -> TYPE_NONE
         }
     }
@@ -39,7 +39,7 @@ class BackupListAdapter : BaseAdapter<Any>(diffUtils) {
         when (holder) {
             is BackupListTitlePresenter -> holder.bind(getItem(position) as BackupListTitle)
             is BackupListItemPresenter -> holder.bind(getItem(position) as BackupKey)
-            is DeviceInfoPresenter -> holder.bind(getItem(position) as DeviceModel)
+            is DeviceInfoPresenter -> holder.bind(getItem(position) as DeviceKeyModel)
         }
     }
 
@@ -56,8 +56,8 @@ private val diffUtils = object : DiffUtil.ItemCallback<Any>() {
         if (oldItem is BackupKey && newItem is BackupKey) {
             return oldItem.keyId == newItem.keyId
         }
-        if (oldItem is DeviceModel && newItem is DeviceModel) {
-            return oldItem.id == newItem.id
+        if (oldItem is DeviceKeyModel && newItem is DeviceKeyModel) {
+            return oldItem.deviceId == newItem.deviceId
         }
         return oldItem == newItem
     }
@@ -67,8 +67,8 @@ private val diffUtils = object : DiffUtil.ItemCallback<Any>() {
         if (oldItem is BackupKey && newItem is BackupKey) {
             return oldItem.keyId == newItem.keyId
         }
-        if (oldItem is DeviceModel && newItem is DeviceModel) {
-            return oldItem.id == newItem.id
+        if (oldItem is DeviceKeyModel && newItem is DeviceKeyModel) {
+            return oldItem.deviceId == newItem.deviceId
         }
         return oldItem == newItem
     }

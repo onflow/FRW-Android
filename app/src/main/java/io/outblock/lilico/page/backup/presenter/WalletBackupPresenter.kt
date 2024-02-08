@@ -2,11 +2,13 @@ package io.outblock.lilico.page.backup.presenter
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import io.outblock.lilico.databinding.ActivityWalletBackupBinding
+import io.outblock.lilico.manager.app.isTestnet
 import io.outblock.lilico.page.backup.BackupListAdapter
 import io.outblock.lilico.page.backup.WalletBackupActivity
 import io.outblock.lilico.page.backup.device.CreateDeviceBackupActivity
 import io.outblock.lilico.page.backup.multibackup.MultiBackupActivity
 import io.outblock.lilico.utils.extensions.setVisible
+import io.outblock.lilico.widgets.SwitchNetworkDialog
 
 class WalletBackupPresenter(
     val activity: WalletBackupActivity,
@@ -30,7 +32,11 @@ class WalletBackupPresenter(
                 CreateDeviceBackupActivity.launch(activity)
             }
             cvCreateMultiBackup.setOnClickListener {
-                MultiBackupActivity.launch(activity)
+                if (isTestnet()) {
+                    SwitchNetworkDialog(activity).show()
+                } else {
+                    MultiBackupActivity.launch(activity)
+                }
             }
         }
     }

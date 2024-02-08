@@ -32,6 +32,7 @@ import io.outblock.lilico.network.model.AccountSignRequest
 import io.outblock.lilico.network.model.LoginRequest
 import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.main.MainActivity
+import io.outblock.lilico.page.restore.multirestore.model.RestoreGoogleDriveOption
 import io.outblock.lilico.page.restore.multirestore.model.RestoreOption
 import io.outblock.lilico.page.restore.multirestore.model.RestoreOptionModel
 import io.outblock.lilico.page.walletrestore.firebaseLogin
@@ -55,6 +56,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     val optionChangeLiveData = MutableLiveData<RestoreOptionModel>()
 
+    val googleDriveOptionChangeLiveData = MutableLiveData<RestoreGoogleDriveOption>()
+
     private val optionList = mutableListOf<RestoreOption>()
     private var currentOption = RestoreOption.RESTORE_START
     private var currentIndex = -1
@@ -62,8 +65,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private var restoreAddress = ""
     private val mnemonicList = mutableListOf<String>()
     private var currentTxId: String? = null
-
-    private var pinCode = ""
+    private var mnemonicData = ""
 
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
@@ -77,18 +79,23 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         return currentIndex
     }
 
-    fun setPinCode(code: String) {
-        this.pinCode = code
-    }
-
-    fun getPinCode(): String {
-        return this.pinCode
-    }
-
     fun changeOption(option: RestoreOption, index: Int) {
         this.currentOption = option
         this.currentIndex = index
         optionChangeLiveData.postValue(RestoreOptionModel(option, index))
+    }
+
+    fun changeGoogleDriveOption(option: RestoreGoogleDriveOption) {
+        googleDriveOptionChangeLiveData.postValue(option)
+    }
+
+    fun getMnemonicData(): String {
+        return mnemonicData
+    }
+
+    fun toPinCode(data: String) {
+        this.mnemonicData = data
+        changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_PIN)
     }
 
     fun isRestoreValid(): Boolean {
@@ -103,18 +110,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private fun toNext() {
         ++currentIndex
         changeOption(optionList[currentIndex], currentIndex)
-    }
-
-    fun handleBackPressed(): Boolean {
-        if (currentIndex > 0) {
-            --currentIndex
-            if (mnemonicList.size > currentIndex) {
-                mnemonicList.removeAt(currentIndex)
-            }
-            changeOption(optionList[currentIndex], currentIndex)
-            return true
-        }
-        return false
     }
 
     private fun addCompleteOption() {

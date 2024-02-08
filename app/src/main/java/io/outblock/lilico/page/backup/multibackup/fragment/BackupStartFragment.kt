@@ -56,6 +56,15 @@ class BackupStartFragment : Fragment() {
                     checkBackupValid()
                 }
             }
+            if (backupViewModel.getBackupOptionList().isEmpty() && BackupListManager.backupCount() == 0) {
+                backupViewModel.selectOption(BackupOption.BACKUP_WITH_GOOGLE_DRIVE) { isSelected ->
+                    oiGoogleDrive.changeItemStatus(isSelected)
+                }
+                backupViewModel.selectOption(BackupOption.BACKUP_WITH_RECOVERY_PHRASE) { isSelected ->
+                    oiRecoveryPhrase.changeItemStatus(isSelected)
+                }
+                checkBackupValid()
+            }
         }
     }
 

@@ -9,14 +9,14 @@ import androidx.lifecycle.ViewModelProvider
 import io.outblock.lilico.databinding.FragmentRestoreGoogleDriveWithPinBinding
 import io.outblock.lilico.page.restore.multirestore.model.RestoreGoogleDriveOption
 import io.outblock.lilico.page.restore.multirestore.presenter.RestoreGoogleDriveWithPinPresenter
-import io.outblock.lilico.page.restore.multirestore.viewmodel.RestoreGoogleDriveWithPinViewModel
+import io.outblock.lilico.page.restore.multirestore.viewmodel.MultiRestoreViewModel
 
 
 class RestoreGoogleDriveWithPinFragment: Fragment() {
 
     private lateinit var binding: FragmentRestoreGoogleDriveWithPinBinding
     private lateinit var withPinPresenter: RestoreGoogleDriveWithPinPresenter
-    private lateinit var withPinViewModel: RestoreGoogleDriveWithPinViewModel
+    private lateinit var restoreViewModel: MultiRestoreViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,11 +30,11 @@ class RestoreGoogleDriveWithPinFragment: Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         withPinPresenter = RestoreGoogleDriveWithPinPresenter(this)
-        withPinViewModel = ViewModelProvider(this)[RestoreGoogleDriveWithPinViewModel::class.java].apply {
-            optionChangeLiveData.observe(viewLifecycleOwner) {
+        restoreViewModel = ViewModelProvider(requireActivity())[MultiRestoreViewModel::class.java].apply {
+            googleDriveOptionChangeLiveData.observe(requireActivity()) {
                 withPinPresenter.bind(it)
             }
-            changeOption(RestoreGoogleDriveOption.RESTORE_PIN)
+            changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_GOOGLE_DRIVE)
         }
     }
 }

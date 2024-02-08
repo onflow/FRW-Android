@@ -47,12 +47,13 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
             withContext(Dispatchers.Main) {
                 val list = str.split(" ").mapIndexed { index, s -> MnemonicModel(index + 1, s) }
                 val result = mutableListOf<MnemonicModel>()
-                (0 until list.size / 2).forEach { i ->
+                val mid = list.size / 2 + 1
+                (0 until mid).forEach { i ->
                     result.add(list[i])
-                    result.add(list[i + list.size / 2])
-                }
-                if (result.size < list.size) {
-                    result.add(list.last())
+                    val j = i + mid
+                    if (j < list.size) {
+                        result.add(list[j])
+                    }
                 }
                 mnemonicListLiveData.value = result
             }

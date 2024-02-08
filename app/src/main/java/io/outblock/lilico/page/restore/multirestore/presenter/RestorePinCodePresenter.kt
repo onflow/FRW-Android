@@ -7,23 +7,21 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import io.outblock.lilico.R
 import io.outblock.lilico.databinding.FragmentRestorePinCodeBinding
+import io.outblock.lilico.manager.backup.decryptMnemonic
 import io.outblock.lilico.page.restore.multirestore.viewmodel.MultiRestoreViewModel
-import io.outblock.lilico.page.restore.multirestore.viewmodel.RestoreGoogleDriveWithPinViewModel
 import io.outblock.lilico.page.walletcreate.fragments.pincode.pin.KeyboardItem
 import io.outblock.lilico.page.walletcreate.fragments.pincode.pin.widgets.KeyboardType
 import io.outblock.lilico.page.walletcreate.fragments.pincode.pin.widgets.keyboardT9Normal
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
+import io.outblock.lilico.utils.toast
+import wallet.core.jni.HDWallet
 
 
 class RestorePinCodePresenter(
     private val fragment: Fragment,
-    binding: FragmentRestorePinCodeBinding
+    private val binding: FragmentRestorePinCodeBinding
 ) {
-
-    private val withPinViewModel by lazy {
-        ViewModelProvider(fragment.requireParentFragment())[RestoreGoogleDriveWithPinViewModel::class.java]
-    }
 
     private val restoreViewModel by lazy {
         ViewModelProvider(fragment.requireParentFragment().requireActivity())[MultiRestoreViewModel::class.java]
@@ -68,9 +66,25 @@ class RestorePinCodePresenter(
             pinInput.input(key)
             if (pinInput.keys().size == 6) {
                 val pinCode = pinInput.keys().joinToString("") { "${it.number}" }
-                restoreViewModel.setPinCode(pinCode)
-                withPinViewModel.restoreGoogleDrive()
+                checkPinCode(pinCode)
             }
+        }
+    }
+
+    private fun checkPinCode(pinCode: String) {
+        try {
+            val data = restoreViewModel.getMnemonicData()
+            if (data.isEmpty()) {
+                toast(msg = "No backup found")
+                return
+            }
+            val mnemonic = decryptMnemonic(data, pinCode)
+            // check mnemonic
+            HDWallet(mnemonic, "")
+            restoreViewModel.addMnemonicToTransaction(mnemonic)
+        } catch (e: Exception) {
+            toast(msgRes = R.string.verify_pin_code_error)
+            binding.pinInput.shakeAndClear(keysCLear = true)
         }
     }
 }

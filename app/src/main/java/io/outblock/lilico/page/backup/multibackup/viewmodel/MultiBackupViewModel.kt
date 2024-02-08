@@ -43,15 +43,6 @@ class MultiBackupViewModel : ViewModel() {
         changeOption(optionList[currentIndex], currentIndex)
     }
 
-    fun handleBackPressed(): Boolean {
-        if (currentIndex > 0) {
-            --currentIndex
-            changeOption(optionList[currentIndex], currentIndex)
-            return true
-        }
-        return false
-    }
-
     fun addCompleteOption() {
         if (optionList.lastOrNull() != BackupOption.BACKUP_COMPLETED) {
             optionList.remove(BackupOption.BACKUP_COMPLETED)

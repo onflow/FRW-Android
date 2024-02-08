@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.outblock.lilico.R
 import io.outblock.lilico.base.recyclerview.BaseAdapter
 import io.outblock.lilico.base.recyclerview.BaseViewHolder
-import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceModel
+import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceKeyModel
 import io.outblock.lilico.page.profile.subpage.wallet.device.model.DeviceTitle
 import io.outblock.lilico.page.profile.subpage.wallet.device.presenter.DeviceTitlePresenter
 import io.outblock.lilico.page.profile.subpage.wallet.device.presenter.DeviceInfoPresenter
@@ -19,7 +19,7 @@ class DevicesAdapter : BaseAdapter<Any>(devicesDiffCallback) {
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is DeviceTitle -> TYPE_TITLE
-            is DeviceModel -> TYPE_DEVICE
+            is DeviceKeyModel -> TYPE_DEVICE
             else -> TYPE_NONE
         }
     }
@@ -35,7 +35,7 @@ class DevicesAdapter : BaseAdapter<Any>(devicesDiffCallback) {
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is DeviceTitlePresenter -> holder.bind(getItem(position) as DeviceTitle)
-            is DeviceInfoPresenter -> holder.bind(getItem(position) as DeviceModel)
+            is DeviceInfoPresenter -> holder.bind(getItem(position) as DeviceKeyModel)
         }
     }
 
@@ -48,8 +48,8 @@ class DevicesAdapter : BaseAdapter<Any>(devicesDiffCallback) {
 
 val devicesDiffCallback = object : DiffUtil.ItemCallback<Any>() {
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
-        if (oldItem is DeviceModel && newItem is DeviceModel) {
-            return oldItem.id == newItem.id
+        if (oldItem is DeviceKeyModel && newItem is DeviceKeyModel) {
+            return oldItem.deviceId == newItem.deviceId
         }
         return oldItem == newItem
     }

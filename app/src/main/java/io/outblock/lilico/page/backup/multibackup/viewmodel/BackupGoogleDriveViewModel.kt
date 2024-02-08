@@ -48,6 +48,9 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
                     BackupGoogleDriveState.UPLOAD_BACKUP_FAILURE
                 }
             )
+            if (isSuccess) {
+                registrationKeyList()
+            }
         }
     }
 

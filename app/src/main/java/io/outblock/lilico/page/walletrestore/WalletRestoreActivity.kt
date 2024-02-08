@@ -29,7 +29,6 @@ class WalletRestoreActivity : BaseActivity() {
                     WalletRestoreContentModel(changeStep = it)
                 )
             }
-            changeStep(WALLET_RESTORE_STEP_MNEMONIC)
         }
 
         setupToolbar()

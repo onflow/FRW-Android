@@ -7,6 +7,7 @@ import io.outblock.lilico.manager.flowjvm.FlowApi
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.network.ApiService
 import io.outblock.lilico.network.retrofit
+import io.outblock.lilico.utils.isRegistered
 import io.outblock.lilico.utils.loge
 import io.outblock.lilico.utils.viewModelIOScope
 
@@ -19,7 +20,7 @@ class DeveloperModeViewModel : ViewModel() {
         viewModelIOScope(this) {
             FlowApi.refreshConfig()
             val cacheExist = WalletManager.wallet() != null && !WalletManager.wallet()?.walletAddress().isNullOrBlank()
-            if (!cacheExist) {
+            if (!cacheExist && isRegistered()) {
                 progressVisibleLiveData.postValue(true)
                 try {
                     val service = retrofit().create(ApiService::class.java)

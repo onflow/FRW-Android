@@ -179,6 +179,15 @@ fun deleteFromGoogleDrive(driveService: Drive) {
     }
 }
 
+fun encryptMnemonic(data: String?, pinCode: String): String {
+    if (data == null) {
+        return ""
+    }
+    val aesKey = sha256(pinCode.toByteArray())
+    val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
+    return aesEncrypt(aesKey, aesIv, data)
+}
+
 fun decryptMnemonic(data: String?, pinCode: String): String {
     if (data == null) {
         return ""

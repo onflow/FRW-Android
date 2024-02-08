@@ -25,9 +25,18 @@ class TransferRecordItemPresenter(
 
     override fun bind(model: TransferRecord) {
         with(binding) {
-            Glide.with(iconView).load(model.image).into(iconView)
+            if (model.image.isNullOrBlank()) {
+                iconView.setImageResource(R.drawable.ic_transaction_default)
+            } else {
+                Glide.with(iconView).load(model.image).into(iconView)
+            }
             transferTypeView.rotation = if (model.transferType == TRANSFER_TYPE_SEND) 0.0f else 180.0f
-            titleView.text = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
+            val title = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
+            titleView.text = if (title.isNullOrBlank()) {
+                model.title
+            } else {
+                title
+            }
             val amount = if (model.amount.isNullOrBlank()) "" else (model.amount.toSafeFloat() / 100000000f).formatNum(8, RoundingMode.HALF_UP)
             amountView.text = amount
             bindStatus(model)
