@@ -25,7 +25,7 @@ class DevicesViewModel : ViewModel() {
             val response = service.getDeviceList()
             val deviceInfoList = response.data ?: emptyList()
             val infoResponse = service.getKeyDeviceInfo()
-            val keyDeviceList = infoResponse.data.result ?: emptyList()
+            val keyDeviceList = infoResponse.data.result?.filter { it.backupInfo != null && it.backupInfo.type < 0 } ?: emptyList()
             val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
             val keys = account?.keys ?: emptyList()
             val deviceList = mutableListOf<DeviceKeyModel>()
