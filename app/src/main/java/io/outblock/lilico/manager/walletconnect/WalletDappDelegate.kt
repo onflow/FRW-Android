@@ -128,10 +128,10 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
             uiScope {
                 if (isSuccess) {
                     delay(200)
-                    MainActivity.relaunch(activity, clearTop = true)
                 } else {
                     toast(msg = "login failure")
                 }
+                MainActivity.relaunch(activity, clearTop = isSuccess)
             }
         }
     }

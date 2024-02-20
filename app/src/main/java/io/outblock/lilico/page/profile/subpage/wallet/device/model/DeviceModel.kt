@@ -89,7 +89,7 @@ data class DeviceKeyModel(
     @SerializedName("device_id")
     val deviceId: String,
     @SerializedName("key_id")
-    val keyId: Int,
+    val keyId: Int? = null,
     @SerializedName("device_model")
     val deviceModel: DeviceModel,
 ): Parcelable

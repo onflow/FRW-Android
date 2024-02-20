@@ -49,6 +49,7 @@ android {
             multiDexEnabled true
             debuggable true
             signingConfig signingConfigs.release
+            matchingFallbacks = ['release']
         }
 
         dev {

@@ -28,7 +28,7 @@ class BackupListItemPresenter(private val view: View) : BaseViewHolder(view),
             }
             model.info?.device?.let {
                 tvBackupOs.text = it.user_agent
-                tvBackupLocation.text = it.city + ", " + it.countryCode + " · " + formatGMTToDate(it.updated_at)
+                tvBackupLocation.text = cityInfo(it.city, it.countryCode) + formatGMTToDate(it.updated_at)
             }
             clBackupContentLayout.setOnClickListener {
                 BackupDetailActivity.launch(view.context, model)
@@ -43,5 +43,21 @@ class BackupListItemPresenter(private val view: View) : BaseViewHolder(view),
                 )
             }
         }
+    }
+
+    private fun cityInfo(city: String, country: String): String {
+        val sb = StringBuilder()
+        if (city.isNotBlank()) {
+            sb.append(city)
+            if (country.isNotBlank()) {
+                sb.append(", ").append(country)
+            }
+            sb.append(" · ")
+        } else {
+            if (country.isNotBlank()) {
+                sb.append(country).append(" · ")
+            }
+        }
+        return sb.toString()
     }
 }

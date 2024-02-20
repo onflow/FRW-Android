@@ -64,11 +64,11 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
     fun claimUnStaked(provider: StakingProvider) {
-        CADENCE_STAKING_UNSATKED_CLAIM.rewardsAction(provider)
+        CADENCE_STAKING_UNSATKED_CLAIM.rewardsAction(provider, true)
     }
 
     fun reStakeUnStaked(provider: StakingProvider) {
-        CADENCE_STAKING_UNSATKED_RESTAKE.rewardsAction(provider)
+        CADENCE_STAKING_UNSATKED_RESTAKE.rewardsAction(provider, true)
     }
 
     private fun String.rewardsAction(provider: StakingProvider, isUnStaked: Boolean = false) {

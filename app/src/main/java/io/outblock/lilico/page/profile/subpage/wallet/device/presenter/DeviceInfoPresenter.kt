@@ -26,7 +26,7 @@ class DeviceInfoPresenter(private val view: View) : BaseViewHolder(view),
             ivDeviceType.setImageResource(R.drawable.ic_device_type_phone)
             tvDeviceName.text = model.deviceModel.device_name
             tvDeviceOs.text = model.deviceModel.user_agent
-            tvDeviceLocation.text = model.deviceModel.city + ", " + model.deviceModel.countryCode + " · " +
+            tvDeviceLocation.text = cityInfo(model.deviceModel.city, model.deviceModel.countryCode) +
                     if (isCurrentDevice) {
                         "Online"
                     } else {
@@ -45,4 +45,19 @@ class DeviceInfoPresenter(private val view: View) : BaseViewHolder(view),
         }
     }
 
+    private fun cityInfo(city: String, country: String): String {
+        val sb = StringBuilder()
+        if (city.isNotBlank()) {
+            sb.append(city)
+            if (country.isNotBlank()) {
+                sb.append(", ").append(country)
+            }
+            sb.append(" · ")
+        } else {
+            if (country.isNotBlank()) {
+                sb.append(country).append(" · ")
+            }
+        }
+        return sb.toString()
+    }
 }

@@ -89,7 +89,7 @@
                 android:clipToPadding="false"
                 android:layout_marginTop="14dp"
                 android:paddingTop="10dp"
-                android:paddingBottom="20dp"/>
+                android:paddingBottom="40dp"/>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
 

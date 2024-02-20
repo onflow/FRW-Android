@@ -44,7 +44,21 @@ class DevicesViewModel : ViewModel() {
                                 deviceModel = device
                             )
                         )
+                    } else {
+                        deviceList.add(
+                            DeviceKeyModel(
+                                deviceId = device.id,
+                                deviceModel = device
+                            )
+                        )
                     }
+                } else {
+                    deviceList.add(
+                        DeviceKeyModel(
+                            deviceId = device.id,
+                            deviceModel = device
+                        )
+                    )
                 }
             }
             uiScope {

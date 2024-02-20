@@ -229,7 +229,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
                         val resp = service.login(
                             LoginRequest(
                                 signature = cryptoProvider.getUserSignature(

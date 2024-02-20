@@ -11,11 +11,13 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivityWalletRestoreBinding
+import io.outblock.lilico.manager.app.isTestnet
 import io.outblock.lilico.page.restore.multirestore.MultiRestoreActivity
 import io.outblock.lilico.page.wallet.sync.WalletSyncActivity
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.isNightMode
+import io.outblock.lilico.widgets.SwitchNetworkDialog
 
 
 class WalletRestoreActivity : BaseActivity() {
@@ -37,7 +39,11 @@ class WalletRestoreActivity : BaseActivity() {
             }
 
             llImportFromBackup.setOnClickListener {
-                MultiRestoreActivity.launch(this@WalletRestoreActivity)
+                if (isTestnet()) {
+                    SwitchNetworkDialog(this@WalletRestoreActivity).show()
+                } else {
+                    MultiRestoreActivity.launch(this@WalletRestoreActivity)
+                }
             }
 
             llImportFromRecoveryPhrase.setOnClickListener {

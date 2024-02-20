@@ -63,24 +63,24 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback, OnTransactionState
             tvDeviceIp.text = deviceModel.ip
             tvDeviceLocation.text = deviceModel.city + ", " + deviceModel.countryCode
             tvDeviceDate.text = formatGMTToDate(deviceModel.updated_at)
-            btnRevoke.setVisible(DeviceInfoManager.isCurrentDevice(deviceModel.id).not())
+            btnRevoke.setVisible(canRevokeDevice())
             btnRevoke.setOnClickListener {
+                if (canRevokeDevice().not()) {
+                    return@setOnClickListener
+                }
                 if (btnRevoke.isProgressVisible()) {
                     return@setOnClickListener
                 }
                 btnRevoke.setProgressVisible(true)
-                revokeLastKeyOfDevice(deviceModel.id)
+                deviceKeyModel.keyId?.let {
+                    AccountKeyRevokeDialog.show(this@DeviceInfoActivity, it)
+                }
             }
         }
     }
 
-    private fun revokeLastKeyOfDevice(deviceId: String) {
-        if (DeviceInfoManager.isCurrentDevice(deviceId)) {
-            return
-        }
-        deviceKeyModel?.let {
-            AccountKeyRevokeDialog.show(this@DeviceInfoActivity, it.keyId)
-        }
+    private fun canRevokeDevice(): Boolean {
+        return DeviceInfoManager.isCurrentDevice(deviceKeyModel?.deviceId ?: "").not() && deviceKeyModel?.keyId != null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -6,6 +6,8 @@ import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
+import io.outblock.lilico.manager.flowjvm.transaction.checkSecurityProvider
+import io.outblock.lilico.manager.flowjvm.transaction.updateSecurityProvider
 import io.outblock.wallet.CryptoProvider
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
@@ -35,6 +37,7 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     }
 
     override fun getSigner(): Signer {
+        updateSecurityProvider()
         return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(
                 getPrivateKey(),
