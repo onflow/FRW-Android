@@ -118,7 +118,7 @@ class WalletHeaderPresenter(
         val count = transactionCount ?: 0
         TransitionManager.beginDelayedTransition(binding.root)
         binding.transactionCountWrapper.setVisible(count > 0)
-        binding.transactionCountView.text = "$transactionCount"
+//        binding.transactionCountView.text = "$transactionCount"
         binding.transactionCountWrapper.setOnClickListener { TransactionRecordActivity.launch(view.context) }
     }
 

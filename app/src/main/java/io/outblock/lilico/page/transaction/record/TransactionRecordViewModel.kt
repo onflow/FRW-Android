@@ -42,7 +42,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
 
     private suspend fun loadTransfer() {
         transferListLiveData.postValue(transferRecordCache(contractId.orEmpty()).read()?.list.orEmpty())
-        transferCountLiveData.postValue(getAccountTransferCount())
+//        transferCountLiveData.postValue(getAccountTransferCount())
 
         val service = retrofit().create(ApiService::class.java)
         val walletAddress = WalletManager.selectedWalletAddress()
@@ -66,7 +66,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         }
 
         transferListLiveData.postValue(data)
-        transferCountLiveData.postValue((resp.data?.total ?: 0) + processing.size)
+//        transferCountLiveData.postValue((resp.data?.total ?: 0) + processing.size)
 
         transferRecordCache(contractId.orEmpty()).cache(TransferRecordList(transfers))
         updateAccountTransferCount(resp.data?.total ?: 0)

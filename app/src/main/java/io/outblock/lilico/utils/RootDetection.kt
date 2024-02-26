@@ -1,6 +1,5 @@
 package io.outblock.lilico.utils
 
-import android.content.Context
 import android.os.Build
 import com.google.firebase.crashlytics.internal.common.CommonUtils
 import java.io.BufferedReader
@@ -8,15 +7,15 @@ import java.io.File
 import java.io.InputStreamReader
 
 
-fun isRooted(context: Context): Boolean {
-    if (CommonUtils.isRooted(context)) {
+fun isRooted(): Boolean {
+    if (CommonUtils.isRooted()) {
         return true
     }
 
-    return rootDetectInternal(context)
+    return rootDetectInternal()
 }
 
-fun rootDetectInternal(context: Context): Boolean {
+fun rootDetectInternal(): Boolean {
     return runCatching { checkRootMethod1() || checkRootMethod2() || checkRootMethod3() }.getOrElse { false }
 }
 

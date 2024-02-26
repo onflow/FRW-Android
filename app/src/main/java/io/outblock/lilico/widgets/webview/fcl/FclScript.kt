@@ -225,7 +225,11 @@ suspend fun fclAuthnResponse(fcl: FclAuthnResponse, address: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
 
     val accountProofSign = if (!fcl.body.nonce.isNullOrBlank()) {
-        cryptoProvider.signData(fcl.encodeAccountProof(address))
+        try {
+            cryptoProvider.signData(fcl.encodeAccountProof(address))
+        } catch (e: Exception) {
+            ""
+        }
     } else ""
 
     val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())

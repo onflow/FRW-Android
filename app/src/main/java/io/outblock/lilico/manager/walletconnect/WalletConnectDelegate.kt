@@ -31,6 +31,14 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         loge(error.throwable)
     }
 
+    override fun onProposalExpired(proposal: Sign.Model.ExpiredProposal) {
+        logd(TAG, "onProposalExpired() expiredProposal:${Gson().toJson(proposal)}")
+    }
+
+    override fun onRequestExpired(request: Sign.Model.ExpiredRequest) {
+        logd(TAG, "onRequestExpired() expiredRequest:${Gson().toJson(request)}")
+    }
+
     /**
      * Triggered when the session is deleted by the peer
      */

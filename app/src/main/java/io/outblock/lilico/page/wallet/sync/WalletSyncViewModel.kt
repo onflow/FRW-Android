@@ -56,7 +56,7 @@ class WalletSyncViewModel : ViewModel() {
 
         SignClient.connect(
             connectParams,
-            onSuccess = { continuation.resume(pairing.uri) },
+            onSuccess = { _ -> continuation.resume(pairing.uri) },
             onError = { error ->
                 loge(error.throwable)
                 continuation.resumeWithException(error.throwable)

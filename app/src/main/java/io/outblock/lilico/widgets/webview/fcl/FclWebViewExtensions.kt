@@ -9,6 +9,7 @@ import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.wallet.WalletManager
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logv
+import io.outblock.lilico.utils.toast
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.widgets.webview.executeJs
 import io.outblock.lilico.widgets.webview.fcl.model.FclAuthnResponse
