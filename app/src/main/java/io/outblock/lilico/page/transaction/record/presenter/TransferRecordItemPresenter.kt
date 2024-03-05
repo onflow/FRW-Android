@@ -31,14 +31,15 @@ class TransferRecordItemPresenter(
                 Glide.with(iconView).load(model.image).into(iconView)
             }
             transferTypeView.rotation = if (model.transferType == TRANSFER_TYPE_SEND) 0.0f else 180.0f
-            val title = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
-            titleView.text = if (title.isNullOrBlank()) {
-                model.title
-            } else {
-                title
-            }
-            val amount = if (model.amount.isNullOrBlank()) "" else (model.amount.toSafeFloat() / 100000000f).formatNum(8, RoundingMode.HALF_UP)
-            amountView.text = amount
+//            val title = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
+//            titleView.text = if (title.isNullOrBlank()) {
+//                model.title
+//            } else {
+//                title
+//            }
+            titleView.text = model.title ?: ""
+//            val amount = if (model.amount.isNullOrBlank()) "" else (model.amount.toSafeFloat() / 100000000f).formatNum(8, RoundingMode.HALF_UP)
+            amountView.text = model.amount ?: ""
             bindStatus(model)
             bindTime(model)
             bindAddress(model)
@@ -69,7 +70,7 @@ class TransferRecordItemPresenter(
         val str = if (transfer.transferType == TRANSFER_TYPE_SEND) {
             view.context.getString(R.string.to_address, transfer.receiver)
         } else if (!transfer.sender.isNullOrEmpty()) {
-            view.context.getString(R.string.from, transfer.sender)
+            view.context.getString(R.string.from_address, transfer.sender)
         } else ""
         toView.text = str
     }

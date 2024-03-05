@@ -205,6 +205,7 @@
             android:paddingVertical="1dp"
             android:textColor="@color/note"
             android:textSize="14sp"
+            android:visibility="gone"
             tools:text="123"/>
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
