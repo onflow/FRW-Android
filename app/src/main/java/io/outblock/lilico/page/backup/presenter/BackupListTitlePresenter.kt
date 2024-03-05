@@ -13,6 +13,7 @@ import io.outblock.lilico.page.walletrestore.AccountNotFoundDialog
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.extensions.setVisible
+import io.outblock.lilico.widgets.DialogType
 import io.outblock.lilico.widgets.SwitchNetworkDialog
 
 
@@ -36,7 +37,7 @@ class BackupListTitlePresenter(private val view: View) : BaseViewHolder(view),
                     CreateDeviceBackupActivity.launch(view.context)
                 } else if (model == BackupListTitle.MULTI_BACKUP) {
                     if (isTestnet()) {
-                        SwitchNetworkDialog(view.context).show()
+                        SwitchNetworkDialog(view.context, DialogType.BACKUP).show()
                     } else {
                         MultiBackupActivity.launch(view.context)
                     }

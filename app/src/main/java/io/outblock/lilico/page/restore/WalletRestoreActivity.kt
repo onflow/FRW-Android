@@ -17,6 +17,7 @@ import io.outblock.lilico.page.wallet.sync.WalletSyncActivity
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.isNightMode
+import io.outblock.lilico.widgets.DialogType
 import io.outblock.lilico.widgets.SwitchNetworkDialog
 
 
@@ -40,7 +41,7 @@ class WalletRestoreActivity : BaseActivity() {
 
             llImportFromBackup.setOnClickListener {
                 if (isTestnet()) {
-                    SwitchNetworkDialog(this@WalletRestoreActivity).show()
+                    SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     MultiRestoreActivity.launch(this@WalletRestoreActivity)
                 }

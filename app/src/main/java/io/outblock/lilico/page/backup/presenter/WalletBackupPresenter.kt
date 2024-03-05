@@ -8,6 +8,7 @@ import io.outblock.lilico.page.backup.WalletBackupActivity
 import io.outblock.lilico.page.backup.device.CreateDeviceBackupActivity
 import io.outblock.lilico.page.backup.multibackup.MultiBackupActivity
 import io.outblock.lilico.utils.extensions.setVisible
+import io.outblock.lilico.widgets.DialogType
 import io.outblock.lilico.widgets.SwitchNetworkDialog
 
 class WalletBackupPresenter(
@@ -33,7 +34,7 @@ class WalletBackupPresenter(
             }
             cvCreateMultiBackup.setOnClickListener {
                 if (isTestnet()) {
-                    SwitchNetworkDialog(activity).show()
+                    SwitchNetworkDialog(activity, DialogType.BACKUP).show()
                 } else {
                     MultiBackupActivity.launch(activity)
                 }

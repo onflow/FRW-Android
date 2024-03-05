@@ -532,5 +532,7 @@
     <string name="revoke_device_failed">Cannot revoke current device.</string>
     <string name="wrong_network">Wrong Network</string>
     <string name="backup_on_mainnet">You can only create backup on mainnet.</string>
+    <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
+    <string name="switch_on_mainnet">You can only switch account on mainnet.</string>
     <string name="switch_to_mainnet">Switch to Mainnet</string>
 </resources>
