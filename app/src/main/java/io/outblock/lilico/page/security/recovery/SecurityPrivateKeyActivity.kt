@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import com.instabug.library.Instabug
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivitySecurityPrivateKeyBinding
@@ -33,7 +34,6 @@ class SecurityPrivateKeyActivity : BaseActivity() {
         return true
     }
 
-    //todo keystore private display
     private fun initPrivateKey() {
         with(binding) {
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
@@ -48,6 +48,7 @@ class SecurityPrivateKeyActivity : BaseActivity() {
 
             hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
             signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().id)
+            Instabug.addPrivateViews(privateKeyView)
         }
     }
 

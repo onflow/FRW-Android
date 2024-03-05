@@ -33,7 +33,7 @@ fun instabugInitialize(application: Application) {
                 ReproConfigurations.Builder()
                     .setIssueMode(IssueType.All, ReproMode.Disable)
                     .build())
-            .setAutoMaskScreenshotsTypes(MaskingType.LABELS, MaskingType.MEDIA, MaskingType.TEXT_INPUTS)
+            .setAutoMaskScreenshotsTypes(MaskingType.MASK_NOTHING)
             .build()
         Instabug.setWelcomeMessageState(WelcomeMessage.State.DISABLED)
     }

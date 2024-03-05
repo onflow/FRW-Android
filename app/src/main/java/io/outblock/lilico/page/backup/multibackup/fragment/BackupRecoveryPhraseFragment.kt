@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.instabug.library.Instabug
 import io.outblock.lilico.databinding.FragmentBackupRecoveryPhraseBinding
 import io.outblock.lilico.page.backup.multibackup.viewmodel.BackupRecoveryPhraseViewModel
 import io.outblock.lilico.page.backup.multibackup.viewmodel.MultiBackupViewModel
@@ -56,6 +57,7 @@ class BackupRecoveryPhraseFragment : Fragment() {
             adapter = this@BackupRecoveryPhraseFragment.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
+            Instabug.addPrivateViews(this)
         }
         binding.stringContainer.setVisible(false)
         binding.copyButton.setOnClickListener {

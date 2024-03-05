@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.instabug.library.Instabug
 import io.outblock.lilico.R
 import io.outblock.lilico.databinding.FragmentWalletCreateMnemonicBinding
 import io.outblock.lilico.page.walletcreate.WALLET_CREATE_STEP_CLOUD_PWD
@@ -48,6 +49,7 @@ class WalletCreateMnemonicFragment : Fragment() {
             adapter = this@WalletCreateMnemonicFragment.adapter
             layoutManager = GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
+            Instabug.addPrivateViews(this)
         }
 
         with(binding) {
