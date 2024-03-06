@@ -36,6 +36,7 @@ private val KEY_BIOMETRIC_ENABLE = booleanPreferencesKey("KEY_BIOMETRIC_ENABLE")
 
 private val KEY_BACKUP_MANUALLY = booleanPreferencesKey("KEY_BACKUP_MANUALLY")
 private val KEY_BACKUP_GOOGLE_DRIVE = booleanPreferencesKey("KEY_BACKUP_GOOGLE_DRIVE")
+private val KEY_BACKUP_MULTI = booleanPreferencesKey("KEY_BACKUP_MULTI")
 private val KEY_SEND_STATE_BUBBLE_POSITION = stringPreferencesKey("KEY_SEND_STATE_BUBBLE_POSITION")
 private val KEY_DEVELOPER_MODE_ENABLE = booleanPreferencesKey("KEY_DEVELOPER_MODE_ENABLE")
 private val KEY_CHAIN_NETWORK = intPreferencesKey("KEY_CHAIN_NETWORK")
@@ -109,6 +110,16 @@ suspend fun isBackupGoogleDrive(): Boolean = dataStore.data.map { it[KEY_BACKUP_
 
 fun setBackupGoogleDrive(isBackuped: Boolean = true) {
     edit { dataStore.edit { it[KEY_BACKUP_GOOGLE_DRIVE] = isBackuped } }
+}
+
+suspend fun isMultiBackupCreated(): Boolean = dataStore.data.map { it[KEY_BACKUP_MULTI] ?: false }.first()
+
+fun setMultiBackupCreated() {
+    edit { dataStore.edit { it[KEY_BACKUP_MULTI] = true } }
+}
+
+fun setMultiBackupDeleted() {
+    edit { dataStore.edit { it[KEY_BACKUP_MULTI] = false } }
 }
 
 suspend fun isDeveloperModeEnable(): Boolean = dataStore.data.map { it[KEY_DEVELOPER_MODE_ENABLE] ?: isDev() || isTesting() }.first()

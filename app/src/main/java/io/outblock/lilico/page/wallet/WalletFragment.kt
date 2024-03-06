@@ -20,6 +20,7 @@ import io.outblock.lilico.page.wallet.presenter.WalletHeaderPlaceholderPresenter
 import io.outblock.lilico.page.wallet.presenter.WalletHeaderPresenter
 import io.outblock.lilico.utils.isBackupGoogleDrive
 import io.outblock.lilico.utils.isBackupManually
+import io.outblock.lilico.utils.isMultiBackupCreated
 import io.outblock.lilico.utils.launch
 import io.outblock.lilico.utils.registerBarcodeLauncher
 import io.outblock.lilico.utils.uiScope
@@ -73,7 +74,9 @@ class WalletFragment : BaseFragment() {
         }
         isBackupShown = true
         uiScope {
-            if (!isBackupGoogleDrive() && !isBackupManually()) {
+            if (isBackupGoogleDrive() || isBackupManually() || isMultiBackupCreated()) {
+                isBackupShown = false
+            } else {
                 val sumCoin = coinList.map { it.balance }.sum()
                 if (sumCoin > 0.001f) {
                     isBackupShown = true
@@ -81,8 +84,6 @@ class WalletFragment : BaseFragment() {
                 } else {
                     isBackupShown = false
                 }
-            } else {
-                isBackupShown = false
             }
         }
     }

@@ -39,6 +39,7 @@ import io.outblock.lilico.page.walletrestore.firebaseLogin
 import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.loge
+import io.outblock.lilico.utils.setMultiBackupCreated
 import io.outblock.lilico.utils.setRegistered
 import io.outblock.lilico.utils.toast
 import io.outblock.lilico.utils.uiScope
@@ -248,6 +249,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
+                                    setMultiBackupCreated()
                                     ioScope {
                                         AccountManager.add(
                                             Account(
