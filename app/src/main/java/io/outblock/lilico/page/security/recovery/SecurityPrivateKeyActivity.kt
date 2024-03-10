@@ -4,14 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import com.instabug.library.Instabug
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivitySecurityPrivateKeyBinding
+import io.outblock.lilico.manager.key.CryptoProviderManager
+import io.outblock.lilico.manager.key.HDWalletCryptoProvider
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.textToClipboard
 import io.outblock.lilico.utils.toast
-import io.outblock.lilico.wallet.getPrivateKey
-import io.outblock.lilico.wallet.getPublicKey
 
 class SecurityPrivateKeyActivity : BaseActivity() {
 
@@ -35,14 +36,19 @@ class SecurityPrivateKeyActivity : BaseActivity() {
 
     private fun initPrivateKey() {
         with(binding) {
-            privateKeyView.text = getPrivateKey()
-            publicKeyView.text = getPublicKey()
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
+            val privateKeyText = (cryptoProvider as? HDWalletCryptoProvider)?.getPrivateKey() ?: ""
+            privateKeyView.text = privateKeyText
+            publicKeyView.text = cryptoProvider.getPublicKey()
 
-            privateKeyCopyButton.setOnClickListener { copyToClipboard(getPrivateKey()) }
-            publicKeyCopyButton.setOnClickListener { copyToClipboard(getPublicKey()) }
+            if (privateKeyText.isNotEmpty()) {
+                privateKeyCopyButton.setOnClickListener { copyToClipboard(privateKeyText) }
+            }
+            publicKeyCopyButton.setOnClickListener { copyToClipboard(cryptoProvider.getPublicKey()) }
 
-            hashAlgorithm.text = getString(R.string.hash_algorithm, "Sha2_256")
-            signAlgorithm.text = getString(R.string.sign_algorithm, "ECDSA_secp256k1")
+            hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
+            signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().id)
+            Instabug.addPrivateViews(privateKeyView)
         }
     }
 

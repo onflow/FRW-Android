@@ -114,6 +114,23 @@ const val CADENCE_GET_BALANCE = """
  }
 """
 
+const val CADENCE_ADD_PUBLIC_KEY = """
+    import Crypto
+    transaction(publicKey: String, signatureAlgorithm: UInt8, hashAlgorithm: UInt8, weight: UFix64) {
+        prepare(signer: AuthAccount) {
+            let key = PublicKey(
+                publicKey: publicKey.decodeHex(),
+                signatureAlgorithm: SignatureAlgorithm(rawValue: signatureAlgorithm)!
+            )
+            signer.keys.add(
+                publicKey: key,
+                hashAlgorithm: HashAlgorithm(rawValue: hashAlgorithm)!,
+                weight: weight
+            )
+        }
+    }
+"""
+
 const val CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS = """
   import Flowns from 0xFlowns
   import Domains from 0xDomains

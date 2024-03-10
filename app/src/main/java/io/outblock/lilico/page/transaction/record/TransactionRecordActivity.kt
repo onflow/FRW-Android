@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModelProvider
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivityTransactionRecordBinding
-import io.outblock.lilico.page.transaction.record.model.TransactionRecordPageModel
 import io.outblock.lilico.page.transaction.record.presenter.TransactionRecordPresenter
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.res2color
@@ -29,8 +28,10 @@ class TransactionRecordActivity : BaseActivity() {
         presenter = TransactionRecordPresenter(binding, this)
         viewModel = ViewModelProvider(this)[TransactionRecordViewModel::class.java].apply {
             setContractId(contractId)
-            transactionCountLiveData.observe(this@TransactionRecordActivity) { presenter.bind(TransactionRecordPageModel(transactionCount = it)) }
-            transferCountLiveData.observe(this@TransactionRecordActivity) { presenter.bind(TransactionRecordPageModel(transferCount = it)) }
+            transferCountLiveData.observe(this@TransactionRecordActivity) { presenter.bind(it ?: 0) }
+            transferListLiveData.observe(this@TransactionRecordActivity) {
+                presenter.setListData(it)
+            }
             load()
         }
 

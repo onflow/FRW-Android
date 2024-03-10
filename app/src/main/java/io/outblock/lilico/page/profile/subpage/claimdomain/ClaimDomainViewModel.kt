@@ -7,10 +7,7 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.cadence.TYPE_STRING
-import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.flowTransaction
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.config.AppConfig
@@ -22,6 +19,7 @@ import io.outblock.lilico.manager.flowjvm.transaction.Singature
 import io.outblock.lilico.manager.flowjvm.transaction.Voucher
 import io.outblock.lilico.manager.flowjvm.transaction.encodeTransactionPayload
 import io.outblock.lilico.manager.flowjvm.transaction.updateSecurityProvider
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
 import io.outblock.lilico.manager.wallet.WalletManager
@@ -31,7 +29,6 @@ import io.outblock.lilico.network.retrofit
 import io.outblock.lilico.page.window.bubble.tools.pushBubbleStack
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.utils.viewModelIOScope
-import io.outblock.lilico.wallet.getPrivateKey
 import io.outblock.lilico.wallet.toAddress
 
 class ClaimDomainViewModel : ViewModel() {
@@ -66,6 +63,11 @@ class ClaimDomainViewModel : ViewModel() {
         val walletAddress = WalletManager.selectedWalletAddress().toAddress()
         val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress))
             ?: throw RuntimeException("get wallet account error")
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            ?: throw RuntimeException("get account error")
+        val currentKey =
+            account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
+                ?: throw RuntimeException("get account key error")
         return flowTransaction {
             script { prepare.cadence!! }
 
@@ -80,8 +82,8 @@ class ClaimDomainViewModel : ViewModel() {
 
             proposalKey {
                 address = FlowAddress(walletAddress)
-                keyIndex = account.keys.first().id
-                sequenceNumber = account.keys.first().sequenceNumber
+                keyIndex = currentKey.id
+                sequenceNumber = currentKey.sequenceNumber
             }
 
             authorizers(listOf(walletAddress, prepare.lilicoServerAddress!!, prepare.flownsServerAddress!!).map { FlowAddress(it) }.toMutableList())
@@ -91,11 +93,8 @@ class ClaimDomainViewModel : ViewModel() {
             addPayloadSignatures {
                 signature(
                     FlowAddress(walletAddress),
-                    account.keys.first().id,
-                    Crypto.getSigner(
-                        privateKey = Crypto.decodePrivateKey(getPrivateKey(), SignatureAlgorithm.ECDSA_SECP256k1),
-                        hashAlgo = HashAlgorithm.SHA2_256
-                    ),
+                    currentKey.id,
+                    cryptoProvider.getSigner(),
                 )
             }
         }.buildPayerSignable()

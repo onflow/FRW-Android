@@ -4,6 +4,7 @@ import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import com.nftco.flow.sdk.HashAlgorithm
 import io.outblock.lilico.R
 import io.outblock.lilico.firebase.auth.firebaseCustomLogin
 import io.outblock.lilico.firebase.auth.getFirebaseJwt
@@ -15,6 +16,7 @@ import io.outblock.lilico.manager.account.BalanceManager
 import io.outblock.lilico.manager.account.DeviceInfoManager
 import io.outblock.lilico.manager.coin.FlowCoinListManager
 import io.outblock.lilico.manager.coin.TokenStateManager
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.nft.NftCollectionStateManager
 import io.outblock.lilico.manager.staking.StakingManager
 import io.outblock.lilico.manager.transaction.TransactionStateManager
@@ -30,13 +32,13 @@ import io.outblock.lilico.utils.logd
 import io.outblock.lilico.utils.setMeowDomainClaimed
 import io.outblock.lilico.utils.setRegistered
 import io.outblock.lilico.utils.toast
-import io.outblock.lilico.utils.updateAccountTransactionCountLocal
+import io.outblock.lilico.utils.updateAccountTransferCount
 import io.outblock.lilico.wallet.Wallet
 import io.outblock.lilico.wallet.createWalletFromServer
-import io.outblock.lilico.wallet.getPublicKey
-import io.outblock.lilico.wallet.sign
+import io.outblock.wallet.KeyManager
+import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
-import wallet.core.jni.HDWallet
+import java.security.MessageDigest
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -48,15 +50,19 @@ suspend fun registerOutblock(
     username: String,
 ) = suspendCoroutine { continuation ->
     ioScope {
-        registerOutblockUserInternal(username) { isSuccess, wallet ->
+        registerOutblockUserInternal(username) { isSuccess, prefix ->
             ioScope {
                 if (isSuccess) {
                     createWalletFromServer()
-                    Wallet.store().reset(wallet.mnemonic())
                     setRegistered()
 
                     val service = retrofit().create(ApiService::class.java)
-                    AccountManager.add(Account(userInfo = service.userInfo().data))
+                    AccountManager.add(
+                        Account(
+                            userInfo = service.userInfo().data,
+                            prefix = prefix
+                        )
+                    )
                     continuation.resume(true)
                 } else {
                     resumeAccount()
@@ -69,25 +75,25 @@ suspend fun registerOutblock(
 
 private suspend fun registerOutblockUserInternal(
     username: String,
-    callback: (isSuccess: Boolean, wallet: HDWallet) -> Unit,
+    callback: (isSuccess: Boolean, prefix: String) -> Unit,
 ) {
-    val wallet = HDWallet(128, "")
+    val prefix = generatePrefix(username)
     if (!setToAnonymous()) {
         resumeAccount()
-        callback.invoke(false, wallet)
+        callback.invoke(false, prefix)
         return
     }
 
-    val user = registerServer(username, wallet)
+    val user = registerServer(username, prefix)
 
     if (user.status > 400) {
-        callback(false, wallet)
+        callback(false, prefix)
         return
     }
-
+    logd(TAG, "SYNC Register userId:::${user.data.uid}")
     logd(TAG, "start delete user")
     registerFirebase(user) { isSuccess ->
-        callback.invoke(isSuccess, wallet)
+        callback.invoke(isSuccess, prefix)
     }
 }
 
@@ -105,19 +111,27 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
     }
 }
 
-private suspend fun registerServer(username: String, wallet: HDWallet): RegisterResponse {
+private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
+    val keyPair = KeyManager.generateKeyWithPrefix(prefix)
     val user = service.register(
         RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
+            accountKey = AccountKey(publicKey = keyPair.public.toFormatString()),
             deviceInfo = deviceInfoRequest
-
         )
     )
     logd(TAG, user.toString())
     return user
+}
+
+fun generatePrefix(text: String): String {
+    val timestamp = System.currentTimeMillis().toString()
+    val combinedInput = "${text}_$timestamp"
+    val bytes = MessageDigest.getInstance(HashAlgorithm.SHA2_256.algorithm)
+        .digest(combinedInput.toByteArray())
+    return bytes.joinToString("") { "%02x".format(it) }
 }
 
 private suspend fun setToAnonymous(): Boolean {
@@ -135,14 +149,20 @@ private suspend fun resumeAccount() {
         return
     }
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-    val wallet = Wallet.store().wallet()
     val service = retrofit().create(ApiService::class.java)
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+    if (cryptoProvider == null) {
+        toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+        return
+    }
     val resp = service.login(
         LoginRequest(
-            signature = wallet.sign(
-                getFirebaseJwt()
+            signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+            accountKey = AccountKey(
+                publicKey = cryptoProvider.getPublicKey(),
+                hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                signAlgo = cryptoProvider.getSignatureAlgorithm().index
             ),
-            accountKey = AccountKey(publicKey = wallet.getPublicKey(removePrefix = true)),
             deviceInfo = deviceInfoRequest
         )
     )
@@ -153,7 +173,9 @@ private suspend fun resumeAccount() {
     firebaseLogin(resp.data?.customToken!!) { isSuccess ->
         if (isSuccess) {
             setRegistered()
-            Wallet.store().resume()
+            if (AccountManager.get()?.prefix == null) {
+                Wallet.store().resume()
+            }
         } else {
             toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
             return@firebaseLogin
@@ -171,6 +193,7 @@ suspend fun clearUserCache() {
     FlowCoinListManager.reload()
     BalanceManager.clear()
     StakingManager.clear()
-    updateAccountTransactionCountLocal(0)
+    CryptoProviderManager.clear()
+    updateAccountTransferCount(0)
     delay(1000)
 }

@@ -5,50 +5,127 @@
     android:layout_height="match_parent"
     android:background="@color/deep_bg">
 
-    <androidx.constraintlayout.utils.widget.ImageFilterView
-        android:id="@+id/ifv_logo"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:src="@drawable/ic_launcher_fill"
-        app:layout_constraintBottom_toTopOf="@id/title_view"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <TextView
-        android:id="@+id/title_view"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/montsettat"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="@string/app_short_name"
-        android:textColor="@color/welcome_page_text"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/desc_view"
-        app:layout_constraintTop_toBottomOf="@id/ifv_logo"/>
-
-    <TextView
-        android:id="@+id/desc_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:fontFamily="@font/inter"
-        android:gravity="center"
-        android:text="@string/welcome_desc"
-        android:textColor="@color/welcome_page_text"
-        android:textSize="16sp"
+        android:layout_height="0dp"
+        android:layout_marginTop="54dp"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/create_button"
-        app:layout_constraintTop_toBottomOf="@id/title_view"/>
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/ifv_logo"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:src="@drawable/ic_launcher_fill"
+            app:layout_constraintBottom_toTopOf="@id/title_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/montsettat"
+            android:gravity="center"
+            android:text="@string/app_full_name"
+            android:textColor="@color/text_2"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/desc_view"
+            app:layout_constraintTop_toBottomOf="@id/ifv_logo"/>
+
+        <TextView
+            android:id="@+id/desc_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/inter"
+            android:gravity="center"
+            android:text="@string/welcome_desc"
+            android:textColor="@color/text_2"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/title_view"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_account_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="5dp"
+            android:paddingHorizontal="28dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/desc_view">
+
+            <TextView
+                android:id="@+id/tv_account_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_semi_bold"
+                android:gravity="center"
+                android:text="@string/login_with_registered_account"
+                android:textColor="@color/text_3"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_account_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:paddingVertical="12dp"
+                app:layout_constraintBottom_toTopOf="@id/ll_divider"
+                app:layout_constraintTop_toBottomOf="@id/tv_account_title"/>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_divider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/rv_account_list">
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight="1"
+                    android:background="@color/black_10"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/inter_semi_bold"
+                    android:gravity="center"
+                    android:text="@string/or"
+                    android:textColor="@color/text_3"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:layout_weight="1"
+                    android:background="@color/black_10"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/create_button"
         android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:layout_marginHorizontal="41dp"
-        android:layout_marginBottom="24dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="28dp"
+        android:layout_marginBottom="12dp"
         android:backgroundTint="@color/accent_green"
         android:fontFamily="@font/inter_semi_bold"
         android:insetTop="0dp"
@@ -61,8 +138,8 @@
         app:cornerRadius="100dp"
         app:icon="@drawable/ic_add_circle_white"
         app:iconGravity="textStart"
-        app:iconTint="@color/white"
         app:iconPadding="8dp"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toTopOf="@id/import_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:rippleColor="@color/black_10"/>
@@ -70,9 +147,9 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_button"
         android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:layout_marginHorizontal="41dp"
-        android:layout_marginBottom="80dp"
+        android:layout_height="56dp"
+        android:layout_marginHorizontal="28dp"
+        android:layout_marginBottom="40dp"
         android:fontFamily="@font/inter_semi_bold"
         android:insetTop="0dp"
         android:insetBottom="0dp"

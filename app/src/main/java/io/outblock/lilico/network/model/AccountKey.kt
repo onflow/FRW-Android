@@ -9,7 +9,7 @@ data class AccountKey(
     val hashAlgo: Int = HashAlgorithm.SHA2_256.index,
 
     @SerializedName("sign_algo")
-    val signAlgo: Int = SignatureAlgorithm.ECDSA_SECP256k1.index,
+    val signAlgo: Int = SignatureAlgorithm.ECDSA_P256.index,
 
     @SerializedName("weight")
     val weight: Int = 1000,

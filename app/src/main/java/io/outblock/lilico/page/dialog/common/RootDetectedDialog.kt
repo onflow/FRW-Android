@@ -38,7 +38,7 @@ class RootDetectedDialog : BottomSheetDialogFragment() {
 
         fun show(fragmentManager: FragmentManager) {
             ioScope {
-                if (WalletManager.wallet() == null || isRootDetectedDialogShown() || !isRooted(Env.getApp())) {
+                if (WalletManager.wallet() == null || isRootDetectedDialogShown() || !isRooted()) {
                     return@ioScope
                 }
                 uiScope { RootDetectedDialog().showNow(fragmentManager, "") }

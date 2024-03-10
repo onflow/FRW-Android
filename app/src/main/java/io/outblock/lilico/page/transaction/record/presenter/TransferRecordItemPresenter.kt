@@ -25,11 +25,21 @@ class TransferRecordItemPresenter(
 
     override fun bind(model: TransferRecord) {
         with(binding) {
-            Glide.with(iconView).load(model.image).into(iconView)
+            if (model.image.isNullOrBlank()) {
+                iconView.setImageResource(R.drawable.ic_transaction_default)
+            } else {
+                Glide.with(iconView).load(model.image).into(iconView)
+            }
             transferTypeView.rotation = if (model.transferType == TRANSFER_TYPE_SEND) 0.0f else 180.0f
-            titleView.text = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
-            val amount = if (model.amount.isNullOrBlank()) "" else (model.amount.toSafeFloat() / 100000000f).formatNum(8, RoundingMode.HALF_UP)
-            amountView.text = amount
+//            val title = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
+//            titleView.text = if (title.isNullOrBlank()) {
+//                model.title
+//            } else {
+//                title
+//            }
+            titleView.text = model.title ?: ""
+//            val amount = if (model.amount.isNullOrBlank()) "" else (model.amount.toSafeFloat() / 100000000f).formatNum(8, RoundingMode.HALF_UP)
+            amountView.text = model.amount ?: ""
             bindStatus(model)
             bindTime(model)
             bindAddress(model)
@@ -55,11 +65,12 @@ class TransferRecordItemPresenter(
         statusView.text = transfer.status
     }
 
+    @SuppressLint("StringFormatInvalid")
     private fun ItemTransferRecordBinding.bindAddress(transfer: TransferRecord) {
         val str = if (transfer.transferType == TRANSFER_TYPE_SEND) {
             view.context.getString(R.string.to_address, transfer.receiver)
         } else if (!transfer.sender.isNullOrEmpty()) {
-            view.context.getString(R.string.from, transfer.sender)
+            view.context.getString(R.string.from_address, transfer.sender)
         } else ""
         toView.text = str
     }

@@ -6,6 +6,7 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowPublicKey
 import io.outblock.lilico.manager.account.AccountKeyManager
 import io.outblock.lilico.manager.flowjvm.lastBlockAccount
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.transaction.OnTransactionStateChange
 import io.outblock.lilico.manager.transaction.TransactionState
 import io.outblock.lilico.manager.transaction.TransactionStateManager
@@ -16,7 +17,6 @@ import io.outblock.lilico.page.profile.subpage.wallet.key.model.AccountKey
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.uiScope
 import io.outblock.lilico.utils.viewModelIOScope
-import io.outblock.lilico.wallet.getPublicKey
 import java.util.concurrent.CopyOnWriteArrayList
 
 
@@ -64,9 +64,9 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
             val keyDeviceInfo = response.data.result ?: emptyList()
             uiScope {
                 keyList.forEach { accountKey ->
-                    keyDeviceInfo.find { it.pubKey?.publicKey == accountKey.publicKey.base16Value }
+                    keyDeviceInfo.find { it.pubKey.publicKey == accountKey.publicKey.base16Value }
                         ?.let {
-                            accountKey.deviceName = it.device?.device_name ?: ""
+                            accountKey.deviceName = it.backupInfo?.name.takeIf { name -> !name.isNullOrEmpty() } ?: it.device?.device_name ?: ""
                         }
                 }
                 keyListLiveData.value = keyList
@@ -78,7 +78,7 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
     override fun onTransactionStateChange() {
         val transactionList = TransactionStateManager.getTransactionStateList()
         val transaction =
-            transactionList.firstOrNull { it.type == TransactionState.TYPE_REVOKE_KEY }
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_REVOKE_KEY }
         transaction?.let { state ->
             keyList.firstOrNull { it.id == AccountKeyManager.getRevokingIndexId() }?.let { key ->
                 keyList[keyList.indexOf(key)] = key.copy(
@@ -92,7 +92,8 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     private fun isCurrentDevice(publicKey: FlowPublicKey): Boolean {
-        return getPublicKey() == publicKey.base16Value
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+        return cryptoProvider?.getPublicKey() == publicKey.base16Value
     }
 
 }

@@ -62,10 +62,6 @@
             android:id="@+id/group4"
             layout="@layout/layout_profile_group_4"/>
 
-        <include
-            android:id="@+id/group5"
-            layout="@layout/layout_profile_group_5"/>
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/logout_button"
             android:layout_width="wrap_content"

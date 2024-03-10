@@ -11,6 +11,7 @@ import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.cache.storageInfoCache
 import io.outblock.lilico.databinding.ActivityWalletSettingBinding
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.page.profile.subpage.claimdomain.ClaimDomainActivity
 import io.outblock.lilico.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import io.outblock.lilico.page.profile.subpage.wallet.dialog.WalletResetConfirmDialog
@@ -22,6 +23,7 @@ import io.outblock.lilico.utils.*
 import io.outblock.lilico.utils.extensions.gone
 import io.outblock.lilico.utils.extensions.res2String
 import io.outblock.lilico.utils.extensions.setVisible
+import io.outblock.lilico.utils.extensions.visible
 
 class WalletSettingActivity : BaseActivity() {
 
@@ -50,11 +52,16 @@ class WalletSettingActivity : BaseActivity() {
     @SuppressLint("SetTextI18n")
     private fun setup() {
         with(binding) {
-            privatePreference.setOnClickListener {
-                securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
-            }
-            recoveryPreference.setOnClickListener {
-                securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
+            if (CryptoProviderManager.isHDWalletCrypto()) {
+                group1.visible()
+                privatePreference.setOnClickListener {
+                    securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
+                }
+                recoveryPreference.setOnClickListener {
+                    securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
+                }
+            } else {
+                group1.gone()
             }
 
             accountKey.setOnClickListener {

@@ -19,7 +19,7 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cv_map_layout"
         android:layout_width="match_parent"
-        android:layout_height="260dp"
+        android:layout_height="136dp"
         android:layout_marginHorizontal="18dp"
         android:layout_marginTop="10dp"
         app:cardBackgroundColor="@color/deep_bg"
@@ -221,4 +221,14 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <io.outblock.lilico.widgets.LoadingMaterialButton
+        android:id="@+id/btn_revoke"
+        style="@style/Button"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginBottom="50dp"
+        android:backgroundTint="@color/accent_red"
+        android:text="@string/revoke_device"
+        app:backgroundTint="@color/accent_red"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

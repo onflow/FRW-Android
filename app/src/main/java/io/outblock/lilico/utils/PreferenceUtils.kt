@@ -36,6 +36,7 @@ private val KEY_BIOMETRIC_ENABLE = booleanPreferencesKey("KEY_BIOMETRIC_ENABLE")
 
 private val KEY_BACKUP_MANUALLY = booleanPreferencesKey("KEY_BACKUP_MANUALLY")
 private val KEY_BACKUP_GOOGLE_DRIVE = booleanPreferencesKey("KEY_BACKUP_GOOGLE_DRIVE")
+private val KEY_BACKUP_MULTI = booleanPreferencesKey("KEY_BACKUP_MULTI")
 private val KEY_SEND_STATE_BUBBLE_POSITION = stringPreferencesKey("KEY_SEND_STATE_BUBBLE_POSITION")
 private val KEY_DEVELOPER_MODE_ENABLE = booleanPreferencesKey("KEY_DEVELOPER_MODE_ENABLE")
 private val KEY_CHAIN_NETWORK = intPreferencesKey("KEY_CHAIN_NETWORK")
@@ -44,7 +45,6 @@ private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
 private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
-private val KEY_ACCOUNT_TRANSACTION_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSACTION_COUNT")
 private val KEY_ACCOUNT_TRANSFER_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSFER_COUNT")
 private const val KEY_IS_GUIDE_PAGE_SHOWN = "KEY_IS_GUIDE_PAGE_SHOWN"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
@@ -112,6 +112,16 @@ fun setBackupGoogleDrive(isBackuped: Boolean = true) {
     edit { dataStore.edit { it[KEY_BACKUP_GOOGLE_DRIVE] = isBackuped } }
 }
 
+suspend fun isMultiBackupCreated(): Boolean = dataStore.data.map { it[KEY_BACKUP_MULTI] ?: false }.first()
+
+fun setMultiBackupCreated() {
+    edit { dataStore.edit { it[KEY_BACKUP_MULTI] = true } }
+}
+
+fun setMultiBackupDeleted() {
+    edit { dataStore.edit { it[KEY_BACKUP_MULTI] = false } }
+}
+
 suspend fun isDeveloperModeEnable(): Boolean = dataStore.data.map { it[KEY_DEVELOPER_MODE_ENABLE] ?: isDev() || isTesting() }.first()
 
 fun setDeveloperModeEnable(isEnable: Boolean) {
@@ -167,12 +177,6 @@ suspend fun isFreeGasPreferenceEnable(): Boolean = dataStore.data.map { it[KEY_F
 
 suspend fun setFreeGasPreferenceEnable(isEnable: Boolean) {
     dataStore.edit { it[KEY_FREE_GAS_ENABLE] = isEnable }
-}
-
-suspend fun getAccountTransactionCountLocal(): Int = dataStore.data.map { it[KEY_ACCOUNT_TRANSACTION_COUNT] ?: 0 }.first()
-
-suspend fun updateAccountTransactionCountLocal(count: Int) {
-    dataStore.edit { it[KEY_ACCOUNT_TRANSACTION_COUNT] = count }
 }
 
 suspend fun getAccountTransferCount(): Int = dataStore.data.map { it[KEY_ACCOUNT_TRANSFER_COUNT] ?: 0 }.first()

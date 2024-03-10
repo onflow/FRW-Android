@@ -11,6 +11,7 @@ import io.outblock.lilico.databinding.FragmentWalletCreateUsernameBinding
 import io.outblock.lilico.page.main.MainActivity
 import io.outblock.lilico.page.walletcreate.WalletCreateViewModel
 import io.outblock.lilico.utils.extensions.dp2px
+import io.outblock.lilico.utils.extensions.hideKeyboard
 import io.outblock.lilico.utils.extensions.res2color
 import io.outblock.lilico.utils.extensions.res2pix
 import io.outblock.lilico.utils.extensions.setVisible
@@ -44,6 +45,7 @@ class WalletCreateUsernamePresenter(
             post { layoutParams.height = height }
         }
         binding.nextButton.setOnClickListener {
+            binding.editText.hideKeyboard()
             binding.nextButton.setProgressVisible(true)
             viewModel.createUser(binding.editText.text.toString())
         }

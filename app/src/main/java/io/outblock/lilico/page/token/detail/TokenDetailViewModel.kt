@@ -52,13 +52,17 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate, OnT
     }
 
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        balanceAmountLiveData.value = balance.balance
-        balancePriceLiveData.value = coinRate * balance.balance
+        if (coin.contractName == this.coin.contractName) {
+            balanceAmountLiveData.value = balance.balance
+            balancePriceLiveData.value = coinRate * balance.balance
+        }
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
-        coinRate = price
-        balancePriceLiveData.value = coinRate * (balanceAmountLiveData.value ?: 0f)
+        if (coin.contractName == this.coin.contractName) {
+            coinRate = price
+            balancePriceLiveData.value = coinRate * (balanceAmountLiveData.value ?: 0f)
+        }
     }
 
     override fun onTransactionStateChange() {

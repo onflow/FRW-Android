@@ -10,10 +10,13 @@ import io.outblock.lilico.base.recyclerview.BaseViewHolder
 import io.outblock.lilico.databinding.ItemAccountListDialogBinding
 import io.outblock.lilico.manager.account.Account
 import io.outblock.lilico.manager.account.AccountManager
+import io.outblock.lilico.manager.app.isTestnet
 import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.loadAvatar
 import io.outblock.lilico.utils.uiScope
+import io.outblock.lilico.widgets.DialogType
 import io.outblock.lilico.widgets.ProgressDialog
+import io.outblock.lilico.widgets.SwitchNetworkDialog
 
 class AccountListAdapter : BaseAdapter<Account>() {
 
@@ -37,11 +40,15 @@ private class AccountViewHolder(
 
     init {
         view.setOnClickListener {
-            model?.let {
-                progressDialog.show()
-                AccountManager.switch(it) {
-                    uiScope {
-                        progressDialog.dismiss()
+            if (isTestnet()) {
+                SwitchNetworkDialog(view.context, DialogType.SWITCH).show()
+            } else {
+                model?.let {
+                    progressDialog.show()
+                    AccountManager.switch(it) {
+                        uiScope {
+                            progressDialog.dismiss()
+                        }
                     }
                 }
             }

@@ -15,6 +15,7 @@ import io.outblock.lilico.databinding.LayoutMainDrawerLayoutBinding
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.OnWalletDataUpdate
 import io.outblock.lilico.manager.account.WalletFetcher
+import io.outblock.lilico.manager.app.isTestnet
 import io.outblock.lilico.manager.childaccount.ChildAccount
 import io.outblock.lilico.manager.childaccount.ChildAccountList
 import io.outblock.lilico.manager.childaccount.ChildAccountUpdateListenerCallback
@@ -34,7 +35,9 @@ import io.outblock.lilico.utils.launch
 import io.outblock.lilico.utils.loadAvatar
 import io.outblock.lilico.utils.registerBarcodeLauncher
 import io.outblock.lilico.utils.uiScope
+import io.outblock.lilico.widgets.DialogType
 import io.outblock.lilico.widgets.ProgressDialog
+import io.outblock.lilico.widgets.SwitchNetworkDialog
 import org.joda.time.format.ISODateTimeFormat
 
 class DrawerLayoutPresenter(
@@ -79,10 +82,14 @@ class DrawerLayoutPresenter(
                 )
                 setPadding(8.dp2px().toInt(), 0, 8.dp2px().toInt(), 0)
                 setOnClickListener {
-                    progressDialog.show()
-                    AccountManager.switch(account) {
-                        uiScope {
-                            progressDialog.dismiss()
+                    if (isTestnet()) {
+                        SwitchNetworkDialog(activity, DialogType.SWITCH).show()
+                    } else {
+                        progressDialog.show()
+                        AccountManager.switch(account) {
+                            uiScope {
+                                progressDialog.dismiss()
+                            }
                         }
                     }
                 }

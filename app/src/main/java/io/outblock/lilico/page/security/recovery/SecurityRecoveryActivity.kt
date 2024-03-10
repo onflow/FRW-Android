@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.recyclerview.widget.GridLayoutManager
+import com.instabug.library.Instabug
 import io.outblock.lilico.R
 import io.outblock.lilico.base.activity.BaseActivity
 import io.outblock.lilico.databinding.ActivitySecurityRecoveryBinding
@@ -48,6 +49,7 @@ class SecurityRecoveryActivity : BaseActivity() {
             adapter = this@SecurityRecoveryActivity.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 16.0))
+            Instabug.addPrivateViews(this)
         }
         loadMnemonic()
         binding.stringContainer.setVisible(false)

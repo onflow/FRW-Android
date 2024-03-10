@@ -1,11 +1,12 @@
 package io.outblock.lilico.widgets.webview.fcl
 
 import com.nftco.flow.sdk.DomainTag
+import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.hexToBytes
 import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.config.isGasFree
-import io.outblock.lilico.wallet.hdWallet
-import io.outblock.lilico.wallet.signData
+import io.outblock.lilico.manager.flowjvm.currentKeyId
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.wallet.toAddress
 import io.outblock.lilico.widgets.webview.fcl.model.FclAuthnResponse
 
@@ -59,7 +60,7 @@ private val FCL_AUTHN_RESPONSE = """
             "method": "EXT/RPC",
             "identity": {
               "address": "$ADDRESS_REPLACEMENT",
-              "keyId": 0
+              "keyId": $KEY_ID_REPLACEMENT
             }
           }
         ],
@@ -98,7 +99,7 @@ private val FCL_AUTHN_RESPONSE_ACCOUNT_PROOF = """
               "f_type": "CompositeSignature",
               "f_vsn": "1.0.0",
               "addr": "$ADDRESS_REPLACEMENT",
-              "keyId": 0,
+              "keyId": $KEY_ID_REPLACEMENT,
               "signature": "$SIGNATURE_REPLACEMENT"
             }
           ]
@@ -138,7 +139,7 @@ private val FCL_PRE_AUTHZ_RESPONSE = """
                 "method": "EXT/RPC",
                 "identity": {
                     "address": "$ADDRESS_REPLACEMENT",
-                    "keyId": 0
+                    "keyId": $KEY_ID_REPLACEMENT
                 }
             },
             "payer": [
@@ -165,7 +166,7 @@ private val FCL_PRE_AUTHZ_RESPONSE = """
                     "method": "EXT/RPC",
                     "identity": {
                         "address": "$ADDRESS_REPLACEMENT",
-                        "keyId": 0
+                        "keyId": $KEY_ID_REPLACEMENT
                     }
                 }
             ]
@@ -184,7 +185,7 @@ private val FCL_SIGN_MESSAGE_RESPONSE = """
         "f_type": "CompositeSignature",
         "f_vsn": "1.0.0",
         "addr": "$ADDRESS_REPLACEMENT",
-        "keyId": 0,
+        "keyId": $KEY_ID_REPLACEMENT,
         "signature": "$SIGNATURE_REPLACEMENT"
       },
       "type": "FCL:VIEW:RESPONSE"
@@ -221,32 +222,43 @@ fun generateFclExtensionInject(): String {
 }
 
 suspend fun fclAuthnResponse(fcl: FclAuthnResponse, address: String): String {
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+
     val accountProofSign = if (!fcl.body.nonce.isNullOrBlank()) {
-        hdWallet().signData(fcl.encodeAccountProof(address))
+        try {
+            cryptoProvider.signData(fcl.encodeAccountProof(address))
+        } catch (e: Exception) {
+            ""
+        }
     } else ""
 
-    return fclAuthnResponseWithAccountProofSign(accountProofSign, fcl.body.nonce, address)
+    val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
+    return fclAuthnResponseWithAccountProofSign(accountProofSign, fcl.body.nonce, address, keyId)
 }
 
 suspend fun fclAuthnResponseWithAccountProofSign(
     accountProofSign: String? = null,
     nonce: String? = null,
     address: String,
+    keyId: Int
 ): String {
     return FCL_AUTHN_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
+        .replace(KEY_ID_REPLACEMENT, "$keyId")
         .replace(PRE_AUTHZ_REPLACEMENT, generateAuthnPreAuthz())
         .replace(USER_SIGNATURE_REPLACEMENT, FCL_AUTHN_RESPONSE_USER_SIGNATURE)
         .replace(
             ACCOUNT_PROOF_REPLACEMENT,
             if (accountProofSign.isNullOrEmpty()) "" else FCL_AUTHN_RESPONSE_ACCOUNT_PROOF.replace(ADDRESS_REPLACEMENT, address)
-                .replace(SIGNATURE_REPLACEMENT, accountProofSign).replace(NONCE_REPLACEMENT, nonce.orEmpty())
+                .replace(SIGNATURE_REPLACEMENT, accountProofSign).replace(NONCE_REPLACEMENT,
+                    nonce.orEmpty()).replace(KEY_ID_REPLACEMENT, "$keyId")
         )
 }
 
-fun fclPreAuthzResponse(address: String): String {
+fun fclPreAuthzResponse(address: String, keyId: Int): String {
     return FCL_PRE_AUTHZ_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
+        .replace(KEY_ID_REPLACEMENT, "$keyId")
         .replace(PAYER_ADDRESS_REPLACEMENT, AppConfig.payer().address)
 }
 
@@ -259,9 +271,13 @@ fun fclAuthzResponse(address: String, signature: String, keyId: Int? = 0): Strin
 
 fun fclSignMessageResponse(message: String?, address: String): String {
     val messageBytes = message?.hexToBytes() ?: throw IllegalArgumentException("Message is empty")
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalArgumentException("Crypto Provider is null")
+
+    val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
     return FCL_SIGN_MESSAGE_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
-        .replace(SIGNATURE_REPLACEMENT, hdWallet().signData(DomainTag.USER_DOMAIN_TAG + messageBytes))
+        .replace(KEY_ID_REPLACEMENT, "$keyId")
+        .replace(SIGNATURE_REPLACEMENT, cryptoProvider.signData(DomainTag.USER_DOMAIN_TAG + messageBytes))
 }
 
 private suspend fun generateAuthnPreAuthz(): String {

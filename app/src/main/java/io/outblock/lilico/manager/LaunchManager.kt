@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatDelegate
 import io.outblock.lilico.firebase.config.initFirebaseConfig
 import io.outblock.lilico.firebase.firebaseInitialize
+import io.outblock.lilico.instabug.instabugInitialize
 import io.outblock.lilico.manager.account.AccountManager
 import io.outblock.lilico.manager.account.BalanceManager
 import io.outblock.lilico.manager.account.DeviceInfoManager
@@ -46,6 +47,7 @@ object LaunchManager {
             safeRun { FlowApi.refreshConfig() }
             safeRun { asyncInit() }
             safeRun { firebaseInitialize(application) }
+            safeRun { instabugInitialize(application) }
             safeRun { setNightMode() }
             safeRun { runWorker(application) }
             safeRun { readCache(application) }

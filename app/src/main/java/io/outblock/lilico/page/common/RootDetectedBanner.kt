@@ -19,7 +19,7 @@ class RootDetectedBanner : FrameLayout {
     init {
         setVisible(false)
         ioScope {
-            if (isRooted(context)) {
+            if (isRooted()) {
                 setup()
             }
         }

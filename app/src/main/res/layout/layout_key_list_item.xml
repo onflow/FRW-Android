@@ -36,102 +36,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cv_title_card"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/deep_bg"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/tv_serial_number"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/inter"
-                        android:textColor="@color/text_2"
-                        android:textSize="12sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:text="Key 1"/>
-
-                    <TextView
-                        android:id="@+id/tv_device_label"
-                        android:layout_width="wrap_content"
-                        android:layout_height="20dp"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/bg_round_4dp_alpha_12"
-                        android:backgroundTint="@color/text_3"
-                        android:fontFamily="@font/inter"
-                        android:paddingHorizontal="8dp"
-                        android:paddingVertical="2dp"
-                        android:textColor="@color/text_3"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toEndOf="@id/tv_serial_number"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:text="iPhone 15 Pro Max"/>
-
-                    <ImageView
-                        android:id="@+id/iv_key_lock"
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:layout_marginEnd="2dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_key_list_lock"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/pb_key_weight"
-                        app:layout_constraintTop_toTopOf="parent"/>
-
-                    <ProgressBar
-                        android:id="@+id/pb_key_weight"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="72dp"
-                        android:layout_height="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:progress="40"
-                        android:progressDrawable="@drawable/bg_key_list_weight"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/fb_toggle"
-                        app:layout_constraintTop_toTopOf="parent"/>
-
-                    <TextView
-                        android:id="@+id/tv_key_weight"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/inter"
-                        android:gravity="center"
-                        android:textColor="@color/text_white"
-                        android:textSize="9sp"
-                        app:layout_constraintBottom_toBottomOf="@id/pb_key_weight"
-                        app:layout_constraintEnd_toEndOf="@id/pb_key_weight"
-                        app:layout_constraintStart_toStartOf="@id/pb_key_weight"
-                        app:layout_constraintTop_toTopOf="@id/pb_key_weight"
-                        tools:text="1000 / 1000"/>
-
-
-                    <ImageView
-                        android:id="@+id/fb_toggle"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_key_list_expand"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/cl_key_content"
                 android:layout_width="0dp"
@@ -169,8 +73,10 @@
 
                 <ImageView
                     android:id="@+id/iv_key_copy"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="0dp"
                     android:src="@drawable/ic_key_list_copy"
                     app:layout_constraintBottom_toBottomOf="@id/iv_key_public"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -297,6 +203,102 @@
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_title_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_serial_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter"
+                        android:textColor="@color/text_2"
+                        android:textSize="12sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="Key 1"/>
+
+                    <TextView
+                        android:id="@+id/tv_device_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_round_4dp_alpha_12"
+                        android:backgroundTint="@color/text_3"
+                        android:fontFamily="@font/inter"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:textColor="@color/text_3"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/tv_serial_number"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:text="iPhone 15 Pro Max"/>
+
+                    <ImageView
+                        android:id="@+id/iv_key_lock"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="2dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_key_list_lock"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/pb_key_weight"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <ProgressBar
+                        android:id="@+id/pb_key_weight"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="72dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:progress="40"
+                        android:progressDrawable="@drawable/bg_key_list_weight"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/fb_toggle"
+                        app:layout_constraintTop_toTopOf="parent"/>
+
+                    <TextView
+                        android:id="@+id/tv_key_weight"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/inter"
+                        android:gravity="center"
+                        android:textColor="@color/text_white"
+                        android:textSize="9sp"
+                        app:layout_constraintBottom_toBottomOf="@id/pb_key_weight"
+                        app:layout_constraintEnd_toEndOf="@id/pb_key_weight"
+                        app:layout_constraintStart_toStartOf="@id/pb_key_weight"
+                        app:layout_constraintTop_toTopOf="@id/pb_key_weight"
+                        tools:text="1000 / 1000"/>
+
+
+                    <ImageView
+                        android:id="@+id/fb_toggle"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_key_list_expand"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"/>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </com.google.android.material.card.MaterialCardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </com.chauthai.swipereveallayout.SwipeRevealLayout>

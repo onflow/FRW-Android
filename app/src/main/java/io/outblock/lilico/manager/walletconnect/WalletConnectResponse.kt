@@ -4,16 +4,16 @@ import androidx.annotation.WorkerThread
 import com.nftco.flow.sdk.FlowAddress
 import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.flowjvm.lastBlockAccountKeyId
+import io.outblock.lilico.manager.key.CryptoProviderManager
 import io.outblock.lilico.manager.walletconnect.model.WalletConnectMethod
-import io.outblock.lilico.wallet.hdWallet
 import io.outblock.lilico.wallet.removeAddressPrefix
-import io.outblock.lilico.wallet.signData
 import io.outblock.lilico.wallet.toAddress
 import io.outblock.lilico.widgets.webview.fcl.encodeAccountProof
 
 @WorkerThread
 fun walletConnectAuthnServiceResponse(
     address: String,
+    keyId: Int,
     nonce: String?,
     appIdentifier: String?,
     isFromSdk: Boolean,
@@ -30,18 +30,18 @@ fun walletConnectAuthnServiceResponse(
       ${
         if (isFromSdk) {
             """
-                  ${authn(address.removeAddressPrefix())},
-                  ${authz(address.removeAddressPrefix())},
-                  ${userSign(address.removeAddressPrefix())},
+                  ${authn(address.removeAddressPrefix(), keyId)},
+                  ${authz(address.removeAddressPrefix(), keyId)},
+                  ${userSign(address.removeAddressPrefix(), keyId)},
                   ${preAuthz()},
                   ${signMessage()},
-                  ${accountProof(address, nonce, appIdentifier)}${if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) "" else ","}
+                  ${accountProof(address, keyId, nonce, appIdentifier)}${if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) "" else ","}
               """.trimIndent()
         } else {
             """
-                  ${authn(address.removeAddressPrefix())},
-                  ${authz(address.removeAddressPrefix())},
-                  ${userSign(address.removeAddressPrefix())}
+                  ${authn(address.removeAddressPrefix(), keyId)},
+                  ${authz(address.removeAddressPrefix(), keyId)},
+                  ${userSign(address.removeAddressPrefix(), keyId)}
               """.trimIndent()
         }
     }
@@ -54,7 +54,7 @@ fun walletConnectAuthnServiceResponse(
     """.trimIndent()
 }
 
-private fun authn(address: String): String {
+private fun authn(address: String, keyId: Int): String {
     return """
 {
     "f_type": "Service",
@@ -69,12 +69,12 @@ private fun authn(address: String): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_authn",
     "type": "authn",
-    "identity": { "address": "$address", "keyId": 0 }
+    "identity": { "address": "$address", "keyId": $keyId }
 }
     """.trimIndent()
 }
 
-private fun authz(address: String): String {
+private fun authz(address: String, keyId: Int): String {
     return """
 {
     "f_type": "Service",
@@ -83,12 +83,12 @@ private fun authz(address: String): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_authz",
     "type": "authz",
-    "identity": { "address": "$address", "keyId": 0 }
+    "identity": { "address": "$address", "keyId": $keyId }
 }
     """.trimIndent()
 }
 
-private fun userSign(address: String): String {
+private fun userSign(address: String, keyId: Int): String {
     return """
 {
     "f_type": "Service",
@@ -97,7 +97,7 @@ private fun userSign(address: String): String {
     "f_vsn": "1.0.0",
     "endpoint": "flow_user_sign",
     "type": "user-signature",
-    "identity": { "address": "$address", "keyId": 0 }
+    "identity": { "address": "$address", "keyId": $keyId }
 }
     """.trimIndent()
 }
@@ -119,9 +119,11 @@ private fun preAuthz(): String {
     """.trimIndent()
 }
 
-private fun accountProof(address: String, nonce: String?, appIdentifier: String?): String {
+private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
     if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) return ""
-    val accountProofSign = hdWallet().signData(encodeAccountProof(address, nonce, appIdentifier, includeDomainTag = true))
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+    val accountProofSign = cryptoProvider.signData(encodeAccountProof(address, nonce, appIdentifier,
+        includeDomainTag = true))
     return """
     {
         "f_type": "Service",
@@ -140,7 +142,7 @@ private fun accountProof(address: String, nonce: String?, appIdentifier: String?
               "f_type": "CompositeSignature",
               "f_vsn": "1.0.0",
               "addr": "$address",
-              "keyId": 0,
+              "keyId": $keyId,
               "signature": "$accountProofSign"
             }
           ]

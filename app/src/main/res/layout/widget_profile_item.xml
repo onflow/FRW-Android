@@ -25,7 +25,6 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:scaleType="centerInside"
-            app:round="24dp"
             tools:background="#999"/>
     </FrameLayout>
 

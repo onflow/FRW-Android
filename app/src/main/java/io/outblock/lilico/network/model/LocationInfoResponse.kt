@@ -39,7 +39,9 @@ data class KeyDeviceInfo(
     @SerializedName("device")
     val device: DeviceModel?,
     @SerializedName("pubkey")
-    val pubKey: KeyModel?
+    val pubKey: KeyModel,
+    @SerializedName("backup_info")
+    val backupInfo: BackupInfoModel?
 ) {
     data class KeyModel(
         @SerializedName("hash_algo")
@@ -49,11 +51,20 @@ data class KeyDeviceInfo(
         @SerializedName("public_key")
         val publicKey: String,
         @SerializedName("sign_algo")
-        val signAlgo: String,
+        val signAlgo: Int,
         @SerializedName("weight")
-        val weight: String,
+        val weight: Int,
     )
 }
+
+data class BackupInfoModel(
+    @SerializedName("create_time")
+    val createTime: String,
+    @SerializedName("name")
+    val name: String,
+    @SerializedName("type")
+    val type: Int
+)
 
 data class UpdateDeviceParams(
     @SerializedName("device_id")
@@ -146,4 +157,11 @@ data class DeviceInfoRequest(
 
     @SerializedName("zip")
     val zip: String
+)
+
+data class BackupInfoRequest(
+    @SerializedName("name")
+    val name: String,
+    @SerializedName("type")
+    val type: Int
 )

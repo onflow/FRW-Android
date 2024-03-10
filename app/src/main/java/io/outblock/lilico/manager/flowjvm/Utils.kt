@@ -140,6 +140,11 @@ fun FlowAddress.lastBlockAccountKeyId(): Int {
     return lastBlockAccount()?.keys?.firstOrNull()?.id ?: 0
 }
 
+@WorkerThread
+fun FlowAddress.currentKeyId(publicKey: String): Int {
+    return lastBlockAccount()?.keys?.first { publicKey == it.publicKey.base16Value }?.id ?: 0
+}
+
 fun Field<*>.valueString(): String = if (value is String) value as String else Flow.OBJECT_MAPPER.writeValueAsString(value)
 
 fun FlowArgument.toAsArgument(): AsArgument {

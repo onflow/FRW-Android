@@ -18,9 +18,13 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
+import io.outblock.lilico.manager.backup.BackupCryptoProvider
+import io.outblock.lilico.manager.backup.restoreFromGoogleDrive
+import io.outblock.lilico.manager.backup.uploadGoogleDriveBackup
 import io.outblock.lilico.utils.Env
 import io.outblock.lilico.utils.ioScope
 import io.outblock.lilico.utils.logd
+import wallet.core.jni.HDWallet
 import java.util.*
 
 
@@ -30,6 +34,11 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
     private val isRestore by lazy { intent.getBooleanExtra(EXTRA_RESTORE, false) }
     private val isRestoreWithSignOut by lazy { intent.getBooleanExtra(EXTRA_RESTORE_WITH_SIGN_OUT, false) }
     private val isDeleteBackup by lazy { intent.getBooleanExtra(EXTRA_DELETE_BACKUP, false) }
+    private val isMultiBackup by lazy { intent.getBooleanExtra(EXTRA_MULTI_BACKUP, false) }
+    private val isMultiRestoreWithSignOut by lazy {
+        intent.getBooleanExtra(EXTRA_MULTI_RESTORE_WITH_SIGN_OUT, false)
+    }
+    private val mnemonic by lazy { intent.getStringExtra(EXTRA_MNEMONIC) }
 
     private var mClient: GoogleSignInClient? = null
 
@@ -44,7 +53,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             .build()
         mClient = GoogleSignIn.getClient(this, signInOptions)
 
-        if (isRestoreWithSignOut) {
+        if (isRestoreWithSignOut || isMultiRestoreWithSignOut || isMultiBackup) {
             signOutAndSignInAgain()
         } else {
             mClient?.let {
@@ -122,6 +131,8 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                 when {
                     isDeleteBackup -> deleteMnemonicFromGoogleDrive(googleDriveService)
                     isRestore || isRestoreWithSignOut -> restoreMnemonicFromGoogleDrive(googleDriveService)
+                    isMultiBackup -> uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(HDWallet(mnemonic, "")))
+                    isMultiRestoreWithSignOut -> restoreFromGoogleDrive(googleDriveService)
                     else -> uploadMnemonicToGoogleDrive(googleDriveService, password)
                 }
                 finish()
@@ -145,6 +156,10 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         private const val REQUEST_CODE_SIGN_IN = 1
         private const val EXTRA_PASSWORD = "extra_password"
 
+        private const val EXTRA_MULTI_BACKUP = "extra_multi_backup"
+        private const val EXTRA_MULTI_RESTORE_WITH_SIGN_OUT = "extra_multi_restore_with_sign_out"
+        private const val EXTRA_MNEMONIC = "extra_mnemonic"
+
         private const val EXTRA_RESTORE = "extra_restore"
 
         private const val EXTRA_RESTORE_WITH_SIGN_OUT = "extra_restore_with_sign_out"
@@ -154,6 +169,19 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         fun uploadMnemonic(context: Context, password: String) {
             context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
                 putExtra(EXTRA_PASSWORD, password)
+            })
+        }
+
+        fun multiBackupMnemonic(context: Context, mnemonic: String) {
+            context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
+                putExtra(EXTRA_MULTI_BACKUP, true)
+                putExtra(EXTRA_MNEMONIC, mnemonic)
+            })
+        }
+
+        fun multiRestoreMnemonicWithSignOut(context: Context) {
+            context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
+                putExtra(EXTRA_MULTI_RESTORE_WITH_SIGN_OUT, true)
             })
         }
 

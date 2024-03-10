@@ -2,6 +2,7 @@ package io.outblock.lilico.page.profile.presenter
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.TransitionManager
+import com.instabug.library.Instabug
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import io.outblock.lilico.R
 import io.outblock.lilico.base.presenter.BasePresenter
@@ -11,6 +12,7 @@ import io.outblock.lilico.manager.config.AppConfig
 import io.outblock.lilico.manager.walletconnect.WalletConnect
 import io.outblock.lilico.network.model.UserInfoData
 import io.outblock.lilico.page.address.AddressBookActivity
+import io.outblock.lilico.page.backup.WalletBackupActivity
 import io.outblock.lilico.page.dialog.accounts.AccountSwitchDialog
 import io.outblock.lilico.page.inbox.InboxActivity
 import io.outblock.lilico.page.main.HomeTab
@@ -20,7 +22,6 @@ import io.outblock.lilico.page.profile.model.ProfileFragmentModel
 import io.outblock.lilico.page.profile.subpage.about.AboutActivity
 import io.outblock.lilico.page.profile.subpage.accountsetting.AccountSettingActivity
 import io.outblock.lilico.page.profile.subpage.avatar.ViewAvatarActivity
-import io.outblock.lilico.page.profile.subpage.backup.BackupSettingActivity
 import io.outblock.lilico.page.profile.subpage.claimdomain.MeowDomainClaimedStateChangeListener
 import io.outblock.lilico.page.profile.subpage.claimdomain.observeMeowDomainClaimedStateChange
 import io.outblock.lilico.page.profile.subpage.currency.CurrencyListActivity
@@ -39,7 +40,6 @@ import io.outblock.lilico.utils.extensions.setVisible
 import io.outblock.lilico.utils.getCurrencyFlag
 import io.outblock.lilico.utils.getNotificationSettingIntent
 import io.outblock.lilico.utils.ioScope
-import io.outblock.lilico.utils.isBackupGoogleDrive
 import io.outblock.lilico.utils.isMeowDomainClaimed
 import io.outblock.lilico.utils.isNightMode
 import io.outblock.lilico.utils.isNotificationPermissionGrand
@@ -72,7 +72,7 @@ class ProfileFragmentPresenter(
         binding.actionGroup.walletButton.setOnClickListener { WalletSettingActivity.launch(context) }
         binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
-        binding.group0.backupPreference.setOnClickListener { BackupSettingActivity.launch(context) }
+        binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }
         binding.group0.securityPreference.setOnClickListener {
             SecuritySettingActivity.launch(context)
         }
@@ -103,8 +103,9 @@ class ProfileFragmentPresenter(
             )
         }
 
-        binding.group4.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
-        binding.group5.switchAccountPreference.setOnClickListener {
+        binding.group3.bugReport.setOnClickListener { Instabug.show() }
+        binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
+        binding.group4.switchAccountPreference.setOnClickListener {
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
 
@@ -148,18 +149,15 @@ class ProfileFragmentPresenter(
 
     private fun updatePreferenceState() {
         ioScope {
-            val isBackupGoogleDrive = isBackupGoogleDrive()
             val isSignIn = isRegistered()
             uiScope {
-                with(binding.group0.backupPreference) {
-                    setStateVisible(isBackupGoogleDrive)
-                    setDesc(R.string.manually.res2String())
-                }
                 with(binding) {
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
                     actionGroup.root.setVisible(isSignIn)
-                    group0.root.setVisible(isSignIn)
+                    group0.linkedAccount.setVisible(isSignIn)
+                    group0.backupPreference.setVisible(isSignIn)
+                    group0.securityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
                     group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark.res2String() else R.string.light.res2String())
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
