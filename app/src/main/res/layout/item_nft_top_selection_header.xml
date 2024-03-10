@@ -48,7 +48,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <io.outblock.lilico.widgets.CardSwipeView
+    <com.flowfoundation.wallet.widgets.CardSwipeView
         android:id="@+id/motion_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,7 +57,7 @@
         tools:layout_height="300dp"
         tools:visibility="visible">
 
-        <io.outblock.lilico.page.nft.nftlist.widget.NftCardView
+        <com.flowfoundation.wallet.page.nft.nftlist.widget.NftCardView
             android:id="@+id/card0"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -70,7 +70,7 @@
             app:layout_constraintEnd_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <io.outblock.lilico.page.nft.nftlist.widget.NftCardView
+        <com.flowfoundation.wallet.page.nft.nftlist.widget.NftCardView
             android:id="@+id/card1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -83,7 +83,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <io.outblock.lilico.page.nft.nftlist.widget.NftCardView
+        <com.flowfoundation.wallet.page.nft.nftlist.widget.NftCardView
             android:id="@+id/card2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -98,7 +98,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <io.outblock.lilico.page.nft.nftlist.widget.NftCardView
+        <com.flowfoundation.wallet.page.nft.nftlist.widget.NftCardView
             android:id="@+id/card3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -113,7 +113,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <io.outblock.lilico.page.nft.nftlist.widget.NftCardView
+        <com.flowfoundation.wallet.page.nft.nftlist.widget.NftCardView
             android:id="@+id/card4"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -128,7 +128,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <io.outblock.lilico.page.nft.nftlist.widget.NftCardView
+        <com.flowfoundation.wallet.page.nft.nftlist.widget.NftCardView
             android:id="@+id/card5"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -154,5 +154,5 @@
             app:carousel_nextState="@+id/next"
             app:carousel_previousState="@+id/previous"
             app:constraint_referenced_ids="card0, card1, card2, card3, card4, card5"/>
-    </io.outblock.lilico.widgets.CardSwipeView>
+    </com.flowfoundation.wallet.widgets.CardSwipeView>
 </LinearLayout>

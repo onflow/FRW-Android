@@ -111,7 +111,7 @@
                 android:layout_marginTop="25dp"
                 android:background="@color/background"/>
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreferenceSwitch
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
                 android:id="@+id/auto_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

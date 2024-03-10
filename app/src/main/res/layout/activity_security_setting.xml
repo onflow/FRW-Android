@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreference
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
                 android:id="@+id/pin_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
                 android:layout_marginHorizontal="8dp"
                 android:background="@color/background"/>
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreferenceSwitch
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
                 android:id="@+id/biometrics_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

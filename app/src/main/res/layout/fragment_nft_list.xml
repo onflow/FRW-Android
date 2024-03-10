@@ -96,7 +96,7 @@
                 app:layout_scrollFlags="scroll|snap"
                 tools:visibility="visible">
 
-                <io.outblock.lilico.widgets.FocusRecyclerView
+                <com.flowfoundation.wallet.widgets.FocusRecyclerView
                     android:id="@+id/collection_tabs"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"

@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <io.outblock.lilico.widgets.BlurImageView
+            <com.flowfoundation.wallet.widgets.BlurImageView
                 android:id="@+id/background_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -175,7 +175,7 @@
                         tools:text="The Truth of Nature"/>
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <io.outblock.lilico.widgets.likebutton.LikeButton
+                <com.flowfoundation.wallet.widgets.likebutton.LikeButton
                     android:id="@+id/collect_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

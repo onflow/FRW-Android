@@ -216,7 +216,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -252,7 +252,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -288,7 +288,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -325,7 +325,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 

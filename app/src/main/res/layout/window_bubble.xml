@@ -21,7 +21,7 @@
             tools:listitem="@layout/item_browser_float_tabs"/>
     </FrameLayout>
 
-    <io.outblock.lilico.widgets.DraggableLayout
+    <com.flowfoundation.wallet.widgets.DraggableLayout
         android:id="@+id/float_bubble"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -62,5 +62,5 @@
             tools:progress="80"
             tools:visibility="visible"/>
 
-    </io.outblock.lilico.widgets.DraggableLayout>
+    </com.flowfoundation.wallet.widgets.DraggableLayout>
 </FrameLayout>

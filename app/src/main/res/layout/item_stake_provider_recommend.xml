@@ -81,7 +81,7 @@
                 app:layout_constraintStart_toEndOf="@id/icon_view"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_chainStyle="packed"
-                tools:text="Flow Ref"/>
+                tools:text="Flow Wallet"/>
 
             <TextView
                 android:id="@+id/desc_view"
@@ -98,7 +98,7 @@
                 app:layout_constraintStart_toEndOf="@id/icon_view"
                 app:layout_constraintTop_toBottomOf="@id/title_view"
                 app:layout_constraintVertical_chainStyle="packed"
-                tools:text="Flow Ref"/>
+                tools:text="Flow Wallet"/>
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/rate_wrapper"

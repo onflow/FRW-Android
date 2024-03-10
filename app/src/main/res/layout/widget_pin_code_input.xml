@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="horizontal"
-    tools:parentTag="io.outblock.lilico.page.walletcreate.fragments.pincode.pin.widgets.PinCodeInputLayout">
+    tools:parentTag="com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.PinCodeInputLayout">
 
     <View
         android:layout_width="20dp"

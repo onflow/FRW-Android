@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="file_provider_authorities" translatable="false">io.outblock.lilico.provider</string>
+    <string name="file_provider_authorities" translatable="false">com.flowfoundation.wallet.provider</string>
 </resources>

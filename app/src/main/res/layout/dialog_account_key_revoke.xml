@@ -61,7 +61,7 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 
-    <io.outblock.lilico.widgets.SendButton
+    <com.flowfoundation.wallet.widgets.SendButton
         android:id="@+id/send_button"
         android:layout_width="match_parent"
         android:layout_height="48dp"

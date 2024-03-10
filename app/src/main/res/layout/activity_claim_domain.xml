@@ -213,7 +213,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/claim_button"
         android:layout_width="match_parent"
         android:layout_height="54dp"

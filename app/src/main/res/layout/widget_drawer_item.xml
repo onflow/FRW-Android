@@ -33,7 +33,7 @@
             android:textColor="@color/neutrals2"
             android:textSize="14sp"
             android:textStyle="bold"
-            tools:text="Flow Ref"/>
+            tools:text="Flow Wallet"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 </com.google.android.material.card.MaterialCardView>

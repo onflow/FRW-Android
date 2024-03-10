@@ -31,7 +31,7 @@
         android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@id/tv_multi_backup_tip"/>
 
-    <io.outblock.lilico.page.backup.multibackup.view.BackupOptionItem
+    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
         android:id="@+id/oi_google_drive"
         android:layout_width="110dp"
         android:layout_height="110dp"
@@ -53,7 +53,7 @@
         app:layout_constraintStart_toStartOf="@id/oi_google_drive"
         app:layout_constraintEnd_toEndOf="@id/oi_google_drive"/>
 
-    <io.outblock.lilico.page.backup.multibackup.view.BackupOptionItem
+    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
         android:id="@+id/oi_recovery_phrase"
         android:layout_width="110dp"
         android:layout_height="110dp"
@@ -74,7 +74,7 @@
         app:layout_constraintStart_toStartOf="@id/oi_recovery_phrase"
         app:layout_constraintEnd_toEndOf="@id/oi_recovery_phrase"/>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_next"
         style="@style/Button"
         android:layout_width="match_parent"

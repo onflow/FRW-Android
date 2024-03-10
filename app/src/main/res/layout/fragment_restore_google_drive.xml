@@ -55,7 +55,7 @@
         app:layout_constraintTop_toBottomOf="@id/tv_option_note"
         app:layout_constraintBottom_toTopOf="@id/btn_next"/>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_next"
         style="@style/Button"
         android:layout_width="match_parent"

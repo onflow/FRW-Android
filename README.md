@@ -1,5 +1,5 @@
-# Flow Reference Wallet Android Project User Guide
-This document is a guide for users who want to run the Flow Reference Wallet Android project. Before starting, please make sure you have installed Android Studio and have a basic understanding of Android development.
+# Flow Wallet Android Project User Guide
+This document is a guide for users who want to run the Flow Wallet Android project. Before starting, please make sure you have installed Android Studio and have a basic understanding of Android development.
 
 ### Step 1: Configure google-services.json
 The google-services.json file is required to enable Firebase services such as Firebase Authentication and Firebase Cloud Messaging. To use these services, you need to provide your own google-services.json file.
@@ -35,6 +35,6 @@ WALLET_CONNECT_PROJECT_ID
 Please fill in the values for each item according to your project's requirements.
 
 ### Step 4: Run the project
-Now you are ready to run the Flow Reference Wallet Android project. Simply open the project in Android Studio and run it on an emulator or a physical device.
+Now you are ready to run the Flow Wallet Android project. Simply open the project in Android Studio and run it on an emulator or a physical device.
 
 If you encounter any issues during the setup process, please refer to the project's documentation or contact the project's developer for assistance.

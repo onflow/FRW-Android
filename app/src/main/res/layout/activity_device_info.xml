@@ -104,7 +104,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -140,7 +140,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -176,7 +176,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -213,7 +213,7 @@
                     android:textSize="14sp"
                     android:textColor="@color/text_3"
                     android:gravity="end"
-                    tools:text="Flow Ref"
+                    tools:text="Flow Wallet"
                     />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -221,7 +221,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_revoke"
         style="@style/Button"
         android:layout_width="match_parent"

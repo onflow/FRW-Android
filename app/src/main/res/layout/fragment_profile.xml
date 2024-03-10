@@ -31,7 +31,7 @@
                 tools:visibility="gone"/>
         </FrameLayout>
 
-        <io.outblock.lilico.page.common.RootDetectedBanner
+        <com.flowfoundation.wallet.page.common.RootDetectedBanner
             android:id="@+id/root_detect_banner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

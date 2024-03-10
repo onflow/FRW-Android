@@ -13,10 +13,10 @@
       "delegate_permission/common.get_login_creds"
     ],
     "target": {
-      "namespace": "Lilico Dev",
-      "package_name": "io.outblock.lilico.dev",
+      "namespace": "Flow Wallet Dev",
+      "package_name": "com.flowfoundation.wallet.dev",
       "sha256_cert_fingerprints": [
-        "95:44:19:B4:8B:D2:14:50:AB:89:24:01:4F:0A:E0:60:55:E3:FF:BD:37:F3:73:56:69:65:6D:E8:44:5F:3D:D6"
+        "38:09:EB:5D:0E:E2:92:14:44:9C:22:77:FB:EA:C6:FD:AD:12:C1:85:40:5E:06:05:23:22:59:CA:1F:9D:05:A9"
       ]
     }
   },
@@ -25,10 +25,10 @@
       "delegate_permission/common.get_login_creds"
     ],
     "target": {
-      "namespace": "Lilico",
-      "package_name": "io.outblock.lilico",
+      "namespace": "Flow Wallet",
+      "package_name": "com.flowfoundation.wallet",
       "sha256_cert_fingerprints": [
-        "95:44:19:B4:8B:D2:14:50:AB:89:24:01:4F:0A:E0:60:55:E3:FF:BD:37:F3:73:56:69:65:6D:E8:44:5F:3D:D6"
+        "38:09:EB:5D:0E:E2:92:14:44:9C:22:77:FB:EA:C6:FD:AD:12:C1:85:40:5E:06:05:23:22:59:CA:1F:9D:05:A9"
       ]
     }
   }
