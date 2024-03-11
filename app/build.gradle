@@ -239,6 +239,7 @@ dependencies {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
     implementation("com.walletconnect:sign")
+    implementation 'com.github.trustwallet:trust-web3-provider:3.0.0'
     /** FLOW **/
 
     implementation "io.github.cdimascio:dotenv-kotlin:6.4.1"
@@ -251,6 +252,7 @@ dependencies {
     implementation 'com.instabug.library:instabug:12.6.0'
 
     implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
+    implementation "com.louiscad.splitties:splitties-alertdialog-material:3.0.0"
 
     /** TEST **/
     testImplementation 'junit:junit:4.13.2'

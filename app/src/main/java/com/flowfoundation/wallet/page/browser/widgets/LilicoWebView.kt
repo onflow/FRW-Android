@@ -4,17 +4,22 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.net.http.SslError
 import android.util.AttributeSet
 import android.webkit.CookieManager
+import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebView
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.manager.evm.loadInitJS
+import com.flowfoundation.wallet.manager.evm.loadProviderJS
 import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFilePicker
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.*
+import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -36,6 +41,7 @@ class LilicoWebView : WebView {
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
         addJavascriptInterface(JsInterface(this), "android")
+        addJavascriptInterface(EvmInterface(this), "_tw_")
         setOnScrollChangeListener { _, scrollX, scrollY, _, oldScrollY ->
             callback?.onScrollChange(scrollX, scrollY - oldScrollY)
         }
@@ -91,6 +97,8 @@ class LilicoWebView : WebView {
             view.executeJs(JS_FCL_EXTENSIONS)
             view.executeJs(JS_LISTEN_WINDOW_FCL_MESSAGE)
             view.executeJs(JS_LISTEN_FLOW_WALLET_TRANSACTION)
+            view?.evaluateJavascript(loadProviderJS(), null)
+            view?.evaluateJavascript(loadInitJS(), null)
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
