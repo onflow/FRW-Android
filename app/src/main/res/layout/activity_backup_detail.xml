@@ -80,72 +80,46 @@
             android:layout_height="52dp"
             android:padding="16dp">
 
-            <TextView
-                android:id="@+id/tv_serial_number"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter"
-                android:textColor="@color/text_2"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
+            <ImageView
+                android:id="@+id/iv_key_type"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_backup_passkey"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                tools:text="Key 1"/>
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
             <TextView
-                android:id="@+id/tv_device_label"
+                android:id="@+id/tv_key_type"
                 android:layout_width="wrap_content"
                 android:layout_height="20dp"
                 android:layout_marginStart="8dp"
+                android:fontFamily="@font/inter"
+                android:textColor="@color/text_3"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/iv_key_type"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="iPhone 15 Pro Max"/>
+
+            <TextView
+                android:id="@+id/tv_status_label"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_marginEnd="16dp"
                 android:background="@drawable/bg_round_4dp_alpha_12"
                 android:backgroundTint="@color/text_3"
                 android:fontFamily="@font/inter"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
                 android:textColor="@color/text_3"
-                android:textSize="10sp"
+                android:textSize="9sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tv_serial_number"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="iPhone 15 Pro Max"/>
-
-            <ImageView
-                android:id="@+id/iv_key_lock"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_marginEnd="2dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_key_list_lock"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/pb_key_weight"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <ProgressBar
-                android:id="@+id/pb_key_weight"
-                style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="72dp"
-                android:layout_height="16dp"
-                android:layout_marginEnd="16dp"
-                android:progress="40"
-                android:progressDrawable="@drawable/bg_key_list_weight"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/fb_toggle"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <TextView
-                android:id="@+id/tv_key_weight"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/inter"
-                android:gravity="center"
-                android:textColor="@color/text_white"
-                android:textSize="9sp"
-                app:layout_constraintBottom_toBottomOf="@id/pb_key_weight"
-                app:layout_constraintEnd_toEndOf="@id/pb_key_weight"
-                app:layout_constraintStart_toStartOf="@id/pb_key_weight"
-                app:layout_constraintTop_toTopOf="@id/pb_key_weight"
-                tools:text="1000 / 1000"/>
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Multi-sign"/>
 
             <ImageView
                 android:id="@+id/fb_toggle"

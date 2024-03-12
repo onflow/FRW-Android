@@ -48,7 +48,9 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
                         it.revoked,
                         isRevoking = false,
                         isCurrentDevice = isCurrentDevice(it.publicKey),
-                        deviceName = ""
+                        deviceName = "",
+                        backupType = -1,
+                        deviceType = -1,
                     )
                 })
                 keyListLiveData.postValue(keyList)
@@ -67,6 +69,8 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
                     keyDeviceInfo.find { it.pubKey.publicKey == accountKey.publicKey.base16Value }
                         ?.let {
                             accountKey.deviceName = it.backupInfo?.name.takeIf { name -> !name.isNullOrEmpty() } ?: it.device?.device_name ?: ""
+                            accountKey.deviceType = it.device?.device_type ?: -1
+                            accountKey.backupType = it.backupInfo?.type ?: -1
                         }
                 }
                 keyListLiveData.value = keyList

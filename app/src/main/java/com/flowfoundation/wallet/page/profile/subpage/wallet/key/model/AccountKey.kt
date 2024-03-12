@@ -16,4 +16,6 @@ data class AccountKey(
     val isRevoking: Boolean = false,
     val isCurrentDevice: Boolean = false,
     var deviceName: String,
+    var backupType: Int,
+    var deviceType: Int,
 )

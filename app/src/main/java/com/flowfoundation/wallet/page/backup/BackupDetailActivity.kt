@@ -59,33 +59,25 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 tvBackupName.text = BackupType.getBackupName(it.type)
             }
             backupKey?.let {
-                tvSerialNumber.text = "Key ${it.keyId}"
-                val labelText: String
-                val labelColor: Int
+                val backupType = it.info?.backupInfo?.type ?: -1
+                ivKeyType.setImageResource(BackupType.getBackupKeyIcon(backupType))
+                tvKeyType.text = BackupType.getBackupName(backupType)
+                val statusType: String
+                val statusColor: Int
+                val weight = it.info?.pubKey?.weight ?: 0
                 if (it.isRevoking) {
-                    labelText = "Revoking..."
-                    labelColor = R.color.accent_orange.res2color()
+                    statusType = "Revoking..."
+                    statusColor = R.color.accent_orange.res2color()
+                } else if (weight >= 1000){
+                    statusType = "Full Access"
+                    statusColor = R.color.accent_green.res2color()
                 } else {
-                    labelText = BackupType.getBackupName(it.info?.backupInfo?.type ?: -1)
-                    labelColor = R.color.text_3.res2color()
+                    statusType = "Multi-sign"
+                    statusColor = R.color.text_3.res2color()
                 }
-                tvDeviceLabel.text = labelText
-                tvDeviceLabel.backgroundTintList = ColorStateList.valueOf(labelColor)
-                tvDeviceLabel.setTextColor(labelColor)
-                tvDeviceLabel.setVisible(labelText.isNotEmpty())
-                it.info?.pubKey?.let { key ->
-                    val weight = if (key.weight < 0) 0 else key.weight
-                    tvKeyWeight.text = "$weight / 1000"
-                    val progress = weight / 1000f
-                    pbKeyWeight.max = 100
-                    if (progress > 1) {
-                        pbKeyWeight.progressTintList = ColorStateList.valueOf(R.color.accent_green
-                            .res2color())
-                        pbKeyWeight.progress = 100
-                    } else {
-                        pbKeyWeight.progress = (progress * 100).toInt()
-                    }
-                }
+                tvStatusLabel.text = statusType
+                tvStatusLabel.backgroundTintList = ColorStateList.valueOf(statusColor)
+                tvStatusLabel.setTextColor(statusColor)
             }
             backupKey?.info?.device?.let { deviceModel ->
                 tvDeviceApplication.text = deviceModel.user_agent

@@ -41,6 +41,7 @@ class WalletBackupActivity: BaseActivity() {
     override fun onResume() {
         super.onResume()
         viewModel.loadData()
+        presenter.showLoading()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

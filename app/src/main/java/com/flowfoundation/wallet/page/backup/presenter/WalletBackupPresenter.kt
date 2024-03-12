@@ -7,7 +7,10 @@ import com.flowfoundation.wallet.page.backup.BackupListAdapter
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
 import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isMultiBackupCreated
 import com.flowfoundation.wallet.utils.setMultiBackupCreated
@@ -22,6 +25,9 @@ class WalletBackupPresenter(
 
     private val backupAdapter by lazy { BackupListAdapter() }
     private val deviceAdapter by lazy { BackupListAdapter() }
+
+    private var isBackupListLoading = true
+    private var isDeviceListLoading = true
 
     init {
         with(binding.rvMultiBackupList) {
@@ -46,6 +52,18 @@ class WalletBackupPresenter(
         }
     }
 
+    fun showLoading() {
+        isBackupListLoading = true
+        isDeviceListLoading = true
+        with(binding) {
+            cvCreateDeviceBackup.gone()
+            cvCreateMultiBackup.gone()
+            llMultiBackupList.gone()
+            llDeviceBackupList.gone()
+            lavLoading.visible()
+        }
+    }
+
     fun bindBackupList(list: List<Any>) {
         with(binding) {
             cvCreateMultiBackup.setVisible(list.isEmpty())
@@ -53,6 +71,8 @@ class WalletBackupPresenter(
             backupAdapter.setNewDiffData(list)
         }
         setMultiBackupStatus(list.isEmpty())
+        isBackupListLoading = false
+        checkLoadingStatus()
     }
 
     private fun setMultiBackupStatus(noBackup: Boolean) {
@@ -68,6 +88,14 @@ class WalletBackupPresenter(
             cvCreateDeviceBackup.setVisible(list.isEmpty())
             llDeviceBackupList.setVisible(list.isNotEmpty())
             deviceAdapter.setNewDiffData(list)
+        }
+        isDeviceListLoading = false
+        checkLoadingStatus()
+    }
+
+    private fun checkLoadingStatus() {
+        if (!isBackupListLoading && !isDeviceListLoading) {
+            binding.lavLoading.gone()
         }
     }
 }

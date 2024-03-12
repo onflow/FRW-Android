@@ -33,7 +33,7 @@ open class ProfilePreference : FrameLayout {
     private val titleView by lazy { findViewById<TextView>(R.id.title_view) }
     private val subtitleView by lazy { findViewById<TextView>(R.id.subtitle_view) }
     val descView: TextView by lazy { findViewById(R.id.desc_view) }
-    private val arrowView by lazy { findViewById<View>(R.id.arrow_view) }
+    val arrowView: ImageView by lazy { findViewById(R.id.arrow_view) }
     private val extendContainer by lazy { findViewById<ViewGroup>(R.id.extend_container) }
     private val beginningContainer by lazy { findViewById<ViewGroup>(R.id.beginning_container) }
 

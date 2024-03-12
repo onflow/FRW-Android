@@ -468,6 +468,8 @@
     <string name="key_revoke">Revoke</string>
     <string name="curve">Curve</string>
     <string name="hash">Hash</string>
+    <string name="weight">Weight</string>
+    <string name="key_index">Key Index</string>
     <string name="sequence_number">Sequence Number</string>
     <string name="hold_to_sync">Hold to Sync</string>
     <string name="hold_to_revoke">Hold to Revoke</string>

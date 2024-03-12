@@ -3,8 +3,11 @@ package com.flowfoundation.wallet.page.profile.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.TextView
+import androidx.core.view.updateLayoutParams
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
 
 class ProfilePreferenceMark : ProfilePreference {
@@ -24,5 +27,10 @@ class ProfilePreferenceMark : ProfilePreference {
     fun setMarkText(markText: String) {
         markView.setVisible(markText.isNotBlank())
         markView.text = markText
+        if (arrowView.visibility == View.VISIBLE) {
+            markView.updateLayoutParams<LayoutParams> {
+                this.setMargins(0, 0, 8.dp2px().toInt(), 0)
+            }
+        }
     }
 }

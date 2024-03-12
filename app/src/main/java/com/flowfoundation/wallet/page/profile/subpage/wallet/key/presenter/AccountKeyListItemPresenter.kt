@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutKeyListItemBinding
+import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyRevokeDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.model.AccountKey
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -27,27 +28,41 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
     @SuppressLint("SetTextI18n")
     override fun bind(model: AccountKey) {
         with(binding) {
-            tvSerialNumber.text = "Key ${model.id}"
-            val labelText: String
-            val labelColor: Int
-            if (model.isCurrentDevice) {
-                labelText = "Current Device"
-                labelColor = R.color.accent_blue.res2color()
-            } else if (model.revoked) {
-                labelText = "Revoked"
-                labelColor = R.color.accent_red.res2color()
-            } else if (model.isRevoking) {
-                labelText = "Revoking..."
-                labelColor = R.color.accent_orange.res2color()
+            if (model.backupType > -1) {
+                ivKeyType.setImageResource(BackupType.getBackupKeyIcon(model.backupType))
             } else {
-                labelText = model.deviceName
-                labelColor = R.color.text_3.res2color()
+                ivKeyType.setImageResource(if (model.deviceType == 2) R.drawable.ic_device_type_computer else R.drawable.ic_device_type_phone)
             }
-            tvDeviceLabel.text = labelText
-            tvDeviceLabel.backgroundTintList = ColorStateList.valueOf(labelColor)
-            tvDeviceLabel.setTextColor(labelColor)
-            tvDeviceLabel.setVisible(labelText.isNotEmpty())
+            val keyType: String
+            val typeColor: Int
+            if (model.isCurrentDevice) {
+                keyType = "Current Device"
+                typeColor = R.color.accent_blue.res2color()
+            } else {
+                keyType = model.deviceName
+                typeColor = R.color.text_3.res2color()
+            }
+            tvKeyType.text = keyType
+            tvKeyType.setTextColor(typeColor)
             val weight = if (model.weight < 0) 0 else model.weight
+            val statusType: String
+            val statusColor: Int
+            if (model.revoked) {
+                statusType = "Revoked"
+                statusColor = R.color.accent_red.res2color()
+            } else if (model.isRevoking) {
+                statusType = "Revoking..."
+                statusColor = R.color.accent_orange.res2color()
+            } else if (weight >= 1000){
+                statusType = "Full Access"
+                statusColor = R.color.accent_green.res2color()
+            } else {
+                statusType = "Multi-sign"
+                statusColor = R.color.text_3.res2color()
+            }
+            tvStatusLabel.text = statusType
+            tvStatusLabel.backgroundTintList = ColorStateList.valueOf(statusColor)
+            tvStatusLabel.setTextColor(statusColor)
             tvKeyWeight.text = "$weight / 1000"
             val progress = weight / 1000f
             pbKeyWeight.max = 100
@@ -63,6 +78,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             tvCurveContent.text = model.signAlgo.name
             tvHashContent.text = model.hashAlgo.name
             tvSequenceContent.text = model.sequenceNumber.toString()
+            tvKeyIndex.text = if(model.id < 0) "0${model.id}" else model.id.toString()
 
             cvTitleCard.setOnClickListener {
                 toggleContent()
