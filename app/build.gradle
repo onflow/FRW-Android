@@ -250,6 +250,8 @@ dependencies {
 
     implementation 'com.instabug.library:instabug:12.6.0'
 
+    implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
+
     /** TEST **/
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

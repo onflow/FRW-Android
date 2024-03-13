@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySyncWalletBinding
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.toast
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -25,6 +26,7 @@ class WalletSyncActivity : BaseActivity() {
         binding = ActivitySyncWalletBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(false).colorRes(R.color.transparent).light(false).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
         viewModel.apply {
             qrCodeLiveData.observe(this@WalletSyncActivity) {
                 binding.progressBar.gone()
@@ -33,7 +35,7 @@ class WalletSyncActivity : BaseActivity() {
                     binding.ivRetry.visible()
                     return@observe
                 }
-                binding.ivQrCode.setImageBitmap(it)
+                binding.ivQrCode.setImageDrawable(it)
             }
             generateQRCode()
         }

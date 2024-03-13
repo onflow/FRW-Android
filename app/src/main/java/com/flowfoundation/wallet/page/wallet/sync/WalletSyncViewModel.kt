@@ -1,6 +1,6 @@
 package com.flowfoundation.wallet.page.wallet.sync
 
-import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nftco.flow.sdk.FlowChainId
@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.toQRBitmap
+import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -22,9 +22,9 @@ import kotlin.coroutines.suspendCoroutine
 
 class WalletSyncViewModel : ViewModel() {
 
-    private val size by lazy { ScreenUtils.getScreenWidth() - (30 * 2).dp2px().toInt() }
+    private val size by lazy { ScreenUtils.getScreenWidth() - (24 * 2).dp2px().toInt() }
 
-    val qrCodeLiveData = MutableLiveData<Bitmap?>()
+    val qrCodeLiveData = MutableLiveData<Drawable?>()
 
     fun load() {
         viewModelIOScope(this) {
@@ -35,8 +35,8 @@ class WalletSyncViewModel : ViewModel() {
                 return@viewModelIOScope
             }
             loge(WalletSyncViewModel::class.java.simpleName, "paringURI::${uri}")
-            val bitmap = uri?.toQRBitmap(width = size, height = size)
-            qrCodeLiveData.postValue(bitmap)
+            val drawable = uri?.toQRDrawable(withScale = true)
+            qrCodeLiveData.postValue(drawable)
         }
     }
 

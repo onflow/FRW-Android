@@ -43,7 +43,7 @@ class CreateDeviceBackupActivity: BaseActivity() {
                     binding.ivRetry.visible()
                     return@observe
                 }
-                binding.ivQrCode.setImageBitmap(it)
+                binding.ivQrCode.setImageDrawable(it)
             }
             generateQRCode()
         }

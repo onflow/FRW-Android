@@ -1,15 +1,12 @@
 package com.flowfoundation.wallet.utils
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import com.flowfoundation.wallet.R
-
 
 fun String.toQRBitmap(
     width: Int = 500,
@@ -38,8 +35,7 @@ fun String.toQRBitmap(
     }
     val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     bitmap.setPixels(pixels, 0, width, 0, 0, w, h)
-    val logo = BitmapFactory.decodeResource(Env.getApp().resources, R.drawable.ic_launcher_fill)
-    return addLogoToQRCode(bitmap, logo)
+    return bitmap
 }
 
 private fun addLogoToQRCode(qrCode: Bitmap, logo: Bitmap?): Bitmap {

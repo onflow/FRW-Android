@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.receive.presenter
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -45,8 +46,8 @@ class ReceivePresenter(
         }
     }
 
-    private fun updateQrcode(qrcode: Bitmap) {
-        binding.qrcodeImageView.setImageBitmap(qrcode)
+    private fun updateQrcode(qrcode: Drawable) {
+        binding.qrcodeImageView.setImageDrawable(qrcode)
     }
 
     private fun setupToolbar() {
