@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.outblock.lilico">
+    package="com.flowfoundation.wallet">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -25,7 +25,7 @@
         android:required="true"/>
 
     <application
-        android:name=".LilicoApplication"
+        android:name=".FlowWalletApplication"
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:hardwareAccelerated="true"
@@ -49,21 +49,8 @@
         </activity>
 
         <activity-alias
-            android:name="io.outblock.lilico.page.profile.subpage.logo.pages.LilicoLogoDefault"
+            android:name="com.flowfoundation.wallet.page.profile.subpage.logo.pages.FlowWalletLogoDefault"
             android:enabled="true"
-            android:exported="true"
-            android:icon="@mipmap/ic_launcher"
-            android:label="@string/app_name"
-            android:targetActivity=".page.splash.SplashActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-
-        <activity-alias
-            android:name="io.outblock.lilico.page.profile.subpage.logo.pages.LilicoLogo1"
-            android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
@@ -113,39 +100,39 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.security.SecuritySettingActivity"
+            android:name="com.flowfoundation.wallet.page.security.SecuritySettingActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.security.pin.SecurityPinActivity"
+            android:name="com.flowfoundation.wallet.page.security.pin.SecurityPinActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.security.recovery.SecurityRecoveryActivity"
+            android:name="com.flowfoundation.wallet.page.security.recovery.SecurityRecoveryActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.security.recovery.SecurityPrivateKeyActivity"
+            android:name="com.flowfoundation.wallet.page.security.recovery.SecurityPrivateKeyActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.profile.subpage.backup.BackupSettingActivity"
+            android:name="com.flowfoundation.wallet.page.profile.subpage.backup.BackupSettingActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.backup.WalletBackupActivity"
+            android:name="com.flowfoundation.wallet.page.backup.WalletBackupActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.backup.BackupDetailActivity"
+            android:name="com.flowfoundation.wallet.page.backup.BackupDetailActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.backup.device.CreateDeviceBackupActivity"
+            android:name="com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name="io.outblock.lilico.page.backup.multibackup.MultiBackupActivity"
+            android:name="com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity"
             android:screenOrientation="portrait"/>
 
         <activity android:name=".page.restore.WalletRestoreActivity"

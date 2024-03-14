@@ -168,7 +168,7 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/action_button"
         style="@style/Button"
         android:layout_width="match_parent"

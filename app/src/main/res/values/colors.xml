@@ -223,6 +223,7 @@
     <color name="profile_card_divider">#FFFFFF</color>
     <color name="welcome_page_text">#000000</color>
     <color name="drawer_item_background">#F4F4F7</color>
+    <color name="key_card_background">#ffffff</color>
     <color name="inaccessible_tag_background_gray">#408C9BAB</color>
     <color name="inaccessible_tag_background">#40FCE9E1</color>
     <color name="accent_blue_16">#29579AF2</color>

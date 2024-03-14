@@ -154,7 +154,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 
-                <io.outblock.lilico.widgets.FrozenSwitch
+                <com.flowfoundation.wallet.widgets.FrozenSwitch
                     android:id="@+id/switch_empty"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

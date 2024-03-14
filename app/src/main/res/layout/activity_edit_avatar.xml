@@ -29,7 +29,7 @@
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_profile_temp"/>
 
-    <io.outblock.lilico.widgets.AvatarCropMask
+    <com.flowfoundation.wallet.widgets.AvatarCropMask
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="@id/image_view"

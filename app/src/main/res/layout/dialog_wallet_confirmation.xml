@@ -89,7 +89,7 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_3"
                 android:gravity="end"
-                tools:text="Flow Ref"
+                tools:text="Flow Wallet"
                 />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -118,7 +118,7 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_3"
                 android:gravity="end"
-                tools:text="Flow Ref"
+                tools:text="Flow Wallet"
                 />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -147,14 +147,14 @@
                 android:textSize="14sp"
                 android:textColor="@color/text_3"
                 android:gravity="end"
-                tools:text="Flow Ref"
+                tools:text="Flow Wallet"
                 />
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 
-    <io.outblock.lilico.widgets.SendButton
+    <com.flowfoundation.wallet.widgets.SendButton
         android:id="@+id/send_button"
         android:layout_width="match_parent"
         android:layout_height="48dp"

@@ -84,7 +84,7 @@
             tools:text="0x0c666c888d8fb999"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_next"
         style="@style/Button"
         android:layout_width="match_parent"

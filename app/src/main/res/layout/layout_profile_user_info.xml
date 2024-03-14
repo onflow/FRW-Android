@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <io.outblock.lilico.page.profile.widget.ProfileSwitchTipsBanner
+    <com.flowfoundation.wallet.page.profile.widget.ProfileSwitchTipsBanner
         android:id="@+id/profile_switch_tips"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

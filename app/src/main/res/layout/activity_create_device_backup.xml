@@ -151,6 +151,33 @@
                 app:layout_constraintDimensionRatio="1:1"
                 app:layout_constraintTop_toBottomOf="@id/ll_content"
                 tools:background="@color/line_light"/>
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:indeterminateTint="@color/accent_blue"
+                android:progressTint="@color/accent_blue"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/iv_qr_code"
+                app:layout_constraintEnd_toEndOf="@id/iv_qr_code"
+                app:layout_constraintStart_toStartOf="@id/iv_qr_code"
+                app:layout_constraintTop_toTopOf="@id/iv_qr_code"
+                tools:visibility="visible"/>
+
+            <ImageView
+                android:id="@+id/iv_retry"
+                android:layout_width="68dp"
+                android:layout_height="68dp"
+                android:padding="10dp"
+                android:src="@drawable/ic_baseline_refresh_24"
+                app:layout_constraintBottom_toBottomOf="@id/iv_qr_code"
+                app:layout_constraintEnd_toEndOf="@id/iv_qr_code"
+                app:layout_constraintStart_toStartOf="@id/iv_qr_code"
+                app:layout_constraintTop_toTopOf="@id/iv_qr_code"
+                app:tint="@color/text_3"
+                android:visibility="gone"/>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 

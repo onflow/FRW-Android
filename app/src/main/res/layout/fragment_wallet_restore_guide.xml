@@ -44,7 +44,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/drive_restore"
         style="@style/Button"
         android:layout_width="match_parent"

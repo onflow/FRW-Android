@@ -28,7 +28,7 @@
         app:cardElevation="0dp"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-        <io.outblock.lilico.page.profile.widget.ProfilePreferenceSwitch
+        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
             android:id="@+id/developer_mode_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <io.outblock.lilico.page.profile.widget.ProfilePreferenceCheckbox
+                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
                     android:id="@+id/mainnet_preference"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
                     android:layout_marginHorizontal="8dp"
                     android:background="@color/background"/>
 
-                <io.outblock.lilico.page.profile.widget.ProfilePreferenceCheckbox
+                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
                     android:id="@+id/testnet_preference"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"/>
 
-                    <io.outblock.lilico.widgets.FrozenCheckbox
+                    <com.flowfoundation.wallet.widgets.FrozenCheckbox
                         android:id="@+id/sandbox_checkbox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

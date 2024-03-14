@@ -8,7 +8,7 @@
     android:paddingBottom="10dp"
     tools:background="@color/background">
 
-    <io.outblock.lilico.page.common.RootDetectedBanner
+    <com.flowfoundation.wallet.page.common.RootDetectedBanner
         android:id="@+id/root_detect_banner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

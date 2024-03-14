@@ -1,7 +1,5 @@
 <resources>
-    <string name="app_name">Flow Ref</string>
-    <string name="app_short_name">Flow Reference</string>
-    <string name="app_full_name">Flow Reference Wallet</string>
+    <string name="app_name">Flow Wallet</string>
     <string name="next">Next</string>
     <string name="username">Username</string>
     <string name="username_too_short">Too short</string>
@@ -15,8 +13,8 @@
     <string name="create_password">Create Password</string>
     <string name="enter_your_password">Enter your password</string>
     <string name="enter_your_password_again">Please enter your password again</string>
-    <string name="password_check">I understand Flow Reference Wallet can not recover this password .</string>
-    <string name="cloud_password_tip">Flow Reference Wallet uses this password to encrypt your backup.</string>
+    <string name="password_check">I understand Flow Wallet can not recover this password .</string>
+    <string name="cloud_password_tip">Flow Wallet uses this password to encrypt your backup.</string>
     <string name="password">Password</string>
     <string name="password_verify_format">Enter at least 8 characters</string>
     <string name="password_verify_no_number">At least 1 character</string>
@@ -86,7 +84,7 @@
     <string name="biometrics">Biometrics</string>
     <string name="legal_information">Legal \nInformation</string>
     <string name="legal">Legal</string>
-    <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Reference Wallet.</string>
+    <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Wallet.</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -116,12 +114,12 @@
     <string name="device">Device</string>
     <string name="chrome_extension">Chrome Extension</string>
     <string name="about">About</string>
-    <string name="sync_title">Sync Flow Reference</string>
+    <string name="sync_title">Sync Flow Wallet</string>
     <string name="switch_account">Switch Account</string>
     <string name="logout">Logout</string>
     <string name="edit_avatar">Edit avatar</string>
     <string name="edit">Edit</string>
-    <string name="settings_visible_desc">Other Flow Ref users cannot search for your username .</string>
+    <string name="settings_visible_desc">Other Flow Wallet users cannot search for your username .</string>
     <string name="visible">Visible</string>
     <string name="invisible">Invisible</string>
     <string name="private_str">Private</string>
@@ -231,7 +229,7 @@
     <string name="recovery_purchase_tips">Write down or copy these words in the right order and save them somewhere safe.</string>
     <string name="open_in_browser">Open in browser</string>
     <string name="pending_transaction">Pending Transaction</string>
-    <string name="welcome_to_lilico">Welcome to Flow Reference Wallet!</string>
+    <string name="welcome_to_lilico">Welcome to Flow Wallet!</string>
     <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
@@ -251,7 +249,7 @@
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
     <string name="not_logged_in_toast">You are not logged in to the wallet</string>
     <string name="free_gas_fee">Free gas fee</string>
-    <string name="free_gas_fee_desc">Allow Flow Ref to pay the gas fee for all my transactions
+    <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
         .</string>
     <string name="file_picker_title">Select File</string>
     <string name="transaction_fee">Transaction fee</string>
@@ -263,7 +261,7 @@
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Wallet</string>
     <string name="reset_wallet_confirm_title">Are you sure you want to reset your wallet?</string>
-    <string name="reset_wallet_tips">Removing the wallet from Flow Reference Wallet does not remove the wallet
+    <string name="reset_wallet_tips">Removing the wallet from Flow Wallet does not remove the wallet
         from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.</string>
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
@@ -351,7 +349,7 @@
     <string name="flow_available_num">%1$s Flow available</string>
     <string name="flow_available">Flow available</string>
     <string name="flow_coin_name">Flow</string>
-    <string name="on_lilico_only">On Flow Ref Only</string>
+    <string name="on_lilico_only">On Flow Wallet Only</string>
     <string name="confirm_your_stake">Confirm Your Stake</string>
     <string name="confirm_your_unstake">Confirm Your Unstake</string>
     <string name="staking">Staking</string>
@@ -400,7 +398,7 @@
     <string name="create_account">Create Account</string>
     <string name="suggest_to_backup">Suggest to Backup</string>
     <string name="link_account">Link Account</string>
-    <string name="link_account_desc">We would like to link your %1$s account to your Flow Ref account</string>
+    <string name="link_account_desc">We would like to link your %1$s account to your Flow Wallet account</string>
     <string name="hold_to_link">Hold to Link</string>
     <string name="work_in_progress">Work in Progress</string>
     <string name="account_linking">Account Linking</string>
@@ -409,6 +407,9 @@
     <string name="successful">Successful</string>
     <string name="link_account_success_desc">Now you can find your child account under side menu</string>
     <string name="try_it_again">Try it again</string>
+    <string name="try_again">Try Again</string>
+    <string name="generate_qr_code_error">Generating QR code failed. Please try again.</string>
+    <string name="wallet_connect_error">Create wallet connect failed. Please try again.</string>
     <string name="linked_account">Linked Account</string>
     <string name="devices">Devices</string>
     <string name="device_info">Device Info</string>
@@ -421,8 +422,8 @@
     <string name="unlink_account_desc">Unlink your account, the main wallet will not have any access to this account anymore.</string>
     <string name="hold_to_unlink">Hold to unlink</string>
     <string name="this_app_would_like_to">This App would like to</string>
-    <string name="link_account_tips_1">Delegate account to your Flow Reference Wallet</string>
-    <string name="link_account_tips_2">Flow Reference Wallet will manage linked account</string>
+    <string name="link_account_tips_1">Delegate account to your Flow Wallet</string>
+    <string name="link_account_tips_2">Flow Wallet will manage linked account</string>
     <string name="root_detected">Root Detected</string>
     <string name="root_detected_desc">Your keychain is exposing in threats.\nPlease make sure it’s your movement and improve the safety of your account.</string>
     <string name="things_you_need_to_know">Things you need to know</string>
@@ -449,8 +450,8 @@
     <string name="network_error_dialog_desc">This action will change your current network from the %1$s to the %2$s.</string>
     <string name="switch_network">Switch Network</string>
     <string name="new_feature_title_1">Notification of Digital Assets</string>
-    <string name="new_feature_desc_1">Flow Ref will notify you when your digital assets has moved.</string>
-    <string name="new_feature_desc2">Now you can add multiple accounts in your Flow Reference Wallet app, by switching account from the side menu or profile.</string>
+    <string name="new_feature_desc_1">Flow Wallet will notify you when your digital assets has moved.</string>
+    <string name="new_feature_desc2">Now you can add multiple accounts in your Flow Wallet app, by switching account from the side menu or profile.</string>
     <string name="get_started">Get Started</string>
     <string name="notification_request_title">Turn On Push Notifications</string>
     <string name="notification_request_desc">Get notified when your transfers, swaps, and approvals complete.</string>
@@ -462,11 +463,13 @@
     <string name="no_linked_account">No Linked Account</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
-    <string name="inaccessible_token_tip">Flow Reference Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
+    <string name="inaccessible_token_tip">Flow Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
     <string name="account_keys">Account Keys</string>
     <string name="key_revoke">Revoke</string>
     <string name="curve">Curve</string>
     <string name="hash">Hash</string>
+    <string name="weight">Weight</string>
+    <string name="key_index">Key Index</string>
     <string name="sequence_number">Sequence Number</string>
     <string name="hold_to_sync">Hold to Sync</string>
     <string name="hold_to_revoke">Hold to Revoke</string>
@@ -479,21 +482,21 @@
     <string name="device_entry_date">Entry Date</string>
     <string name="login_with_registered_account">Enter the Registered Account</string>
     <string name="or">Or</string>
-    <string name="sync_page_title">Open your Flow Reference on Mobile App \n and Scan the QR Code to Sync your Wallet.</string>
+    <string name="sync_page_title">Open your Flow Wallet on Mobile App \n and Scan the QR Code to Sync your Wallet.</string>
     <string name="sync_scan_qr_code">Scan QR Code with Mobile App</string>
-    <string name="sync_note">Note: Your recovery phrase will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">Find 1 Matching Wallet</string>
     <string name="wallet_confirmation">Wallet Confirmation</string>
     <string name="loading">Loading</string>
     <string name="loading_desc">It might take a while, please do not exit...</string>
     <string name="create_device_backup">Create Device Backup</string>
-    <string name="google_backup_note">Note: Your Google Drive Backup will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="google_backup_note">Note: Your Google Drive Backup will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="create_multi_backup">Create Multi-Backup</string>
     <string name="multi_backup">Multi-Backup</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
-    <string name="multi_backup_note">Note: All Your Backup will go through Flow Reference’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="multi_backup_note">Note: All Your Backup will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
@@ -515,7 +518,7 @@
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
     <string name="create_device_backup_title">Scan to Sync Extension Wallet</string>
-    <string name="create_device_backup_note">Scan QR code shown by the Flow Reference Browser extension to sync your wallet.</string>
+    <string name="create_device_backup_note">Scan QR code shown by the Flow Wallet Browser extension to sync your wallet.</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
     <string name="backup_info">Backup Info</string>

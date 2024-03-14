@@ -31,7 +31,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
-        <io.outblock.lilico.page.browser.widgets.BrowserProgressView
+        <com.flowfoundation.wallet.page.browser.widgets.BrowserProgressView
             android:id="@+id/progress_bar"
             android:layout_width="0dp"
             android:layout_height="0dp"
