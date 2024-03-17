@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreferenceProgressState
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceProgressState
                 android:id="@+id/drive_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
                 android:layout_marginHorizontal="8dp"
                 android:background="@color/background"/>
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreferenceState
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceState
                 android:id="@+id/manually_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

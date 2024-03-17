@@ -73,4 +73,8 @@
         <attr name="drawer_item_icon" format="reference"/>
         <attr name="drawer_item_text" format="string|reference"/>
     </declare-styleable>
+
+    <declare-styleable name="BackupOptionItem">
+        <attr name="option_item_icon" format="reference"/>
+    </declare-styleable>
 </resources>

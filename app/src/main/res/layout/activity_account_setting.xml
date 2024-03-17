@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreferenceImage
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceImage
                 android:id="@+id/avatar_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -45,7 +45,7 @@
                 android:layout_marginHorizontal="8dp"
                 android:background="@color/background"/>
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreference
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
                 android:id="@+id/nickname_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
                 android:layout_marginHorizontal="8dp"
                 android:background="@color/background"/>
 
-            <io.outblock.lilico.page.profile.widget.ProfilePreferenceVisible
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceVisible
                 android:id="@+id/visible_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -155,7 +155,7 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <io.outblock.lilico.widgets.SendButton
+    <com.flowfoundation.wallet.widgets.SendButton
         android:id="@+id/action_button"
         android:layout_width="match_parent"
         android:layout_height="54dp"

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_backup_google_drive"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_1">
+
+    <ImageView
+        android:id="@+id/iv_option_icon"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="86dp"
+        android:src="@drawable/ic_backup_google_drive"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_option_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center_horizontal"
+        android:textColor="@color/text_1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/iv_option_icon"
+        tools:text="Backup 1: Google Drive Backup"/>
+
+    <TextView
+        android:id="@+id/tv_option_note"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="44dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center_horizontal"
+        android:lineSpacingMultiplier="1.1"
+        android:text="@string/google_backup_note"
+        android:textColor="@color/accent_gray"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_option_title"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_status_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="72dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_option_note">
+
+        <View
+            android:id="@+id/view_upload"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="72dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_upload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/inter"
+            android:text="@string/upload_key_to_google_drive"
+            android:textColor="@color/text_2"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/view_upload"
+            app:layout_constraintStart_toEndOf="@id/view_upload"
+            app:layout_constraintTop_toTopOf="@id/view_upload"/>
+
+        <View
+            android:id="@+id/view_line"
+            android:layout_width="0.5dp"
+            android:layout_height="88dp"
+            android:background="@color/text_3"
+            app:layout_constraintTop_toBottomOf="@id/view_upload"
+            app:layout_constraintStart_toStartOf="@id/view_upload"
+            app:layout_constraintEnd_toEndOf="@id/view_upload"/>
+
+        <View
+            android:id="@+id/view_registration"
+            android:layout_width="9dp"
+            android:layout_height="9dp"
+            android:layout_marginStart="72dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/view_line"/>
+
+        <TextView
+            android:id="@+id/tv_registration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:includeFontPadding="false"
+            android:layout_marginStart="8dp"
+            android:fontFamily="@font/inter"
+            android:text="@string/registration_key_list"
+            android:textColor="@color/text_3"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/view_registration"
+            app:layout_constraintStart_toEndOf="@id/view_registration"
+            app:layout_constraintTop_toTopOf="@id/view_registration"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
+        android:id="@+id/btn_next"
+        style="@style/Button"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="@dimen/activity_padding"
+        android:layout_marginBottom="@dimen/wallet_create_button_margin"
+        android:text="@string/upload_backup"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -42,7 +42,7 @@
         android:id="@+id/intro_text_2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Other Flow Ref users can find you and send you payments via your unique username."
+        android:text="Other Flow Wallet users can find you and send you payments via your unique username."
         android:textColor="@color/text_light"
         android:textSize="14sp"
         android:layout_marginTop="27dp"
@@ -114,7 +114,7 @@
         tools:visibility="visible"/>
 
 
-    <io.outblock.lilico.widgets.LoadingMaterialButton
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/next_button"
         style="@style/Button"
         android:layout_width="match_parent"

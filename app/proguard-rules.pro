@@ -74,7 +74,7 @@
 -keep class com.just.agentweb.** {*;}
 -dontwarn com.just.agentweb.**
 
--keep class io.outblock.lilico.database.WebviewRecord {*;}
+-keep class com.flowfoundation.wallet.database.WebviewRecord {*;}
 
 # google drive
 -keepclassmembers class * {
@@ -84,14 +84,14 @@
 # BouncyCastleProvider
 -keep class org.bouncycastle.** {*;}
 
--keep class io.outblock.lilico.widgets.webview.JsInterface.** {*;}
+-keep class com.flowfoundation.wallet.widgets.webview.JsInterface.** {*;}
 
 -keep class com.walletconnect.** {*;}
 -keep class net.sqlcipher.** {*;}
 
--keep public enum io.outblock.lilico.page.profile.subpage.currency.model.Currency.** {*;}
+-keep public enum com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency.** {*;}
 
--keep public enum io.outblock.lilico.page.profile.subpage.currency.model.Currency$** {
+-keep public enum com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency$** {
   **[] $VALUES;
   public *;
 }

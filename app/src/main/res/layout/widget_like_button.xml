@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <io.outblock.lilico.widgets.likebutton.DotsView
+    <com.flowfoundation.wallet.widgets.likebutton.DotsView
         android:id="@+id/dots"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"/>
 
-    <io.outblock.lilico.widgets.likebutton.CircleView
+    <com.flowfoundation.wallet.widgets.likebutton.CircleView
         android:id="@+id/circle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

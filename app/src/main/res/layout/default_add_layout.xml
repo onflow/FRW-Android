@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<io.outblock.lilico.widgets.easyfloat.widget.base.DefaultAddView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.flowfoundation.wallet.widgets.easyfloat.widget.base.DefaultAddView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="160dp"
     android:layout_height="160dp"
     android:clipChildren="false">
@@ -26,4 +26,4 @@
         android:paddingStart="26dp"
         android:src="@drawable/ic_add_user"/>
 
-</io.outblock.lilico.widgets.easyfloat.widget.base.DefaultAddView>
+</com.flowfoundation.wallet.widgets.easyfloat.widget.base.DefaultAddView>

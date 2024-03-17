@@ -374,7 +374,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <io.outblock.lilico.widgets.TransactionButton
+    <com.flowfoundation.wallet.widgets.TransactionButton
         android:id="@+id/send_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

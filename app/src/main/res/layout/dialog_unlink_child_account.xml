@@ -220,7 +220,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <io.outblock.lilico.widgets.SendButton
+    <com.flowfoundation.wallet.widgets.SendButton
         android:id="@+id/start_button"
         android:layout_width="match_parent"
         android:layout_height="54dp"

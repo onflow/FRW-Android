@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <io.outblock.lilico.page.scan.widget.BarcodeScannerMaskView
+    <com.flowfoundation.wallet.page.scan.widget.BarcodeScannerMaskView
         android:id="@+id/zxing_viewfinder_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>

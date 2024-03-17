@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="file_provider_authorities" translatable="false">io.outblock.lilico.provider</string>
+    <string name="file_provider_authorities" translatable="false">com.flowfoundation.wallet.provider</string>
     <string name="asset_statements" translatable="false">[{\"include\": \"https://lilico.app/.well-known/assetlinks.json\"}]</string>
-    <string name="google_auth_web_client_id" translatable="false">246247206636-3jao9q30fttoqqdli9shbel3btaaf80f.apps.googleusercontent.com</string>
+    <string name="google_auth_web_client_id" translatable="false">556216024625-605ntfb94brptltv2lmu912vk74p0i1t.apps.googleusercontent.com</string>
     <string name="notification_channel_id" translatable="false">fcm_default_channel</string>
 </resources>

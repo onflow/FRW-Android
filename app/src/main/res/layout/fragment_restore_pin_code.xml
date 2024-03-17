@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_restore_pin_code"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/pin_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/montsettat"
+        android:text="@string/verify_pin"
+        android:textColor="@color/text"
+        android:textSize="36sp"
+        android:paddingHorizontal="@dimen/activity_padding"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/pin_tip"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/pin_tip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="72dp"
+        android:text="@string/enter_verify_pin_tip"
+        android:textColor="@color/text_sub"
+        android:paddingHorizontal="@dimen/activity_padding"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/pin_input"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.PinCodeInputLayout
+        android:id="@+id/pin_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="120dp"
+        app:layout_constraintBottom_toTopOf="@id/pin_keyboard"/>
+
+    <com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.PinKeyboard
+        android:id="@+id/pin_keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout_height="250dp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

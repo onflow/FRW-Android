@@ -78,7 +78,7 @@
                     android:fontFamily="@font/inter_medium"
                     android:textColor="@color/text"
                     android:textSize="12sp"
-                    tools:text="Flow Ref"/>
+                    tools:text="Flow Wallet"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -257,7 +257,7 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <io.outblock.lilico.widgets.SendButton
+    <com.flowfoundation.wallet.widgets.SendButton
         android:id="@+id/send_button"
         android:layout_width="match_parent"
         android:layout_height="54dp"

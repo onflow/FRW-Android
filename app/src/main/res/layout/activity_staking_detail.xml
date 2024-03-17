@@ -80,7 +80,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <io.outblock.lilico.widgets.LoadingMaterialButton
+            <com.flowfoundation.wallet.widgets.LoadingMaterialButton
                 android:id="@+id/unstake_button"
                 style="@style/Button"
                 android:layout_width="0dp"
@@ -103,7 +103,7 @@
                 app:cornerRadius="12dp"
                 app:rippleColor="@color/white_20"/>
 
-            <io.outblock.lilico.widgets.LoadingMaterialButton
+            <com.flowfoundation.wallet.widgets.LoadingMaterialButton
                 android:id="@+id/stake_button"
                 style="@style/Button"
                 android:layout_width="0dp"

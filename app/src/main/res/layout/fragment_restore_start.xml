@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/fragment_restore_start"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_1">
+
+    <TextView
+        android:id="@+id/tv_multi_restore_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginHorizontal="24dp"
+        android:fontFamily="@font/montsettat"
+        android:gravity="start"
+        android:text="@string/import_wallet"
+        android:textColor="@color/accent_green"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_multi_restore_sub_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/montsettat"
+        android:gravity="start"
+        android:text="@string/multi_restore_title"
+        android:textColor="@color/text_2"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_multi_restore_title"/>
+
+    <TextView
+        android:id="@+id/tv_multi_restore_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter"
+        android:textSize="14sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="24dp"
+        android:text="@string/multi_restore_note"
+        android:textColor="@color/note"
+        app:layout_constraintTop_toBottomOf="@id/tv_multi_restore_sub_title"/>
+
+    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
+        android:id="@+id/oi_google_drive"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        android:layout_marginTop="46dp"
+        app:layout_constraintEnd_toStartOf="@id/oi_recovery_phrase"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_multi_restore_desc"
+        app:option_item_icon="@drawable/ic_backup_google_drive"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/inter"
+        android:textSize="14sp"
+        android:textColor="@color/text_2"
+        android:text="@string/google_drive"
+        app:layout_constraintTop_toBottomOf="@id/oi_google_drive"
+        app:layout_constraintStart_toStartOf="@id/oi_google_drive"
+        app:layout_constraintEnd_toEndOf="@id/oi_google_drive"/>
+
+    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
+        android:id="@+id/oi_recovery_phrase"
+        android:layout_width="110dp"
+        android:layout_height="110dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/oi_google_drive"
+        app:layout_constraintTop_toTopOf="@id/oi_google_drive"
+        app:option_item_icon="@drawable/ic_backup_recovery_phrase"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/inter"
+        android:textSize="14sp"
+        android:textColor="@color/text_2"
+        android:text="@string/recovery_phrase"
+        app:layout_constraintTop_toBottomOf="@id/oi_recovery_phrase"
+        app:layout_constraintStart_toStartOf="@id/oi_recovery_phrase"
+        app:layout_constraintEnd_toEndOf="@id/oi_recovery_phrase"/>
+
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
+        android:id="@+id/btn_next"
+        style="@style/Button"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="@dimen/activity_padding"
+        android:layout_marginBottom="@dimen/wallet_create_button_margin"
+        android:text="@string/next"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <io.outblock.lilico.page.profile.widget.ProfilePreference
+        <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
             android:id="@+id/linked_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,12 +28,13 @@
             android:layout_marginHorizontal="8dp"
             android:background="@color/profile_card_divider"/>
 
-        <io.outblock.lilico.page.profile.widget.ProfilePreferenceState
+        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceState
             android:id="@+id/backup_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:isArrowVisible="true"
             app:icon="@drawable/ic_settings_backup"
-            app:title="@string/suggest_to_backup"/>
+            app:title="@string/backup"/>
 
         <View
             android:layout_width="match_parent"
@@ -41,7 +42,7 @@
             android:layout_marginHorizontal="8dp"
             android:background="@color/profile_card_divider"/>
 
-        <io.outblock.lilico.page.profile.widget.ProfilePreference
+        <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
             android:id="@+id/security_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -55,7 +56,7 @@
             android:layout_marginHorizontal="8dp"
             android:background="@color/profile_card_divider"/>
 
-        <io.outblock.lilico.page.profile.widget.ProfilePreference
+        <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
             android:id="@+id/developer_mode_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
