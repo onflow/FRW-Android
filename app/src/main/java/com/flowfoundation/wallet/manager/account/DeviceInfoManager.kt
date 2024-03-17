@@ -35,15 +35,13 @@ object DeviceInfoManager {
         return currentDeviceId == id
     }
 
-    suspend fun getDeviceInfoRequest(): DeviceInfoRequest? {
-        return try {
-            val service = retrofit().create(ApiService::class.java)
-            val response = service.getDeviceLocation()
-            response.data?.createApiDeviceInfo()
-        } catch (e: Exception) {
-            loge(e)
-            null
-        }
+    fun getDeviceInfoRequest(): DeviceInfoRequest {
+        return DeviceInfoRequest(
+            device_id = currentDeviceId,
+            name = deviceName,
+            type = "1",
+            user_agent = userAgent
+        )
     }
 
     suspend fun getWCDeviceInfo(): WCDeviceInfo? {
@@ -71,25 +69,6 @@ object DeviceInfoManager {
 
     private fun LocationInfo.createWCDeviceInfo(): WCDeviceInfo {
         return WCDeviceInfo(
-            this.city,
-            this.country,
-            this.countryCode,
-            currentDeviceId,
-            this.query,
-            this.isp,
-            this.lat,
-            this.lon,
-            deviceName,
-            this.org,
-            this.regionName,
-            "1",
-            userAgent,
-            this.zip,
-        )
-    }
-
-    private fun LocationInfo.createApiDeviceInfo(): DeviceInfoRequest {
-        return DeviceInfoRequest(
             this.city,
             this.country,
             this.countryCode,
