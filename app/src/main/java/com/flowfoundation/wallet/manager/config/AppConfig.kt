@@ -1,11 +1,12 @@
 package com.flowfoundation.wallet.manager.config
 
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.utils.NETWORK_SANDBOX
+import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
@@ -20,7 +21,7 @@ object AppConfig {
 
     fun isFreeGas() = config().features.freeGas
 
-    fun payer() = if (isTestnet()) config().payer.testnet else config().payer.mainnet
+    fun payer() = if (isTestnet()) config().payer.testnet else if (isPreviewnet()) config().payer.previewnet else config().payer.mainnet
 
     fun walletConnectEnable() = config().features.walletConnect
 
@@ -37,7 +38,7 @@ object AppConfig {
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
-            NETWORK_SANDBOX -> flowAddressRegistry().sandboxnet
+            NETWORK_PREVIEWNET -> flowAddressRegistry().previewnet
             else -> flowAddressRegistry().mainnet
         }
     }
@@ -99,7 +100,9 @@ private data class Payer(
     @SerializedName("mainnet")
     val mainnet: PayerNet,
     @SerializedName("testnet")
-    val testnet: PayerNet
+    val testnet: PayerNet,
+    @SerializedName("previewnet")
+    val previewnet: PayerNet
 )
 
 data class PayerNet(
@@ -114,6 +117,6 @@ private data class FlowAddressRegistry(
     val mainnet: Map<String, String>,
     @SerializedName("testnet")
     val testnet: Map<String, String>,
-    @SerializedName("sandboxnet")
-    val sandboxnet: Map<String, String>,
+    @SerializedName("previewnet")
+    val previewnet: Map<String, String>,
 )

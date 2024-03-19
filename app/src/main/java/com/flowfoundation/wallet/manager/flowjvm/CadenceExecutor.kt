@@ -6,6 +6,7 @@ import com.nftco.flow.sdk.ScriptBuilder
 import com.nftco.flow.sdk.cadence.marshall
 import com.nftco.flow.sdk.simpleFlowScript
 import com.flowfoundation.wallet.manager.account.parsePublicKeyMap
+import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.formatCadence
 import com.flowfoundation.wallet.manager.config.NftCollection
@@ -74,56 +75,24 @@ fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
     return result?.parseBool()
 }
 
-fun cadenceCheckTokenListEnabled(coins: List<FlowCoin>): List<Boolean>? {
+fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     logd(TAG, "cadenceCheckTokenListEnabled()")
-    val walletAddress = WalletManager.selectedWalletAddress()
-    if (walletAddress.isEmpty()) return emptyList()
-    val filterCoinList = coins.filter { it.address().isNotEmpty() }
-
-    val tokenImports = filterCoinList.map { it.formatCadence("import <Token> from <TokenAddress>") }
-        .joinToString("\r\n") { it }
-
-    val tokenFunctions = filterCoinList.map {
-        it.formatCadence(
-            """
-        pub fun check<Token>Vault(address: Address) : Bool {
-            let receiver: Bool = getAccount(address)
-            .getCapability<&<Token>.Vault{FungibleToken.Receiver}>(<TokenReceiverPath>)
-            .check()
-            let balance: Bool = getAccount(address)
-             .getCapability<&<Token>.Vault{FungibleToken.Balance}>(<TokenBalancePath>)
-             .check()
-             return receiver && balance
-          }
-    """.trimIndent()
-        )
-    }.joinToString("\r\n") { it }
-
-    val tokenCalls = filterCoinList.map {
-        it.formatCadence(
-            """
-        check<Token>Vault(address: address)
-    """.trimIndent()
-        )
-    }.joinToString(",") { it }
-
-    val cadence = """
-        import FungibleToken from 0xFungibleToken
-        <TokenImports>
-        <TokenFunctions>
-        pub fun main(address: Address) : [Bool] {
-            return [<TokenCall>]
-        }
-    """.trimIndent().replace("<TokenFunctions>", tokenFunctions)
-        .replace("<TokenImports>", tokenImports)
-        .replace("<TokenCall>", tokenCalls)
-
-    logd(TAG, "cadenceCheckTokenListEnabled() address:$walletAddress")
-    val result = cadence.executeCadence {
-        arg { address(walletAddress) }
+    val result = CADENCE_CHECK_TOKEN_LIST_ENABLED.executeCadence {
+        arg { address(walletAddress)}
     }
     logd(TAG, "cadenceCheckTokenListEnabled address:$walletAddress :: response:${String(result?.bytes ?: byteArrayOf())}")
-    return result?.parseBoolList()
+    return result?.parseStringBoolMap()
+}
+
+fun cadenceQueryTokenListBalance(): Map<String, Float>? {
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    logd(TAG, "cadenceQueryTokenListBalance()")
+    val result = CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
+        arg { address(walletAddress)}
+    }
+    logd(TAG, "cadenceQueryTokenListBalance response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseStringFloatMap()
 }
 
 fun cadenceQueryTokenBalance(coin: FlowCoin): Float? {
@@ -169,6 +138,16 @@ suspend fun cadenceNftEnabled(nft: NftCollection): String? {
     val transactionId = nft.formatCadence(CADENCE_NFT_ENABLE).transactionByMainWallet {}
     logd(TAG, "cadenceEnableToken() transactionId:$transactionId")
     return transactionId
+}
+
+fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
+    logd(TAG, "cadenceCheckNFTListEnabled()")
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val result = CADENCE_CHECK_NFT_LIST_ENABLED.executeCadence {
+        arg { address(walletAddress) }
+    }
+    logd(TAG, "cadenceCheckNFTListEnabled response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseStringBoolMap()
 }
 
 fun cadenceNftListCheckEnabled(nfts: List<NftCollection>): List<Boolean>? {
@@ -316,15 +295,4 @@ suspend fun String.executeTransaction(arguments: CadenceArgumentsBuilder.() -> U
         loge(e)
         null
     }
-}
-
-fun queryAccountPublicKey(accounts: List<String>): Map<String, String> {
-    val result = CADENCE_QUERY_PUBLIC_KEY.executeCadence {
-        arg {
-            array {
-                accounts.map { address(it) }
-            }
-        }
-    }
-    return result?.parsePublicKeyMap() ?: emptyMap()
 }

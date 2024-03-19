@@ -50,11 +50,11 @@ class WalletFragmentPresenter(
         with(binding.networkView) {
             setVisible(!isMainnet())
             if (!isMainnet()) {
-                val color = if (isTestnet()) R.color.testnet.res2color() else R.color.sandbox.res2color()
+                val color = if (isTestnet()) R.color.testnet.res2color() else R.color.previewnet.res2color()
                 backgroundTintList =
                     ColorStateList.valueOf(color).withAlpha(16)
                 setTextColor(color)
-                setText(if (isTestnet()) R.string.testnet else R.string.sandbox)
+                setText(if (isTestnet()) R.string.testnet else R.string.previewnet)
             }
         }
         bindUserInfo()

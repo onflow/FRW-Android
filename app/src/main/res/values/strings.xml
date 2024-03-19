@@ -385,7 +385,7 @@
     <string name="setting_up">Setting up</string>
     <string name="setup_fail">Setup fail</string>
     <string name="restake">ReStake</string>
-    <string name="sandbox">Sandbox</string>
+    <string name="previewnet">Previewnet</string>
     <string name="storage_info">Storage info</string>
     <string name="storage_info_count">%1$s / %2$s</string>
     <string name="committed">Committed</string>

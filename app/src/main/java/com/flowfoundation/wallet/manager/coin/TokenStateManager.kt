@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.tokenStateCache
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
+import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.logw
@@ -30,13 +31,13 @@ object TokenStateManager {
 
     private fun fetchStateSync() {
         val coinList = FlowCoinListManager.coinList()
-        val isEnableList = cadenceCheckTokenListEnabled(coinList)
-        if (coinList.size != isEnableList?.size) {
+        val enabledToken = cadenceCheckTokenListEnabled()
+        if (enabledToken == null) {
             logw(TAG, "fetch error")
             return
         }
-        coinList.forEachIndexed { index, coin ->
-            val isEnable = isEnableList[index]
+        coinList.forEach { coin ->
+            val isEnable = enabledToken[coin.contractId()] ?: false
             val oldState = tokenStateList.firstOrNull { it.symbol == coin.symbol }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address(), isEnable))

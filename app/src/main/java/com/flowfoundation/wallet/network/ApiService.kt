@@ -1,6 +1,10 @@
 package com.flowfoundation.wallet.network
 
+<<<<<<< HEAD
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
+=======
+import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
+>>>>>>> 29a90c3 (feat: add previewnet)
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
 import retrofit2.http.*
@@ -188,9 +192,10 @@ interface ApiService {
         @Query("to") to: String,
     ): CurrencyResponse
 
-    @POST("/v1/user/address/sandboxnet")
-    suspend fun enableSandboxNet(
-    ): SandboxEnableResponse
+    @POST("/v1/user/address/network")
+    suspend fun enableNetwork(@Body param: NetworkEnableParams): NetworkEnableResponse
+
+    @POST("/v1/user/address/")
 
     @GET("/v1/user/location")
     suspend fun getDeviceLocation(): LocationInfoResponse
@@ -206,4 +211,7 @@ interface ApiService {
 
     @GET("/api/prices")
     suspend fun getTokenPrices(): TokenPriceResponse
+
+    @GET("/api/scripts")
+    suspend fun getCadenceScript(): CadenceScriptResponse
 }

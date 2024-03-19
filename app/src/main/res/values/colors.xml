@@ -200,7 +200,7 @@
     <color name="deep_bg_0">#00ffffff</color>
 
     <color name="mainnet">#41CC5D</color>
-    <color name="sandbox">#CCAF21</color>
+    <color name="previewnet">#CCAF21</color>
     <color name="testnet">#FF8A00</color>
     <color name="profile_tip_background">#29579AF2</color>
     <color name="colorSecondary_16">#2941CC5D</color>

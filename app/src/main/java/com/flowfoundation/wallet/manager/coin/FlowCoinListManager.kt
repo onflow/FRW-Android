@@ -1,12 +1,12 @@
 package com.flowfoundation.wallet.manager.coin
 
 import android.os.Parcelable
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
-import com.flowfoundation.wallet.manager.app.isSandboxNet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -59,7 +59,7 @@ data class FlowCoin(
 ) : Parcelable {
     fun address() = when {
         isTestnet() -> address.testnet.orEmpty()
-        isSandboxNet() -> address.sandboxnet.orEmpty()
+        isPreviewnet() -> address.previewnet.orEmpty()
         else -> address.mainnet.orEmpty()
     }
 
@@ -83,8 +83,8 @@ class FlowCoinAddress(
     val mainnet: String?,
     @SerializedName("testnet")
     val testnet: String?,
-    @SerializedName("sandboxnet")
-    val sandboxnet: String?,
+    @SerializedName("previewnet")
+    val previewnet: String?,
 ) : Parcelable
 
 @Parcelize

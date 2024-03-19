@@ -230,7 +230,7 @@ dependencies {
 
     /** FLOW **/
     // implementation "com.nftco:flow-jvm-sdk:0.7.3"
-    implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.6") {
+    implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.7") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
     implementation 'io.grpc:grpc-okhttp:1.59.0'

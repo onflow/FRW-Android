@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.manager.app
 
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
-import com.flowfoundation.wallet.utils.NETWORK_SANDBOX
+import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.cpuScope
 import com.flowfoundation.wallet.utils.getChainNetworkPreference
@@ -34,13 +34,12 @@ fun isDeveloperMode() = isDeveloperMode
 
 fun isMainnet() = network == NETWORK_MAINNET
 fun isTestnet() = network == NETWORK_TESTNET
-fun isSandboxNet() = network == NETWORK_SANDBOX
-
+fun isPreviewnet() = network == NETWORK_PREVIEWNET
 
 fun chainNetWorkString(): String {
     return when {
         isTestnet() -> NETWORK_NAME_TESTNET
-        isSandboxNet() -> NETWORK_NAME_SANDBOX
+        isPreviewnet() -> NETWORK_NAME_PREVIEWNET
         else -> NETWORK_NAME_MAINNET
     }
 }
@@ -48,7 +47,7 @@ fun chainNetWorkString(): String {
 fun chainNetWorkString(network: Int): String {
     return when (network) {
         NETWORK_TESTNET -> NETWORK_NAME_TESTNET
-        NETWORK_SANDBOX -> NETWORK_NAME_SANDBOX
+        NETWORK_PREVIEWNET -> NETWORK_NAME_PREVIEWNET
         else -> NETWORK_NAME_MAINNET
     }
 }
@@ -56,7 +55,7 @@ fun chainNetWorkString(network: Int): String {
 fun networkId(network: String): Int {
     return when (network) {
         NETWORK_NAME_TESTNET -> NETWORK_TESTNET
-        NETWORK_NAME_SANDBOX -> NETWORK_SANDBOX
+        NETWORK_NAME_PREVIEWNET -> NETWORK_PREVIEWNET
         else -> NETWORK_MAINNET
     }
 }
@@ -67,4 +66,4 @@ fun doNetworkChangeTask() {
 
 const val NETWORK_NAME_MAINNET = "mainnet"
 const val NETWORK_NAME_TESTNET = "testnet"
-const val NETWORK_NAME_SANDBOX = "sandboxnet"
+const val NETWORK_NAME_PREVIEWNET = "previewnet"

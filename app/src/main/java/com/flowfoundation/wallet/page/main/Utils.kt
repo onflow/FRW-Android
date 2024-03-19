@@ -18,7 +18,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_SANDBOX
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
@@ -100,7 +100,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList() {
                 add(wallets.firstOrNull { it.network() == NETWORK_NAME_MAINNET })
                 if (isDeveloperMode()) {
                     add(wallets.firstOrNull { it.network() == NETWORK_NAME_TESTNET })
-                    add(wallets.firstOrNull { it.network() == NETWORK_NAME_SANDBOX })
+                    add(wallets.firstOrNull { it.network() == NETWORK_NAME_PREVIEWNET })
                 }
             }.filterNotNull()
 
@@ -183,7 +183,7 @@ private fun View.setupWalletItem(
             val color = when (network) {
                 "mainnet" -> R.color.mainnet
                 "testnet" -> R.color.testnet
-                "sandbox" -> R.color.sandbox
+                "previewnet" -> R.color.previewnet
                 else -> R.color.text
             }
             setTextColor(color.res2color())

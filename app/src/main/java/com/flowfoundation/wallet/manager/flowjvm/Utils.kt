@@ -18,9 +18,12 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowAddressListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringMapResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.logd
 import java.util.Locale
 
@@ -50,6 +53,28 @@ internal fun FlowScriptResponse.parseBoolList(): List<Boolean>? {
     return try {
         val result = Gson().fromJson(String(bytes), FlowBoolListResult::class.java)
         return result.value.map { it.value }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+internal fun FlowScriptResponse.parseStringFloatMap(): Map<String, Float>? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringMapResult::class.java)
+        return result.value?.associate {
+            it.key?.value.toString() to it.value?.value.toSafeFloat()
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+internal fun FlowScriptResponse.parseStringBoolMap(): Map<String, Boolean>? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringBoolResult::class.java)
+        return result.value?.associate {
+            it.key?.value.toString() to (it.value?.value ?: false)
+        }
     } catch (e: Exception) {
         null
     }
