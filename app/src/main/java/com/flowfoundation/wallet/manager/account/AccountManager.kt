@@ -29,6 +29,7 @@ import com.flowfoundation.wallet.utils.setUploadedAddressSet
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
+import io.outblock.wallet.KeyManager
 
 object AccountManager {
     private val accounts = mutableListOf<Account>()
@@ -62,10 +63,29 @@ object AccountManager {
     }
 
     fun updateWalletInfo(wallet: WalletListData) {
-        list().firstOrNull { it.userInfo.username == wallet.username }?.wallet = wallet
-        accountsCache().cache(Accounts().apply { addAll(accounts) })
-        WalletManager.walletUpdate()
-        uploadPushToken()
+        val account: Account? = list().firstOrNull { it.userInfo.username == wallet.username }
+        if (account == null) {
+            addAccountWithWallet(wallet)
+        } else {
+            account.wallet = wallet
+            accountsCache().cache(Accounts().apply { addAll(accounts) })
+            WalletManager.walletUpdate()
+            uploadPushToken()
+        }
+    }
+
+    private fun addAccountWithWallet(wallet: WalletListData) {
+        ioScope {
+            val service = retrofit().create(ApiService::class.java)
+            val userInfo = service.userInfo().data
+            add(Account(
+                userInfo = userInfo,
+                prefix = KeyManager.getCurrentPrefix(),
+                wallet = wallet
+            ))
+            WalletManager.walletUpdate()
+            uploadPushToken()
+        }
     }
 
     fun isAddressUploaded(address: String): Boolean {
