@@ -75,6 +75,10 @@
 -dontwarn com.just.agentweb.**
 
 -keep class com.flowfoundation.wallet.database.WebviewRecord {*;}
+-keep class com.flowfoundation.wallet.manager.cadence.CadenceScript { *; }
+-keep class com.flowfoundation.wallet.manager.cadence.CadenceScripts { *; }
+-keep class com.flowfoundation.wallet.manager.cadence.CadenceScriptData { *; }
+-keep class com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse { *; }
 
 # google drive
 -keepclassmembers class * {
