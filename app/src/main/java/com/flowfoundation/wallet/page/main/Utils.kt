@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.isDeveloperMode
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.UserInfoData
@@ -129,6 +130,23 @@ private fun ViewGroup.setupWallet(wallet: WalletData, userInfo: UserInfoData) {
             wrapper.addView(childView)
         }
     }
+    if (wallet.network() == NETWORK_NAME_PREVIEWNET && EVMWalletManager.showEVMAccount()) {
+        EVMWalletManager.getEVMAccount()?.let {
+            val childView = LayoutInflater.from(context)
+                .inflate(R.layout.item_wallet_list_child_account, this, false)
+            childView.setupWalletItem(
+                WalletItemData(
+                    address = it.address,
+                    name = it.name,
+                    icon = it.icon,
+                    isSelected = WalletManager.selectedWalletAddress() == it.address
+
+                ),
+                isEVMAccount = true
+            )
+            wrapper.addView(childView)
+        }
+    }
 }
 
 private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
@@ -162,7 +180,7 @@ private class WalletItemData(
 @SuppressLint("SetTextI18n")
 private fun View.setupWalletItem(
     data: WalletItemData?, network: String? = null, isChildAccount:
-    Boolean = false
+    Boolean = false, isEVMAccount: Boolean = false
 ) {
     data ?: return
     val itemView = findViewById<View>(R.id.wallet_item)
@@ -172,10 +190,12 @@ private fun View.setupWalletItem(
     val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
 
     iconView.loadAvatar(data.icon)
-    nameView.text = if (isChildAccount) "@${data.name}" else R.string.my_wallet.res2String()
+    nameView.text =
+        if (isChildAccount) "@${data.name}" else if (isEVMAccount) data.name else R.string.my_wallet.res2String()
     addressView.text = data.address
     selectedView.setVisible(data.isSelected)
     itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_wallet_item_selected else R.color.transparent)
+    findViewById<TextView>(R.id.tv_evm_label)?.setVisible(isEVMAccount)
 
     if (network != null) {
         findViewById<TextView>(R.id.wallet_network_view)?.apply {

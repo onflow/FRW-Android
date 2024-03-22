@@ -41,7 +41,7 @@ class DeveloperModePresenter(
         uiScope {
             with(binding) {
                 val isDeveloperModeEnable = isDeveloperMode()
-                val isPreviewnetEnabled = isPreviewnetEnabled() || WalletManager.isPreviewnetWalletCreated()
+                val isPreviewnetEnabled = WalletManager.isPreviewnetWalletCreated()
                 developerModePreference.setChecked(isDeveloperModeEnable)
 
                 group2.setVisible(isDeveloperModeEnable)
@@ -151,7 +151,6 @@ class DeveloperModePresenter(
     }
 
     private fun previewnetEnabled() {
-        ioScope { setPreviewnetEnabled() }
         uiScope {
             binding.previewnetEnableButton.setVisible(false)
             binding.previewnetProgressbar.setVisible(false)

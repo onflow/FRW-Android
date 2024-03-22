@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.page.address.FlowDomainServer
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
 
@@ -102,6 +103,18 @@ fun cadenceQueryTokenBalance(coin: FlowCoin): Float? {
         arg { address(walletAddress) }
     }
     logd(TAG, "cadenceQueryTokenBalance response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseFloat()
+}
+
+fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): Float? {
+    if (coin == null || address == null) {
+        return null
+    }
+    logd(TAG, "cadenceQueryTokenBalanceWithAddress()")
+    val result = coin.formatCadence(CADENCE_GET_BALANCE).executeCadence {
+        arg { address(address) }
+    }
+    logd(TAG, "cadenceQueryTokenBalanceWithAddress response:${String(result?.bytes ?: byteArrayOf())}")
     return result?.parseFloat()
 }
 
@@ -247,6 +260,54 @@ suspend fun cadenceClaimInboxNft(
     return txid
 }
 
+suspend fun cadenceCreateCOAAccount(): String? {
+    logd(TAG, "cadenceCreateCOAAccount()")
+    val transactionId = CADENCE_CREATE_COA_ACCOUNT.transactionByMainWallet {
+        arg { ufix64Safe(BigDecimal(0.0)) }
+    }
+    logd(TAG, "cadenceCreateCOAAccount() transactionId:$transactionId")
+    return transactionId
+}
+
+fun cadenceQueryEVMAddress(): String? {
+    logd(TAG, "cadenceQueryEVMAddress()")
+    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    val result = CADENCE_QUERY_COA_EVM_ADDRESS.executeCadence {
+        arg { address(walletAddress) }
+    }
+    logd(TAG, "cadenceQueryEVMAddress response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseString()
+}
+
+fun cadenceQueryCOATokenBalance(): Float? {
+    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    logd(TAG, "cadenceQueryCOATokenBalance address:$walletAddress")
+    val result = CADENCE_QUERY_COA_FLOW_BALANCE.executeCadence {
+        arg { address(walletAddress) }
+    }
+    logd(TAG, "cadenceQueryCOATokenBalance response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseFloat()
+}
+
+suspend fun cadenceFundFlowToCOAAccount(amount: Float): String? {
+    logd(TAG, "cadenceFundFlowToCOAAccount()")
+    val transactionId = CADENCE_FUND_COA_FLOW_BALANCE.transactionByMainWallet {
+        arg { ufix64Safe(amount) }
+    }
+    logd(TAG, "cadenceFundFlowToCOAAccount() transactionId:$transactionId")
+    return transactionId
+}
+
+suspend fun cadenceWithdrawTokenFromCOAAccount(amount: Float, toAddress: String): String? {
+    logd(TAG, "cadenceWithdrawTokenFromCOAAccount()")
+    val transactionId = CADENCE_WITHDRAW_COA_FLOW_BALANCE.transactionByMainWallet {
+        arg { ufix64Safe(amount) }
+        arg { address(toAddress) }
+    }
+    logd(TAG, "cadenceWithdrawTokenFromCOAAccount() transactionId:$transactionId")
+    return transactionId
+}
+
 fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? {
     logv(
         TAG,
@@ -269,7 +330,7 @@ fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? 
 }
 
 suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return null
+    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
     logd(TAG, "transactionByMainWallet() walletAddress:$walletAddress")
     val args = CadenceArgumentsBuilder().apply { arguments(this) }
     return try {

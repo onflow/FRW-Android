@@ -5,7 +5,11 @@ import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_COA_EVM_ADDRESS
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -63,7 +67,11 @@ object BalanceManager {
         ioScope {
             balanceList.firstOrNull { it.symbol == coin.symbol }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = cadenceQueryTokenBalance(coin)
+            val balance = if (WalletManager.isEVMAccountSelected()) {
+                cadenceQueryCOATokenBalance()
+            } else {
+                cadenceQueryTokenBalance(coin)
+            }
             if (balance != null) {
                 val existBalance = balanceList.firstOrNull { coin.symbol == it.symbol }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance

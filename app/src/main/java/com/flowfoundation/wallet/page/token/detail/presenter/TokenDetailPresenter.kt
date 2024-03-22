@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.isLilico
@@ -26,6 +27,7 @@ import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.TokenDetailViewModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
+import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -52,9 +54,13 @@ class TokenDetailPresenter(
             Glide.with(iconView).load(coin.icon).into(iconView)
             nameWrapper.setOnClickListener { openBrowser(activity, coin.website) }
             getMoreWrapper.setOnClickListener { }
-            sendButton.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
-            receiveButton.setOnClickListener { ReceiveActivity.launch(activity) }
-            sendButton.isEnabled = !WalletManager.isChildAccountSelected()
+            btnSend.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
+            btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
+            btnSend.isEnabled = !WalletManager.isChildAccountSelected()
+            llEvmMoveToken.setVisible(EVMWalletManager.haveEVMAddress())
+            llEvmMoveToken.setOnClickListener {
+                MoveTokenDialog.show(activity)
+            }
         }
 
         if (!coin.isFlowCoin() && coin.symbol != FlowCoin.SYMBOL_FUSD) {

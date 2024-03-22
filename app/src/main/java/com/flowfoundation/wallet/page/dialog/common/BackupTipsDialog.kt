@@ -8,8 +8,6 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogBackupTipsBinding
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
-import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_WARNING
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 
 class BackupTipsDialog : BottomSheetDialogFragment() {
 

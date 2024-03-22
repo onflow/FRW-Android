@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
 import com.flowfoundation.wallet.page.browser.openBrowser
@@ -65,7 +66,11 @@ class WalletHeaderPresenter(
         with(binding) {
             walletName.text = if (WalletManager.isChildAccountSelected()) {
                 WalletManager.childAccount(WalletManager.selectedWalletAddress())?.name ?: R.string.default_child_account_name.res2String()
-            } else R.string.wallet.res2String()
+            } else if(WalletManager.isEVMAccountSelected()){
+                EVMWalletManager.getEVMAccount()?.name ?: ""
+            } else {
+                R.string.wallet.res2String()
+            }
 
             uiScope {
                 val isHideBalance = isHideWalletBalance()

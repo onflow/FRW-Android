@@ -19,7 +19,8 @@ import com.github.alexzhirkevich.customqrgenerator.vector.style.asFrameShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.scale
 
 fun String.toQRDrawable(
-    withScale: Boolean = false
+    withScale: Boolean = false,
+    isEVM: Boolean = false
 ): Drawable {
     val data = QrData.Url(this)
     val options = createQrVectorOptions {
@@ -38,7 +39,7 @@ fun String.toQRDrawable(
         }
         colors {
             dark = QrVectorColor.Solid(R.color.black_80.res2color())
-            ball = QrVectorColor.Solid(R.color.accent_green.res2color())
+            ball = QrVectorColor.Solid(if(isEVM) R.color.evm.res2color() else R.color.accent_green.res2color())
             frame = QrVectorColor.Solid(R.color.black_80.res2color())
         }
         shapes {

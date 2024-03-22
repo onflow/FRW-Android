@@ -1,10 +1,7 @@
 package com.flowfoundation.wallet.network
 
-<<<<<<< HEAD
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
-=======
 import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
->>>>>>> 29a90c3 (feat: add previewnet)
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
 import retrofit2.http.*
@@ -207,7 +204,7 @@ interface ApiService {
     suspend fun getKeyDeviceInfo(): KeyDeviceInfoResponse
 
     @POST("/v3/user/device")
-    suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): String
+    suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): CommonResponse
 
     @GET("/api/prices")
     suspend fun getTokenPrices(): TokenPriceResponse

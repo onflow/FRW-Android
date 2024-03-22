@@ -4,14 +4,12 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.manager.evm.DAppMethod
-import com.flowfoundation.wallet.manager.evm.EvmWalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.evm.Numeric
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmDialogModel
-import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclAuthnDialog
-import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import org.json.JSONObject
 import splitties.alertdialog.appcompat.cancelButton
 import splitties.alertdialog.appcompat.message
@@ -39,7 +37,7 @@ class EvmInterface(
                         EvmDialogModel(title = webView.title, url = webView.url, network = network)
                     )
                     if (connect) {
-                        val address = EvmWalletManager.address()
+                        val address = EVMWalletManager.getEVMAddress()
                         val setAddress = "window.$network.setAddress(\"$address\");"
                         val callback = "window.$network.sendResponse($id, [\"$address\"])"
                         webView.post {
@@ -131,6 +129,6 @@ class EvmInterface(
 //            .apply {
 //                (this[this.size - 1]) = (this[this.size - 1] + 27).toByte()
 //            }
-        return Numeric.toHexString(EvmWalletManager.signData(data))
+        return Numeric.toHexString(EVMWalletManager.signData(data))
     }
 }

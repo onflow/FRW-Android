@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.databinding.DialogEvmAccountBinding
-import com.flowfoundation.wallet.manager.evm.EvmWalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.urlHost
@@ -41,7 +41,7 @@ class EvmRequestAccountDialog : BottomSheetDialogFragment() {
             ivIcon.loadFavicon(data.logo ?: data.url?.toFavIcon())
             tvName.text = data.title?.split(" ")?.last()
             tvUrl.text = data.url?.urlHost()
-            tvWalletAddress.text = EvmWalletManager.address()
+            tvWalletAddress.text = EVMWalletManager.address()
             btnCancel.setOnClickListener {
                 result?.resume(false)
                 dismiss()

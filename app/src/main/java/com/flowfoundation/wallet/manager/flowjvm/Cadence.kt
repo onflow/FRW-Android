@@ -271,3 +271,23 @@ const val CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID = """
         return ChildNFTInfo(address: child, info: nfts)
     }
 """
+
+var CADENCE_CREATE_COA_ACCOUNT
+    get() = CadenceApiManager.getCadenceEVMScript("createCoa")
+    private set(value) {}
+
+var CADENCE_QUERY_COA_EVM_ADDRESS
+    get() = CadenceApiManager.getCadenceEVMScript("getCoaAddr")
+    private set(value) {}
+
+var CADENCE_QUERY_COA_FLOW_BALANCE
+    get() = CadenceApiManager.getCadenceEVMScript("getCoaBalance")
+    private set(value) {}
+
+var CADENCE_FUND_COA_FLOW_BALANCE
+    get() = CadenceApiManager.getCadenceEVMScript("fundCoa")
+    private set(value) {}
+
+var CADENCE_WITHDRAW_COA_FLOW_BALANCE
+    get() = CadenceApiManager.getCadenceEVMScript("withdrawCoa")
+    private set(value) {}

@@ -219,7 +219,7 @@
             android:theme="@style/AppTheme"/>
 
         <activity
-            android:name=".evm.Web3TestActivity"
+            android:name=".page.evm.EnableEVMActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme"/>
 

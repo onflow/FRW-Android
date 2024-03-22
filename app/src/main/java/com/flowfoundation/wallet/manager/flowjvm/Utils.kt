@@ -80,6 +80,15 @@ internal fun FlowScriptResponse.parseStringBoolMap(): Map<String, Boolean>? {
     }
 }
 
+internal fun FlowScriptResponse.parseString(): String? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
+        result.value
+    } catch (e: Exception) {
+        return null
+    }
+}
+
 internal fun FlowScriptResponse?.parseFloat(default: Float = 0f): Float {
     // {"type":"UFix64","value":"12.34"}
     this ?: return default

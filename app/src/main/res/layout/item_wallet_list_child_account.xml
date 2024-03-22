@@ -32,18 +32,48 @@
         android:textColor="@color/text"
         android:textSize="14sp"
         android:textStyle="bold"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@id/wallet_icon_view"
+        app:layout_constraintEnd_toStartOf="@id/tv_evm_label"
         app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_evm_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:text="@string/label_evm"
+        android:fontFamily="@font/inter"
+        android:textSize="9sp"
+        android:paddingHorizontal="8dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="2dp"
+        android:visibility="gone"
+        android:background="@drawable/bg_round_corner"
+        android:backgroundTint="@color/accent_purple"
+        app:layout_constraintTop_toTopOf="@id/wallet_name_view"
+        app:layout_constraintBottom_toBottomOf="@id/wallet_name_view"
+        app:layout_constraintStart_toEndOf="@id/wallet_name_view"
+        app:layout_constraintEnd_toStartOf="@id/wallet_selected_view"
+        />
 
     <TextView
         android:id="@+id/wallet_address_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
+        android:layout_marginEnd="8dp"
+        android:lines="1"
+        android:ellipsize="middle"
         android:textColor="@color/note"
         android:textSize="12sp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/wallet_icon_view"
         app:layout_constraintTop_toBottomOf="@id/wallet_name_view"
+        app:layout_constraintEnd_toStartOf="@id/wallet_selected_view"
         tools:text="0x0c666c888d8fb999"/>
 
     <androidx.constraintlayout.utils.widget.ImageFilterView

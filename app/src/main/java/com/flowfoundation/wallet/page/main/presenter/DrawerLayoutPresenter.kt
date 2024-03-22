@@ -1,6 +1,12 @@
 package com.flowfoundation.wallet.page.main.presenter
 
 import android.content.Context
+import android.graphics.LinearGradient
+import android.graphics.Shader
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.LinearLayout
 import androidx.activity.result.ActivityResultLauncher
@@ -19,9 +25,11 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountUpdateListenerCallback
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
+import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.refreshWalletList
@@ -29,6 +37,10 @@ import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.scan.dispatchScanResult
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.dp2px
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.launch
@@ -61,13 +73,43 @@ class DrawerLayoutPresenter(
         with(binding) {
             scanItem.setOnClickListener { launchClick { barcodeLauncher.launch() } }
             accountSwitchButton.setOnClickListener { AccountSwitchDialog.show(activity.supportFragmentManager) }
+            clEvmLayout.setOnClickListener {
+                EnableEVMActivity.launch(activity)
+            }
         }
+
         bindData()
         binding.refreshWalletList()
         barcodeLauncher = activity.registerBarcodeLauncher { result -> dispatchScanResult(activity, result.orEmpty()) }
 
         ChildAccountList.addAccountUpdateListener(this)
         WalletFetcher.addListener(this)
+    }
+
+    private fun initEVMLayoutTitle() {
+        binding.tvEvmTitle.text = SpannableStringBuilder(R.string.enable_evm_title.res2String()).apply {
+            val evmText = R.string.flow_evm.res2String()
+            val index = indexOf(evmText)
+            val startColor = R.color.flow_evm_start_color.res2color()
+            val endColor = R.color.flow_evm_end_color.res2color()
+            val shader = LinearGradient(
+                0f, 0f, binding.tvEvmTitle.width.toFloat(), 0f,
+                startColor, endColor,
+                Shader.TileMode.CLAMP,
+            )
+            setSpan(
+                ForegroundColorSpan(startColor),
+                index,
+                index + evmText.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            setSpan(
+                ShaderSpan(shader),
+                index,
+                index + evmText.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
     }
 
     private fun bindAccountData() {
@@ -121,6 +163,15 @@ class DrawerLayoutPresenter(
         bindAccountData()
     }
 
+    private fun bindEVMInfo() {
+        if (EVMWalletManager.showEVMEnablePage()) {
+            initEVMLayoutTitle()
+            binding.clEvmLayout.visible()
+        } else {
+            binding.clEvmLayout.gone()
+        }
+    }
+
     private fun launchClick(unit: () -> Unit) {
         unit.invoke()
         drawer.close()
@@ -130,6 +181,7 @@ class DrawerLayoutPresenter(
         override fun onDrawerOpened(drawerView: View) {
             super.onDrawerOpened(drawerView)
             bindData()
+            bindEVMInfo()
         }
     }
 
@@ -139,6 +191,12 @@ class DrawerLayoutPresenter(
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
         binding.refreshWalletList()
+    }
+
+    private inner class ShaderSpan(private val shader: Shader) : ForegroundColorSpan(0) {
+        override fun updateDrawState(tp: TextPaint) {
+            tp.shader = shader
+        }
     }
 }
 

@@ -4,7 +4,6 @@ import com.flowfoundation.wallet.manager.app.chainNetwork
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
@@ -39,10 +38,10 @@ object CadenceApiManager {
                 )
                 assetsData.data
             }
-//            fetchCadenceFromNetwork()
+            fetchCadenceFromNetwork()
         } catch (e: Exception) {
             e.printStackTrace()
-//            fetchCadenceFromNetwork()
+            fetchCadenceFromNetwork()
         }
     }
 

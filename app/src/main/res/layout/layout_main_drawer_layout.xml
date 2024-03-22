@@ -80,6 +80,64 @@
         app:layout_constraintTop_toBottomOf="@id/nick_name_view"
         tools:text="Flow Wallet"/>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_evm_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/header_bg"
+        app:layout_constraintBottom_toTopOf="@id/scan_item">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="72dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_round_16dp"
+            android:backgroundTint="@color/drawer_item_background"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:id="@+id/tv_evm_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter_semi_bold"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/text_2"
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/enable_evm_title"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="12dp"
+                android:textSize="14sp"
+                android:textColor="@color/text_3"
+                android:text="@string/enable_evm_desc"
+                app:layout_constraintTop_toBottomOf="@id/tv_evm_title"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_evm_logo"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <com.flowfoundation.wallet.page.main.widget.DrawerItem
         android:id="@+id/scan_item"
         android:layout_width="match_parent"
@@ -87,9 +145,11 @@
         android:layout_marginTop="24dp"
         app:drawer_item_icon="@drawable/ic_scan_simple"
         app:drawer_item_text="@string/scan_qr_code"
-        app:layout_constraintTop_toBottomOf="@id/header_bg"/>
+        app:layout_constraintTop_toBottomOf="@id/cl_evm_layout"
+        app:layout_constraintBottom_toTopOf="@id/cv_wallet_list"/>
 
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cv_wallet_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="24dp"

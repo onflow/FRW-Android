@@ -223,14 +223,6 @@ suspend fun updateCurrencyFlag(flag: String, callback: (() -> Unit)? = null) {
     }
 }
 
-suspend fun isPreviewnetEnabled(): Boolean {
-    return dataStore.data.map { it[KEY_PREVIEWNET_ENABLED] ?: false }.first()
-}
-
-suspend fun setPreviewnetEnabled() {
-    dataStore.edit { it[KEY_PREVIEWNET_ENABLED] = true }
-}
-
 suspend fun isRootDetectedDialogShown(): Boolean {
     return dataStore.data.map { it[KEY_IS_ROOT_DETECTED_DIALOG_SHOWN] ?: false }.first()
 }
