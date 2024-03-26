@@ -26,6 +26,10 @@ object AppConfig {
 
     fun isInAppSwap() = config().features.swap
 
+    fun isInAppBuy() = config().features.onRamp
+
+    fun showDappList() = config().features.appList
+
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
@@ -77,6 +81,10 @@ private data class Features(
     val walletConnect: Boolean,
     @SerializedName("swap")
     val swap: Boolean,
+    @SerializedName("on_ramp")
+    val onRamp: Boolean,
+    @SerializedName("app_list")
+    val appList: Boolean
 )
 
 private data class Payer(

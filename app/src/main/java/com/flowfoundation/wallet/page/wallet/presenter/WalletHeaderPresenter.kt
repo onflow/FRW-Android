@@ -92,6 +92,8 @@ class WalletHeaderPresenter(
             }
             stackingButton.setOnClickListener { openStakingPage(view.context) }
             buyButton.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
+            buyButton.setVisible(AppConfig.isInAppBuy())
+            swapButton.setVisible(AppConfig.isInAppSwap())
 
             sendButton.isEnabled = !WalletManager.isChildAccountSelected()
             swapButton.isEnabled = !WalletManager.isChildAccountSelected()
