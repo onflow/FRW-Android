@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.wallet.sync
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.nftco.flow.sdk.FlowChainId
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
@@ -10,8 +11,6 @@ import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
-import com.flowfoundation.wallet.utils.ScreenUtils
-import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
@@ -21,8 +20,6 @@ import kotlin.coroutines.suspendCoroutine
 
 
 class WalletSyncViewModel : ViewModel() {
-
-    private val size by lazy { ScreenUtils.getScreenWidth() - (24 * 2).dp2px().toInt() }
 
     val qrCodeLiveData = MutableLiveData<Drawable?>()
 
@@ -40,10 +37,13 @@ class WalletSyncViewModel : ViewModel() {
         }
     }
 
-    private suspend fun wcFetchPairUriInternal() = suspendCoroutine<String?> { continuation ->
+    private suspend fun wcFetchPairUriInternal() = suspendCoroutine { continuation ->
         val namespaces = mapOf(
             "flow" to Sign.Model.Namespace.Proposal(
-                chains = listOf("flow:${if (isTestnet()) FlowChainId.TESTNET else FlowChainId.MAINNET}"),
+                chains = listOf("flow:${
+                    if (isTestnet()) FlowChainId.TESTNET 
+                    else if (isPreviewnet()) FlowChainId.PREVIEWNET 
+                    else FlowChainId.MAINNET}"),
                 methods = WalletConnectMethod.values().map { it.value },
                 events = listOf("chainChanged", "accountsChanged"),
             )

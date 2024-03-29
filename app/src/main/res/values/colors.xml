@@ -248,5 +248,6 @@
     <color name="bg_skip">#26000000</color>
     <color name="flow_evm_start_color">#00EF8B</color>
     <color name="flow_evm_end_color">#BE9FFF</color>
+    <color name="flow_evm_title_end_color">#627EEA</color>
 
 </resources>

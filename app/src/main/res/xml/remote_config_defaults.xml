@@ -527,518 +527,117 @@
         <value>
             [
             {
-            "name": "Flow",
-            "address": {
-            "mainnet": "0x1654653399040a61",
-            "testnet": "0x7e60df042a9c0868",
-            "previewnet": "0x4445e7ad11568276"
-            },
-            "contract_name": "FlowToken",
-            "storage_path": {
-            "balance": "/public/flowTokenBalance",
-            "vault": "/storage/flowTokenVault",
-            "receiver": "/public/flowTokenReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/flow/logo.png",
-            "symbol": "flow",
-            "website": "https://www.onflow.org"
+            "name": "FLOAT",
+            "url": "https://floats.city/",
+            "testnet_url": "https://testnet.floats.city/",
+            "description": "A Flow-enabled proof of attendance platform built by Emerald DAO",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/float/logo.png",
+            "category": "Collectible"
             },
             {
-            "name": "USD Coin",
-            "address": {
-            "mainnet": "0xb19436aae4d94622",
-            "testnet": "0xa983fecbed621163",
-            "crescendo": "0xa983fecbed621163"
-            },
-            "contract_name": "FiatToken",
-            "storage_path": {
-            "balance": "/public/USDCVaultBalance",
-            "vault": "/storage/USDCVault",
-            "receiver": "/public/USDCVaultReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/usdc/logo.png",
-            "symbol": "usdc",
-            "website": "https://www.circle.com/en/"
+            "name": "Increment",
+            "url": "https://swap.increment.fi/swap",
+            "testnet_url": "https://demo.increment.fi/swap",
+            "description": "Decentralized money market and one-stop DeFi suites to boost yield
+            &amp; liquidity opportunities on the Flow blockchain",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/increment/logo.jpeg",
+            "category": "Defi"
             },
             {
-            "name": "Liquid Staking Flow",
-            "address": {
-            "mainnet": "0xd6f80565193ad727",
-            "testnet": "0xe45c64ecfe31e465"
-            },
-            "contract_name": "stFlowToken",
-            "storage_path": {
-            "balance": "/public/stFlowTokenBalance",
-            "vault": "/storage/stFlowTokenVault",
-            "receiver": "/public/stFlowTokenReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/stFlow/logo.png",
-            "symbol": "stFlow",
-            "website": "https://app.increment.fi/staking"
+            "name": "Flow Port",
+            "url": "https://port.onflow.org/",
+            "testnet_url": "https://port.testnet.onflow.org/",
+            "description": "Welcome to Flow Port, your portal to the decentralized world of Flow.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/flow/logo.png",
+            "category": "Tool"
             },
             {
-            "name": "Dust",
-            "address": {
-            "mainnet": "0x921ea449dffec68a",
-            "testnet": "0x9392a4a7c3f49a0b"
-            },
-            "contract_name": "FlovatarDustToken",
-            "storage_path": {
-            "balance": "/public/FlovatarDustTokenBalance",
-            "vault": "/storage/FlovatarDustTokenVault",
-            "receiver": "/public/FlovatarDustTokenReceiver"
-            },
-            "decimal": 8,
-            "icon": "http://images.flovatar.com/logo-round.png",
-            "symbol": "DUST",
-            "website": "https://flovatar.com"
+            "name": "Flowns",
+            "url": "https://flowns.org",
+            "testnet_url": "https://testnet.flowns.org",
+            "description": "Flow-based Domain Name Service where every domain is an NFT",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowns/logo.png",
+            "category": "Domain"
             },
             {
-            "name": "Freely",
-            "address": {
-            "mainnet": "0x71e661cc981985c4",
-            "testnet": null
-            },
-            "contract_name": "Freely",
-            "storage_path": {
-            "balance": "/public/FreelyMetadata",
-            "vault": "/storage/FreelyVault",
-            "receiver": "/public/FreelyReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/frly/logo.png",
-            "symbol": "FRLY",
-            "website": "https://freely.com/"
+            "name": "Matrix Market",
+            "url": "https://matrixmarket.xyz/",
+            "testnet_url": null,
+            "description": "The first all-in-one marketplace for creators, collectors, and traders on Flow",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/matrixmarket/logo.png",
+            "category": "Marketplace"
             },
             {
-            "name": "Flow USD",
-            "address": {
-            "mainnet": "0x3c5959b568896393",
-            "testnet": "0xe223d8a629e49c68",
-            "sandboxnet": "0x6c52cbc80f034d1b"
-            },
-            "contract_name": "FUSD",
-            "storage_path": {
-            "balance": "/public/fusdBalance",
-            "vault": "/storage/fusdVault",
-            "receiver": "/public/fusdReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/fusd/logo.png",
-            "symbol": "fusd",
-            "website": "https://docs.onflow.org/fusd/"
+            "name": "Flowscan",
+            "url": "https://flowscan.org/",
+            "testnet_url": "https://testnet.flowscan.org/",
+            "description": "Search the Flow blockchain for transactions, accounts, and other activities taking place on Flow.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowscan/logo.png",
+            "category": "Tool"
             },
             {
-            "name": "Blocto Token",
-            "address": {
-            "mainnet": "0x0f9df91c9121c460",
-            "testnet": "0x6e0797ac987005f5"
-            },
-            "contract_name": "BloctoToken",
-            "storage_path": {
-            "balance": "/public/bloctoTokenBalance",
-            "vault": "/storage/bloctoTokenVault",
-            "receiver": "/public/bloctoTokenReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/blt/logo.png",
-            "symbol": "blt",
-            "website": "https://blocto.portto.io/en/"
+            "name": "Find",
+            "url": "https://find.xyz/",
+            "testnet_url": "https://test.find.xyz/",
+            "description": "A place to find people and things on the Flow Blockchain",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/find/logo.png",
+            "category": "Domain"
             },
             {
-            "name": "Crypthulhu Token",
-            "address": {
-            "mainnet": "0xe3ad6030cbaff1c2",
-            "testnet": "0x46664e2033f9853d"
-            },
-            "contract_name": "ThulToken",
-            "storage_path": {
-            "balance": "/public/thulTokenBalance",
-            "vault": "/storage/thulTokenVault",
-            "receiver": "/public/thulTokenReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/thul/logo.png",
-            "symbol": "thul",
-            "website": "https://dimensionxnft.com/"
+            "name": "MyNFT",
+            "url": "https://mynft.io/",
+            "testnet_url": null,
+            "description": "Mynft is a public creators’ platform to provide creators and their followers with a brand-new way of growth and capitalization.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/myNFT/logo.png",
+            "category": "Marketplace"
             },
             {
-            "name": "Starly Token",
-            "address": {
-            "mainnet": "0x142fa6570b62fd97",
-            "testnet": "0xf63219072aaddd50"
-            },
-            "contract_name": "StarlyToken",
-            "storage_path": {
-            "balance": "/public/starlyTokenBalance",
-            "vault": "/storage/starlyTokenVault",
-            "receiver": "/public/starlyTokenReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.142fa6570b62fd97.StarlyToken/logo.png",
-            "symbol": "STARLY",
-            "website": "https://starly.io/"
+            "name": "SoulMade",
+            "url": "https://www.soulmade.art/",
+            "testnet_url": null,
+            "description": "A new way to make your own NFT art.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/soulmade/logo.png",
+            "category": "Collectible"
             },
             {
-            "name": "Green Bitcoin",
-            "address": {
-            "mainnet": "0x078a8129525775dd",
-            "testnet": null
-            },
-            "contract_name": "GreenBitcoin",
-            "storage_path": {
-            "balance": "/public/GreenBitcoinMetadata",
-            "vault": "/storage/GreenBitcoinVault",
-            "receiver": "/public/GreenBitcoinReceiver"
-            },
-            "decimal": 8,
-            "symbol": "GBTC",
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/gbtc/logo.png",
-            "website": "https://toucans.ecdao.org/p/GreenBitcoin"
+            "name": "Flowty",
+            "url": "https://flowty.io/",
+            "testnet_url": null,
+            "description": "P2P NFT Loans and Rentals on the Flow Blockchain.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowty/logo.jpeg",
+            "category": "Tool"
             },
             {
-            "name": "Sloppy Stakes",
-            "address": {
-            "mainnet": "0x53f389d96fb4ce5e",
-            "testnet": null
-            },
-            "contract_name": "SloppyStakes",
-            "storage_path": {
-            "balance": "/public/SloppyStakesMetadata",
-            "vault": "/storage/SloppyStakesVault",
-            "receiver": "/public/SloppyStakesReceiver"
-            },
-            "decimal": 8,
-            "symbol": "LOPPY",
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/loppy/logo.png",
-            "website": "https://toucans.ecdao.org/p/SloppyStakes"
+            "name": "Hype Day",
+            "url": "https://hype.day/public-projects",
+            "testnet_url": null,
+            "description": "Get high-quality registrations for your web3 project's mints, giveaways, and raffles. All for free.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/hypeDay/logo.png",
+            "category": "Tool"
             },
             {
-            "name": "Ballerz FC",
-            "address": {
-            "mainnet": "0x4ea047c3e73ca460",
-            "testnet": null
-            },
-            "contract_name": "BallerzFC",
-            "storage_path": {
-            "balance": "/public/BallerzFCMetadata",
-            "vault": "/storage/BallerzFCVault",
-            "receiver": "/public/BallerzFCReceiver"
-            },
-            "decimal": 8,
-            "symbol": "BFC",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.4ea047c3e73ca460.BallerzFC/logo.png",
-            "website": "https://toucans.ecdao.org/p/BallerzFC"
+            "name": "MonoCats",
+            "url": "https://mono.fun",
+            "testnet_url": null,
+            "description": "N(W)A(H)N(A)I(T)!!? A cat birth in Monoverse? Just come and grab your fellow.",
+            "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/mono/logo.png",
+            "category": "Game"
             },
             {
-            "name": "brasil",
-            "address": {
-            "mainnet": "0x7bf07d719dcb8480",
-            "testnet": null
-            },
-            "contract_name": "brasil",
-            "storage_path": {
-            "balance": "/public/brasilMetadata",
-            "vault": "/storage/brasilVault",
-            "receiver": "/public/brasilReceiver"
-            },
-            "decimal": 8,
-            "symbol": "BR",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.7bf07d719dcb8480.brasil/logo.png",
-            "website": "https://toucans.ecdao.org/p/brasil"
+            "name": "DAY-NFT",
+            "url": "https://day-nft.io",
+            "testnet_url": null,
+            "description": "DAY-NFT minting app.",
+            "logo": "https://day-nft.io/thumbnail.png",
+            "category": "Collectible"
             },
             {
-            "name": "SDM Token",
-            "address": {
-            "mainnet": "0xc8c340cebd11f690",
-            "testnet": null
-            },
-            "contract_name": "SdmToken",
-            "storage_path": {
-            "balance": "/public/sdmTokenBalance",
-            "vault": "/storage/sdmTokenVault",
-            "receiver": "/public/sdmTokenReceiver"
-            },
-            "decimal": 8,
-            "symbol": "SDM",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.c8c340cebd11f690.SdmToken/logo.png",
-            "website": "https://flow.darkcountry.io/"
-            },
-            {
-            "name": "Teleported Tether Token",
-            "address": {
-            "mainnet": "0xcfdd90d4a00f7b5b",
-            "testnet": null
-            },
-            "contract_name": "TeleportedTetherToken",
-            "storage_path": {
-            "balance": "/public/teleportedTetherTokenBalance",
-            "vault": "/storage/teleportedTetherTokenVault",
-            "receiver": "/public/teleportedTetherTokenReceiver"
-            },
-            "decimal": 8,
-            "symbol": "tUSDT",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.cfdd90d4a00f7b5b.TeleportedTetherToken/logo.png",
-            "website": "https://blocto.app/"
-            },
-            {
-            "name": "My Token",
-            "address": {
-            "mainnet": "0x348fe2042c8a70d8",
-            "testnet": "0x40212f3e288efd03"
-            },
-            "contract_name": "MyToken",
-            "storage_path": {
-            "balance": "/public/mytokenBalance",
-            "vault": "/storage/mytokenVault",
-            "receiver": "/public/mytokenReceiver"
-            },
-            "decimal": 8,
-            "icon": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/my/logo.png",
-            "symbol": "my",
-            "website": "https://mynft.io/"
-            },
-            {
-            "name": "Ozone",
-            "address": {
-            "mainnet": "0xd756450f386fb4ac",
-            "testnet": null
-            },
-            "contract_name": "OzoneToken",
-            "storage_path": {
-            "balance": "/public/ozonetokenBalance",
-            "vault": "/storage/ozonetokenVault",
-            "receiver": "/public/ozonetokenReceiver"
-            },
-            "decimal": 8,
-            "symbol": "Ozone",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.d756450f386fb4ac.OzoneToken/logo.png",
-            "website": "https://ozoneuniverse.com/"
-            },
-            {
-            "name": "Rally",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "RLY",
-            "storage_path": {
-            "balance": "/public/RLYBalance",
-            "vault": "/storage/RLYVault",
-            "receiver": "/public/RLYReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.RLY/logo.png",
-            "symbol": "RLY",
-            "website": null
-            },
-            {
-            "name": "REVV",
-            "address": {
-            "mainnet": "0xd01e482eb680ec9f",
-            "testnet": null
-            },
-            "contract_name": "REVV",
-            "storage_path": {
-            "balance": "/public/revvBalance",
-            "vault": "/storage/revvVault",
-            "receiver": "/public/revvReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.d01e482eb680ec9f.REVV/logo.png",
-            "symbol": "REVV",
-            "website": "https://revvmotorsport.com/"
-            },
-            {
-            "name": "Avalanche (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceAVAX",
-            "storage_path": {
-            "balance": "/public/ceAVAXBalance",
-            "vault": "/storage/ceAVAXVault",
-            "receiver": "/public/ceAVAXReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceAVAX/logo.png",
-            "symbol": "ceAVAX",
-            "website": "https://snowtrace.io/token/0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7"
-            },
-            {
-            "name": "Binance Coin (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceBNB",
-            "storage_path": {
-            "balance": "/public/ceBNBBalance",
-            "vault": "/storage/ceBNBVault",
-            "receiver": "/public/ceBNBReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceBNB/logo.png",
-            "symbol": "ceBNB",
-            "website": "https://bscscan.com/address/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
-            },
-            {
-            "name": "Binance USD (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceBUSD",
-            "storage_path": {
-            "balance": "/public/ceBUSDBalance",
-            "vault": "/storage/ceBUSDVault",
-            "receiver": "/public/ceBUSDReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceBUSD/logo.png",
-            "symbol": "ceBUSD",
-            "website": "https://bscscan.com/address/0xe9e7cea3dedca5984780bafc599bd69add087d56"
-            },
-            {
-            "name": "Dai Stablecoin (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceDAI",
-            "storage_path": {
-            "balance": "/public/ceDAIBalance",
-            "vault": "/storage/ceDAIVault",
-            "receiver": "/public/ceDAIReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceDAI/logo.png",
-            "symbol": "ceDAI",
-            "website": "https://etherscan.io/address/0x6b175474e89094c44da98b954eedeac495271d0f"
-            },
-            {
-            "name": "Fantom (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceFTM",
-            "storage_path": {
-            "balance": "/public/ceFTMBalance",
-            "vault": "/storage/ceFTMVault",
-            "receiver": "/public/ceFTMReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceFTM/logo.png",
-            "symbol": "ceFTM",
-            "website": "https://celer.network"
-            },
-            {
-            "name": "Matic Token (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceMATIC",
-            "storage_path": {
-            "balance": "/public/ceMATICBalance",
-            "vault": "/storage/ceMATICVault",
-            "receiver": "/public/ceMATICReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceMATIC/logo.png",
-            "symbol": "ceMATIC",
-            "website": "https://celer.network"
-            },
-            {
-            "name": "Tether USD (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceUSDT",
-            "storage_path": {
-            "balance": "/public/ceUSDTBalance",
-            "vault": "/storage/ceUSDTVault",
-            "receiver": "/public/ceUSDTReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceUSDT/logo.png",
-            "symbol": "ceUSDT",
-            "website": "https://tether.to/"
-            },
-            {
-            "name": "Wrapped BTC (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceWBTC",
-            "storage_path": {
-            "balance": "/public/ceWBTCBalance",
-            "vault": "/storage/ceWBTCVault",
-            "receiver": "/public/ceWBTCReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceWBTC/logo.png",
-            "symbol": "ceWBTC",
-            "website": "https://celer.network"
-            },
-            {
-            "name": "Wrapped Ether (Celer)",
-            "address": {
-            "mainnet": "0x231cc0dbbcffc4b7",
-            "testnet": null
-            },
-            "contract_name": "ceWETH",
-            "storage_path": {
-            "balance": "/public/ceWETHBalance",
-            "vault": "/storage/ceWETHVault",
-            "receiver": "/public/ceWETHReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceWETH/logo.png",
-            "symbol": "ceWETH",
-            "website": "https://celer.network"
-            },
-            {
-            "name": "Teleported Sportium Token",
-            "address": {
-            "mainnet": "0x475755d2c9dccc3a",
-            "testnet": null
-            },
-            "contract_name": "TeleportedSportiumToken",
-            "storage_path": {
-            "balance": "/public/TeleportedSportiumTokenBalance",
-            "vault": "/storage/TeleportedSportiumTokenVault",
-            "receiver": "/public/TeleportedSportiumTokenReceiver"
-            },
-            "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.475755d2c9dccc3a.TeleportedSportiumToken/logo.png",
-            "symbol": "SPRT",
-            "website": null
+            "name": "Relation",
+            "url": "https://relationlabs.ai/",
+            "testnet_url": null,
+            "description": "Relation Labs is building a multi-chain decentralized Web3 social graph.",
+            "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/relationlabs/logo.png",
+            "category": "Social"
             }
             ]
         </value>

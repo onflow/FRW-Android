@@ -28,6 +28,7 @@ enum class DialogType(
     BACKUP(R.string.backup_on_mainnet),
     RESTORE(R.string.restore_on_mainnet),
     SWITCH(R.string.switch_on_mainnet),
+    CREATE(R.string.create_on_mainnet_or_testnet)
 }
 
 class SwitchNetworkDialog(

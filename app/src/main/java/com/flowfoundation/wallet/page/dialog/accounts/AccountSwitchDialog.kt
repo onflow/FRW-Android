@@ -9,10 +9,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogAccountSwitchBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.dialog.accounts.adapter.AccountListAdapter
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
+import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
+import com.flowfoundation.wallet.widgets.DialogType
+import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 
 class AccountSwitchDialog : BottomSheetDialogFragment() {
 
@@ -37,8 +42,12 @@ class AccountSwitchDialog : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.tvNewAccount.setOnClickListener {
-            WalletCreateActivity.launch(requireContext(), step = WALLET_CREATE_STEP_USERNAME)
-            dismiss()
+            if (isPreviewnet()) {
+                SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
+            } else {
+                WalletCreateActivity.launch(requireContext(), step = WALLET_CREATE_STEP_USERNAME)
+                dismiss()
+            }
         }
 
         with(binding.recyclerView) {

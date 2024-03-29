@@ -38,10 +38,10 @@ object CadenceApiManager {
                 )
                 assetsData.data
             }
-            fetchCadenceFromNetwork()
+//            fetchCadenceFromNetwork()
         } catch (e: Exception) {
             e.printStackTrace()
-            fetchCadenceFromNetwork()
+//            fetchCadenceFromNetwork()
         }
     }
 

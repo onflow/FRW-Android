@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.flowfoundation.wallet.firebase.analytics.reportEvent
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.utils.*
@@ -116,7 +117,7 @@ private suspend fun String?.wrapFunctionBody(): String {
 }
 
 private fun getNetwork(): String {
-    return if (isTestnet()) "testnet" else "mainnet"
+    return if (isTestnet()) "testnet" else if (isPreviewnet()) "previewnet" else "mainnet"
 }
 
 private fun reportError(functionName: String, message: String?, isHttp: Boolean) {

@@ -12,8 +12,7 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.PreviewnetTransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
-import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isSuccessFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey
@@ -140,7 +139,7 @@ class DeveloperModePresenter(
                 TransactionStateManager.newTransaction(transactionState)
                 uiScope { pushBubbleStack(transactionState) }
                 PreviewnetTransactionStateWatcher(transactionId).watch {
-                    if (it.isExecuteFinished()) {
+                    if (it.isSuccessFinished()) {
                         previewnetEnabled()
                     }
                 }

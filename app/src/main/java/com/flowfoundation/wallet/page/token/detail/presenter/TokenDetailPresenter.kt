@@ -68,13 +68,13 @@ class TokenDetailPresenter(
             binding.chartWrapper.root.setVisible(false)
         }
 
-        if (!StakingManager.isStaked() && coin.isFlowCoin() && !isTestnet()) {
+        if (!StakingManager.isStaked() && coin.isFlowCoin() && isMainnet()) {
             binding.stakingBanner.root.setVisible(true)
             binding.getMoreWrapper.setVisible(false)
             binding.stakingBanner.root.setOnClickListener { openStakingPage(activity) }
         }
 
-        if (StakingManager.isStaked() && coin.isFlowCoin() && !isTestnet()) {
+        if (StakingManager.isStaked() && coin.isFlowCoin() && isMainnet()) {
             binding.getMoreWrapper.setVisible(false)
             setupStakingRewards()
         }
@@ -83,7 +83,7 @@ class TokenDetailPresenter(
             binding.getMoreWrapper.setOnClickListener {
                 openBrowser(
                     activity,
-                    if (isTestnet()) "https://testnet-faucet.onflow.org/fund-account" else "https://sandboxnet-faucet.flow.com/"
+                    if (isTestnet()) "https://testnet-faucet.onflow.org/fund-account" else "https://previewnet-faucet.onflow.org/fund-account"
                 )
             }
         }

@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemAccountListDialogBinding
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.loadAvatar
@@ -40,7 +41,7 @@ private class AccountViewHolder(
 
     init {
         view.setOnClickListener {
-            if (isTestnet()) {
+            if (isTestnet() || isPreviewnet()) {
                 SwitchNetworkDialog(view.context, DialogType.SWITCH).show()
             } else {
                 model?.let {

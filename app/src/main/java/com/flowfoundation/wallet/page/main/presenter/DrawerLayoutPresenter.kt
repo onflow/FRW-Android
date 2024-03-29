@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
@@ -87,21 +88,18 @@ class DrawerLayoutPresenter(
     }
 
     private fun initEVMLayoutTitle() {
-        binding.tvEvmTitle.text = SpannableStringBuilder(R.string.enable_evm_title.res2String()).apply {
-            val evmText = R.string.flow_evm.res2String()
-            val index = indexOf(evmText)
+        val text = R.string.enable_evm_title.res2String()
+        val evmText = R.string.flow_evm.res2String()
+        val index = text.indexOf(evmText)
+        val start = binding.tvEvmTitle.paint.measureText(text.substring(0, index))
+        binding.tvEvmTitle.text = SpannableStringBuilder(text).apply {
             val startColor = R.color.flow_evm_start_color.res2color()
             val endColor = R.color.flow_evm_end_color.res2color()
+            val gradientTextWidth = binding.tvEvmTitle.paint.measureText(text)
             val shader = LinearGradient(
-                0f, 0f, binding.tvEvmTitle.width.toFloat(), 0f,
-                startColor, endColor,
+                start, 0f, gradientTextWidth, 0f,
+                intArrayOf(startColor, endColor), null,
                 Shader.TileMode.CLAMP,
-            )
-            setSpan(
-                ForegroundColorSpan(startColor),
-                index,
-                index + evmText.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
             setSpan(
                 ShaderSpan(shader),
@@ -123,7 +121,7 @@ class DrawerLayoutPresenter(
                 )
                 setPadding(8.dp2px().toInt(), 0, 8.dp2px().toInt(), 0)
                 setOnClickListener {
-                    if (isTestnet()) {
+                    if (isTestnet() || isPreviewnet()) {
                         SwitchNetworkDialog(activity, DialogType.SWITCH).show()
                     } else {
                         progressDialog.show()

@@ -43,8 +43,23 @@
         android:lineSpacingMultiplier="1.1"
         android:textStyle="bold"
         android:gravity="center_horizontal"
-        android:text="@string/enable_evm_title_new_line"
+        android:text="@string/enable_evm_title_enable_the_path"
         app:layout_constraintTop_toBottomOf="@id/iv_logo"/>
+
+    <TextView
+        android:id="@+id/tv_title_evm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/montsettat"
+        android:textSize="30sp"
+        android:textColor="@color/text_2"
+        android:lineSpacingMultiplier="1.1"
+        android:textStyle="bold"
+        android:gravity="center_horizontal"
+        android:text="@string/enable_evm_title_to_evm"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"/>
 
     <TextView
         android:id="@+id/tv_desc"
@@ -56,7 +71,7 @@
         android:fontFamily="@font/inter"
         android:textColor="@color/text_2"
         android:text="@string/enable_evm_desc"
-        app:layout_constraintTop_toBottomOf="@id/tv_title"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_title_evm"/>
 
     <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_enable"

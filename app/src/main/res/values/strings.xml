@@ -539,11 +539,13 @@
     <string name="backup_on_mainnet">You can only create backup on mainnet.</string>
     <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
     <string name="switch_on_mainnet">You can only switch account on mainnet.</string>
+    <string name="create_on_mainnet_or_testnet">You can only create account on mainnet or testnet.</string>
     <string name="switch_to_mainnet">Switch to Mainnet</string>
     <string name="connect">Connect</string>
     <string name="learn_more">Learn more</string>
     <string name="enable_evm_desc">Manage multi-VM assets seamlessly.</string>
-    <string name="enable_evm_title_new_line">Enable the path \nto FlowEVM</string>
+    <string name="enable_evm_title_enable_the_path">Enable the path</string>
+    <string name="enable_evm_title_to_evm">to FlowEVM</string>
     <string name="enable_evm_title">Enable the path to FlowEVM !</string>
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>

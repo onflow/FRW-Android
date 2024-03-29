@@ -2,7 +2,14 @@ package com.flowfoundation.wallet.page.evm
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.style.ForegroundColorSpan
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityEnableEvmBinding
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
@@ -12,6 +19,9 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
+import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.nftco.flow.sdk.FlowTransactionStatus
@@ -29,9 +39,30 @@ class EnableEVMActivity : BaseActivity() {
         UltimateBarX.with(this).fitWindow(false).light(false).applyStatusBar()
 
         with(binding) {
+
+            val text = R.string.enable_evm_title_to_evm.res2String()
+            val evmText = R.string.flow_evm.res2String()
+            val index = text.indexOf(evmText)
+            val start = binding.tvTitleEvm.paint.measureText(text.substring(0, index))
+            binding.tvTitleEvm.text = SpannableStringBuilder(text).apply {
+                val startColor = R.color.flow_evm_start_color.res2color()
+                val endColor = R.color.flow_evm_title_end_color.res2color()
+                val gradientTextWidth = binding.tvTitleEvm.paint.measureText(text)
+                val shader = LinearGradient(
+                    start, 0f, gradientTextWidth, 0f,
+                    intArrayOf(startColor, endColor), null,
+                    Shader.TileMode.CLAMP,
+                )
+                setSpan(
+                    ShaderSpan(shader),
+                    index,
+                    index + evmText.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
             tvSkip.setOnClickListener { finish() }
             tvMore.setOnClickListener {
-                //todo learn more
+                "https://flow.com/upgrade/crescendo/evm".openInSystemBrowser(this@EnableEVMActivity, ignoreInAppBrowser = true)
             }
 
             btnEnable.setOnClickListener {
@@ -86,6 +117,12 @@ class EnableEVMActivity : BaseActivity() {
     companion object {
         fun launch(context: Context) {
             context.startActivity(Intent(context, EnableEVMActivity::class.java))
+        }
+    }
+
+    private inner class ShaderSpan(private val shader: Shader) : ForegroundColorSpan(0) {
+        override fun updateDrawState(tp: TextPaint) {
+            tp.shader = shader
         }
     }
 }

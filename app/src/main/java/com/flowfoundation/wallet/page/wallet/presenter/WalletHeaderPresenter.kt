@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletHeaderBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
@@ -91,7 +92,8 @@ class WalletHeaderPresenter(
                     SwapActivity.launch(view.context)
                 } else {
                     activity?.let {
-                        openBrowser(it, "https://${if (isTestnet()) "demo" else "app"}.increment.fi/swap")
+                        openBrowser(it, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                                ".increment.fi/swap")
                     }
                 }
             }
