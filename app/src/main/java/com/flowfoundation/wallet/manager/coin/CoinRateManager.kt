@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.token.detail.QuoteMarket
 import com.flowfoundation.wallet.page.token.detail.getPricePair
 import com.flowfoundation.wallet.page.token.detail.isUSDStableCoin
@@ -32,7 +33,7 @@ object CoinRateManager {
     }
 
     fun refresh() {
-        ioScope { FlowCoinListManager.getEnabledCoinList().forEach { coin -> fetchCoinRate(coin) } }
+        ioScope { fetchCoinListRate(FlowCoinListManager.getEnabledCoinList()) }
     }
 
     fun addListener(callback: OnCoinRateUpdate) {
@@ -58,6 +59,16 @@ object CoinRateManager {
                     val coinPair = coin.getPricePair(market)
 
                     if (coinPair.isEmpty()) {
+                        val apiService = retrofitApi().create(ApiService::class.java)
+                        val tokenPriceResponse = apiService.getTokenPrices()
+                        val tokenPriceList = tokenPriceResponse.data
+                        tokenPriceList?.find {
+                            coin.contractName == it.contractName
+                        }?.let {
+                            val rate = it.rateToUSD.toFloat()
+                            updateCache(coin, rate, 0f)
+                            dispatchListeners(coin, rate, 0f)
+                        }
                         return@ioScope
                     }
 
@@ -67,6 +78,45 @@ object CoinRateManager {
                     val quoteChange = response.data.result.price.change.percentage
                     updateCache(coin, price, quoteChange)
                     dispatchListeners(coin, price, quoteChange)
+                }
+            }
+        }
+    }
+
+    fun fetchCoinListRate(list: List<FlowCoin>) {
+        ioScope {
+            val apiService = retrofitApi().create(ApiService::class.java)
+            val tokenPriceResponse = apiService.getTokenPrices()
+            val tokenPriceList = tokenPriceResponse.data
+            list.forEach { coin ->
+                if (coin.isUSDStableCoin()) {
+                    dispatchListeners(coin, 1.0f, 0f)
+                    return@forEach
+                }
+                val cacheRate = coinRateMap[coin.symbol]
+                cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
+                if (cacheRate.isExpire()) {
+                    runCatching {
+                        val market = QuoteMarket.fromMarketName(getQuoteMarket())
+                        val coinPair = coin.getPricePair(market)
+
+                        if (coinPair.isEmpty()) {
+                            tokenPriceList?.find {
+                                coin.contractName == it.contractName
+                            }?.let {
+                                val rate = it.rateToUSD.toFloat()
+                                updateCache(coin, rate, 0f)
+                                dispatchListeners(coin, rate, 0f)
+                            }
+                            return@forEach
+                        }
+                        val service = retrofit().create(ApiService::class.java)
+                        val response = service.summary(market.value, coin.getPricePair(market))
+                        val price = response.data.result.price.last
+                        val quoteChange = response.data.result.price.change.percentage
+                        updateCache(coin, price, quoteChange)
+                        dispatchListeners(coin, price, quoteChange)
+                    }
                 }
             }
         }

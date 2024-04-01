@@ -111,8 +111,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         tokenListLiveData.postValue(response.tokenList())
         nftListLiveData.postValue(response.nftList())
         updateInboxReadList(response)
-        response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress } }
-            .forEach { CoinRateManager.fetchCoinRate(it) }
+        CoinRateManager.fetchCoinListRate(response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress } })
         inboxCache().cache(response)
     }
 
@@ -120,7 +119,6 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         val response = inboxCache().read() ?: return
         tokenListLiveData.postValue(response.tokenList())
         nftListLiveData.postValue(response.nftList())
-        response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress } }
-            .forEach { CoinRateManager.fetchCoinRate(it) }
+        CoinRateManager.fetchCoinListRate(response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress } })
     }
 }

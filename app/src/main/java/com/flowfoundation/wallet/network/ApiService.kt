@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.network
 
+import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
 import retrofit2.http.*
@@ -202,4 +203,7 @@ interface ApiService {
 
     @POST("/v1/user/device")
     suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): String
+
+    @GET("/api/prices")
+    suspend fun getTokenPrices(): TokenPriceResponse
 }
