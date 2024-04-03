@@ -246,8 +246,7 @@
     <color name="line_light">#0A000000</color>
 
     <color name="bg_skip">#26000000</color>
-    <color name="flow_evm_start_color">#00EF8B</color>
-    <color name="flow_evm_end_color">#BE9FFF</color>
-    <color name="flow_evm_title_end_color">#627EEA</color>
+    <color name="evm_on_flow_start_color">#627EEA</color>
+    <color name="evm_on_flow_end_color">#00EF8B</color>
 
 </resources>

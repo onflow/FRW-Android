@@ -6,16 +6,30 @@ import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.evm.Numeric
+import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.findActivity
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmDialogModel
+import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
+import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
+import com.nftco.flow.sdk.DomainTag
+import com.nftco.flow.sdk.FlowAddress
+import com.nftco.flow.sdk.bytesToHex
 import org.json.JSONObject
-import splitties.alertdialog.appcompat.cancelButton
+import org.web3j.rlp.RlpEncoder
+import org.web3j.rlp.RlpList
+import org.web3j.rlp.RlpString
+import org.web3j.rlp.RlpType
 import splitties.alertdialog.appcompat.message
 import splitties.alertdialog.appcompat.okButton
 import splitties.alertdialog.appcompat.title
 import splitties.alertdialog.material.materialAlertDialog
+import wallet.core.jni.Hash
 
 
 class EvmInterface(
@@ -54,16 +68,20 @@ class EvmInterface(
             DAppMethod.SIGN_MESSAGE -> {
                 val data = extractMessage(obj)
                 if (network == "ethereum")
-                    handleSignMessage(id, data, addPrefix = false)
+                    uiScope {
+                        handleSignMessage(id, data, network)
+                    }
             }
             DAppMethod.SIGN_PERSONAL_MESSAGE -> {
                 val data = extractMessage(obj)
-                handleSignMessage(id, data, addPrefix = true)
+                uiScope {
+                    handleSignMessage(id, data, network)
+                }
             }
             DAppMethod.SIGN_TYPED_MESSAGE -> {
                 val data = extractMessage(obj)
                 val raw = extractRaw(obj)
-                handleSignTypedMessage(id, data, raw)
+//                handleSignTypedMessage(id, data, raw)
             }
             else -> {
                 webView.context.materialAlertDialog {
@@ -87,48 +105,62 @@ class EvmInterface(
         return param.getString("raw")
     }
 
-    private fun handleSignMessage(id: Long, data: ByteArray, addPrefix: Boolean) {
-        webView.context.materialAlertDialog {
-            title = "Sign Ethereum Message"
-            message = if (addPrefix) String(data, Charsets.UTF_8) else Numeric.toHexString(data)
-            cancelButton {
-                webView.sendError("ethereum","Cancel", id)
+    private fun handleSignMessage(id: Long, data: ByteArray, network: String) {
+        val signMessage = String(data, Charsets.UTF_8)
+        val model = FclDialogModel(
+            signMessage = data.bytesToHex(),
+            url = webView.url,
+            title = webView.title,
+            logo = webView.url?.toFavIcon(),
+            network = network
+        )
+        FclSignMessageDialog.show(
+            activity().supportFragmentManager,
+            model
+        )
+        FclSignMessageDialog.observe { approve ->
+            if (approve) {
+                webView.sendResult(network, signEthereumMessage(signMessage), id)
             }
-            okButton {
-                webView.sendResult("ethereum", signEthereumMessage(data, addPrefix), id)
-            }
-        }.show()
-    }
-
-
-    private fun handleSignTypedMessage(id: Long, data: ByteArray, raw: String) {
-        webView.context.materialAlertDialog {
-            title = "Sign Typed Message"
-            message = raw
-            cancelButton {
-                webView.sendError("ethereum","Cancel", id)
-            }
-            okButton {
-                webView.sendResult("ethereum", signEthereumMessage(data, false), id)
-            }
-        }.show()
-    }
-
-    private fun signEthereumMessage(message: ByteArray, addPrefix: Boolean): String {
-        var data = message
-        if (addPrefix) {
-            val messagePrefix = "\u0019Ethereum Signed Message:\n"
-            val prefix = (messagePrefix + message.size).toByteArray()
-            val result = ByteArray(prefix.size + message.size)
-            System.arraycopy(prefix, 0, result, 0, prefix.size)
-            System.arraycopy(message, 0, result, prefix.size, message.size)
-            data = wallet.core.jni.Hash.keccak256(result)
         }
-
-//        val signatureData = privateKey.sign(data, Curve.SECP256K1)
-//            .apply {
-//                (this[this.size - 1]) = (this[this.size - 1] + 27).toByte()
-//            }
-        return Numeric.toHexString(EVMWalletManager.signData(data))
     }
+
+    private fun signEthereumMessage(message: String): String {
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+        val address = WalletManager.wallet()?.walletAddress() ?: return ""
+        val flowAddress = FlowAddress(address)
+        val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
+
+        val hashedData = hashPersonalMessage(message.toByteArray())
+        val signableData = DomainTag.USER_DOMAIN_TAG + hashedData
+        val sign = cryptoProvider.getSigner().sign(signableData)
+        val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, "evm", sign))
+        val encoded = RlpEncoder.encode(rlpList)
+
+        logd("evm", "hashedData:::${hashedData.bytesToHex()}")
+        logd("evm", "signableData:::${signableData.bytesToHex()}")
+        logd("evm", "sign:::${sign.bytesToHex()}")
+        logd("evm", "encoded:::${encoded.bytesToHex()}")
+        logd("evm", "signResult:::${Numeric.toHexString(encoded)}")
+
+        return Numeric.toHexString(encoded)
+    }
+
+    private fun asRlpValues(keyIndex: Int, address: ByteArray, capabilityPath: String, signature: ByteArray): List<RlpType> {
+        return listOf(
+            RlpList(RlpString.create(keyIndex.toBigInteger())),
+            RlpString.create(address),
+            RlpString.create(capabilityPath),
+            RlpList(RlpString.create(signature)))
+    }
+
+    private fun hashPersonalMessage(message: ByteArray): ByteArray {
+        val messagePrefix = "\u0019Ethereum Signed Message:\n"
+        val prefix = (messagePrefix + message.size).toByteArray()
+        val result = ByteArray(prefix.size + message.size)
+        System.arraycopy(prefix, 0, result, 0, prefix.size)
+        System.arraycopy(message, 0, result, prefix.size, message.size)
+        return Hash.keccak256(result)
+    }
+
 }

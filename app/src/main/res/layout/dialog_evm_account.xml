@@ -168,7 +168,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:fontFamily="@font/inter"
-            android:text="FlowEVM Wallet"
+            android:text="EVM Wallet"
             android:textColor="@color/text_3"
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="@id/iv_wallet_icon"

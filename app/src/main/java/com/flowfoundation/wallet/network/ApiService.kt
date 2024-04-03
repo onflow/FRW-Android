@@ -192,8 +192,6 @@ interface ApiService {
     @POST("/v1/user/address/network")
     suspend fun enableNetwork(@Body param: NetworkEnableParams): NetworkEnableResponse
 
-    @POST("/v1/user/address/")
-
     @GET("/v1/user/location")
     suspend fun getDeviceLocation(): LocationInfoResponse
 

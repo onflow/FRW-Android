@@ -41,7 +41,7 @@ class EvmRequestAccountDialog : BottomSheetDialogFragment() {
             ivIcon.loadFavicon(data.logo ?: data.url?.toFavIcon())
             tvName.text = data.title?.split(" ")?.last()
             tvUrl.text = data.url?.urlHost()
-            tvWalletAddress.text = EVMWalletManager.address()
+            tvWalletAddress.text = EVMWalletManager.getEVMAddress()
             btnCancel.setOnClickListener {
                 result?.resume(false)
                 dismiss()

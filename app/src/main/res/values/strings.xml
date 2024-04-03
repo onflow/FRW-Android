@@ -415,7 +415,7 @@
     <string name="device_info">Device Info</string>
 
     <string name="default_child_account_name">Linked Account</string>
-    <string name="default_evm_account_name">Flow-EVM Wallet</string>
+    <string name="default_evm_account_name">EVM Wallet</string>
     <string name="description">Description</string>
     <string name="unlink_wallet">Unlink Wallet</string>
     <string name="unlink_confirmation">Unlink Confirmation</string>
@@ -545,8 +545,9 @@
     <string name="learn_more">Learn more</string>
     <string name="enable_evm_desc">Manage multi-VM assets seamlessly.</string>
     <string name="enable_evm_title_enable_the_path">Enable the path</string>
-    <string name="enable_evm_title_to_evm">to FlowEVM</string>
+    <string name="enable_evm_title_to_evm">to EVM on Flow</string>
     <string name="enable_evm_title">Enable the path to FlowEVM !</string>
+    <string name="evm_on_flow">EVM on Flow</string>
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
     <string name="move">Move</string>
@@ -556,4 +557,5 @@
     <string name="move_token">Move Token</string>
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
     <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
+    <string name="hide_browser_toolbar">Hide</string>
 </resources>

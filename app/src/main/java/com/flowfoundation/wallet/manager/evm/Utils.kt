@@ -3,16 +3,16 @@ package com.flowfoundation.wallet.manager.evm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.utils.Env
 
-const val ETH_CHAIN_ID = 1
-const val ETH_RPC_URL = "https://cloudflare-eth.com"
+const val PREVIEWNET_CHAIN_ID = 646
+const val PREVIEWNET_RPC_URL = "https://previewnet.evm.nodes.onflow.org"
 
 fun loadInitJS(): String {
     return """
         (function() {
             var config = {                
                 ethereum: {
-                    chainId: $ETH_CHAIN_ID,
-                    rpcUrl: "$ETH_RPC_URL"
+                    chainId: $PREVIEWNET_CHAIN_ID,
+                    rpcUrl: "$PREVIEWNET_RPC_URL"
                 },
                 isDebug: true
             };
