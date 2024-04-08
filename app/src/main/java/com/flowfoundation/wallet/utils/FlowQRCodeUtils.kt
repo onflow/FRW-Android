@@ -43,7 +43,7 @@ fun String.toQRDrawable(
         }
         shapes {
             if (withScale) {
-                darkPixel = QrVectorPixelShape.Circle(0.9f)
+                darkPixel = QrVectorPixelShape.Circle(.9f)
                 ball = QrVectorBallShape
                     .Circle(1f).scale(1.3f).asBallShape()
                 frame = QrVectorFrameShape
@@ -56,7 +56,8 @@ fun String.toQRDrawable(
                     .Circle(1.2f).scale(.9f).asFrameShape()
             }
         }
-        errorCorrectionLevel = QrErrorCorrectionLevel.Low
+        errorCorrectionLevel = if (withScale) QrErrorCorrectionLevel.Low else
+            QrErrorCorrectionLevel.MediumHigh
     }
     return QrCodeDrawable(data, options)
 }
