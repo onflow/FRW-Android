@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.walletrestore
 import androidx.annotation.WorkerThread
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.deleteAnonymousUser
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
@@ -12,10 +11,7 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
@@ -130,7 +126,7 @@ suspend fun firebaseLogin(customToken: String, callback: (isSuccess: Boolean) ->
     } else callback(false)
 }
 
-private suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
+suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
     val uid = Firebase.auth.currentUser?.uid
     if (!uid.isNullOrBlank()) {
         callback.invoke(uid)

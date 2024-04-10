@@ -7,6 +7,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentProfileBinding
+import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
@@ -149,7 +150,7 @@ class ProfileFragmentPresenter(
 
     private fun updatePreferenceState() {
         ioScope {
-            val isSignIn = isRegistered()
+            val isSignIn = isRegistered() && isUserSignIn()
             uiScope {
                 with(binding) {
                     userInfo.root.setVisible(isSignIn)
