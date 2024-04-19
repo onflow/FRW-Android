@@ -79,6 +79,7 @@
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
                 android:paddingVertical="12dp"
+                app:layout_constraintHeight_max="220dp"
                 app:layout_constraintBottom_toTopOf="@id/ll_divider"
                 app:layout_constraintTop_toBottomOf="@id/tv_account_title"/>
 

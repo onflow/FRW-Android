@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
@@ -37,28 +38,16 @@ class DevicesViewModel : ViewModel() {
                                 deviceKey.pubKey.publicKey && it.revoked.not()
                     }
                     if (unRevokedDevice != null) {
+                        val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
+                        val keyId = if (unRevokedDevice.publicKey.base16Value == currentKey) null else unRevokedDevice.id
                         deviceList.add(
                             DeviceKeyModel(
                                 deviceId = device.id,
-                                keyId = unRevokedDevice.id,
-                                deviceModel = device
-                            )
-                        )
-                    } else {
-                        deviceList.add(
-                            DeviceKeyModel(
-                                deviceId = device.id,
+                                keyId = keyId,
                                 deviceModel = device
                             )
                         )
                     }
-                } else {
-                    deviceList.add(
-                        DeviceKeyModel(
-                            deviceId = device.id,
-                            deviceModel = device
-                        )
-                    )
                 }
             }
             uiScope {

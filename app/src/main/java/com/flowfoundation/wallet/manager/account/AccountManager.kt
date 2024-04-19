@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
+import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -17,7 +19,6 @@ import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
-import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
@@ -26,8 +27,9 @@ import com.flowfoundation.wallet.utils.setUploadedAddressSet
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import io.outblock.wallet.KeyManager
-import kotlinx.coroutines.runBlocking
 
 object AccountManager {
     private val accounts = mutableListOf<Account>()
@@ -109,6 +111,9 @@ object AccountManager {
 
     fun switch(account: Account, onFinish: () -> Unit) {
         ioScope {
+            if (account.wallet == null) {
+                return@ioScope
+            }
             if (isSwitching) {
                 return@ioScope
             }
@@ -135,48 +140,51 @@ object AccountManager {
     }
 
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
-        getFirebaseUid { uid ->
-            if (uid.isNullOrBlank()) {
-                callback.invoke(false)
-                return@getFirebaseUid
-            }
-            runBlocking {
-                val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-                val service = retrofit().create(ApiService::class.java)
-                val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
-                if (cryptoProvider == null) {
-                    callback.invoke(false)
-                    return@runBlocking
-                }
-                val resp = service.login(
-                    LoginRequest(
-                        signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                        accountKey = AccountKey(
-                            publicKey = cryptoProvider.getPublicKey(),
-                            hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                            signAlgo = cryptoProvider.getSignatureAlgorithm().index
-                        ),
-                        deviceInfo = deviceInfoRequest
-                    )
-                )
-                if (resp.data?.customToken.isNullOrBlank()) {
-                    callback.invoke(false)
-                } else {
-                    firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                        if (isSuccess) {
-                            setRegistered()
-                            if (account.prefix == null) {
-                                Wallet.store().resume()
-                            }
-                            callback.invoke(true)
-                        } else {
-                            callback.invoke(false)
-                        }
+        if (!setToAnonymous()) {
+            callback.invoke(false)
+            return
+        }
+        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+        val service = retrofit().create(ApiService::class.java)
+        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account, true)
+        if (cryptoProvider == null) {
+            callback.invoke(false)
+            return
+        }
+        val resp = service.login(
+            LoginRequest(
+                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+                accountKey = AccountKey(
+                    publicKey = cryptoProvider.getPublicKey(),
+                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                ),
+                deviceInfo = deviceInfoRequest
+            )
+        )
+        if (resp.data?.customToken.isNullOrBlank()) {
+            callback.invoke(false)
+        } else {
+            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                if (isSuccess) {
+                    setRegistered()
+                    if (account.prefix == null) {
+                        Wallet.store().resume()
                     }
+                    callback.invoke(true)
+                } else {
+                    callback.invoke(false)
                 }
             }
         }
+    }
 
+    private suspend fun setToAnonymous(): Boolean {
+        if (!isAnonymousSignIn()) {
+            Firebase.auth.signOut()
+            return signInAnonymously()
+        }
+        return true
     }
 }
 

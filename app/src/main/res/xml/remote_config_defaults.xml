@@ -58,7 +58,9 @@
             "wallet_connect": true,
             "on_ramp": false,
             "app_list": false,
-            "swap": false
+            "swap": false,
+            "browser": false,
+            "nft_transfer": false
             },
             "payer": {
             "mainnet": {
