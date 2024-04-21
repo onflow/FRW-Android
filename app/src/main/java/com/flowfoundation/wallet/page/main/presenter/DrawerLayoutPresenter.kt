@@ -63,7 +63,6 @@ class DrawerLayoutPresenter(
             accountSwitchButton.setOnClickListener { AccountSwitchDialog.show(activity.supportFragmentManager) }
         }
         bindData()
-        bindAccountData()
         binding.refreshWalletList()
         barcodeLauncher = activity.registerBarcodeLauncher { result -> dispatchScanResult(activity, result.orEmpty()) }
 
@@ -119,6 +118,7 @@ class DrawerLayoutPresenter(
                 }
             }
         }
+        bindAccountData()
     }
 
     private fun launchClick(unit: () -> Unit) {

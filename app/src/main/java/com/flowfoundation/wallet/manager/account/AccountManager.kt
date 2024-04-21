@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.manager.account
 
 import android.widget.Toast
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.CacheManager
@@ -29,6 +27,8 @@ import com.flowfoundation.wallet.utils.setUploadedAddressSet
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import io.outblock.wallet.KeyManager
 
 object AccountManager {
@@ -107,10 +107,13 @@ object AccountManager {
         return accounts.map { it.wallet?.walletAddress() ?: "" }
     }
 
-    var isSwitching = false
+    private var isSwitching = false
 
     fun switch(account: Account, onFinish: () -> Unit) {
         ioScope {
+            if (account.wallet == null) {
+                return@ioScope
+            }
             if (isSwitching) {
                 return@ioScope
             }
@@ -138,14 +141,14 @@ object AccountManager {
 
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
         if (!setToAnonymous()) {
-            callback(false)
+            callback.invoke(false)
             return
         }
         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
         val service = retrofit().create(ApiService::class.java)
-        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account, true)
         if (cryptoProvider == null) {
-            callback(false)
+            callback.invoke(false)
             return
         }
         val resp = service.login(
@@ -160,19 +163,18 @@ object AccountManager {
             )
         )
         if (resp.data?.customToken.isNullOrBlank()) {
-            callback(false)
-            return
-        }
-        firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-            if (isSuccess) {
-                setRegistered()
-                if (account.prefix == null) {
-                    Wallet.store().resume()
+            callback.invoke(false)
+        } else {
+            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                if (isSuccess) {
+                    setRegistered()
+                    if (account.prefix == null) {
+                        Wallet.store().resume()
+                    }
+                    callback.invoke(true)
+                } else {
+                    callback.invoke(false)
                 }
-                callback(true)
-            } else {
-                callback(false)
-                return@firebaseLogin
             }
         }
     }
@@ -202,5 +204,5 @@ data class Account(
 class Accounts : ArrayList<Account>()
 
 fun accountsCache(): CacheManager<Accounts> {
-    return CacheManager("${"accounts".hashCode()}", Accounts::class.java)
+    return CacheManager("${"accounts".hashCode()}", Accounts::class.java, false)
 }

@@ -201,7 +201,7 @@ interface ApiService {
     @GET("/v1/user/keys")
     suspend fun getKeyDeviceInfo(): KeyDeviceInfoResponse
 
-    @POST("/v1/user/device")
+    @POST("/v3/user/device")
     suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): String
 
     @GET("/api/prices")

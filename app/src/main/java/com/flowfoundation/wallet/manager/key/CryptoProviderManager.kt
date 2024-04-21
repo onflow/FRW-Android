@@ -19,12 +19,12 @@ object CryptoProviderManager {
         return cryptoProvider
     }
 
-    fun generateAccountCryptoProvider(account: Account?): CryptoProvider? {
+    fun generateAccountCryptoProvider(account: Account?, isSwitch: Boolean = false): CryptoProvider? {
         if (account == null) {
             return null
         }
         if (account.prefix.isNullOrBlank()) {
-            val wallet = if (account.isActive) {
+            val wallet = if (account.isActive && isSwitch.not()) {
                 Wallet.store().wallet()
             } else {
                 AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")

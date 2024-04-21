@@ -24,11 +24,15 @@ object AppConfig {
 
     fun walletConnectEnable() = config().features.walletConnect
 
-    fun isInAppSwap() = config().features.swap
+    fun isInAppSwap() = config().features.swap ?: false
 
-    fun isInAppBuy() = config().features.onRamp
+    fun isInAppBuy() = config().features.onRamp ?: false
 
-    fun showDappList() = config().features.appList
+    fun showDappList() = config().features.appList ?: false
+
+    fun useInAppBrowser() = config().features.browser ?: false
+
+    fun showNFTTransfer() = config().features.nftTransfer ?: false
 
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
@@ -80,11 +84,15 @@ private data class Features(
     @SerializedName("wallet_connect")
     val walletConnect: Boolean,
     @SerializedName("swap")
-    val swap: Boolean,
+    val swap: Boolean?,
     @SerializedName("on_ramp")
-    val onRamp: Boolean,
+    val onRamp: Boolean?,
     @SerializedName("app_list")
-    val appList: Boolean
+    val appList: Boolean?,
+    @SerializedName("browser")
+    val browser: Boolean?,
+    @SerializedName("nft_transfer")
+    val nftTransfer: Boolean?
 )
 
 private data class Payer(

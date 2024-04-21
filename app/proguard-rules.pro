@@ -85,9 +85,11 @@
 -keep class org.bouncycastle.** {*;}
 
 -keep class com.flowfoundation.wallet.widgets.webview.JsInterface.** {*;}
+-keep class com.flowfoundation.wallet.widgets.webview.JavascriptKt.** {*;}
 
 -keep class com.walletconnect.** {*;}
 -keep class net.sqlcipher.** {*;}
+-keep class org.trustwallet.core.** { *; }
 
 -keep public enum com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency.** {*;}
 

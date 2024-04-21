@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
@@ -20,6 +18,7 @@ import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.wallet.confirm.WalletConfirmActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -210,18 +209,6 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
     override fun onSessionUpdate(updatedSession: Sign.Model.UpdatedSession) {
         logd(TAG, "onSessionUpdate() updatedSession:${Gson().toJson(updatedSession)}")
     }
-}
-
-private suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
-    val uid = Firebase.auth.currentUser?.uid
-    if (!uid.isNullOrBlank()) {
-        callback.invoke(uid)
-        return
-    }
-
-    getFirebaseJwt(true)
-
-    callback.invoke(Firebase.auth.currentUser?.uid)
 }
 
 private var currentSession: Sign.Model.ApprovedSession? = null

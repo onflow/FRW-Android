@@ -19,6 +19,11 @@ fun isAnonymousSignIn(): Boolean {
     return Firebase.auth.currentUser?.isAnonymous ?: true
 }
 
+fun isUserSignIn(): Boolean {
+    val user = Firebase.auth.currentUser
+    return user != null && user.uid.isNotEmpty() && isAnonymousSignIn().not()
+}
+
 fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     val auth = Firebase.auth
     if (auth.currentUser != null) {

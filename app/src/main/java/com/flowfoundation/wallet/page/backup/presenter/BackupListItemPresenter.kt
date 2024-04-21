@@ -26,9 +26,12 @@ class BackupListItemPresenter(private val view: View) : BaseViewHolder(view),
                 ivBackupType.setImageResource(BackupType.getBackupIcon(it.type))
                 tvBackupName.text = BackupType.getBackupName(it.type)
             }
+            val created = model.info?.backupInfo?.createTime
             model.info?.device?.let {
                 tvBackupOs.text = it.user_agent
-                tvBackupLocation.text = cityInfo(it.city, it.countryCode) + formatGMTToDate(it.updated_at)
+                tvBackupLocation.text = cityInfo(it.city, it.countryCode) +
+                        if (created.isNullOrBlank()) formatGMTToDate(it.updated_at) else
+                            formatGMTToDate(created)
             }
             clBackupContentLayout.setOnClickListener {
                 BackupDetailActivity.launch(view.context, model)

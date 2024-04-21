@@ -24,6 +24,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
@@ -159,7 +160,7 @@ class NftDetailPresenter(
 
             ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }
 
-            sendButton.setVisible(!nft.isDomain())
+            sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
         }
     }
 

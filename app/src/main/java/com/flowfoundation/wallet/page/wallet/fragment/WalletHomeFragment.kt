@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletHomeBinding
+import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.wallet.WalletFragment
 import com.flowfoundation.wallet.utils.isRegistered
@@ -33,7 +34,7 @@ class WalletHomeFragment : Fragment() {
     private suspend fun bindFragment() {
         childFragmentManager
             .beginTransaction()
-            .replace(R.id.fragment_container, if (isRegistered()) WalletFragment() else WalletUnregisteredFragment())
+            .replace(R.id.fragment_container, if (isRegistered() && isUserSignIn()) WalletFragment() else WalletUnregisteredFragment())
             .commitAllowingStateLoss()
     }
 }
