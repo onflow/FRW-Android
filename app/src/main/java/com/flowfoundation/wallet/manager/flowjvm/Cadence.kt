@@ -292,6 +292,10 @@ var CADENCE_WITHDRAW_COA_FLOW_BALANCE
     get() = CadenceApiManager.getCadenceEVMScript("withdrawCoa")
     private set(value) {}
 
+var CADENCE_TRANSFER_FLOW_TO_EVM
+    get() = CadenceApiManager.getCadenceEVMScript("transferFlowToEvmAddress")
+    private set(value) {}
+
 var CADENCE_CALL_EVM_CONTRACT
     get() = CadenceApiManager.getCadenceEVMScript("callContract")
     private set(value) {}

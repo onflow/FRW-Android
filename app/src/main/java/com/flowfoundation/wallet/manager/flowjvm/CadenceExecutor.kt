@@ -308,6 +308,17 @@ suspend fun cadenceWithdrawTokenFromCOAAccount(amount: Float, toAddress: String)
     return transactionId
 }
 
+suspend fun cadenceTransferFlowToEvmAddress(toAddress: String, amount: Float): String? {
+    logd(TAG, "cadenceSendEVMTransaction")
+    val transactionId = CADENCE_TRANSFER_FLOW_TO_EVM.transactionByMainWallet {
+        arg { string(toAddress) }
+        arg { ufix64Safe(amount) }
+        arg { uint64(100000) }
+    }
+    logd(TAG, "cadenceSendEVMTransaction transactionId:$transactionId")
+    return transactionId
+}
+
 suspend fun cadenceSendEVMTransaction(toAddress: String, amount: BigDecimal, data: ByteArray,
                                       gasLimit: Int): String? {
     logd(TAG, "cadenceSendEVMTransaction")
