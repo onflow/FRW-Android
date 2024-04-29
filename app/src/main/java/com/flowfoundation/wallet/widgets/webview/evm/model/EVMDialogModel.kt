@@ -4,9 +4,10 @@ import android.os.Parcelable
 
 
 @kotlinx.parcelize.Parcelize
-class EvmDialogModel(
+class EVMDialogModel(
     val title: String? = null,
     val logo: String? = null,
     val url: String? = null,
     val network: String? = null,
+    val cadence: String? = null,
 ) : Parcelable

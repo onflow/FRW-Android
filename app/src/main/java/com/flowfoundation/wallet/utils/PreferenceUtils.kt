@@ -39,6 +39,7 @@ private val KEY_BACKUP_GOOGLE_DRIVE = booleanPreferencesKey("KEY_BACKUP_GOOGLE_D
 private val KEY_BACKUP_MULTI = booleanPreferencesKey("KEY_BACKUP_MULTI")
 private val KEY_SEND_STATE_BUBBLE_POSITION = stringPreferencesKey("KEY_SEND_STATE_BUBBLE_POSITION")
 private val KEY_DEVELOPER_MODE_ENABLE = booleanPreferencesKey("KEY_DEVELOPER_MODE_ENABLE")
+private val KEY_EVM_ON_FLOW_ENABLE = booleanPreferencesKey("KEY_EVM_ON_FLOW_ENABLE")
 private val KEY_CHAIN_NETWORK = intPreferencesKey("KEY_CHAIN_NETWORK")
 private val KEY_THEME_MODE = intPreferencesKey("KEY_THEME_MODE")
 private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
@@ -126,6 +127,12 @@ suspend fun isDeveloperModeEnable(): Boolean = dataStore.data.map { it[KEY_DEVEL
 
 fun setDeveloperModeEnable(isEnable: Boolean) {
     edit { dataStore.edit { it[KEY_DEVELOPER_MODE_ENABLE] = isEnable } }
+}
+
+suspend fun isEVMOnFlowEnable(): Boolean = dataStore.data.map { it[KEY_EVM_ON_FLOW_ENABLE] ?: false}.first()
+
+fun setEVMOnFlowEnable(isEnable: Boolean) {
+    edit { dataStore.edit { it[KEY_EVM_ON_FLOW_ENABLE] = isEnable } }
 }
 
 suspend fun getChainNetworkPreference(): Int =

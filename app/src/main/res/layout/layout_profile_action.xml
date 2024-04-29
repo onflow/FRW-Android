@@ -23,7 +23,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
             android:letterSpacing="0"
-            android:text="@string/address"
+            android:text="@string/address_book"
             android:textAllCaps="false"
             android:textColor="@color/note"
             android:textSize="12sp"

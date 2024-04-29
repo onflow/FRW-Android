@@ -2,7 +2,8 @@ package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CREATE_COA_ACCOUNT
+import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_COA_EVM_ADDRESS
 import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.cadenceWithdrawTokenFromCOAAccount
@@ -11,7 +12,9 @@ import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isEVMOnFlowEnable
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.setEVMOnFlowEnable
 import com.flowfoundation.wallet.wallet.toAddress
 
 private val TAG = EVMWalletManager::class.java.simpleName
@@ -20,12 +23,37 @@ object EVMWalletManager {
 
     private val evmAddressMap = mutableMapOf<String, String>()
 
+    private var isEVMEnable = false
+
+    fun init() {
+        ioScope {
+            isEVMEnable = isEVMOnFlowEnable()
+        }
+    }
+
+    fun isEVMEnable(): Boolean {
+        return isEVMEnable
+    }
+
+    fun setEVMEnable(enable: Boolean) {
+        isEVMEnable = enable
+        setEVMOnFlowEnable(enable)
+    }
+
     fun showEVMEnablePage(): Boolean {
-        return isPreviewnet() && haveEVMAddress().not()
+        return isEVMEnable && canEnableEVM() && haveEVMAddress().not()
+    }
+
+    private fun canEnableEVM(): Boolean {
+        return CADENCE_CREATE_COA_ACCOUNT.isNotEmpty()
+    }
+
+    private fun canFetchEVMAddress(): Boolean {
+        return CADENCE_QUERY_COA_EVM_ADDRESS.isNotEmpty()
     }
 
     fun fetchEVMAddress(callback: ((isSuccess: Boolean) -> Unit)? = null) {
-        if (!isPreviewnet()) {
+        if (isEVMEnable.not() || canFetchEVMAddress().not() ) {
             callback?.invoke(false)
         }
         logd(TAG, "fetchEVMAddress()")
@@ -42,8 +70,8 @@ object EVMWalletManager {
         }
     }
 
-    fun showEVMAccount(): Boolean {
-        return isPreviewnet() && haveEVMAddress()
+    fun showEVMAccount(network: String?): Boolean {
+        return isEVMEnable && network != null &&  evmAddressMap[network].isNullOrBlank().not()
     }
 
     fun getEVMAccount(): EVMAccount? {

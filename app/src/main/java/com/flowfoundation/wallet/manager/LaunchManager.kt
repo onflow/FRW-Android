@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.env.EnvKey
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -73,6 +74,7 @@ object LaunchManager {
         safeRun { CoinRateManager.init() }
         safeRun { CurrencyManager.init() }
         safeRun { StakingManager.init() }
+        safeRun { EVMWalletManager.init() }
 //        Translized.init(application, EnvKey.get("TRANSLIZED_PROJECT_ID"), EnvKey.get("TRANSLIZED_TOKEN"))
     }
 

@@ -215,6 +215,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/coin_wrapper"
+            app:layout_constraintBottom_toTopOf="@id/tv_balance"
             tools:ignore="LabelFor"
             tools:text=""/>
 
@@ -252,8 +253,6 @@
             android:id="@+id/tv_max"
             android:layout_width="40dp"
             android:layout_height="24dp"
-            android:layout_marginTop="13dp"
-            android:layout_marginBottom="25dp"
             android:background="@drawable/bg_round_16dp"
             android:backgroundTint="@color/accent_gray_16"
             android:fontFamily="@font/inter_medium"
@@ -263,8 +262,8 @@
             android:textColor="@color/accent_gray"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/coin_wrapper"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toTopOf="@id/tv_balance"
+            app:layout_constraintBottom_toBottomOf="@id/tv_balance"/>
 
         <TextView
             android:id="@+id/tv_balance"
@@ -273,10 +272,12 @@
             android:fontFamily="@font/inter"
             android:textSize="16sp"
             android:textColor="@color/neutrals4"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tv_max"
-            app:layout_constraintTop_toTopOf="@id/tv_max"
-            app:layout_constraintBottom_toBottomOf="@id/tv_max"
+            app:layout_constraintTop_toBottomOf="@id/et_amount"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="Balance $ 1212"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

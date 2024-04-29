@@ -110,7 +110,7 @@
     <string name="buy">Buy</string>
     <string name="swap">Swap</string>
     <string name="address">Address</string>
-    <string name="wallets">Wallets</string>
+    <string name="wallets">Wallet Detail</string>
     <string name="device">Device</string>
     <string name="chrome_extension">Chrome Extension</string>
     <string name="about">About</string>
@@ -291,7 +291,7 @@
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Incorrect mnemonic</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="inbox">Inbox</string>
+    <string name="inbox">Token Inbox</string>
     <string name="token">Token</string>
     <string name="token_with_count">Token (%1$d)</string>
     <string name="nft_with_count">NFT (%1$d)</string>
@@ -410,7 +410,7 @@
     <string name="try_again">Try Again</string>
     <string name="generate_qr_code_error">Generating QR code failed. Please try again.</string>
     <string name="wallet_connect_error">Create wallet connect failed. Please try again.</string>
-    <string name="linked_account">Linked Account</string>
+    <string name="linked_account">Linked Accounts</string>
     <string name="devices">Devices</string>
     <string name="device_info">Device Info</string>
 
@@ -461,7 +461,7 @@
     <string name="transaction_pending_tips">Almost there, the last transaction is pending.</string>
     <string name="accessible">Accessible</string>
     <string name="none_accessible_coins">None Accessible Coins</string>
-    <string name="no_linked_account">No Linked Account</string>
+    <string name="no_linked_account">No Linked Accounts</string>
     <string name="empty_bookmarks">Empty Bookmarks</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
@@ -492,26 +492,24 @@
     <string name="loading">Loading</string>
     <string name="loading_desc">It might take a while, please do not exit...</string>
     <string name="create_device_backup">Create Device Backup</string>
-    <string name="google_backup_note">Note: Your Google Drive Backup will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">Create Multi-Backup</string>
     <string name="multi_backup">Multi-Backup</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
-    <string name="multi_backup_note">Note: All Your Backup will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
-    <string name="import_wallet_note">Restore wallet from your backup history.</string>
+    <string name="import_wallet_note">Restore your wallet using a backup.</string>
     <string name="from_device_backup">From Device Backup</string>
-    <string name="from_device_backup_note">Mobile or Extension Devices</string>
+    <string name="from_device_backup_note">Restore from another mobile or extension wallet</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Old Version Backup</string>
-    <string name="from_recovery_phrase_note">The old version include 12 words recovery phrase and
-        Google Drive</string>
+    <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
+    <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">From Multi-Backup</string>
     <string name="multi_restore_note">Please Select 2 or More Backup Options</string>
@@ -519,8 +517,8 @@
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
-    <string name="create_device_backup_title">Scan to Sync Extension Wallet</string>
-    <string name="create_device_backup_note">Scan QR code shown by the Flow Wallet Browser extension to sync your wallet.</string>
+    <string name="create_device_backup_title">Sync your wallet between your devices</string>
+    <string name="create_device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
     <string name="backup_info">Backup Info</string>
@@ -557,5 +555,6 @@
     <string name="move_token">Move Token</string>
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
     <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
+    <string name="enable_evm_failed">Balance is lower than 0.002 please fund your account to continue.</string>
     <string name="hide_browser_toolbar">Hide</string>
 </resources>

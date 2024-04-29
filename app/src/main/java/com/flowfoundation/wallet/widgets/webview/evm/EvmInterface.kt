@@ -5,36 +5,32 @@ import android.webkit.WebView
 import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.evm.Numeric
-import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
+import com.flowfoundation.wallet.manager.evm.signEthereumMessage
+import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
-import com.flowfoundation.wallet.widgets.webview.evm.model.EvmDialogModel
+import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
+import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
+import com.google.gson.Gson
 import com.nftco.flow.sdk.bytesToHex
 import org.json.JSONObject
-import org.web3j.rlp.RlpEncoder
-import org.web3j.rlp.RlpList
-import org.web3j.rlp.RlpString
-import org.web3j.rlp.RlpType
-import splitties.alertdialog.appcompat.message
-import splitties.alertdialog.appcompat.okButton
-import splitties.alertdialog.appcompat.title
-import splitties.alertdialog.material.materialAlertDialog
-import wallet.core.jni.Hash
+import org.web3j.utils.Numeric
 
 
 class EvmInterface(
     private val webView: WebView
 ) {
+    companion object {
+        const val ETH_NETWORK = "ethereum"
+        const val TAG = "EVMInterface"
+    }
     private fun activity() = findActivity(webView) as FragmentActivity
 
     @JavascriptInterface
@@ -48,7 +44,7 @@ class EvmInterface(
                 uiScope {
                     val connect = EvmRequestAccountDialog().show(
                         activity().supportFragmentManager,
-                        EvmDialogModel(title = webView.title, url = webView.url, network = network)
+                        EVMDialogModel(title = webView.title, url = webView.url, network = network)
                     )
                     if (connect) {
                         val address = EVMWalletManager.getEVMAddress()
@@ -67,7 +63,7 @@ class EvmInterface(
             }
             DAppMethod.SIGN_MESSAGE -> {
                 val data = extractMessage(obj)
-                if (network == "ethereum")
+                if (network == ETH_NETWORK)
                     uiScope {
                         handleSignMessage(id, data, network)
                     }
@@ -78,18 +74,42 @@ class EvmInterface(
                     handleSignMessage(id, data, network)
                 }
             }
+            DAppMethod.SIGN_TRANSACTION -> {
+                if (network == ETH_NETWORK) {
+                    val transaction = Gson().fromJson(obj.optString("object"), EvmTransaction::class.java)
+                    uiScope {
+                        handleTransaction(transaction, id, network)
+                    }
+                }
+            }
             DAppMethod.SIGN_TYPED_MESSAGE -> {
                 val data = extractMessage(obj)
                 val raw = extractRaw(obj)
 //                handleSignTypedMessage(id, data, raw)
             }
             else -> {
-                webView.context.materialAlertDialog {
-                    title = "Error"
-                    message = "$method not implemented"
-                    okButton {
-                    }
-                }.show()
+                logd("evm", "methodNotImplement:::$method")
+            }
+        }
+    }
+
+    private fun handleTransaction(transaction: EvmTransaction, id: Long, network: String) {
+        val model = EVMDialogModel(
+            url = webView.url,
+            title = webView.title,
+            logo = webView.url?.toFavIcon(),
+            network = network,
+            cadence = CADENCE_CALL_EVM_CONTRACT
+        )
+        EVMSendTransactionDialog.show(
+            activity().supportFragmentManager,
+            model
+        )
+        EVMSendTransactionDialog.observe { isApprove ->
+            if (isApprove) {
+                sendEthereumTransaction(transaction) { txHash ->
+                    webView.sendResult(network, txHash, id)
+                }
             }
         }
     }
@@ -123,44 +143,6 @@ class EvmInterface(
                 webView.sendResult(network, signEthereumMessage(signMessage), id)
             }
         }
-    }
-
-    private fun signEthereumMessage(message: String): String {
-        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-        val address = WalletManager.wallet()?.walletAddress() ?: return ""
-        val flowAddress = FlowAddress(address)
-        val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
-
-        val hashedData = hashPersonalMessage(message.toByteArray())
-        val signableData = DomainTag.USER_DOMAIN_TAG + hashedData
-        val sign = cryptoProvider.getSigner().sign(signableData)
-        val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, "evm", sign))
-        val encoded = RlpEncoder.encode(rlpList)
-
-        logd("evm", "hashedData:::${hashedData.bytesToHex()}")
-        logd("evm", "signableData:::${signableData.bytesToHex()}")
-        logd("evm", "sign:::${sign.bytesToHex()}")
-        logd("evm", "encoded:::${encoded.bytesToHex()}")
-        logd("evm", "signResult:::${Numeric.toHexString(encoded)}")
-
-        return Numeric.toHexString(encoded)
-    }
-
-    private fun asRlpValues(keyIndex: Int, address: ByteArray, capabilityPath: String, signature: ByteArray): List<RlpType> {
-        return listOf(
-            RlpList(RlpString.create(keyIndex.toBigInteger())),
-            RlpString.create(address),
-            RlpString.create(capabilityPath),
-            RlpList(RlpString.create(signature)))
-    }
-
-    private fun hashPersonalMessage(message: ByteArray): ByteArray {
-        val messagePrefix = "\u0019Ethereum Signed Message:\n"
-        val prefix = (messagePrefix + message.size).toByteArray()
-        val result = ByteArray(prefix.size + message.size)
-        System.arraycopy(prefix, 0, result, 0, prefix.size)
-        System.arraycopy(message, 0, result, prefix.size, message.size)
-        return Hash.keccak256(result)
     }
 
 }

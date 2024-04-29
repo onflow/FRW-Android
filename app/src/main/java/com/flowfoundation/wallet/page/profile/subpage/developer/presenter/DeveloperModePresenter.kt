@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityDeveloperModeSettingBinding
 import com.flowfoundation.wallet.manager.app.*
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.PreviewnetTransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -42,15 +43,15 @@ class DeveloperModePresenter(
                 val isDeveloperModeEnable = isDeveloperMode()
                 val isPreviewnetEnabled = WalletManager.isPreviewnetWalletCreated()
                 developerModePreference.setChecked(isDeveloperModeEnable)
-
-                group2.setVisible(isDeveloperModeEnable)
+                setDevelopContentVisible(isDeveloperModeEnable)
+                evmModePreference.setChecked(EVMWalletManager.isEVMEnable())
                 mainnetPreference.setChecked(isMainnet())
                 testnetPreference.setChecked(isTestnet())
                 previewnetCheckbox.isChecked = isPreviewnet()
 
                 mainnetPreference.setCheckboxColor(R.color.colorSecondary.res2color())
-                testnetPreference.setCheckboxColor(R.color.colorSecondary.res2color())
-                previewnetCheckbox.buttonTintList = ColorStateList.valueOf(R.color.colorSecondary.res2color())
+                testnetPreference.setCheckboxColor(R.color.testnet.res2color())
+                previewnetCheckbox.buttonTintList = ColorStateList.valueOf(R.color.previewnet.res2color())
 
                 mainnetPreference.setOnCheckedChangeListener {
                     testnetPreference.setChecked(!it)
@@ -71,14 +72,22 @@ class DeveloperModePresenter(
                 }
 
                 developerModePreference.setOnCheckedChangeListener {
-                    group2.setVisible(it)
+                    setDevelopContentVisible(it)
                     setDeveloperModeEnable(it)
                     if (!it) {
                         changeNetwork(NETWORK_MAINNET)
                     }
                 }
+                evmModePreference.setOnCheckedChangeListener {
+                    EVMWalletManager.setEVMEnable(it)
+                }
             }
         }
+    }
+
+    private fun setDevelopContentVisible(visible: Boolean) {
+        binding.group2.setVisible(visible)
+        binding.group3.setVisible(visible)
     }
 
     override fun bind(model: DeveloperPageModel) {

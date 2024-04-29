@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.network
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
+import com.instabug.library.apm_okhttp_event_listener.InstabugApmOkHttpEventListener
+import com.instabug.library.apmokhttplogger.InstabugAPMOkhttpInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -19,6 +21,7 @@ fun retrofit(
 ): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(network = network))
+        addInterceptor(InstabugAPMOkhttpInterceptor())
 
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
@@ -28,6 +31,7 @@ fun retrofit(
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
+        eventListener(InstabugApmOkHttpEventListener())
     }.build()
 
     val builder = Retrofit.Builder()
@@ -46,7 +50,7 @@ fun retrofitApi(): Retrofit {
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(ignoreAuthorization))
-
+        addInterceptor(InstabugAPMOkhttpInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
         readTimeout(20, TimeUnit.SECONDS)
@@ -55,6 +59,7 @@ fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuth
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
+        eventListener(InstabugApmOkHttpEventListener())
     }.build()
 
     val builder = Retrofit.Builder()

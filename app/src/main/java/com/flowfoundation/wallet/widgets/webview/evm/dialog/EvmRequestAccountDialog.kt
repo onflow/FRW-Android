@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.urlHost
-import com.flowfoundation.wallet.widgets.webview.evm.model.EvmDialogModel
+import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -20,7 +20,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class EvmRequestAccountDialog : BottomSheetDialogFragment() {
 
-    private var data: EvmDialogModel? = null
+    private var data: EVMDialogModel? = null
     private var result: Continuation<Boolean>? = null
     private lateinit var binding: DialogEvmAccountBinding
 
@@ -59,7 +59,7 @@ class EvmRequestAccountDialog : BottomSheetDialogFragment() {
 
     suspend fun show(
         fragmentManager: FragmentManager,
-        data: EvmDialogModel,
+        data: EVMDialogModel,
     ) = suspendCoroutine { result ->
         this.result = result
         this.data = data

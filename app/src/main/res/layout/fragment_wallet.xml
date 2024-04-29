@@ -41,7 +41,6 @@
         android:paddingVertical="1dp"
         android:textColor="@color/text"
         android:textSize="13sp"
-        android:textAllCaps="true"
         android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/avatar_view"

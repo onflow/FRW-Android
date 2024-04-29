@@ -6,6 +6,7 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization" version "1.6.0-RC"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
+    id("instabug-apm")
 //    id 'com.google.ar.sceneform.plugin'
 }
 
@@ -240,7 +241,7 @@ dependencies {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    implementation(platform("com.walletconnect:android-bom:1.23.0"))
+    implementation(platform("com.walletconnect:android-bom:1.30.0"))
     implementation("com.walletconnect:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
@@ -259,7 +260,6 @@ dependencies {
     implementation 'com.instabug.library:instabug:12.6.0'
 
     implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
-    implementation "com.louiscad.splitties:splitties-alertdialog-material:3.0.0"
 
     /** TEST **/
     testImplementation 'junit:junit:4.13.2'

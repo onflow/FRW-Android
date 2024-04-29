@@ -36,7 +36,7 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_account_layout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="28dp"
         android:gravity="center_vertical"
         android:layout_marginTop="10dp"
         app:layout_constraintEnd_toStartOf="@id/account_switch_button"

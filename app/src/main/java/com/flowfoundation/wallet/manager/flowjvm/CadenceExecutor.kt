@@ -263,7 +263,7 @@ suspend fun cadenceClaimInboxNft(
 suspend fun cadenceCreateCOAAccount(): String? {
     logd(TAG, "cadenceCreateCOAAccount()")
     val transactionId = CADENCE_CREATE_COA_ACCOUNT.transactionByMainWallet {
-        arg { ufix64Safe(BigDecimal(0.0)) }
+        arg { ufix64Safe(BigDecimal(0.001)) }
     }
     logd(TAG, "cadenceCreateCOAAccount() transactionId:$transactionId")
     return transactionId
@@ -305,6 +305,19 @@ suspend fun cadenceWithdrawTokenFromCOAAccount(amount: Float, toAddress: String)
         arg { address(toAddress) }
     }
     logd(TAG, "cadenceWithdrawTokenFromCOAAccount() transactionId:$transactionId")
+    return transactionId
+}
+
+suspend fun cadenceSendEVMTransaction(toAddress: String, amount: BigDecimal, data: ByteArray,
+                                      gasLimit: Int): String? {
+    logd(TAG, "cadenceSendEVMTransaction")
+    val transactionId = CADENCE_CALL_EVM_CONTRACT.transactionByMainWallet {
+        arg { string(toAddress) }
+        arg { ufix64Safe(amount) }
+        arg { byteArray(data) }
+        arg { uint64(gasLimit) }
+    }
+    logd(TAG, "cadenceSendEVMTransaction transactionId:$transactionId")
     return transactionId
 }
 

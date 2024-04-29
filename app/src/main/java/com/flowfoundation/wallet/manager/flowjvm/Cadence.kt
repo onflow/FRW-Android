@@ -291,3 +291,7 @@ var CADENCE_FUND_COA_FLOW_BALANCE
 var CADENCE_WITHDRAW_COA_FLOW_BALANCE
     get() = CadenceApiManager.getCadenceEVMScript("withdrawCoa")
     private set(value) {}
+
+var CADENCE_CALL_EVM_CONTRACT
+    get() = CadenceApiManager.getCadenceEVMScript("callContract")
+    private set(value) {}

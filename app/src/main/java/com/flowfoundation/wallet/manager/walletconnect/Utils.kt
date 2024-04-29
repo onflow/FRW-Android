@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.bytesToHex
 import com.walletconnect.sign.client.Sign
@@ -14,22 +15,39 @@ import com.flowfoundation.wallet.utils.loge
 private const val TAG = "WalletConnectUtils"
 
 fun Sign.Model.SessionProposal.approveSession() {
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return
-
-    val namespaces = requiredNamespaces.map { item ->
+    val namespaces = mutableMapOf<String, Sign.Model.Namespace.Session>()
+    namespaces.putAll(requiredNamespaces.map { item ->
         val caip2Namespace = item.key
         val proposalNamespace = item.value
-        val accounts = proposalNamespace.chains?.map { "$it:$walletAddress" }.orEmpty()
-//        val methods = proposalNamespace.methods.toMutableSet().apply { add("flow_pre_authz") }
+        val accounts = proposalNamespace.chains?.map { "$it:${getWalletAddress(caip2Namespace)}" }.orEmpty()
         caip2Namespace to Sign.Model.Namespace.Session(
             chains = proposalNamespace.chains,
             accounts = accounts,
             methods = proposalNamespace.methods,
             events = proposalNamespace.events
         )
-    }.toMap()
+    }.toMap())
+    namespaces.putAll(optionalNamespaces.map { item ->
+        val caip2Namespace = item.key
+        val proposalNamespace = item.value
+        val accounts = proposalNamespace.chains?.map { "$it:${getWalletAddress(caip2Namespace)}" }.orEmpty()
+        caip2Namespace to Sign.Model.Namespace.Session(
+            chains = proposalNamespace.chains,
+            accounts = accounts,
+            methods = proposalNamespace.methods,
+            events = proposalNamespace.events
+        )
+    }.toMap())
     logd(TAG, "approveSession: $namespaces")
     SignClient.approveSession(Sign.Params.Approve(proposerPublicKey, namespaces)) { error -> loge(error.throwable) }
+}
+
+fun getWalletAddress(namespace: String): String {
+    return if (namespace == "eip155") {
+        EVMWalletManager.getEVMAddress() ?: ""
+    } else {
+        WalletManager.selectedWalletAddress()
+    }
 }
 
 fun Sign.Model.SessionProposal.reject() {

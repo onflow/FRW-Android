@@ -130,7 +130,7 @@ private fun ViewGroup.setupWallet(wallet: WalletData, userInfo: UserInfoData) {
             wrapper.addView(childView)
         }
     }
-    if (wallet.network() == NETWORK_NAME_PREVIEWNET && EVMWalletManager.showEVMAccount()) {
+    if (EVMWalletManager.showEVMAccount(wallet.network())) {
         EVMWalletManager.getEVMAccount()?.let {
             val childView = LayoutInflater.from(context)
                 .inflate(R.layout.item_wallet_list_child_account, this, false)
