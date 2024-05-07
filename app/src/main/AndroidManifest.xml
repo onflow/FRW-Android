@@ -19,10 +19,10 @@
     <!-- Sceneform requires OpenGLES 3.0 or later. -->
     <uses-feature
         android:glEsVersion="0x00030000"
-        android:required="true"/>
+        android:required="false"/>
     <uses-feature
         android:name="android.hardware.camera.ar"
-        android:required="true"/>
+        android:required="false"/>
 
     <application
         android:name=".FlowWalletApplication"
