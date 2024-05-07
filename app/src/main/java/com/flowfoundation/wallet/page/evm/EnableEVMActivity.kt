@@ -12,11 +12,8 @@ import android.text.style.ForegroundColorSpan
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityEnableEvmBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
@@ -29,7 +26,6 @@ import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -71,26 +67,8 @@ class EnableEVMActivity : BaseActivity() {
             }
 
             btnEnable.setOnClickListener {
-                checkFlowBalance()
+                enableEVM()
             }
-        }
-    }
-
-    private fun checkFlowBalance() {
-        showLoading()
-        val coin = FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW)
-        if (coin == null) {
-            hideLoading()
-            return
-        }
-        ioScope {
-            val balance = cadenceQueryTokenBalance(coin) ?: 0f
-            if (balance < FLOW_BALANCE_LIMIT) {
-                toast(R.string.enable_evm_failed)
-                hideLoading()
-                return@ioScope
-            }
-            enableEVM()
         }
     }
 
@@ -103,6 +81,7 @@ class EnableEVMActivity : BaseActivity() {
     }
 
     private fun enableEVM() {
+        showLoading()
         ioScope {
             try {
                 val txId = cadenceCreateCOAAccount()
@@ -141,7 +120,6 @@ class EnableEVMActivity : BaseActivity() {
     }
 
     companion object {
-        const val FLOW_BALANCE_LIMIT = 0.002f
         fun launch(context: Context) {
             context.startActivity(Intent(context, EnableEVMActivity::class.java))
         }

@@ -272,8 +272,12 @@ const val CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID = """
     }
 """
 
+var CADENCE_QUERY_MIN_FLOW_BALANCE
+    get() = CadenceApiManager.getCadenceBasicScript("getAccountMinFlow")
+    private set(value) {}
+
 var CADENCE_CREATE_COA_ACCOUNT
-    get() = CadenceApiManager.getCadenceEVMScript("createCoa")
+    get() = CadenceApiManager.getCadenceEVMScript("createCoaEmpty")
     private set(value) {}
 
 var CADENCE_QUERY_COA_EVM_ADDRESS

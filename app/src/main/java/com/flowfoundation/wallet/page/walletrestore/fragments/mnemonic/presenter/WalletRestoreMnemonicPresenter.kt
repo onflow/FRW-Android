@@ -64,7 +64,7 @@ class WalletRestoreMnemonicPresenter(
         binding.editText.addTextChangedListener(object : SimpleTextWatcher() {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 viewModel.suggestMnemonic(s.toString())
-                viewModel.invalidMnemonicCheck(s.toString())
+                viewModel.invalidMnemonicCheck(s.toString(), isLegacy = true)
             }
         })
         binding.nextButton.setOnClickListener {

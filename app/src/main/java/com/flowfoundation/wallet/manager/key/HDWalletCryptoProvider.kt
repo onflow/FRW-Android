@@ -6,7 +6,6 @@ import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import io.outblock.wallet.CryptoProvider
 import wallet.core.jni.Curve
@@ -53,6 +52,10 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
 
     override fun getSignatureAlgorithm(): SignatureAlgorithm {
         return SignatureAlgorithm.ECDSA_SECP256k1
+    }
+
+    override fun getKeyWeight(): Int {
+        return 1000
     }
 
     companion object {

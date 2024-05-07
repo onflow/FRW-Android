@@ -50,11 +50,11 @@ fun String.toQRDrawable(
                 frame = QrVectorFrameShape
                     .Circle(radius = 0.9f).scale(1.1f).asFrameShape()
             } else {
-                darkPixel = QrVectorPixelShape.Circle(.8f)
+                darkPixel = QrVectorPixelShape.Circle(.85f)
                 ball = QrVectorBallShape
-                    .Circle(1f).scale(.9f).asBallShape()
+                    .Circle(1f).scale(1f).asBallShape()
                 frame = QrVectorFrameShape
-                    .Circle(1.2f).scale(.9f).asFrameShape()
+                    .Circle(0.9f).scale(0.95f).asFrameShape()
             }
         }
         errorCorrectionLevel = if (withScale) QrErrorCorrectionLevel.MediumHigh else

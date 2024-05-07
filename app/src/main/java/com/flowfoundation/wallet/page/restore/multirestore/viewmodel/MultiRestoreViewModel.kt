@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -182,7 +183,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val cryptoProvider = KeyStoreCryptoProvider(KeyManager.getCurrentPrefix())
                 val service = retrofit().create(ApiService::class.java)
                 val providers = mnemonicList.map {
-                    BackupCryptoProvider(HDWallet(it, ""))
+                    val words = it.split(" ")
+                    if (words.size == 15) {
+                        BackupCryptoProvider(HDWallet(it, ""))
+                    } else {
+                        HDWalletCryptoProvider(HDWallet(it, ""))
+                    }
                 }
                 val resp = service.signAccount(
                     AccountSignRequest(
@@ -192,7 +198,10 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             AccountKeySignature(
                                 publicKey = it.getPublicKey(),
                                 signMessage = jwt,
-                                signature = it.getUserSignature(jwt)
+                                signature = it.getUserSignature(jwt),
+                                weight = it.getKeyWeight(),
+                                hashAlgo = it.getHashAlgorithm().index,
+                                signAlgo = it.getSignatureAlgorithm().index
                             )
                         }.toList()
                     )
@@ -281,7 +290,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private suspend fun String.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val providers = mnemonicList.map {
-            BackupCryptoProvider(HDWallet(it, ""))
+            val words = it.split(" ")
+            if (words.size == 15) {
+                BackupCryptoProvider(HDWallet(it, ""))
+            } else {
+                HDWalletCryptoProvider(HDWallet(it, ""))
+            }
         }
         return try {
             sendTransactionWithMultiSignature(providers = providers, builder = {

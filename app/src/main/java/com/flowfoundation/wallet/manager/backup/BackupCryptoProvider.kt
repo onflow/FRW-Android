@@ -17,7 +17,7 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
         return wallet.mnemonic()
     }
 
-    fun getKeyWeight(): Int {
+    override fun getKeyWeight(): Int {
         return 500
     }
 

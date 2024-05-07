@@ -260,11 +260,19 @@ suspend fun cadenceClaimInboxNft(
     return txid
 }
 
+fun cadenceQueryMinFlowBalance(): Float? {
+    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    logd(TAG, "cadenceQueryMinFlowBalance address:$walletAddress")
+    val result = CADENCE_QUERY_MIN_FLOW_BALANCE.executeCadence {
+        arg { address(walletAddress) }
+    }
+    logd(TAG, "cadenceQueryMinFlowBalance response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseFloat()
+}
+
 suspend fun cadenceCreateCOAAccount(): String? {
     logd(TAG, "cadenceCreateCOAAccount()")
-    val transactionId = CADENCE_CREATE_COA_ACCOUNT.transactionByMainWallet {
-        arg { ufix64Safe(BigDecimal(0.001)) }
-    }
+    val transactionId = CADENCE_CREATE_COA_ACCOUNT.transactionByMainWallet {}
     logd(TAG, "cadenceCreateCOAAccount() transactionId:$transactionId")
     return transactionId
 }

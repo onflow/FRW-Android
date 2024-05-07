@@ -34,7 +34,6 @@ import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.refreshWalletList
-import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.scan.dispatchScanResult
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -51,7 +50,6 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
-import org.joda.time.format.ISODateTimeFormat
 
 class DrawerLayoutPresenter(
     private val drawer: DrawerLayout,
@@ -148,17 +146,19 @@ class DrawerLayoutPresenter(
             drawer.setDrawerLockMode(if (address.isBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED)
 
             val userInfo = AccountManager.userInfo() ?: return@ioScope
-            val nftCount = NftCache(address).grid().read()?.count ?: 0
-            val createTime = ISODateTimeFormat.dateTimeParser().parseDateTime(userInfo.created).toString("yyyy")
             uiScope {
                 with(binding) {
                     avatarView.loadAvatar(userInfo.avatar)
                     nickNameView.text = userInfo.nickname
-                    descView.text = activity.getString(R.string.drawer_desc, createTime, nftCount)
                 }
             }
         }
-        bindAccountData()
+        /**
+         * Temp Remove
+         * The account 'quick switch' feature must be removed until we enable user-defined profile pictures or otherwise make it more obvious which profile icon corresponds to which account.
+         * Until that time, we must remove the quick switch feature.
+         */
+//        bindAccountData()
     }
 
     private fun bindEVMInfo() {

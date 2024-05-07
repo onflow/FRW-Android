@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.page.send.transaction.adapter.TransactionSendPa
 import com.flowfoundation.wallet.page.send.transaction.model.TransactionSendModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.utils.addressPattern
+import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -109,6 +110,7 @@ class TransactionSendPresenter(
 
     private fun checkAddressAutoJump(text: String) {
         val isMatched = addressPattern.matches(text)
+        val isEVMMatched = evmAddressPattern.matches(text)
         if (isMatched) {
             binding.progressBar.setVisible()
             binding.searchIconView.setVisible(false, invisible = true)
@@ -123,6 +125,14 @@ class TransactionSendPresenter(
                         }
                     }
                 }
+            }
+        } else if (isEVMMatched) {
+            binding.progressBar.setVisible()
+            binding.searchIconView.setVisible(false, invisible = true)
+            if (text == binding.editText.text.toString()) {
+                binding.progressBar.setVisible(false)
+                binding.searchIconView.setVisible()
+                viewModel.onAddressSelectedLiveData.postValue(AddressBookContact(address = text))
             }
         }
     }

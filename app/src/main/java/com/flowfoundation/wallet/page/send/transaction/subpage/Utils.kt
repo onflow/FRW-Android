@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.loadAvatar
+import com.flowfoundation.wallet.utils.shortenEVMString
 import com.flowfoundation.wallet.wallet.toAddress
 
 
@@ -20,7 +21,8 @@ import com.flowfoundation.wallet.wallet.toAddress
 fun DialogSendConfirmBinding.bindUserInfo(userInfo: UserInfoData, contact: AddressBookContact) {
     fromAvatarView.loadAvatar(userInfo.avatar)
     fromNameView.text = userInfo.nickname
-    fromAddressView.text = "(${userInfo.address?.toAddress()})"
+    val fromAddress = userInfo.address?.toAddress()
+    fromAddressView.text = "(${shortenEVMString(fromAddress)})"
 
     toNameView.text = "${contact.name()} ${if (!contact.username.isNullOrEmpty()) " (@${contact.username})" else ""}"
     namePrefixView.text = contact.prefixName()
@@ -37,7 +39,7 @@ fun DialogSendConfirmBinding.bindUserInfo(userInfo: UserInfoData, contact: Addre
         Glide.with(toAvatarView).load(avatar).into(toAvatarView)
     }
 
-    toAddressView.text = "(${contact.address})"
+    toAddressView.text = "(${shortenEVMString(contact.address)})"
 }
 
 fun DialogSendConfirmBinding.bindNft(nft: Nft) {

@@ -38,7 +38,7 @@
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="secret_key_name" translatable="false">biometric_sample_encryption_key</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
-    <string name="backup_pin_tip">So we will secure your backup with your PIN.</string>
+    <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="finish">Finish</string>
     <string name="create">Create</string>
@@ -256,7 +256,7 @@
     <string name="hold_to_confirm">Hold to Confirm</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
-    <string name="activities">Activities</string>
+    <string name="transaction_history">Transaction history</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Wallet</string>
@@ -325,7 +325,6 @@
     <string name="hold_to_swap">Hold to swap</string>
     <string name="swap_failed">Swap failed</string>
     <string name="auditors_by">Verified by %1$s</string>
-    <string name="drawer_desc">Since %1$s · %2$d NFTs</string>
     <string name="pending_request">Pending Request</string>
     <string name="connected_site">Connected Site</string>
     <string name="currency">Currency</string>
@@ -395,6 +394,7 @@
     <string name="will_be_processed_at_the_next_epoch">Will be processed at the next epoch</string>
     <string name="backup_desc">Backup Recovery Phrase is important in protect your prize property.</string>
     <string name="not_now">Not Now</string>
+    <string name="not_now_tip">Not now</string>
     <string name="create_account">Create Account</string>
     <string name="suggest_to_backup">Suggest to Backup</string>
     <string name="link_account">Link Account</string>
@@ -475,8 +475,8 @@
     <string name="sequence_number">Sequence Number</string>
     <string name="hold_to_sync">Hold to Sync</string>
     <string name="hold_to_revoke">Hold to Revoke</string>
-    <string name="revoke_tip">Once you revoke this key, \n there is no way to re-activate this key.</string>
-    <string name="revoke_title">Are you sure you want to \n revoke this key?</string>
+    <string name="revoke_tip">Once you revoke this key, \n there is no way to re-activate it.</string>
+    <string name="revoke_title">Are you sure?</string>
     <string name="revoke_failed">Revoke Failed</string>
     <string name="device_application">Application</string>
     <string name="device_ip_address">IP Address</string>
@@ -555,6 +555,5 @@
     <string name="move_token">Move Token</string>
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
     <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
-    <string name="enable_evm_failed">Balance is lower than 0.002 please fund your account to continue.</string>
     <string name="hide_browser_toolbar">Hide</string>
 </resources>
