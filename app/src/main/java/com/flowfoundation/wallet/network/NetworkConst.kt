@@ -1,5 +1,7 @@
 package com.flowfoundation.wallet.network
 
+import com.flowfoundation.wallet.network.interceptor.GzipRequestInterceptor
+import com.flowfoundation.wallet.network.interceptor.GzipResponseInterceptor
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
@@ -45,6 +47,29 @@ fun retrofit(
 
 fun retrofitApi(): Retrofit {
     return retrofitWithHost(if (isDev()) "https://test.lilico.app" else "https://lilico.app", ignoreAuthorization = false)
+}
+
+fun cadenceScriptApi(): Retrofit {
+    val host = if (isDev()) "https://test.lilico.app" else "https://lilico.app"
+    val client = OkHttpClient.Builder().apply {
+        addInterceptor(HeaderInterceptor(false))
+        addInterceptor(InstabugAPMOkhttpInterceptor())
+        addInterceptor(GzipRequestInterceptor())
+        addInterceptor(GzipResponseInterceptor())
+        callTimeout(20, TimeUnit.SECONDS)
+        connectTimeout(20, TimeUnit.SECONDS)
+        readTimeout(20, TimeUnit.SECONDS)
+        writeTimeout(20, TimeUnit.SECONDS)
+
+        if (isTesting()) {
+            addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+        }
+        eventListener(InstabugApmOkHttpEventListener())
+    }.build()
+
+    val builder = Retrofit.Builder()
+    builder.addConverterFactory(GsonConverterFactory.create())
+    return builder.baseUrl(host).client(client).build()
 }
 
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {

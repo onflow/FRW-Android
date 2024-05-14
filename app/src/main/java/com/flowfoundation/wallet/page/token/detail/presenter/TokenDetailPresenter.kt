@@ -10,9 +10,11 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
@@ -25,9 +27,11 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollect
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
+import com.flowfoundation.wallet.page.swap.SwapActivity
 import com.flowfoundation.wallet.page.token.detail.TokenDetailViewModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
+import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -56,6 +60,24 @@ class TokenDetailPresenter(
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
+            btnSwap.setOnClickListener {
+                if (WalletManager.isChildAccountSelected()) {
+                    return@setOnClickListener
+                }
+                if (AppConfig.isInAppSwap()) {
+                    SwapActivity.launch(activity, coin.symbol)
+                } else {
+                    openBrowser(
+                        activity, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                            ".increment.fi/swap")
+                }
+            }
+            btnTrade.setOnClickListener {
+                if (WalletManager.isChildAccountSelected()) {
+                    return@setOnClickListener
+                }
+                SwapDialog.show(activity.supportFragmentManager)
+            }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
             llEvmMoveToken.setVisible(EVMWalletManager.haveEVMAddress())
             llEvmMoveToken.setOnClickListener {

@@ -2,10 +2,11 @@ package com.flowfoundation.wallet.manager.cadence
 
 import com.flowfoundation.wallet.manager.app.chainNetwork
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.retrofitApi
+import com.flowfoundation.wallet.network.cadenceScriptApi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
+import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.readTextFromAssets
@@ -38,10 +39,10 @@ object CadenceApiManager {
                 )
                 assetsData.data
             }
-//            fetchCadenceFromNetwork()
+            fetchCadenceFromNetwork()
         } catch (e: Exception) {
             e.printStackTrace()
-//            fetchCadenceFromNetwork()
+            fetchCadenceFromNetwork()
         }
     }
 
@@ -52,12 +53,16 @@ object CadenceApiManager {
     private fun fetchCadenceFromNetwork() {
         ioScope {
             try {
-                val response = retrofitApi().create(ApiService::class.java).getCadenceScript()
+                val response = cadenceScriptApi().create(ApiService::class.java).getCadenceScript()
                 if (response.data == null) {
                     return@ioScope
                 }
-                cadenceApi = response.data
-                saveCadenceToLocal(Gson().toJson(response))
+                val localVersion = cadenceApi?.version.toSafeFloat()
+                val currentVersion = response.data.version.toSafeFloat()
+                if (currentVersion > localVersion) {
+                    cadenceApi = response.data
+                    saveCadenceToLocal(Gson().toJson(response))
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }

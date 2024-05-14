@@ -65,6 +65,7 @@ suspend fun registerOutblock(
                             prefix = prefix
                         )
                     )
+                    clearUserCache()
                     continuation.resume(true)
                 } else {
                     resumeAccount()

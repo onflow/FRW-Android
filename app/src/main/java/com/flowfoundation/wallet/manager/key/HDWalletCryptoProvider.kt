@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.key
 
+import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -36,6 +37,7 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     }
 
     override fun getSigner(): Signer {
+        checkSecurityProvider()
         updateSecurityProvider()
         return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(

@@ -33,6 +33,7 @@ import com.flowfoundation.wallet.page.send.transaction.subpage.amount.widget.Sen
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionDialog
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.*
+import kotlin.math.max
 
 class SendAmountPresenter(
     private val activity: SendAmountActivity,
@@ -93,7 +94,7 @@ class SendAmountPresenter(
         return if (WalletManager.isEVMAccountSelected() || viewModel.currentCoin() != FlowCoin.SYMBOL_FLOW) {
             0f
         } else {
-            minFlowBalance
+            max(minFlowBalance, 0.001f)
         }
     }
 

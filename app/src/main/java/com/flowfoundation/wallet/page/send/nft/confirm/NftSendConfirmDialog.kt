@@ -14,10 +14,11 @@ import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.send.nft.confirm.model.NftSendConfirmDialogModel
 import com.flowfoundation.wallet.page.send.nft.confirm.presenter.NftSendConfirmPresenter
 import com.flowfoundation.wallet.utils.safeRun
+import com.google.gson.Gson
 
 class NftSendConfirmDialog : BottomSheetDialogFragment() {
 
-    private val nft by lazy { arguments?.getParcelable<NftSendModel>(EXTRA_NFT)!! }
+    private val nft by lazy { arguments?.getString(EXTRA_NFT) ?: "" }
 
     private lateinit var binding: DialogSendConfirmBinding
     private lateinit var presenter: NftSendConfirmPresenter
@@ -32,7 +33,9 @@ class NftSendConfirmDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         presenter = NftSendConfirmPresenter(this, binding)
         viewModel = ViewModelProvider(this)[NftSendConfirmViewModel::class.java].apply {
-            bindSendModel(this@NftSendConfirmDialog.nft)
+            Gson().fromJson(this@NftSendConfirmDialog.nft, NftSendModel::class.java)?.let {
+                bindSendModel(it)
+            }
             userInfoLiveData.observe(this@NftSendConfirmDialog) { presenter.bind(NftSendConfirmDialogModel(userInfo = it)) }
             resultLiveData.observe(this@NftSendConfirmDialog) { isSuccess ->
                 presenter.bind(NftSendConfirmDialogModel(isSendSuccess = isSuccess))
@@ -53,7 +56,7 @@ class NftSendConfirmDialog : BottomSheetDialogFragment() {
             return NftSendConfirmDialog().apply {
                 safeRun {
                     arguments = Bundle().apply {
-                        putParcelable(EXTRA_NFT, nft)
+                        putString(EXTRA_NFT, Gson().toJson(nft))
                     }
                 }
             }

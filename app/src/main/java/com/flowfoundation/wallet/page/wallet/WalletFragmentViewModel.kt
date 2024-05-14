@@ -116,6 +116,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private suspend fun loadWallet() {
         if (WalletManager.wallet() == null) {
             headerLiveData.postValue(null)
+            dataList.clear()
+            dataListLiveData.postValue(emptyList())
         } else {
             updateWalletHeader(WalletManager.wallet())
         }

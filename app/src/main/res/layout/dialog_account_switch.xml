@@ -19,7 +19,8 @@
         android:textColor="@color/text"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/recycler_view"/>
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:layout_width="50dp"
@@ -33,11 +34,32 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintHeight_max="320dp"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="1"
+        android:scrollbars="vertical"
         android:paddingBottom="20dp"
         android:clipToPadding="false"
-        app:layout_constraintTop_toBottomOf="@id/title_view"/>
+        app:layout_constraintTop_toBottomOf="@id/title_view"
+        app:layout_constraintBottom_toTopOf="@id/tv_new_account"/>
+    
+    <TextView
+        android:id="@+id/tv_view_more"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_marginBottom="8dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="4dp"
+        android:drawablePadding="8dp"
+        android:text="@string/view_more"
+        android:textColor="@color/accent_gray"
+        android:background="@drawable/bg_round_24dp"
+        android:backgroundTint="@color/bg_2"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/recycler_view"
+        app:drawableEndCompat="@drawable/ic_double_arrow_down"
+        app:drawableTint="@color/accent_gray"/>
 
     <View
         android:layout_width="match_parent"
@@ -82,5 +104,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_new_account"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:drawableStartCompat="@drawable/ic_account_import"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

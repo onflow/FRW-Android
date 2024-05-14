@@ -37,7 +37,11 @@ class WalletRestoreActivity : BaseActivity() {
                 setSpan(ForegroundColorSpan(R.color.accent_green.res2color()), 0, 6, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             llImportFromDevice.setOnClickListener {
-                WalletSyncActivity.launch(this@WalletRestoreActivity)
+                if (isTestnet() || isPreviewnet()) {
+                    SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
+                } else {
+                    WalletSyncActivity.launch(this@WalletRestoreActivity)
+                }
             }
 
             llImportFromBackup.setOnClickListener {
@@ -49,7 +53,11 @@ class WalletRestoreActivity : BaseActivity() {
             }
 
             llImportFromRecoveryPhrase.setOnClickListener {
-                com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
+                if (isTestnet() || isPreviewnet()) {
+                    SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
+                } else {
+                    com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
+                }
             }
         }
         setupToolbar()

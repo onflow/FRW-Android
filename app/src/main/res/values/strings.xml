@@ -556,4 +556,6 @@
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
     <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
     <string name="hide_browser_toolbar">Hide</string>
+    <string name="sync_in_processing">Scan Successfully \nSync in Processing...</string>
+    <string name="view_more">View More</string>
 </resources>

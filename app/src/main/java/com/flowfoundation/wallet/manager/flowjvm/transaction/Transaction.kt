@@ -322,7 +322,7 @@ fun updateSecurityProvider() {
 fun checkSecurityProvider() {
     val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
     if (provider == null) {
-        Security.addProvider(BouncyCastleProvider())
+        Security.insertProviderAt(BouncyCastleProvider(), 1)
     }
 }
 

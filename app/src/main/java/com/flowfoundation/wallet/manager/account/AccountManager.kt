@@ -57,6 +57,22 @@ object AccountManager {
 
     fun userInfo() = get()?.userInfo
 
+    fun removeCurrentAccount() {
+        ioScope {
+            val index = list().indexOfFirst { it.isActive }
+            if (index < 0) {
+                return@ioScope
+            }
+            setToAnonymous()
+            accounts.removeAt(index)
+            accountsCache().cache(Accounts().apply { addAll(accounts) })
+            uiScope {
+                clearUserCache()
+                MainActivity.relaunch(Env.getApp(), true)
+            }
+        }
+    }
+
     fun updateUserInfo(userInfo: UserInfoData) {
         list().firstOrNull { it.userInfo.username == userInfo.username }?.userInfo = userInfo
         accountsCache().cache(Accounts().apply { addAll(accounts) })

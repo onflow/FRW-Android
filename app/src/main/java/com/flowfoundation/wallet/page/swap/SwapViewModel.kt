@@ -48,10 +48,13 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         private set
 
     init {
-        FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW)?.let { coin ->
+        BalanceManager.addListener(this)
+        CoinRateManager.addListener(this)
+    }
+
+    fun initFromCoin(symbol: String) {
+        FlowCoinListManager.getCoin(symbol)?.let { coin ->
             fromCoinLiveData.value = coin
-            BalanceManager.addListener(this)
-            CoinRateManager.addListener(this)
             BalanceManager.getBalanceByCoin(coin)
             CoinRateManager.fetchCoinRate(coin)
         }

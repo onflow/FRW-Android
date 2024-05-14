@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogResetWalletConfirmBinding
+import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 
@@ -27,8 +27,8 @@ class WalletResetConfirmDialog : BottomSheetDialogFragment() {
         binding.closeButton.setOnClickListener { dismiss() }
         with(binding) {
             actionButton.setOnClickListener {
-                WalletRestoreActivity.launch(it.context)
-                dismiss()
+                binding.actionButton.setProgressVisible(true)
+                AccountManager.removeCurrentAccount()
             }
             ioScope {
                 val address = WalletManager.selectedWalletAddress()
