@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.saveToFile
@@ -18,6 +19,7 @@ import java.io.File
 
 object CadenceApiManager {
 
+    private val TAG = CadenceApiManager::class.java.simpleName
     private const val LOCAL_CADENCE_FILE_NAME = "local_cadence.json"
     private const val ASSETS_CADENCE_FILE_PATH = "config/cadence_api.json"
     private var cadenceApi: CadenceScriptData? = null
@@ -59,6 +61,7 @@ object CadenceApiManager {
                 }
                 val localVersion = cadenceApi?.version.toSafeFloat()
                 val currentVersion = response.data.version.toSafeFloat()
+                logd(TAG, "cadenceScriptVersion::local::$localVersion::current::$currentVersion")
                 if (currentVersion > localVersion) {
                     cadenceApi = response.data
                     saveCadenceToLocal(Gson().toJson(response))
@@ -127,5 +130,9 @@ object CadenceApiManager {
 
     fun getCadenceSwapScript(method: String): String {
         return (getCadenceScript()?.swap?.get(method) as? String)?.decodeBase64()?.utf8() ?: ""
+    }
+
+    fun getCadenceBridgeScript(method: String): String {
+        return getCadenceScript()?.bridge?.get(method)?.decodeBase64()?.utf8() ?: ""
     }
 }

@@ -231,6 +231,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false)
+                    return@getFirebaseUid
                 }
                 runBlocking {
                     val catching = runCatching {

@@ -63,10 +63,9 @@ class TransactionPresenter(
     @SuppressLint("SetTextI18n")
     private fun setupAmount() {
         with(binding) {
-            amountView.text = "${transaction.amount} ${coin.name
-                .capitalizeV2()}"
+            amountView.text = "${transaction.amount} ${coin.symbol.uppercase()}"
             coinNameView.text = coin.name
-            Glide.with(coinIconView).load(coin.icon).into(coinIconView)
+            Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
         }
     }
 

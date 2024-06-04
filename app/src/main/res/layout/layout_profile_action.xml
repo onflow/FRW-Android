@@ -42,7 +42,7 @@
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
             android:letterSpacing="0"
-            android:text="@string/wallets"
+            android:text="@string/account_list"
             android:textAllCaps="false"
             android:textColor="@color/note"
             android:textSize="12sp"

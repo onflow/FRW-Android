@@ -50,6 +50,17 @@
         tools:text="TESTNET"
         tools:visibility="visible"/>
 
+    <androidx.constraintlayout.utils.widget.ImageFilterButton
+        android:id="@+id/move_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/actionBarItemBackground"
+        android:src="@drawable/ic_move"
+        app:layout_constraintBottom_toBottomOf="@id/title_view"
+        app:layout_constraintEnd_toStartOf="@id/scan_button"
+        app:layout_constraintTop_toTopOf="@id/title_view"/>
+
 
     <androidx.constraintlayout.utils.widget.ImageFilterButton
         android:id="@+id/scan_button"

@@ -42,22 +42,13 @@ class WalletFragmentPresenter(
             addItemDecoration(ColorDividerItemDecoration(Color.TRANSPARENT, 10.dp2px().toInt(), LinearLayout.VERTICAL))
         }
         with(binding.refreshLayout) {
-            setOnRefreshListener { viewModel.load() }
+            setOnRefreshListener { viewModel.load(isRefresh = true) }
             setColorSchemeColors(R.color.colorSecondary.res2color())
         }
 
         binding.avatarView.setOnClickListener { openDrawerLayout(fragment.requireContext()) }
-        with(binding.networkView) {
-            setVisible(!isMainnet())
-            if (!isMainnet()) {
-                val color = if (isTestnet()) R.color.testnet.res2color() else R.color.previewnet.res2color()
-                backgroundTintList =
-                    ColorStateList.valueOf(color).withAlpha(16)
-                setTextColor(color)
-                setText(if (isTestnet()) R.string.testnet else R.string.previewnet)
-            }
-        }
         bindUserInfo()
+        bindNetworkInfo()
     }
 
     override fun bind(model: WalletFragmentModel) {
@@ -66,6 +57,7 @@ class WalletFragmentPresenter(
             adapter.setNewDiffData(it)
             binding.refreshLayout.isRefreshing = false
             bindUserInfo()
+            bindNetworkInfo()
         }
     }
 
@@ -75,6 +67,19 @@ class WalletFragmentPresenter(
             uiScope {
                 binding.titleView.text = userInfo.nickname
                 binding.avatarView.loadAvatar(userInfo.avatar)
+            }
+        }
+    }
+
+    private fun bindNetworkInfo() {
+        with(binding.networkView) {
+            setVisible(!isMainnet())
+            if (!isMainnet()) {
+                val color = if (isTestnet()) R.color.testnet.res2color() else R.color.previewnet.res2color()
+                backgroundTintList =
+                    ColorStateList.valueOf(color).withAlpha(16)
+                setTextColor(color)
+                setText(if (isTestnet()) R.string.testnet else R.string.previewnet)
             }
         }
     }

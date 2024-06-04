@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.network.model
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 data class UserInfoResponse(
     @SerializedName("data")
@@ -15,6 +16,7 @@ data class UserInfoResponse(
     val status: Int,
 )
 
+@Serializable
 @Parcelize
 data class UserInfoData(
     @SerializedName("nickname")

@@ -85,24 +85,25 @@
 
         <androidx.constraintlayout.utils.widget.ImageFilterButton
             android:id="@+id/back_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:background="?attr/actionBarItemBackground"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_circle_arrow_left"
+            android:src="@drawable/ic_arrow_left_border"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/home_button"
+            app:layout_constraintEnd_toStartOf="@id/move_button"
             app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
         <androidx.constraintlayout.utils.widget.ImageFilterButton
-            android:id="@+id/home_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:id="@+id/move_button"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:background="?attr/actionBarItemBackground"
             android:scaleType="centerInside"
-            android:src="@drawable/ic_webview_home"
+            android:src="@drawable/ic_move"
+            android:tint="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/text_wrapper"
             app:layout_constraintStart_toEndOf="@id/back_button"
@@ -110,8 +111,8 @@
 
         <androidx.constraintlayout.utils.widget.ImageFilterButton
             android:id="@+id/menu_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:background="?attr/actionBarItemBackground"
             android:scaleType="centerInside"
             android:src="@drawable/ic_webview_menu"
@@ -123,8 +124,8 @@
 
         <androidx.constraintlayout.utils.widget.ImageFilterButton
             android:id="@+id/float_button"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:background="?attr/actionBarItemBackground"
             android:scaleType="centerInside"
             android:src="@drawable/ic_webview_float"

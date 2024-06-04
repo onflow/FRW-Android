@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.size
 import com.airbnb.lottie.LottieCompositionFactory
 import com.airbnb.lottie.LottieDrawable
 import com.airbnb.lottie.LottieProperty
@@ -17,28 +18,39 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
+import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
-import com.flowfoundation.wallet.manager.app.isDeveloperMode
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
+import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.coin.TokenStateManager
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
+import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearUserCache
+import com.flowfoundation.wallet.network.clearWebViewCache
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.extensions.capitalizeV2
+import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.extensions.colorStateList
-import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
+import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import kotlinx.coroutines.delay
 
@@ -84,7 +96,7 @@ fun BottomNavigationView.setLottieDrawable(
         addValueCallback(
             KeyPath("**"),
             LottieProperty.COLOR_FILTER,
-            LottieValueCallback(SimpleColorFilter(if (isSelected) activeColor(index) else com.flowfoundation.wallet.R.color.neutrals8.res2color()))
+            LottieValueCallback(SimpleColorFilter(if (isSelected) activeColor(index) else R.color.neutrals8.res2color()))
         )
         if (playAnimation) playAnimation()
     }
@@ -94,46 +106,38 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList() {
     ioScope {
         val userInfo = AccountManager.userInfo() ?: return@ioScope
         uiScope {
-            walletListWrapper.removeAllViews()
+            llMainAccount.removeAllViews()
 
-            val wallets = WalletManager.wallet()?.wallets ?: return@uiScope
+            // todo multi account
+            val wallet = WalletManager.wallet()?.wallet() ?: return@uiScope
             val list = mutableListOf<WalletData?>().apply {
-                add(wallets.firstOrNull { it.network() == NETWORK_NAME_MAINNET })
-                if (isDeveloperMode()) {
-                    add(wallets.firstOrNull { it.network() == NETWORK_NAME_TESTNET })
-                    add(wallets.firstOrNull { it.network() == NETWORK_NAME_PREVIEWNET })
-                }
+                add(wallet)
             }.filterNotNull()
 
             if (list.isEmpty()) {
                 return@uiScope
             }
 
-            list.forEach { wallet ->
+            list.forEach { walletItem ->
                 val itemView = LayoutInflater.from(root.context)
-                    .inflate(R.layout.item_wallet_list, walletListWrapper, false)
-                (itemView as ViewGroup).setupWallet(wallet, userInfo)
-                walletListWrapper.addView(itemView)
+                    .inflate(R.layout.item_wallet_list_main_account, llMainAccount, false)
+                (itemView as ViewGroup).setupWallet(walletItem, userInfo)
+                llMainAccount.addView(itemView)
             }
+            this.setupLinkedAccount(wallet, userInfo)
         }
     }
 }
 
-private fun ViewGroup.setupWallet(wallet: WalletData, userInfo: UserInfoData) {
-    setupWalletItem(wallet.address()?.walletData(userInfo), wallet.network(), isChildAccount = false)
-    val wrapper = findViewById<ViewGroup>(R.id.wallet_wrapper)
-    WalletManager.childAccountList(wallet.address())?.get()?.forEach { childAccount ->
-        val childView = LayoutInflater.from(context)
-            .inflate(R.layout.item_wallet_list_child_account, this, false)
-        childAccount.address.walletData(userInfo)?.let { data ->
-            childView.setupWalletItem(data)
-            wrapper.addView(childView)
-        }
-    }
+private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
+    wallet: WalletData,
+    userInfo: UserInfoData
+) {
+    llLinkedAccount.removeAllViews()
     if (EVMWalletManager.showEVMAccount(wallet.network())) {
         EVMWalletManager.getEVMAccount()?.let {
-            val childView = LayoutInflater.from(context)
-                .inflate(R.layout.item_wallet_list_child_account, this, false)
+            val childView = LayoutInflater.from(root.context)
+                .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
             childView.setupWalletItem(
                 WalletItemData(
                     address = it.address,
@@ -144,7 +148,63 @@ private fun ViewGroup.setupWallet(wallet: WalletData, userInfo: UserInfoData) {
                 ),
                 isEVMAccount = true
             )
-            wrapper.addView(childView)
+            llLinkedAccount.addView(childView)
+            clEvmLayout.gone()
+        }
+    }
+    WalletManager.childAccountList(wallet.address())?.get()?.forEach { childAccount ->
+        val childView = LayoutInflater.from(root.context)
+            .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
+        childAccount.address.walletData(userInfo)?.let { data ->
+            childView.setupWalletItem(data)
+            llLinkedAccount.addView(childView)
+        }
+    }
+    tvLinkedAccount.setVisible(llLinkedAccount.size > 0)
+}
+
+@SuppressLint("SetTextI18n")
+private fun ViewGroup.setupWallet(
+    wallet: WalletData,
+    userInfo: UserInfoData
+) {
+    val data = wallet.address()?.walletData(userInfo) ?: return
+
+    val itemView = findViewById<View>(R.id.wallet_item)
+    val iconView = findViewById<TextView>(R.id.wallet_icon_view)
+    val nameView = findViewById<TextView>(R.id.wallet_name_view)
+    val balanceView = findViewById<TextView>(R.id.wallet_balance_view)
+    val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
+
+    val emojiInfo = AccountEmojiManager.getEmojiByAddress(wallet.address())
+    iconView.text = Emoji.getEmojiById(emojiInfo.emojiId)
+    iconView.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+    nameView.text = emojiInfo.emojiName
+    itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_account_selected else R.drawable.bg_empty_placeholder)
+    selectedView.setVisible(data.isSelected)
+
+    bindFlowBalance(balanceView, data.address)
+
+    setOnClickListener {
+        WalletManager.selectWalletAddress(data.address)
+        ioScope {
+            delay(200)
+            doNetworkChangeTask()
+            clearCacheDir()
+            clearWebViewCache()
+            setMeowDomainClaimed(false)
+            TokenStateManager.clear()
+            NftCollectionStateManager.clear()
+            TransactionStateManager.reload()
+            FlowCoinListManager.reload()
+            BalanceManager.clear()
+            StakingManager.clear()
+            CryptoProviderManager.clear()
+            updateAccountTransferCount(0)
+            delay(1000)
+            uiScope {
+                MainActivity.relaunch(Env.getApp())
+            }
         }
     }
 }
@@ -179,41 +239,37 @@ private class WalletItemData(
 
 @SuppressLint("SetTextI18n")
 private fun View.setupWalletItem(
-    data: WalletItemData?, network: String? = null, isChildAccount:
-    Boolean = false, isEVMAccount: Boolean = false
+    data: WalletItemData?, network: String? = null, isEVMAccount: Boolean = false
 ) {
     data ?: return
     val itemView = findViewById<View>(R.id.wallet_item)
+    val emojiIconView = findViewById<TextView>(R.id.tv_icon_view)
     val iconView = findViewById<ImageView>(R.id.wallet_icon_view)
     val nameView = findViewById<TextView>(R.id.wallet_name_view)
-    val addressView = findViewById<TextView>(R.id.wallet_address_view)
+    val balanceView = findViewById<TextView>(R.id.wallet_balance_view)
     val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
 
-    iconView.loadAvatar(data.icon)
-    nameView.text =
-        if (isChildAccount) "@${data.name}" else if (isEVMAccount) data.name else R.string.my_wallet.res2String()
-    addressView.text = data.address
-    selectedView.setVisible(data.isSelected)
-    itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_wallet_item_selected else R.color.transparent)
-    findViewById<TextView>(R.id.tv_evm_label)?.setVisible(isEVMAccount)
-
-    if (network != null) {
-        findViewById<TextView>(R.id.wallet_network_view)?.apply {
-            text = network.capitalizeV2()
-            val color = when (network) {
-                "mainnet" -> R.color.mainnet
-                "testnet" -> R.color.testnet
-                "previewnet" -> R.color.previewnet
-                else -> R.color.text
-            }
-            setTextColor(color.res2color())
-            backgroundTintList = ColorStateList.valueOf(color.res2color()).withAlpha(16)
-            setVisible(true)
-        }
+    if (isEVMAccount) {
+        val emojiInfo = AccountEmojiManager.getEmojiByAddress(data.address)
+        emojiIconView.text = Emoji.getEmojiById(emojiInfo.emojiId)
+        emojiIconView.backgroundTintList =
+            ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+        nameView.text = emojiInfo.emojiName
+        bindEVMFlowBalance(balanceView)
+    } else {
+        nameView.text = "@${data.name}"
+        iconView.loadAvatar(data.icon)
+        bindFlowBalance(balanceView, data.address)
     }
+    emojiIconView.setVisible(isEVMAccount)
+
+    selectedView.setVisible(data.isSelected)
+    itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_account_selected else R.drawable.bg_empty_placeholder)
+    findViewById<TextView>(R.id.tv_evm_label)?.setVisible(isEVMAccount)
 
     setOnClickListener {
         val newNetwork = WalletManager.selectWalletAddress(data.address)
+
         if (newNetwork != chainNetWorkString()) {
             // network change
             if (network != chainNetWorkString()) {
@@ -229,7 +285,48 @@ private fun View.setupWalletItem(
                 }
             }
         } else {
-            MainActivity.relaunch(Env.getApp())
+            ioScope {
+                delay(200)
+                doNetworkChangeTask()
+                clearCacheDir()
+                clearWebViewCache()
+                setMeowDomainClaimed(false)
+                TokenStateManager.clear()
+                NftCollectionStateManager.clear()
+                TransactionStateManager.reload()
+                FlowCoinListManager.reload()
+                BalanceManager.clear()
+                StakingManager.clear()
+                CryptoProviderManager.clear()
+                updateAccountTransferCount(0)
+                delay(1000)
+                uiScope {
+                    MainActivity.relaunch(Env.getApp())
+                }
+            }
+        }
+    }
+}
+
+@SuppressLint("SetTextI18n")
+fun bindFlowBalance(balanceView: TextView, address: String) {
+    ioScope {
+        val balance = cadenceQueryTokenBalanceWithAddress(
+            FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW),
+            address
+        ) ?: 0f
+        uiScope {
+            balanceView.text = "$balance Flow"
+        }
+    }
+}
+
+@SuppressLint("SetTextI18n")
+fun bindEVMFlowBalance(balanceView: TextView) {
+    ioScope {
+        val balance = cadenceQueryCOATokenBalance() ?: 0f
+        uiScope {
+            balanceView.text = "$balance Flow"
         }
     }
 }

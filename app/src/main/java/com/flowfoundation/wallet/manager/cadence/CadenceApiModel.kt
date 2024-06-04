@@ -32,4 +32,5 @@ data class CadenceScript(
     val evm: Map<String, String>?,
     val nft: Map<String, String>?,
     val swap: Map<String, Any>?,
+    val bridge: Map<String, String>?
 )

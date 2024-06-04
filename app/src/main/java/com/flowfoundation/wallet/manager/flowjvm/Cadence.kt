@@ -66,6 +66,10 @@ var CADENCE_NFT_TRANSFER
     get() = CadenceApiManager.getCadenceCollectionScript("sendNFT")
     private set(value) {}
 
+var CADENCE_INBOX_NFT_TRANSFER
+    get() = CadenceApiManager.getCadenceDomainScript("sendInboxNFT")
+    private set(value) {}
+
 var CADENCE_NBA_NFT_TRANSFER
     get() = CadenceApiManager.getCadenceCollectionScript("sendNbaNFT")
     private set(value) {}
@@ -302,4 +306,44 @@ var CADENCE_TRANSFER_FLOW_TO_EVM
 
 var CADENCE_CALL_EVM_CONTRACT
     get() = CadenceApiManager.getCadenceEVMScript("callContract")
+    private set(value) {}
+
+var CADENCE_BRIDGE_FT_TO_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_FT_FROM_FLOW_TO_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmAddress")
+    private set(value) {}
+
+var CADENCE_BRIDGE_FT_FROM_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvmToFlow")
+    private set(value) {}
+
+var CADENCE_BRIDGE_NFT_TO_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_NFT_FROM_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_NFT_LIST_TO_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTToEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_NFT_LIST_FROM_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTFromEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvmAddress")
+    private set(value) {}
+
+var CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmToFlow")
     private set(value) {}

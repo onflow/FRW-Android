@@ -25,8 +25,8 @@ class InboxTokenItemPresenter(
     @SuppressLint("SetTextI18n")
     override fun bind(model: InboxToken) {
         with(binding) {
-            val coin = FlowCoinListManager.coinList().firstOrNull { it.address() == model.coinAddress } ?: return
-            Glide.with(coinIconView).load(coin.icon).into(coinIconView)
+            val coin = FlowCoinListManager.coinList().firstOrNull { it.address == model.coinAddress } ?: return
+            Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
             amountView.text = "${model.amount.formatNum()} ${coin.symbol.uppercase()}"
 
             val marketValue = model.marketValue

@@ -35,7 +35,7 @@ object WalletFetcher {
                     // request success & wallet list is empty (wallet not create finish)
                     if (resp.status == 200 && !resp.data?.walletAddress().isNullOrBlank()) {
                         AccountManager.updateWalletInfo(resp.data!!)
-                        EVMWalletManager.fetchEVMAddress()
+                        EVMWalletManager.updateEVMAddress()
                         delay(300)
                         dispatchListeners(resp.data)
                         dataReceived = true

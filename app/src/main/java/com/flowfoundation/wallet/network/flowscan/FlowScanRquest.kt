@@ -16,4 +16,4 @@ suspend fun flowScanAccountTransferCountQuery(): Int {
     return response.data?.data?.participationAggregate?.aggregate?.count ?: 0
 }
 
-fun FlowCoin.contractId() = "A.${address().removeAddressPrefix()}.${contractName}"
+fun FlowCoin.contractId() = "A.${address.removeAddressPrefix()}.${contractName()}"

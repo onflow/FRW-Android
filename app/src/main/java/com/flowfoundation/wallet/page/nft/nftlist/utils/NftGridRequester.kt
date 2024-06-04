@@ -1,7 +1,10 @@
 package com.flowfoundation.wallet.page.nft.nftlist.utils
 
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.network.model.NftCollectionWrapper
+import com.flowfoundation.wallet.network.model.NftCollectionsResponse
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 
@@ -27,7 +30,11 @@ class NftGridRequester {
             count = 0
             return NftList()
         }
-        val response = service.nftList(address, offset, limit)
+        val response = if (isPreviewnet()) {
+            service.getNFTList(address, offset, limit)
+        } else {
+            service.nftList(address, offset, limit)
+        }
         if (response.status > 200) {
             throw Exception("request grid list error: $response")
         }
@@ -58,7 +65,11 @@ class NftGridRequester {
 
         isLoadMoreRequesting = true
         offset += limit
-        val response = service.nftList(nftWalletAddress(), offset, limit)
+        val response = if (isPreviewnet()) {
+            service.getNFTList(nftWalletAddress(), offset, limit)
+        } else {
+            service.nftList(nftWalletAddress(), offset, limit)
+        }
         response.data ?: return NftList()
         count = response.data.nftCount
 
@@ -68,6 +79,12 @@ class NftGridRequester {
 
         isLoadMoreRequesting = false
         return NftList(list = response.data.nfts.orEmpty(), count = response.data.nftCount)
+    }
+
+    fun cacheEVMNFTList(list: List<Nft>) {
+        count = list.size
+        dataList.addAll(list)
+        cache().grid().cacheSync(NftList(dataList.toList(), count = count))
     }
 
     fun count() = count

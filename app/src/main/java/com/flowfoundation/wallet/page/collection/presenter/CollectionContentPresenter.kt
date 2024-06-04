@@ -93,8 +93,8 @@ class CollectionContentPresenter(
     private fun bindHeader(collectionWrapper: NftCollectionWrapper) {
         val collection = collectionWrapper.collection ?: return
         with(binding) {
-            Glide.with(coverView).load(collection.logo).transform(CenterCrop(), RoundedCorners(16.dp2px().toInt())).into(coverView)
-            Glide.with(backgroundImage).load(collection.logo)
+            Glide.with(coverView).load(collection.logo()).transform(CenterCrop(), RoundedCorners(16.dp2px().toInt())).into(coverView)
+            Glide.with(backgroundImage).load(collection.logo())
                 .transition(DrawableTransitionOptions.withCrossFade(100))
                 .transform(BlurTransformation(15, 30))
                 .into(backgroundImage)

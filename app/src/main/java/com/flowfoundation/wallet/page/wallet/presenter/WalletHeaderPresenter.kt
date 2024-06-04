@@ -80,7 +80,7 @@ class WalletHeaderPresenter(
                 hideButton.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
 
-            val count = FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address()) }
+            val count = FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address) }
             coinCountView.text = view.context.getString(R.string.coins_count, count)
 
             sendButton.setOnClickListener { TransactionSendActivity.launch(view.context) }
@@ -101,6 +101,7 @@ class WalletHeaderPresenter(
             buyButton.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
             buyButton.setVisible(AppConfig.isInAppBuy())
             swapButton.setVisible(AppConfig.isInAppSwap())
+            addButton.setVisible(WalletManager.isEVMAccountSelected().not())
 
             sendButton.isEnabled = !WalletManager.isChildAccountSelected()
             swapButton.isEnabled = !WalletManager.isChildAccountSelected()

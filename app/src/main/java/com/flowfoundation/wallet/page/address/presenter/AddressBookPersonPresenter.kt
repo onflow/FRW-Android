@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.address.presenter
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.res.ColorStateList
 import android.view.View
 import android.widget.ArrayAdapter
 import androidx.fragment.app.FragmentActivity
@@ -13,6 +14,9 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemAddressBookPersonBinding
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.Emoji
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.address.AddressBookViewModel
@@ -21,8 +25,11 @@ import com.flowfoundation.wallet.page.address.model.AddressBookPersonModel
 import com.flowfoundation.wallet.page.addressadd.AddressAddActivity
 import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewModel
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.wallet.toAddress
@@ -47,12 +54,18 @@ class AddressBookPersonPresenter(
         with(binding) {
             nameView.text = "${data.name()} ${if (!data.username.isNullOrEmpty()) "  (@${data.username})" else ""}"
 
-            namePrefixView.text = data.prefixName()
-            namePrefixView.setVisible(data.prefixName().isNotEmpty())
-
             if ((data.domain?.domainType ?: 0) == 0) {
-                avatarView.setVisible(!data.avatar.isNullOrEmpty(), invisible = true)
-                avatarView.loadAvatar(data.avatar.orEmpty())
+                val emojiInfo = AccountEmojiManager.getEmojiByAddress(WalletManager.selectedWalletAddress())
+                if (data.avatar.isNullOrEmpty()) {
+                    namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
+                    namePrefixView.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+                    avatarView.invisible()
+                    namePrefixView.visible()
+                } else {
+                    avatarView.loadAvatar(data.avatar)
+                    avatarView.visible()
+                    namePrefixView.gone()
+                }
             } else {
                 bindDomainAvatar(data.domain?.domainType ?: 0)
             }

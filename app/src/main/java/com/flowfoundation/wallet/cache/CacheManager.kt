@@ -8,10 +8,9 @@ import java.io.File
 class CacheManager<T>(
     private val fileName: String,
     private val type: Class<T>,
-    private val isInfoCache: Boolean = true,
 ) {
 
-    private val file by lazy { File(if (isInfoCache) CACHE_PATH else DATA_PATH, fileName) }
+    private val file by lazy { File(CACHE_PATH, fileName) }
 
     @WorkerThread
     fun read(): T? {

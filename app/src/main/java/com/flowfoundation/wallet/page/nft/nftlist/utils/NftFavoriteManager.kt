@@ -9,7 +9,9 @@ import com.flowfoundation.wallet.network.model.*
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.uiScope
+import com.google.gson.Gson
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 

@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.network
 
+import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
 import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
@@ -58,6 +59,26 @@ interface ApiService {
 
     @GET("/api/nft/id")
     suspend fun nftCollectionsOfAccount(
+        @Query("address") address: String,
+    ): NftCollectionsResponse
+
+    @GET("/api/v2/nft/list")
+    suspend fun getNFTList(
+        @Query("address") address: String,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 25,
+    ): NFTListResponse
+
+    @GET("/api/v2/nft/collectionList")
+    suspend fun getNFTListOfCollection(
+        @Query("address") address: String,
+        @Query("collectionIdentifier") collectionIdentifier: String,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 25,
+    ): NFTListResponse
+
+    @GET("/api/v2/nft/id")
+    suspend fun getNFTCollections(
         @Query("address") address: String,
     ): NftCollectionsResponse
 
@@ -207,6 +228,16 @@ interface ApiService {
     @GET("/api/prices")
     suspend fun getTokenPrices(): TokenPriceResponse
 
-    @GET("/api/scripts")
+    @GET("/api/v2/scripts")
     suspend fun getCadenceScript(): CadenceScriptResponse
+
+    @GET("/api/evm/{evmAddress}/fts")
+    suspend fun getEVMTokenBalance(
+        @Path("evmAddress") address: String
+    ): EVMTokenBalanceResponse
+
+    @GET("/api/evm/{evmAddress}/nfts")
+    suspend fun getEVMNFTCollections(
+        @Path("evmAddress") address: String
+    ): EVMNFTCollectionsResponse
 }

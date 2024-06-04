@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.env.EnvKey
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
@@ -74,7 +75,6 @@ object LaunchManager {
         safeRun { CoinRateManager.init() }
         safeRun { CurrencyManager.init() }
         safeRun { StakingManager.init() }
-        safeRun { EVMWalletManager.init() }
 //        Translized.init(application, EnvKey.get("TRANSLIZED_PROJECT_ID"), EnvKey.get("TRANSLIZED_TOKEN"))
     }
 

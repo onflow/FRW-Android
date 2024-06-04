@@ -6,7 +6,6 @@
     android:id="@+id/wallet_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
     android:paddingHorizontal="18dp"
     android:paddingVertical="12dp">
 
@@ -14,7 +13,6 @@
         android:id="@+id/wallet_icon_view"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="18dp"
         android:src="@drawable/ic_coin_flow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,13 +21,27 @@
         app:roundPercent="1"/>
 
     <TextView
+        android:id="@+id/tv_icon_view"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="@drawable/bg_round_24dp"
+        android:backgroundTint="@color/emoji_peach"
+        android:gravity="center"
+        android:text="🍑"
+        android:textSize="12sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
         android:id="@+id/wallet_name_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="10dp"
         android:fontFamily="@font/inter_semi_bold"
         android:text="@string/wallet"
-        android:textColor="@color/text"
+        android:textColor="@color/text_2"
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constrainedWidth="true"
@@ -60,21 +72,19 @@
         />
 
     <TextView
-        android:id="@+id/wallet_address_view"
+        android:id="@+id/wallet_balance_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="10dp"
         android:layout_marginEnd="8dp"
-        android:lines="1"
-        android:ellipsize="middle"
-        android:textColor="@color/note"
+        android:textColor="@color/text_3"
         android:textSize="12sp"
         app:layout_constrainedWidth="true"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/wallet_icon_view"
         app:layout_constraintTop_toBottomOf="@id/wallet_name_view"
         app:layout_constraintEnd_toStartOf="@id/wallet_selected_view"
-        tools:text="0x0c666c888d8fb999"/>
+        tools:text="$333 Flow"/>
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/wallet_selected_view"

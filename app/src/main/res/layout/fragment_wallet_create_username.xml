@@ -124,7 +124,7 @@
         android:gravity="center"
         app:iconGravity="textStart"
         app:iconPadding="10dp"
-        android:text="@string/create_account"
+        android:text="@string/create_profile"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

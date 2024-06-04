@@ -22,7 +22,7 @@ class TokenItemPresenter(
         with(binding) {
             nameView.text = model.coin.name
             symbolView.text = model.coin.symbol.uppercase()
-            Glide.with(iconView).load(model.coin.icon).into(iconView)
+            Glide.with(iconView).load(model.coin.icon()).into(iconView)
             stateButton.setOnClickListener {
                 if (model.isNormalState()) {
                     AddTokenConfirmDialog.show((findActivity(view) as FragmentActivity).supportFragmentManager, model.coin)

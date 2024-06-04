@@ -4,6 +4,9 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -22,6 +25,7 @@ import com.flowfoundation.wallet.manager.staking.isLilico
 import com.flowfoundation.wallet.manager.staking.stakingCount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
@@ -55,8 +59,8 @@ class TokenDetailPresenter(
             root.addNavigationBarBottomPadding()
             nameView.text = coin.name
             coinTypeView.text = coin.symbol.uppercase()
-            Glide.with(iconView).load(coin.icon).into(iconView)
-            nameWrapper.setOnClickListener { openBrowser(activity, coin.website) }
+            Glide.with(iconView).load(coin.icon()).into(iconView)
+            nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
@@ -79,9 +83,18 @@ class TokenDetailPresenter(
                 SwapDialog.show(activity.supportFragmentManager)
             }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
-            llEvmMoveToken.setVisible(EVMWalletManager.haveEVMAddress())
+            val moveVisible = if (coin.isFlowCoin()) {
+                true
+            } else if (coin.evmAddress.isNullOrBlank().not()) {
+                true
+            } else coin.flowIdentifier.isNullOrBlank().not()
+            llEvmMoveToken.setVisible(isPreviewnet() && moveVisible)
             llEvmMoveToken.setOnClickListener {
-                MoveTokenDialog.show(activity)
+                if (EVMWalletManager.haveEVMAddress()) {
+                    MoveTokenDialog.show(activity, coin.symbol)
+                } else {
+                    EnableEVMActivity.launch(activity)
+                }
             }
         }
 
@@ -113,7 +126,7 @@ class TokenDetailPresenter(
     }
 
     private fun bindAccessible(coin: FlowCoin) {
-        if (ChildAccountCollectionManager.isTokenAccessible(coin.contractName, coin.address())) {
+        if (ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)) {
             binding.inaccessibleTip.gone()
             return
         }

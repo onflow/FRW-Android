@@ -25,7 +25,7 @@ class NftCollectionItemPresenter(
         with(binding) {
             nameView.text = model.collection.name
             descView.text = model.collection.description
-            Glide.with(coverView).load(model.collection.banner).transform(BlurTransformation(2, 5)).into(coverView)
+            Glide.with(coverView).load(model.collection.banner()).transform(BlurTransformation(2, 5)).into(coverView)
             stateButton.setOnClickListener {
                 if (model.isNormalState()) {
                     NftEnableConfirmDialog.show((findActivity(view) as FragmentActivity).supportFragmentManager, model.collection)

@@ -3,11 +3,15 @@ package com.flowfoundation.wallet.manager.account
 import android.widget.Toast
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.cache.CacheManager
+import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
+import com.flowfoundation.wallet.manager.evm.EVMAddressData
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
@@ -30,16 +34,24 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import io.outblock.wallet.KeyManager
+import kotlinx.serialization.Serializable
+import java.lang.ref.WeakReference
+import java.util.concurrent.CopyOnWriteArrayList
 
 object AccountManager {
+
     private val accounts = mutableListOf<Account>()
     private var uploadedAddressSet = mutableSetOf<String>()
+    private val listeners = CopyOnWriteArrayList<WeakReference<OnUserInfoReload>>()
 
     fun init() {
         accounts.clear()
-        accountsCache().read()?.let { accounts.addAll(it) }
+        AccountCacheManager.read()?.let {
+            accounts.addAll(it)
+        }
         WalletManager.walletUpdate()
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
+        initEmojiAndEVMInfo()
     }
 
     fun add(account: Account) {
@@ -48,7 +60,8 @@ object AccountManager {
         accounts.forEach {
             it.isActive = it == account
         }
-        accountsCache().cache(Accounts().apply { addAll(accounts) })
+        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+        initEmojiAndEVMInfo()
     }
 
     fun get(): Account? {
@@ -56,6 +69,15 @@ object AccountManager {
     }
 
     fun userInfo() = get()?.userInfo
+
+    fun evmAddressData() = get()?.evmAddressData
+
+    fun emojiInfoList() = get()?.walletEmojiList
+
+    private fun initEmojiAndEVMInfo() {
+        EVMWalletManager.init()
+        AccountEmojiManager.init()
+    }
 
     fun removeCurrentAccount() {
         ioScope {
@@ -65,7 +87,7 @@ object AccountManager {
             }
             setToAnonymous()
             accounts.removeAt(index)
-            accountsCache().cache(Accounts().apply { addAll(accounts) })
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             uiScope {
                 clearUserCache()
                 MainActivity.relaunch(Env.getApp(), true)
@@ -75,7 +97,7 @@ object AccountManager {
 
     fun updateUserInfo(userInfo: UserInfoData) {
         list().firstOrNull { it.userInfo.username == userInfo.username }?.userInfo = userInfo
-        accountsCache().cache(Accounts().apply { addAll(accounts) })
+        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
     }
 
     fun updateWalletInfo(wallet: WalletListData) {
@@ -84,10 +106,22 @@ object AccountManager {
             addAccountWithWallet(wallet)
         } else {
             account.wallet = wallet
-            accountsCache().cache(Accounts().apply { addAll(accounts) })
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             WalletManager.walletUpdate()
             uploadPushToken()
         }
+    }
+
+    fun updateEVMAddressInfo(evmAddressMap: Map<String, String>) {
+        get()?.let {
+            it.evmAddressData = EVMAddressData(evmAddressMap)
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+        }
+    }
+
+    fun updateWalletEmojiInfo(username: String, emojiInfoList: List<WalletEmojiInfo>) {
+        list().firstOrNull { it.userInfo.username == username }?.walletEmojiList = emojiInfoList
+        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
     }
 
     private fun addAccountWithWallet(wallet: WalletListData) {
@@ -101,6 +135,18 @@ object AccountManager {
             ))
             WalletManager.walletUpdate()
             uploadPushToken()
+            onUserInfoReload()
+        }
+    }
+
+    fun addListener(callback: OnUserInfoReload) {
+        uiScope { this.listeners.add(WeakReference(callback)) }
+    }
+
+    private fun onUserInfoReload() {
+        uiScope {
+            listeners.removeAll { it.get() == null}
+            listeners.forEach {it.get()?.onUserInfoReload()}
         }
     }
 
@@ -140,7 +186,8 @@ object AccountManager {
                     accounts.forEach {
                         it.isActive = it.userInfo.username == account.userInfo.username
                     }
-                    accountsCache().cache(Accounts().apply { addAll(accounts) })
+                    AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+                    initEmojiAndEVMInfo()
                     uiScope {
                         clearUserCache()
                         MainActivity.relaunch(Env.getApp(), true)
@@ -206,6 +253,7 @@ object AccountManager {
 
 fun username() = AccountManager.get()!!.userInfo.username
 
+@Serializable
 data class Account(
     @SerializedName("username")
     var userInfo: UserInfoData,
@@ -214,11 +262,15 @@ data class Account(
     @SerializedName("wallet")
     var wallet: WalletListData? = null,
     @SerializedName("prefix")
-    var prefix: String? = null
+    var prefix: String? = null,
+    @SerializedName("evmAddressData")
+    var evmAddressData: EVMAddressData? = null,
+    @SerializedName("walletEmojiList")
+    var walletEmojiList: List<WalletEmojiInfo>? = null,
 )
 
 class Accounts : ArrayList<Account>()
 
-fun accountsCache(): CacheManager<Accounts> {
-    return CacheManager("${"accounts".hashCode()}", Accounts::class.java, false)
+interface OnUserInfoReload {
+    fun onUserInfoReload()
 }

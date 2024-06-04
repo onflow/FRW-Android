@@ -5,9 +5,16 @@ import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.config.NftCollection
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.model.EVMNFTCollection
+import com.flowfoundation.wallet.network.model.NFTMetadata
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
+import com.flowfoundation.wallet.network.model.NftCollections
+import com.flowfoundation.wallet.network.model.PostMedia
 import com.flowfoundation.wallet.network.model.WalletListData
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionTitleModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTCountTitleModel
@@ -54,6 +61,146 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
 
     fun requestChildAccountCollectionList() {
         ChildAccountCollectionManager.loadChildAccountNFTCollectionList()
+    }
+
+    fun requestEVMList() {
+        viewModelIOScope(this) {
+            isCollectionExpanded = isNftCollectionExpanded()
+
+            val service = retrofitApi().create(ApiService::class.java)
+            val response = service.getEVMNFTCollections(WalletManager.selectedWalletAddress())
+            val collections = response.data?.filter { it.nftList.isNotEmpty() }
+            if (collections.isNullOrEmpty()) {
+                emptyLiveData.postValue(true)
+                return@viewModelIOScope
+            }
+            emptyLiveData.postValue(false)
+            collectionTitleLiveData.postValue(CollectionTitleModel(count = collections.size))
+            val wrapperList = collections.map {
+                NftCollectionWrapper(
+                    count = it.nftList.size,
+                    ids = it.nftIds,
+                    collection = NftCollection(
+                        id = it.getId(),
+                        address = it.getContractAddress(),
+                        banner = it.logo(),
+                        contractName = it.getContractName(),
+                        description = "",
+                        logo = it.logo(),
+                        name = it.name,
+                        path = NftCollection.Path(
+                            publicPath = "",
+                            storagePath = "",
+                            publicCollectionName = "",
+                            publicType = "",
+                            privateType = ""
+                        ),
+                        secureCadenceCompatible = null,
+                        marketplace = "",
+                        officialWebsite = "",
+                        evmAddress = null
+                    )
+                )
+            }
+
+            collections.forEach { collection ->
+                val nftList = collection.nftList.map {
+                    Nft(
+                        contract = null,
+                        description = "",
+                        id = it.id,
+                        media = null,
+                        metadata = NFTMetadata(
+                            metadata = null
+                        ),
+                        title = it.name,
+                        postMedia = PostMedia(
+                            title = it.name,
+                            image = it.thumb
+                        ),
+                        collectionName = collection.name,
+                        collectionContractName = collection.getContractName(),
+                        collectionAddress = collection.address,
+                        collectionDescription = "",
+                        collectionSquareImage = collection.logo(),
+                        collectionBannerImage = collection.logo(),
+                        collectionExternalURL = "",
+                        traits = null,
+                        flowIdentifier = collection.flowIdentifier
+                    )
+                }.toList()
+                listRequester.cacheCollectionNFTs(collection.getContractName(), nftList)
+            }
+
+            listRequester.cacheCollections(wrapperList)
+            notifyCollectionList(wrapperList)
+            updateDefaultSelectCollection()
+
+            val firstCollection = collections.firstOrNull()
+            firstCollection?.nftList?.map {
+                NFTItemModel(
+                    nft = Nft(
+                        contract = null,
+                        description = "",
+                        id = it.id,
+                        media = null,
+                        metadata = NFTMetadata(
+                            metadata = null
+                        ),
+                        title = it.name,
+                        postMedia = PostMedia(
+                            title = it.name,
+                            image = it.thumb
+                        ),
+                        collectionName = firstCollection.name,
+                        collectionContractName = firstCollection.getContractName(),
+                        collectionAddress = firstCollection.address,
+                        collectionDescription = "",
+                        collectionSquareImage = firstCollection.logo(),
+                        collectionBannerImage = firstCollection.logo(),
+                        collectionExternalURL = "",
+                        traits = null,
+                        flowIdentifier = firstCollection.flowIdentifier
+                    )
+                )
+            }?.toList()?.let {
+                listNftLiveData.postValue(it)
+            }
+
+            val gridList: List<Nft> = collections.flatMap { collection: EVMNFTCollection ->
+                collection.nftList.map {
+                    Nft(
+                        contract = null,
+                        description = "",
+                        id = it.id,
+                        media = null,
+                        metadata = NFTMetadata(
+                            metadata = null
+                        ),
+                        title = it.name,
+                        postMedia = PostMedia(
+                            title = it.name,
+                            image = it.thumb
+                        ),
+                        collectionName = collection.name,
+                        collectionContractName = collection.getContractName(),
+                        collectionAddress = collection.address,
+                        collectionDescription = "",
+                        collectionSquareImage = collection.logo(),
+                        collectionBannerImage = collection.logo(),
+                        collectionExternalURL = "",
+                        traits = null,
+                        flowIdentifier = collection.flowIdentifier
+                    )
+                }
+            }
+            gridRequester.cacheEVMNFTList(gridList)
+            gridNftLiveData.postValue(gridList.map {
+                NFTItemModel(
+                    nft = it
+                )
+            })
+        }
     }
 
     fun requestList() {
@@ -103,9 +250,13 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
-        requestList()
-        requestGrid()
-        requestChildAccountCollectionList()
+        if (WalletManager.isEVMAccountSelected()) {
+            requestEVMList()
+        } else {
+            requestList()
+            requestGrid()
+            requestChildAccountCollectionList()
+        }
     }
 
     private fun observeWalletUpdate() {
@@ -154,7 +305,11 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
         ioScope {
             updateNftCollectionExpanded(!isCollectionExpanded)
             isCollectionExpanded = isNftCollectionExpanded()
-            requestList()
+            if (WalletManager.isEVMAccountSelected()) {
+                requestEVMList()
+            } else {
+                requestList()
+            }
         }
     }
 

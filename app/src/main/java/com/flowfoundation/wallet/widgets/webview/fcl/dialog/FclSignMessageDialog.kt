@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
+import com.flowfoundation.wallet.R
 import androidx.transition.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.nftco.flow.sdk.hexToBytes
@@ -13,6 +14,7 @@ import com.flowfoundation.wallet.databinding.DialogFclSignMessageBinding
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.isVisible
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 
@@ -35,6 +37,7 @@ class FclSignMessageDialog : BottomSheetDialogFragment() {
         }
         val data = data ?: return
         with(binding) {
+            title1.text = R.string.message_to.res2String()
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
             nameView.text = data.title
             data.signMessage?.hexToBytes()?.let { scriptTextView.text = it.toString(Charsets.UTF_8) }

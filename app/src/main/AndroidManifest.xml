@@ -244,6 +244,10 @@
             android:screenOrientation="portrait"/>
 
         <activity
+            android:name=".page.profile.subpage.wallet.WalletListActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name=".page.guide.GuideActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"/>
@@ -310,6 +314,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
+                <data android:scheme="fw"/>
                 <data android:scheme="frw"/>
                 <data android:scheme="lilico"/>
             </intent-filter>

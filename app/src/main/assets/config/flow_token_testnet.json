@@ -1,0 +1,30 @@
+{
+  "chainId": 545,
+  "address": "0x7e60df042a9c0868",
+  "contractName": "FlowToken",
+  "path": {
+    "vault": "/storage/flowTokenVault",
+    "receiver": "/public/flowTokenReceiver",
+    "balance": "/public/flowTokenBalance"
+  },
+  "symbol": "FLOW",
+  "name": "Flow",
+  "description": "",
+  "decimals": 8,
+  "logoURI": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.1654653399040a61.FlowToken/logo.svg",
+  "tags": [
+    "Verified",
+    "Featured",
+    "utility-token"
+  ],
+  "extensions": {
+    "coingeckoId": "flow",
+    "github": "https://github.com/onflow/flow-core-contracts",
+    "twitter": "https://twitter.com/flow_blockchain",
+    "documentation": "https://developers.flow.com/build/core-contracts/flow-token",
+    "discord": "http://discord.gg/flow",
+    "website": "https://flow.com",
+    "displaySource": "0xa51d7fe9e0080662",
+    "pathSource": "0xa51d7fe9e0080662"
+  }
+}

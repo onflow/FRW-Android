@@ -154,11 +154,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ll_desc">
 
-        <ImageView
-            android:id="@+id/iv_wallet_icon"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/ic_evm_wallet_logo"
+        <TextView
+            android:id="@+id/tv_wallet_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/bg_round_24dp"
+            android:backgroundTint="@color/emoji_peach"
+            android:gravity="center"
+            android:text="🍑"
+            android:textSize="10sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
@@ -171,9 +175,9 @@
             android:text="EVM Wallet"
             android:textColor="@color/text_3"
             android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@id/iv_wallet_icon"
-            app:layout_constraintStart_toEndOf="@id/iv_wallet_icon"
-            app:layout_constraintTop_toTopOf="@id/iv_wallet_icon"/>
+            app:layout_constraintBottom_toBottomOf="@id/tv_wallet_icon"
+            app:layout_constraintStart_toEndOf="@id/tv_wallet_icon"
+            app:layout_constraintTop_toTopOf="@id/tv_wallet_icon"/>
 
         <TextView
             android:id="@+id/tv_wallet_address"
@@ -189,7 +193,7 @@
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_wallet_icon"/>
+            app:layout_constraintTop_toBottomOf="@id/tv_wallet_icon"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

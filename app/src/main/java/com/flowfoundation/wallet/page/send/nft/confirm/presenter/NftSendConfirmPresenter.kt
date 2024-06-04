@@ -23,8 +23,8 @@ class NftSendConfirmPresenter(
 
     private val viewModel by lazy { ViewModelProvider(fragment)[NftSendConfirmViewModel::class.java] }
 
-    private val sendModel by lazy { viewModel.nft }
-    private val contact by lazy { viewModel.nft.target }
+    private val sendModel by lazy { viewModel.sendModel }
+    private val contact by lazy { viewModel.sendModel.target }
 
     init {
         binding.sendButton.button().setOnProcessing { viewModel.send() }

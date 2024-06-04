@@ -106,6 +106,9 @@
     <color name="text_4">#14FFFFFF</color>
     <color name="text_5">#E6000000</color>
 
+    <color name="line_light">#0AFFFFFF</color>
+
+
     <color name="bg_skip">#4DFFFFFF</color>
 
 </resources>

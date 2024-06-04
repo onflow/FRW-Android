@@ -112,7 +112,6 @@ object WalletManager {
     fun clear() {
         selectedWalletAddress = ""
         childAccountMap = mapOf()
-        EVMWalletManager.clear()
     }
 
     private fun refreshChildAccount(wallet: WalletListData) {

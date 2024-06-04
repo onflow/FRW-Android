@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager

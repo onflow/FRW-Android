@@ -57,6 +57,7 @@ fun requestWalletRestoreLogin(
         getFirebaseUid { uid ->
             if (uid.isNullOrBlank()) {
                 callback.invoke(false, ERROR_UID)
+                return@getFirebaseUid
             }
             runBlocking {
                 val catching = runCatching {

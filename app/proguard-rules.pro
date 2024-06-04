@@ -48,7 +48,7 @@
 
 # Gson specific classes
 -dontwarn sun.misc.**
-#-keep class com.google.gson.stream.** { *; }
+-keep class com.google.gson.stream.** { *; }
 
 # Prevent proguard from stripping interface information from TypeAdapter, TypeAdapterFactory,
 # JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
@@ -70,6 +70,52 @@
 ##---------------End: proguard configuration for Gson  ----------
 -keep class wallet.core.** {*;}
 -keep class com.nftco.flow.** {*;}
+-keepattributes Signature, RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations, RuntimeInvisibleAnnotations, RuntimeInvisibleParameterAnnotations
+-keep class kotlin.Metadata { *; }
+-keepclassmembers class ** {
+    @com.nftco.flow.sdk.cadence.JsonCadenceConversion *;
+}
+-keepclassmembers class * {
+    @kotlin.Metadata *;
+}
+-keep class kotlin.reflect.** { *; }
+
+-keep class kotlin.reflect.jvm.internal.** { *; }
+-keepclassmembers class * {
+    @com.nftco.flow.sdk.cadence.JsonCadenceConversion <methods>;
+}
+-keepclassmembers class * {
+    @com.nftco.flow.sdk.cadence.JsonCadenceConversion <fields>;
+}
+-keepclassmembers class ** {
+    @com.nftco.flow.sdk.cadence.JsonCadenceConversion *;
+}
+
+-keepnames class kotlin.** { *; }
+-keep class kotlin.reflect.jvm.internal.impl.metadata.** { *; }
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+
+-keep class com.nftco.flow.sdk.cadence.JsonCadenceConverter
+-keep class * implements com.nftco.flow.sdk.cadence.JsonCadenceConverter { *; }
+
+-keep @interface com.nftco.flow.sdk.cadence.JsonCadenceConversion
+-keep class * {
+    @com.nftco.flow.sdk.cadence.JsonCadenceConversion *;
+}
+-keep class com.nftco.flow.sdk.cadence.** { *; }
+-keepclassmembers class com.nftco.flow.sdk.cadence.** {
+    *;
+    <init>(...);
+    <clinit>(...);
+}
+-keep enum com.nftco.flow.sdk.cadence.** { *; }
+-keep class com.nftco.flow.sdk.cadence.JsonCadenceConverter { *; }
+-keep class com.nftco.flow.sdk.cadence.JsonCadenceMarshalling { *; }
+-keep class com.nftco.flow.sdk.cadence.JsonCadenceBuilder { *; }
+-keep class com.nftco.flow.sdk.cadence.JsonCadenceParser { *; }
+
 
 -keep class com.just.agentweb.** {*;}
 -dontwarn com.just.agentweb.**

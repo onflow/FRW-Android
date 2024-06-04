@@ -63,7 +63,7 @@ object CoinRateManager {
                         val tokenPriceResponse = apiService.getTokenPrices()
                         val tokenPriceList = tokenPriceResponse.data
                         tokenPriceList?.find {
-                            coin.contractName == it.contractName
+                            coin.contractName() == it.contractName
                         }?.let {
                             val rate = it.rateToUSD.toFloat()
                             updateCache(coin, rate, 0f)
@@ -102,7 +102,7 @@ object CoinRateManager {
 
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
-                                coin.contractName == it.contractName
+                                coin.contractName() == it.contractName
                             }?.let {
                                 val rate = it.rateToUSD.toFloat()
                                 updateCache(coin, rate, 0f)

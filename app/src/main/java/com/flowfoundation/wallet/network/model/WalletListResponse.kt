@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.wallet.toAddress
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 class WalletListResponse(
     @SerializedName("data")
@@ -17,6 +18,7 @@ class WalletListResponse(
     val status: Int,
 )
 
+@Serializable
 data class WalletListData(
     @SerializedName("id")
     val id: String,
@@ -34,6 +36,7 @@ data class WalletListData(
     fun walletAddress(): String? = wallet()?.address()?.toAddress()
 }
 
+@Serializable
 data class WalletData(
     @SerializedName("blockchain")
     val blockchain: List<BlockchainData>?,
@@ -51,6 +54,7 @@ data class WalletData(
     fun network() = blockchain?.firstOrNull()?.chainId
 }
 
+@Serializable
 @Parcelize
 data class BlockchainData(
     @SerializedName("address")

@@ -66,37 +66,50 @@
                 app:layout_constraintTop_toTopOf="@id/icon_view"
                 app:layout_constraintVertical_bias="0.0"
                 tools:layout_editor_absoluteX="0dp"/>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
+            <FrameLayout
                 android:id="@+id/name_wrapper"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/bg_token_detail_coin_gradient"
-                android:gravity="center_vertical|end"
                 android:orientation="horizontal"
-                android:paddingStart="86dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/icon_view"
-                tools:ignore="RtlSymmetry">
+                app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token">
 
-                <TextView
-                    android:id="@+id/name_view"
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/montsettat"
-                    android:textColor="@color/neutrals1"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:text="Flow"/>
+                    android:minHeight="32dp"
+                    android:background="@drawable/bg_token_detail_coin_gradient"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/icon_view"
+                    tools:ignore="RtlSymmetry">
 
-                <androidx.constraintlayout.utils.widget.ImageFilterView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="10dp"
-                    android:src="@drawable/ic_circle_arrow_right"/>
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                    <TextView
+                        android:id="@+id/name_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montsettat"
+                        android:layout_marginStart="80dp"
+                        android:textColor="@color/neutrals1"
+                        android:lineSpacingMultiplier="1.1"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="Flow"/>
+
+                    <androidx.constraintlayout.utils.widget.ImageFilterView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/ic_circle_arrow_right"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </FrameLayout>
+
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/ll_evm_move_token"
@@ -109,7 +122,7 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:layout_marginEnd="16dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintTop_toTopOf="@id/name_wrapper"
                 app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -139,6 +152,7 @@
                 android:outlineAmbientShadowColor="@color/border_2"
                 android:outlineSpotShadowColor="@color/border_2"
                 android:scaleType="centerCrop"
+                app:round="64dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/inaccessible_tip"
                 tools:src="@drawable/ic_coin_flow"/>

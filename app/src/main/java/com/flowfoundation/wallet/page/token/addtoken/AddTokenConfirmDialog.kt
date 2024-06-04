@@ -38,7 +38,7 @@ class AddTokenConfirmDialog : BottomSheetDialogFragment() {
         binding.closeButton.setOnClickListener { dismiss() }
         with(binding) {
             tokenNameView.text = coin.name
-            Glide.with(iconView).load(coin.icon).into(iconView)
+            Glide.with(iconView).load(coin.icon()).into(iconView)
             actionButton.setOnClickListener {
                 uiScope {
                     actionButton.setProgressVisible(true)

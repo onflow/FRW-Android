@@ -3,6 +3,9 @@ package com.flowfoundation.wallet.page.dialog.processing.send.presenter
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -96,7 +99,7 @@ class SendProcessingPresenter(
             uiScope {
                 with(binding) {
                     amountView.text = "$amount ${coin.name}"
-                    Glide.with(coinIconView).load(coin.icon).into(coinIconView)
+                    Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
                     coinNameView.text = coin.name
                 }
             }

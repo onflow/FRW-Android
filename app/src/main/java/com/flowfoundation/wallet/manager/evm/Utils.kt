@@ -1,6 +1,8 @@
 package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -12,16 +14,13 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
-import com.flowfoundation.wallet.widgets.webview.evm.model.EvmEvent
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
-import com.google.gson.Gson
 import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.cadence.toJsonElement
 import com.nftco.flow.sdk.decodeToAny
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
@@ -60,7 +59,9 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
     ioScope {
         val amountValue = Numeric.decodeQuantity(transaction.value ?: "0")
         val toAddress = transaction.to?.removeAddressPrefix() ?: ""
-        val gasValue = Numeric.decodeQuantity(transaction.gas ?: "100000").toInt()
+        val gasValue = transaction.gas?.run {
+            Numeric.decodeQuantity(this).toInt()
+        } ?: EVM_GAS_LIMIT
         val value = Convert.fromWei(amountValue.toString(), Convert.Unit.ETHER)
         logd(EvmInterface.TAG, "amountValue:::$amountValue")
         logd(EvmInterface.TAG, "toAddress:::${toAddress}")
@@ -77,24 +78,28 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
         logd(EvmInterface.TAG, "send transaction transactionId:$txId")
         TransactionStateWatcher(txId).watch { result ->
             if (result.isExecuteFinished()) {
-                val event = result.events.find { it.type == "evm.TransactionExecuted" }
+                val event = result.events.find { it.type.contains("evm.TransactionExecuted", ignoreCase = true)}
                 if (event == null) {
-                    logd(EvmInterface.TAG, "send transaction failed")
                     callback.invoke("")
                 } else {
-                    logd(EvmInterface.TAG, "event::${Gson().toJson(event)}")
                     val element = event.payload.decodeToAny().toJsonElement()
-                    val json = Json {
-                        isLenient = true
-                        ignoreUnknownKeys = true
+                    try {
+                        val eventHash = element.jsonObject["hash"].toString()
+                        logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
+                        callback.invoke(eventHash)
+                        refreshBalance(value.toFloat())
+                    } catch (e: Exception) {
+                        refreshBalance(value.toFloat())
                     }
-                    val txEvent = json.decodeFromJsonElement<EvmEvent>(element)
-                    logd(EvmInterface.TAG, "txHash::${txEvent.transactionHash}")
-                    logd(EvmInterface.TAG, "send transaction success")
-                    callback.invoke(txEvent.transactionHash)
                 }
             }
         }
+    }
+}
+
+fun refreshBalance(value: Float) {
+    if (WalletManager.isEVMAccountSelected() && value > 0) {
+        BalanceManager.refresh()
     }
 }
 

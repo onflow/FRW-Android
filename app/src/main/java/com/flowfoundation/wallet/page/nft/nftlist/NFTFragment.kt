@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.NFTFragmentPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.NftEmptyPresenter
@@ -45,7 +46,11 @@ class NFTFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.requestList()
-        viewModel.requestGrid()
+        if (WalletManager.isEVMAccountSelected()) {
+            viewModel.requestEVMList()
+        } else {
+            viewModel.requestList()
+            viewModel.requestGrid()
+        }
     }
 }

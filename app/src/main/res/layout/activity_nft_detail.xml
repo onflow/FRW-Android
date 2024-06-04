@@ -365,6 +365,28 @@
         app:iconSize="16dp"
         app:iconTint="@color/text"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/move_button"
+        app:rippleColor="@color/black_10"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/move_button"
+        style="@style/Widget.MaterialComponents.Button.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="@font/inter_semi_bold"
+        android:letterSpacing="0"
+        android:text="@string/move"
+        android:textAllCaps="false"
+        android:textColor="@color/text"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_evm_move_token"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:iconSize="16dp"
+        app:iconTint="@color/text"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/more_button"
         app:rippleColor="@color/black_10"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

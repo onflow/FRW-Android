@@ -103,19 +103,19 @@
     <string name="download">Download</string>
     <string name="saved_to_album">Saved to album</string>
     <string name="view_on_web">View on web</string>
-    <string name="empty_title">We find nothing here.</string>
-    <string name="nft_empty_desc">Looking forward to your new discovery.</string>
+    <string name="empty_title">You don’t have any NFTs yet</string>
+    <string name="nft_empty_desc">Looking forward to your next discovery.</string>
     <string name="get_new_nfts">Get new NFTs</string>
     <string name="receive">Receive</string>
     <string name="buy">Buy</string>
     <string name="swap">Swap</string>
     <string name="address">Address</string>
-    <string name="wallets">Wallet Detail</string>
     <string name="device">Device</string>
     <string name="chrome_extension">Chrome Extension</string>
     <string name="about">About</string>
     <string name="sync_title">Sync Flow Wallet</string>
     <string name="switch_account">Switch Account</string>
+    <string name="switch_profile">Switch Profile</string>
     <string name="logout">Logout</string>
     <string name="edit_avatar">Edit avatar</string>
     <string name="edit">Edit</string>
@@ -238,6 +238,8 @@
     <string name="outblock">Outblock</string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="transaction_to">Transaction Request from</string>
+    <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
     <string name="fcl_permission_read_balance">View your wallet balance and activity</string>
     <string name="fcl_permission_transaction">Request approval for transactions</string>
@@ -395,7 +397,6 @@
     <string name="backup_desc">Backup Recovery Phrase is important in protect your prize property.</string>
     <string name="not_now">Not Now</string>
     <string name="not_now_tip">Not now</string>
-    <string name="create_account">Create Account</string>
     <string name="suggest_to_backup">Suggest to Backup</string>
     <string name="link_account">Link Account</string>
     <string name="link_account_desc">We would like to link your %1$s account to your Flow Wallet account</string>
@@ -435,9 +436,8 @@
     <string name="root_detection_alert">Root Detection Alert</string>
 
     <string name="notification_channel_name">Push Notification</string>
-    <string name="accounts">Accounts</string>
-    <string name="add_new_account">Add a New Account</string>
-    <string name="import_existing_account">Import an Existing Account</string>
+    <string name="add_new_profile">Add a New Profile</string>
+    <string name="import_existing_profile">Import an Existing Profile</string>
     <string name="resume_login_error">Encountered a problem, please restart the app</string>
     <string name="new_feature">New Feature</string>
     <string name="new_feature_desc">We have made the following updates to improve your experiences.</string>
@@ -504,6 +504,7 @@
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
     <string name="import_wallet_note">Restore your wallet using a backup.</string>
+    <string name="import_profile_note">Restore your profile using a backup.</string>
     <string name="from_device_backup">From Device Backup</string>
     <string name="from_device_backup_note">Restore from another mobile or extension wallet</string>
     <string name="from_multi_backup">From Multi Backup</string>
@@ -544,7 +545,7 @@
     <string name="enable_evm_desc">Manage multi-VM assets seamlessly.</string>
     <string name="enable_evm_title_enable_the_path">Enable the path</string>
     <string name="enable_evm_title_to_evm">to EVM on Flow</string>
-    <string name="enable_evm_title">Enable the path to FlowEVM !</string>
+    <string name="enable_evm_title">Enable the path to EVM on Flow !</string>
     <string name="evm_on_flow">EVM on Flow</string>
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
@@ -554,8 +555,32 @@
     <string name="share_qr_code">Share QR Code</string>
     <string name="move_token">Move Token</string>
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
+    <string name="move_nft_to_evm_failed">Move NFT to EVM failed</string>
     <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
     <string name="hide_browser_toolbar">Hide</string>
     <string name="sync_in_processing">Scan Successfully \nSync in Processing...</string>
     <string name="view_more">View More</string>
+    <string name="select_nft">Select NFTs</string>
+    <string name="account">Account</string>
+    <string name="collection">Collection</string>
+    <string name="nft_move_limit">You can move 10 NFTs </string>
+    <string name="move_assets">Move Assets</string>
+    <string name="move_to_desc">What type of assets would you like to move?</string>
+    <string name="move_nfts">Move NFTs</string>
+    <string name="move_tokens">Move Tokens</string>
+    <string name="move_nft">Move NFT</string>
+    <string name="main_account">Main Account</string>
+    <string name="main_accounts">Main Accounts</string>
+    <string name="evm_accounts">EVM Accounts</string>
+    <string name="account_list">Account List</string>
+    <string name="edit_wallet">Edit Wallet</string>
+    <string name="select_nft_empty">0 NFTs</string>
+    <string name="profiles">Profiles</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="features_coming">Features Coming Soon</string>
+    <string name="quick_enable_evm">Quick Enable EVM</string>
+    <string name="select_collection">Select Collection</string>
+    <string name="import_profile">Import Profile</string>
+
+
 </resources>

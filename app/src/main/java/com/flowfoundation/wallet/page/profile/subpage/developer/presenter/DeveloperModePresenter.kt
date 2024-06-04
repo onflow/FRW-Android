@@ -8,12 +8,11 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityDeveloperModeSettingBinding
 import com.flowfoundation.wallet.manager.app.*
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.PreviewnetTransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.transaction.isSuccessFinished
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey
@@ -44,7 +43,6 @@ class DeveloperModePresenter(
                 val isPreviewnetEnabled = WalletManager.isPreviewnetWalletCreated()
                 developerModePreference.setChecked(isDeveloperModeEnable)
                 setDevelopContentVisible(isDeveloperModeEnable)
-                evmModePreference.setChecked(EVMWalletManager.isEVMEnable())
                 mainnetPreference.setChecked(isMainnet())
                 testnetPreference.setChecked(isTestnet())
                 previewnetCheckbox.isChecked = isPreviewnet()
@@ -78,16 +76,12 @@ class DeveloperModePresenter(
                         changeNetwork(NETWORK_MAINNET)
                     }
                 }
-                evmModePreference.setOnCheckedChangeListener {
-                    EVMWalletManager.setEVMEnable(it)
-                }
             }
         }
     }
 
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
-        binding.group3.setVisible(visible)
     }
 
     override fun bind(model: DeveloperPageModel) {
@@ -148,7 +142,7 @@ class DeveloperModePresenter(
                 TransactionStateManager.newTransaction(transactionState)
                 uiScope { pushBubbleStack(transactionState) }
                 PreviewnetTransactionStateWatcher(transactionId).watch {
-                    if (it.isSuccessFinished()) {
+                    if (it.isExecuteFinished()) {
                         previewnetEnabled()
                     }
                 }

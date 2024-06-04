@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.evm.dialog
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,10 +12,12 @@ import androidx.transition.Fade
 import androidx.transition.Scene
 import androidx.transition.TransitionManager
 import androidx.transition.TransitionSet
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogEvmTransactionBinding
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.isVisible
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -39,9 +42,14 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
         }
         val data = data ?: return
         with(binding) {
+            title1.text = R.string.transaction_to.res2String()
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
             nameView.text = data.title
-            data.cadence?.hexToBytes()?.let { scriptTextView.text = it.toString(Charsets.UTF_8) }
+            try {
+                data.cadence?.hexToBytes()?.let { scriptTextView.text = it.toString(Charsets.UTF_8) }
+            } catch (e: Exception) {
+                scriptTextView.text = data.cadence
+            }
             actionButton.setOnProcessing {
                 approveCallback?.invoke(true)
                 dismiss()

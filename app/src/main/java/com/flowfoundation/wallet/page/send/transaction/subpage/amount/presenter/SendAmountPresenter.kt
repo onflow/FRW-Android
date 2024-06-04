@@ -10,6 +10,9 @@ import androidx.transition.Fade
 import androidx.transition.Scene
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -112,9 +115,9 @@ class SendAmountPresenter(
             val icon =
                 if (viewModel.currentCoin() == selectedCurrency().flag) FlowCoinListManager.getCoin(
                     viewModel.convertCoin()
-                )?.icon else FlowCoinListManager.getCoin(
+                )?.icon() else FlowCoinListManager.getCoin(
                     viewModel.currentCoin()
-                )?.icon
+                )?.icon()
             Glide.with(balanceIconView).load(icon).into(balanceIconView)
             coinWrapper.isEnabled = viewModel.currentCoin() != selectedCurrency().flag
             coinMoreArrowView.setVisible(viewModel.currentCoin() != selectedCurrency().flag)
@@ -228,7 +231,7 @@ class SendAmountPresenter(
     }
 
     private fun String.coinIcon(): Any {
-        return FlowCoinListManager.getCoin(this)?.icon ?: selectedCurrency().icon
+        return FlowCoinListManager.getCoin(this)?.icon() ?: selectedCurrency().icon
     }
 
 }

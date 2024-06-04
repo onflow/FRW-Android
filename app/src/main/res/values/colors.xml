@@ -249,4 +249,26 @@
     <color name="evm_on_flow_start_color">#627EEA</color>
     <color name="evm_on_flow_end_color">#00EF8B</color>
 
+    <color name="move_nft_start_color">#857AFF</color>
+    <color name="move_nft_cover_color">#14000000</color>
+    <color name="move_token_start_color">#00FF75</color>
+    <color name="move_token_cover_color">#23CBCB</color>
+
+    <color name="main_account_cover_color_start">#1400B881</color>
+    <color name="main_account_cover_color_end">#0000B881</color>
+
+    <color name="emoji_koala">#DFCFC8</color>
+    <color name="emoji_lion">#FFA600</color>
+    <color name="emoji_panda">#F4F3F3</color>
+    <color name="emoji_butterfly">#36A5F8</color>
+    <color name="emoji_dragon">#AEE676</color>
+    <color name="emoji_penguin">#FFCB6C</color>
+
+    <color name="emoji_cherry">#FED5DB</color>
+    <color name="emoji_chestnut">#EBCA84</color>
+    <color name="emoji_peach">#FBB06B</color>
+    <color name="emoji_lemon">#FDEF85</color>
+    <color name="emoji_coconut">#E3CAAA</color>
+    <color name="emoji_avocado">#B2C45C</color>
+
 </resources>

@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.evm
 
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.fragment.app.FragmentActivity
@@ -76,7 +77,9 @@ class EvmInterface(
             }
             DAppMethod.SIGN_TRANSACTION -> {
                 if (network == ETH_NETWORK) {
+                    Log.d(TAG, "transaction obj::${obj.toString()}")
                     val transaction = Gson().fromJson(obj.optString("object"), EvmTransaction::class.java)
+                    Log.d(TAG, "transaction::${transaction.toString()}")
                     uiScope {
                         handleTransaction(transaction, id, network)
                     }

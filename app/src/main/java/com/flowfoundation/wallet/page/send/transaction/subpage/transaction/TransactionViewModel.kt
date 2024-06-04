@@ -8,7 +8,8 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromEVMToFlow
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromFlowToEVM
 import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
 import com.flowfoundation.wallet.manager.flowjvm.cadenceTransferFlowToEvmAddress
@@ -23,9 +24,15 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
-import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.google.gson.Gson
 import com.nftco.flow.sdk.FlowTransactionStatus
+import org.web3j.abi.FunctionEncoder
+import org.web3j.abi.datatypes.Address
+import org.web3j.abi.datatypes.Function
+import org.web3j.abi.datatypes.generated.Uint256
+import org.web3j.utils.Numeric
+import java.math.BigDecimal
+
 
 class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
 
@@ -62,9 +69,9 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
 
     fun send(coin: FlowCoin) {
         viewModelIOScope(this) {
+            val toAddress = transaction.target.address.orEmpty().toAddress()
+            val fromAddress = transaction.fromAddress
             if (coin.isFlowCoin()) {
-                val fromAddress = transaction.fromAddress
-                val toAddress = transaction.target.address.orEmpty().toAddress()
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
                         // COA -> Flow
@@ -85,6 +92,63 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         transferFlowToEVM(toAddress, transaction.amount)
                     }
                 }
+            } else if (coin.isCOABridgeCoin() || coin.canBridgeToCOA()) {
+                if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                    if (isFlowAddress(toAddress)) {
+                        // COA -> Flow
+                        val contractAddress = if (coin.flowIdentifier != null) {
+                            val identifier = coin.flowIdentifier.split(".")
+                            if (identifier.size > 1) {
+                                identifier[1].toAddress()
+                            } else {
+                                ""
+                            }
+                        } else {
+                            ""
+                        }
+                        val contractName = if (coin.flowIdentifier != null) {
+                            val identifier = coin.flowIdentifier.split(".")
+                            if (identifier.size > 2) {
+                                identifier[2]
+                            } else {
+                                ""
+                            }
+                        } else {
+                            ""
+                        }
+                        if (contractAddress.isEmpty() || contractName.isEmpty()) {
+                            return@viewModelIOScope
+                        }
+                        val amount = transaction.amount.toBigDecimal().movePointRight(18)
+                        bridgeTokenToFlow(contractAddress, contractName, amount, toAddress)
+                    } else {
+                        // COA -> EOA/COA
+                        val amount = transaction.amount.toBigDecimal().movePointRight(18).toBigInteger()
+                        val function = Function(
+                            "transfer",
+                            listOf(Address(toAddress), Uint256(amount)), emptyList()
+                        )
+                        val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
+                        val txId = cadenceSendEVMTransaction(coin.address.removeAddressPrefix(), 0f.toBigDecimal(), data)
+                        postTransaction(txId)
+                    }
+                } else {
+                    if (isFlowAddress(toAddress)) {
+                        // Flow -> Flow
+                        transferToken(coin)
+                    } else {
+                        // Flow -> EOA/COA
+                        val amount = transaction.amount.toBigDecimal().movePointRight(18).toBigInteger()
+                        val function = Function(
+                            "transfer",
+                            listOf(Address(toAddress), Uint256(amount)), emptyList()
+                        )
+                        val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
+                        val contractName = coin.contractName()
+                        val txId = cadenceBridgeFTFromFlowToEVM(coin.address.removeAddressPrefix(), contractName, transaction.amount, coin.evmAddress?.removeAddressPrefix() ?: "", data)
+                        postTransaction(txId)
+                    }
+                }
             } else {
                 transferToken(coin)
             }
@@ -101,7 +165,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
     }
 
     private suspend fun evmTransaction(to: String, amount: Float) {
-        val txId = cadenceSendEVMTransaction(to.removeAddressPrefix(), amount.toBigDecimal(), byteArrayOf(), 100000)
+        val txId = cadenceSendEVMTransaction(to.removeAddressPrefix(), amount.toBigDecimal(), byteArrayOf())
         postTransaction(txId)
     }
 
@@ -116,7 +180,15 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
     }
 
     private suspend fun transferFlowToEVM(to: String, amount: Float) {
-        val txId = cadenceTransferFlowToEvmAddress(to, amount)
+        val txId = cadenceTransferFlowToEvmAddress(to.removeAddressPrefix(), amount)
+        postTransaction(txId)
+    }
+
+    private suspend fun bridgeTokenToFlow(
+        tokenContractAddress: String, tokenContractName:
+        String, amount: BigDecimal, toFlowAddress: String
+    ) {
+        val txId = cadenceBridgeFTFromEVMToFlow(tokenContractAddress, tokenContractName, amount, toFlowAddress)
         postTransaction(txId)
     }
 

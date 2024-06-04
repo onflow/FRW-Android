@@ -2,13 +2,19 @@ package com.flowfoundation.wallet.manager.coin
 
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.tokenStateCache
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.flowscan.contractId
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -26,7 +32,38 @@ object TokenStateManager {
     }
 
     fun fetchState() {
-        ioScope { fetchStateSync() }
+        ioScope {
+            if (WalletManager.isEVMAccountSelected()) {
+                fetchEVMTokenStateSync()
+                FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW)?.let { token ->
+                    val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
+                    tokenStateList.remove(oldState)
+                    tokenStateList.add(TokenState(token.symbol, token.address, true))
+                    dispatchListeners()
+                }
+            } else {
+                fetchStateSync()
+            }
+        }
+    }
+
+    private suspend fun fetchEVMTokenStateSync() {
+        val address = EVMWalletManager.getEVMAddress() ?: return
+        val apiService = retrofitApi().create(ApiService::class.java)
+        val balanceResponse = apiService.getEVMTokenBalance(address)
+        balanceResponse.data?.forEach { token ->
+            if (token.balance.isBlank()) {
+                return@forEach
+            }
+            val amountValue = token.balance.toBigDecimal()
+            val value = amountValue.movePointLeft(token.decimal).toFloat()
+            val isEnable = value > 0
+            val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
+            tokenStateList.remove(oldState)
+            tokenStateList.add(TokenState(token.symbol, token.address, isEnable))
+        }
+        dispatchListeners()
+        tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
 
     private fun fetchStateSync() {
@@ -38,9 +75,11 @@ object TokenStateManager {
         }
         coinList.forEach { coin ->
             val isEnable = enabledToken[coin.contractId()] ?: false
-            val oldState = tokenStateList.firstOrNull { it.symbol == coin.symbol }
+            val oldState = tokenStateList.firstOrNull {
+                it.symbol == coin.symbol
+            }
             tokenStateList.remove(oldState)
-            tokenStateList.add(TokenState(coin.symbol, coin.address(), isEnable))
+            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
         }
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
@@ -51,7 +90,7 @@ object TokenStateManager {
         if (isEnable != null) {
             val oldState = tokenStateList.firstOrNull { it.symbol == coin.symbol }
             tokenStateList.remove(oldState)
-            tokenStateList.add(TokenState(coin.symbol, coin.address(), isEnable))
+            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
             if (oldState?.isAdded != isEnable) {
                 dispatchListeners()
             }

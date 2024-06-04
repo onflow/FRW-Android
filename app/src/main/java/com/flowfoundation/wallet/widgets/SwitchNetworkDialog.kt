@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
@@ -69,14 +70,13 @@ private class SwitchNetworkDialogView(
                     delay(200)
                     refreshChainNetworkSync()
                     doNetworkChangeTask()
-                    ioScope {
-                        FlowApi.refreshConfig()
-                        uiScope {
-                            onCancel()
-                            WalletManager.changeNetwork()
-                            clearUserCache()
-                            MainActivity.relaunch(context, true)
-                        }
+                    FlowApi.refreshConfig()
+                    uiScope {
+                        FlowLoadingDialog(context).show()
+                        onCancel()
+                        WalletManager.changeNetwork()
+                        clearUserCache()
+                        MainActivity.relaunch(context, true)
                     }
                 }
             }

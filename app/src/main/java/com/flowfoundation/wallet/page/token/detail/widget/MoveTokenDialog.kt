@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.widget
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,21 +12,28 @@ import androidx.fragment.app.FragmentActivity
 import androidx.transition.Fade
 import androidx.transition.Scene
 import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveTokenBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
@@ -35,6 +43,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
 class MoveTokenDialog : BottomSheetDialogFragment() {
+    private var symbol: String = FlowCoin.SYMBOL_FLOW
     private lateinit var binding: DialogMoveTokenBinding
     private var isFundToEVM = true
     private var fromBalance = 0.001f
@@ -48,9 +57,17 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         return binding.rootView
     }
 
+    private fun getMinBalance(): Float {
+        return if (symbol == FlowCoin.SYMBOL_FLOW) {
+            0.001f
+        } else {
+            0f
+        }
+    }
+
     private fun checkAmount() {
         val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeFloat()
-        val isOutOfBalance = amount > (fromBalance - 0.001f)
+        val isOutOfBalance = amount > (fromBalance - getMinBalance())
         if (isOutOfBalance && !binding.llErrorLayout.isVisible()) {
             TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
         } else if (!isOutOfBalance && binding.llErrorLayout.isVisible()) {
@@ -86,7 +103,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 initView()
             }
             tvMax.setOnClickListener {
-                val amount = (fromBalance - 0.001f).formatNum()
+                val amount = (fromBalance - getMinBalance()).formatNum()
                 etAmount.setText(amount)
                 etAmount.setSelection(etAmount.text.length)
             }
@@ -96,7 +113,20 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             ivClose.setOnClickListener {
                 dismiss()
             }
+            coinWrapper.setOnClickListener {
+                uiScope {
+                    SelectMoveTokenDialog().show(
+                        selectedCoin = symbol,
+                        disableCoin = null,
+                        childFragmentManager,
+                    )?.let {
+                        symbol = it.symbol.lowercase()
+                        initView()
+                    }
+                }
+            }
         }
+        symbol = arguments?.getString(EXTRA_SYMBOL)?.lowercase() ?: FlowCoin.SYMBOL_FLOW
         initView()
     }
 
@@ -107,14 +137,33 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         binding.btnMove.setProgressVisible(true)
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeFloat()
-            EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
-                uiScope {
-                    binding.btnMove.setProgressVisible(false)
-                    if (isSuccess) {
-                        BalanceManager.getBalanceByCoin(FlowCoin.SYMBOL_FLOW)
-                        dismiss()
-                    } else {
-                        toast(R.string.move_flow_to_evm_failed)
+            if (symbol == FlowCoin.SYMBOL_FLOW) {
+                EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
+                    uiScope {
+                        binding.btnMove.setProgressVisible(false)
+                        if (isSuccess) {
+                            BalanceManager.getBalanceByCoin(FlowCoin.SYMBOL_FLOW)
+                            dismiss()
+                        } else {
+                            toast(R.string.move_flow_to_evm_failed)
+                        }
+                    }
+                }
+            } else {
+                val coin = FlowCoinListManager.getCoin(symbol) ?: return@ioScope
+                EVMWalletManager.moveToken(coin, amount, isFundToEVM) { isSuccess ->
+                    uiScope {
+                        binding.btnMove.setProgressVisible(false)
+                        if (isSuccess) {
+                            if (WalletManager.isEVMAccountSelected()) {
+                                BalanceManager.refresh()
+                            } else {
+                                BalanceManager.getBalanceByCoin(symbol)
+                            }
+                            dismiss()
+                        } else {
+                            toast(R.string.move_flow_to_evm_failed)
+                        }
                     }
                 }
             }
@@ -123,32 +172,37 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
     private fun initView() {
         with(binding) {
-            val userInfo = AccountManager.userInfo()
             val walletAddress = WalletManager.wallet()?.walletAddress()
             val evmAddress = EVMWalletManager.getEVMAddress()
+            val walletEmoji = AccountEmojiManager.getEmojiByAddress(walletAddress)
+            val evmEmoji = AccountEmojiManager.getEmojiByAddress(evmAddress)
             if (isFundToEVM) {
-                if (userInfo == null || userInfo.avatar.isBlank()) {
-                    ivFromAvatar.setImageResource(R.drawable.ic_switch_vm_cadence)
-                } else {
-                    ivFromAvatar.loadAvatar(userInfo.avatar)
-                }
-                tvFromName.text = userInfo?.username ?: R.string.cadence.res2String()
+                tvFromAvatar.text = Emoji.getEmojiById(walletEmoji.emojiId)
+                tvFromAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(walletEmoji.emojiId))
+                tvFromName.text = walletEmoji.emojiName
                 tvFromAddress.text = walletAddress ?: ""
-                ivToAvatar.setImageResource(R.drawable.ic_switch_vm_evm)
-                tvToName.text = R.string.flow_evm.res2String()
+                tvFromEvmLabel.gone()
+
+                tvToAvatar.text = Emoji.getEmojiById(evmEmoji.emojiId)
+                tvToAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(evmEmoji.emojiId))
+                tvToName.text = evmEmoji.emojiName
                 tvToAddress.text = evmAddress
+                tvToEvmLabel.visible()
             } else {
-                ivFromAvatar.setImageResource(R.drawable.ic_switch_vm_evm)
-                tvFromName.text = R.string.flow_evm.res2String()
+                tvFromAvatar.text = Emoji.getEmojiById(evmEmoji.emojiId)
+                tvFromAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(evmEmoji.emojiId))
+                tvFromEvmLabel.visible()
+                tvFromName.text = evmEmoji.emojiName
                 tvFromAddress.text = evmAddress
 
-                if (userInfo == null || userInfo.avatar.isBlank()) {
-                    ivToAvatar.setImageResource(R.drawable.ic_switch_vm_cadence)
-                } else {
-                    ivToAvatar.loadAvatar(userInfo.avatar)
-                }
-                tvToName.text = userInfo?.username ?: R.string.cadence.res2String()
+                tvToAvatar.text = Emoji.getEmojiById(walletEmoji.emojiId)
+                tvToAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(walletEmoji.emojiId))
+                tvToName.text = walletEmoji.emojiName
                 tvToAddress.text = walletAddress ?: ""
+                tvToEvmLabel.gone()
+            }
+            FlowCoinListManager.getCoin(symbol)?.let {
+                Glide.with(ivTokenIcon).load(it.icon()).into(ivTokenIcon)
             }
             tvBalance.text = ""
             etAmount.setText("")
@@ -162,22 +216,31 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         ioScope {
             fromBalance = if (isFundToEVM) {
                 cadenceQueryTokenBalanceWithAddress(
-                    FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW),
+                    FlowCoinListManager.getCoin(symbol),
                     WalletManager.wallet()?.walletAddress()
                 )
             } else {
-                cadenceQueryCOATokenBalance()
+                if (symbol == FlowCoin.SYMBOL_FLOW) {
+                    cadenceQueryCOATokenBalance()
+                } else {
+                    BalanceManager.getEVMBalanceByCoin(symbol)
+                }
             } ?: 0f
 
             uiScope {
-                binding.tvBalance.text = "Balance $ $fromBalance"
+                binding.tvBalance.text = "Balance $fromBalance"
             }
         }
     }
 
     companion object {
-        fun show(activity: FragmentActivity) {
-            MoveTokenDialog().show(activity.supportFragmentManager, "")
+        private const val EXTRA_SYMBOL = "extra_symbol"
+        fun show(activity: FragmentActivity, symbol: String) {
+            MoveTokenDialog().apply {
+                arguments = Bundle().apply {
+                    putString(EXTRA_SYMBOL, symbol)
+                }
+            }.show(activity.supportFragmentManager, "")
         }
     }
 }
