@@ -134,11 +134,12 @@
             app:layout_constraintStart_toStartOf="@id/transfer_amount_input"
             app:layout_constraintTop_toTopOf="@id/transfer_amount_input">
 
-            <ImageView
+            <androidx.constraintlayout.utils.widget.ImageFilterView
                 android:id="@+id/coin_icon_view"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:src="@drawable/ic_coin_flow"
+                app:round="32dp"
                 tools:ignore="ContentDescription"/>
 
             <ImageView
@@ -245,13 +246,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/error_wrapper"/>
 
-    <ImageView
+    <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/balance_icon_view"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginStart="18dp"
         android:layout_marginTop="22dp"
         android:src="@drawable/ic_coin_flow"
+        app:round="32dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/balance_title"
         tools:ignore="ContentDescription"/>

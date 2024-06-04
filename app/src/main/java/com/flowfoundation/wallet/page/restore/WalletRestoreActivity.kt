@@ -11,6 +11,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletRestoreBinding
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
@@ -36,11 +37,15 @@ class WalletRestoreActivity : BaseActivity() {
                 setSpan(ForegroundColorSpan(R.color.accent_green.res2color()), 0, 6, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             llImportFromDevice.setOnClickListener {
-                WalletSyncActivity.launch(this@WalletRestoreActivity)
+                if (isTestnet() || isPreviewnet()) {
+                    SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
+                } else {
+                    WalletSyncActivity.launch(this@WalletRestoreActivity)
+                }
             }
 
             llImportFromBackup.setOnClickListener {
-                if (isTestnet()) {
+                if (isTestnet() || isPreviewnet()) {
                     SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     MultiRestoreActivity.launch(this@WalletRestoreActivity)
@@ -48,7 +53,11 @@ class WalletRestoreActivity : BaseActivity() {
             }
 
             llImportFromRecoveryPhrase.setOnClickListener {
-                com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
+                if (isTestnet() || isPreviewnet()) {
+                    SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
+                } else {
+                    com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
+                }
             }
         }
         setupToolbar()

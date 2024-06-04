@@ -31,12 +31,12 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
         swapPaths = tokenKeyFlatSplitPath,
         tokenInMax = amountInMax,
         tokenOutMin = amountOutMin,
-        tokenInVaultPath = storageIn.vault.split("/").last(),
+        tokenInVaultPath = storageIn?.vault?.split("/")?.last() ?: "",
         tokenOutSplit = amountOutSplit,
         tokenInSplit = amountInSplit,
-        tokenOutVaultPath = storageOut.vault.split("/").last(),
-        tokenOutReceiverPath = storageOut.receiver.split("/").last(),
-        tokenOutBalancePath = storageOut.balance.split("/").last(),
+        tokenOutVaultPath = storageOut?.vault?.split("/")?.last() ?: "",
+        tokenOutReceiverPath = storageOut?.receiver?.split("/")?.last() ?: "",
+        tokenOutBalancePath = storageOut?.balance?.split("/")?.last() ?: "",
         deadline = deadline,
     )
 }

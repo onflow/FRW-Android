@@ -1,5 +1,8 @@
 package com.flowfoundation.wallet.network
 
+import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
+import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
+import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
 import retrofit2.http.*
@@ -56,6 +59,26 @@ interface ApiService {
 
     @GET("/api/nft/id")
     suspend fun nftCollectionsOfAccount(
+        @Query("address") address: String,
+    ): NftCollectionsResponse
+
+    @GET("/api/v2/nft/list")
+    suspend fun getNFTList(
+        @Query("address") address: String,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 25,
+    ): NFTListResponse
+
+    @GET("/api/v2/nft/collectionList")
+    suspend fun getNFTListOfCollection(
+        @Query("address") address: String,
+        @Query("collectionIdentifier") collectionIdentifier: String,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 25,
+    ): NFTListResponse
+
+    @GET("/api/v2/nft/id")
+    suspend fun getNFTCollections(
         @Query("address") address: String,
     ): NftCollectionsResponse
 
@@ -187,9 +210,8 @@ interface ApiService {
         @Query("to") to: String,
     ): CurrencyResponse
 
-    @POST("/v1/user/address/sandboxnet")
-    suspend fun enableSandboxNet(
-    ): SandboxEnableResponse
+    @POST("/v1/user/address/network")
+    suspend fun enableNetwork(@Body param: NetworkEnableParams): NetworkEnableResponse
 
     @GET("/v1/user/location")
     suspend fun getDeviceLocation(): LocationInfoResponse
@@ -200,6 +222,22 @@ interface ApiService {
     @GET("/v1/user/keys")
     suspend fun getKeyDeviceInfo(): KeyDeviceInfoResponse
 
-    @POST("/v1/user/device")
-    suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): String
+    @POST("/v3/user/device")
+    suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): CommonResponse
+
+    @GET("/api/prices")
+    suspend fun getTokenPrices(): TokenPriceResponse
+
+    @GET("/api/v2/scripts")
+    suspend fun getCadenceScript(): CadenceScriptResponse
+
+    @GET("/api/evm/{evmAddress}/fts")
+    suspend fun getEVMTokenBalance(
+        @Path("evmAddress") address: String
+    ): EVMTokenBalanceResponse
+
+    @GET("/api/evm/{evmAddress}/nfts")
+    suspend fun getEVMNFTCollections(
+        @Path("evmAddress") address: String
+    ): EVMNFTCollectionsResponse
 }

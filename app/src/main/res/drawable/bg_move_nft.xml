@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:startColor="@color/move_nft_start_color"
+        android:endColor="@color/deep_bg"
+        android:angle="270" />
+    <corners android:radius="16dp"/>
+</shape>

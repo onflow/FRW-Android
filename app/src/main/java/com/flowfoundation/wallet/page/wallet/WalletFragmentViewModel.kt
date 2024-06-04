@@ -2,9 +2,11 @@ package com.flowfoundation.wallet.page.wallet
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.Balance
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
+import com.flowfoundation.wallet.manager.account.OnUserInfoReload
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
@@ -35,7 +37,8 @@ import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate, TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener {
+class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate, TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener,
+    OnUserInfoReload {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
 
@@ -43,7 +46,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private val dataList = CopyOnWriteArrayList<WalletCoinItemModel>()
 
+    private var needReload = true
+
     init {
+        AccountManager.addListener(this)
         WalletFetcher.addListener(this)
         TokenStateManager.addListener(this)
         CoinRateManager.addListener(this)
@@ -52,25 +58,23 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         StakingManager.addStakingInfoUpdateListener(this)
     }
 
-    fun load() {
+    fun load(isRefresh: Boolean = false) {
         viewModelIOScope(this) {
             logd(TAG, "view model load")
-            loadWallet()
+            loadWallet(isRefresh)
             CurrencyManager.fetch()
+        }
+    }
+
+    override fun onUserInfoReload() {
+        viewModelIOScope(this) {
+            loadWallet(true)
         }
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
         updateWalletHeader(wallet = wallet)
-        if (dataList.isEmpty()) {
-            loadCoinList()
-        }
-        TokenStateManager.fetchState()
-        StakingManager.refresh()
-        ChildAccountCollectionManager.loadChildAccountTokenList()
-        ioScope {
-            loadTransactionCount()
-        }
+        loadCoinInfo(false)
     }
 
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
@@ -113,28 +117,53 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         }
     }
 
-    private suspend fun loadWallet() {
+    private suspend fun loadWallet(isRefresh: Boolean) {
         if (WalletManager.wallet() == null) {
             headerLiveData.postValue(null)
+            dataList.clear()
+            dataListLiveData.postValue(emptyList())
+            needReload = true
         } else {
             updateWalletHeader(WalletManager.wallet())
+            needReload = true
+            loadCoinInfo(isRefresh)
         }
         WalletFetcher.fetch()
     }
 
+    private fun loadCoinInfo(isRefresh: Boolean) {
+        if (needReload) {
+            needReload = false
+            if (isRefresh || dataList.isEmpty()) {
+                loadCoinList()
+            }
+            TokenStateManager.fetchState()
+            StakingManager.refresh()
+            ChildAccountCollectionManager.loadChildAccountTokenList()
+            ioScope {
+                loadTransactionCount()
+            }
+        }
+    }
+
     private fun loadCoinList() {
         viewModelIOScope(this) {
-            val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address()) }
+            val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+            if (coinList.isEmpty()) {
+                return@viewModelIOScope
+            }
 
             val isHideBalance = isHideWalletBalance()
             val currency = getCurrencyFlag()
             uiScope {
                 val coinToAdd = coinList.filter { coin -> dataList.none { it.coin.symbol == coin.symbol } }
                 val coinToRemove = dataList.filter { coin -> coinList.none {it.symbol == coin.coin.symbol} }
+                logd(TAG, "loadCoinList coinToAdd::${coinToAdd.map { it.symbol }}")
+                logd(TAG, "loadCoinList coinToRemove::${coinToRemove.map { it.coin.symbol }}")
                 if (coinToAdd.isNotEmpty() || coinToRemove.isNotEmpty()) {
                     dataList.addAll(coinToAdd.map {
                         WalletCoinItemModel(
-                            it, it.address(), 0f,
+                            it, it.address, 0f,
                             0f, isHideBalance = isHideBalance, currency = currency,
                             isStaked = StakingManager.isStaked(),
                             stakeAmount = StakingManager.stakingCount(),
@@ -199,6 +228,5 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     companion object {
         private val TAG = WalletFragmentViewModel::class.java.simpleName
     }
-
 
 }

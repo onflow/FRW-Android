@@ -7,6 +7,8 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentProfileBinding
+import com.flowfoundation.wallet.firebase.auth.isUserSignIn
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
@@ -28,6 +30,7 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.CurrencyListActiv
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
+import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
@@ -69,7 +72,7 @@ class ProfileFragmentPresenter(
             )
         }
         binding.actionGroup.addressButton.setOnClickListener { AddressBookActivity.launch(context) }
-        binding.actionGroup.walletButton.setOnClickListener { WalletSettingActivity.launch(context) }
+        binding.actionGroup.walletButton.setOnClickListener { WalletListActivity.launch(context) }
         binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
         binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }
@@ -149,7 +152,7 @@ class ProfileFragmentPresenter(
 
     private fun updatePreferenceState() {
         ioScope {
-            val isSignIn = isRegistered()
+            val isSignIn = isRegistered() && isUserSignIn()
             uiScope {
                 with(binding) {
                     userInfo.root.setVisible(isSignIn)
@@ -163,6 +166,7 @@ class ProfileFragmentPresenter(
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
                     group0.developerModePreference.setDesc(
                         (if (isTestnet()) R.string.testnet
+                        else if(isPreviewnet()) R.string.previewnet
                         else R.string.mainnet).res2String()
                     )
                 }

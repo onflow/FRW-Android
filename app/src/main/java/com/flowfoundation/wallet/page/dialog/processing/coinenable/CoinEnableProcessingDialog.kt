@@ -33,7 +33,7 @@ class CoinEnableProcessingDialog : BottomSheetDialogFragment() {
         with(binding) {
             val coin = state.tokenData()
             tokenNameView.text = coin.name
-            Glide.with(iconView).load(coin.icon).into(iconView)
+            Glide.with(iconView).load(coin.icon()).into(iconView)
             updateState(state)
         }
 

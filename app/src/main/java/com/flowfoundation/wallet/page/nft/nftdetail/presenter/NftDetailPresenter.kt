@@ -24,10 +24,14 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.collection.CollectionActivity
+import com.flowfoundation.wallet.page.evm.EnableEVMActivity
+import com.flowfoundation.wallet.page.nft.move.MoveNFTDialog
 import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.shareNft
 import com.flowfoundation.wallet.page.nft.nftdetail.widget.NftMorePopupMenu
@@ -35,6 +39,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.*
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftFavoriteManager
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.send.nft.NftSendAddressDialog
+import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.exoplayer.createExoPlayer
 import com.flowfoundation.wallet.utils.extensions.gone
@@ -99,6 +104,16 @@ class NftDetailPresenter(
                 NftSendAddressDialog.newInstance(uniqueId).show(activity.supportFragmentManager, "")
             }
             sendButton.isEnabled = !WalletManager.isChildAccountSelected()
+
+            moveButton.setOnClickListener {
+                nft?.let {
+                    if (EVMWalletManager.haveEVMAddress()) {
+                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId())
+                    } else {
+                        EnableEVMActivity.launch(activity)
+                    }
+                }
+            }
         }
     }
 
@@ -141,7 +156,8 @@ class NftDetailPresenter(
 
             titleView.text = title
             subtitleView.text = name
-            Glide.with(collectionIcon).load(config?.logo).transform(CenterCrop(), CircleCrop()).into(collectionIcon)
+            Glide.with(collectionIcon).load(config?.logo()).transform(CenterCrop(), CircleCrop())
+                .into(collectionIcon)
             descView.text = nft.desc()
 
             purchaseDate.text = "01.01.2022"
@@ -159,7 +175,8 @@ class NftDetailPresenter(
 
             ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }
 
-            sendButton.setVisible(!nft.isDomain())
+            sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
+            moveButton.setVisible(nft.canBridgeToFlow() || nft.canBridgeToEVM())
         }
     }
 
@@ -198,7 +215,7 @@ class NftDetailPresenter(
                         coverRatio = "${resource.width}:${resource.height}"
                         val color = Palette.from(resource).generate().getDominantColor(R.color.text_sub.res2color())
                         uiScope {
-                            updatePageColor(color)
+//                            updatePageColor(color)
                             binding.coverView.setImageBitmap(resource)
                         }
                     }
@@ -222,6 +239,7 @@ class NftDetailPresenter(
             }
 
             sendButton.iconTint = ColorStateList.valueOf(color)
+            moveButton.iconTint = ColorStateList.valueOf(color)
             moreButton.iconTint = ColorStateList.valueOf(color)
         }
     }

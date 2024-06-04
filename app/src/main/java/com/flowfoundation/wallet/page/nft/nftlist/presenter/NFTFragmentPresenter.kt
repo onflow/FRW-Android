@@ -7,6 +7,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.collectionlist.NftCollectionListActivity
 import com.flowfoundation.wallet.page.nft.nftlist.NFTFragment
 import com.flowfoundation.wallet.page.nft.nftlist.NftViewModel
@@ -15,6 +16,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.startShimmer
 import java.lang.Float.min
 
@@ -32,6 +34,7 @@ class NFTFragmentPresenter(
             with(toolbar) { post { setPadding(paddingLeft, paddingTop + statusBarHeight, paddingRight, paddingBottom) } }
             viewPager.adapter = NftListPageAdapter(fragment)
             addButton.setOnClickListener { NftCollectionListActivity.launch(fragment.requireContext()) }
+            addButton.setVisible(WalletManager.isEVMAccountSelected().not())
 
             with(refreshLayout) {
                 isEnabled = true
@@ -100,12 +103,16 @@ class NFTFragmentPresenter(
     }
 
     private fun refresh() {
-        if (isGridTabSelected()) {
-            viewModel.requestGrid()
+        if (WalletManager.isEVMAccountSelected()) {
+            viewModel.requestEVMList()
         } else {
-            viewModel.requestList()
+            if (isGridTabSelected()) {
+                viewModel.requestGrid()
+            } else {
+                viewModel.requestList()
+            }
+            viewModel.requestChildAccountCollectionList()
         }
-        viewModel.requestChildAccountCollectionList()
     }
 
     private fun isGridTabSelected() = binding.tabs.currentTab != 0

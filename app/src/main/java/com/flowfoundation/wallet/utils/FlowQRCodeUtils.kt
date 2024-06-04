@@ -19,7 +19,8 @@ import com.github.alexzhirkevich.customqrgenerator.vector.style.asFrameShape
 import com.github.alexzhirkevich.customqrgenerator.vector.style.scale
 
 fun String.toQRDrawable(
-    withScale: Boolean = false
+    withScale: Boolean = false,
+    isEVM: Boolean = false
 ): Drawable {
     val data = QrData.Url(this)
     val options = createQrVectorOptions {
@@ -38,25 +39,26 @@ fun String.toQRDrawable(
         }
         colors {
             dark = QrVectorColor.Solid(R.color.black_80.res2color())
-            ball = QrVectorColor.Solid(R.color.accent_green.res2color())
+            ball = QrVectorColor.Solid(if(isEVM) R.color.evm.res2color() else R.color.accent_green.res2color())
             frame = QrVectorColor.Solid(R.color.black_80.res2color())
         }
         shapes {
             if (withScale) {
                 darkPixel = QrVectorPixelShape.Circle(0.9f)
                 ball = QrVectorBallShape
-                    .Circle(1f).scale(1.3f).asBallShape()
+                    .Circle(1f).scale(1f).asBallShape()
                 frame = QrVectorFrameShape
-                    .Circle(1.2f).scale(1.2f).asFrameShape()
+                    .Circle(radius = 0.9f).scale(1.1f).asFrameShape()
             } else {
-                darkPixel = QrVectorPixelShape.Circle(.8f)
+                darkPixel = QrVectorPixelShape.Circle(.85f)
                 ball = QrVectorBallShape
-                    .Circle(1f).scale(.9f).asBallShape()
+                    .Circle(1f).scale(1f).asBallShape()
                 frame = QrVectorFrameShape
-                    .Circle(1.2f).scale(.9f).asFrameShape()
+                    .Circle(0.9f).scale(0.95f).asFrameShape()
             }
         }
-        errorCorrectionLevel = QrErrorCorrectionLevel.Low
+        errorCorrectionLevel = if (withScale) QrErrorCorrectionLevel.MediumHigh else
+            QrErrorCorrectionLevel.High
     }
     return QrCodeDrawable(data, options)
 }

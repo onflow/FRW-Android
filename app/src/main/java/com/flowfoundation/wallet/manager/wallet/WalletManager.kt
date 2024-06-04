@@ -6,9 +6,11 @@ import com.flowfoundation.wallet.cache.CACHE_WALLET
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.utils.getSelectedWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
@@ -32,12 +34,20 @@ object WalletManager {
 
     fun wallet() = AccountManager.get()?.wallet
 
+    fun isPreviewnetWalletCreated(): Boolean {
+        return wallet()?.wallets?.lastOrNull { it.network() == NETWORK_NAME_PREVIEWNET } != null
+    }
+
+    fun isEVMAccountSelected(): Boolean {
+        return EVMWalletManager.getEVMAddress() == selectedWalletAddress
+    }
+
     fun isChildAccountSelected(): Boolean {
         val wallets = wallet()?.wallets
         if (wallets.isNullOrEmpty()) {
             return false
         }
-        return wallets.firstOrNull { it.address() == selectedWalletAddress } == null
+        return wallets.firstOrNull { it.address() == selectedWalletAddress } == null && isEVMAccountSelected().not()
     }
 
     fun childAccountList(walletAddress: String? = null): ChildAccountList? {
@@ -79,7 +89,7 @@ object WalletManager {
 
     fun selectedWalletAddress(): String {
         val pref = selectedWalletAddress
-        val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null
+        val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null || EVMWalletManager.isEVMWalletAddress(pref)
         if (isExist) {
             return pref
         }

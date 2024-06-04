@@ -9,7 +9,7 @@
     android:background="@color/deep_bg"
     android:clickable="true"
     android:paddingHorizontal="12dp"
-    android:paddingVertical="28dp"
+    android:paddingVertical="24dp"
     tools:layout_width="300dp">
 
     <View
@@ -17,28 +17,28 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/bg_round_12dp"
-        android:backgroundTint="@color/bg_icon"
-        app:layout_constraintBottom_toBottomOf="@id/desc_view"
+        android:background="@drawable/bg_avatar_header"
+        app:layout_constraintBottom_toBottomOf="@id/nick_name_view"
         app:layout_constraintTop_toTopOf="@id/avatar_view"/>
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/account_switch_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="8dp"
         android:paddingEnd="12dp"
-        app:layout_constraintTop_toTopOf="@id/ll_account_layout"
+        android:src="@drawable/ic_more_circle"
         app:layout_constraintBottom_toBottomOf="@id/ll_account_layout"
         app:layout_constraintEnd_toEndOf="parent"
-        android:id="@+id/account_switch_button"
-        android:src="@drawable/ic_more_circle"/>
+        app:layout_constraintTop_toTopOf="@id/ll_account_layout"/>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_account_layout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
+        android:layout_height="28dp"
         android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:visibility="invisible"
         app:layout_constraintEnd_toStartOf="@id/account_switch_button"
         app:layout_constraintTop_toTopOf="@id/avatar_view">
 
@@ -46,9 +46,10 @@
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/avatar_view"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_margin="24dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:round="100dp"
@@ -58,61 +59,214 @@
         android:id="@+id/nick_name_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="21dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="4dp"
         android:fontFamily="@font/montsettat"
-        android:textColor="@color/text"
-        android:textSize="24sp"
+        android:paddingBottom="24dp"
+        android:textColor="@color/text_2"
+        android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/header_bg"
+        app:layout_constraintStart_toStartOf="@id/avatar_view"
         app:layout_constraintTop_toBottomOf="@id/avatar_view"
         tools:text="Flow Wallet"/>
 
-    <TextView
-        android:id="@+id/desc_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="21dp"
-        android:paddingBottom="18dp"
-        android:textColor="@color/note"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/header_bg"
-        app:layout_constraintTop_toBottomOf="@id/nick_name_view"
-        tools:text="Flow Wallet"/>
 
-    <com.flowfoundation.wallet.page.main.widget.DrawerItem
-        android:id="@+id/scan_item"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_evm_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        app:drawer_item_icon="@drawable/ic_scan_simple"
-        app:drawer_item_text="@string/scan_qr_code"
-        app:layout_constraintTop_toBottomOf="@id/header_bg"/>
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/nsv_account_layout"
+        app:layout_constraintTop_toBottomOf="@id/header_bg">
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="24dp"
-        app:cardBackgroundColor="@color/deep_bg"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/scan_item">
-
-        <androidx.core.widget.NestedScrollView
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:background="@drawable/bg_round_16dp"
             android:backgroundTint="@color/drawer_item_background"
-            tools:layout_height="100dp">
+            android:minHeight="72dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/wallet_list_wrapper"
+            <TextView
+                android:id="@+id/tv_evm_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
-        </androidx.core.widget.NestedScrollView>
-    </com.google.android.material.card.MaterialCardView>
+                android:layout_marginStart="18dp"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/inter_semi_bold"
+                android:text="@string/enable_evm_title"
+                android:textColor="@color/text_2"
+                android:lines="1"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:autoSizeTextType="uniform"
+                app:autoSizeMinTextSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="12dp"
+                android:fontFamily="@font/inter"
+                android:text="@string/enable_evm_desc"
+                android:textColor="@color/text_3"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_evm_title"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_evm_logo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nsv_account_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingVertical="24dp"
+        app:layout_constraintBottom_toTopOf="@id/cl_action_layout"
+        app:layout_constraintTop_toBottomOf="@id/cl_evm_layout">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/tv_main_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:fontFamily="@font/inter"
+                android:text="@string/main_account"
+                android:textColor="@color/text_3"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_main_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@id/tv_main_account"
+                app:layout_constraintBottom_toTopOf="@id/tv_linked_account">
+
+
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <TextView
+                android:id="@+id/tv_linked_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:fontFamily="@font/inter"
+                android:layout_marginTop="14dp"
+                android:text="@string/linked_account"
+                android:textColor="@color/text_3"
+                android:textSize="12sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ll_main_account"/>
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_linked_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_linked_account"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_action_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nsv_account_layout">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/line_light"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <FrameLayout
+            android:id="@+id/fl_network_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:layout_constraintBottom_toTopOf="@id/tv_import_account"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawablePadding="8dp"
+                android:fontFamily="@font/inter_semi_bold"
+                android:gravity="start"
+                android:paddingVertical="5dp"
+                android:text="@string/network"
+                android:textColor="@color/text_2"
+                android:textSize="14sp"
+                app:drawableStartCompat="@drawable/ic_switch_network"/>
+
+            <TextView
+                android:id="@+id/tv_network"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:background="@drawable/bg_round_8dp"
+                android:backgroundTint="@color/neutrals1_a8"
+                android:fontFamily="@font/inter"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/text"
+                android:textSize="12sp"
+                tools:ignore="SmallSp"
+                tools:text="Testnet"/>
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_import_account"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:drawablePadding="8dp"
+            android:fontFamily="@font/inter_semi_bold"
+            android:gravity="start"
+            android:paddingVertical="5dp"
+            android:text="@string/import_profile"
+            android:textColor="@color/text_2"
+            android:textSize="14sp"
+            app:drawableStartCompat="@drawable/ic_import_wallet"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fl_network_layout"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

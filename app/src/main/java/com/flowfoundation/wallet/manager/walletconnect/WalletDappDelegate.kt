@@ -1,8 +1,8 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
+import android.content.Intent
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
@@ -10,6 +10,8 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
+import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.walletconnect.model.WCWalletResponse
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.network.ApiService
@@ -19,7 +21,10 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.wallet.confirm.WalletConfirmActivity
+import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
+import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -68,6 +73,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
     override fun onSessionApproved(approvedSession: Sign.Model.ApprovedSession) {
         logd(TAG, "onSessionApproved() ApprovedSession:${Gson().toJson(approvedSession)}")
         updateWalletConnectSession(approvedSession)
+        sendSyncCallback(true)
         val params = mapOf(
             "addr" to approvedSession.address(),
         )
@@ -78,7 +84,19 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                 params = "[${Gson().toJson(params)}]",
                 chainId = approvedSession.chainId(),
             )
-        ) { error -> loge(error.throwable) }
+        ) { error ->
+            loge(error.throwable)
+            sendSyncCallback(false)
+        }
+    }
+
+    private fun sendSyncCallback(isSyncing: Boolean) {
+        LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(
+            Intent(
+                WalletSyncActivity.ACTION_SYNCING
+            ).apply {
+                putExtra(WalletSyncActivity.EXTRA_SYNCING, isSyncing)
+            })
     }
 
     /**
@@ -210,18 +228,6 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
     override fun onSessionUpdate(updatedSession: Sign.Model.UpdatedSession) {
         logd(TAG, "onSessionUpdate() updatedSession:${Gson().toJson(updatedSession)}")
     }
-}
-
-private suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
-    val uid = Firebase.auth.currentUser?.uid
-    if (!uid.isNullOrBlank()) {
-        callback.invoke(uid)
-        return
-    }
-
-    getFirebaseJwt(true)
-
-    callback.invoke(Firebase.auth.currentUser?.uid)
 }
 
 private var currentSession: Sign.Model.ApprovedSession? = null

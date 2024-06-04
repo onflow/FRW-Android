@@ -8,4 +8,8 @@ class ExploreModel(
     val bookmarkList: List<Bookmark>? = null,
     val dAppList: List<DAppModel>? = null,
     val dAppTagList: List<DAppTagModel>? = null,
-)
+) {
+    fun isModelEmpty(): Boolean {
+        return recentList.isNullOrEmpty() && bookmarkList.isNullOrEmpty() && dAppList.isNullOrEmpty() && dAppTagList.isNullOrEmpty()
+    }
+}

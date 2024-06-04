@@ -51,7 +51,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
     override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
         val tokens = tokenListLiveData.value.orEmpty().toMutableList()
         tokens.toList().forEachIndexed { index, token ->
-            if (token.coinAddress == coin.address()) {
+            if (token.coinAddress == coin.address) {
                 tokens[index] = token.copy(marketValue = token.amount * price)
             }
         }
@@ -62,7 +62,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         claimExecutingLiveData.postValue(true)
         viewModelIOScope(this) {
             try {
-                val coin = FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress }!!
+                val coin = FlowCoinListManager.coinList().firstOrNull { it.address == token.coinAddress }!!
                 val txid = cadenceClaimInboxToken(meowDomainHost()!!, token.key, coin, token.amount)!!
                 val transactionState = TransactionState(
                     transactionId = txid,
@@ -111,8 +111,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         tokenListLiveData.postValue(response.tokenList())
         nftListLiveData.postValue(response.nftList())
         updateInboxReadList(response)
-        response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress } }
-            .forEach { CoinRateManager.fetchCoinRate(it) }
+        CoinRateManager.fetchCoinListRate(response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address == token.coinAddress } })
         inboxCache().cache(response)
     }
 
@@ -120,7 +119,6 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         val response = inboxCache().read() ?: return
         tokenListLiveData.postValue(response.tokenList())
         nftListLiveData.postValue(response.nftList())
-        response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address() == token.coinAddress } }
-            .forEach { CoinRateManager.fetchCoinRate(it) }
+        CoinRateManager.fetchCoinListRate(response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address == token.coinAddress } })
     }
 }

@@ -96,7 +96,7 @@
                     android:background="@color/background"/>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/sandbox_wrapper"
+                    android:id="@+id/previewnet_wrapper"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="?attr/selectableItemBackground"
@@ -104,13 +104,13 @@
                     android:paddingHorizontal="20dp">
 
                     <TextView
-                        android:id="@+id/sandbox_title"
+                        android:id="@+id/previewnet_title"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginVertical="20dp"
                         android:fontFamily="@font/inter_medium"
                         android:paddingStart="6dp"
-                        android:text="@string/sandbox"
+                        android:text="@string/previewnet"
                         android:textColor="@color/neutrals9"
                         android:textSize="16sp"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -118,11 +118,11 @@
                         app:layout_constraintTop_toTopOf="parent"/>
 
                     <com.flowfoundation.wallet.widgets.FrozenCheckbox
-                        android:id="@+id/sandbox_checkbox"
+                        android:id="@+id/previewnet_checkbox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="-3dp"
-                        android:buttonTint="@color/colorSecondary"
+                        android:buttonTint="@color/previewnet"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
                         android:padding="0dp"
@@ -134,7 +134,7 @@
                         tools:visibility="visible"/>
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/sandbox_enable_button"
+                        android:id="@+id/previewnet_enable_button"
                         android:layout_width="wrap_content"
                         android:layout_height="32dp"
                         android:backgroundTint="@color/colorSecondary"
@@ -156,7 +156,7 @@
                         app:rippleColor="@color/black_20"/>
 
                     <ProgressBar
-                        android:id="@+id/sandbox_progressbar"
+                        android:id="@+id/previewnet_progressbar"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:visibility="gone"
@@ -169,5 +169,4 @@
         </com.google.android.material.card.MaterialCardView>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

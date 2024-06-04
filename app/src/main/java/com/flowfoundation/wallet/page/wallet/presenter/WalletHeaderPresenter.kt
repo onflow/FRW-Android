@@ -18,10 +18,12 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletHeaderBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
 import com.flowfoundation.wallet.page.browser.openBrowser
@@ -65,7 +67,11 @@ class WalletHeaderPresenter(
         with(binding) {
             walletName.text = if (WalletManager.isChildAccountSelected()) {
                 WalletManager.childAccount(WalletManager.selectedWalletAddress())?.name ?: R.string.default_child_account_name.res2String()
-            } else R.string.wallet.res2String()
+            } else if(WalletManager.isEVMAccountSelected()){
+                EVMWalletManager.getEVMAccount()?.name ?: ""
+            } else {
+                R.string.wallet.res2String()
+            }
 
             uiScope {
                 val isHideBalance = isHideWalletBalance()
@@ -74,7 +80,7 @@ class WalletHeaderPresenter(
                 hideButton.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
 
-            val count = FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address()) }
+            val count = FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address) }
             coinCountView.text = view.context.getString(R.string.coins_count, count)
 
             sendButton.setOnClickListener { TransactionSendActivity.launch(view.context) }
@@ -86,12 +92,16 @@ class WalletHeaderPresenter(
                     SwapActivity.launch(view.context)
                 } else {
                     activity?.let {
-                        openBrowser(it, "https://${if (isTestnet()) "demo" else "app"}.increment.fi/swap")
+                        openBrowser(it, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                                ".increment.fi/swap")
                     }
                 }
             }
             stackingButton.setOnClickListener { openStakingPage(view.context) }
             buyButton.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
+            buyButton.setVisible(AppConfig.isInAppBuy())
+            swapButton.setVisible(AppConfig.isInAppSwap())
+            addButton.setVisible(WalletManager.isEVMAccountSelected().not())
 
             sendButton.isEnabled = !WalletManager.isChildAccountSelected()
             swapButton.isEnabled = !WalletManager.isChildAccountSelected()

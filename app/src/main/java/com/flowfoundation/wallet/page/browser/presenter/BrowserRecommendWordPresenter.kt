@@ -8,8 +8,10 @@ import android.widget.TextView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.page.browser.model.RecommendModel
 import com.flowfoundation.wallet.page.browser.toSearchUrl
+import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.res2color
 
 class BrowserRecommendWordPresenter(
@@ -31,6 +33,12 @@ class BrowserRecommendWordPresenter(
             }
         }
         textView.text = text
-        view.setOnClickListener { model.viewModel.updateUrl(model.text.toSearchUrl()) }
+        view.setOnClickListener {
+            if (AppConfig.useInAppBrowser().not()) {
+                model.text.toSearchUrl().openInSystemBrowser(view.context, true)
+                return@setOnClickListener
+            }
+            model.viewModel.updateUrl(model.text.toSearchUrl())
+        }
     }
 }

@@ -1,19 +1,24 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
 import android.animation.ObjectAnimator
+import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutBrowserBinding
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.page.browser.*
 import com.flowfoundation.wallet.page.browser.model.BrowserModel
 import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
+import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.toast
 import kotlin.math.abs
 
 class BrowserPresenter(
@@ -38,7 +43,15 @@ class BrowserPresenter(
             with(binding.toolbar) {
                 refreshButton.setOnClickListener { webview()?.reload() }
                 backButton.setOnClickListener { handleBackPressed() }
-                homeButton.setOnClickListener { popBrowserLastTab() }
+                moveButton.setOnClickListener {
+                    if (isPreviewnet()) {
+                        val activity =
+                            BaseActivity.getCurrentActivity() ?: return@setOnClickListener
+                        MoveDialog.show(activity.supportFragmentManager)
+                    } else {
+                        toast(R.string.features_coming)
+                    }
+                }
                 floatButton.setOnClickListener { shrinkBrowser() }
                 menuButton.setOnClickListener { browserTabLast()?.let { BrowserPopupMenu(menuButton, it).show() } }
             }

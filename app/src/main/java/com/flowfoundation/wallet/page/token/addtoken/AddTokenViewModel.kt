@@ -39,7 +39,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
         viewModelIOScope(this) {
             coinList.clear()
             coinList.addAll(
-                FlowCoinListManager.coinList().map { TokenItem(coin = it, isAdded = TokenStateManager.isTokenAdded(it.address()), isAdding = false) })
+                FlowCoinListManager.coinList().map { TokenItem(coin = it, isAdded = TokenStateManager.isTokenAdded(it.address), isAdding = false) })
             tokenListLiveData.postValue(coinList.toList())
 
             onTransactionStateChange()
@@ -92,12 +92,12 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
                 if (state.type == TransactionState.TYPE_ADD_TOKEN) {
                     val coin = state.tokenData()
 
-                    if (state.isSuccess() && !TokenStateManager.isTokenAdded(coin.address())) {
+                    if (state.isSuccess() && !TokenStateManager.isTokenAdded(coin.address)) {
                         TokenStateManager.fetchStateSingle(state.tokenData(), cache = true)
                     }
                     val index = coinList.indexOfFirst { it.coin.symbol == coin.symbol }
                     if (index >= 0) {
-                        val isAdded = TokenStateManager.isTokenAdded(coin.address())
+                        val isAdded = TokenStateManager.isTokenAdded(coin.address)
                         coinList[index] = TokenItem(
                             coin = coinList[index].coin,
                             isAdding = !state.isFailed() && !isAdded,

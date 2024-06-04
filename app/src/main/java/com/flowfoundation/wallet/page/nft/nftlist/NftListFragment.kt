@@ -16,6 +16,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.NftSelections
 import com.flowfoundation.wallet.databinding.FragmentNftListBinding
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.adapter.NFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
@@ -60,8 +61,12 @@ internal class NftListFragment : Fragment() {
         binding.root.setBackgroundResource(R.color.background)
 
         viewModel = ViewModelProvider(requireActivity())[NftViewModel::class.java].apply {
-            requestList()
-            requestChildAccountCollectionList()
+            if (WalletManager.isEVMAccountSelected()) {
+                requestEVMList()
+            } else {
+                requestList()
+                requestChildAccountCollectionList()
+            }
             listNftLiveData.observe(viewLifecycleOwner) { data -> updateListData(data) }
             collectionsLiveData.observe(viewLifecycleOwner) { data -> updateCollections(data) }
             collectionTitleLiveData.observe(viewLifecycleOwner) { collectionTitlePresenter.bind(it) }

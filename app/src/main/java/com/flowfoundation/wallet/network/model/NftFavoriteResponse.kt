@@ -10,7 +10,7 @@ data class NftFavoriteResponse(
     val data: NftFavoriteData?,
 
     @SerializedName("message")
-    val message: String,
+    val message: String?,
 
     @SerializedName("status")
     val status: Int,

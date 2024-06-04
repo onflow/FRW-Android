@@ -38,7 +38,7 @@
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="secret_key_name" translatable="false">biometric_sample_encryption_key</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
-    <string name="backup_pin_tip">So we will secure your backup with your PIN.</string>
+    <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="finish">Finish</string>
     <string name="create">Create</string>
@@ -103,19 +103,19 @@
     <string name="download">Download</string>
     <string name="saved_to_album">Saved to album</string>
     <string name="view_on_web">View on web</string>
-    <string name="empty_title">We find nothing here.</string>
-    <string name="nft_empty_desc">Looking forward to your new discovery.</string>
+    <string name="empty_title">You don’t have any NFTs yet</string>
+    <string name="nft_empty_desc">Looking forward to your next discovery.</string>
     <string name="get_new_nfts">Get new NFTs</string>
     <string name="receive">Receive</string>
     <string name="buy">Buy</string>
     <string name="swap">Swap</string>
     <string name="address">Address</string>
-    <string name="wallets">Wallets</string>
     <string name="device">Device</string>
     <string name="chrome_extension">Chrome Extension</string>
     <string name="about">About</string>
     <string name="sync_title">Sync Flow Wallet</string>
     <string name="switch_account">Switch Account</string>
+    <string name="switch_profile">Switch Profile</string>
     <string name="logout">Logout</string>
     <string name="edit_avatar">Edit avatar</string>
     <string name="edit">Edit</string>
@@ -238,6 +238,8 @@
     <string name="outblock">Outblock</string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="transaction_to">Transaction Request from</string>
+    <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
     <string name="fcl_permission_read_balance">View your wallet balance and activity</string>
     <string name="fcl_permission_transaction">Request approval for transactions</string>
@@ -256,7 +258,7 @@
     <string name="hold_to_confirm">Hold to Confirm</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
-    <string name="activities">Activities</string>
+    <string name="transaction_history">Transaction history</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Wallet</string>
@@ -291,7 +293,7 @@
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Incorrect mnemonic</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="inbox">Inbox</string>
+    <string name="inbox">Token Inbox</string>
     <string name="token">Token</string>
     <string name="token_with_count">Token (%1$d)</string>
     <string name="nft_with_count">NFT (%1$d)</string>
@@ -325,7 +327,6 @@
     <string name="hold_to_swap">Hold to swap</string>
     <string name="swap_failed">Swap failed</string>
     <string name="auditors_by">Verified by %1$s</string>
-    <string name="drawer_desc">Since %1$s · %2$d NFTs</string>
     <string name="pending_request">Pending Request</string>
     <string name="connected_site">Connected Site</string>
     <string name="currency">Currency</string>
@@ -385,7 +386,7 @@
     <string name="setting_up">Setting up</string>
     <string name="setup_fail">Setup fail</string>
     <string name="restake">ReStake</string>
-    <string name="sandbox">Sandbox</string>
+    <string name="previewnet">Previewnet</string>
     <string name="storage_info">Storage info</string>
     <string name="storage_info_count">%1$s / %2$s</string>
     <string name="committed">Committed</string>
@@ -395,7 +396,7 @@
     <string name="will_be_processed_at_the_next_epoch">Will be processed at the next epoch</string>
     <string name="backup_desc">Backup Recovery Phrase is important in protect your prize property.</string>
     <string name="not_now">Not Now</string>
-    <string name="create_account">Create Account</string>
+    <string name="not_now_tip">Not now</string>
     <string name="suggest_to_backup">Suggest to Backup</string>
     <string name="link_account">Link Account</string>
     <string name="link_account_desc">We would like to link your %1$s account to your Flow Wallet account</string>
@@ -410,11 +411,12 @@
     <string name="try_again">Try Again</string>
     <string name="generate_qr_code_error">Generating QR code failed. Please try again.</string>
     <string name="wallet_connect_error">Create wallet connect failed. Please try again.</string>
-    <string name="linked_account">Linked Account</string>
+    <string name="linked_account">Linked Accounts</string>
     <string name="devices">Devices</string>
     <string name="device_info">Device Info</string>
 
     <string name="default_child_account_name">Linked Account</string>
+    <string name="default_evm_account_name">EVM Wallet</string>
     <string name="description">Description</string>
     <string name="unlink_wallet">Unlink Wallet</string>
     <string name="unlink_confirmation">Unlink Confirmation</string>
@@ -434,9 +436,8 @@
     <string name="root_detection_alert">Root Detection Alert</string>
 
     <string name="notification_channel_name">Push Notification</string>
-    <string name="accounts">Accounts</string>
-    <string name="add_new_account">Add a New Account</string>
-    <string name="import_existing_account">Import an Existing Account</string>
+    <string name="add_new_profile">Add a New Profile</string>
+    <string name="import_existing_profile">Import an Existing Profile</string>
     <string name="resume_login_error">Encountered a problem, please restart the app</string>
     <string name="new_feature">New Feature</string>
     <string name="new_feature_desc">We have made the following updates to improve your experiences.</string>
@@ -460,7 +461,8 @@
     <string name="transaction_pending_tips">Almost there, the last transaction is pending.</string>
     <string name="accessible">Accessible</string>
     <string name="none_accessible_coins">None Accessible Coins</string>
-    <string name="no_linked_account">No Linked Account</string>
+    <string name="no_linked_account">No Linked Accounts</string>
+    <string name="empty_bookmarks">Empty Bookmarks</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
     <string name="inaccessible_token_tip">Flow Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
@@ -473,8 +475,8 @@
     <string name="sequence_number">Sequence Number</string>
     <string name="hold_to_sync">Hold to Sync</string>
     <string name="hold_to_revoke">Hold to Revoke</string>
-    <string name="revoke_tip">Once you revoke this key, \n there is no way to re-activate this key.</string>
-    <string name="revoke_title">Are you sure you want to \n revoke this key?</string>
+    <string name="revoke_tip">Once you revoke this key, \n there is no way to re-activate it.</string>
+    <string name="revoke_title">Are you sure?</string>
     <string name="revoke_failed">Revoke Failed</string>
     <string name="device_application">Application</string>
     <string name="device_ip_address">IP Address</string>
@@ -490,26 +492,25 @@
     <string name="loading">Loading</string>
     <string name="loading_desc">It might take a while, please do not exit...</string>
     <string name="create_device_backup">Create Device Backup</string>
-    <string name="google_backup_note">Note: Your Google Drive Backup will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">Create Multi-Backup</string>
     <string name="multi_backup">Multi-Backup</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
-    <string name="multi_backup_note">Note: All Your Backup will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
-    <string name="import_wallet_note">Restore wallet from your backup history.</string>
+    <string name="import_wallet_note">Restore your wallet using a backup.</string>
+    <string name="import_profile_note">Restore your profile using a backup.</string>
     <string name="from_device_backup">From Device Backup</string>
-    <string name="from_device_backup_note">Mobile or Extension Devices</string>
+    <string name="from_device_backup_note">Restore from another mobile or extension wallet</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Old Version Backup</string>
-    <string name="from_recovery_phrase_note">The old version include 12 words recovery phrase and
-        Google Drive</string>
+    <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
+    <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">From Multi-Backup</string>
     <string name="multi_restore_note">Please Select 2 or More Backup Options</string>
@@ -517,8 +518,8 @@
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
-    <string name="create_device_backup_title">Scan to Sync Extension Wallet</string>
-    <string name="create_device_backup_note">Scan QR code shown by the Flow Wallet Browser extension to sync your wallet.</string>
+    <string name="create_device_backup_title">Sync your wallet between your devices</string>
+    <string name="create_device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
     <string name="backup_info">Backup Info</string>
@@ -537,5 +538,49 @@
     <string name="backup_on_mainnet">You can only create backup on mainnet.</string>
     <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
     <string name="switch_on_mainnet">You can only switch account on mainnet.</string>
+    <string name="create_on_mainnet_or_testnet">You can only create account on mainnet or testnet.</string>
     <string name="switch_to_mainnet">Switch to Mainnet</string>
+    <string name="connect">Connect</string>
+    <string name="learn_more">Learn more</string>
+    <string name="enable_evm_desc">Manage multi-VM assets seamlessly.</string>
+    <string name="enable_evm_title_enable_the_path">Enable the path</string>
+    <string name="enable_evm_title_to_evm">to EVM on Flow</string>
+    <string name="enable_evm_title">Enable the path to EVM on Flow !</string>
+    <string name="evm_on_flow">EVM on Flow</string>
+    <string name="flow_evm">FlowEVM</string>
+    <string name="label_evm">EVM</string>
+    <string name="move">Move</string>
+    <string name="current_vm">Current VM</string>
+    <string name="cadence">Cadence</string>
+    <string name="share_qr_code">Share QR Code</string>
+    <string name="move_token">Move Token</string>
+    <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
+    <string name="move_nft_to_evm_failed">Move NFT to EVM failed</string>
+    <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
+    <string name="hide_browser_toolbar">Hide</string>
+    <string name="sync_in_processing">Scan Successfully \nSync in Processing...</string>
+    <string name="view_more">View More</string>
+    <string name="select_nft">Select NFTs</string>
+    <string name="account">Account</string>
+    <string name="collection">Collection</string>
+    <string name="nft_move_limit">You can move 10 NFTs </string>
+    <string name="move_assets">Move Assets</string>
+    <string name="move_to_desc">What type of assets would you like to move?</string>
+    <string name="move_nfts">Move NFTs</string>
+    <string name="move_tokens">Move Tokens</string>
+    <string name="move_nft">Move NFT</string>
+    <string name="main_account">Main Account</string>
+    <string name="main_accounts">Main Accounts</string>
+    <string name="evm_accounts">EVM Accounts</string>
+    <string name="account_list">Account List</string>
+    <string name="edit_wallet">Edit Wallet</string>
+    <string name="select_nft_empty">0 NFTs</string>
+    <string name="profiles">Profiles</string>
+    <string name="create_profile">Create Profile</string>
+    <string name="features_coming">Features Coming Soon</string>
+    <string name="quick_enable_evm">Quick Enable EVM</string>
+    <string name="select_collection">Select Collection</string>
+    <string name="import_profile">Import Profile</string>
+
+
 </resources>

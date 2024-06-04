@@ -4,14 +4,20 @@ import android.os.Parcelable
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionsCache
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.NftCollectionListResponse
+import com.flowfoundation.wallet.network.model.PreviewnetNftCollectionListResponse
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.readTextFromAssets
+import com.flowfoundation.wallet.utils.svgToPng
+import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
+import java.net.URL
+import kotlin.math.log
 
 object NftCollectionConfig {
 
@@ -54,7 +60,14 @@ object NftCollectionConfig {
         ioScope {
             config.clear()
             config.addAll(loadFromCache())
-            val response = retrofitApi().create(ApiService::class.java).nftCollections()
+
+            val response = if (isPreviewnet()) {
+                val text = URL("https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/previewnet/flow/nfts.json").readText()
+                val listResponse = Gson().fromJson(text, PreviewnetNftCollectionListResponse::class.java)
+                NftCollectionListResponse(data = listResponse.tokens, status = 200)
+            } else {
+                retrofitApi().create(ApiService::class.java).nftCollections()
+            }
             if (response.data.isNotEmpty()) {
                 config.clear()
                 config.addAll(response.data)
@@ -71,8 +84,15 @@ object NftCollectionConfig {
 
 
     private fun loadFromAssets(): List<NftCollection> {
-        val text =
-            if (isTestnet()) readTextFromAssets("config/nft_collections_testnet.json") else readTextFromAssets("config/nft_collections_mainnet.json")
+        val text = readTextFromAssets(
+            if (isTestnet()) {
+                "config/nft_collections_testnet.json"
+            } else if (isPreviewnet()) {
+                "config/nft_collections_previewnet.json"
+            } else {
+                "config/nft_collections_mainnet.json"
+            }
+        )
         val data = Gson().fromJson(text, NftCollectionListResponse::class.java)
         return data.data
     }
@@ -85,7 +105,7 @@ data class NftCollection(
     @SerializedName("address")
     val address: String,
     @SerializedName("banner")
-    val banner: String,
+    val banner: String?,
     @SerializedName("contract_name")
     val contractName: String,
     @SerializedName("description")
@@ -95,14 +115,35 @@ data class NftCollection(
     @SerializedName("secure_cadence_compatible")
     val secureCadenceCompatible: CadenceCompatible?,
     @SerializedName("marketplace")
-    val marketplace: String,
+    val marketplace: String?,
     @SerializedName("name")
     val name: String,
     @SerializedName("official_website")
     val officialWebsite: String?,
     @SerializedName("path")
-    val path: Path
+    val path: Path,
+    @SerializedName("evmAddress")
+    val evmAddress: String?,
 ) : Parcelable {
+
+    fun logo(): String {
+        return if (logo.endsWith(".svg")) {
+            logo.svgToPng()
+        } else {
+            logo
+        }
+    }
+
+    fun banner(): String {
+        if (banner == null) {
+            return ""
+        }
+        return if (banner.endsWith(".svg")) {
+            banner.svgToPng()
+        } else {
+            banner
+        }
+    }
 
     @Parcelize
     data class Address(
@@ -115,15 +156,15 @@ data class NftCollection(
     @Parcelize
     data class Path(
         @SerializedName("public_collection_name")
-        val publicCollectionName: String,
+        val publicCollectionName: String?,
         @SerializedName("public_path")
         val publicPath: String,
         @SerializedName("storage_path")
         val storagePath: String,
         @SerializedName("public_type")
-        val publicType: String,
+        val publicType: String?,
         @SerializedName("private_type")
-        val privateType: String,
+        val privateType: String?,
     ) : Parcelable
 
     @Parcelize

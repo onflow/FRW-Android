@@ -28,7 +28,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyRevok
 import com.flowfoundation.wallet.page.security.securityOpen
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
-import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatGMTToDate
 
 
@@ -58,6 +57,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
             backupKey?.info?.backupInfo?.let {
                 tvBackupName.text = BackupType.getBackupName(it.type)
             }
+            val created = backupKey?.info?.backupInfo?.createTime
             backupKey?.let {
                 val backupType = it.info?.backupInfo?.type ?: -1
                 ivKeyType.setImageResource(BackupType.getBackupKeyIcon(backupType))
@@ -83,7 +83,9 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 tvDeviceApplication.text = deviceModel.user_agent
                 tvDeviceIp.text = deviceModel.ip
                 tvDeviceLocation.text = deviceModel.city + ", " + deviceModel.countryCode
-                tvDeviceDate.text = formatGMTToDate(deviceModel.updated_at)
+                tvDeviceDate.text =
+                    if (created.isNullOrBlank()) formatGMTToDate(deviceModel.updated_at)
+                    else formatGMTToDate(created)
             }
             cvKeyCard.setOnClickListener {
                 securityOpen(AccountKeyActivity.launchIntent(this@BackupDetailActivity))

@@ -69,8 +69,13 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
         accountInfo?.deviceInfo?.let {
             with(binding) {
                 tvDeviceApplication.text = it.user_agent
-                tvDeviceIp.text = it.ip
-                tvDeviceLocation.text = it.city + ", " + it.countryCode
+                tvDeviceIp.text = it.ip ?: ""
+                tvDeviceLocation.text = if (it.city.isNullOrBlank()) {
+                    it.countryCode ?: ""
+                }  else {
+                    it.city + ", " + (it.countryCode ?: "")
+                }
+
             }
         }
         binding.closeButton.setOnClickListener { dismissAllowingStateLoss() }
@@ -150,7 +155,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
 
     override fun onMapReady(googleMap: GoogleMap) {
         accountInfo?.deviceInfo?.let {
-            val initialLatLng = LatLng(it.lat, it.lon)
+            val initialLatLng = LatLng(it.lat ?: 0.0, it.lon ?: 0.0)
             googleMap.moveCamera(CameraUpdateFactory.newLatLng(initialLatLng))
 
             googleMap.addMarker(

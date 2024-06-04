@@ -12,10 +12,13 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
 import com.flowfoundation.wallet.manager.app.PageLifecycleObserver
 import com.flowfoundation.wallet.manager.app.refreshChainNetwork
+import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.env.EnvKey
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -80,6 +83,7 @@ object LaunchManager {
     }
 
     private fun runWorker(application: Application) {
+        CadenceApiManager.init()
     }
 
     /**

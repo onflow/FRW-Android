@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.nft.nftlist.utils
 
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
@@ -29,11 +30,19 @@ class NftListRequester {
         if (address.isEmpty()) {
             return emptyList()
         }
-        val collectionResponse = service.nftCollectionsOfAccount(nftWalletAddress())
+        val collectionResponse = if (isPreviewnet()) {
+            service.getNFTCollections(nftWalletAddress())
+        } else {
+            service.nftCollectionsOfAccount(nftWalletAddress())
+        }
         if (collectionResponse.status > 200) {
             throw Exception("request nft list error: $collectionResponse")
         }
-        val collections = collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true }.orEmpty()
+        val collections = if (isPreviewnet()) {
+            collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true && it.ids?.isNotEmpty() == true }.orEmpty()
+        } else {
+            collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true }.orEmpty()
+        }
         collectionList.clear()
         collectionList.addAll(collections)
         cache().collection().cacheSync(NftCollections(collections))
@@ -42,10 +51,22 @@ class NftListRequester {
 
     fun cachedNfts(collection: NftCollection) = cache().list(collection.contractName).read()?.list
 
+    fun cacheCollections(collections: List<NftCollectionWrapper>) {
+        cache().collection().cacheSync(NftCollections(collections))
+    }
+
+    fun cacheCollectionNFTs(contractName: String, list: List<Nft>) {
+        cache().list(contractName).cacheSync(NftList(list.toList()))
+    }
+
     suspend fun request(collection: NftCollection): List<Nft> {
         resetOffset()
         dataList.clear()
-        val response = service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        val response = if (isPreviewnet()) {
+            service.getNFTListOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        } else {
+            service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        }
         if (response.status > 200) {
             throw Exception("request nft list error: $response")
         }
@@ -71,7 +92,11 @@ class NftListRequester {
         isLoadMoreRequesting = true
 
         offset += limit
-        val response = service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        val response = if (isPreviewnet()) {
+            service.getNFTListOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        } else {
+            service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        }
         response.data ?: return emptyList()
         count = response.data.nftCount
 

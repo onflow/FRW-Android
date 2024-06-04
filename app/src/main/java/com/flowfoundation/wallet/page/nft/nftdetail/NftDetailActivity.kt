@@ -2,11 +2,12 @@ package com.flowfoundation.wallet.page.nft.nftdetail
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
-import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
@@ -16,6 +17,8 @@ import com.flowfoundation.wallet.page.nft.nftdetail.presenter.NftDetailPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.utils.isNightMode
+import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
+
 
 class NftDetailActivity : BaseActivity() {
 
@@ -54,7 +57,12 @@ class NftDetailActivity : BaseActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.nft_detail, menu)
-        menu.findItem(R.id.view_in_ar).actionView?.setOnClickListener { openInAr() }
+        val menuItem = menu.findItem(R.id.view_in_ar)
+        if (isARCameraSupported()) {
+            menuItem.actionView?.setOnClickListener { openInAr() }
+        } else {
+            menuItem.setVisible(false)
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -70,6 +78,14 @@ class NftDetailActivity : BaseActivity() {
     private fun openInAr() {
         val nft = viewModel.nftLiveData.value ?: return
         ArActivity.launch(this, nft.cover(), nft.video())
+    }
+
+    private fun isARCameraSupported(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_AR)
+        } else {
+            false
+        }
     }
 
     companion object {

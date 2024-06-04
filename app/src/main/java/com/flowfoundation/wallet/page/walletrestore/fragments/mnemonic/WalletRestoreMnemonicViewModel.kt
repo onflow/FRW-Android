@@ -38,18 +38,21 @@ class WalletRestoreMnemonicViewModel : ViewModel() {
         }
     }
 
-    fun invalidMnemonicCheck(text: String) {
+    fun invalidMnemonicCheck(text: String, isLegacy: Boolean = false) {
         if (this.text == text) {
             return
         }
         this.text = text
         val words = text.split(" ")
-        val invalidWords = words.filter { it.isNotBlank() && !Mnemonic.isValidWord(it) }
+        val invalidWords = words.filter { it.isNotBlank() && !Mnemonic.isValidWord(it) }.toMutableList()
+        if (isLegacy && words.size > 12) {
+            invalidWordListLiveData.postValue(listOf(Pair(0, "")))
+            return
+        }
         if (invalidWords.isEmpty()) {
             invalidWordListLiveData.postValue(emptyList())
             return
         }
-
         val result = mutableListOf<Pair<Int, String>>()
         invalidWords.forEach { word ->
             text.indexOfAll(word).forEach { index ->

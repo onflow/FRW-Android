@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivitySwapBinding
+import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.page.swap.model.SwapModel
 import com.flowfoundation.wallet.page.swap.presenter.SwapPresenter
 import com.flowfoundation.wallet.utils.isNightMode
@@ -35,6 +36,7 @@ class SwapActivity : BaseActivity() {
             onEstimateToUpdate.observe(this@SwapActivity) { presenter.bind(SwapModel(onEstimateToUpdate = it)) }
             onEstimateLoading.observe(this@SwapActivity) { presenter.bind(SwapModel(onEstimateLoading = it)) }
             estimateLiveData.observe(this@SwapActivity) { presenter.bind(SwapModel(estimateData = it)) }
+            initFromCoin(intent.getStringExtra(EXTRA_COIN_SYMBOL) ?: FlowCoin.SYMBOL_FLOW)
         }
     }
 
@@ -47,8 +49,11 @@ class SwapActivity : BaseActivity() {
     }
 
     companion object {
-        fun launch(context: Context) {
-            context.startActivity(Intent(context, SwapActivity::class.java))
+        const val EXTRA_COIN_SYMBOL = "extra_coin_symbol"
+        fun launch(context: Context, symbol: String? = FlowCoin.SYMBOL_FLOW) {
+            val intent = Intent(context, SwapActivity::class.java)
+            intent.putExtra(EXTRA_COIN_SYMBOL, symbol)
+            context.startActivity(intent)
         }
     }
 }

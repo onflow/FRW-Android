@@ -115,8 +115,9 @@ class RestoreRecoveryPhrasePresenter(
             text = sp
             setSelection(selection)
         }
+        val mnemonicSize = formatMnemonic().split(" ").size
 
-        val isComplete = array.isEmpty() && formatMnemonic().split(" ").size == 15
+        val isComplete = array.isEmpty() && (mnemonicSize == 15 || mnemonicSize == 12)
         binding.nextButton.isEnabled = isComplete
     }
 

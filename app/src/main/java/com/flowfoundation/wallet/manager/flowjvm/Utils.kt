@@ -18,9 +18,12 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowAddressListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringMapResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.logd
 import java.util.Locale
 
@@ -52,6 +55,37 @@ internal fun FlowScriptResponse.parseBoolList(): List<Boolean>? {
         return result.value.map { it.value }
     } catch (e: Exception) {
         null
+    }
+}
+
+internal fun FlowScriptResponse.parseStringFloatMap(): Map<String, Float>? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringMapResult::class.java)
+        return result.value?.associate {
+            it.key?.value.toString() to it.value?.value.toSafeFloat()
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+internal fun FlowScriptResponse.parseStringBoolMap(): Map<String, Boolean>? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringBoolResult::class.java)
+        return result.value?.associate {
+            it.key?.value.toString() to (it.value?.value ?: false)
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+internal fun FlowScriptResponse.parseString(): String? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
+        result.value
+    } catch (e: Exception) {
+        return null
     }
 }
 
@@ -97,15 +131,15 @@ fun NftCollection.formatCadence(script: String): String {
     return script.replace("<NFT>", contractName)
         .replace("<NFTAddress>", address)
         .replace("<CollectionStoragePath>", path.storagePath)
-        .replace("<CollectionPublic>", path.publicCollectionName)
+        .replace("<CollectionPublic>", path.publicCollectionName ?: "")
         .replace("<CollectionPublicPath>", path.publicPath)
         .replace("<Token>", contractName)
         .replace("<TokenAddress>", address)
         .replace("<TokenCollectionStoragePath>", path.storagePath)
-        .replace("<TokenCollectionPublic>", path.publicCollectionName)
+        .replace("<TokenCollectionPublic>", path.publicCollectionName ?: "")
         .replace("<TokenCollectionPublicPath>", path.publicPath)
-        .replace("<CollectionPublicType>", path.publicType)
-        .replace("<CollectionPrivateType>", path.privateType)
+        .replace("<CollectionPublicType>", path.publicType ?: "")
+        .replace("<CollectionPrivateType>", path.privateType ?: "")
 }
 
 class CadenceArgumentsBuilder {
@@ -142,7 +176,7 @@ fun FlowAddress.lastBlockAccountKeyId(): Int {
 
 @WorkerThread
 fun FlowAddress.currentKeyId(publicKey: String): Int {
-    return lastBlockAccount()?.keys?.first { publicKey == it.publicKey.base16Value }?.id ?: 0
+    return lastBlockAccount()?.keys?.firstOrNull { publicKey == it.publicKey.base16Value }?.id ?: 0
 }
 
 fun Field<*>.valueString(): String = if (value is String) value as String else Flow.OBJECT_MAPPER.writeValueAsString(value)

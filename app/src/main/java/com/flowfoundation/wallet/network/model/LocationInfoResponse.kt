@@ -73,90 +73,60 @@ data class UpdateDeviceParams(
 
 data class LocationInfo(
     @SerializedName("as")
-    val asValue: String,
+    val asValue: String?,
 
     @SerializedName("city")
-    val city: String,
+    val city: String?,
 
     @SerializedName("country")
-    val country: String,
+    val country: String?,
 
     @SerializedName("countryCode")
-    val countryCode: String,
+    val countryCode: String?,
 
     @SerializedName("isp")
-    val isp: String,
+    val isp: String?,
 
     @SerializedName("lat")
-    val lat: Double,
+    val lat: Double?,
 
     @SerializedName("lon")
-    val lon: Double,
+    val lon: Double?,
 
     @SerializedName("org")
-    val org: String,
+    val org: String?,
 
     @SerializedName("query")
-    val query: String,
+    val query: String?,
 
     @SerializedName("region")
-    val region: String,
+    val region: String?,
 
     @SerializedName("regionName")
-    val regionName: String,
+    val regionName: String?,
 
     @SerializedName("status")
-    val status: String,
+    val status: String?,
 
     @SerializedName("timezone")
-    val timezone: String,
+    val timezone: String?,
 
     @SerializedName("zip")
-    val zip: String
+    val zip: String?
 )
 
 data class DeviceInfoRequest(
-    @SerializedName("city")
-    val city: String,
-
-    @SerializedName("country")
-    val country: String,
-
-    @SerializedName("countryCode")
-    val countryCode: String,
-
     @SerializedName("device_id")
     val device_id: String,
 
-    @SerializedName("ip")
-    val ip: String,
-
-    @SerializedName("isp")
-    val isp: String,
-
-    @SerializedName("lat")
-    val lat: Double,
-
-    @SerializedName("lon")
-    val lon: Double,
-
     @SerializedName("name")
     val name: String,
-
-    @SerializedName("org")
-    val org: String,
-
-    @SerializedName("regionName")
-    val regionName: String,
 
     @SerializedName("type")
     val type: String,
 
     @SerializedName("user_agent")
     val user_agent: String,
-
-    @SerializedName("zip")
-    val zip: String
 )
 
 data class BackupInfoRequest(

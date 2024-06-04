@@ -13,10 +13,14 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.widgets.DialogType
+import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 
 class AccountNotFoundDialog(
     private val context: Context,
@@ -58,7 +62,11 @@ private class AccountNotFoundDialogView(
             onCancel()
             (context as? Activity)?.finish()
             Wallet.store().updateMnemonic(mnemonic).store()
-            WalletCreateActivity.launch(context)
+            if (isPreviewnet()) {
+                SwitchNetworkDialog(context, DialogType.CREATE).show()
+            } else {
+                WalletCreateActivity.launch(context)
+            }
         }
         cancelButton.setOnClickListener { onCancel() }
     }

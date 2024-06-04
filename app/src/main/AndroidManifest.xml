@@ -19,10 +19,10 @@
     <!-- Sceneform requires OpenGLES 3.0 or later. -->
     <uses-feature
         android:glEsVersion="0x00030000"
-        android:required="true"/>
+        android:required="false"/>
     <uses-feature
         android:name="android.hardware.camera.ar"
-        android:required="true"/>
+        android:required="false"/>
 
     <application
         android:name=".FlowWalletApplication"
@@ -218,6 +218,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme"/>
 
+        <activity
+            android:name=".page.evm.EnableEVMActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"/>
+
         <activity android:name=".page.demo.DemoActivity"/>
 
         <activity
@@ -236,6 +241,10 @@
 
         <activity
             android:name=".page.profile.subpage.wallet.WalletSettingActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.profile.subpage.wallet.WalletListActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -305,6 +314,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
 
+                <data android:scheme="fw"/>
                 <data android:scheme="frw"/>
                 <data android:scheme="lilico"/>
             </intent-filter>
@@ -389,7 +399,7 @@
 
         <meta-data
             android:name="com.google.ar.core"
-            android:value="required"/>
+            android:value="optional"/>
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key" />

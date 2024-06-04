@@ -1,17 +1,20 @@
 package com.flowfoundation.wallet.page.wallet.sync
 
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySyncWalletBinding
 import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.toast
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -20,6 +23,13 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 class WalletSyncActivity : BaseActivity() {
     private lateinit var binding: ActivitySyncWalletBinding
     private val viewModel by lazy { ViewModelProvider(this)[WalletSyncViewModel::class.java] }
+
+    private val syncReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val isSyncing = intent?.getBooleanExtra("extra_syncing", false) ?: return
+            binding.tvSyncing.setVisible(isSyncing)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +54,14 @@ class WalletSyncActivity : BaseActivity() {
             generateQRCode()
         }
         setupToolbar()
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            syncReceiver, IntentFilter(ACTION_SYNCING)
+        )
+    }
+
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(syncReceiver)
+        super.onDestroy()
     }
 
     private fun generateQRCode() {
@@ -68,6 +86,8 @@ class WalletSyncActivity : BaseActivity() {
     }
 
     companion object {
+        const val EXTRA_SYNCING = "extra_syncing"
+        const val ACTION_SYNCING = "action_start_syncing"
         fun launch(context: Context) {
             context.startActivity(Intent(context, WalletSyncActivity::class.java))
         }

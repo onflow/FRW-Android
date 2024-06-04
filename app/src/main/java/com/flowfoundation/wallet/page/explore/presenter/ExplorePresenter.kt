@@ -8,6 +8,7 @@ import androidx.transition.Visibility
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentExploreBinding
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.explore.ExploreFragment
 import com.flowfoundation.wallet.page.explore.adapter.ExploreBookmarkAdapter
@@ -27,11 +28,13 @@ import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.location
 import com.flowfoundation.wallet.utils.extensions.scrollToPositionForce
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isMeowDomainClaimed
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import kotlinx.coroutines.delay
 
 class ExplorePresenter(
@@ -98,6 +101,11 @@ class ExplorePresenter(
     }
 
     override fun bind(model: ExploreModel) {
+        if (model.isModelEmpty()) {
+            binding.llEmpty.visible()
+            return
+        }
+        binding.llEmpty.gone()
         model.recentList?.let {
             recentAdapter.setNewDiffData(it)
             binding.recentWrapper.setVisible(it.isNotEmpty())
@@ -111,7 +119,7 @@ class ExplorePresenter(
 
         model.dAppList?.let {
             dappAdapter.setNewDiffData(it)
-            binding.dappWrapper.setVisible(it.isNotEmpty())
+            binding.dappWrapper.setVisible(it.isNotEmpty() && AppConfig.showDappList())
         }
 
         model.dAppTagList?.let {

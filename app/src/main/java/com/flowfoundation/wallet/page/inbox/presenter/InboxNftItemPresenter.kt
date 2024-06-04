@@ -27,7 +27,7 @@ class InboxNftItemPresenter(
             titleView.text = collection.name
             tokenIdView.text = "ID: ${model.tokenId}"
             claimButton.setOnClickListener { viewModel.claimNft(model) }
-            Glide.with(nftCollectionCoverView).load(collection.logo).into(nftCollectionCoverView)
+            Glide.with(nftCollectionCoverView).load(collection.logo()).into(nftCollectionCoverView)
             collectionWrapper.setOnClickListener { openBrowser(findActivity(view)!!, collection.officialWebsite) }
         }
     }

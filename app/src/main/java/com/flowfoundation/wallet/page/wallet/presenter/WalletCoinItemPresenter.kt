@@ -28,7 +28,7 @@ class WalletCoinItemPresenter(
     @SuppressLint("SetTextI18n")
     override fun bind(model: WalletCoinItemModel) {
         with(binding) {
-            Glide.with(coinIcon).load(model.coin.icon).into(coinIcon)
+            Glide.with(coinIcon).load(model.coin.icon()).into(coinIcon)
             coinName.text = model.coin.name
             if (model.isHideBalance) {
                 coinBalance.text = "**** ${model.coin.symbol.uppercase()}"
@@ -60,7 +60,7 @@ class WalletCoinItemPresenter(
     }
 
     private fun bindAccessible(coin: FlowCoin) {
-        val accessible = ChildAccountCollectionManager.isTokenAccessible(coin.contractName, coin.address())
+        val accessible = ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)
         if (accessible.not()) {
             setStakingVisible(false)
         }

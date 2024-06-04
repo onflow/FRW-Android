@@ -3,8 +3,6 @@ package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -19,6 +17,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -36,6 +35,7 @@ import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreGoogleDr
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOption
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOptionModel
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
@@ -183,7 +183,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val cryptoProvider = KeyStoreCryptoProvider(KeyManager.getCurrentPrefix())
                 val service = retrofit().create(ApiService::class.java)
                 val providers = mnemonicList.map {
-                    BackupCryptoProvider(HDWallet(it, ""))
+                    val words = it.split(" ")
+                    if (words.size == 15) {
+                        BackupCryptoProvider(HDWallet(it, ""))
+                    } else {
+                        HDWalletCryptoProvider(HDWallet(it, ""))
+                    }
                 }
                 val resp = service.signAccount(
                     AccountSignRequest(
@@ -193,7 +198,10 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             AccountKeySignature(
                                 publicKey = it.getPublicKey(),
                                 signMessage = jwt,
-                                signature = it.getUserSignature(jwt)
+                                signature = it.getUserSignature(jwt),
+                                weight = it.getKeyWeight(),
+                                hashAlgo = it.getHashAlgorithm().index,
+                                signAlgo = it.getSignatureAlgorithm().index
                             )
                         }.toList()
                     )
@@ -223,6 +231,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false)
+                    return@getFirebaseUid
                 }
                 runBlocking {
                     val catching = runCatching {
@@ -274,18 +283,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
-    private suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
-        val uid = Firebase.auth.currentUser?.uid
-        if (!uid.isNullOrBlank()) {
-            callback.invoke(uid)
-            return
-        }
-
-        getFirebaseJwt(true)
-
-        callback.invoke(Firebase.auth.currentUser?.uid)
-    }
-
     fun addWalletInfo(userName: String, address: String) {
         restoreUserName = userName
         restoreAddress = address
@@ -294,7 +291,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private suspend fun String.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val providers = mnemonicList.map {
-            BackupCryptoProvider(HDWallet(it, ""))
+            val words = it.split(" ")
+            if (words.size == 15) {
+                BackupCryptoProvider(HDWallet(it, ""))
+            } else {
+                HDWalletCryptoProvider(HDWallet(it, ""))
+            }
         }
         return try {
             sendTransactionWithMultiSignature(providers = providers, builder = {

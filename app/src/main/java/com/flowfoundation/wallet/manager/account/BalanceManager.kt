@@ -5,7 +5,14 @@ import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.flowscan.contractId
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -29,7 +36,71 @@ object BalanceManager {
     }
 
     fun refresh() {
-        FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address()) }.forEach { fetch(it) }
+        if (WalletManager.isEVMAccountSelected()) {
+            FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW)?.let {
+                fetch(it)
+            }
+            getEVMTokenBalance()
+        } else {
+            fetchTokenBalance()
+        }
+    }
+
+    private fun fetchTokenBalance() {
+        val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+        val balanceMap = cadenceQueryTokenListBalance() ?: return
+        coinList.forEach { coin ->
+            balanceList.firstOrNull { it.symbol == coin.symbol }?.let { dispatchListeners(coin, it.balance) }
+
+            val balance = balanceMap[coin.contractId()] ?: 0f
+
+            val existBalance = balanceList.firstOrNull { coin.symbol == it.symbol }
+            val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
+            if (isDiff) {
+                dispatchListeners(coin, balance)
+                balanceList.removeAll { it.symbol == coin.symbol }
+                balanceList.add(Balance(coin.symbol, balance))
+                ioScope { cache.cache(BalanceCache(balanceList.toList())) }
+            }
+        }
+    }
+
+    private fun getEVMTokenBalance() {
+        ioScope {
+            val address = EVMWalletManager.getEVMAddress() ?: return@ioScope
+            val apiService = retrofitApi().create(ApiService::class.java)
+            val balanceResponse = apiService.getEVMTokenBalance(address)
+            balanceResponse.data?.forEach { tokenBalance ->
+                balanceList.firstOrNull { tokenBalance.symbol == it.symbol }?.let {
+                    FlowCoinListManager.getCoin(it.symbol)?.let { coin ->
+                        dispatchListeners(coin, it.balance)
+                    }
+                }
+                if (tokenBalance.balance.isBlank()) {
+                    return@forEach
+                }
+                val amountValue = tokenBalance.balance.toBigDecimal()
+                val value = amountValue.movePointLeft(tokenBalance.decimal).toFloat()
+                val existBalance = balanceList.firstOrNull { listItem -> tokenBalance.symbol == listItem.symbol }
+                val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != value
+                if (isDiff) {
+                    FlowCoinListManager.getCoin(tokenBalance.symbol)?.let { coin ->
+                        dispatchListeners(coin, value)
+                        balanceList.removeAll { listItem -> listItem.symbol == coin.symbol }
+                        balanceList.add(Balance(coin.symbol, value))
+                        ioScope { cache.cache(BalanceCache(balanceList.toList())) }
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun getEVMBalanceByCoin(symbol: String): Float {
+        val address = EVMWalletManager.getEVMAddress() ?: return 0f
+        val apiService = retrofitApi().create(ApiService::class.java)
+        val balanceResponse = apiService.getEVMTokenBalance(address)
+        val evmBalance = balanceResponse.data?.firstOrNull { it.symbol.lowercase() == symbol.lowercase() } ?: return 0f
+        return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal).toFloat()
     }
 
     fun getBalanceByCoin(coin: FlowCoin) {
@@ -63,7 +134,15 @@ object BalanceManager {
         ioScope {
             balanceList.firstOrNull { it.symbol == coin.symbol }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = cadenceQueryTokenBalance(coin)
+            val balance = if (WalletManager.isEVMAccountSelected()) {
+                if (coin.isFlowCoin()) {
+                    cadenceQueryCOATokenBalance()
+                } else {
+                    getEVMBalanceByCoin(coin.symbol)
+                }
+            } else {
+                cadenceQueryTokenBalance(coin)
+            }
             if (balance != null) {
                 val existBalance = balanceList.firstOrNull { coin.symbol == it.symbol }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance

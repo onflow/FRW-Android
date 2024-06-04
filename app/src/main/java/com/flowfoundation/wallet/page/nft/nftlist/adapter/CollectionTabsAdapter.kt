@@ -61,7 +61,7 @@ private class TabsViewHolder(
         val config = model.collection
         with(binding) {
             if (this@TabsViewHolder.model != model) {
-                Glide.with(coverView).load(config.logo).transform(CenterCrop(), RoundedCorners(corners)).into(coverView)
+                Glide.with(coverView).load(config.logo()).transform(CenterCrop(), RoundedCorners(corners)).into(coverView)
                 nameView.text = config.name
                 countView.text = view.context.getString(R.string.collectibles_count, model.count)
             }

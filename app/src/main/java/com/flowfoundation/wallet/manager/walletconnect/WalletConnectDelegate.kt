@@ -59,6 +59,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         verifyContext: Sign.Model.VerifyContext
     ) {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
+        logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
         val activity = BaseActivity.getCurrentActivity() ?: return
         uiScope {
             with(sessionProposal) {

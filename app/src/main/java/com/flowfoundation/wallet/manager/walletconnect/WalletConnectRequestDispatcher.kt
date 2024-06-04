@@ -1,10 +1,14 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
+import com.flowfoundation.wallet.manager.evm.signEthereumMessage
+import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
@@ -31,6 +35,9 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
+import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
+import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.authz.FclAuthzDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
@@ -69,6 +76,62 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.SIGN_PROPOSER.value -> respondSignProposer()
         WalletConnectMethod.ACCOUNT_INFO.value -> respondAccountInfo()
         WalletConnectMethod.ADD_DEVICE_KEY.value -> respondAddDeviceKey()
+        WalletConnectMethod.EVM_SIGN_MESSAGE.value -> evmSignMessage()
+        WalletConnectMethod.EVM_SEND_TRANSACTION.value -> evmSendTransaction()
+    }
+}
+
+private suspend fun WCRequest.evmSendTransaction() {
+    val activity = topActivity() ?: return
+    val json = gson().fromJson<List<EvmTransaction>>(params, object : TypeToken<List<EvmTransaction>>() {}.type)
+    val transaction = json.firstOrNull() ?: return
+    uiScope {
+        val model = EVMDialogModel(
+            title = metaData?.name,
+            logo = metaData?.icons?.firstOrNull(),
+            url = metaData?.url,
+            cadence = CADENCE_CALL_EVM_CONTRACT,
+        )
+        EVMSendTransactionDialog.show(
+            activity.supportFragmentManager,
+            model
+        )
+        EVMSendTransactionDialog.observe { isApprove ->
+            if (isApprove) {
+                sendEthereumTransaction(transaction) { txHash ->
+                    if (txHash.isEmpty()) {
+                        reject()
+                    } else {
+                        approve(txHash)
+                    }
+                }
+            } else reject()
+            redirectToSourceApp()
+        }
+    }
+}
+
+private suspend fun WCRequest.evmSignMessage() {
+    val activity = topActivity() ?: return
+    val json = gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
+    val hexMessage = json.firstOrNull() ?: return
+    val message = String(hexMessage.hexToBytes(), Charsets.UTF_8)
+    uiScope {
+        val model = FclDialogModel(
+            title = metaData?.name,
+            logo = metaData?.icons?.firstOrNull(),
+            url = metaData?.url,
+            signMessage = hexMessage,
+        )
+        FclSignMessageDialog.show(
+            activity.supportFragmentManager,
+            model
+        )
+        FclSignMessageDialog.observe { isApprove ->
+            if (isApprove) approve(signEthereumMessage(message)) else reject()
+            FclAuthzDialog.dismiss()
+            redirectToSourceApp()
+        }
     }
 }
 

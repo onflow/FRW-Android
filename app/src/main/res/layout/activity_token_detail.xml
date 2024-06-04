@@ -33,8 +33,8 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="10dp"
                 android:visibility="gone"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/icon_view">
+                app:layout_constraintBottom_toTopOf="@id/icon_view"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
                     android:layout_width="16dp"
@@ -63,39 +63,84 @@
                 android:background="@drawable/bg_round_16dp"
                 android:backgroundTint="@color/deep_bg"
                 app:layout_constraintBottom_toBottomOf="@id/button_wrapper"
-                app:layout_constraintTop_toTopOf="@id/icon_view"/>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
+                app:layout_constraintTop_toTopOf="@id/icon_view"
+                app:layout_constraintVertical_bias="0.0"
+                tools:layout_editor_absoluteX="0dp"/>
+            <FrameLayout
                 android:id="@+id/name_wrapper"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/bg_token_detail_coin_gradient"
-                android:gravity="center_vertical|end"
                 android:orientation="horizontal"
-                android:paddingStart="86dp"
+                android:layout_marginEnd="20dp"
+                app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@id/icon_view"
-                tools:ignore="RtlSymmetry">
+                app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token">
 
-                <TextView
-                    android:id="@+id/name_view"
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/montsettat"
-                    android:textColor="@color/neutrals1"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:text="Flow"/>
+                    android:minHeight="32dp"
+                    android:background="@drawable/bg_token_detail_coin_gradient"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/icon_view"
+                    tools:ignore="RtlSymmetry">
 
-                <androidx.constraintlayout.utils.widget.ImageFilterView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:layout_marginStart="6dp"
-                    android:layout_marginEnd="10dp"
-                    android:src="@drawable/ic_circle_arrow_right"/>
+                    <TextView
+                        android:id="@+id/name_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montsettat"
+                        android:layout_marginStart="80dp"
+                        android:textColor="@color/neutrals1"
+                        android:lineSpacingMultiplier="1.1"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="Flow"/>
+
+                    <androidx.constraintlayout.utils.widget.ImageFilterView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/ic_circle_arrow_right"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </FrameLayout>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_evm_move_token"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="9dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/bg_round_8dp"
+                android:backgroundTint="@color/colorSecondary_16"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginEnd="16dp"
+                android:visibility="visible"
+                app:layout_constraintTop_toTopOf="@id/name_wrapper"
+                app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:fontFamily="@font/inter"
+                    android:text="@string/move"
+                    android:textColor="@color/accent_green"
+                    android:textSize="14sp"/>
+
+                <ImageView
+                    android:layout_width="11dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_evm_move_token"/>
             </androidx.appcompat.widget.LinearLayoutCompat>
-
 
             <androidx.constraintlayout.utils.widget.ImageFilterView
                 android:id="@+id/icon_view"
@@ -107,6 +152,7 @@
                 android:outlineAmbientShadowColor="@color/border_2"
                 android:outlineSpotShadowColor="@color/border_2"
                 android:scaleType="centerCrop"
+                app:round="64dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/inaccessible_tip"
                 tools:src="@drawable/ic_coin_flow"/>
@@ -155,34 +201,90 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="18dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="22dp"
+                android:paddingBottom="18dp"
                 android:orientation="horizontal"
-                android:paddingBottom="8dp"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/balance_price_view">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/send_button"
+                <FrameLayout
+                    android:id="@+id/btn_send"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
-                    android:backgroundTint="@color/colorSecondary"
-                    android:fontFamily="@font/inter_semi_bold"
-                    android:text="@string/send"
-                    android:textColor="@color/white"
-                    app:cornerRadius="12dp"/>
+                    android:background="@drawable/bg_round_left_24dp"
+                    android:backgroundTint="@color/accent_green_8">
+                    
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginStart="2dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_token_action_send"
+                        app:tint="@color/accent_green"/>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/receive_button"
+                </FrameLayout>
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="40dp"/>
+
+                <FrameLayout
+                    android:id="@+id/btn_swap"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="13dp"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
-                    android:backgroundTint="@color/colorSecondary"
-                    android:fontFamily="@font/inter_semi_bold"
-                    android:text="@string/receive"
-                    android:textColor="@color/white"
-                    app:cornerRadius="12dp"/>
+                    android:background="@color/accent_green_8">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_token_action_swap"
+                        app:tint="@color/accent_green"/>
+
+                </FrameLayout>
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="40dp"/>
+
+                <FrameLayout
+                    android:id="@+id/btn_receive"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@color/accent_green_8">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_token_action_receive"
+                        app:tint="@color/accent_green"/>
+
+                </FrameLayout>
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="40dp"/>
+
+                <FrameLayout
+                    android:id="@+id/btn_trade"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_round_right_24dp"
+                    android:backgroundTint="@color/accent_green_8">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="2dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_token_action_trade"
+                        app:tint="@color/accent_green"/>
+
+                </FrameLayout>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 

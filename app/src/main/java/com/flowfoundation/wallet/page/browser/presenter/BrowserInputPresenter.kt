@@ -14,6 +14,7 @@ import androidx.transition.TransitionManager
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutBrowserBinding
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.page.browser.BrowserViewModel
 import com.flowfoundation.wallet.page.browser.adapter.BrowserRecommendWordsAdapter
 import com.flowfoundation.wallet.page.browser.browserViewModel
@@ -50,7 +51,11 @@ class BrowserInputPresenter(
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     val keyword = text.toString()
-                    viewModel.updateUrl(keyword.toSearchUrl())
+                    if (AppConfig.useInAppBrowser().not()) {
+                        keyword.toSearchUrl().openInSystemBrowser(context, true)
+                    } else {
+                        viewModel.updateUrl(keyword.toSearchUrl())
+                    }
                     clearPage()
                 }
                 return@setOnEditorActionListener false

@@ -29,13 +29,13 @@ fun ActivitySwapBinding.bindInputListener() {
 }
 
 fun ActivitySwapBinding.updateFromCoin(coin: FlowCoin) {
-    Glide.with(fromCoinIcon).load(coin.icon).into(fromCoinIcon)
+    Glide.with(fromCoinIcon).load(coin.icon()).into(fromCoinIcon)
     fromCoinName.text = coin.symbol.uppercase()
     legalCheck()
 }
 
 fun ActivitySwapBinding.updateToCoin(coin: FlowCoin) {
-    Glide.with(toCoinIcon).load(coin.icon).into(toCoinIcon)
+    Glide.with(toCoinIcon).load(coin.icon()).into(toCoinIcon)
     toCoinName.text = coin.symbol.uppercase()
     toButton.strokeWidth = 0
     legalCheck()

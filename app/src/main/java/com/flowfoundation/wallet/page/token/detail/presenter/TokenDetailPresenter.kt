@@ -4,28 +4,38 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.isLilico
 import com.flowfoundation.wallet.manager.staking.stakingCount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
+import com.flowfoundation.wallet.page.swap.SwapActivity
 import com.flowfoundation.wallet.page.token.detail.TokenDetailViewModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
+import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
+import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -49,12 +59,43 @@ class TokenDetailPresenter(
             root.addNavigationBarBottomPadding()
             nameView.text = coin.name
             coinTypeView.text = coin.symbol.uppercase()
-            Glide.with(iconView).load(coin.icon).into(iconView)
-            nameWrapper.setOnClickListener { openBrowser(activity, coin.website) }
+            Glide.with(iconView).load(coin.icon()).into(iconView)
+            nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             getMoreWrapper.setOnClickListener { }
-            sendButton.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
-            receiveButton.setOnClickListener { ReceiveActivity.launch(activity) }
-            sendButton.isEnabled = !WalletManager.isChildAccountSelected()
+            btnSend.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
+            btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
+            btnSwap.setOnClickListener {
+                if (WalletManager.isChildAccountSelected()) {
+                    return@setOnClickListener
+                }
+                if (AppConfig.isInAppSwap()) {
+                    SwapActivity.launch(activity, coin.symbol)
+                } else {
+                    openBrowser(
+                        activity, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                            ".increment.fi/swap")
+                }
+            }
+            btnTrade.setOnClickListener {
+                if (WalletManager.isChildAccountSelected()) {
+                    return@setOnClickListener
+                }
+                SwapDialog.show(activity.supportFragmentManager)
+            }
+            btnSend.isEnabled = !WalletManager.isChildAccountSelected()
+            val moveVisible = if (coin.isFlowCoin()) {
+                true
+            } else if (coin.evmAddress.isNullOrBlank().not()) {
+                true
+            } else coin.flowIdentifier.isNullOrBlank().not()
+            llEvmMoveToken.setVisible(isPreviewnet() && moveVisible)
+            llEvmMoveToken.setOnClickListener {
+                if (EVMWalletManager.haveEVMAddress()) {
+                    MoveTokenDialog.show(activity, coin.symbol)
+                } else {
+                    EnableEVMActivity.launch(activity)
+                }
+            }
         }
 
         if (!coin.isFlowCoin() && coin.symbol != FlowCoin.SYMBOL_FUSD) {
@@ -62,13 +103,13 @@ class TokenDetailPresenter(
             binding.chartWrapper.root.setVisible(false)
         }
 
-        if (!StakingManager.isStaked() && coin.isFlowCoin() && !isTestnet()) {
+        if (!StakingManager.isStaked() && coin.isFlowCoin() && isMainnet()) {
             binding.stakingBanner.root.setVisible(true)
             binding.getMoreWrapper.setVisible(false)
             binding.stakingBanner.root.setOnClickListener { openStakingPage(activity) }
         }
 
-        if (StakingManager.isStaked() && coin.isFlowCoin() && !isTestnet()) {
+        if (StakingManager.isStaked() && coin.isFlowCoin() && isMainnet()) {
             binding.getMoreWrapper.setVisible(false)
             setupStakingRewards()
         }
@@ -77,7 +118,7 @@ class TokenDetailPresenter(
             binding.getMoreWrapper.setOnClickListener {
                 openBrowser(
                     activity,
-                    if (isTestnet()) "https://testnet-faucet.onflow.org/fund-account" else "https://sandboxnet-faucet.flow.com/"
+                    if (isTestnet()) "https://testnet-faucet.onflow.org/fund-account" else "https://previewnet-faucet.onflow.org/fund-account"
                 )
             }
         }
@@ -85,7 +126,7 @@ class TokenDetailPresenter(
     }
 
     private fun bindAccessible(coin: FlowCoin) {
-        if (ChildAccountCollectionManager.isTokenAccessible(coin.contractName, coin.address())) {
+        if (ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)) {
             binding.inaccessibleTip.gone()
             return
         }

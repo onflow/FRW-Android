@@ -55,7 +55,7 @@ private val KEY_IS_PROFILE_SWITCH_TIPS_SHOWN = booleanPreferencesKey("KEY_IS_PRO
 
 private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
 
-private val KEY_SANDBOX_ENABLED = booleanPreferencesKey("KEY_SANDBOX_ENABLED")
+private val KEY_PREVIEWNET_ENABLED = booleanPreferencesKey("KEY_PREVIEWNET_ENABLED")
 
 private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
 private const val KEY_IS_NOTIFICATION_PERMISSION_CHECKED = "KEY_IS_NOTIFICATION_PERMISSION_CHECKED"
@@ -221,14 +221,6 @@ suspend fun updateCurrencyFlag(flag: String, callback: (() -> Unit)? = null) {
         it[KEY_CURRENCY_FLAG] = flag
         callback?.invoke()
     }
-}
-
-suspend fun isSandboxEnabled(): Boolean {
-    return dataStore.data.map { it[KEY_SANDBOX_ENABLED] ?: false }.first()
-}
-
-suspend fun setSandboxEnabled() {
-    dataStore.edit { it[KEY_SANDBOX_ENABLED] = true }
 }
 
 suspend fun isRootDetectedDialogShown(): Boolean {

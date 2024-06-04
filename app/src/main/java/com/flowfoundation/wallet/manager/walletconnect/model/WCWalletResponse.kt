@@ -67,37 +67,37 @@ data class WCAccountKey(
 
 data class WCDeviceInfo(
     @SerializedName("city")
-    val city: String,
+    val city: String?,
 
     @SerializedName("country")
-    val country: String,
+    val country: String?,
 
     @SerializedName("countryCode")
-    val countryCode: String,
+    val countryCode: String?,
 
     @SerializedName("deviceId")
     val device_id: String,
 
     @SerializedName("ip")
-    val ip: String,
+    val ip: String?,
 
     @SerializedName("isp")
-    val isp: String,
+    val isp: String?,
 
     @SerializedName("lat")
-    val lat: Double,
+    val lat: Double?,
 
     @SerializedName("lon")
-    val lon: Double,
+    val lon: Double?,
 
     @SerializedName("name")
     val name: String,
 
     @SerializedName("org")
-    val org: String,
+    val org: String?,
 
     @SerializedName("regionName")
-    val regionName: String,
+    val regionName: String?,
 
     @SerializedName("type")
     val type: String,
@@ -106,10 +106,10 @@ data class WCDeviceInfo(
     val user_agent: String,
 
     @SerializedName("zip")
-    val zip: String
+    val zip: String?
 ) {
     fun getApiDeviceInfo(): DeviceInfoRequest {
-        return DeviceInfoRequest(city, country, countryCode, device_id, ip, isp, lat, lon, name, org, regionName, type, user_agent, zip)
+        return DeviceInfoRequest(device_id, name, type, user_agent)
     }
 }
 
@@ -142,62 +142,5 @@ private fun walletInfo(
             "userName": "$userName",
             "walletAddress": "$walletAddress"
         }
-    """.trimIndent()
-}
-
-fun walletConnectDeviceKeyRequest(
-    accountInfoJson: String
-): String {
-    return """
-        {
-            "method": "${WalletConnectMethod.ADD_DEVICE_KEY.value}",
-            "status": "200",
-            "message": "success",
-            "data": "$accountInfoJson"
-        }
-    """.trimIndent()
-}
-
-private fun accountInfo(
-    accountKey: AccountKey,
-    deviceInfo: DeviceInfoRequest?
-): String {
-    return """
-        {
-            "account_key": {
-                "hash_algo": ${accountKey.hashAlgo},
-                "sign_algo": ${accountKey.signAlgo},
-                "weight": ${accountKey.weight},
-                "public_key": "${accountKey.publicKey}"
-            },
-            "device_info": ${if (deviceInfo == null) null else deviceInfo(deviceInfo)}
-        }
-    """.trimIndent()
-}
-
-private fun deviceInfo(deviceInfo: DeviceInfoRequest): String {
-    return """
-        {
-            "city": "${deviceInfo.city}",
-            "country": "${deviceInfo.country}",
-            "countryCode": "${deviceInfo.countryCode}",
-            "device_id": "${deviceInfo.device_id}",
-            "ip": "${deviceInfo.ip}",
-            "isp": "${deviceInfo.isp}",
-            "lat": ${deviceInfo.lat},
-            "lon": ${deviceInfo.lon},
-            "name": "${deviceInfo.name}",
-            "org": "${deviceInfo.org}",
-            "regionName": "${deviceInfo.regionName}",
-            "type": "${deviceInfo.type}",
-            "user_agent": "${deviceInfo.user_agent}",
-            "zip": "${deviceInfo.zip}"
-        }
-    """.trimIndent()
-}
-
-private fun accountKey(accountKey: AccountKey): String {
-    return """
-        
     """.trimIndent()
 }

@@ -91,7 +91,9 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        INSTANCE = null
+        if (INSTANCE == this) {
+            INSTANCE = null
+        }
         WindowFrame.release()
         super.onDestroy()
     }

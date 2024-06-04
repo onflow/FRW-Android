@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.databinding.FragmentWalletUnregisteredBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.page.wallet.adapter.WalletAccountAdapter
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
@@ -16,6 +17,8 @@ import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.widgets.DialogType
+import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 
 class WalletUnregisteredFragment : Fragment() {
 
@@ -50,7 +53,13 @@ class WalletUnregisteredFragment : Fragment() {
                     height = 130.dp2px().toInt()
                 }
             }
-            createButton.setOnClickListener { WalletCreateActivity.launch(requireContext()) }
+            createButton.setOnClickListener {
+                if (isPreviewnet()) {
+                    SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
+                } else {
+                    WalletCreateActivity.launch(requireContext())
+                }
+            }
             importButton.setOnClickListener { WalletRestoreActivity.launch(requireContext()) }
         }
     }

@@ -12,7 +12,9 @@ import com.bumptech.glide.load.model.LazyHeaders
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.database.AppDataBase
 import com.flowfoundation.wallet.database.WebviewRecord
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.page.browser.tools.browserTabLast
 import com.flowfoundation.wallet.page.browser.tools.expandWebView
 import com.flowfoundation.wallet.page.browser.tools.shrinkWebView
@@ -20,6 +22,7 @@ import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.CACHE_PATH
 import com.flowfoundation.wallet.utils.extensions.isVisible
+import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlEncode
 import com.flowfoundation.wallet.utils.ioScope
@@ -37,6 +40,10 @@ fun openBrowser(
     url: String? = null,
     searchBoxPosition: Point? = null,
 ) {
+    if (AppConfig.useInAppBrowser().not() && searchBoxPosition == null) {
+        url?.openInSystemBrowser(activity, true)
+        return
+    }
     openBrowser(activity, url, BrowserParams(searchBoxPosition))
 }
 
@@ -174,7 +181,8 @@ fun String.toFavIcon(size: Int = 256): String {
 }
 
 fun openInFlowScan(activity: Activity, transactionId: String) {
-    openBrowser(activity, "https://${if (isTestnet()) "testnet." else ""}flowdiver.io/tx/$transactionId")
+    openBrowser(activity, "https://${if (isTestnet()) "testnet." else if (isPreviewnet()) 
+        "previewnet." else ""}flowdiver" + ".io/tx/$transactionId")
 }
 
 class BrowserParams(

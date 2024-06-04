@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:icon="@drawable/ic_settings_switch_account"
-        app:title="@string/switch_account"/>
+        app:title="@string/switch_profile"/>
 
 
 </com.google.android.material.card.MaterialCardView>

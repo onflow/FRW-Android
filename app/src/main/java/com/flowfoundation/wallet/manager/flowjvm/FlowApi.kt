@@ -1,19 +1,18 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.FlowAccessApi
 import com.nftco.flow.sdk.FlowChainId
 import com.nftco.flow.sdk.impl.FlowAccessApiImpl
-import com.flowfoundation.wallet.manager.app.isSandboxNet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.logd
 
 internal object FlowApi {
     private const val HOST_MAINNET = "access.mainnet.nodes.onflow.org"
     private const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
-    private const val HOST_CANARYNET = "access.canary.nodes.onflow.org"
-    private const val HOST_SANDBOXNET = "access.sandboxnet.nodes.onflow.org"
+    private const val HOST_PREVIEWNET = "access.previewnet.nodes.onflow.org"
 
     private var api: FlowAccessApi? = null
 
@@ -37,22 +36,26 @@ internal object FlowApi {
     }
 
     fun get(): FlowAccessApi {
-        val chainId = if (isTestnet()) FlowChainId.TESTNET else FlowChainId.MAINNET
+        val chainId = chainId()
         if (Flow.DEFAULT_CHAIN_ID != chainId) {
             refreshConfig()
         }
-        return api ?: Flow.newAccessApi(if (isTestnet()) HOST_TESTNET else HOST_MAINNET, 9000)
+        return api ?: Flow.newAccessApi(host(), 9000)
+    }
+
+    fun getPreviewnetAccessApi(): FlowAccessApi {
+        return Flow.newAccessApi(HOST_PREVIEWNET, 9000)
     }
 
     private fun chainId() = when {
         isTestnet() -> FlowChainId.TESTNET
-        isSandboxNet() -> FlowChainId.SANDBOX
+        isPreviewnet() -> FlowChainId.PREVIEWNET
         else -> FlowChainId.MAINNET
     }
 
     private fun host() = when {
         isTestnet() -> HOST_TESTNET
-        isSandboxNet() -> HOST_SANDBOXNET
+        isPreviewnet() -> HOST_PREVIEWNET
         else -> HOST_MAINNET
     }
 }

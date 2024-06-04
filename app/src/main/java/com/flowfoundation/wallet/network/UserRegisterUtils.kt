@@ -1,5 +1,7 @@
 package com.flowfoundation.wallet.network
 
+import android.webkit.WebStorage
+import android.webkit.WebView
 import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -63,6 +65,7 @@ suspend fun registerOutblock(
                             prefix = prefix
                         )
                     )
+                    clearUserCache()
                     continuation.resume(true)
                 } else {
                     resumeAccount()
@@ -185,6 +188,7 @@ private suspend fun resumeAccount() {
 
 suspend fun clearUserCache() {
     clearCacheDir()
+    clearWebViewCache()
     setMeowDomainClaimed(false)
     TokenStateManager.clear()
     WalletManager.clear()
@@ -196,4 +200,8 @@ suspend fun clearUserCache() {
     CryptoProviderManager.clear()
     updateAccountTransferCount(0)
     delay(1000)
+}
+
+fun clearWebViewCache() {
+    WebStorage.getInstance().deleteAllData()
 }

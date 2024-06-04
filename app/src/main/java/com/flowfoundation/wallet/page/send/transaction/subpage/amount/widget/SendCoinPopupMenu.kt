@@ -22,7 +22,7 @@ class SendCoinPopupMenu(
             uiScope {
                 popupMenu(
                     view,
-                    items = coinList.map { PopupListView.ItemData(it.name, iconUrl = it.icon) },
+                    items = coinList.map { PopupListView.ItemData(it.name, iconUrl = it.icon()) },
                     selectListener = { _, text -> onMenuItemClick(text) },
                 ).show()
             }

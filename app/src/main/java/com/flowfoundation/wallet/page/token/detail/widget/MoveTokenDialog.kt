@@ -1,0 +1,246 @@
+package com.flowfoundation.wallet.page.token.detail.widget
+
+import android.annotation.SuppressLint
+import android.content.res.ColorStateList
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.FragmentActivity
+import androidx.transition.Fade
+import androidx.transition.Scene
+import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.databinding.DialogMoveTokenBinding
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.Emoji
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.hideKeyboard
+import com.flowfoundation.wallet.utils.extensions.isVisible
+import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.toSafeFloat
+import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatNum
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.loadAvatar
+import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.uiScope
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+
+
+class MoveTokenDialog : BottomSheetDialogFragment() {
+    private var symbol: String = FlowCoin.SYMBOL_FLOW
+    private lateinit var binding: DialogMoveTokenBinding
+    private var isFundToEVM = true
+    private var fromBalance = 0.001f
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = DialogMoveTokenBinding.inflate(inflater)
+        return binding.rootView
+    }
+
+    private fun getMinBalance(): Float {
+        return if (symbol == FlowCoin.SYMBOL_FLOW) {
+            0.001f
+        } else {
+            0f
+        }
+    }
+
+    private fun checkAmount() {
+        val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeFloat()
+        val isOutOfBalance = amount > (fromBalance - getMinBalance())
+        if (isOutOfBalance && !binding.llErrorLayout.isVisible()) {
+            TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
+        } else if (!isOutOfBalance && binding.llErrorLayout.isVisible()) {
+            TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
+        }
+        binding.llErrorLayout.setVisible(isOutOfBalance)
+        binding.btnMove.isEnabled = verifyAmount() && !isOutOfBalance
+    }
+
+    private fun verifyAmount(): Boolean {
+        val number = binding.etAmount.text.toString().toFloatOrNull()
+        return number != null && number > 0
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        isFundToEVM = WalletManager.isEVMAccountSelected().not()
+        with(binding.etAmount) {
+            doOnTextChanged { _, _, _, _ ->
+                checkAmount()
+            }
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                    hideKeyboard()
+                    if (verifyAmount() && !binding.llErrorLayout.isVisible()) moveToken()
+                }
+                return@setOnEditorActionListener false
+            }
+        }
+
+        with(binding) {
+            ivSwitch.setOnClickListener {
+                isFundToEVM = isFundToEVM.not()
+                initView()
+            }
+            tvMax.setOnClickListener {
+                val amount = (fromBalance - getMinBalance()).formatNum()
+                etAmount.setText(amount)
+                etAmount.setSelection(etAmount.text.length)
+            }
+            btnMove.setOnClickListener {
+                moveToken()
+            }
+            ivClose.setOnClickListener {
+                dismiss()
+            }
+            coinWrapper.setOnClickListener {
+                uiScope {
+                    SelectMoveTokenDialog().show(
+                        selectedCoin = symbol,
+                        disableCoin = null,
+                        childFragmentManager,
+                    )?.let {
+                        symbol = it.symbol.lowercase()
+                        initView()
+                    }
+                }
+            }
+        }
+        symbol = arguments?.getString(EXTRA_SYMBOL)?.lowercase() ?: FlowCoin.SYMBOL_FLOW
+        initView()
+    }
+
+    private fun moveToken() {
+        if (binding.btnMove.isProgressVisible()) {
+            return
+        }
+        binding.btnMove.setProgressVisible(true)
+        ioScope {
+            val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeFloat()
+            if (symbol == FlowCoin.SYMBOL_FLOW) {
+                EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
+                    uiScope {
+                        binding.btnMove.setProgressVisible(false)
+                        if (isSuccess) {
+                            BalanceManager.getBalanceByCoin(FlowCoin.SYMBOL_FLOW)
+                            dismiss()
+                        } else {
+                            toast(R.string.move_flow_to_evm_failed)
+                        }
+                    }
+                }
+            } else {
+                val coin = FlowCoinListManager.getCoin(symbol) ?: return@ioScope
+                EVMWalletManager.moveToken(coin, amount, isFundToEVM) { isSuccess ->
+                    uiScope {
+                        binding.btnMove.setProgressVisible(false)
+                        if (isSuccess) {
+                            if (WalletManager.isEVMAccountSelected()) {
+                                BalanceManager.refresh()
+                            } else {
+                                BalanceManager.getBalanceByCoin(symbol)
+                            }
+                            dismiss()
+                        } else {
+                            toast(R.string.move_flow_to_evm_failed)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun initView() {
+        with(binding) {
+            val walletAddress = WalletManager.wallet()?.walletAddress()
+            val evmAddress = EVMWalletManager.getEVMAddress()
+            val walletEmoji = AccountEmojiManager.getEmojiByAddress(walletAddress)
+            val evmEmoji = AccountEmojiManager.getEmojiByAddress(evmAddress)
+            if (isFundToEVM) {
+                tvFromAvatar.text = Emoji.getEmojiById(walletEmoji.emojiId)
+                tvFromAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(walletEmoji.emojiId))
+                tvFromName.text = walletEmoji.emojiName
+                tvFromAddress.text = walletAddress ?: ""
+                tvFromEvmLabel.gone()
+
+                tvToAvatar.text = Emoji.getEmojiById(evmEmoji.emojiId)
+                tvToAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(evmEmoji.emojiId))
+                tvToName.text = evmEmoji.emojiName
+                tvToAddress.text = evmAddress
+                tvToEvmLabel.visible()
+            } else {
+                tvFromAvatar.text = Emoji.getEmojiById(evmEmoji.emojiId)
+                tvFromAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(evmEmoji.emojiId))
+                tvFromEvmLabel.visible()
+                tvFromName.text = evmEmoji.emojiName
+                tvFromAddress.text = evmAddress
+
+                tvToAvatar.text = Emoji.getEmojiById(walletEmoji.emojiId)
+                tvToAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(walletEmoji.emojiId))
+                tvToName.text = walletEmoji.emojiName
+                tvToAddress.text = walletAddress ?: ""
+                tvToEvmLabel.gone()
+            }
+            FlowCoinListManager.getCoin(symbol)?.let {
+                Glide.with(ivTokenIcon).load(it.icon()).into(ivTokenIcon)
+            }
+            tvBalance.text = ""
+            etAmount.setText("")
+            btnMove.isEnabled = false
+        }
+        fetchTokenBalance()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun fetchTokenBalance() {
+        ioScope {
+            fromBalance = if (isFundToEVM) {
+                cadenceQueryTokenBalanceWithAddress(
+                    FlowCoinListManager.getCoin(symbol),
+                    WalletManager.wallet()?.walletAddress()
+                )
+            } else {
+                if (symbol == FlowCoin.SYMBOL_FLOW) {
+                    cadenceQueryCOATokenBalance()
+                } else {
+                    BalanceManager.getEVMBalanceByCoin(symbol)
+                }
+            } ?: 0f
+
+            uiScope {
+                binding.tvBalance.text = "Balance $fromBalance"
+            }
+        }
+    }
+
+    companion object {
+        private const val EXTRA_SYMBOL = "extra_symbol"
+        fun show(activity: FragmentActivity, symbol: String) {
+            MoveTokenDialog().apply {
+                arguments = Bundle().apply {
+                    putString(EXTRA_SYMBOL, symbol)
+                }
+            }.show(activity.supportFragmentManager, "")
+        }
+    }
+}

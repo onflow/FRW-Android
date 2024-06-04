@@ -24,19 +24,20 @@ class TokenItemPresenter(
         with(binding) {
             nameView.text = model.name
             symbolView.text = model.symbol.uppercase()
-            Glide.with(iconView).load(model.icon).into(iconView)
+            Glide.with(iconView).load(model.icon()).into(iconView)
             stateButton.setVisible(false)
+            selectedView.setVisible(model.symbol.lowercase() == selectedCoin?.lowercase())
         }
 
-        val backgroundColor = when (model.symbol) {
-            selectedCoin -> R.color.swap_token_selected.res2color()
-            disableCoin -> R.color.transparent.res2color()
-            else -> R.color.background.res2color()
+        val backgroundColor = if (model.symbol.lowercase() == disableCoin?.lowercase()) {
+            R.color.transparent.res2color()
+        } else {
+            R.color.background.res2color()
         }
 
         view.backgroundTintList = ColorStateList.valueOf(backgroundColor)
         view.setOnClickListener {
-            if (disableCoin != model.symbol) {
+            if (disableCoin?.lowercase() != model.symbol.lowercase()) {
                 callback.invoke(model)
             }
         }

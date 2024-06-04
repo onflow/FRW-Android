@@ -5,15 +5,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.receive.model.ReceiveData
-import com.flowfoundation.wallet.utils.ScreenUtils
-import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.toAddress
 
 class ReceiveViewModel : ViewModel() {
-
-    private val size by lazy { ScreenUtils.getScreenWidth() - (30 * 2).dp2px().toInt() }
 
     val qrcodeLiveData = MutableLiveData<Drawable>()
     val walletLiveData = MutableLiveData<ReceiveData>()

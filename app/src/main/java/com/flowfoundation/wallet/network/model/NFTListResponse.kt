@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.network.model
 
 import android.os.Parcelable
+import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -63,6 +64,8 @@ data class Nft(
     val collectionExternalURL: String,
     @SerializedName("traits")
     val traits: List<NftTraits>?,
+    @SerializedName("flowIdentifier")
+    val flowIdentifier: String?
 ) : Parcelable {
     fun uniqueId() = "${collectionName}.${collectionContractName}-${id}"
 
@@ -73,6 +76,15 @@ data class Nft(
     fun tokenId() = id
 
     fun isNBA() = collectionName.trim().lowercase() == "TopShot".lowercase()
+
+    fun canBridgeToFlow(): Boolean {
+        return flowIdentifier.isNullOrBlank().not()
+    }
+
+    fun canBridgeToEVM(): Boolean {
+        val collection = NftCollectionConfig.getByContractName(collectionContractName) ?: return false
+        return collection.evmAddress.isNullOrEmpty().not()
+    }
 }
 
 @Parcelize

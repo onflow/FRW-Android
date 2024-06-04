@@ -41,7 +41,6 @@
         android:paddingVertical="1dp"
         android:textColor="@color/text"
         android:textSize="13sp"
-        android:textAllCaps="true"
         android:textStyle="bold"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/avatar_view"
@@ -50,6 +49,17 @@
         tools:backgroundTint="@color/salmon_primary"
         tools:text="TESTNET"
         tools:visibility="visible"/>
+
+    <androidx.constraintlayout.utils.widget.ImageFilterButton
+        android:id="@+id/move_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/actionBarItemBackground"
+        android:src="@drawable/ic_move"
+        app:layout_constraintBottom_toBottomOf="@id/title_view"
+        app:layout_constraintEnd_toStartOf="@id/scan_button"
+        app:layout_constraintTop_toTopOf="@id/title_view"/>
 
 
     <androidx.constraintlayout.utils.widget.ImageFilterButton

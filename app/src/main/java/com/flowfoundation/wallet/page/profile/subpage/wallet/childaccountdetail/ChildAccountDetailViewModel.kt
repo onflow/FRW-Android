@@ -28,12 +28,12 @@ class ChildAccountDetailViewModel : ViewModel() {
                 val contractName = idSplitList[2]
                 val address = idSplitList[1]
                 val flowCoin = FlowCoinListManager.coinList().firstOrNull { flowCoin ->
-                    contractName == flowCoin.contractName && address == flowCoin.address()
+                    contractName == flowCoin.contractName() && address == flowCoin.address
                 }
                 coinDataList.add(
                     CoinData(
                         flowCoin?.name ?: contractName,
-                        flowCoin?.icon.orEmpty().ifBlank {
+                        flowCoin?.icon().orEmpty().ifBlank {
                             "https://lilico.app/placeholder-2.0.png"
                         },
                         flowCoin?.symbol.orEmpty(),
@@ -56,7 +56,7 @@ class ChildAccountDetailViewModel : ViewModel() {
                     CollectionData(
                         it.id,
                         nftCollection?.name ?: it.display.name,
-                        nftCollection?.logo ?: it.display.squareImage,
+                        nftCollection?.logo() ?: it.display.squareImage,
                         it.path,
                         it.id.split(".", ignoreCase = true, limit = 0)[2],
                         it.idList

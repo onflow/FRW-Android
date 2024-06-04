@@ -12,6 +12,8 @@ import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
@@ -130,9 +132,9 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
         ?: throw RuntimeException("get wallet account error")
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
-    val currentKey =
-        account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
-            ?: throw RuntimeException("get account key error")
+    val currentKey = account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
+        ?: throw RuntimeException("get account key error")
+
     return Voucher(
         arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },
         cadence = builder.script,
@@ -320,7 +322,7 @@ fun updateSecurityProvider() {
 fun checkSecurityProvider() {
     val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
     if (provider == null) {
-        Security.addProvider(BouncyCastleProvider())
+        Security.insertProviderAt(BouncyCastleProvider(), 1)
     }
 }
 
