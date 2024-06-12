@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_wallet_connect"
             app:isArrowVisible="true"
-            app:title="@string/wallet_connect"/>
+            app:titleId="@string/wallet_connect"/>
 
         <View
             android:layout_width="match_parent"
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_devices"
             app:isArrowVisible="true"
-            app:title="@string/devices"/>
+            app:titleId="@string/devices"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 </com.google.android.material.card.MaterialCardView>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Flow Wallet</string>
     <string name="next">Next</string>
@@ -27,7 +28,6 @@
     <string name="pin_code_title">Add Extra\nProtection To\nYour Wallet</string>
     <string name="protection">Protection</string>
     <string name="pin_code">PIN Code</string>
-
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
@@ -138,11 +138,10 @@
     <string name="add_address">Add address</string>
     <string name="checking">Checking</string>
     <string name="address_check_format_error">Invalid address</string>
-    <string name="address_check_chain_error">"Can't find address in chain</string>
+    <string name="address_check_chain_error">\"Can\'t find address in chain</string>
     <string name="address_check_success">Validated address</string>
     <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
-
     <string name="send_to">Send to</string>
     <string name="send_search_hint">Username, address(0x), Find or Flowns</string>
     <string name="recent">Recent</string>
@@ -256,8 +255,8 @@
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>
-    <string name="claim_free_domain">Claim for your <font color='#32E355'>FREE</font> Lilico domain!</string>
-    <string name="claim_free_domain_at_lilico">Claim <font color='#32E355'>Free</font> Domain\nAt Lilico</string>
+    <string name="claim_free_domain">Claim for your <font color="#32E355">FREE</font> Lilico domain!</string>
+    <string name="claim_free_domain_at_lilico">Claim <font color="#32E355">Free</font> Domain\nAt Lilico</string>
     <string name="free_domain">Free Domain</string>
     <string name="things_you_should_know">Things You Should Know</string>
     <string name="claim_domain_desc_1">Free lilico domain help you find each other easier on chain.</string>
@@ -305,11 +304,11 @@
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Let\'s Staking</string>
-    <string name="stake_guide_desc_1">Earn up to <font color='#60C293'><strong>13%</strong></font>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
         per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color='#60C293'><strong>Flow</strong></font> you receive <font color='#60C293'><strong>Flow</strong></font>. You can <font color='#60C293'><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color='#60C293'><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color='#60C293'><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">Staking Provider</string>
     <string name="select_provider">Select Provider</string>
     <string name="stake">Stake</string>
@@ -381,7 +380,6 @@
     <string name="linked_account">Linked Accounts</string>
     <string name="devices">Devices</string>
     <string name="device_info">Device Info</string>
-
     <string name="default_child_account_name">Linked Account</string>
     <string name="default_evm_account_name">EVM Wallet</string>
     <string name="description">Description</string>
@@ -401,7 +399,6 @@
     <string name="root_detect_warning3">Your keychain will exposing in threats.</string>
     <string name="i_understand">I understand</string>
     <string name="root_detection_alert">Root Detection Alert</string>
-
     <string name="notification_channel_name">Push Notification</string>
     <string name="add_new_profile">Add a New Profile</string>
     <string name="import_existing_profile">Import an Existing Profile</string>
@@ -409,7 +406,6 @@
     <string name="new_feature">New Feature</string>
     <string name="new_feature_desc">We have made the following updates to improve your experiences.</string>
     <string name="profile_switch_tip">Tap the profile name to switch profiles.</string>
-
     <string name="all">All</string>
     <string name="avatar">Avatar</string>
     <string name="edit_fail">Edit fail</string>
@@ -545,6 +541,4 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-
-
 </resources>

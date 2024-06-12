@@ -19,9 +19,11 @@ open class ProfilePreference : FrameLayout {
     @DrawableRes
     internal val icon: Int
     internal val iconEnable: Boolean
-    internal val title: String
-    internal var subtitle: String
-    internal var desc: String
+    internal val titleId: Int
+    internal var subtitleId: Int
+    internal var descId: Int
+    private var desc: String
+
 
     @ColorInt
     internal var descColor: Int
@@ -43,8 +45,9 @@ open class ProfilePreference : FrameLayout {
         val styleAttrs = context.obtainStyledAttributes(attrs, R.styleable.ProfilePreference, defStyleAttr, 0)
         iconEnable = styleAttrs.getBoolean(R.styleable.ProfilePreference_iconEnable, true)
         icon = styleAttrs.getResourceId(R.styleable.ProfilePreference_icon, 0)
-        title = styleAttrs.getString(R.styleable.ProfilePreference_title).orEmpty()
-        subtitle = styleAttrs.getString(R.styleable.ProfilePreference_subtitle).orEmpty()
+        titleId = styleAttrs.getResourceId(R.styleable.ProfilePreference_titleId, 0)
+        subtitleId = styleAttrs.getResourceId(R.styleable.ProfilePreference_subtitleId, 0)
+        descId = styleAttrs.getResourceId(R.styleable.ProfilePreference_descId, 0)
         desc = styleAttrs.getString(R.styleable.ProfilePreference_desc).orEmpty()
         descColor = styleAttrs.getColor(R.styleable.ProfilePreference_descColor, R.color.note.res2color())
         isArrowVisible = styleAttrs.getBoolean(R.styleable.ProfilePreference_isArrowVisible, false)
@@ -70,10 +73,15 @@ open class ProfilePreference : FrameLayout {
         descView.text = desc
     }
 
-    fun setSubtitle(subtitle: String) {
-        this.subtitle = subtitle
-        subtitleView.setVisible(subtitle.isNotBlank())
-        subtitleView.text = subtitle
+    fun setDesc(descId: Int) {
+        this.descId = descId
+        descView.setText(descId)
+    }
+
+    fun setSubtitle(subtitleId: Int) {
+        this.subtitleId = subtitleId
+        subtitleView.setVisible(subtitleId > 0)
+        subtitleView.setText(subtitleId)
     }
 
     override fun setOnClickListener(l: OnClickListener?) {
@@ -87,10 +95,14 @@ open class ProfilePreference : FrameLayout {
         }
         arrowView.setVisible(isArrowVisible)
 
-        descView.text = desc
+        if (desc.isNotBlank()) {
+            descView.text = desc
+        } else {
+            descView.setText(descId)
+        }
         descView.setTextColor(descColor)
-        titleView.text = title
-        subtitleView.setVisible(subtitle.isNotBlank())
-        subtitleView.text = subtitle
+        titleView.setText(titleId)
+        subtitleView.setVisible(subtitleId > 0)
+        subtitleView.setText(subtitleId)
     }
 }

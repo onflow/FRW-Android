@@ -115,7 +115,7 @@
                 android:id="@+id/auto_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:title="@string/auto"/>
+                app:titleId="@string/auto"/>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </com.google.android.material.card.MaterialCardView>

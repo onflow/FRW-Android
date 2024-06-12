@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
                 app:isArrowVisible="true"
-                app:title="@string/reset_pin_code"/>
+                app:titleId="@string/reset_pin_code"/>
 
             <View
                 android:layout_width="match_parent"
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
-                app:title="@string/biometrics"/>
+                app:titleId="@string/biometrics"/>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </com.google.android.material.card.MaterialCardView>

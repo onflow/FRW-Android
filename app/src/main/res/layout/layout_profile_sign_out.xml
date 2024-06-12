@@ -40,7 +40,7 @@
             android:layout_marginStart="12dp"
             android:fontFamily="@font/inter_semi_bold"
             android:paddingTop="16dp"
-            android:text="@string/welcome_to_lilico"
+            android:text="@string/welcome_to_wallet"
             android:textColor="@color/text"
             android:textSize="16sp"
             app:layout_constraintBottom_toTopOf="@id/userid_view"

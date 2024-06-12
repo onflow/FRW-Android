@@ -13,8 +13,8 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 
 class TransactionButton : FrameLayout, OnTransactionStateChange {
 
-    private var defaultText: String
-    private var processingText: String
+    private var defaultTextId: Int
+    private var processingTextId: Int
 
     private val pendingWrapper by lazy { findViewById<View>(R.id.pending_wrapper) }
 
@@ -27,8 +27,8 @@ class TransactionButton : FrameLayout, OnTransactionStateChange {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int)
             : super(context, attrs, defStyleAttr) {
         val array = context.obtainStyledAttributes(attrs, R.styleable.SendButton, defStyleAttr, 0)
-        defaultText = array.getString(R.styleable.SendButton_defaultText).orEmpty()
-        processingText = array.getString(R.styleable.SendButton_processingText).orEmpty()
+        defaultTextId = array.getResourceId(R.styleable.SendButton_defaultText, 0)
+        processingTextId = array.getResourceId(R.styleable.SendButton_processingText, 0)
         array.recycle()
 
         init()
@@ -37,8 +37,8 @@ class TransactionButton : FrameLayout, OnTransactionStateChange {
     fun init() {
         LayoutInflater.from(context).inflate(R.layout.wdiget_transaction_button, this)
 
-        sendButton.updateDefaultText(defaultText)
-        sendButton.updateProcessingText(processingText)
+        sendButton.updateDefaultText(defaultTextId)
+        sendButton.updateProcessingText(processingTextId)
 
         TransactionStateManager.addOnTransactionStateChange(this)
 

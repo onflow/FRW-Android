@@ -34,7 +34,8 @@ class WalletRestoreActivity : BaseActivity() {
 
         with(binding) {
             tvTitle.text = SpannableString(R.string.import_wallet.res2String()).apply {
-                setSpan(ForegroundColorSpan(R.color.accent_green.res2color()), 0, 6, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                val keyword = R.string.import_str.res2String()
+                setSpan(ForegroundColorSpan(R.color.accent_green.res2color()), 0, keyword.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             llImportFromDevice.setOnClickListener {
                 if (isTestnet() || isPreviewnet()) {

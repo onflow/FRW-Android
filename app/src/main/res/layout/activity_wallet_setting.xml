@@ -97,7 +97,7 @@
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
                 app:isArrowVisible="true"
-                app:title="@string/private_key"/>
+                app:titleId="@string/private_key"/>
 
             <View
                 android:layout_width="match_parent"
@@ -111,7 +111,7 @@
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
                 app:isArrowVisible="true"
-                app:title="Recovery Phrases"/>
+                app:titleId="@string/recovery_phrase"/>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </com.google.android.material.card.MaterialCardView>
@@ -133,7 +133,7 @@
             android:layout_height="wrap_content"
             app:iconEnable="false"
             app:isArrowVisible="true"
-            app:title="@string/account_keys"/>
+            app:titleId="@string/account_keys"/>
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView
@@ -152,8 +152,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:iconEnable="false"
-            app:subtitle="@string/free_gas_fee_desc"
-            app:title="@string/free_gas_fee"/>
+            app:subtitleId="@string/free_gas_fee_desc"
+            app:titleId="@string/free_gas_fee"/>
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.card.MaterialCardView

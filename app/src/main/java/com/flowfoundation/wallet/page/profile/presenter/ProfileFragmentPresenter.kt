@@ -143,9 +143,9 @@ class ProfileFragmentPresenter(
     private fun updateNotificationPermissionStatus() {
         binding.group2.notificationPreference.setDesc(
             if (isNotificationPermissionGrand(context)) {
-                R.string.on.res2String()
+                R.string.on
             } else {
-                R.string.off.res2String()
+                R.string.off
             }
         )
     }
@@ -162,12 +162,12 @@ class ProfileFragmentPresenter(
                     group0.backupPreference.setVisible(isSignIn)
                     group0.securityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
-                    group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark.res2String() else R.string.light.res2String())
+                    group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark else R.string.light)
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
                     group0.developerModePreference.setDesc(
                         (if (isTestnet()) R.string.testnet
                         else if(isPreviewnet()) R.string.previewnet
-                        else R.string.mainnet).res2String()
+                        else R.string.mainnet)
                     )
                 }
                 updateWalletConnectSessionCount()

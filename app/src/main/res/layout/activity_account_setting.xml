@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
-                app:title="@string/edit_avatar"/>
+                app:titleId="@string/edit_avatar"/>
 
             <View
                 android:layout_width="match_parent"
@@ -50,8 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
-                app:title="@string/edit_nickname"
-                tools:desc="Nickname"/>
+                app:titleId="@string/edit_nickname"/>
 
             <View
                 android:layout_width="match_parent"
@@ -64,8 +63,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:iconEnable="false"
-                app:subtitle="@string/settings_visible_desc"
-                app:title="@string/private_str"/>
+                app:subtitleId="@string/settings_visible_desc"
+                app:titleId="@string/private_str"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
     </com.google.android.material.card.MaterialCardView>
 

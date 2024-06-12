@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager
 import android.app.Application
 import android.content.Intent
 import androidx.appcompat.app.AppCompatDelegate
+import com.flowfoundation.wallet.crowdin.crowdinInitialize
 import com.flowfoundation.wallet.firebase.config.initFirebaseConfig
 import com.flowfoundation.wallet.firebase.firebaseInitialize
 import com.flowfoundation.wallet.instabug.instabugInitialize
@@ -51,6 +52,7 @@ object LaunchManager {
             safeRun { asyncInit() }
             safeRun { firebaseInitialize(application) }
             safeRun { instabugInitialize(application) }
+            safeRun { crowdinInitialize(application) }
             safeRun { setNightMode() }
             safeRun { runWorker(application) }
             safeRun { readCache(application) }

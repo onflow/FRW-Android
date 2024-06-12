@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_linked_account"
             app:isArrowVisible="true"
-            app:title="@string/linked_account"/>
+            app:titleId="@string/linked_account"/>
 
         <View
             android:layout_width="match_parent"
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             app:isArrowVisible="true"
             app:icon="@drawable/ic_settings_backup"
-            app:title="@string/backup"/>
+            app:titleId="@string/backup"/>
 
         <View
             android:layout_width="match_parent"
@@ -48,7 +48,7 @@
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_settings_security"
             app:isArrowVisible="true"
-            app:title="@string/security"/>
+            app:titleId="@string/security"/>
 
         <View
             android:layout_width="match_parent"
@@ -61,7 +61,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_developer"
-            app:title="@string/developer_mode"/>
+            app:titleId="@string/developer_mode"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

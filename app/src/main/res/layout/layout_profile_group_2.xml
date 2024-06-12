@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             app:desc="USD"
             app:icon="@drawable/ic_settings_currency"
-            app:title="@string/currency"/>
+            app:titleId="@string/currency"/>
 
         <View
             android:layout_width="match_parent"
@@ -33,9 +33,9 @@
             android:id="@+id/theme_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:desc="Light"
+            app:descId="@string/light"
             app:icon="@drawable/ic_settings_theme"
-            app:title="@string/theme"/>
+            app:titleId="@string/theme"/>
 
         <View
             android:layout_width="match_parent"
@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:icon="@drawable/ic_settings_notification"
-            app:title="Notification"
-            app:desc="@string/off"/>
+            app:titleId="@string/notification"
+            app:descId="@string/off"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
 </com.google.android.material.card.MaterialCardView>
