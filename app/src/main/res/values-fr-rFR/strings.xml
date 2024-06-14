@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Portefeuille Flow</string>
     <string name="next">Suivant</string>
     <string name="username">Nom d\'utilisateur</string>
     <string name="username_too_short">Trop court</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Wallet utilise ce mot de passe pour crypter votre sauvegarde.</string>
     <string name="password">Mot de passe</string>
     <string name="password_verify_format">Saisir au moins 8 caractères</string>
-    <string name="please_create">Créer un mot de passe \n</string>
+    <string name="create">Créer</string>
     <string name="backing_up">Sauvegarde</string>
     <string name="backup_error">Erreur de sauvegarde</string>
     <string name="backup">Sauvegarde</string>
@@ -25,8 +24,9 @@
     <string name="secure">Sécurisé</string>
     <string name="manual_backup_tip">Déverrouillage par code PIN et biométrie pour une sécurité accrue du portefeuille.</string>
     <string name="pick_your">Choisissez votre</string>
-    <string name="pin_code_title">Ajoutez une protection supplémentaire à\npour\nVotre portefeuille</string>
+    <string name="add_extra">Ajouter un supplément</string>
     <string name="protection">Protection de l\'environnement</string>
+    <string name="to_your_wallet">À votre porte-monnaie</string>
     <string name="pin_code">Code PIN</string>
     <string name="create_pin">Créer un code PIN</string>
     <string name="pin">PIN</string>
@@ -39,7 +39,6 @@
     <string name="explore">Explorer</string>
     <string name="profile">Profil</string>
     <string name="things_you">Ce que vous devez savoir \n</string>
-    <string name="know">Savoir</string>
     <string name="wallet_create_warning_tip">À l\'étape suivante, vous verrez apparaître une phrase secrète (12 mots). Cette phrase secrète est la seule clé pour récupérer votre portefeuille.</string>
     <string name="create_wallet_warning1">Si je perds mes phrases secrètes, je ne pourrai plus jamais accéder à mon compte.</string>
     <string name="create_wallet_warning2">Si je dévoile mes phrases secrètes n\'importe où, mes fonds peuvent être volés.</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">Sauvegarde manuelle</string>
     <string name="backup_to_google_drive">Sauvegarde sur google drive</string>
     <string name="recovery_phrase">Phrase de récupération</string>
+    <string name="recovery">Récupération</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">Restaurer le portefeuille</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">Cryptage de la sauvegarde</string>
     <string name="done">Terminé</string>
     <string name="biometrics">Biométrie</string>
-    <string name="legal_information">Informations juridiques \n</string>
     <string name="legal">Juridique</string>
+    <string name="information">Informations</string>
     <string name="legal_tip">Veuillez consulter la politique de confidentialité et les conditions d\'utilisation de Flow Wallet.</string>
     <string name="i_accept">J\'accepte</string>
     <string name="terms_of_service">Conditions d\'utilisation</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">Explorer\nvotre site préféré</string>
     <string name="guide_desc_4">Partagez d\'excellentes collections du NFT avec vos amis</string>
     <string name="import_wallet">Portefeuille d\'importation</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">Importation</string>
     <string name="welcome_desc">En savoir plus sur la sécurité</string>
     <string name="explore_new_nfts">Explorer de nouveaux NFT</string>
     <string name="network_error">Erreur de réseau</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">Télécharger la sauvegarde</string>
     <string name="backup_completed">Sauvegarde terminée</string>
     <string name="ok">OK</string>
-    <string name="import_profile_note">Restaurez votre profil à l\'aide d\'une sauvegarde.</string>
+    <string name="import_wallet_note">Restaurez votre portefeuille à l\'aide d\'une sauvegarde.</string>
     <string name="from_device_backup">À partir de la sauvegarde de l\'appareil</string>
     <string name="from_device_backup_note">Restauration à partir d\'un autre mobile ou d\'un portefeuille d\'extension</string>
     <string name="from_multi_backup">A partir de Multi Backup</string>

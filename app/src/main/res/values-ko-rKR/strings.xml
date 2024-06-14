@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">플로우 월렛</string>
     <string name="next">다음</string>
     <string name="username">사용자 이름</string>
     <string name="username_too_short">너무 짧음</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">플로우 월렛은 이 비밀번호를 사용하여 백업을 암호화합니다.</string>
     <string name="password">비밀번호</string>
     <string name="password_verify_format">8자 이상 입력</string>
-    <string name="please_create">\n비밀번호 만들기</string>
+    <string name="create">만들기</string>
     <string name="backing_up">백업</string>
     <string name="backup_error">백업 오류</string>
     <string name="backup">백업</string>
@@ -25,8 +24,9 @@
     <string name="secure">보안</string>
     <string name="manual_backup_tip">비밀번호와 생체 인식으로 잠금을 해제하여 지갑 보안을 강화하세요.</string>
     <string name="pick_your">선택</string>
-    <string name="pin_code_title">\n지갑에 추가\n보호 기능 추가</string>
+    <string name="add_extra">추가 추가</string>
     <string name="protection">보호</string>
+    <string name="to_your_wallet">지갑으로</string>
     <string name="pin_code">PIN 코드</string>
     <string name="create_pin">PIN 만들기</string>
     <string name="pin">PIN</string>
@@ -39,7 +39,6 @@
     <string name="explore">탐색</string>
     <string name="profile">프로필</string>
     <string name="things_you">\n사용자가 알아야 할 사항</string>
-    <string name="know">알기</string>
     <string name="wallet_create_warning_tip">다음 단계에서는 비밀 문구(12단어)가 표시됩니다. 이 비밀 문구는 지갑을 복구할 수 있는 유일한 열쇠입니다.</string>
     <string name="create_wallet_warning1">비밀번호를 분실하면 계정에 영원히 액세스할 수 없습니다.</string>
     <string name="create_wallet_warning2">비밀 문구를 아무 곳에나 노출하면 자금이 도난당할 수 있습니다.</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">수동 백업</string>
     <string name="backup_to_google_drive">Google 드라이브에 백업</string>
     <string name="recovery_phrase">복구 문구</string>
+    <string name="recovery">복구</string>
     <string name="phrase">문구</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">지갑 복원</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">백업 암호화</string>
     <string name="done">완료</string>
     <string name="biometrics">생체 인식</string>
-    <string name="legal_information">법률 \n정보</string>
     <string name="legal">법률</string>
+    <string name="information">정보</string>
     <string name="legal_tip">플로우 월렛의 개인정보처리방침 및 서비스 약관을 검토하시기 바랍니다.</string>
     <string name="i_accept">동의함</string>
     <string name="terms_of_service">서비스 약관</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">\n즐겨 찾는 사이트 둘러보기</string>
     <string name="guide_desc_4">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
     <string name="import_wallet">지갑 가져오기</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">가져오기</string>
     <string name="welcome_desc">보안에 대한 자세한 정보 제공</string>
     <string name="explore_new_nfts">새로운 NFT 살펴보기</string>
     <string name="network_error">네트워크 오류</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">백업 업로드</string>
     <string name="backup_completed">백업 완료</string>
     <string name="ok">확인</string>
-    <string name="import_profile_note">백업을 사용하여 프로필을 복원합니다.</string>
+    <string name="import_wallet_note">백업을 사용하여 지갑을 복원하세요.</string>
     <string name="from_device_backup">장치 백업에서</string>
     <string name="from_device_backup_note">다른 모바일 또는 확장 지갑에서 복원</string>
     <string name="from_multi_backup">멀티 백업에서</string>
@@ -540,5 +540,5 @@
     <string name="quick_enable_evm">빠른 EVM 활성화</string>
     <string name="select_collection">컬렉션 선택</string>
     <string name="import_profile">프로필 가져오기</string>
-    <string name="notification">Notification</string>
+    <string name="notification">알림</string>
 </resources>

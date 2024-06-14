@@ -14,17 +14,32 @@
         app:title=""/>
 
     <TextView
+        android:id="@+id/tv_title_green"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/montsettat"
+        android:layout_marginStart="24dp"
+        android:text="@string/import_str"
+        android:textColor="@color/accent_green"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/tv_title"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"/>
+
+    <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/montsettat"
-        android:layout_marginHorizontal="24dp"
-        android:text="@string/import_profile"
+        android:layout_marginStart="10dp"
+        android:text="@string/wallet"
         android:textColor="@color/text_2"
         android:textSize="30sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/tv_title_green"
         app:layout_constraintTop_toBottomOf="@id/toolbar"/>
 
     <TextView
@@ -32,7 +47,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
-        android:text="@string/import_profile_note"
+        android:text="@string/import_wallet_note"
         android:layout_marginHorizontal="24dp"
         android:textColor="@color/note"
         android:textSize="14sp"

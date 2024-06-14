@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Portafoglio Flow</string>
     <string name="next">Avanti</string>
     <string name="username">Nome utente</string>
     <string name="username_too_short">Troppo breve</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Wallet utilizza questa password per criptare il backup.</string>
     <string name="password">Password</string>
     <string name="password_verify_format">Inserire almeno 8 caratteri</string>
-    <string name="please_create">Creare la password di \n</string>
+    <string name="create">Creare</string>
     <string name="backing_up">Backup</string>
     <string name="backup_error">Errore di backup</string>
     <string name="backup">Backup</string>
@@ -25,8 +24,9 @@
     <string name="secure">Sicuro</string>
     <string name="manual_backup_tip">Sblocco con codice PIN e biometria per una maggiore sicurezza del portafoglio.</string>
     <string name="pick_your">Scegliete il vostro</string>
-    <string name="pin_code_title">Aggiungete una protezione extra\nper\nil vostro portafoglio</string>
+    <string name="add_extra">Aggiungi extra</string>
     <string name="protection">Protezione</string>
+    <string name="to_your_wallet">Al vostro portafoglio</string>
     <string name="pin_code">Codice PIN</string>
     <string name="create_pin">Creare un PIN</string>
     <string name="pin">PIN</string>
@@ -39,7 +39,6 @@
     <string name="explore">Esplorare</string>
     <string name="profile">Profilo</string>
     <string name="things_you">Cose che \ndeve sapere</string>
-    <string name="know">Conoscere</string>
     <string name="wallet_create_warning_tip">Nella fase successiva, verrà visualizzata una frase segreta (12 parole). La frase segreta è l\'unica chiave per recuperare il portafoglio.</string>
     <string name="create_wallet_warning1">Se perdo le mie frasi segrete, non potrò più accedere al mio account per sempre.</string>
     <string name="create_wallet_warning2">Se espongo le mie frasi segrete da qualche parte, i miei fondi possono essere rubati.</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">Backup manuale</string>
     <string name="backup_to_google_drive">Backup su google drive</string>
     <string name="recovery_phrase">Frase di recupero</string>
+    <string name="recovery">Recupero</string>
     <string name="phrase">Frase</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">Ripristino del portafoglio</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">Crittografia del backup</string>
     <string name="done">Fatto</string>
     <string name="biometrics">Biometria</string>
-    <string name="legal_information">Informazioni legali \n</string>
     <string name="legal">Legale</string>
+    <string name="information">Informazioni</string>
     <string name="legal_tip">Si prega di consultare l\'Informativa sulla privacy e i Termini di servizio di Flow Wallet.</string>
     <string name="i_accept">Accetto</string>
     <string name="terms_of_service">Termini di servizio</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">Esplora\nil tuo sito preferito</string>
     <string name="guide_desc_4">Condividete con gli amici le collezioni eccellenti di NFT</string>
     <string name="import_wallet">Portafoglio di importazione</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">Importazione</string>
     <string name="welcome_desc">Per saperne di più sulla sicurezza</string>
     <string name="explore_new_nfts">Esplorare nuovi NFT</string>
     <string name="network_error">Errore di rete</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">Caricamento del backup</string>
     <string name="backup_completed">Backup completato</string>
     <string name="ok">OK</string>
-    <string name="import_profile_note">Ripristinare il profilo utilizzando un backup.</string>
+    <string name="import_wallet_note">Ripristinare il portafoglio utilizzando un backup.</string>
     <string name="from_device_backup">Dal backup del dispositivo</string>
     <string name="from_device_backup_note">Ripristino da un altro cellulare o da un portafoglio di estensioni</string>
     <string name="from_multi_backup">Da Multi Backup</string>
@@ -540,5 +540,5 @@
     <string name="quick_enable_evm">Abilitazione rapida EVM</string>
     <string name="select_collection">Seleziona la collezione</string>
     <string name="import_profile">Profilo di importazione</string>
-    <string name="notification">Notification</string>
+    <string name="notification">Notifica</string>
 </resources>

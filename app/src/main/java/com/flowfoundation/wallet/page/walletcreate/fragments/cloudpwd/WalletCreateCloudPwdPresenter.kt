@@ -2,9 +2,6 @@ package com.flowfoundation.wallet.page.walletcreate.fragments.cloudpwd
 
 import android.content.res.ColorStateList
 import android.graphics.Rect
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -19,7 +16,6 @@ import com.flowfoundation.wallet.databinding.FragmentWalletCreateCloudPwdBinding
 import com.flowfoundation.wallet.page.profile.subpage.backup.BackupGoogleDriveActivity
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_PIN_GUIDE
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 import com.flowfoundation.wallet.utils.setBackupGoogleDrive
@@ -38,11 +34,6 @@ class WalletCreateCloudPwdPresenter(
 
     init {
         with(binding) {
-            title1.text = SpannableString(R.string.please_create.res2String()).apply {
-                val protection = R.string.password.res2String()
-                val index = indexOf(protection)
-                setSpan(ForegroundColorSpan(R.color.colorSecondary.res2color()), index, index + protection.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
             pwdText1.setOnFocusChangeListener { _, _ -> onFocusChange() }
             pwdText2.setOnFocusChangeListener { _, _ -> onFocusChange() }
 

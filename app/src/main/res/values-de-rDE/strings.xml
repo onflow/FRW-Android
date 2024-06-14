@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Flow Wallet</string>
     <string name="next">Weiter</string>
     <string name="username">Benutzername</string>
     <string name="username_too_short">Zu kurz</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Wallet verwendet dieses Passwort, um Ihr Backup zu verschlüsseln.</string>
     <string name="password">Passwort</string>
     <string name="password_verify_format">Mindestens 8 Zeichen eingeben</string>
-    <string name="please_create">\nPasswort erstellen</string>
+    <string name="create">erstellen.</string>
     <string name="backing_up">Sichern von Daten</string>
     <string name="backup_error">Backup-Fehler</string>
     <string name="backup">Sicherung</string>
@@ -25,8 +24,9 @@
     <string name="secure">Sicher</string>
     <string name="manual_backup_tip">Entsperren mit PIN-Code und Biometrie für zusätzliche Sicherheit der Brieftasche.</string>
     <string name="pick_your">Wählen Sie Ihr</string>
-    <string name="pin_code_title">Fügen Sie einen zusätzlichen\nSchutz hinzu, um\nIhre Geldbörse zu schützen.</string>
+    <string name="add_extra">Extra hinzufügen</string>
     <string name="protection">Schutz</string>
+    <string name="to_your_wallet">Für Ihr Portemonnaie</string>
     <string name="pin_code">PIN-Code</string>
     <string name="create_pin">Eine PIN erstellen</string>
     <string name="pin">PIN</string>
@@ -39,7 +39,6 @@
     <string name="explore">Erkunden Sie</string>
     <string name="profile">Profil</string>
     <string name="things_you">Dinge, die Sie \nwissen müssen</string>
-    <string name="know">Wissen</string>
     <string name="wallet_create_warning_tip">Im nächsten Schritt wird Ihnen eine geheime Phrase (12 Wörter) angezeigt. Die geheime Phrase ist der einzige Schlüssel zur Wiederherstellung Ihrer Brieftasche.</string>
     <string name="create_wallet_warning1">Wenn ich meine geheimen Phrasen verliere, kann ich nicht mehr auf mein Konto zugreifen.</string>
     <string name="create_wallet_warning2">Wenn ich meine geheimen Phrasen irgendwo preisgebe, kann mein Geld gestohlen werden.</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">Manuelles Backup</string>
     <string name="backup_to_google_drive">Sicherung auf Google Drive</string>
     <string name="recovery_phrase">Wiederherstellungsphrase</string>
+    <string name="recovery">Erholung</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">Brieftasche wiederherstellen</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">Backup verschlüsseln</string>
     <string name="done">Erledigt</string>
     <string name="biometrics">Biometrische Daten</string>
-    <string name="legal_information">Rechtliche Informationen \n</string>
     <string name="legal">Rechtliches</string>
+    <string name="information">Informationen</string>
     <string name="legal_tip">Bitte lesen Sie die Datenschutzrichtlinie und die Nutzungsbedingungen von Flow Wallet.</string>
     <string name="i_accept">I Annehmen</string>
     <string name="terms_of_service">Bedingungen der Dienstleistung</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">Erkunden Sie\nIhre Lieblingsseite</string>
     <string name="guide_desc_4">Teilen Sie ausgezeichnete NFT-Sammlungen mit Freunden</string>
     <string name="import_wallet">Brieftasche importieren</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">Importieren</string>
     <string name="welcome_desc">Mehr über die Sicherheit bereitstellen</string>
     <string name="explore_new_nfts">Neue NFTs erforschen</string>
     <string name="network_error">Netzwerkfehler</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">Backup hochladen</string>
     <string name="backup_completed">Sicherung abgeschlossen</string>
     <string name="ok">OK</string>
-    <string name="import_profile_note">Stellen Sie Ihr Profil anhand einer Sicherungskopie wieder her.</string>
+    <string name="import_wallet_note">Stellen Sie Ihr Portemonnaie mit Hilfe eines Backups wieder her.</string>
     <string name="from_device_backup">Von der Gerätesicherung</string>
     <string name="from_device_backup_note">Wiederherstellen von einem anderen Mobiltelefon oder einer erweiterten Brieftasche</string>
     <string name="from_multi_backup">Von Multi Backup</string>
@@ -540,5 +540,5 @@
     <string name="quick_enable_evm">EVM schnell freigeben</string>
     <string name="select_collection">Kollektion auswählen</string>
     <string name="import_profile">Profil importieren</string>
-    <string name="notification">Notification</string>
+    <string name="notification">Benachrichtigung</string>
 </resources>

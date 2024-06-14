@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Flow Wallet</string>
     <string name="next">Next</string>
     <string name="username">Username</string>
     <string name="username_too_short">Too short</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Wallet uses this password to encrypt your backup.</string>
     <string name="password">Password</string>
     <string name="password_verify_format">Enter at least 8 characters</string>
-    <string name="please_create">Create \nPassword</string>
+    <string name="create">Create</string>
     <string name="backing_up">Backing up</string>
     <string name="backup_error">Backup error</string>
     <string name="backup">Backup</string>
@@ -25,8 +24,9 @@
     <string name="secure">Secure</string>
     <string name="manual_backup_tip">Unlock with PIN Code and Biometrics to allow extra wallet security.</string>
     <string name="pick_your">Pick Your</string>
-    <string name="pin_code_title">Add Extra\nProtection To\nYour Wallet</string>
+    <string name="add_extra">Add Extra</string>
     <string name="protection">Protection</string>
+    <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
@@ -39,7 +39,6 @@
     <string name="explore">Explore</string>
     <string name="profile">Profile</string>
     <string name="things_you">Things You \nNeed to Know</string>
-    <string name="know">Know</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>
     <string name="create_wallet_warning2">If I expose my secret phrases anywhere, my funds can be stolen.</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">Backup Manually</string>
     <string name="backup_to_google_drive">Backup to google drive</string>
     <string name="recovery_phrase">Recovery Phrase</string>
+    <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">Restore Wallet</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">Encrypt Backup</string>
     <string name="done">Done</string>
     <string name="biometrics">Biometrics</string>
-    <string name="legal_information">Legal \nInformation</string>
     <string name="legal">Legal</string>
+    <string name="information">Information</string>
     <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Wallet.</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
-    <string name="import_profile_note">Restore your profile using a backup.</string>
+    <string name="import_wallet_note">Restore your wallet using a backup.</string>
     <string name="from_device_backup">From Device Backup</string>
     <string name="from_device_backup_note">Restore from another mobile or extension wallet</string>
     <string name="from_multi_backup">From Multi Backup</string>

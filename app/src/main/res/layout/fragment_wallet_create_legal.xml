@@ -16,10 +16,9 @@
         android:id="@+id/title_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
         android:fontFamily="@font/montsettat"
         android:paddingHorizontal="@dimen/activity_padding"
-        android:text="@string/legal_information"
+        android:text="@string/legal"
         android:textColor="@color/text"
         android:textSize="36sp"
         android:textStyle="bold"
@@ -30,13 +29,27 @@
         android:id="@+id/title_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/montsettat"
+        android:paddingHorizontal="@dimen/activity_padding"
+        android:text="@string/information"
+        android:textColor="@color/accent_green"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_1"/>
+
+    <TextView
+        android:id="@+id/title_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="27dp"
         android:paddingHorizontal="@dimen/activity_padding"
         android:text="@string/legal_tip"
         android:textColor="@color/text_sub"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_1"/>
+        app:layout_constraintTop_toBottomOf="@id/title_2"/>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/pin_code_layout"

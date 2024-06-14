@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Flow Wallet</string>
     <string name="next">下一步</string>
     <string name="username">用户名</string>
     <string name="username_too_short">太短</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Wallet 使用此密码对您的备份进行加密。</string>
     <string name="password">密码</string>
     <string name="password_verify_format">输入至少 8 个字符</string>
-    <string name="please_create">创建 \n密码</string>
+    <string name="create">创建</string>
     <string name="backing_up">备份</string>
     <string name="backup_error">备份错误</string>
     <string name="backup">备份</string>
@@ -25,8 +24,9 @@
     <string name="secure">安全</string>
     <string name="manual_backup_tip">使用 PIN 码和生物识别解锁以提供额外的钱包安全性。</string>
     <string name="pick_your">选择你的</string>
-    <string name="pin_code_title">添加额外的\n保护，\n您的钱包</string>
+    <string name="add_extra">添加额外</string>
     <string name="protection">保护</string>
+    <string name="to_your_wallet">致您的钱包</string>
     <string name="pin_code">PIN 码</string>
     <string name="create_pin">创建密码</string>
     <string name="pin">PIN 码</string>
@@ -39,7 +39,6 @@
     <string name="explore">探索</string>
     <string name="profile">简介</string>
     <string name="things_you">您 \n需要知道的事情</string>
-    <string name="know">知道</string>
     <string name="wallet_create_warning_tip">在下一步中，您将看到一个秘密短语（12 个词）。秘密短语是恢复您钱包的唯一钥匙。</string>
     <string name="create_wallet_warning1">如果我丢失了我的秘密短语，我将无法永远访问我的账户。</string>
     <string name="create_wallet_warning2">如果我在任何地方泄露了我的秘密短语，我的资金可能会被盗。</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">手动备份</string>
     <string name="backup_to_google_drive">备份到谷歌硬盘</string>
     <string name="recovery_phrase">恢复短语</string>
+    <string name="recovery">恢复</string>
     <string name="phrase">短语</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">恢复钱包</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">加密备份</string>
     <string name="done">完成</string>
     <string name="biometrics">生物识别</string>
-    <string name="legal_information">法律 \n信息</string>
     <string name="legal">法律</string>
+    <string name="information">信息</string>
     <string name="legal_tip">请查看Flow Wallet的隐私政策和服务条款。</string>
     <string name="i_accept">我接受</string>
     <string name="terms_of_service">服务条款</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">探索\n您喜爱的网站</string>
     <string name="guide_desc_4">与朋友分享优秀的 NFT 藏品</string>
     <string name="import_wallet">导入钱包</string>
-    <string name="import_str">导入</string>
+    <string name="import_str">进口</string>
     <string name="welcome_desc">提供更多安全信息</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">网络错误</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">上传备份</string>
     <string name="backup_completed">备份完成</string>
     <string name="ok">确定</string>
-    <string name="import_profile_note">使用备份恢复个人配置文件。</string>
+    <string name="import_wallet_note">使用备份恢复您的钱包。</string>
     <string name="from_device_backup">从设备备份恢复</string>
     <string name="from_device_backup_note">从另一台手机或扩展钱包恢复</string>
     <string name="from_multi_backup">从多重备份恢复</string>

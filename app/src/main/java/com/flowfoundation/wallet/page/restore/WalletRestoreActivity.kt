@@ -3,9 +3,6 @@ package com.flowfoundation.wallet.page.restore
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.MenuItem
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
@@ -15,8 +12,6 @@ import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
-import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
@@ -33,10 +28,6 @@ class WalletRestoreActivity : BaseActivity() {
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
 
         with(binding) {
-            tvTitle.text = SpannableString(R.string.import_wallet.res2String()).apply {
-                val keyword = R.string.import_str.res2String()
-                setSpan(ForegroundColorSpan(R.color.accent_green.res2color()), 0, keyword.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
             llImportFromDevice.setOnClickListener {
                 if (isTestnet() || isPreviewnet()) {
                     SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()

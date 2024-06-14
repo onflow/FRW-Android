@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Бумажник Flow</string>
     <string name="next">Следующий</string>
     <string name="username">Имя пользователя</string>
     <string name="username_too_short">Слишком короткая</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Wallet использует этот пароль для шифрования резервной копии.</string>
     <string name="password">Пароль</string>
     <string name="password_verify_format">Введите не менее 8 символов</string>
-    <string name="please_create">Создать пароль \n</string>
+    <string name="create">Создать</string>
     <string name="backing_up">Резервное копирование</string>
     <string name="backup_error">Ошибка резервного копирования</string>
     <string name="backup">Резервное копирование</string>
@@ -25,8 +24,9 @@
     <string name="secure">Безопасный</string>
     <string name="manual_backup_tip">Разблокировка с помощью PIN-кода и биометрических данных обеспечивает дополнительную безопасность кошелька.</string>
     <string name="pick_your">Выбери свой</string>
-    <string name="pin_code_title">Добавьте дополнительную защиту\n, чтобы\nваш кошелек.</string>
+    <string name="add_extra">Добавить дополнительно</string>
     <string name="protection">Защита</string>
+    <string name="to_your_wallet">В ваш кошелек</string>
     <string name="pin_code">ПИН-код</string>
     <string name="create_pin">Создайте PIN-код</string>
     <string name="pin">PIN</string>
@@ -39,7 +39,6 @@
     <string name="explore">Посетите сайт</string>
     <string name="profile">Профиль</string>
     <string name="things_you">Вещи, которые вы \nдолжны знать</string>
-    <string name="know">Знайте:</string>
     <string name="wallet_create_warning_tip">На следующем шаге вы увидите секретную фразу (12 слов). Секретная фраза - единственный ключ к восстановлению вашего кошелька.</string>
     <string name="create_wallet_warning1">Если я потеряю свои секретные фразы, я не смогу получить доступ к своей учетной записи навсегда.</string>
     <string name="create_wallet_warning2">Если я где-нибудь раскрою свои секретные фразы, мои средства могут быть украдены.</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">Резервное копирование вручную</string>
     <string name="backup_to_google_drive">Резервное копирование на google drive</string>
     <string name="recovery_phrase">Фраза о восстановлении</string>
+    <string name="recovery">Восстановление</string>
     <string name="phrase">Фраза</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">Восстановить кошелек</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">Зашифровать резервную копию</string>
     <string name="done">Готово</string>
     <string name="biometrics">Биометрия</string>
-    <string name="legal_information">Юридическая \nинформация</string>
     <string name="legal">Юридическая</string>
+    <string name="information">Информация</string>
     <string name="legal_tip">Ознакомьтесь с Политикой конфиденциальности и Условиями обслуживания Flow Wallet.</string>
     <string name="i_accept">Я принимаю</string>
     <string name="terms_of_service">Условия предоставления услуг</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">Изучите\nваш любимый сайт.</string>
     <string name="guide_desc_4">Поделитесь отличными коллекциями NFT с друзьями</string>
     <string name="import_wallet">Импортный кошелек</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">Импорт</string>
     <string name="welcome_desc">Предоставьте больше информации о безопасности</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
     <string name="network_error">Ошибка сети</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">Загрузка резервной копии</string>
     <string name="backup_completed">Резервное копирование завершено</string>
     <string name="ok">OK</string>
-    <string name="import_profile_note">Восстановите профиль с помощью резервной копии.</string>
+    <string name="import_wallet_note">Восстановите кошелек с помощью резервной копии.</string>
     <string name="from_device_backup">Из резервной копии устройства</string>
     <string name="from_device_backup_note">Восстановление из другого мобильного кошелька или кошелька расширения</string>
     <string name="from_multi_backup">Из Multi Backup</string>
@@ -540,5 +540,5 @@
     <string name="quick_enable_evm">Быстрое включение EVM</string>
     <string name="select_collection">Выберите коллекцию</string>
     <string name="import_profile">Профиль импорта</string>
-    <string name="notification">Notification</string>
+    <string name="notification">Уведомление</string>
 </resources>

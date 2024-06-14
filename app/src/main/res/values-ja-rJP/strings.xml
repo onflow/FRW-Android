@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">フロー・ウォレット</string>
     <string name="next">次のページ</string>
     <string name="username">ユーザー名</string>
     <string name="username_too_short">短すぎる</string>
@@ -17,7 +16,7 @@
     <string name="cloud_password_tip">Flow Walletはこのパスワードを使ってバックアップを暗号化します。</string>
     <string name="password">パスワード</string>
     <string name="password_verify_format">8文字以上</string>
-    <string name="please_create">\nパスワードの作成</string>
+    <string name="create">作成</string>
     <string name="backing_up">バックアップ</string>
     <string name="backup_error">バックアップエラー</string>
     <string name="backup">バックアップ</string>
@@ -25,8 +24,9 @@
     <string name="secure">セキュア</string>
     <string name="manual_backup_tip">PINコードと生体認証によるロック解除で、財布のセキュリティを強化。</string>
     <string name="pick_your">あなたの選択</string>
-    <string name="pin_code_title">\nお財布に\nのプロテクションを追加する。</string>
+    <string name="add_extra">追加</string>
     <string name="protection">保護</string>
+    <string name="to_your_wallet">あなたの財布へ</string>
     <string name="pin_code">PINコード</string>
     <string name="create_pin">PINの作成</string>
     <string name="pin">暗証番号</string>
@@ -39,7 +39,6 @@
     <string name="explore">エクスペリエンス</string>
     <string name="profile">プロフィール</string>
     <string name="things_you">\n知っておくべきこと</string>
-    <string name="know">知る</string>
     <string name="wallet_create_warning_tip">次のステップでは、秘密のフレーズ（12語）が表示されます。この秘密のフレーズこそが、あなたの財布を取り戻す唯一の鍵なのです。</string>
     <string name="create_wallet_warning1">シークレットフレーズを紛失すると、永遠に自分のアカウントにアクセスできなくなります。</string>
     <string name="create_wallet_warning2">私の秘密のフレーズをどこかに晒せば、私の資金は盗まれる可能性がある。</string>
@@ -47,6 +46,7 @@
     <string name="backup_manually">手動バックアップ</string>
     <string name="backup_to_google_drive">グーグルドライブにバックアップ</string>
     <string name="recovery_phrase">リカバリーフレーズ</string>
+    <string name="recovery">リカバリー</string>
     <string name="phrase">フレーズ</string>
     <string name="nft">エヌエフティー</string>
     <string name="restore_wallet">財布の復元</string>
@@ -72,8 +72,8 @@
     <string name="encrypt_backup">バックアップの暗号化</string>
     <string name="done">完了</string>
     <string name="biometrics">バイオメトリクス</string>
-    <string name="legal_information">\nインフォメーション</string>
     <string name="legal">リーガル</string>
+    <string name="information">インフォメーション</string>
     <string name="legal_tip">Flow Walletのプライバシーポリシーおよび利用規約をご確認ください。</string>
     <string name="i_accept">私は受け入れる</string>
     <string name="terms_of_service">利用規約</string>
@@ -250,7 +250,7 @@
     <string name="guide_title_4">探索\nお気に入りのサイト</string>
     <string name="guide_desc_4">優れたNFTコレクションを友人と共有する</string>
     <string name="import_wallet">インポート・ウォレット</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">輸入</string>
     <string name="welcome_desc">セキュリティについて</string>
     <string name="explore_new_nfts">新しいNFTの開拓</string>
     <string name="network_error">ネットワークエラー</string>
@@ -465,7 +465,7 @@
     <string name="upload_backup">バックアップのアップロード</string>
     <string name="backup_completed">バックアップ完了</string>
     <string name="ok">OK</string>
-    <string name="import_profile_note">バックアップを使用してプロファイルを復元します。</string>
+    <string name="import_wallet_note">バックアップを使って財布を復元する。</string>
     <string name="from_device_backup">デバイスのバックアップから</string>
     <string name="from_device_backup_note">他の携帯電話や拡張ウォレットから復元する</string>
     <string name="from_multi_backup">マルチバックアップより</string>
@@ -540,5 +540,5 @@
     <string name="quick_enable_evm">クイックイネーブルEVM</string>
     <string name="select_collection">セレクト・コレクション</string>
     <string name="import_profile">インポートプロフィール</string>
-    <string name="notification">Notification</string>
+    <string name="notification">お知らせ</string>
 </resources>

@@ -1,9 +1,6 @@
 package com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic
 
 import android.os.Bundle
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +13,6 @@ import com.flowfoundation.wallet.databinding.FragmentWalletCreateMnemonicBinding
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_CLOUD_PWD
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_MNEMONIC_CHECK
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
-import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
@@ -40,11 +35,6 @@ class WalletCreateMnemonicFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.title.text = SpannableString(R.string.recovery_phrase.res2String()).apply {
-            val protection = R.string.phrase.res2String()
-            val index = indexOf(protection)
-            setSpan(ForegroundColorSpan(R.color.colorSecondary.res2color()), index, index + protection.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
         with(binding.mnemonicContainer) {
             adapter = this@WalletCreateMnemonicFragment.adapter
             layoutManager = GridLayoutManager(requireContext(), 2, GridLayoutManager.VERTICAL, false)
