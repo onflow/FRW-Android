@@ -11,8 +11,10 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 
 open class ProfilePreference : FrameLayout {
 
@@ -75,13 +77,19 @@ open class ProfilePreference : FrameLayout {
 
     fun setDesc(descId: Int) {
         this.descId = descId
-        descView.setText(descId)
+        if (descId != 0) {
+            descView.setText(descId)
+        }
     }
 
     fun setSubtitle(subtitleId: Int) {
         this.subtitleId = subtitleId
-        subtitleView.setVisible(subtitleId > 0)
-        subtitleView.setText(subtitleId)
+        if (subtitleId != 0) {
+            subtitleView.visible()
+            subtitleView.setText(subtitleId)
+        } else {
+            subtitleView.gone()
+        }
     }
 
     override fun setOnClickListener(l: OnClickListener?) {
@@ -98,11 +106,19 @@ open class ProfilePreference : FrameLayout {
         if (desc.isNotBlank()) {
             descView.text = desc
         } else {
-            descView.setText(descId)
+            if (descId != 0) {
+                descView.setText(descId)
+            }
         }
         descView.setTextColor(descColor)
-        titleView.setText(titleId)
-        subtitleView.setVisible(subtitleId > 0)
-        subtitleView.setText(subtitleId)
+        if (titleId != 0) {
+            titleView.setText(titleId)
+        }
+        if (subtitleId != 0) {
+            subtitleView.visible()
+            subtitleView.setText(subtitleId)
+        } else {
+            subtitleView.gone()
+        }
     }
 }

@@ -24,7 +24,9 @@ class DrawerItem : FrameLayout {
         val textView = findViewById<TextView>(R.id.text_view)
 
         imageView.setImageResource(image)
-        textView.setText(textId)
+        if (textId != 0) {
+            textView.setText(textId)
+        }
     }
 
     override fun setOnClickListener(l: OnClickListener?) {

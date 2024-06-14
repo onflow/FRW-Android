@@ -49,7 +49,9 @@ class SendButton : TouchScaleCardView {
     private fun init() {
         addView(binding.root)
         with(binding) {
-            holdToSend.setText(defaultTextId)
+            if (defaultTextId != 0) {
+                holdToSend.setText(defaultTextId)
+            }
         }
     }
 
@@ -72,7 +74,9 @@ class SendButton : TouchScaleCardView {
 
     fun updateDefaultText(textId: Int) {
         defaultTextId = textId
-        binding.holdToSend.setText(defaultTextId)
+        if (textId != 0) {
+            binding.holdToSend.setText(defaultTextId)
+        }
     }
 
     fun updateProcessingText(textId: Int) {
@@ -100,13 +104,17 @@ class SendButton : TouchScaleCardView {
                     progressBar.changeIndeterminate(false)
                     removeCallbacks(progressTask)
                     indicatorProgress = 0f
-                    holdToSend.setText(defaultTextId)
+                    if (defaultTextId != 0) {
+                        holdToSend.setText(defaultTextId)
+                    }
                     progressBar.setProgress(0, true)
                 }
                 ButtonState.VERIFICATION -> verification()
                 ButtonState.LOADING -> {
                     setScaleEnable(false)
-                    holdToSend.setText(processingTextId)
+                    if (processingTextId != 0) {
+                        holdToSend.setText(processingTextId)
+                    }
                     progressBar.changeIndeterminate(true)
                 }
             }
