@@ -143,6 +143,9 @@
     <string name="address_check_success">Validated address</string>
     <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
 
     <string name="send_to">Send to</string>
     <string name="send_search_hint">Username, address(0x), Find or Flowns</string>
@@ -238,7 +241,7 @@
     <string name="transaction_history">Transaction history</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
-    <string name="reset_wallet">Reset Wallet</string>
+    <string name="reset_wallet">Reset Profile</string>
     <string name="reset_wallet_confirm_title">Are you sure you want to reset your wallet?</string>
     <string name="reset_wallet_tips">Removing the wallet from Flow Wallet does not remove the wallet
         from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.</string>
@@ -500,9 +503,9 @@
         wallet.</string>
     <string name="revoke_device">Revoke Device</string>
     <string name="wrong_network">Wrong Network</string>
-    <string name="backup_on_mainnet">You can only create backup on mainnet.</string>
-    <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
-    <string name="switch_on_mainnet">You can only switch account on mainnet.</string>
+    <string name="backup_on_mainnet">You can only perform this operation on Mainnet.</string>
+    <string name="restore_on_mainnet">You can only restore wallet on Mainnet.</string>
+    <string name="switch_on_mainnet">You can only switch account on Mainnet.</string>
     <string name="create_on_mainnet_or_testnet">You can only create account on mainnet or testnet.</string>
     <string name="switch_to_mainnet">Switch to Mainnet</string>
     <string name="connect">Connect</string>

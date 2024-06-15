@@ -142,6 +142,9 @@
     <string name="address_check_success">Bestätigte Adresse</string>
     <string name="address_search_empty_tip">Tut uns leid, wir haben kein entsprechendes Konto gefunden. Bitte überprüfen Sie Ihre Eingabe und suchen Sie erneut.</string>
     <string name="search_the_id">Suche nach der ID: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
     <string name="send_to">Senden an</string>
     <string name="send_search_hint">Benutzername, Adresse(0x), Suchen oder Flowns</string>
     <string name="recent">Neueste</string>

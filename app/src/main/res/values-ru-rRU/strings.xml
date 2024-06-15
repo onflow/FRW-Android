@@ -142,6 +142,9 @@
     <string name="address_check_success">Подтвержденный адрес</string>
     <string name="address_search_empty_tip">Извините, мы не нашли ни одного связанного аккаунта, пожалуйста, проверьте свой ввод и выполните поиск снова.</string>
     <string name="search_the_id">Поиск по идентификатору: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
     <string name="send_to">Отправить по адресу</string>
     <string name="send_search_hint">Имя пользователя, адрес (0x), Find или Flowns</string>
     <string name="recent">Последние</string>

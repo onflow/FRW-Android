@@ -142,6 +142,9 @@
     <string name="address_check_success">Dirección validada</string>
     <string name="address_search_empty_tip">Lo sentimos, no hemos encontrado ninguna cuenta relacionada, por favor compruebe su entrada y vuelva a buscarla.</string>
     <string name="search_the_id">Busque el identificador: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
     <string name="send_to">Enviar a</string>
     <string name="send_search_hint">Nombre de usuario, dirección(0x), Find o Flowns</string>
     <string name="recent">Recientes</string>

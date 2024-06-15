@@ -142,6 +142,9 @@
     <string name="address_check_success">확인된 주소</string>
     <string name="address_search_empty_tip">죄송합니다. 관련 계정을 찾을 수 없습니다. 입력하신 내용을 확인하신 후 다시 검색해 주세요.</string>
     <string name="search_the_id">ID 검색: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
     <string name="send_to">다음 주소로 보내기</string>
     <string name="send_search_hint">사용자 이름, 주소(0x), 찾기 또는 플라잉</string>
     <string name="recent">최근</string>

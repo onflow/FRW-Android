@@ -37,7 +37,7 @@
     <string name="mnemonic_question_title">选择单词 %1$s</string>
     <string name="home">首页</string>
     <string name="explore">探索</string>
-    <string name="profile">简介</string>
+    <string name="profile">账户</string>
     <string name="things_you">您 \n需要知道的事情</string>
     <string name="wallet_create_warning_tip">在下一步中，您将看到一个秘密短语（12 个词）。秘密短语是恢复您钱包的唯一钥匙。</string>
     <string name="create_wallet_warning1">如果我丢失了我的秘密短语，我将无法永远访问我的账户。</string>
@@ -83,7 +83,7 @@
     <string name="grid">网格</string>
     <string name="purchase_date">购买日期</string>
     <string name="purchase_price">购买价格</string>
-    <string name="coins">硬币</string>
+    <string name="coins">代币</string>
     <string name="collections">藏品</string>
     <string name="collections_count">%1$d 收藏品</string>
     <string name="collectibles_count">%1$d 收藏品</string>
@@ -104,7 +104,7 @@
     <string name="about">关于</string>
     <string name="sync_title">同步Flow钱包</string>
     <string name="switch_account">切换账户</string>
-    <string name="switch_profile">切换简介</string>
+    <string name="switch_profile">切换账户</string>
     <string name="logout">注销</string>
     <string name="edit_avatar">编辑头像</string>
     <string name="edit">编辑</string>
@@ -142,6 +142,8 @@
     <string name="address_check_success">验证地址</string>
     <string name="address_search_empty_tip">抱歉，未找到相关账户，请检查您的输入并重试。</string>
     <string name="search_the_id">搜索 ID： %1$s</string>
+    <string name="move_do_not_ask_me">不再提示</string>
+    <string name="move_to_desc_borwser">在 Flow 上的 cadence 地址之间转移您的资产，以便 %1$s 查看您的资产</string>
     <string name="send_to">发送到</string>
     <string name="send_search_hint">用户名，地址(0x)，查找或 Flowns</string>
     <string name="recent">最近</string>
@@ -171,7 +173,7 @@
     <string name="address_add_failed">添加地址簿失败</string>
     <string name="copy_str">复制</string>
     <string name="wallet">钱包</string>
-    <string name="coins_count">%1$d 硬币</string>
+    <string name="coins_count">%1$d 代币</string>
     <string name="add_token">添加代币</string>
     <string name="add_token_failed">添加代币失败</string>
     <string name="search_token">搜索代币</string>
@@ -221,7 +223,7 @@
     <string name="fcl_permission_transaction">请求交易批准</string>
     <string name="script">脚本</string>
     <string name="dapps">dApps</string>
-    <string name="process_of_enabling_coin">启用硬币的过程</string>
+    <string name="process_of_enabling_coin">启用代币</string>
     <string name="mnemonic_check_fail">选择错误</string>
     <string name="restore_with_recovery_phrase">用恢复短语恢复</string>
     <string name="not_logged_in_toast">您尚未登录钱包</string>
@@ -400,7 +402,7 @@
     <string name="i_understand">我明白</string>
     <string name="root_detection_alert">根检测警报</string>
     <string name="notification_channel_name">推送通知</string>
-    <string name="add_new_profile">添加新简介</string>
+    <string name="add_new_profile">添加新账户</string>
     <string name="import_existing_profile">导入现有配置文件</string>
     <string name="resume_login_error">遇到问题，请重新启动应用程序</string>
     <string name="new_feature">新功能</string>
@@ -422,7 +424,7 @@
     <string name="maybe_later">稍后再说</string>
     <string name="transaction_pending_tips">快到了，最后一笔交易尚未完成。</string>
     <string name="accessible">可访问</string>
-    <string name="none_accessible_coins">无无障碍硬币</string>
+    <string name="none_accessible_coins">无可用代币</string>
     <string name="no_linked_account">无关联账户</string>
     <string name="empty_bookmarks">空书签</string>
     <string name="view_empty_collection">查看空档</string>
@@ -534,11 +536,11 @@
     <string name="account_list">账户列表</string>
     <string name="edit_wallet">编辑钱包</string>
     <string name="select_nft_empty">0 NFTs</string>
-    <string name="profiles">简介</string>
-    <string name="create_profile">创建简介</string>
+    <string name="profiles">账户</string>
+    <string name="create_profile">创建账户</string>
     <string name="features_coming">即将推出的功能</string>
     <string name="quick_enable_evm">快速启用 EVM</string>
     <string name="select_collection">选择系列</string>
-    <string name="import_profile">进口简介</string>
+    <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
 </resources>

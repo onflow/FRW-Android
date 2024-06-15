@@ -142,6 +142,9 @@
     <string name="address_check_success">Indirizzo convalidato</string>
     <string name="address_search_empty_tip">Siamo spiacenti, non abbiamo trovato alcun account correlato, si prega di controllare l\'inserimento e di effettuare nuovamente la ricerca.</string>
     <string name="search_the_id">Cerca l\'ID: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
     <string name="send_to">Inviare a</string>
     <string name="send_search_hint">Nome utente, indirizzo(0x), Trova o Flowns</string>
     <string name="recent">Recente</string>

@@ -64,7 +64,9 @@ class WalletFragment : BaseFragment() {
         binding.moveButton.setVisible(isPreviewnet())
         binding.moveButton.setOnClickListener {
             if (EVMWalletManager.haveEVMAddress()) {
-                MoveDialog.show(childFragmentManager)
+                uiScope {
+                    MoveDialog().showMove(childFragmentManager)
+                }
             } else {
                 EnableEVMActivity.launch(this.requireContext())
             }

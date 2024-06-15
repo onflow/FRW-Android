@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.widget
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,11 +14,8 @@ import androidx.transition.Fade
 import androidx.transition.Scene
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveTokenBinding
-import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -30,16 +28,17 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class MoveTokenDialog : BottomSheetDialogFragment() {
@@ -47,6 +46,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private lateinit var binding: DialogMoveTokenBinding
     private var isFundToEVM = true
     private var fromBalance = 0.001f
+    private var result: Continuation<Boolean>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -111,6 +111,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 moveToken()
             }
             ivClose.setOnClickListener {
+                result?.resume(false)
                 dismiss()
             }
             coinWrapper.setOnClickListener {
@@ -126,7 +127,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 }
             }
         }
-        symbol = arguments?.getString(EXTRA_SYMBOL)?.lowercase() ?: FlowCoin.SYMBOL_FLOW
         initView()
     }
 
@@ -143,6 +143,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
                             BalanceManager.getBalanceByCoin(FlowCoin.SYMBOL_FLOW)
+                            result?.resume(true)
                             dismiss()
                         } else {
                             toast(R.string.move_flow_to_evm_failed)
@@ -160,6 +161,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                             } else {
                                 BalanceManager.getBalanceByCoin(symbol)
                             }
+                            result?.resume(true)
                             dismiss()
                         } else {
                             toast(R.string.move_flow_to_evm_failed)
@@ -231,6 +233,17 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 binding.tvBalance.text = "Balance $fromBalance"
             }
         }
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        result?.resume(false)
+    }
+
+    suspend fun showDialog(activity: FragmentActivity, symbol: String) = suspendCoroutine {
+        this.result = it
+        this.symbol = symbol.lowercase()
+        show(activity.supportFragmentManager, "")
     }
 
     companion object {

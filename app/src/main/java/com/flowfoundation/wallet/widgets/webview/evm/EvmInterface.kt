@@ -10,7 +10,9 @@ import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.page.browser.toFavIcon
+import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.findActivity
+import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
@@ -43,6 +45,9 @@ class EvmInterface(
         when (method) {
             DAppMethod.REQUEST_ACCOUNTS -> {
                 uiScope {
+                    if (isShowMoveDialog()) {
+                        MoveDialog().showMove(activity().supportFragmentManager, webView.title)
+                    }
                     val connect = EvmRequestAccountDialog().show(
                         activity().supportFragmentManager,
                         EVMDialogModel(title = webView.title, url = webView.url, network = network)

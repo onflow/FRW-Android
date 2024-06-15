@@ -28,6 +28,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.app.isDeveloperMode
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
@@ -51,6 +52,7 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
@@ -89,6 +91,7 @@ class DrawerLayoutPresenter(
                     EnableEVMActivity.launch(activity)
                 }
             }
+            flNetworkLayout.setVisible(isDeveloperMode())
             flNetworkLayout.setOnClickListener {
                 NetworkPopupMenu(tvNetwork).show()
             }

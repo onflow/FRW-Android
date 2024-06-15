@@ -46,7 +46,7 @@ class EvmRequestAccountDialog : BottomSheetDialogFragment() {
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
         with(binding) {
             ivIcon.loadFavicon(data.logo ?: data.url?.toFavIcon())
-            tvName.text = data.title?.split(" ")?.last()
+            tvName.text = data.title
             tvUrl.text = data.url?.urlHost()
             tvWalletAddress.text = address
             tvWalletIcon.text = Emoji.getEmojiById(emojiInfo.emojiId)

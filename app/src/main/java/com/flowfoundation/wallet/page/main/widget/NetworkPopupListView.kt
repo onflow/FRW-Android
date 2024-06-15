@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.lxj.xpopup.core.AttachPopupView
 import com.lxj.xpopup.interfaces.OnSelectListener
@@ -91,7 +92,7 @@ class NetworkPopupListView(
                     titleView.setTextColor(R.color.text_2.res2color())
                     bgView.backgroundTintList = ColorStateList.valueOf(R.color.transparent.res2color())
                 }
-                titleView.text = item.title
+                titleView.text = item.title.capitalizeV2()
                 view.setOnClickListener {
                     selectListener?.onSelect(layoutPosition, item.title)
                     if (popupInfo.autoDismiss) dismiss()

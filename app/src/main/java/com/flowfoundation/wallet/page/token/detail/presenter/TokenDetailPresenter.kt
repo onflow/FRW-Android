@@ -43,6 +43,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
+import com.flowfoundation.wallet.utils.uiScope
 
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,
@@ -91,7 +92,9 @@ class TokenDetailPresenter(
             llEvmMoveToken.setVisible(isPreviewnet() && moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
-                    MoveTokenDialog.show(activity, coin.symbol)
+                    uiScope {
+                        MoveTokenDialog().showDialog(activity, coin.symbol)
+                    }
                 } else {
                     EnableEVMActivity.launch(activity)
                 }

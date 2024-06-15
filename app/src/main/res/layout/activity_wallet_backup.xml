@@ -61,17 +61,6 @@
                         android:textSize="20sp"
                         android:textStyle="bold"/>
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/inter"
-                        android:gravity="center"
-                        android:lineSpacingMultiplier="1.1"
-                        android:text="@string/google_backup_note"
-                        android:textColor="@color/accent_blue"
-                        android:textSize="12sp"/>
-
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
@@ -120,17 +109,6 @@
                         android:textColor="@color/accent_purple"
                         android:textSize="20sp"
                         android:textStyle="bold"/>
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="@font/inter"
-                        android:gravity="center"
-                        android:text="@string/google_backup_note"
-                        android:lineSpacingMultiplier="1.1"
-                        android:textColor="@color/accent_purple"
-                        android:textSize="12sp"/>
 
                     <ImageView
                         android:layout_width="32dp"

@@ -29,6 +29,9 @@ import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 
 class SelectNFTDialog: BottomSheetDialogFragment() {
@@ -39,6 +42,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         SelectNFTListAdapter(viewModel)
     }
     private var selectedCollection: CollectionInfo? = null
+    private var result: Continuation<Boolean>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -75,7 +79,10 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
         isMoveToEVM = WalletManager.isEVMAccountSelected().not()
         with(binding) {
-            ivClose.setOnClickListener { dismissAllowingStateLoss() }
+            ivClose.setOnClickListener {
+                result?.resume(false)
+                dismissAllowingStateLoss()
+            }
             layoutFromAccount.setAccountInfo(WalletManager.selectedWalletAddress())
             if (isMoveToEVM) {
                 layoutToAccount.setAccountInfo(EVMWalletManager.getEVMAddress() ?: "")
@@ -93,6 +100,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                         uiScope {
                             btnMove.setProgressVisible(false)
                             if (isSuccess) {
+                                result?.resume(true)
                                 dismissAllowingStateLoss()
                             } else {
                                 toast(msg = "move nft failure")
@@ -177,10 +185,14 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         }
     }
 
-
-    companion object {
-        fun show(activity: FragmentActivity) {
-            SelectNFTDialog().show(activity.supportFragmentManager, "")
-        }
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        result?.resume(false)
     }
+
+    suspend fun show(activity: FragmentActivity) = suspendCoroutine {
+        this.result = it
+        show(activity.supportFragmentManager, "")
+    }
+
 }
