@@ -37,7 +37,8 @@ import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate, TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener,
+class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate,
+    TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener,
     OnUserInfoReload {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
@@ -94,7 +95,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     override fun onCurrencyUpdate(flag: String, price: Float) {
         ioScope {
             val currency = selectedCurrency()
-            dataList.forEachIndexed { index, item -> dataList[index] = item.copy(currency = currency.flag) }
+            dataList.forEachIndexed { index, item ->
+                dataList[index] = item.copy(currency = currency.flag)
+            }
             dataListLiveData.postValue(dataList)
         }
     }
@@ -148,7 +151,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private fun loadCoinList() {
         viewModelIOScope(this) {
-            val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+            val coinList =
+                FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
             if (coinList.isEmpty()) {
                 return@viewModelIOScope
             }
@@ -156,8 +160,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val isHideBalance = isHideWalletBalance()
             val currency = getCurrencyFlag()
             uiScope {
-                val coinToAdd = coinList.filter { coin -> dataList.none { it.coin.symbol == coin.symbol } }
-                val coinToRemove = dataList.filter { coin -> coinList.none {it.symbol == coin.coin.symbol} }
+                val coinToAdd =
+                    coinList.filter { coin -> dataList.none { it.coin.symbol == coin.symbol } }
+                val coinToRemove =
+                    dataList.filter { coin -> coinList.none { it.symbol == coin.coin.symbol } }
                 logd(TAG, "loadCoinList coinToAdd::${coinToAdd.map { it.symbol }}")
                 logd(TAG, "loadCoinList coinToRemove::${coinToRemove.map { it.coin.symbol }}")
                 if (coinToAdd.isNotEmpty() || coinToRemove.isNotEmpty()) {
@@ -184,7 +190,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     }
 
     private suspend fun loadTransactionCount() {
-        val count = flowScanAccountTransferCountQuery() + TransactionStateManager.getProcessingTransaction().size
+        val count =
+            flowScanAccountTransferCountQuery() + TransactionStateManager.getProcessingTransaction().size
         val localCount = getAccountTransferCount()
         if (count < localCount) {
             logd(TAG, "loadTransactionCount remote count < local count:$count < $localCount")
@@ -199,24 +206,44 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         val oldItem = dataList.firstOrNull { it.coin.symbol == balance.symbol } ?: return
         val item = oldItem.copy(balance = balance.balance)
         dataList[dataList.indexOf(oldItem)] = item
+        sortDataList()
         dataListLiveData.value = dataList
         updateWalletHeader()
     }
 
-    private fun updateCoinRate(coin: FlowCoin, price: Float? = null, quoteChange: Float, forceRate: Float? = null) {
+    private fun updateCoinRate(
+        coin: FlowCoin,
+        price: Float? = null,
+        quoteChange: Float,
+        forceRate: Float? = null
+    ) {
         val rate = (price ?: forceRate) ?: 0f
         logd(TAG, "updateCoinRate ${coin.symbol}:$rate:$quoteChange")
 
         val oldItem = dataList.firstOrNull { it.coin.symbol == coin.symbol } ?: return
         val item = oldItem.copy(coinRate = rate, quoteChange = quoteChange)
         dataList[dataList.indexOf(oldItem)] = item
+        sortDataList()
         dataListLiveData.value = dataList
         updateWalletHeader()
     }
 
+    private fun sortDataList() {
+        val mutableData = dataList.toMutableList()
+        val comparator = compareByDescending<WalletCoinItemModel> { it.balance * it.coinRate }
+            .thenByDescending { it.balance }
+        mutableData.sortWith(comparator)
+        dataList.clear()
+        dataList.addAll(mutableData)
+    }
+
     private fun updateWalletHeader(wallet: WalletListData? = null, count: Int? = null) {
         uiScope {
-            val header = headerLiveData.value ?: (if (wallet == null) return@uiScope else WalletHeaderModel(wallet, 0f))
+            val header =
+                headerLiveData.value ?: (if (wallet == null) return@uiScope else WalletHeaderModel(
+                    wallet,
+                    0f
+                ))
             headerLiveData.postValue(header.copy().apply {
                 balance = dataList.toList().map { it.balance * it.coinRate }.sum()
                 count?.let { coinCount = it }

@@ -1,8 +1,5 @@
 package com.flowfoundation.wallet.page.backup.multibackup.presenter
 
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
@@ -13,6 +10,7 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.keyboardT9Normal
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setSpannableText
 import com.flowfoundation.wallet.utils.getPinCode
 import com.flowfoundation.wallet.utils.savePinCode
 
@@ -72,42 +70,28 @@ class BackupPinCodePresenter(
 
     private fun setPinText(isCheckMode: Boolean) {
         with(binding) {
-            pinTitle.text = SpannableString(
+            pinTitle.setSpannableText(
                 if (isVerifyPinCode) {
                     R.string.verify_pin.res2String()
                 } else if (isCheckMode) {
                     R.string.check_pin.res2String()
                 } else {
                     R.string.create_pin.res2String()
-                }
-            ).apply {
-                val protection = R.string.pin.res2String()
-                val index = indexOf(protection)
-                setSpan(
-                    ForegroundColorSpan(R.color.accent_green.res2color()),
-                    index,
-                    index + protection.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-            pinTip.text = SpannableString(
+                },
+                R.string.pin.res2String(),
+                R.color.accent_green.res2color()
+            )
+            pinTip.setSpannableText(
                 if (isVerifyPinCode) {
                     R.string.verify_pin_tip.res2String()
                 } else if (isCheckMode) {
                     R.string.check_pin_tip.res2String()
                 } else {
                     R.string.backup_pin_tip.res2String()
-                }
-            ).apply {
-                val protection = R.string.pin.res2String()
-                val index = indexOf(protection)
-                setSpan(
-                    ForegroundColorSpan(R.color.accent_green.res2color()),
-                    index,
-                    index + protection.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+                },
+                R.string.pin.res2String(),
+                R.color.accent_green.res2color()
+            )
         }
     }
 }

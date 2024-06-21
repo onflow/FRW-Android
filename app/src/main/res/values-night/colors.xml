@@ -111,5 +111,6 @@
 
     <color name="bg_skip">#4DFFFFFF</color>
 
+    <color name="landing_tab_dot_normal">#29FFFFFF</color>
 </resources>
 

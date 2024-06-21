@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
 import com.flowfoundation.wallet.page.inbox.InboxActivity
+import com.flowfoundation.wallet.page.landing.LandingActivity
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.profile.ProfileFragment
@@ -31,14 +32,12 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrenc
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
-import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
 import com.flowfoundation.wallet.utils.getNotificationSettingIntent

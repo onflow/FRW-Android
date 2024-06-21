@@ -28,8 +28,8 @@
     <string name="protection">保护</string>
     <string name="to_your_wallet">致您的钱包</string>
     <string name="pin_code">PIN 码</string>
-    <string name="create_pin">创建密码</string>
-    <string name="pin">PIN 码</string>
+    <string name="create_pin">创建 PIN 密码</string>
+    <string name="pin">PIN</string>
     <string name="check_pin">请再次输入\n您的 PIN 码</string>
     <string name="check_pin_tip">请确保您能记住自己的 PIN 码。</string>
     <string name="create_pin_tip">只有你自己可以解锁你的钱包。</string>
@@ -112,13 +112,13 @@
     <string name="visible">可见</string>
     <string name="invisible">无形</string>
     <string name="private_str">私密</string>
-    <string name="reset_pin_code">重置密码</string>
+    <string name="reset_pin_code">重置 PIN 密码</string>
     <string name="private_key">私钥</string>
     <string name="verify_pin_code">验证 PIN 码</string>
     <string name="verify_pin">验证 PIN 码</string>
     <string name="verify_pin_tip">因此，我们将使用 PIN 码保护您的备份。</string>
     <string name="enter_verify_pin_tip">请在创建此备份时输入 PIN 码。</string>
-    <string name="verify_pin_code_error">请确认输入的密码正确无误。</string>
+    <string name="verify_pin_code_error">请确认输入的 PIN 密码正确无误。</string>
     <string name="enter_current_pin_code">请输入当前的 PIN 码</string>
     <string name="do_not_share_secret">不要分享你的密语！</string>
     <string name="do_not_share_secret_desc">如果有人获得了你的密语，他们将对你的钱包拥有完全控制权。</string>
@@ -157,7 +157,7 @@
     <string name="to">至</string>
     <string name="amount_confirmation">金额确认</string>
     <string name="insufficient_balance">余额不足</string>
-    <string name="minimum_required">最少 50 个流量</string>
+    <string name="minimum_required">最少 50 个 Flow</string>
     <string name="copy_address_toast">复制到剪贴板的地址</string>
     <string name="shared_via">通过...分享</string>
     <string name="send_nft">发送 NFT</string>
@@ -252,7 +252,7 @@
     <string name="guide_title_4">探索\n您喜爱的网站</string>
     <string name="guide_desc_4">与朋友分享优秀的 NFT 藏品</string>
     <string name="import_wallet">导入钱包</string>
-    <string name="import_str">进口</string>
+    <string name="import_str">导入</string>
     <string name="welcome_desc">提供更多安全信息</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">网络错误</string>
@@ -301,14 +301,14 @@
     <string name="pending_request">待处理请求</string>
     <string name="connected_site">已连接网站</string>
     <string name="currency">货币</string>
-    <string name="stake_flow_banner_title">盯住流量，赚取奖励</string>
+    <string name="stake_flow_banner_title">质押 Flow，赚取奖励</string>
     <string name="stake_flow">质押 Flow</string>
     <string name="stake_guide_header1">赚取奖励</string>
     <string name="stake_guide_header2">质押你的 Flow</string>
     <string name="lets_staking">让我们开始质押</string>
     <string name="stake_guide_desc_1">赚取高达 <font color="#60C293"><strong>13%</strong></font>
         每年收益高达 13%。</string>
-    <string name="stake_guide_desc_2">押注时 <font color="#60C293"><strong>流量</strong></font>您将获得 <font color="#60C293"><strong>流量</strong></font>.您可以 <font color="#60C293"><strong>交易</strong></font>这种流动资产。</string>
+    <string name="stake_guide_desc_2">当您质押 <font color="#60C293"><strong>Flow</strong></font>您将获得 <font color="#60C293"><strong>Flow</strong></font>. 您可以 <font color="#60C293"><strong>交易</strong></font>这种流动资产。</string>
     <string name="stake_guide_desc_3">您可以 <font color="#60C293"><strong>马上</strong></font>.</string>
     <string name="stake_guide_desc_4">奖励自动存入您的存款 <font color="#60C293"><strong>每隔几天</strong></font>.</string>
     <string name="staking_provider">定标提供商</string>
@@ -317,7 +317,7 @@
     <string name="stake_amount">质押金额</string>
     <string name="rate">利率</string>
     <string name="est_annual_reward">预计年奖励</string>
-    <string name="flow_available_num">%1$s 可用流量</string>
+    <string name="flow_available_num">%1$s 可用 Flow</string>
     <string name="flow_available">可用Flow</string>
     <string name="flow_coin_name">Flow</string>
     <string name="on_wallet_only">仅限 Flow 钱包</string>
@@ -340,10 +340,10 @@
     <string name="epoch_ends">纪元结束</string>
     <string name="daily_reward">每日奖励</string>
     <string name="monthly_reward">每月奖励</string>
-    <string name="flow_num">%1$s 流量</string>
+    <string name="flow_num">%1$s Flow</string>
     <string name="unstake">取消质押</string>
     <string name="unstake_amount">取消质押金额</string>
-    <string name="staked_flow_num">%1$s 定点流量</string>
+    <string name="staked_flow_num">%1$s 已质押 Flow</string>
     <string name="unstaking_amount">质押中金额</string>
     <string name="committed_amount">已提交金额</string>
     <string name="unstaked_amount">未质押金额</string>
@@ -391,8 +391,8 @@
     <string name="unlink_account_desc">解除账户链接，主钱包将不再访问该账户。</string>
     <string name="hold_to_unlink">按住以解除连接</string>
     <string name="this_app_would_like_to">此应用想要</string>
-    <string name="link_account_tips_1">将账户委托给流量钱包</string>
-    <string name="link_account_tips_2">流量钱包将管理链接账户</string>
+    <string name="link_account_tips_1">将账户委托给 Flow Wallet</string>
+    <string name="link_account_tips_2">Flow Wallet 将管理链接账户</string>
     <string name="root_detected">检测到根</string>
     <string name="root_detected_desc">您的钥匙串在威胁中暴露。\n请确保这是您的操作并提高账户安全性。</string>
     <string name="things_you_need_to_know">需要了解的事项</string>
@@ -403,7 +403,7 @@
     <string name="root_detection_alert">根检测警报</string>
     <string name="notification_channel_name">推送通知</string>
     <string name="add_new_profile">添加新账户</string>
-    <string name="import_existing_profile">导入现有配置文件</string>
+    <string name="import_existing_profile">导入现有账户</string>
     <string name="resume_login_error">遇到问题，请重新启动应用程序</string>
     <string name="new_feature">新功能</string>
     <string name="new_feature_desc">我们进行了以下更新，以改善您的体验。</string>
@@ -482,7 +482,9 @@
     <string name="prepared_to_restore_wallet">准备恢复钱包</string>
     <string name="view_all">查看所有</string>
     <string name="create_device_backup_title">在设备间同步您的钱包</string>
-    <string name="create_device_backup_note">扫描 Flow Wallet 浏览器扩展程序显示的二维码，在设备之间同步钱包</string>
+    <string name="device_backup_note">扫描 Flow Wallet 浏览器扩展程序显示的二维码，在设备之间同步钱包</string>
+    <string name="create_device_backup_note">将设备用作备份钱包，轻松保护和恢复数字资产</string>
+    <string name="create_multi_backup_note">使用 Google Drive、Passkey 等可信提供商创建云备份，并确保恢复密码的安全</string>
     <string name="scan_desktop_device">扫描桌面设备</string>
     <string name="backup_detail">备份详情</string>
     <string name="backup_info">备份信息</string>
@@ -496,10 +498,10 @@
     <string name="restore_failed_option">还原失败。确保备份选项属于同一个
         钱包。</string>
     <string name="revoke_device">撤销设备</string>
-    <string name="wrong_network">错误网络</string>
-    <string name="backup_on_mainnet">您只能在主网上创建备份。</string>
+    <string name="wrong_network">切换网络</string>
+    <string name="backup_on_mainnet">您只能在 Mainnet 上创建备份。</string>
     <string name="restore_on_mainnet">您只能在主网上恢复钱包。</string>
-    <string name="switch_on_mainnet">您只能在主网上切换账户。</string>
+    <string name="switch_on_mainnet">您只能在主网上创建备份。</string>
     <string name="create_on_mainnet_or_testnet">您只能在主网或测试网创建账户。</string>
     <string name="switch_to_mainnet">切换到主网</string>
     <string name="connect">连接</string>
@@ -516,7 +518,7 @@
     <string name="cadence">节奏</string>
     <string name="share_qr_code">共享 QR 代码</string>
     <string name="move_token">移动令牌</string>
-    <string name="move_flow_to_evm_failed">将流量令牌移至 EVM 失败</string>
+    <string name="move_flow_to_evm_failed">将 Flow 代币移至 EVM 失败</string>
     <string name="move_nft_to_evm_failed">将 NFT 移至 EVM 失败</string>
     <string name="hide_browser_toolbar">隐藏</string>
     <string name="sync_in_processing">扫描成功 \n同步处理中...</string>
@@ -543,4 +545,17 @@
     <string name="select_collection">选择系列</string>
     <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
+    <string name="landing_step_one_title">安全， \n由 KeyStore 提供支持。</string>
+    <string name="landing_step_two_title">您的设备，\n现在是一个硬件钱包。</string>
+    <string name="landing_step_three_title">您刚刚，\n解锁了真正的所有权。</string>
+    <string name="landing_step_four_title">蓄势待发</string>
+    <string name="landing_step_one_desc">Flow 钱包使用设备的 KeyStore 来保护您的 Flow 账户。</string>
+    <string name="landing_step_two_desc">KeyStore 是设备上的特殊硬件，Flow
+        Wallet
+利用它将设备变成硬件钱包。</string>
+    <string name="landing_step_three_desc">您的资产受到设备的保护，从而在 Flow 上实现对资产的真正所有权。</string>
+    <string name="landing_step_four_desc">您的 Flow 账户已准备就绪，
+，让我们开始吧！</string>
+    <string name="landing_step_loading">创建账户中</string>
+    <string name="landing_step_done">进入 Flow</string>
 </resources>

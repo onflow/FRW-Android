@@ -98,15 +98,15 @@ fun QuoteMarket.getFlowPricePair(): String {
 }
 
 fun FlowCoin.getPricePair(market: QuoteMarket): String {
-    return when (symbol) {
-        FlowCoin.SYMBOL_FLOW, FlowCoin.SYMBOL_STFLOW -> market.getFlowPricePair()
+    return when (symbol.lowercase()) {
+        FlowCoin.SYMBOL_FLOW, FlowCoin.SYMBOL_STFLOW.lowercase() -> market.getFlowPricePair()
         FlowCoin.SYMBOL_FUSD, FlowCoin.SYMBOL_USDC -> market.getUSDCPricePair()
         else -> ""
     }
 }
 
 fun FlowCoin.isUSDStableCoin(): Boolean {
-    return symbol == FlowCoin.SYMBOL_FUSD || symbol == FlowCoin.SYMBOL_USDC
+    return symbol.lowercase() == FlowCoin.SYMBOL_FUSD || symbol.lowercase() == FlowCoin.SYMBOL_USDC
 }
 
 @Suppress("UNCHECKED_CAST")

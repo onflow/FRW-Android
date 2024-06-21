@@ -31,11 +31,12 @@ abstract class BaseAdapter<T>(
 }
 
 private class BaseDiffCallback<T> : DiffUtil.ItemCallback<T>() {
-    override fun areItemsTheSame(oldItem: T, newItem: T): Boolean {
+
+    override fun areItemsTheSame(oldItem: T & Any, newItem: T & Any): Boolean {
         return false
     }
 
-    override fun areContentsTheSame(oldItem: T, newItem: T): Boolean {
+    override fun areContentsTheSame(oldItem: T & Any, newItem: T & Any): Boolean {
         return false
     }
 }

@@ -230,6 +230,7 @@
     <color name="accent_blue_16">#29579AF2</color>
     <color name="accent_purple_16">#297678ED</color>
     <color name="accent_gray_16">#298C9BAB</color>
+    <color name="accent_gray_8">#298C9BAB</color>
     <color name="accent_green_8">#1441CC5D</color>
 
 
@@ -250,7 +251,7 @@
     <color name="evm_on_flow_end_color">#00EF8B</color>
 
     <color name="move_nft_start_color">#857AFF</color>
-    <color name="move_nft_cover_color">#14000000</color>
+    <color name="move_nft_cover_color">#4d00199D</color>
     <color name="move_token_start_color">#00FF75</color>
     <color name="move_token_cover_color">#23CBCB</color>
 
@@ -270,5 +271,7 @@
     <color name="emoji_lemon">#FDEF85</color>
     <color name="emoji_coconut">#E3CAAA</color>
     <color name="emoji_avocado">#B2C45C</color>
+
+    <color name="landing_tab_dot_normal">#14000000</color>
 
 </resources>

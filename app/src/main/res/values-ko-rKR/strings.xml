@@ -22,7 +22,7 @@
     <string name="backup">백업</string>
     <string name="double_str">더블</string>
     <string name="secure">보안</string>
-    <string name="manual_backup_tip">비밀번호와 생체 인식으로 잠금을 해제하여 지갑 보안을 강화하세요.</string>
+    <string name="manual_backup_tip">PIN 와 생체 인식으로 잠금을 해제하여 지갑 보안을 강화하세요.</string>
     <string name="pick_your">선택</string>
     <string name="add_extra">추가 추가</string>
     <string name="protection">보호</string>
@@ -30,10 +30,10 @@
     <string name="pin_code">PIN 코드</string>
     <string name="create_pin">PIN 만들기</string>
     <string name="pin">PIN</string>
-    <string name="check_pin">\n비밀번호를 다시 입력하세요.</string>
-    <string name="check_pin_tip">비밀번호를 기억하고 있는지 확인하세요.</string>
+    <string name="check_pin">\nPIN 를 다시 입력하세요.</string>
+    <string name="check_pin_tip">PIN 를 기억하고 있는지 확인하세요.</string>
     <string name="create_pin_tip">따라서 본인 외에는 누구도 지갑을 잠금 해제할 수 없습니다.</string>
-    <string name="backup_pin_tip">비밀번호는 계정 백업을 안전하게 암호화하는 데 사용됩니다.</string>
+    <string name="backup_pin_tip">PIN 는 계정 백업을 안전하게 암호화하는 데 사용됩니다.</string>
     <string name="mnemonic_question_title">%1$s단어를 선택합니다.</string>
     <string name="home">홈</string>
     <string name="explore">탐색</string>
@@ -115,10 +115,10 @@
     <string name="reset_pin_code">PIN 코드 재설정</string>
     <string name="private_key">개인 키</string>
     <string name="verify_pin_code">PIN 코드 확인</string>
-    <string name="verify_pin">비밀번호 확인</string>
-    <string name="verify_pin_tip">따라서 비밀번호로 백업을 보호합니다.</string>
-    <string name="enter_verify_pin_tip">이 백업을 만들 때 비밀번호를 입력하세요.</string>
-    <string name="verify_pin_code_error">올바른 비밀번호를 입력했는지 확인하세요.</string>
+    <string name="verify_pin">PIN 확인</string>
+    <string name="verify_pin_tip">따라서 PIN 로 백업을 보호합니다.</string>
+    <string name="enter_verify_pin_tip">이 백업을 만들 때 PIN 를 입력하세요.</string>
+    <string name="verify_pin_code_error">올바른 PIN 를 입력했는지 확인하세요.</string>
     <string name="enter_current_pin_code">현재 PIN 코드를 입력하세요.</string>
     <string name="do_not_share_secret">비밀 문구를 공유하지 마세요!</string>
     <string name="do_not_share_secret_desc">누군가 내 비밀 문구를 알고 있다면 지갑을 완전히 제어할 수 있습니다.</string>
@@ -483,7 +483,9 @@
     <string name="prepared_to_restore_wallet">지갑 복원 준비 완료</string>
     <string name="view_all">모두 보기</string>
     <string name="create_device_backup_title">기기 간에 지갑 동기화</string>
-    <string name="create_device_backup_note">플로우 월렛 브라우저 확장 프로그램에 표시된 QR 코드를 스캔하여 기기 간에 월렛을 동기화합니다.</string>
+    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="create_device_backup_note">참고: Google 드라이브 백업은 절대로 플로우 월렛의 서버를 거치지 않습니다. 종단 간 암호화되어 있어 절대 읽을 수 없습니다.</string>
+    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
     <string name="scan_desktop_device">데스크톱 장치 스캔</string>
     <string name="backup_detail">백업 세부 정보</string>
     <string name="backup_info">백업 정보</string>
@@ -497,10 +499,10 @@
     <string name="restore_failed_option">복원에 실패했습니다. 백업 옵션이 동일한
         지갑에 속하는지 확인합니다.</string>
     <string name="revoke_device">장치 해지</string>
-    <string name="wrong_network">잘못된 네트워크</string>
-    <string name="backup_on_mainnet">메인넷에서만 백업을 만들 수 있습니다.</string>
+    <string name="wrong_network">스위치 네트워크</string>
+    <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
     <string name="restore_on_mainnet">메인넷에서만 지갑을 복원할 수 있습니다.</string>
-    <string name="switch_on_mainnet">메인넷에서만 계정을 전환할 수 있습니다.</string>
+    <string name="switch_on_mainnet">메인넷에서만 백업을 만들 수 있습니다.</string>
     <string name="create_on_mainnet_or_testnet">메인넷 또는 테스트넷에서만 계정을 만들 수 있습니다.</string>
     <string name="switch_to_mainnet">메인넷으로 전환</string>
     <string name="connect">연결</string>
@@ -544,4 +546,17 @@
     <string name="select_collection">컬렉션 선택</string>
     <string name="import_profile">프로필 가져오기</string>
     <string name="notification">알림</string>
+    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
+    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
+    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
+    <string name="landing_step_four_title">ready to get started</string>
+    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
+    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
+        Wallet
+uses to turn your device into a hardware wallet.</string>
+    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_desc">Your Flow account is ready,
+let’s get started!</string>
+    <string name="landing_step_loading">Creating your Profile</string>
+    <string name="landing_step_done">Go with the FLOW</string>
 </resources>

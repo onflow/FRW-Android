@@ -29,9 +29,9 @@
     <string name="to_your_wallet">あなたの財布へ</string>
     <string name="pin_code">PINコード</string>
     <string name="create_pin">PINの作成</string>
-    <string name="pin">暗証番号</string>
+    <string name="pin">PIN</string>
     <string name="check_pin">\nPINをもう一度入力してください。</string>
-    <string name="check_pin_tip">暗証番号を忘れないようにしてください。</string>
+    <string name="check_pin_tip">PINを忘れないようにしてください。</string>
     <string name="create_pin_tip">だから、あなた以外の誰もあなたの財布のロックを解除することはできない。</string>
     <string name="backup_pin_tip">PINコードはアカウントのバックアップを安全に暗号化するために使用されます。</string>
     <string name="mnemonic_question_title">%1$sを選択する。</string>
@@ -115,10 +115,10 @@
     <string name="reset_pin_code">PINコードのリセット</string>
     <string name="private_key">プライベート・キー</string>
     <string name="verify_pin_code">PINコードの確認</string>
-    <string name="verify_pin">暗証番号の確認</string>
+    <string name="verify_pin">PINの確認</string>
     <string name="verify_pin_tip">そのため、PINコードでバックアップを保護します。</string>
     <string name="enter_verify_pin_tip">このバックアップを作成する際にPINを入力してください。</string>
-    <string name="verify_pin_code_error">入力された暗証番号が正しいことを確認してください。</string>
+    <string name="verify_pin_code_error">入力されたPINが正しいことを確認してください。</string>
     <string name="enter_current_pin_code">現在のPINコードを入力してください</string>
     <string name="do_not_share_secret">秘密のフレーズを共有しないこと！</string>
     <string name="do_not_share_secret_desc">もし誰かがあなたの秘密のフレーズを持っていたら、彼らはあなたの財布を完全にコントロールすることができる。</string>
@@ -483,7 +483,9 @@
     <string name="prepared_to_restore_wallet">財布を復元する準備</string>
     <string name="view_all">全てを見る</string>
     <string name="create_device_backup_title">デバイス間で財布を同期</string>
-    <string name="create_device_backup_note">Flow Walletブラウザ拡張機能で表示されるQRコードをスキャンして、お使いのデバイス間でウォレットを同期します。</string>
+    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="create_device_backup_note">デバイスをバックアップウォレットとして活用し、デジタル資産を簡単に保護・復元する</string>
+    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
     <string name="scan_desktop_device">スキャンデスクトップデバイス</string>
     <string name="backup_detail">バックアップの詳細</string>
     <string name="backup_info">バックアップ情報</string>
@@ -497,10 +499,10 @@
     <string name="restore_failed_option">リストアに失敗しました。バックアップオプションが同じ
         ウォレットに属していることを確認してください。</string>
     <string name="revoke_device">デバイスの失効</string>
-    <string name="wrong_network">誤ったネットワーク</string>
-    <string name="backup_on_mainnet">バックアップを作成できるのはメインネット上だけです。</string>
+    <string name="wrong_network">スイッチ・ネットワーク</string>
+    <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
     <string name="restore_on_mainnet">ウォレットを復元できるのはメインネット上だけです。</string>
-    <string name="switch_on_mainnet">アカウントの切り替えはメインネットでのみ可能です。</string>
+    <string name="switch_on_mainnet">バックアップを作成できるのはメインネット上だけです。</string>
     <string name="create_on_mainnet_or_testnet">アカウントを作成できるのはメインネットかテストネットのみです。</string>
     <string name="switch_to_mainnet">メインネットへの切り替え</string>
     <string name="connect">接続</string>
@@ -544,4 +546,17 @@
     <string name="select_collection">セレクト・コレクション</string>
     <string name="import_profile">インポートプロフィール</string>
     <string name="notification">お知らせ</string>
+    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
+    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
+    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
+    <string name="landing_step_four_title">ready to get started</string>
+    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
+    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
+        Wallet
+uses to turn your device into a hardware wallet.</string>
+    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_desc">Your Flow account is ready,
+let’s get started!</string>
+    <string name="landing_step_loading">Creating your Profile</string>
+    <string name="landing_step_done">Go with the FLOW</string>
 </resources>

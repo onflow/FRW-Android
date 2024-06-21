@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.page.browser.presenter
 
 import android.animation.ObjectAnimator
 import android.net.Uri
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
@@ -18,8 +20,10 @@ import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import kotlin.math.abs
@@ -43,6 +47,10 @@ class BrowserPresenter(
                     setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom + navBarHeight)
                 }
             }
+            flToolbarCollapsed.setOnClickListener {
+                showToolbar()
+            }
+            flToolbarCollapsed.gone()
             with(binding.toolbar) {
                 refreshButton.setOnClickListener { webview()?.reload() }
                 backButton.setOnClickListener { handleBackPressed() }
@@ -58,9 +66,44 @@ class BrowserPresenter(
                     }
                 }
                 floatButton.setOnClickListener { shrinkBrowser() }
-                menuButton.setOnClickListener { browserTabLast()?.let { BrowserPopupMenu(menuButton, it).show() } }
+                menuButton.setOnClickListener { browserTabLast()?.let {
+                    BrowserPopupMenu(menuButton, it) {
+                        hideToolbar()
+                    }.show()
+                } }
             }
         }
+    }
+
+    private fun hideToolbar() {
+        val slideOut = AnimationUtils.loadAnimation(browser.context, R.anim.slide_out_right)
+        binding.toolbar.root.startAnimation(slideOut)
+        slideOut.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {}
+
+            override fun onAnimationEnd(animation: Animation) {
+                binding.toolbar.root.gone()
+                binding.flToolbarCollapsed.visible()
+            }
+
+            override fun onAnimationRepeat(animation: Animation) {}
+        })
+    }
+
+    private fun showToolbar() {
+        val slideIn = AnimationUtils.loadAnimation(browser.context, R.anim.slide_in_right)
+        binding.toolbar.root.startAnimation(slideIn)
+        slideIn.setAnimationListener(object : Animation.AnimationListener {
+            override fun onAnimationStart(animation: Animation) {
+                binding.toolbar.root.visible()
+            }
+
+            override fun onAnimationEnd(animation: Animation) {
+                binding.flToolbarCollapsed.gone()
+            }
+
+            override fun onAnimationRepeat(animation: Animation) {}
+        })
     }
 
     override fun bind(model: BrowserModel) {

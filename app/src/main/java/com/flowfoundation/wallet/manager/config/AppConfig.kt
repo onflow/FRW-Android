@@ -31,7 +31,8 @@ object AppConfig {
 
     fun showDappList() = config().features.appList ?: false
 
-    fun useInAppBrowser() = config().features.browser ?: false
+//    fun useInAppBrowser() = config().features.browser ?: false
+    fun useInAppBrowser() = true
 
     fun showNFTTransfer() = config().features.nftTransfer ?: false
 

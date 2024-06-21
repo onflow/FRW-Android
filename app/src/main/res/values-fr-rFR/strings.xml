@@ -483,7 +483,9 @@
     <string name="prepared_to_restore_wallet">Prêt à restaurer le portefeuille</string>
     <string name="view_all">Voir tout</string>
     <string name="create_device_backup_title">Synchronisez votre portefeuille entre vos appareils</string>
-    <string name="create_device_backup_note">Scannez le code QR affiché par l\'extension de navigateur Flow Wallet pour synchroniser votre portefeuille entre vos appareils.</string>
+    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="create_device_backup_note">Remarque : votre sauvegarde Google Drive ne passera JAMAIS par le serveur de Flow Wallet. Elle est cryptée de bout en bout et nous ne pouvons jamais la lire.</string>
+    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
     <string name="scan_desktop_device">Numériser l\'appareil de bureau</string>
     <string name="backup_detail">Détail de la sauvegarde</string>
     <string name="backup_info">Informations sur les sauvegardes</string>
@@ -497,10 +499,10 @@
     <string name="restore_failed_option">La restauration a échoué. Assurez-vous que les options de sauvegarde appartiennent au même portefeuille
         .</string>
     <string name="revoke_device">Révoquer le dispositif</string>
-    <string name="wrong_network">Mauvais réseau</string>
-    <string name="backup_on_mainnet">Vous ne pouvez créer une sauvegarde que sur le réseau principal.</string>
+    <string name="wrong_network">Réseau de commutation</string>
+    <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
     <string name="restore_on_mainnet">Vous ne pouvez restaurer votre portefeuille que sur le réseau principal.</string>
-    <string name="switch_on_mainnet">Vous ne pouvez changer de compte que sur le réseau principal.</string>
+    <string name="switch_on_mainnet">Vous ne pouvez créer une sauvegarde que sur le réseau principal.</string>
     <string name="create_on_mainnet_or_testnet">Vous ne pouvez créer un compte que sur le réseau principal ou le réseau de test.</string>
     <string name="switch_to_mainnet">Passer au réseau principal</string>
     <string name="connect">Connecter</string>
@@ -544,4 +546,17 @@
     <string name="select_collection">Sélectionner la collection</string>
     <string name="import_profile">Profil d\'importation</string>
     <string name="notification">Notification</string>
+    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
+    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
+    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
+    <string name="landing_step_four_title">ready to get started</string>
+    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
+    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
+        Wallet
+uses to turn your device into a hardware wallet.</string>
+    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_desc">Your Flow account is ready,
+let’s get started!</string>
+    <string name="landing_step_loading">Creating your Profile</string>
+    <string name="landing_step_done">Go with the FLOW</string>
 </resources>

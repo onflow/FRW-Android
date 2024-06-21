@@ -483,7 +483,9 @@
     <string name="prepared_to_restore_wallet">Preparado para restaurar la cartera</string>
     <string name="view_all">Ver todos</string>
     <string name="create_device_backup_title">Sincroniza tu monedero entre tus dispositivos</string>
-    <string name="create_device_backup_note">Escanea el código QR que muestra la extensión de navegador Flow Wallet para sincronizar tu monedero entre tus dispositivos.</string>
+    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="create_device_backup_note">Nota: Tu copia de seguridad de Google Drive NUNCA pasará por el servidor de Flow Wallet. Está cifrada de extremo a extremo y nunca podremos leerla.</string>
+    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
     <string name="scan_desktop_device">Escanear dispositivo de sobremesa</string>
     <string name="backup_detail">Detalle de la copia de seguridad</string>
     <string name="backup_info">Información de seguridad</string>
@@ -497,10 +499,10 @@
     <string name="restore_failed_option">Falló la restauración. Asegúrese de que las opciones de copia de seguridad pertenecen al mismo monedero
         .</string>
     <string name="revoke_device">Dispositivo de revocación</string>
-    <string name="wrong_network">Red equivocada</string>
-    <string name="backup_on_mainnet">Sólo puedes crear copias de seguridad en mainnet.</string>
+    <string name="wrong_network">Red de conmutación</string>
+    <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
     <string name="restore_on_mainnet">Sólo se puede restaurar la cartera en mainnet.</string>
-    <string name="switch_on_mainnet">Sólo puedes cambiar de cuenta en mainnet.</string>
+    <string name="switch_on_mainnet">Sólo puedes crear copias de seguridad en mainnet.</string>
     <string name="create_on_mainnet_or_testnet">Sólo puedes crear una cuenta en mainnet o testnet.</string>
     <string name="switch_to_mainnet">Cambiar a Mainnet</string>
     <string name="connect">Conectar</string>
@@ -544,4 +546,17 @@
     <string name="select_collection">Seleccionar colección</string>
     <string name="import_profile">Importar perfil</string>
     <string name="notification">Notificación</string>
+    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
+    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
+    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
+    <string name="landing_step_four_title">ready to get started</string>
+    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
+    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
+        Wallet
+uses to turn your device into a hardware wallet.</string>
+    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_desc">Your Flow account is ready,
+let’s get started!</string>
+    <string name="landing_step_loading">Creating your Profile</string>
+    <string name="landing_step_done">Go with the FLOW</string>
 </resources>

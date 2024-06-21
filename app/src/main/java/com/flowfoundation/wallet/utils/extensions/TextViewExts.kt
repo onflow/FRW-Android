@@ -4,6 +4,7 @@ import android.graphics.BlurMaskFilter
 import android.graphics.MaskFilter
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.style.MaskFilterSpan
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -43,4 +44,28 @@ fun EditText.hideKeyboard() {
 fun EditText.showKeyboard() {
     val imm = context.getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.showSoftInput(this, 0)
+}
+
+fun SpannableString.setSafeSpan(
+    target: String,
+    span: Any,
+    flags: Int = Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+): SpannableString {
+    val index = indexOf(target)
+    if (index != -1 && index + target.length <= length) {
+        setSpan(span, index, index + target.length, flags)
+    }
+    return this
+}
+
+fun TextView.setSpannableText(
+    text: String,
+    target: String,
+    color: Int
+) {
+    val spannableString = SpannableString(text).setSafeSpan(
+        target,
+        ForegroundColorSpan(color)
+    )
+    this.text = spannableString
 }
