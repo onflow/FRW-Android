@@ -9,7 +9,9 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
+import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.safeRun
 
 suspend fun isGasFree() = AppConfig.isFreeGas() && isFreeGasPreferenceEnable()
@@ -25,16 +27,15 @@ object AppConfig {
 
     fun walletConnectEnable() = config().features.walletConnect
 
-    fun isInAppSwap() = config().features.swap ?: false
+    fun isInAppSwap() = isDev() || isTesting() || (config().features.swap ?: false)
 
-    fun isInAppBuy() = config().features.onRamp ?: false
+    fun isInAppBuy() = isDev() || isTesting() || (config().features.onRamp ?: false)
 
-    fun showDappList() = config().features.appList ?: false
+    fun showDappList() = isDev() || isTesting() || (config().features.appList ?: false)
 
-//    fun useInAppBrowser() = config().features.browser ?: false
-    fun useInAppBrowser() = true
+    fun useInAppBrowser() = isDev() || isTesting() || (config().features.browser ?: false)
 
-    fun showNFTTransfer() = config().features.nftTransfer ?: false
+    fun showNFTTransfer() = isDev() || isTesting() || (config().features.nftTransfer ?: false)
 
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
