@@ -174,7 +174,6 @@
     <string name="address_add_failed">Hinzufügen zum Adressbuch fehlgeschlagen</string>
     <string name="copy_str">Kopieren</string>
     <string name="wallet">Brieftasche</string>
-    <string name="coins_count">%1$d Münzen</string>
     <string name="add_token">Token hinzufügen</string>
     <string name="add_token_failed">Token hinzufügen fehlgeschlagen</string>
     <string name="search_token">Token suchen</string>
@@ -190,7 +189,6 @@
     <string name="light">Licht</string>
     <string name="dark">Dunkelheit</string>
     <string name="auto">Auto</string>
-    <string name="theme">Thema</string>
     <string name="on">Auf</string>
     <string name="off">Aus</string>
     <string name="get_more_flow">Mehr FLOW erhalten</string>
@@ -559,4 +557,10 @@ uses to turn your device into a hardware wallet.</string>
 let’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
+    <string name="token_count">%1$d Tokens</string>
+    <string name="wallpaper_static">Static</string>
+    <string name="wallpaper_dynamic">Dynamic</string>
+    <string name="wallpaper">Wallpaper</string>
+    <string name="change_wallpaper">Change Wallpaper</string>
+    <string name="appearance">Appearance</string>
 </resources>

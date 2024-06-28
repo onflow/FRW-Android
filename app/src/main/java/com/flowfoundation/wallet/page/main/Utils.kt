@@ -49,9 +49,12 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
+import com.flowfoundation.wallet.utils.textToClipboard
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
+import com.flowfoundation.wallet.wallet.toAddress
 import kotlinx.coroutines.delay
 
 
@@ -175,6 +178,7 @@ private fun ViewGroup.setupWallet(
     val nameView = findViewById<TextView>(R.id.wallet_name_view)
     val balanceView = findViewById<TextView>(R.id.wallet_balance_view)
     val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
+    val copyView = findViewById<ImageView>(R.id.iv_copy)
 
     val emojiInfo = AccountEmojiManager.getEmojiByAddress(wallet.address())
     iconView.text = Emoji.getEmojiById(emojiInfo.emojiId)
@@ -184,6 +188,10 @@ private fun ViewGroup.setupWallet(
     selectedView.setVisible(data.isSelected)
 
     bindFlowBalance(balanceView, data.address)
+    copyView.setOnClickListener {
+        textToClipboard(data.address)
+        toast(msgRes = R.string.copy_address_toast)
+    }
 
     setOnClickListener {
         WalletManager.selectWalletAddress(data.address)
@@ -248,6 +256,7 @@ private fun View.setupWalletItem(
     val nameView = findViewById<TextView>(R.id.wallet_name_view)
     val balanceView = findViewById<TextView>(R.id.wallet_balance_view)
     val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
+    val copyView = findViewById<ImageView>(R.id.iv_copy)
 
     if (isEVMAccount) {
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(data.address)
@@ -259,13 +268,18 @@ private fun View.setupWalletItem(
     } else {
         nameView.text = "@${data.name}"
         iconView.loadAvatar(data.icon)
-        bindFlowBalance(balanceView, data.address)
+        balanceView.text = data.address.toAddress()
     }
     emojiIconView.setVisible(isEVMAccount)
 
     selectedView.setVisible(data.isSelected)
     itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_account_selected else R.drawable.bg_empty_placeholder)
     findViewById<TextView>(R.id.tv_evm_label)?.setVisible(isEVMAccount)
+
+    copyView.setOnClickListener {
+        textToClipboard(data.address)
+        toast(msgRes = R.string.copy_address_toast)
+    }
 
     setOnClickListener {
         val newNetwork = WalletManager.selectWalletAddress(data.address)

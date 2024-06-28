@@ -430,7 +430,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/coin_list_icon_view"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="@string/coins_count"/>
+            tools:text="@string/token_count"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buy_button"

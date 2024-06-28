@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             app:descId="@string/light"
             app:icon="@drawable/ic_settings_theme"
-            app:titleId="@string/theme"/>
+            app:titleId="@string/appearance"/>
 
         <View
             android:layout_width="match_parent"

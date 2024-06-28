@@ -174,7 +174,6 @@
     <string name="address_add_failed">アドレス帳への追加に失敗しました</string>
     <string name="copy_str">コピー</string>
     <string name="wallet">財布</string>
-    <string name="coins_count">%1$d コイン</string>
     <string name="add_token">トークンの追加</string>
     <string name="add_token_failed">トークンの追加に失敗</string>
     <string name="search_token">検索トークン</string>
@@ -190,7 +189,6 @@
     <string name="light">ライト</string>
     <string name="dark">暗い</string>
     <string name="auto">オート</string>
-    <string name="theme">テーマ</string>
     <string name="on">オン</string>
     <string name="off">オフ</string>
     <string name="get_more_flow">もっとFLOWを</string>
@@ -559,4 +557,10 @@ uses to turn your device into a hardware wallet.</string>
 let’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
+    <string name="token_count">%1$d Tokens</string>
+    <string name="wallpaper_static">Static</string>
+    <string name="wallpaper_dynamic">Dynamic</string>
+    <string name="wallpaper">Wallpaper</string>
+    <string name="change_wallpaper">Change Wallpaper</string>
+    <string name="appearance">Appearance</string>
 </resources>

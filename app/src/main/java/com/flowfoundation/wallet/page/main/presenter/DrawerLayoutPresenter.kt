@@ -209,7 +209,7 @@ class DrawerLayoutPresenter(
                             ) {
                                 avatarView.setImageBitmap(resource)
                                 val color = Palette.from(resource).generate().getDominantColor(R.color.text_sub.res2color())
-                                val startColor = R.color.white_60.res2color()
+                                val startColor = R.color.background60.res2color()
                                 val endColor = ColorUtils.setAlphaComponent(color, 153)
                                 val gradientDrawable = GradientDrawable(
                                     GradientDrawable.Orientation.TOP_BOTTOM,

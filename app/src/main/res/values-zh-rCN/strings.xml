@@ -173,7 +173,6 @@
     <string name="address_add_failed">添加地址簿失败</string>
     <string name="copy_str">复制</string>
     <string name="wallet">钱包</string>
-    <string name="coins_count">%1$d 代币</string>
     <string name="add_token">添加代币</string>
     <string name="add_token_failed">添加代币失败</string>
     <string name="search_token">搜索代币</string>
@@ -189,7 +188,6 @@
     <string name="light">浅色</string>
     <string name="dark">深色</string>
     <string name="auto">自动</string>
-    <string name="theme">主题</string>
     <string name="on">关于</string>
     <string name="off">关闭</string>
     <string name="get_more_flow">获取更多 FLOW</string>
@@ -558,4 +556,10 @@
 ，让我们开始吧！</string>
     <string name="landing_step_loading">创建账户中</string>
     <string name="landing_step_done">进入 Flow</string>
+    <string name="token_count">%1$d 代币</string>
+    <string name="wallpaper_static">静态</string>
+    <string name="wallpaper_dynamic">动态</string>
+    <string name="wallpaper">壁纸</string>
+    <string name="change_wallpaper">更换壁纸</string>
+    <string name="appearance">外观</string>
 </resources>

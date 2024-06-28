@@ -41,6 +41,7 @@ private val KEY_SEND_STATE_BUBBLE_POSITION = stringPreferencesKey("KEY_SEND_STAT
 private val KEY_DEVELOPER_MODE_ENABLE = booleanPreferencesKey("KEY_DEVELOPER_MODE_ENABLE")
 private val KEY_CHAIN_NETWORK = intPreferencesKey("KEY_CHAIN_NETWORK")
 private val KEY_THEME_MODE = intPreferencesKey("KEY_THEME_MODE")
+private val KEY_WALLPAPER_ID = intPreferencesKey("KEY_WALLPAPER_ID")
 private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
 private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
@@ -154,6 +155,12 @@ suspend fun getThemeMode(): Int = dataStore.data.map { it[KEY_THEME_MODE] ?: App
 
 fun updateThemeMode(themeMode: Int) {
     edit { dataStore.edit { it[KEY_THEME_MODE] = themeMode } }
+}
+
+suspend fun getWallpaperId(): Int = dataStore.data.map { it[KEY_WALLPAPER_ID] ?: 2 }.first()
+
+fun setWallpaperId(id: Int) {
+    edit { dataStore.edit { it[KEY_WALLPAPER_ID] = id } }
 }
 
 suspend fun getQuoteMarket(): String = dataStore.data.map { it[KEY_QUOTE_MARKET] ?: QuoteMarket.binance.value }.first()

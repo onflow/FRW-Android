@@ -194,6 +194,11 @@
         <activity
             android:name=".page.profile.subpage.theme.ThemeSettingActivity"
             android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.profile.subpage.theme.WallpaperSettingActivity"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".page.token.detail.TokenDetailActivity"
             android:screenOrientation="portrait"/>
@@ -403,6 +408,7 @@
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional"/>
+        <!--suppress AndroidDomInspection -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key" />

@@ -174,7 +174,6 @@
     <string name="address_add_failed">주소록에 추가하지 못했습니다.</string>
     <string name="copy_str">복사</string>
     <string name="wallet">지갑</string>
-    <string name="coins_count">%1$d 코인</string>
     <string name="add_token">토큰 추가</string>
     <string name="add_token_failed">토큰 추가에 실패했습니다.</string>
     <string name="search_token">토큰 검색</string>
@@ -190,7 +189,6 @@
     <string name="light">빛</string>
     <string name="dark">Dark</string>
     <string name="auto">자동</string>
-    <string name="theme">테마</string>
     <string name="on">켜짐</string>
     <string name="off">꺼짐</string>
     <string name="get_more_flow">더 많은 FLOW 확보</string>
@@ -559,4 +557,10 @@ uses to turn your device into a hardware wallet.</string>
 let’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
+    <string name="token_count">%1$d Tokens</string>
+    <string name="wallpaper_static">Static</string>
+    <string name="wallpaper_dynamic">Dynamic</string>
+    <string name="wallpaper">Wallpaper</string>
+    <string name="change_wallpaper">Change Wallpaper</string>
+    <string name="appearance">Appearance</string>
 </resources>

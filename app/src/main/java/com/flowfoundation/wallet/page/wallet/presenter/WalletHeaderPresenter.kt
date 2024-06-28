@@ -1,62 +1,53 @@
 package com.flowfoundation.wallet.page.wallet.presenter
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
-import android.graphics.Bitmap
-import android.transition.TransitionManager
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.palette.graphics.Palette
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.transition.Transition
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
-import com.flowfoundation.wallet.databinding.LayoutWalletHeaderBinding
+import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.AppConfig
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
 import com.flowfoundation.wallet.page.browser.openBrowser
-import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
+import com.flowfoundation.wallet.page.notification.model.WalletNotification
+import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.swap.SwapActivity
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
-import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
 import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.page.wallet.model.WalletHeaderModel
 import com.flowfoundation.wallet.utils.*
-import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.wallet.toAddress
-import jp.wasabeef.glide.transformations.BlurTransformation
 
 class WalletHeaderPresenter(
     private val view: View,
 ) : BaseViewHolder(view), BasePresenter<WalletHeaderModel?> {
 
-    private val binding by lazy { LayoutWalletHeaderBinding.bind(view) }
+    private val binding by lazy { LayoutWalletCoordinatorHeaderBinding.bind(view) }
 
     private val viewModel by lazy { ViewModelProvider(findActivity(view) as FragmentActivity)[WalletFragmentViewModel::class.java] }
 
     private val activity by lazy { findActivity(view) as? FragmentActivity }
 
     init {
-        binding.stackingButton.setVisible(isMainnet())
+        binding.cvStake.setVisible(isMainnet())
     }
 
     @SuppressLint("SetTextI18n")
@@ -65,50 +56,52 @@ class WalletHeaderPresenter(
         model ?: return
 
         with(binding) {
-            walletName.text = if (WalletManager.isChildAccountSelected()) {
-                WalletManager.childAccount(WalletManager.selectedWalletAddress())?.name ?: R.string.default_child_account_name.res2String()
-            } else if(WalletManager.isEVMAccountSelected()){
-                EVMWalletManager.getEVMAccount()?.name ?: ""
-            } else {
-                R.string.wallet.res2String()
-            }
-
             uiScope {
                 val isHideBalance = isHideWalletBalance()
-                address.diffSetText(if (isHideBalance) "******************" else WalletManager.selectedWalletAddress().toAddress())
-                balanceNum.diffSetText(if (isHideBalance) "****" else model.balance.formatPrice(includeSymbol = true))
-                hideButton.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
+                tvBalance.diffSetText(
+                    if (isHideBalance) "****" else model.balance.formatPrice(
+                        includeSymbol = true
+                    )
+                )
+                ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
 
-            val count = FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address) }
-            coinCountView.text = view.context.getString(R.string.coins_count, count)
+            val count =
+                FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address) }
+            tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
-            sendButton.setOnClickListener { TransactionSendActivity.launch(view.context) }
-            receiveButton.setOnClickListener { ReceiveActivity.launch(view.context) }
-            copyButton.setOnClickListener { copyAddress(address.text.toString()) }
-            addButton.setOnClickListener { AddTokenActivity.launch(view.context) }
-            swapButton.setOnClickListener {
+            cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
+            cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
+            ivCopy.setOnClickListener {
+                copyAddress(
+                    WalletManager.selectedWalletAddress().toAddress()
+                )
+            }
+            ivAddToken.setOnClickListener { AddTokenActivity.launch(view.context) }
+            cvSwap.setOnClickListener {
                 if (AppConfig.isInAppSwap()) {
                     SwapActivity.launch(view.context)
                 } else {
                     activity?.let {
-                        openBrowser(it, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
-                                ".increment.fi/swap")
+                        openBrowser(
+                            it, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                                    ".increment.fi/swap"
+                        )
                     }
                 }
             }
-            stackingButton.setOnClickListener { openStakingPage(view.context) }
-            buyButton.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
-            buyButton.setVisible(AppConfig.isInAppBuy())
-            swapButton.setVisible(AppConfig.isInAppSwap())
-            addButton.setVisible(WalletManager.isEVMAccountSelected().not())
+            cvStake.setOnClickListener { openStakingPage(view.context) }
+            tvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
+            tvBuy.setVisible(AppConfig.isInAppBuy())
+            cvSwap.setVisible(AppConfig.isInAppSwap())
+            ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
 
-            sendButton.isEnabled = !WalletManager.isChildAccountSelected()
-            swapButton.isEnabled = !WalletManager.isChildAccountSelected()
-            stackingButton.isEnabled = !WalletManager.isChildAccountSelected()
-            buyButton.isEnabled = !WalletManager.isChildAccountSelected()
+            cvSend.isEnabled = !WalletManager.isChildAccountSelected()
+            cvSwap.isEnabled = !WalletManager.isChildAccountSelected()
+            cvStake.isEnabled = !WalletManager.isChildAccountSelected()
+            ivAddToken.isEnabled = !WalletManager.isChildAccountSelected()
 
-            hideButton.setOnClickListener {
+            ivHide.setOnClickListener {
                 uiScope {
                     setHideWalletBalance(!isHideWalletBalance())
                     bind(model)
@@ -116,34 +109,44 @@ class WalletHeaderPresenter(
                 }
             }
 
-            setupChildAccountCover()
-
-            bindTransactionCount(model.transactionCount)
-            bindDomain(model.walletList.username)
             bindPendingRequest()
         }
     }
 
-    private fun bindTransactionCount(transactionCount: Int?) {
-        val count = transactionCount ?: 0
-        TransitionManager.beginDelayedTransition(binding.root)
-        binding.transactionCountWrapper.setVisible(count > 0)
-//        binding.transactionCountView.text = "$transactionCount"
-        binding.transactionCountWrapper.setOnClickListener { TransactionRecordActivity.launch(view.context) }
-    }
-
     private fun copyAddress(text: String) {
         textToClipboard(text)
-        Toast.makeText(view.context, R.string.copy_address_toast.res2String(), Toast.LENGTH_SHORT).show()
+        Toast.makeText(view.context, R.string.copy_address_toast.res2String(), Toast.LENGTH_SHORT)
+            .show()
     }
 
     private fun bindPendingRequest() {
+        logd("notification", "bindPendingRequest")
+
         ioScope {
-            val requests = getWalletConnectPendingRequests()
-            uiScope {
-                binding.pendingRequestWrapper.setVisible(requests.isNotEmpty())
-                binding.pendingCountView.text = "${requests.size}"
-                binding.pendingRequestWrapper.setOnClickListener { WalletConnectSessionActivity.launch(view.context) }
+            val sessions = WalletConnect.get().sessions()
+            val requests = getWalletConnectPendingRequests().map { request ->
+                PendingRequestModel(
+                    request = request,
+                    metadata = sessions.firstOrNull { request.topic == it.topic }?.metaData
+                )
+            }.filter { it.metadata != null }
+            if (requests.isEmpty()) {
+                WalletNotificationManager.clear()
+            }
+            requests.firstOrNull()?.metadata?.let {
+                logd("notification", "pendingRequest::$it")
+                if (WalletNotificationManager.alreadyExist(it.name)) {
+                    return@ioScope
+                }
+                WalletNotificationManager.addNotification(
+                    WalletNotification(
+                        icon = it.icons.firstOrNull(),
+                        title = it.name,
+                        content = "View More",
+                        clickable = true,
+                        deepLink = "pending_request"
+                    )
+                )
             }
         }
     }
@@ -151,44 +154,6 @@ class WalletHeaderPresenter(
     private fun TextView.diffSetText(text: String?) {
         if (text != this.text.toString()) {
             this.text = text
-        }
-    }
-
-    private fun bindDomain(username: String) {
-        uiScope {
-            binding.domainWrapper.setVisible(isMeowDomainClaimed())
-            binding.domainView.text = "$username.meow"
-//          todo hide domain info for rebranding
-            binding.domainWrapper.gone()
-        }
-    }
-
-    private fun LayoutWalletHeaderBinding.setupChildAccountCover() {
-        val isChildAccountSelected = WalletManager.isChildAccountSelected()
-        childAccountIconView.setVisible(isChildAccountSelected)
-        childAccountMaskView.setVisible(isChildAccountSelected)
-        if (isChildAccountSelected) {
-            val childAccount = WalletManager.childAccount(WalletManager.selectedWalletAddress())
-            if (childAccount?.icon.isNullOrBlank()) {
-                childAccountIconView.setVisible(false)
-                childAccountMaskView.setVisible(false)
-            } else {
-                Glide.with(binding.childAccountIconView)
-                    .asBitmap()
-                    .load(childAccount?.icon)
-                    .into(object : SimpleTarget<Bitmap>() {
-                        override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                            ioScope {
-                                val color = Palette.from(resource).generate().getDominantColor(R.color.text_sub.res2color())
-                                uiScope {
-                                    Glide.with(childAccountIconView)
-                                        .load(resource).transform(BlurTransformation(2, 3)).into(childAccountIconView)
-                                    childAccountMaskView.backgroundTintList = ColorStateList.valueOf(color)
-                                }
-                            }
-                        }
-                    })
-            }
         }
     }
 }

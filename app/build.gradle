@@ -86,11 +86,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.3.0"
+    }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
 
     buildFeatures {
+        compose true
         viewBinding true
     }
 
@@ -128,7 +134,7 @@ dependencies {
 
     implementation project(':wallet')
     /** Android Architecture **/
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
     implementation "androidx.palette:palette-ktx:1.0.0"
@@ -155,6 +161,17 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.7.1")
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     /** Android Architecture **/
+
+    /** Compose **/
+    implementation 'androidx.activity:activity-compose:1.6.1'
+    implementation 'androidx.compose.ui:ui:1.3.0'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.3.0'
+    implementation 'androidx.compose.foundation:foundation:1.3.0'
+    implementation 'androidx.compose.material:material:1.3.0'
+    implementation 'androidx.compose.runtime:runtime-livedata:1.3.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0'
+    implementation 'androidx.compose.ui:ui-tooling:1.3.0'
 
     /** Google Drive **/
     implementation('com.google.api-client:google-api-client:1.23.0') {
