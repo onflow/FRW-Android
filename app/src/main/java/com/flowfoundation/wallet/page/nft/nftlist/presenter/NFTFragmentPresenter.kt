@@ -34,7 +34,8 @@ class NFTFragmentPresenter(
             with(toolbar) { post { setPadding(paddingLeft, paddingTop + statusBarHeight, paddingRight, paddingBottom) } }
             viewPager.adapter = NftListPageAdapter(fragment)
             addButton.setOnClickListener { NftCollectionListActivity.launch(fragment.requireContext()) }
-            addButton.setVisible(WalletManager.isEVMAccountSelected().not())
+            addButton.setVisible(WalletManager.isEVMAccountSelected().not() && WalletManager
+                .isChildAccountSelected().not())
 
             with(refreshLayout) {
                 isEnabled = true

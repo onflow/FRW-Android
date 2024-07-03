@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.profile.subpage.theme
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWallpaperSettingBinding
+import com.flowfoundation.wallet.manager.wallpaper.OnWallpaperChange
 import com.flowfoundation.wallet.manager.wallpaper.WallpaperManager
 import com.flowfoundation.wallet.page.profile.subpage.theme.adapter.WallpaperAdapter
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -19,7 +21,7 @@ import com.flowfoundation.wallet.utils.isNightMode
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 
-class WallpaperSettingActivity : BaseActivity() {
+class WallpaperSettingActivity : BaseActivity(), OnWallpaperChange {
 
     private lateinit var binding: ActivityWallpaperSettingBinding
 
@@ -28,6 +30,7 @@ class WallpaperSettingActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityWallpaperSettingBinding.inflate(layoutInflater)
+        WallpaperManager.addListener(this)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background)
             .light(!isNightMode(this)).applyStatusBar()
@@ -81,14 +84,9 @@ class WallpaperSettingActivity : BaseActivity() {
         }
     }
 
-    class MarginItemDecoration(private val margin: Int) : RecyclerView.ItemDecoration() {
-        override fun getItemOffsets(
-            outRect: Rect,
-            view: View,
-            parent: RecyclerView,
-            state: RecyclerView.State
-        ) {
-            outRect.set(margin, margin, margin, margin)
-        }
+    @SuppressLint("NotifyDataSetChanged")
+    override fun onWallpaperChange(id: Int, position: Int, previousPosition: Int) {
+        wallpaperAdapter.notifyItemChanged(position, true)
+        wallpaperAdapter.notifyItemChanged(previousPosition, false)
     }
 }

@@ -36,6 +36,19 @@ class WallpaperAdapter: BaseAdapter<Any>() {
         }
     }
 
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+        payloads: MutableList<Any>
+    ) {
+        if (payloads.isEmpty()) {
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            val isSelected = payloads[0] as Boolean
+            (holder as? WallpaperImagePresenter)?.updateSelectStatus(isSelected)
+        }
+    }
+
     companion object {
         private const val TYPE_TITLE = 0
         private const val TYPE_WALLPAPER = 1

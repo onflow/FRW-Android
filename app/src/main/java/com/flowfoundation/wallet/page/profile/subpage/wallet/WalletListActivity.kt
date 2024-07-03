@@ -29,6 +29,7 @@ import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.shortenEVMString
@@ -38,6 +39,7 @@ import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
+import java.math.RoundingMode
 
 
 class WalletListActivity : BaseActivity(), OnEmojiUpdate {
@@ -145,7 +147,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                     )
                 } ?: 0f
                 uiScope {
-                    it.text = "$balance Flow"
+                    it.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
                 }
             }
         }

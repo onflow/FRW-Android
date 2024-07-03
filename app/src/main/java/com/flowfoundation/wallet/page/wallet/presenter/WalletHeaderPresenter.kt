@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
@@ -32,8 +33,11 @@ import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.page.wallet.model.WalletHeaderModel
 import com.flowfoundation.wallet.utils.*
+import com.flowfoundation.wallet.utils.extensions.dp2px
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.wallet.toAddress
 
 class WalletHeaderPresenter(
@@ -72,36 +76,46 @@ class WalletHeaderPresenter(
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
-            ivCopy.setOnClickListener {
+            cvCopy.setOnClickListener {
                 copyAddress(
                     WalletManager.selectedWalletAddress().toAddress()
                 )
             }
-            ivAddToken.setOnClickListener { AddTokenActivity.launch(view.context) }
-            cvSwap.setOnClickListener {
-                if (AppConfig.isInAppSwap()) {
-                    SwapActivity.launch(view.context)
-                } else {
-                    activity?.let {
-                        openBrowser(
-                            it, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
-                                    ".increment.fi/swap"
-                        )
+            if (WalletManager.isChildAccountSelected()) {
+                llSend.changeLayoutParams(LinearLayoutCompat.HORIZONTAL, 44f)
+                llReceive.changeLayoutParams(LinearLayoutCompat.HORIZONTAL, 44f)
+                cvSwap.gone()
+                cvStake.gone()
+                cvBuy.gone()
+                ivAddToken.gone()
+            } else {
+                llSend.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
+                llReceive.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
+                ivAddToken.setOnClickListener { AddTokenActivity.launch(view.context) }
+                cvSwap.setOnClickListener {
+                    if (AppConfig.isInAppSwap()) {
+                        SwapActivity.launch(view.context)
+                    } else {
+                        activity?.let {
+                            openBrowser(
+                                it,
+                                "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                                        ".increment.fi/swap"
+                            )
+                        }
                     }
                 }
+                cvStake.setOnClickListener { openStakingPage(view.context) }
+                cvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
+                cvBuy.setVisible(AppConfig.isInAppBuy())
+                cvSwap.setVisible(AppConfig.isInAppSwap())
+                cvStake.visible()
+                ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
             }
-            cvStake.setOnClickListener { openStakingPage(view.context) }
-            tvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
-            tvBuy.setVisible(AppConfig.isInAppBuy())
-            cvSwap.setVisible(AppConfig.isInAppSwap())
-            ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
 
             cvSend.isEnabled = !WalletManager.isChildAccountSelected()
-            cvSwap.isEnabled = !WalletManager.isChildAccountSelected()
-            cvStake.isEnabled = !WalletManager.isChildAccountSelected()
-            ivAddToken.isEnabled = !WalletManager.isChildAccountSelected()
 
-            ivHide.setOnClickListener {
+            cvHide.setOnClickListener {
                 uiScope {
                     setHideWalletBalance(!isHideWalletBalance())
                     bind(model)
@@ -110,6 +124,13 @@ class WalletHeaderPresenter(
             }
 
             bindPendingRequest()
+        }
+    }
+
+    private fun LinearLayoutCompat.changeLayoutParams(newOrientation: Int, newHeight: Float) {
+        orientation = newOrientation
+        layoutParams = layoutParams.apply {
+            height = newHeight.dp2px().toInt()
         }
     }
 

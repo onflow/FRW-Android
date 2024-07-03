@@ -19,39 +19,60 @@
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toStartOf="@id/iv_hide"
+        app:layout_constraintEnd_toStartOf="@id/cv_hide"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="$123093"/>
 
-    <ImageView
-        android:id="@+id/iv_hide"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cv_hide"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginHorizontal="16dp"
-        android:background="@drawable/bg_round_corner"
-        android:backgroundTint="@color/bg_2"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_eye_on"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="@id/tv_balance"
-        app:layout_constraintEnd_toStartOf="@id/iv_copy"
+        app:layout_constraintEnd_toStartOf="@id/cv_copy"
         app:layout_constraintStart_toEndOf="@id/tv_balance"
-        app:layout_constraintTop_toTopOf="@id/tv_balance"/>
+        app:layout_constraintTop_toTopOf="@id/tv_balance"
+        app:rippleColor="?attr/colorControlHighlight">
 
-    <ImageView
-        android:id="@+id/iv_copy"
+        <ImageView
+            android:id="@+id/iv_hide"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/bg_2"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_eye_on"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cv_copy"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginEnd="16dp"
-        android:background="@drawable/bg_round_corner"
-        android:backgroundTint="@color/bg_2"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_address_copy_with_gap"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="0dp"
         app:layout_constraintBottom_toBottomOf="@id/tv_balance"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_balance"/>
+        app:layout_constraintTop_toTopOf="@id/tv_balance"
+        app:rippleColor="?attr/colorControlHighlight">
+
+        <ImageView
+            android:id="@+id/iv_copy"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/bg_2"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_address_copy_with_gap"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_action_layout"
@@ -61,10 +82,10 @@
         android:paddingHorizontal="12dp"
         app:layout_constraintTop_toBottomOf="@id/tv_balance">
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_send"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             app:cardBackgroundColor="@color/home_page_card_background"
             app:cardCornerRadius="16dp"
@@ -75,8 +96,9 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_send"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="64dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -101,12 +123,12 @@
             </androidx.appcompat.widget.LinearLayoutCompat>
 
 
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_receive"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             app:cardBackgroundColor="@color/home_page_card_background"
             app:cardCornerRadius="16dp"
@@ -117,8 +139,9 @@
             app:layout_constraintTop_toTopOf="@id/cv_send">
 
             <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_receive"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="64dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -142,12 +165,12 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_swap"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             app:cardBackgroundColor="@color/home_page_card_background"
             app:cardCornerRadius="16dp"
@@ -159,7 +182,7 @@
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="64dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -183,13 +206,13 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_stake"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
             app:cardBackgroundColor="@color/home_page_card_background"
             app:cardCornerRadius="16dp"
@@ -201,7 +224,7 @@
 
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="64dp"
                 android:background="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:orientation="vertical">
@@ -226,7 +249,7 @@
             </androidx.appcompat.widget.LinearLayoutCompat>
 
 
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -260,30 +283,40 @@
             android:layout_height="24dp"
             android:paddingHorizontal="4dp"
             android:scaleType="centerInside"
+            android:background="?attr/selectableItemBackground"
             android:src="@drawable/ic_account_add"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/text_3"/>
 
-        <TextView
-            android:id="@+id/tv_buy"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cv_buy"
             android:layout_width="wrap_content"
             android:layout_height="24dp"
             android:layout_marginEnd="4dp"
-            android:background="@drawable/bg_round_16dp"
-            android:backgroundTint="@color/bg_2"
-            android:drawablePadding="4dp"
-            android:fontFamily="@font/inter_semi_bold"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="8dp"
-            android:text="@string/buy"
-            android:textColor="@color/text_3"
-            android:textSize="14sp"
-            app:drawableStartCompat="@drawable/ic_buy"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_add_token"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:rippleColor="?attr/colorControlHighlight">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_round_16dp"
+                android:backgroundTint="@color/bg_2"
+                android:drawablePadding="4dp"
+                android:fontFamily="@font/inter_semi_bold"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="8dp"
+                android:text="@string/buy"
+                android:textColor="@color/text_3"
+                android:textSize="14sp"
+                app:drawableStartCompat="@drawable/ic_buy"/>
+        </com.google.android.material.card.MaterialCardView>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

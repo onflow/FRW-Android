@@ -65,19 +65,23 @@
                 android:paddingBottom="24dp"
                 app:layout_collapseMode="pin">
 
-                <FrameLayout
-                    android:id="@+id/fl_avatar"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cv_avatar"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:background="@color/home_page_action_background"
+                    app:cardCornerRadius="40dp"
+                    app:cardElevation="0dp"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent">
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:rippleColor="?attr/colorControlHighlight">
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:alpha="0.7"
-                        android:background="@drawable/bg_round_corner"
-                        android:backgroundTint="@color/button_text"/>
+                    <ImageView
+                        android:id="@+id/iv_avatar"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone"/>
 
                     <TextView
                         android:id="@+id/tv_avatar"
@@ -89,60 +93,64 @@
                         android:gravity="center"
                         android:text="🍑"
                         android:textSize="12sp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
+                        android:visibility="visible"/>
 
-                </FrameLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:alpha="0.7"
-                    android:background="@drawable/bg_round_16dp"
-                    android:backgroundTint="@color/button_text"
-                    app:layout_constraintBottom_toBottomOf="@id/ll_account_layout"
-                    app:layout_constraintEnd_toEndOf="@id/ll_account_layout"
-                    app:layout_constraintStart_toStartOf="@id/ll_account_layout"
-                    app:layout_constraintTop_toTopOf="@id/ll_account_layout"/>
-
-                <androidx.appcompat.widget.LinearLayoutCompat
-                    android:id="@+id/ll_account_layout"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cv_action_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
-                    android:orientation="horizontal"
                     android:paddingHorizontal="8dp"
+                    app:cardBackgroundColor="@color/home_page_action_background"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
-                    <ImageView
-                        android:id="@+id/iv_move"
+                    <androidx.appcompat.widget.LinearLayoutCompat
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="8dp"
-                        android:scaleType="center"
-                        android:src="@drawable/ic_move"
-                        app:tint="@color/text_1"/>
+                        android:layout_height="40dp"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="8dp">
 
-                    <ImageView
-                        android:id="@+id/iv_transition"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="8dp"
-                        android:scaleType="center"
-                        android:src="@drawable/ic_transition"
-                        app:tint="@color/text_1"/>
+                        <androidx.constraintlayout.utils.widget.ImageFilterView
+                            android:id="@+id/iv_move"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="8dp"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_move"
+                            app:round="40dp"
+                            app:tint="@color/text_1"/>
 
-                    <ImageView
-                        android:id="@+id/iv_scan"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="8dp"
-                        android:scaleType="center"
-                        android:src="@drawable/ic_scan_simple"
-                        app:tint="@color/text_1"/>
+                        <androidx.constraintlayout.utils.widget.ImageFilterView
+                            android:id="@+id/iv_transition"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="8dp"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_transition"
+                            app:round="40dp"
+                            app:tint="@color/text_1"/>
 
+                        <androidx.constraintlayout.utils.widget.ImageFilterView
+                            android:id="@+id/iv_scan"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:padding="8dp"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_scan_simple"
+                            app:round="40dp"
+                            app:tint="@color/text_1"/>
 
-                </androidx.appcompat.widget.LinearLayoutCompat>
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                </com.google.android.material.card.MaterialCardView>
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

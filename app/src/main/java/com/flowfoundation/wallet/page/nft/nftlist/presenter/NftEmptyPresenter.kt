@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutNftEmptyBinding
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -17,6 +18,7 @@ class NftEmptyPresenter(
 
     init {
         with(binding) {
+            getNewButton.setVisible(WalletManager.isChildAccountSelected().not())
             getNewButton.setOnClickListener {
                 ViewModelProvider(findActivity(binding.root) as FragmentActivity)[MainActivityViewModel::class.java].changeTab(HomeTab.EXPLORE)
             }

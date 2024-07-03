@@ -426,7 +426,7 @@
     <string name="no_linked_account">无关联账户</string>
     <string name="empty_bookmarks">空书签</string>
     <string name="view_empty_collection">查看空档</string>
-    <string name="inaccessible_tag">无法进入</string>
+    <string name="inaccessible_tag">暂不可用</string>
     <string name="inaccessible_token_tip">Flow Wallet 无法访问 %2$s 账户中的 %1$s ，请检查您的关联账户设置。</string>
     <string name="account_keys">账户密钥</string>
     <string name="key_revoke">撤销</string>

@@ -118,7 +118,7 @@ class ThemeSettingActivity : BaseActivity(), OnWallpaperChange {
         }
     }
 
-    override fun onWallpaperChange(id: Int) {
+    override fun onWallpaperChange(id: Int, position: Int, previousPosition: Int) {
         ioScope {
             val wallpaper = WallpaperManager.getWallpaperById(id)
             uiScope {

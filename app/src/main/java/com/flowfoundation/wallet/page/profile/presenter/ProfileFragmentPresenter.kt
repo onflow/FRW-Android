@@ -11,13 +11,13 @@ import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
 import com.flowfoundation.wallet.page.inbox.InboxActivity
-import com.flowfoundation.wallet.page.landing.LandingActivity
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.profile.ProfileFragment
@@ -157,8 +157,8 @@ class ProfileFragmentPresenter(
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
                     actionGroup.root.setVisible(isSignIn)
-                    group0.linkedAccount.setVisible(isSignIn)
-                    group0.backupPreference.setVisible(isSignIn)
+                    group0.linkedAccount.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
+                    group0.backupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.securityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
                     group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark else R.string.light)

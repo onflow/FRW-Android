@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.profile.subpage.theme.presenter
 
 import android.view.View
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemWallpaperImageBinding
@@ -50,8 +49,10 @@ class WallpaperImagePresenter(
         }
         binding.root.setOnClickListener {
             WallpaperManager.selectWallpaper(model)
-            val activity = BaseActivity.getCurrentActivity() ?: return@setOnClickListener
-            activity.finish()
         }
+    }
+
+    fun updateSelectStatus(isSelected: Boolean) {
+        binding.ivSelected.setVisible(isSelected)
     }
 }

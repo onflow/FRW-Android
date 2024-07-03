@@ -8,11 +8,8 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
-import com.journeyapps.barcodescanner.ScanOptions
-import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.fragment.BaseFragment
 import com.flowfoundation.wallet.databinding.FragmentCoordinatorWalletBinding
-import com.flowfoundation.wallet.databinding.FragmentWalletBinding
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.notification.OnNotificationUpdate
@@ -22,14 +19,12 @@ import com.flowfoundation.wallet.manager.wallpaper.OnWallpaperChange
 import com.flowfoundation.wallet.manager.wallpaper.WallpaperManager
 import com.flowfoundation.wallet.page.dialog.common.BackupTipsDialog
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
-import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.page.scan.dispatchScanResult
 import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.wallet.model.WalletCoinItemModel
 import com.flowfoundation.wallet.page.wallet.model.WalletFragmentModel
 import com.flowfoundation.wallet.page.wallet.presenter.WalletFragmentPresenter
-import com.flowfoundation.wallet.page.wallet.presenter.WalletHeaderPlaceholderPresenter
 import com.flowfoundation.wallet.page.wallet.presenter.WalletHeaderPresenter
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -41,6 +36,7 @@ import com.flowfoundation.wallet.utils.launch
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.registerBarcodeLauncher
 import com.flowfoundation.wallet.utils.uiScope
+import com.journeyapps.barcodescanner.ScanOptions
 import kotlin.math.abs
 
 class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
@@ -157,7 +153,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
         binding.notificationView.onNotificationChange()
     }
 
-    override fun onWallpaperChange(id: Int) {
+    override fun onWallpaperChange(id: Int, position: Int, previousPosition: Int) {
         presenter.onWallpaperChange(id)
     }
 }

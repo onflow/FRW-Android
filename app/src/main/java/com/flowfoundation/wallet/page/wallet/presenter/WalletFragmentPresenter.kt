@@ -29,6 +29,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
+import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 
@@ -59,7 +60,9 @@ class WalletFragmentPresenter(
             setColorSchemeColors(R.color.colorSecondary.res2color())
         }
 
-        binding.flAvatar.setOnClickListener { openDrawerLayout(fragment.requireContext()) }
+        binding.cvAvatar.setOnClickListener {
+            openDrawerLayout(fragment.requireContext())
+        }
         binding.toolBarLayout.setOnLongClickListener {
             ChangeWallpaperDialog.show(fragment.childFragmentManager)
             true
@@ -89,13 +92,26 @@ class WalletFragmentPresenter(
     private fun bindUserInfo() {
         ioScope {
             val address = WalletManager.selectedWalletAddress()
-            val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
-            uiScope {
-                binding.tvAvatar.text = Emoji.getEmojiById(emojiInfo.emojiId)
-                binding.tvAvatar.backgroundTintList =
-                    ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
-                binding.viewMask.setVisible(WalletNotificationManager.haveNotification() || isNightMode())
+            if (WalletManager.isChildAccountSelected()) {
+                val icon = WalletManager.childAccount(address)?.icon ?: ""
+                if (icon.isNotEmpty()) {
+                    uiScope {
+                        binding.ivAvatar.loadAvatar(icon)
+                        binding.ivAvatar.visible()
+                        binding.tvAvatar.gone()
+                    }
+                }
+            } else {
+                val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
+                uiScope {
+                    binding.tvAvatar.text = Emoji.getEmojiById(emojiInfo.emojiId)
+                    binding.tvAvatar.backgroundTintList =
+                        ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+                    binding.tvAvatar.visible()
+                    binding.ivAvatar.gone()
+                }
             }
+            binding.viewMask.setVisible(WalletNotificationManager.haveNotification() || isNightMode())
         }
     }
 

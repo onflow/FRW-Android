@@ -255,8 +255,8 @@
     <color name="move_token_start_color">#00FF75</color>
     <color name="move_token_cover_color">#23CBCB</color>
 
-    <color name="main_account_cover_color_start">#1400B881</color>
-    <color name="main_account_cover_color_end">#0000B881</color>
+    <color name="main_account_cover_color_start">#2941CC5D</color>
+    <color name="main_account_cover_color_end">#0041CC5D</color>
 
     <color name="emoji_koala">#DFCFC8</color>
     <color name="emoji_lion">#FFA600</color>
@@ -277,4 +277,5 @@
     <color name="home_page_background">#FFF5F5F5</color>
     <color name="home_page_card_background">@color/bg_1</color>
     <color name="wallet_notification_background">#CCF0F0F0</color>
+    <color name="home_page_action_background">#A1FFFFFF</color>
 </resources>

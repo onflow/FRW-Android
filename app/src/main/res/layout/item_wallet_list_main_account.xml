@@ -52,18 +52,34 @@
         app:roundPercent="1"/>
 
     <TextView
+        android:id="@+id/wallet_address_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/inter"
+        android:textColor="@color/text_3"
+        android:textSize="12sp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintEnd_toStartOf="@id/iv_copy"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="@id/wallet_name_view"
+        app:layout_constraintTop_toBottomOf="@id/wallet_name_view"
+        tools:text="0x0c666c888d8fb999"/>
+
+    <TextView
         android:id="@+id/wallet_balance_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:textColor="@color/text_3"
+        android:fontFamily="@font/inter"
+        android:textColor="@color/text_2"
         android:textSize="12sp"
         app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/iv_copy"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toStartOf="@id/wallet_name_view"
-        app:layout_constraintTop_toBottomOf="@id/wallet_name_view"
-        tools:text="$555 Flow"/>
+        app:layout_constraintStart_toStartOf="@id/wallet_address_view"
+        app:layout_constraintTop_toBottomOf="@id/wallet_address_view"
+        tools:text="555 Flow"/>
 
     <ImageView
         android:id="@+id/iv_copy"

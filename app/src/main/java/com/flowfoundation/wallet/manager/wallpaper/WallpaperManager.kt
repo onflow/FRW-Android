@@ -4,7 +4,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.wallpaper.model.Wallpaper
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.getWallpaperId
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.setWallpaperId
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
@@ -14,33 +13,38 @@ import java.util.concurrent.CopyOnWriteArrayList
 object WallpaperManager {
 
     private val listeners = CopyOnWriteArrayList<WeakReference<OnWallpaperChange>>()
+    private var position = -1
+    private val wallpaperList = listOf<Any>(
+        R.string.wallpaper_dynamic.res2String(),
+        Wallpaper.DYNAMIC_FLOW,
+        Wallpaper.DYNAMIC_ETH,
+        R.string.wallpaper_static.res2String(),
+        Wallpaper.STATIC_LIGHT_RED,
+        Wallpaper.STATIC_PURPLE,
+        Wallpaper.STATIC_GREEN,
+        Wallpaper.STATIC_ORANGE,
+        Wallpaper.STATIC_LIGHT_PURPLE,
+        Wallpaper.STATIC_LIGHT_GREEN
+    )
 
     fun getWallpaperList(): List<Any> {
-        return listOf(
-            R.string.wallpaper_dynamic.res2String(),
-            Wallpaper.DYNAMIC_FLOW,
-            Wallpaper.DYNAMIC_ETH,
-            R.string.wallpaper_static.res2String(),
-            Wallpaper.STATIC_LIGHT_RED,
-            Wallpaper.STATIC_PURPLE,
-            Wallpaper.STATIC_GREEN,
-            Wallpaper.STATIC_ORANGE,
-            Wallpaper.STATIC_LIGHT_PURPLE,
-            Wallpaper.STATIC_LIGHT_GREEN
-        )
+        return wallpaperList
     }
 
     suspend fun getWallpaper(): Wallpaper {
-        return Wallpaper.getWallpaper(getWallpaperId())
+        return getWallpaperById(getWallpaperId())
     }
 
     fun getWallpaperById(id: Int): Wallpaper {
+        position = wallpaperList.indexOfFirst { (it as? Wallpaper)?.id == id }
         return Wallpaper.getWallpaper(id)
     }
 
     fun selectWallpaper(wallpaper: Wallpaper) {
+        val previousPosition = position
+        position = wallpaperList.indexOfFirst { (it as? Wallpaper)?.id == wallpaper.id }
         setWallpaperId(wallpaper.id)
-        dispatchListeners(wallpaper.id)
+        dispatchListeners(wallpaper.id, position, previousPosition)
     }
 
     fun addListener(callback: OnWallpaperChange) {
@@ -52,14 +56,14 @@ object WallpaperManager {
         }
     }
 
-    private fun dispatchListeners(id: Int) {
+    private fun dispatchListeners(id: Int, position: Int, previousPosition: Int) {
         uiScope {
             listeners.removeAll { it.get() == null }
-            listeners.forEach { it.get()?.onWallpaperChange(id) }
+            listeners.forEach { it.get()?.onWallpaperChange(id, position, previousPosition) }
         }
     }
 }
 
 interface OnWallpaperChange {
-    fun onWallpaperChange(id: Int)
+    fun onWallpaperChange(id: Int, position: Int, previousPosition: Int)
 }
