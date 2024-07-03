@@ -18,7 +18,7 @@ import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 
 object WalletManager {
 
-    private var childAccountMap = mapOf<String, ChildAccountList>()
+    private var childAccountMap = mutableMapOf<String, ChildAccountList>()
 
     private var selectedWalletAddress: String = ""
 
@@ -111,7 +111,7 @@ object WalletManager {
 
     fun clear() {
         selectedWalletAddress = ""
-        childAccountMap = mapOf()
+        childAccountMap.clear()
     }
 
     private fun refreshChildAccount(wallet: WalletListData) {
@@ -123,7 +123,11 @@ object WalletManager {
 //        }
         // get current wallet child account
         wallet.walletAddress()?.let {
-            childAccountMap = mapOf(it to ChildAccountList(it))
+            if (childAccountMap.contains(it)) {
+                childAccountMap[it]?.refresh()
+            } else {
+                childAccountMap[it] = ChildAccountList(it)
+            }
         }
     }
 }

@@ -194,6 +194,11 @@
         <activity
             android:name=".page.profile.subpage.theme.ThemeSettingActivity"
             android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.profile.subpage.theme.WallpaperSettingActivity"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".page.token.detail.TokenDetailActivity"
             android:screenOrientation="portrait"/>
@@ -223,8 +228,6 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme"/>
 
-        <activity android:name=".page.demo.DemoActivity"/>
-
         <activity
             android:name=".page.browser.subpage.filepicker.FilePickerActivity"
             android:launchMode="singleTop"
@@ -250,6 +253,10 @@
         <activity
             android:name=".page.guide.GuideActivity"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.landing.LandingActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -315,6 +322,7 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data android:scheme="fw"/>
+                <data android:scheme="wc"/>
                 <data android:scheme="frw"/>
                 <data android:scheme="lilico"/>
             </intent-filter>
@@ -400,6 +408,7 @@
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional"/>
+        <!--suppress AndroidDomInspection -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key" />

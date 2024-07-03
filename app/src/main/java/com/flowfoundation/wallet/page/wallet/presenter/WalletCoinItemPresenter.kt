@@ -34,15 +34,35 @@ class WalletCoinItemPresenter(
                 coinBalance.text = "**** ${model.coin.symbol.uppercase()}"
                 coinBalancePrice.text = "****"
             } else {
-                coinBalance.text = "${model.balance.formatNum(roundingMode = RoundingMode.HALF_UP)} ${model.coin.symbol.uppercase()}"
-                coinBalancePrice.text = (model.balance * model.coinRate).formatPrice(includeSymbol = true)
+                coinBalance.text =
+                    "${model.balance.formatNum(roundingMode = RoundingMode.HALF_UP)} ${model.coin.symbol.uppercase()}"
+                coinBalancePrice.text =
+                    (model.balance * model.coinRate).formatPrice(includeSymbol = true)
             }
-            coinPrice.text = model.coinRate.formatPrice(includeSymbol = true)
-            val isRise = model.quoteChange >= 0
+            coinPrice.text =
+                if (model.coinRate == 0f) "-" else model.coinRate.formatPrice(includeSymbol = true)
+            val isStable = model.quoteChange == 0f
+            val isRise = model.quoteChange > 0
             tvQuoteChange.backgroundTintList =
-                ColorStateList.valueOf(if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color())
-            tvQuoteChange.setTextColor(if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color())
-            tvQuoteChange.text = (if(isRise) "+" else "-") + "${model.quoteChange.absoluteValue.formatNum(2)}%"
+                ColorStateList.valueOf(
+                    if (isStable) {
+                        R.color.accent_gray_8.res2color()
+                    } else {
+                        if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color()
+                    }
+                )
+            tvQuoteChange.setTextColor(
+                if (isStable) {
+                    R.color.accent_gray.res2color()
+                } else {
+                    if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color()
+                }
+            )
+            tvQuoteChange.text = if (isStable) {
+                "-"
+            } else {
+                (if (isRise) "+" else "-") + "${model.quoteChange.absoluteValue.formatNum(2)}%"
+            }
             bindStaking(model)
             bindAccessible(model.coin)
             view.setOnClickListener { TokenDetailActivity.launch(view.context, model.coin) }
@@ -55,12 +75,15 @@ class WalletCoinItemPresenter(
             return
         }
         setStakingVisible(true)
-        binding.stakingAmount.text = view.context.getString(R.string.flow_num, model.stakeAmount.formatNum(3))
-        binding.stakingAmountPrice.text = (model.stakeAmount * model.coinRate).formatPrice(includeSymbol = true)
+        binding.stakingAmount.text =
+            view.context.getString(R.string.flow_num, model.stakeAmount.formatNum(3))
+        binding.stakingAmountPrice.text =
+            (model.stakeAmount * model.coinRate).formatPrice(includeSymbol = true)
     }
 
     private fun bindAccessible(coin: FlowCoin) {
-        val accessible = ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)
+        val accessible =
+            ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)
         if (accessible.not()) {
             setStakingVisible(false)
         }

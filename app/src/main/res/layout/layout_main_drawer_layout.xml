@@ -257,7 +257,7 @@
             android:fontFamily="@font/inter_semi_bold"
             android:gravity="start"
             android:paddingVertical="5dp"
-            android:text="@string/import_profile"
+            android:text="@string/import_wallet"
             android:textColor="@color/text_2"
             android:textSize="14sp"
             app:drawableStartCompat="@drawable/ic_import_wallet"

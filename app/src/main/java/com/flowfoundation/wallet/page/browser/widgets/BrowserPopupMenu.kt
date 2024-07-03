@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.widgets.popup.PopupListView
 class BrowserPopupMenu(
     private val view: View,
     private val browserTab: BrowserTab,
+    private val hideToolbar: (() -> Unit),
 ) {
     fun show() {
         uiScope {
@@ -26,8 +27,9 @@ class BrowserPopupMenu(
                 view,
                 items = listOf(
                     PopupListView.ItemData(R.string.bookmark.res2String(), iconRes = R.drawable.ic_bookmark, iconTint = iconColor),
-                    PopupListView.ItemData(R.string.share.res2String(), iconRes = R.drawable.ic_web, iconTint = iconColor),
+                    PopupListView.ItemData(R.string.share.res2String(), iconRes = R.drawable.ic_share, iconTint = iconColor),
                     PopupListView.ItemData(R.string.open_in_browser.res2String(), iconRes = R.drawable.ic_web, iconTint = iconColor),
+                    PopupListView.ItemData(R.string.hide_browser_toolbar.res2String(), iconRes = R.drawable.ic_eye_off, iconTint = iconColor),
                 ),
                 selectListener = { _, text -> onMenuItemClick(text) },
                 offsetX = -50.dp2px().toInt()
@@ -40,6 +42,7 @@ class BrowserPopupMenu(
             R.string.bookmark.res2String() -> addToBookmark()
             R.string.share.res2String() -> browserTab.url()?.let { view.context.shareText(it) }
             R.string.open_in_browser.res2String() -> browserTab.url()?.openInSystemBrowser(view.context)
+            R.string.hide_browser_toolbar.res2String() -> hideToolbar()
         }
         return true
     }

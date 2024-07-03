@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.address.AddressBookActivity
@@ -31,14 +32,12 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrenc
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
-import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
 import com.flowfoundation.wallet.utils.getNotificationSettingIntent
@@ -143,9 +142,9 @@ class ProfileFragmentPresenter(
     private fun updateNotificationPermissionStatus() {
         binding.group2.notificationPreference.setDesc(
             if (isNotificationPermissionGrand(context)) {
-                R.string.on.res2String()
+                R.string.on
             } else {
-                R.string.off.res2String()
+                R.string.off
             }
         )
     }
@@ -158,16 +157,16 @@ class ProfileFragmentPresenter(
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
                     actionGroup.root.setVisible(isSignIn)
-                    group0.linkedAccount.setVisible(isSignIn)
-                    group0.backupPreference.setVisible(isSignIn)
+                    group0.linkedAccount.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
+                    group0.backupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.securityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
-                    group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark.res2String() else R.string.light.res2String())
+                    group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark else R.string.light)
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
                     group0.developerModePreference.setDesc(
                         (if (isTestnet()) R.string.testnet
                         else if(isPreviewnet()) R.string.previewnet
-                        else R.string.mainnet).res2String()
+                        else R.string.mainnet)
                     )
                 }
                 updateWalletConnectSessionCount()

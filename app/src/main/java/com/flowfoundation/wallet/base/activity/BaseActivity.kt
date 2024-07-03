@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.base.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.BaseContextWrappingDelegate
 import java.lang.ref.WeakReference
 
 open class BaseActivity : AppCompatActivity() {
@@ -20,6 +22,8 @@ open class BaseActivity : AppCompatActivity() {
 //            window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
 //        }
     }
+
+    override fun getDelegate() = BaseContextWrappingDelegate(super.getDelegate())
 
     override fun onResume() {
         currentActivity = WeakReference(this)

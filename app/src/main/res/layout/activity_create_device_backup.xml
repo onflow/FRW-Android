@@ -61,7 +61,7 @@
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/inter"
                     android:gravity="center_horizontal"
-                    android:text="@string/create_device_backup_note"
+                    android:text="@string/device_backup_note"
                     android:textColor="@color/text_2"
                     android:textSize="12sp"/>
 

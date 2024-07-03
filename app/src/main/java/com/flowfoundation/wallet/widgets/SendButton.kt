@@ -31,8 +31,8 @@ class SendButton : TouchScaleCardView {
 
     private var onProcessing: (() -> Unit)? = null
 
-    private var defaultText: String
-    private var processingText: String
+    private var defaultTextId: Int
+    private var processingTextId: Int
 
     private var state = ButtonState.DEFAULT
 
@@ -40,8 +40,8 @@ class SendButton : TouchScaleCardView {
     constructor(context: Context, attrs: AttributeSet? = null) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(context, attrs, defStyleAttr) {
         val array = context.obtainStyledAttributes(attrs, R.styleable.SendButton, defStyleAttr, 0)
-        defaultText = array.getString(R.styleable.SendButton_defaultText).orEmpty()
-        processingText = array.getString(R.styleable.SendButton_processingText).orEmpty()
+        defaultTextId = array.getResourceId(R.styleable.SendButton_defaultText, 0)
+        processingTextId = array.getResourceId(R.styleable.SendButton_processingText, 0)
         array.recycle()
         init()
     }
@@ -49,7 +49,9 @@ class SendButton : TouchScaleCardView {
     private fun init() {
         addView(binding.root)
         with(binding) {
-            holdToSend.text = defaultText
+            if (defaultTextId != 0) {
+                holdToSend.setText(defaultTextId)
+            }
         }
     }
 
@@ -70,13 +72,15 @@ class SendButton : TouchScaleCardView {
         return true
     }
 
-    fun updateDefaultText(text: String) {
-        defaultText = text
-        binding.holdToSend.text = defaultText
+    fun updateDefaultText(textId: Int) {
+        defaultTextId = textId
+        if (textId != 0) {
+            binding.holdToSend.setText(defaultTextId)
+        }
     }
 
-    fun updateProcessingText(text: String) {
-        processingText = text
+    fun updateProcessingText(textId: Int) {
+        processingTextId = textId
     }
 
     fun setOnProcessing(onProcessing: () -> Unit) {
@@ -100,13 +104,17 @@ class SendButton : TouchScaleCardView {
                     progressBar.changeIndeterminate(false)
                     removeCallbacks(progressTask)
                     indicatorProgress = 0f
-                    holdToSend.text = defaultText
+                    if (defaultTextId != 0) {
+                        holdToSend.setText(defaultTextId)
+                    }
                     progressBar.setProgress(0, true)
                 }
                 ButtonState.VERIFICATION -> verification()
                 ButtonState.LOADING -> {
                     setScaleEnable(false)
-                    holdToSend.text = processingText
+                    if (processingTextId != 0) {
+                        holdToSend.setText(processingTextId)
+                    }
                     progressBar.changeIndeterminate(true)
                 }
             }

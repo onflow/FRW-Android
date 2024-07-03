@@ -1,14 +1,20 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
+import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
+import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclAuthnDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 
@@ -63,15 +69,34 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         val activity = BaseActivity.getCurrentActivity() ?: return
         uiScope {
             with(sessionProposal) {
-                val approve = FclAuthnDialog().show(
-                    activity.supportFragmentManager,
-                    FclDialogModel(title = description, url = url, logo = icons.firstOrNull()?.toString())
-                )
+                val approve = if (WalletManager.isEVMAccountSelected()) {
+                    if (isShowMoveDialog()) {
+                        MoveDialog().showMove(activity.supportFragmentManager, description)
+                    }
+                    EvmRequestAccountDialog().show(
+                        activity.supportFragmentManager,
+                        EVMDialogModel(
+                            title = name,
+                            url = url,
+                            network = chainNetWorkString()
+                        )
+                    )
+                } else {
+                    FclAuthnDialog().show(
+                        activity.supportFragmentManager,
+                        FclDialogModel(
+                            title = description,
+                            url = url,
+                            logo = icons.firstOrNull()?.toString()
+                        )
+                    )
+                }
                 if (approve) {
                     approveSession()
                 } else {
                     reject()
                 }
+
             }
         }
     }
@@ -92,13 +117,19 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
      * Triggered when wallet receives the session settlement response from Dapp
      */
     override fun onSessionSettleResponse(settleSessionResponse: Sign.Model.SettledSessionResponse) {
-        logd(TAG, "onSessionSettleResponse() settleSessionResponse:${Gson().toJson(settleSessionResponse)}")
+        logd(
+            TAG,
+            "onSessionSettleResponse() settleSessionResponse:${Gson().toJson(settleSessionResponse)}"
+        )
     }
 
     /**
      * Triggered when wallet receives the session update response from Dapp
      */
     override fun onSessionUpdateResponse(sessionUpdateResponse: Sign.Model.SessionUpdateResponse) {
-        logd(TAG, "onSessionUpdateResponse() sessionUpdateResponse:${Gson().toJson(sessionUpdateResponse)}")
+        logd(
+            TAG,
+            "onSessionUpdateResponse() sessionUpdateResponse:${Gson().toJson(sessionUpdateResponse)}"
+        )
     }
 }

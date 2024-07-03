@@ -15,7 +15,7 @@ class DrawerItem : FrameLayout {
     constructor(context: Context, attrs: AttributeSet? = null) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(context, attrs, defStyleAttr) {
         val array = context.obtainStyledAttributes(attrs, R.styleable.DrawerItem, defStyleAttr, 0)
-        val text = array.getString(R.styleable.DrawerItem_drawer_item_text).orEmpty()
+        val textId = array.getResourceId(R.styleable.DrawerItem_drawer_item_text, 0)
         val image = array.getResourceId(R.styleable.DrawerItem_drawer_item_icon, 0)
         array.recycle()
 
@@ -24,7 +24,9 @@ class DrawerItem : FrameLayout {
         val textView = findViewById<TextView>(R.id.text_view)
 
         imageView.setImageResource(image)
-        textView.text = text
+        if (textId != 0) {
+            textView.setText(textId)
+        }
     }
 
     override fun setOnClickListener(l: OnClickListener?) {

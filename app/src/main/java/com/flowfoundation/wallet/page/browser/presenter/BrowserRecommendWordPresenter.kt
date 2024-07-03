@@ -1,8 +1,5 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.TextView
 import com.flowfoundation.wallet.R
@@ -13,6 +10,7 @@ import com.flowfoundation.wallet.page.browser.model.RecommendModel
 import com.flowfoundation.wallet.page.browser.toSearchUrl
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setSpannableText
 
 class BrowserRecommendWordPresenter(
     private val view: View,
@@ -21,18 +19,11 @@ class BrowserRecommendWordPresenter(
     private val textView by lazy { view.findViewById<TextView>(R.id.text_view) }
 
     override fun bind(model: RecommendModel) {
-        val text = SpannableString(model.text).apply {
-            val index = indexOf(model.query)
-            if (index >= 0) {
-                setSpan(
-                    ForegroundColorSpan(R.color.note.res2color()),
-                    index,
-                    index + model.query.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-        }
-        textView.text = text
+        textView.setSpannableText(
+            model.text,
+            model.query,
+            R.color.note.res2color()
+        )
         view.setOnClickListener {
             if (AppConfig.useInAppBrowser().not()) {
                 model.text.toSearchUrl().openInSystemBrowser(view.context, true)

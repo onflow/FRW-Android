@@ -46,13 +46,20 @@ import com.flowfoundation.wallet.utils.extensions.colorStateList
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
+import com.flowfoundation.wallet.utils.shortenEVMString
+import com.flowfoundation.wallet.utils.textToClipboard
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
+import com.flowfoundation.wallet.wallet.toAddress
 import kotlinx.coroutines.delay
+import java.math.RoundingMode
 
 
 enum class HomeTab(val index: Int) {
@@ -174,16 +181,23 @@ private fun ViewGroup.setupWallet(
     val iconView = findViewById<TextView>(R.id.wallet_icon_view)
     val nameView = findViewById<TextView>(R.id.wallet_name_view)
     val balanceView = findViewById<TextView>(R.id.wallet_balance_view)
+    val addressView = findViewById<TextView>(R.id.wallet_address_view)
     val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
+    val copyView = findViewById<ImageView>(R.id.iv_copy)
 
     val emojiInfo = AccountEmojiManager.getEmojiByAddress(wallet.address())
     iconView.text = Emoji.getEmojiById(emojiInfo.emojiId)
     iconView.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
     nameView.text = emojiInfo.emojiName
+    addressView.text = data.address.toAddress()
     itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_account_selected else R.drawable.bg_empty_placeholder)
     selectedView.setVisible(data.isSelected)
 
     bindFlowBalance(balanceView, data.address)
+    copyView.setOnClickListener {
+        textToClipboard(data.address)
+        toast(msgRes = R.string.copy_address_toast)
+    }
 
     setOnClickListener {
         WalletManager.selectWalletAddress(data.address)
@@ -247,7 +261,9 @@ private fun View.setupWalletItem(
     val iconView = findViewById<ImageView>(R.id.wallet_icon_view)
     val nameView = findViewById<TextView>(R.id.wallet_name_view)
     val balanceView = findViewById<TextView>(R.id.wallet_balance_view)
+    val addressView = findViewById<TextView>(R.id.wallet_address_view)
     val selectedView = findViewById<ImageView>(R.id.wallet_selected_view)
+    val copyView = findViewById<ImageView>(R.id.iv_copy)
 
     if (isEVMAccount) {
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(data.address)
@@ -255,17 +271,25 @@ private fun View.setupWalletItem(
         emojiIconView.backgroundTintList =
             ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
         nameView.text = emojiInfo.emojiName
+        addressView.text = shortenEVMString(data.address.toAddress())
         bindEVMFlowBalance(balanceView)
+        balanceView.visible()
     } else {
-        nameView.text = "@${data.name}"
+        nameView.text = data.name
         iconView.loadAvatar(data.icon)
-        bindFlowBalance(balanceView, data.address)
+        addressView.text = data.address.toAddress()
+        balanceView.gone()
     }
     emojiIconView.setVisible(isEVMAccount)
 
     selectedView.setVisible(data.isSelected)
     itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_account_selected else R.drawable.bg_empty_placeholder)
     findViewById<TextView>(R.id.tv_evm_label)?.setVisible(isEVMAccount)
+
+    copyView.setOnClickListener {
+        textToClipboard(data.address)
+        toast(msgRes = R.string.copy_address_toast)
+    }
 
     setOnClickListener {
         val newNetwork = WalletManager.selectWalletAddress(data.address)
@@ -316,7 +340,7 @@ fun bindFlowBalance(balanceView: TextView, address: String) {
             address
         ) ?: 0f
         uiScope {
-            balanceView.text = "$balance Flow"
+            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
         }
     }
 }
@@ -326,7 +350,7 @@ fun bindEVMFlowBalance(balanceView: TextView) {
     ioScope {
         val balance = cadenceQueryCOATokenBalance() ?: 0f
         uiScope {
-            balanceView.text = "$balance Flow"
+            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
         }
     }
 }

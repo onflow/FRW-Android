@@ -34,7 +34,7 @@
                 android:ellipsize="end"
                 android:fontFamily="@font/inter_semi_bold"
                 android:maxLines="1"
-                android:text="@string/on_lilico_only"
+                android:text="@string/on_wallet_only"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:textStyle="bold"/>

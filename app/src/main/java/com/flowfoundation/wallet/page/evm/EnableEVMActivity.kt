@@ -44,22 +44,26 @@ class EnableEVMActivity : BaseActivity() {
             val text = R.string.enable_evm_title_to_evm.res2String()
             val evmText = R.string.evm_on_flow.res2String()
             val index = text.indexOf(evmText)
-            val start = binding.tvTitleEvm.paint.measureText(text.substring(0, index))
-            binding.tvTitleEvm.text = SpannableStringBuilder(text).apply {
-                val startColor = R.color.evm_on_flow_start_color.res2color()
-                val endColor = R.color.evm_on_flow_end_color.res2color()
-                val gradientTextWidth = binding.tvTitleEvm.paint.measureText(text)
-                val shader = LinearGradient(
-                    start, 0f, gradientTextWidth, 0f,
-                    intArrayOf(startColor, endColor), null,
-                    Shader.TileMode.CLAMP,
-                )
-                setSpan(
-                    ShaderSpan(shader),
-                    index,
-                    index + evmText.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+            if (index < 0 || index + evmText.length > text.length) {
+                binding.tvTitleEvm.text = text
+            } else {
+                val start = binding.tvTitleEvm.paint.measureText(text.substring(0, index))
+                binding.tvTitleEvm.text = SpannableStringBuilder(text).apply {
+                    val startColor = R.color.evm_on_flow_start_color.res2color()
+                    val endColor = R.color.evm_on_flow_end_color.res2color()
+                    val gradientTextWidth = binding.tvTitleEvm.paint.measureText(text)
+                    val shader = LinearGradient(
+                        start, 0f, gradientTextWidth, 0f,
+                        intArrayOf(startColor, endColor), null,
+                        Shader.TileMode.CLAMP,
+                    )
+                    setSpan(
+                        ShaderSpan(shader),
+                        index,
+                        index + evmText.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
             }
             tvSkip.setOnClickListener { finish() }
             tvMore.setOnClickListener {

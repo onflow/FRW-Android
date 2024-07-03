@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             app:isArrowVisible="true"
             app:icon="@drawable/ic_settings_extension"
-            app:title="@string/chrome_extension"/>
+            app:titleId="@string/chrome_extension"/>
 
         <View
             android:layout_width="match_parent"
@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             app:isArrowVisible="true"
             app:icon="@drawable/ic_settings_bug"
-            app:title="@string/bug_report"/>
+            app:titleId="@string/bug_report"/>
 
         <View
             android:layout_width="match_parent"
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             app:isArrowVisible="true"
             app:icon="@drawable/ic_settings_about"
-            app:title="@string/about"/>
+            app:titleId="@string/about"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 

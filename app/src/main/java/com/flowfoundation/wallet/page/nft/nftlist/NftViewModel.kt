@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.network.model.EVMNFTCollection
 import com.flowfoundation.wallet.network.model.NFTMetadata
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
-import com.flowfoundation.wallet.network.model.NftCollections
 import com.flowfoundation.wallet.network.model.PostMedia
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofitApi

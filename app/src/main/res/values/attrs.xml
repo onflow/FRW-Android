@@ -23,9 +23,10 @@
     <declare-styleable name="ProfilePreference">
         <attr name="iconEnable" format="boolean"/>
         <attr name="icon" format="reference"/>
-        <attr name="title" format="string|reference"/>
-        <attr name="subtitle" format="string|reference"/>
+        <attr name="titleId" format="reference"/>
+        <attr name="subtitleId" format="reference"/>
         <attr name="desc" format="string|reference"/>
+        <attr name="descId" format="reference"/>
         <attr name="descColor" format="color|reference"/>
         <attr name="isArrowVisible" format="boolean"/>
     </declare-styleable>
@@ -71,7 +72,7 @@
 
     <declare-styleable name="DrawerItem">
         <attr name="drawer_item_icon" format="reference"/>
-        <attr name="drawer_item_text" format="string|reference"/>
+        <attr name="drawer_item_text" format="reference"/>
     </declare-styleable>
 
     <declare-styleable name="BackupOptionItem">

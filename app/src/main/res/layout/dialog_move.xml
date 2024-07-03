@@ -38,26 +38,25 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:layout_marginTop="16dp"
-        android:gravity="center_horizontal"
         android:fontFamily="@font/inter"
-        android:lineSpacingMultiplier="1.2"
-        android:textSize="14sp"
-        android:textColor="@color/text_2"
+        android:gravity="center_horizontal"
         android:text="@string/move_to_desc"
+        android:textColor="@color/text_2"
+        android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/tv_title"/>
-    
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_move_nft"
         android:layout_width="0dp"
         android:layout_height="224dp"
-        android:layout_marginTop="32dp"
         android:layout_marginStart="18dp"
-        android:layout_marginBottom="100dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="30dp"
         android:background="@drawable/bg_move_nft"
+        app:layout_constraintBottom_toTopOf="@id/btn_skip"
         app:layout_constraintEnd_toStartOf="@id/cl_move_token"
-        app:layout_constraintTop_toBottomOf="@id/tv_desc"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/tv_desc">
 
         <View
             android:layout_width="match_parent"
@@ -67,20 +66,20 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_move_nft"
-            android:scaleType="centerInside"
             android:layout_marginTop="30dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_move_nft"
             app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="40dp"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:textColor="@color/text_1"
-            android:text="@string/move_nfts"
             android:fontFamily="@font/inter_semi_bold"
+            android:gravity="center"
+            android:text="@string/move_nfts"
+            android:textColor="@color/text_1"
+            android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -89,14 +88,13 @@
         android:id="@+id/cl_move_token"
         android:layout_width="0dp"
         android:layout_height="224dp"
-        android:layout_marginTop="32dp"
         android:layout_marginStart="10dp"
+        android:layout_marginTop="32dp"
         android:layout_marginEnd="18dp"
-        android:layout_marginBottom="100dp"
-        app:layout_constraintStart_toEndOf="@id/cl_move_nft"
-        app:layout_constraintTop_toBottomOf="@id/tv_desc"
+        app:layout_constraintBottom_toBottomOf="@id/cl_move_nft"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toEndOf="@id/cl_move_nft"
+        app:layout_constraintTop_toBottomOf="@id/tv_desc">
 
         <View
             android:layout_width="match_parent"
@@ -113,21 +111,67 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_move_token"
-            android:scaleType="centerInside"
             android:layout_marginTop="30dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_move_token"
             app:layout_constraintTop_toTopOf="parent"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="40dp"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:textColor="@color/text_1"
-            android:text="@string/move_tokens"
             android:fontFamily="@font/inter_semi_bold"
+            android:gravity="center"
+            android:text="@string/move_tokens"
+            android:textColor="@color/text_1"
+            android:textSize="18sp"
             app:layout_constraintBottom_toBottomOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_skip"
+        style="@style/Button"
+        android:layout_width="match_parent"
+        android:layout_marginHorizontal="18dp"
+        android:backgroundTint="@color/bg"
+        android:text="@string/skip"
+        android:textColor="@color/text_1"
+        app:backgroundTint="@color/bg"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@id/cl_move_nft"
+        app:layout_constraintBottom_toTopOf="@id/ll_check"/>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="40dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_skip"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.flowfoundation.wallet.widgets.FrozenCheckbox
+            android:id="@+id/check_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/accent_green"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/inter"
+            android:text="@string/move_do_not_ask_me"
+            android:textColor="@color/text_2"
+            android:textSize="16sp"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.crowdin.platform.util.inflateWithCrowdin
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -31,7 +32,7 @@ class ViewAvatarActivity : BaseActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.edit_avatar, menu)
+        menuInflater.inflateWithCrowdin(R.menu.edit_avatar, menu, resources)
         return super.onCreateOptionsMenu(menu)
     }
 

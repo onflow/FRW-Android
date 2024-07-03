@@ -1,10 +1,9 @@
 <resources>
-    <string name="app_name">Flow Wallet</string>
+    <string name="app_name" translatable="false">Flow Wallet</string>
     <string name="next">Next</string>
     <string name="username">Username</string>
     <string name="username_too_short">Too short</string>
     <string name="username_too_long">Too long</string>
-    <string name="username_format_error">The user name can only contain alphanumeric and.</string>
     <string name="username_exist">It’s taken</string>
     <string name="username_success">Sounds good</string>
     <string name="register_error">Register error</string>
@@ -17,39 +16,30 @@
     <string name="cloud_password_tip">Flow Wallet uses this password to encrypt your backup.</string>
     <string name="password">Password</string>
     <string name="password_verify_format">Enter at least 8 characters</string>
-    <string name="password_verify_no_number">At least 1 character</string>
-    <string name="please_create">Create \nPassword</string>
+    <string name="create">Create</string>
     <string name="backing_up">Backing up</string>
     <string name="backup_error">Backup error</string>
     <string name="backup">Backup</string>
-    <string name="manual">Manual</string>
     <string name="double_str">Double</string>
     <string name="secure">Secure</string>
     <string name="manual_backup_tip">Unlock with PIN Code and Biometrics to allow extra wallet security.</string>
     <string name="pick_your">Pick Your</string>
-    <string name="pin_code_title">Add Extra\nProtection To\nYour Wallet</string>
+    <string name="add_extra">Add Extra</string>
     <string name="protection">Protection</string>
-    <string name="face_id">Face ID</string>
+    <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
 
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
-    <string name="secret_key_name" translatable="false">biometric_sample_encryption_key</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
     <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>
     <string name="mnemonic_question_title">Select the word %1$s</string>
-    <string name="finish">Finish</string>
-    <string name="create">Create</string>
-    <string name="import_str">import</string>
-    <string name="dont_have_account">Don’t have \nan account?</string>
-    <string name="already_have_account">Already have \nan account?</string>
     <string name="home">Home</string>
     <string name="explore">Explore</string>
     <string name="profile">Profile</string>
     <string name="things_you">Things You \nNeed to Know</string>
-    <string name="know">Know</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>
     <string name="create_wallet_warning2">If I expose my secret phrases anywhere, my funds can be stolen.</string>
@@ -57,6 +47,7 @@
     <string name="backup_manually">Backup Manually</string>
     <string name="backup_to_google_drive">Backup to google drive</string>
     <string name="recovery_phrase">Recovery Phrase</string>
+    <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFT</string>
     <string name="restore_wallet">Restore Wallet</string>
@@ -82,8 +73,8 @@
     <string name="encrypt_backup">Encrypt Backup</string>
     <string name="done">Done</string>
     <string name="biometrics">Biometrics</string>
-    <string name="legal_information">Legal \nInformation</string>
     <string name="legal">Legal</string>
+    <string name="information">Information</string>
     <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Wallet.</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
@@ -105,7 +96,6 @@
     <string name="view_on_web">View on web</string>
     <string name="empty_title">You don’t have any NFTs yet</string>
     <string name="nft_empty_desc">Looking forward to your next discovery.</string>
-    <string name="get_new_nfts">Get new NFTs</string>
     <string name="receive">Receive</string>
     <string name="buy">Buy</string>
     <string name="swap">Swap</string>
@@ -153,16 +143,17 @@
     <string name="address_check_success">Validated address</string>
     <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
+    <string name="move_do_not_ask_me">Do not ask me again.</string>
+    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
+        %1$s can view your assets</string>
 
     <string name="send_to">Send to</string>
     <string name="send_search_hint">Username, address(0x), Find or Flowns</string>
     <string name="recent">Recent</string>
     <string name="my_accounts">My Accounts</string>
-    <string name="my_wallet">My Wallet</string>
     <string name="transfer_amount">Transfer Amount</string>
     <string name="max">Max</string>
     <string name="amount_balance">Amount balance</string>
-    <string name="coin_rate_usd_convert">≈ $ %1$s</string>
     <string name="enter_amount">Enter Amount</string>
     <string name="transaction">Transaction</string>
     <string name="from">From</string>
@@ -174,7 +165,6 @@
     <string name="shared_via">Shared via</string>
     <string name="send_nft">Send NFT</string>
     <string name="hold_to_send">Hold to Send</string>
-    <string name="hold_to_add">Hold to Add</string>
     <string name="transaction_is_processing">The transaction is processing</string>
     <string name="common_error_hint">Something went wrong, please try again later.</string>
     <string name="pending">Pending</string>
@@ -184,11 +174,8 @@
     <string name="coin_send_processing">Process of Transaction</string>
     <string name="address_add_success">Add to address book successfully</string>
     <string name="address_add_failed">Failed to add to address book</string>
-    <string name="qr_code">QR Code</string>
-    <string name="qr_code_receive_tip">Shown your QR code to receive transactions.</string>
     <string name="copy_str">Copy</string>
     <string name="wallet">Wallet</string>
-    <string name="coins_count">%1$d Coins</string>
     <string name="add_token">Add Token</string>
     <string name="add_token_failed">Add token failed</string>
     <string name="search_token">Search Token</string>
@@ -200,19 +187,14 @@
     <string name="mainnet">Mainnet</string>
     <string name="testnet">Testnet</string>
     <string name="switch_network_failed">Switch network failed</string>
-    <string name="request_authorization">Request authorization</string>
-    <string name="authn_desc">%1$s is requesting access to your wallet address, are you sure you want to disclose your wallet address to this website?</string>
     <string name="approve">Approve</string>
-    <string name="authz_desc">%1$s is applying to implement Cadence, do you confirm the script for this site?</string>
     <string name="light">Light</string>
     <string name="dark">Dark</string>
     <string name="auto">Auto</string>
-    <string name="theme">Theme</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="get_more_flow">Get more FLOW</string>
     <string name="get_more_flow_desc">Stake tokens and earn rewards</string>
-    <string name="usd_balance">$%1$s USD</string>
     <string name="recent_price">Recent Price</string>
     <string name="market_binance">Binance</string>
     <string name="market_huobi">Huobi</string>
@@ -221,21 +203,18 @@
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
-    <string name="scan">Scan</string>
     <string name="explore_search_hint">Site Name or URL</string>
     <string name="bookmark">Bookmark</string>
     <string name="drag_here_to_unpin">Drag Here To Unpin</string>
-    <string name="recent_history">Recent History</string>
     <string name="recovery_purchase_tips">Write down or copy these words in the right order and save them somewhere safe.</string>
     <string name="open_in_browser">Open in browser</string>
     <string name="pending_transaction">Pending Transaction</string>
-    <string name="welcome_to_lilico">Welcome to Flow Wallet!</string>
+    <string name="welcome_to_wallet">Welcome to Flow Wallet!</string>
     <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
     <string name="contact_us">Contact us</string>
     <string name="made_by_outblock">Made by <a href="https://flow.com/">Flow</a></string>
-    <string name="outblock">Outblock</string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
     <string name="transaction_to">Transaction Request from</string>
@@ -244,7 +223,6 @@
     <string name="fcl_permission_read_balance">View your wallet balance and activity</string>
     <string name="fcl_permission_transaction">Request approval for transactions</string>
     <string name="script">Script</string>
-    <string name="future_coming_soon">Feature coming soon</string>
     <string name="dapps">dApps</string>
     <string name="process_of_enabling_coin">Process of Enabling Coin</string>
     <string name="mnemonic_check_fail">Wrong selection</string>
@@ -261,7 +239,7 @@
     <string name="transaction_history">Transaction history</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
-    <string name="reset_wallet">Reset Wallet</string>
+    <string name="reset_wallet">Reset Profile</string>
     <string name="reset_wallet_confirm_title">Are you sure you want to reset your wallet?</string>
     <string name="reset_wallet_tips">Removing the wallet from Flow Wallet does not remove the wallet
         from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.</string>
@@ -272,12 +250,10 @@
     <string name="guide_desc_1">Share excellent NFT collections with friends</string>
     <string name="guide_title_2">Gather\nall your tokens</string>
     <string name="guide_desc_2">Share excellent NFT collections with friends</string>
-    <string name="guide_title_3">Claim\nfree Lilico domain</string>
-    <string name="guide_desc_3">Share excellent NFT collections with friends</string>
     <string name="guide_title_4">Explore\nyour favourite site</string>
     <string name="guide_desc_4">Share excellent NFT collections with friends</string>
     <string name="import_wallet">Import Wallet</string>
-    <string name="sync_wallet">Sync Wallet</string>
+    <string name="import_str">Import</string>
     <string name="welcome_desc">Provide More About The Security</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
@@ -301,15 +277,12 @@
     <string name="claim_failed">Claim failed</string>
     <string name="auth_error">Auth error</string>
     <string name="wallet_connect">WalletConnect</string>
-    <string name="main_wallet">Main Wallet</string>
     <string name="details">Details</string>
     <string name="expiry">Expiry</string>
     <string name="disconnect">Disconnect</string>
     <string name="public_key">Public Key</string>
     <string name="hash_algorithm">Hash Algorithm\n%1$s</string>
     <string name="sign_algorithm">Sign Algorithm\n%1$s</string>
-    <string name="transaction_with_count">Transaction (%1$d)</string>
-    <string name="transfer_with_count">Transfer (%1$d)</string>
     <string name="to_address">To %1$s</string>
     <string name="from_address">From %1$s</string>
     <string name="view_more_transactions">View more transactions</string>
@@ -317,7 +290,6 @@
     <string name="scan_to_connect">Scan to Connect</string>
     <string name="scan_wallet_connect_desc">With WalletConnect, you can connect your wallet with hundreds of apps</string>
     <string name="new_connection">New Connection</string>
-    <string name="best_price">Best price</string>
     <string name="provider">Provider</string>
     <string name="price_impact">Price Impact</string>
     <string name="estimated_fees">Estimated Fees</string>
@@ -340,7 +312,6 @@
     <string name="stake_guide_desc_2">When you stake <font color='#60C293'><strong>Flow</strong></font> you receive <font color='#60C293'><strong>Flow</strong></font>. You can <font color='#60C293'><strong>trade</strong></font> this liquid asset at any time.</string>
     <string name="stake_guide_desc_3">You start earning <font color='#60C293'><strong>right away</strong></font>.</string>
     <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color='#60C293'><strong>every few days</strong></font>.</string>
-    <string name="recommend">Recommend</string>
     <string name="staking_provider">Staking Provider</string>
     <string name="select_provider">Select Provider</string>
     <string name="stake">Stake</string>
@@ -350,7 +321,7 @@
     <string name="flow_available_num">%1$s Flow available</string>
     <string name="flow_available">Flow available</string>
     <string name="flow_coin_name">Flow</string>
-    <string name="on_lilico_only">On Flow Wallet Only</string>
+    <string name="on_wallet_only">On Flow Wallet Only</string>
     <string name="confirm_your_stake">Confirm Your Stake</string>
     <string name="confirm_your_unstake">Confirm Your Unstake</string>
     <string name="staking">Staking</string>
@@ -397,7 +368,6 @@
     <string name="backup_desc">Backup Recovery Phrase is important in protect your prize property.</string>
     <string name="not_now">Not Now</string>
     <string name="not_now_tip">Not now</string>
-    <string name="suggest_to_backup">Suggest to Backup</string>
     <string name="link_account">Link Account</string>
     <string name="link_account_desc">We would like to link your %1$s account to your Flow Wallet account</string>
     <string name="hold_to_link">Hold to Link</string>
@@ -408,7 +378,6 @@
     <string name="successful">Successful</string>
     <string name="link_account_success_desc">Now you can find your child account under side menu</string>
     <string name="try_it_again">Try it again</string>
-    <string name="try_again">Try Again</string>
     <string name="generate_qr_code_error">Generating QR code failed. Please try again.</string>
     <string name="wallet_connect_error">Create wallet connect failed. Please try again.</string>
     <string name="linked_account">Linked Accounts</string>
@@ -441,7 +410,6 @@
     <string name="resume_login_error">Encountered a problem, please restart the app</string>
     <string name="new_feature">New Feature</string>
     <string name="new_feature_desc">We have made the following updates to improve your experiences.</string>
-    <string name="enjoy_your_experience">Enjoy Your Experience</string>
     <string name="profile_switch_tip">Tap the profile name to switch profiles.</string>
 
     <string name="all">All</string>
@@ -504,7 +472,6 @@
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
     <string name="import_wallet_note">Restore your wallet using a backup.</string>
-    <string name="import_profile_note">Restore your profile using a backup.</string>
     <string name="from_device_backup">From Device Backup</string>
     <string name="from_device_backup_note">Restore from another mobile or extension wallet</string>
     <string name="from_multi_backup">From Multi Backup</string>
@@ -519,7 +486,9 @@
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
     <string name="create_device_backup_title">Sync your wallet between your devices</string>
-    <string name="create_device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="create_device_backup_note">Utilise Your Device as a Backup Wallet to Safeguard and Restore Your Digital Assets with Ease</string>
+    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
     <string name="backup_info">Backup Info</string>
@@ -533,11 +502,10 @@
     <string name="restore_failed_option">Restore failed. Ensure backup options belong to the same
         wallet.</string>
     <string name="revoke_device">Revoke Device</string>
-    <string name="revoke_device_failed">Cannot revoke current device.</string>
-    <string name="wrong_network">Wrong Network</string>
-    <string name="backup_on_mainnet">You can only create backup on mainnet.</string>
-    <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
-    <string name="switch_on_mainnet">You can only switch account on mainnet.</string>
+    <string name="wrong_network">Switch Network</string>
+    <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
+    <string name="restore_on_mainnet">You can only restore wallet on Mainnet.</string>
+    <string name="switch_on_mainnet">You can only perform this operation on Mainnet.</string>
     <string name="create_on_mainnet_or_testnet">You can only create account on mainnet or testnet.</string>
     <string name="switch_to_mainnet">Switch to Mainnet</string>
     <string name="connect">Connect</string>
@@ -550,13 +518,12 @@
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
     <string name="move">Move</string>
-    <string name="current_vm">Current VM</string>
+    <string name="current_vm">Current Network</string>
     <string name="cadence">Cadence</string>
     <string name="share_qr_code">Share QR Code</string>
     <string name="move_token">Move Token</string>
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
     <string name="move_nft_to_evm_failed">Move NFT to EVM failed</string>
-    <string name="move_flow_to_cadence_failed">Move Flow Token to Wallet failed</string>
     <string name="hide_browser_toolbar">Hide</string>
     <string name="sync_in_processing">Scan Successfully \nSync in Processing...</string>
     <string name="view_more">View More</string>
@@ -581,6 +548,27 @@
     <string name="quick_enable_evm">Quick Enable EVM</string>
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
+    <string name="notification">Notification</string>
+    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
+    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
+    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
+    <string name="landing_step_four_title">ready to get started</string>
+    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
+    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
+        Wallet
+uses to turn your device into a hardware wallet.</string>
+    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_desc">Your Flow account is ready,
+let’s get started!</string>
+    <string name="landing_step_loading">Creating your Profile</string>
+    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_four_on_flow" translatable="false">#onFlow.</string>
+    <string name="token_count">%1$d Tokens</string>
 
+    <string name="wallpaper_static">Static</string>
+    <string name="wallpaper_dynamic">Dynamic</string>
+    <string name="wallpaper">Wallpaper</string>
+    <string name="change_wallpaper">Change Wallpaper</string>
+    <string name="appearance">Appearance</string>
 
 </resources>

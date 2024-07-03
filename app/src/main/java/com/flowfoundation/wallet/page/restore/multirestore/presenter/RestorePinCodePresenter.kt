@@ -1,8 +1,5 @@
 package com.flowfoundation.wallet.page.restore.multirestore.presenter
 
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
@@ -14,6 +11,7 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.keyboardT9Normal
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setSpannableText
 import com.flowfoundation.wallet.utils.toast
 import wallet.core.jni.HDWallet
 
@@ -29,30 +27,16 @@ class RestorePinCodePresenter(
 
     init {
         with(binding) {
-            pinTitle.text = SpannableString(
-                R.string.verify_pin.res2String()
-            ).apply {
-                val protection = R.string.pin.res2String()
-                val index = indexOf(protection)
-                setSpan(
-                    ForegroundColorSpan(R.color.accent_green.res2color()),
-                    index,
-                    index + protection.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-            pinTip.text = SpannableString(
-                R.string.enter_verify_pin_tip.res2String()
-            ).apply {
-                val protection = R.string.pin.res2String()
-                val index = indexOf(protection)
-                setSpan(
-                    ForegroundColorSpan(R.color.accent_green.res2color()),
-                    index,
-                    index + protection.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
+            pinTitle.setSpannableText(
+                R.string.verify_pin.res2String(),
+                R.string.pin.res2String(),
+                R.color.accent_green.res2color()
+            )
+            pinTip.setSpannableText(
+                R.string.enter_verify_pin_tip.res2String(),
+                R.string.pin.res2String(),
+                R.color.accent_green.res2color()
+            )
             pinKeyboard.setOnKeyboardActionListener { onKeyPressed(it) }
             pinKeyboard.bindKeys(keyboardT9Normal, KeyboardType.T9)
             pinKeyboard.show()

@@ -1,8 +1,5 @@
 package com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin
 
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import androidx.fragment.app.Fragment
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletCreatePinCodeBinding
@@ -11,6 +8,7 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.keyboardT9Normal
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setSpannableText
 import com.flowfoundation.wallet.utils.savePinCode
 
 class WalletCreatePinCodePresenter(
@@ -20,11 +18,11 @@ class WalletCreatePinCodePresenter(
 
     init {
         with(binding) {
-            title1.text = SpannableString(R.string.create_pin.res2String()).apply {
-                val protection = R.string.pin.res2String()
-                val index = indexOf(protection)
-                setSpan(ForegroundColorSpan(R.color.colorSecondary.res2color()), index, index + protection.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
+            title1.setSpannableText(
+                R.string.create_pin.res2String(),
+                R.string.pin.res2String(),
+                R.color.colorSecondary.res2color()
+            )
             pinInput.setCheckCallback { passed ->
                 savePinCode(pinInput.keys().joinToString("") { "${it.number}" })
                 if (passed) MainActivity.launch(fragment.requireContext())
@@ -49,11 +47,11 @@ class WalletCreatePinCodePresenter(
 
     private fun checkMode() {
         with(binding) {
-            title1.text = SpannableString(R.string.check_pin.res2String()).apply {
-                val protection = R.string.pin.res2String()
-                val index = indexOf(protection)
-                setSpan(ForegroundColorSpan(R.color.colorSecondary.res2color()), index, index + protection.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
+            title1.setSpannableText(
+                R.string.check_pin.res2String(),
+                R.string.pin.res2String(),
+                R.color.colorSecondary.res2color()
+            )
             title2.setText(R.string.check_pin_tip)
         }
     }

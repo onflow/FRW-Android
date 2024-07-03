@@ -9,6 +9,7 @@ import android.view.MenuItem
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.crowdin.platform.util.inflateWithCrowdin
 import com.journeyapps.barcodescanner.ScanOptions
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
@@ -66,7 +67,7 @@ class WalletConnectSessionActivity : BaseActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.qr_scan, menu)
+        menuInflater.inflateWithCrowdin(R.menu.qr_scan, menu, resources)
         return super.onCreateOptionsMenu(menu)
     }
 

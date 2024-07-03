@@ -68,7 +68,7 @@
                         android:fontFamily="@font/inter"
                         android:gravity="center"
                         android:lineSpacingMultiplier="1.1"
-                        android:text="@string/google_backup_note"
+                        android:text="@string/create_device_backup_note"
                         android:textColor="@color/accent_blue"
                         android:textSize="12sp"/>
 
@@ -127,7 +127,7 @@
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
                         android:gravity="center"
-                        android:text="@string/google_backup_note"
+                        android:text="@string/create_multi_backup_note"
                         android:lineSpacingMultiplier="1.1"
                         android:textColor="@color/accent_purple"
                         android:textSize="12sp"/>

@@ -28,6 +28,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.app.isDeveloperMode
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
@@ -51,6 +52,7 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
@@ -89,6 +91,7 @@ class DrawerLayoutPresenter(
                     EnableEVMActivity.launch(activity)
                 }
             }
+            flNetworkLayout.setVisible(isDeveloperMode())
             flNetworkLayout.setOnClickListener {
                 NetworkPopupMenu(tvNetwork).show()
             }
@@ -109,22 +112,26 @@ class DrawerLayoutPresenter(
         val text = R.string.enable_evm_title.res2String()
         val evmText = R.string.evm_on_flow.res2String()
         val index = text.indexOf(evmText)
-        val start = binding.tvEvmTitle.paint.measureText(text.substring(0, index))
-        binding.tvEvmTitle.text = SpannableStringBuilder(text).apply {
-            val startColor = R.color.evm_on_flow_start_color.res2color()
-            val endColor = R.color.evm_on_flow_end_color.res2color()
-            val gradientTextWidth = binding.tvEvmTitle.paint.measureText(text)
-            val shader = LinearGradient(
-                start, 0f, gradientTextWidth, 0f,
-                intArrayOf(startColor, endColor), null,
-                Shader.TileMode.CLAMP,
-            )
-            setSpan(
-                ShaderSpan(shader),
-                index,
-                index + evmText.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
+        if (index < 0 || index + evmText.length > text.length) {
+            binding.tvEvmTitle.text = text
+        } else {
+            val start = binding.tvEvmTitle.paint.measureText(text.substring(0, index))
+            binding.tvEvmTitle.text = SpannableStringBuilder(text).apply {
+                val startColor = R.color.evm_on_flow_start_color.res2color()
+                val endColor = R.color.evm_on_flow_end_color.res2color()
+                val gradientTextWidth = binding.tvEvmTitle.paint.measureText(text)
+                val shader = LinearGradient(
+                    start, 0f, gradientTextWidth, 0f,
+                    intArrayOf(startColor, endColor), null,
+                    Shader.TileMode.CLAMP,
+                )
+                setSpan(
+                    ShaderSpan(shader),
+                    index,
+                    index + evmText.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
         }
     }
 
@@ -202,7 +209,7 @@ class DrawerLayoutPresenter(
                             ) {
                                 avatarView.setImageBitmap(resource)
                                 val color = Palette.from(resource).generate().getDominantColor(R.color.text_sub.res2color())
-                                val startColor = R.color.white_60.res2color()
+                                val startColor = R.color.background60.res2color()
                                 val endColor = ColorUtils.setAlphaComponent(color, 153)
                                 val gradientDrawable = GradientDrawable(
                                     GradientDrawable.Orientation.TOP_BOTTOM,

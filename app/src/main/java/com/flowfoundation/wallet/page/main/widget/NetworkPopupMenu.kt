@@ -2,6 +2,9 @@ package com.flowfoundation.wallet.page.main.widget
 
 import android.view.View
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -22,20 +25,23 @@ import kotlinx.coroutines.delay
 class NetworkPopupMenu (
     private val view: View,
 ) {
+
+    private var isClicking = false
+
     fun show() {
         uiScope {
             networkPopupMenu(
                 view,
                 items = if (WalletManager.isPreviewnetWalletCreated()) {
                     listOf(
-                        NetworkPopupListView.ItemData(R.string.mainnet.res2String()),
-                        NetworkPopupListView.ItemData(R.string.testnet.res2String()),
-                        NetworkPopupListView.ItemData(R.string.previewnet.res2String()),
+                        NetworkPopupListView.ItemData(NETWORK_NAME_MAINNET),
+                        NetworkPopupListView.ItemData(NETWORK_NAME_TESTNET),
+                        NetworkPopupListView.ItemData(NETWORK_NAME_PREVIEWNET),
                     )
                 } else {
                     listOf(
-                        NetworkPopupListView.ItemData(R.string.mainnet.res2String()),
-                        NetworkPopupListView.ItemData(R.string.testnet.res2String()),
+                        NetworkPopupListView.ItemData(NETWORK_NAME_MAINNET),
+                        NetworkPopupListView.ItemData(NETWORK_NAME_TESTNET),
                     )
                 },
                 selectListener = { _, text -> onMenuItemClick(text) },
@@ -44,10 +50,14 @@ class NetworkPopupMenu (
     }
 
     private fun onMenuItemClick(text: String): Boolean {
+        if (isClicking) {
+            return true
+        }
+        isClicking = true
         when (text) {
-            R.string.mainnet.res2String() -> changeNetwork(NETWORK_MAINNET)
-            R.string.testnet.res2String() -> changeNetwork(NETWORK_TESTNET)
-            R.string.previewnet.res2String() -> changeNetwork(NETWORK_PREVIEWNET)
+            NETWORK_NAME_MAINNET -> changeNetwork(NETWORK_MAINNET)
+            NETWORK_NAME_TESTNET -> changeNetwork(NETWORK_TESTNET)
+            NETWORK_NAME_PREVIEWNET -> changeNetwork(NETWORK_PREVIEWNET)
         }
         return true
     }
@@ -59,6 +69,7 @@ class NetworkPopupMenu (
                 refreshChainNetworkSync()
                 doNetworkChangeTask()
                 uiScope {
+                    isClicking = false
                     FlowLoadingDialog(view.context).show()
                     delay(200)
                     WalletManager.changeNetwork()

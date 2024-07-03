@@ -9,12 +9,15 @@ import android.util.AttributeSet
 import android.webkit.CookieManager
 import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
+import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFilePicker
+import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
@@ -103,11 +106,27 @@ class LilicoWebView : WebView {
 
         override fun onPageFinished(view: WebView?, url: String?) {
             view ?: return
+            val padding = 20f.dp2px()
+            val jsCode = "document.body.style.paddingBottom = '${padding}px';"
+            view.evaluateJavascript(jsCode, null)
         }
 
         override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
             super.doUpdateVisitedHistory(view, url, isReload)
             callback?.onPageUrlChange(url.orEmpty(), isReload)
+        }
+
+        override fun shouldOverrideUrlLoading(
+            view: WebView?,
+            request: WebResourceRequest?
+        ): Boolean {
+            request?.url?.let {
+                if (it.scheme == "wc") {
+                    WalletConnect.get().pair(it.toString())
+                    return true
+                }
+            }
+            return super.shouldOverrideUrlLoading(view, request)
         }
     }
 

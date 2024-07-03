@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
+import com.crowdin.platform.util.inflateWithCrowdin
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
@@ -37,7 +38,7 @@ class AddressBookActivity : BaseActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.address_book, menu)
+        menuInflater.inflateWithCrowdin(R.menu.address_book, menu, resources)
         return super.onCreateOptionsMenu(menu)
     }
 

@@ -36,10 +36,10 @@
                 android:id="@+id/drive_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:desc="@string/sync"
+                app:descId="@string/sync"
                 app:descColor="@color/colorSecondary"
                 app:icon="@drawable/ic_google_drive"
-                app:title="Google Drive"/>
+                app:titleId="@string/google_drive"/>
 
             <View
                 android:layout_width="match_parent"
@@ -51,10 +51,10 @@
                 android:id="@+id/manually_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:desc="@string/sync"
+                app:descId="@string/sync"
                 app:descColor="@color/colorSecondary"
                 app:icon="@drawable/ic_profile_backup_manually"
-                app:title="@string/manually"/>
+                app:titleId="@string/manually"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
     </com.google.android.material.card.MaterialCardView>
 

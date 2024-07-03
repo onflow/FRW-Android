@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:iconEnable="false"
-            app:title="@string/developer_mode"/>
+            app:titleId="@string/developer_mode"/>
     </com.google.android.material.card.MaterialCardView>
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -71,9 +71,9 @@
                     android:id="@+id/mainnet_preference"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:desc="@string/selected"
+                    app:descId="@string/selected"
                     app:iconEnable="false"
-                    app:title="@string/mainnet"/>
+                    app:titleId="@string/mainnet"/>
 
                 <View
                     android:layout_width="match_parent"
@@ -85,9 +85,9 @@
                     android:id="@+id/testnet_preference"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:desc="@string/selected"
+                    app:descId="@string/selected"
                     app:iconEnable="false"
-                    app:title="@string/testnet"/>
+                    app:titleId="@string/testnet"/>
 
                 <View
                     android:layout_width="match_parent"

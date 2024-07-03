@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
+import com.crowdin.platform.util.inflateWithCrowdin
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
@@ -56,7 +57,7 @@ class NftDetailActivity : BaseActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.nft_detail, menu)
+        menuInflater.inflateWithCrowdin(R.menu.nft_detail, menu, resources)
         val menuItem = menu.findItem(R.id.view_in_ar)
         if (isARCameraSupported()) {
             menuItem.actionView?.setOnClickListener { openInAr() }

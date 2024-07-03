@@ -1,9 +1,6 @@
 package com.flowfoundation.wallet.page.address.presenter
 
 import android.graphics.Color
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.R
@@ -15,6 +12,7 @@ import com.flowfoundation.wallet.page.address.adapter.AddressBookAdapter
 import com.flowfoundation.wallet.page.address.model.AddressBookFragmentModel
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setSpannableText
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 
@@ -59,11 +57,11 @@ class AddressBookFragmentPresenter(
     private fun updateLocalEmptyState(isEmpty: Boolean) {
         binding.localEmptyWrapper.setVisible(isEmpty)
         if (isEmpty) {
-            binding.localEmptyTextView.text = SpannableString(activity.getString(R.string.search_the_id, viewModel.searchKeyword())).apply {
-                val keyword = viewModel.searchKeyword()
-                val index = lastIndexOf(keyword)
-                setSpan(ForegroundColorSpan(R.color.colorSecondary.res2color()), index, index + keyword.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
+            binding.localEmptyTextView.setSpannableText(
+                activity.getString(
+                    R.string.search_the_id, viewModel.searchKeyword()
+                ), viewModel.searchKeyword(), R.color.colorSecondary.res2color()
+            )
         }
         updateRemoteEmptyState(false)
     }

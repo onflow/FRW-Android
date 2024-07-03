@@ -15,9 +15,9 @@
             android:id="@+id/status_bar_holder"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:background="@color/deep_bg"
             app:layout_constraintTop_toTopOf="parent"
             tools:background="@color/red_1"
-            android:background="@color/deep_bg"
             tools:layout_height="30dp"/>
 
         <FrameLayout
@@ -29,7 +29,29 @@
 
         <include
             android:id="@+id/toolbar"
-            layout="@layout/layout_browser_toolbar"/>
+            layout="@layout/layout_browser_toolbar"
+            android:visibility="visible"/>
+
+        <FrameLayout
+            android:id="@+id/fl_toolbar_collapsed"
+            android:layout_width="20dp"
+            android:layout_height="60dp"
+            android:background="@drawable/bg_round_left_16dp"
+            android:backgroundTint="@color/black_30"
+            android:layout_marginBottom="22dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:rotation="180"
+                android:src="@drawable/ic_arrow_right"
+                app:tint="@color/white"/>
+
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

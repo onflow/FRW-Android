@@ -41,6 +41,7 @@ private val KEY_SEND_STATE_BUBBLE_POSITION = stringPreferencesKey("KEY_SEND_STAT
 private val KEY_DEVELOPER_MODE_ENABLE = booleanPreferencesKey("KEY_DEVELOPER_MODE_ENABLE")
 private val KEY_CHAIN_NETWORK = intPreferencesKey("KEY_CHAIN_NETWORK")
 private val KEY_THEME_MODE = intPreferencesKey("KEY_THEME_MODE")
+private val KEY_WALLPAPER_ID = intPreferencesKey("KEY_WALLPAPER_ID")
 private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
 private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
@@ -52,6 +53,7 @@ private val KEY_INBOX_READ_LIST = stringPreferencesKey("KEY_INBOX_READ_LIST")
 private val KEY_CURRENCY_FLAG = stringPreferencesKey("KEY_CURRENCY_FLAG")
 private val KEY_IS_ROOT_DETECTED_DIALOG_SHOWN = booleanPreferencesKey("KEY_IS_ROOT_DETECTED_DIALOG_SHOWN")
 private val KEY_IS_PROFILE_SWITCH_TIPS_SHOWN = booleanPreferencesKey("KEY_IS_PROFILE_SWITCH_TIPS_SHOWN")
+private val KEY_DO_NOT_SHOW_MOVE_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SHOW_MOVE_DIALOG")
 
 private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
 
@@ -155,6 +157,12 @@ fun updateThemeMode(themeMode: Int) {
     edit { dataStore.edit { it[KEY_THEME_MODE] = themeMode } }
 }
 
+suspend fun getWallpaperId(): Int = dataStore.data.map { it[KEY_WALLPAPER_ID] ?: 2 }.first()
+
+fun setWallpaperId(id: Int) {
+    edit { dataStore.edit { it[KEY_WALLPAPER_ID] = id } }
+}
+
 suspend fun getQuoteMarket(): String = dataStore.data.map { it[KEY_QUOTE_MARKET] ?: QuoteMarket.binance.value }.first()
 
 suspend fun updateQuoteMarket(market: String) {
@@ -237,6 +245,14 @@ suspend fun isProfileSwitchTipsShown(): Boolean {
 
 suspend fun setProfileSwitchTipsShown() {
     dataStore.edit { it[KEY_IS_PROFILE_SWITCH_TIPS_SHOWN] = true }
+}
+
+suspend fun isShowMoveDialog(): Boolean {
+    return dataStore.data.map { it[KEY_DO_NOT_SHOW_MOVE_DIALOG] ?: false }.first().not()
+}
+
+suspend fun setDoNotShowMoveDialog(notShow: Boolean) {
+    dataStore.edit { it[KEY_DO_NOT_SHOW_MOVE_DIALOG] = notShow }
 }
 
 fun getSelectedWalletAddress(): String? {

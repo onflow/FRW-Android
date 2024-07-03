@@ -20,3 +20,4 @@ fabric.properties
 google-services.json
 */google-services.json
 */keystore.jks
+/crowdin.yml

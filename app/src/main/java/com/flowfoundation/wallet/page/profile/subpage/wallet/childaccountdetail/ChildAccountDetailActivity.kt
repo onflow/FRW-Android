@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
+import com.crowdin.platform.util.inflateWithCrowdin
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -50,8 +51,8 @@ class ChildAccountDetailActivity : BaseActivity() {
         setupToolbar()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.child_account_detail, menu)
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflateWithCrowdin(R.menu.child_account_detail, menu, resources)
         return super.onCreateOptionsMenu(menu)
     }
 

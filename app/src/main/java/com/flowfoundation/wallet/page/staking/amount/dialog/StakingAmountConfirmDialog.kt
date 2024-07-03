@@ -63,7 +63,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
             closeButton.setOnClickListener { dismiss() }
             descWrapper.setVisible(!data.isUnstake)
-            sendButton.updateDefaultText(if (data.isUnstake) R.string.hold_to_unstake.res2String() else R.string.hold_to_stake.res2String())
+            sendButton.updateDefaultText(if (data.isUnstake) R.string.hold_to_unstake else R.string.hold_to_stake)
             titleView.setText(if (data.isUnstake) R.string.confirm_your_unstake else R.string.confirm_your_stake)
         }
     }
