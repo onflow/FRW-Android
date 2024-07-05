@@ -553,8 +553,7 @@
         Wallet
 uses to turn your device into a hardware wallet.</string>
     <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready,
-let’s get started!</string>
+    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
@@ -563,4 +562,25 @@ let’s get started!</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
     <string name="appearance">Appearance</string>
+    <string name="current_device">現在のデバイス</string>
+    <string name="create_username_tip">他のFlow Walletユーザーは、あなたのユニークなユーザー名を通じてあなたを見つけ、支払いを送ることができます。</string>
+    <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
+    <string name="create_backup">バックアップの作成</string>
+    <string name="upload_again">再度アップロード</string>
+    <string name="backup_uploaded">バックアップのアップロード</string>
+    <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="try_to_connect">Try to Connect</string>
+    <string name="revoked">取り消された</string>
+    <string name="revoking">Revoking...</string>
+    <string name="full_access">フルアクセス</string>
+    <string name="multi_sign">マルチサイン</string>
+    <string name="can_not_revoke">Can\'t Revoke Current Device Key</string>
+    <string name="login_failure">Login Failure</string>
+    <string name="move_nft_failure">Move NFT Failure</string>
+    <string name="sync_account_info_failure">Sync Account Info Failure</string>
+    <string name="add_public_key_failure">Add Public Key Failure</string>
+    <string name="send_response_failure">Send Response Failure</string>
+    <string name="no_backup_found">No Backup Found</string>
+    <string name="collection_list">Collection List</string>
+    <string name="balance_value">Balance %1$d</string>
 </resources>

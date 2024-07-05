@@ -4,11 +4,12 @@ import android.view.View
 import android.widget.TextView
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
+import com.flowfoundation.wallet.utils.extensions.res2String
 
 
-class WallpaperTitlePresenter(private val view: View): BaseViewHolder(view), BasePresenter<String> {
+class WallpaperTitlePresenter(private val view: View): BaseViewHolder(view), BasePresenter<Int> {
 
-    override fun bind(model: String) {
-        (view as TextView).text = model
+    override fun bind(model: Int) {
+        (view as TextView).text = model.res2String()
     }
 }

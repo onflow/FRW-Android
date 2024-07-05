@@ -15,7 +15,7 @@ class WallpaperAdapter: BaseAdapter<Any>() {
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is String -> TYPE_TITLE
+            is Int -> TYPE_TITLE
             is Wallpaper -> TYPE_WALLPAPER
             else -> -1
         }
@@ -31,7 +31,7 @@ class WallpaperAdapter: BaseAdapter<Any>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is WallpaperTitlePresenter -> holder.bind(getItem(position) as String)
+            is WallpaperTitlePresenter -> holder.bind(getItem(position) as Int)
             is WallpaperImagePresenter -> holder.bind(getItem(position) as Wallpaper)
         }
     }

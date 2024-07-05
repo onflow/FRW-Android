@@ -77,7 +77,7 @@ class RestoreGoogleDriveFragment: Fragment() {
     }
 
     private fun onRestoreEmpty() {
-        toast(msg = "No backup found")
+        toast(msgRes = R.string.no_backup_found)
         binding.btnNext.setProgressVisible(false)
     }
 

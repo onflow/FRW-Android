@@ -59,7 +59,7 @@ class RestorePinCodePresenter(
         try {
             val data = restoreViewModel.getMnemonicData()
             if (data.isEmpty()) {
-                toast(msg = "No backup found")
+                toast(msgRes = R.string.no_backup_found)
                 return
             }
             val mnemonic = decryptMnemonic(data, pinCode)

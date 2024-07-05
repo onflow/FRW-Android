@@ -103,7 +103,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                                 result?.resume(true)
                                 dismissAllowingStateLoss()
                             } else {
-                                toast(msg = "move nft failure")
+                                toast(msgRes = R.string.move_nft_failure)
                             }
                         }
                     }
@@ -160,7 +160,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     private fun showEmptyCollection() {
         with(binding) {
             ivCollectionVm.setImageResource(R.drawable.ic_switch_vm_cadence)
-            tvCollectionName.text = "Collection List"
+            tvCollectionName.text = R.string.collection_list.res2String()
             ivCollectionLogo.setImageResource(R.drawable.bg_empty_placeholder)
             listAdapter.setNewDiffData(emptyList())
             tvEmpty.setVisible()
@@ -178,7 +178,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 }
             )
             tvCollectionName.text = collection.name.ifEmpty {
-                "Collection List"
+                R.string.collection_list.res2String()
             }
             Glide.with(ivCollectionLogo).load(collection.logo).transform(CenterCrop(),
                 RoundedCorners(8.dp2px().toInt())).into(ivCollectionLogo)

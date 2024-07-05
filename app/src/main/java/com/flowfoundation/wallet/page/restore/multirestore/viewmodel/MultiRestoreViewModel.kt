@@ -214,7 +214,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 delay(200)
                                 MainActivity.relaunch(activity, clearTop = true)
                             } else {
-                                toast(msg = "login failure")
+                                toast(msgRes = R.string.login_failure)
                                 activity.finish()
                             }
                         }

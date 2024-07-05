@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletRestoreGuideBinding
 import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_RESTORE_FINISH
 import com.flowfoundation.wallet.manager.drive.DriveItem
@@ -68,7 +69,7 @@ class WalletRestoreGuideFragment : Fragment() {
     }
 
     private fun onRestoreEmpty() {
-        toast(msg = "No backup found")
+        toast(msgRes = R.string.no_backup_found)
         with(binding.driveRestore) {
             setProgressVisible(false)
         }
