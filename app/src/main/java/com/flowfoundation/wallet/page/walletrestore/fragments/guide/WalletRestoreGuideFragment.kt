@@ -11,17 +11,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletRestoreGuideBinding
 import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_RESTORE_FINISH
 import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_BACKUP_NOT_FOUND
 import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_STEP_DRIVE_PASSWORD
 import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_STEP_DRIVE_USERNAME
 import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_STEP_MNEMONIC
 import com.flowfoundation.wallet.page.walletrestore.WalletRestoreViewModel
-import com.flowfoundation.wallet.utils.toast
 
 class WalletRestoreGuideFragment : Fragment() {
 
@@ -69,7 +68,7 @@ class WalletRestoreGuideFragment : Fragment() {
     }
 
     private fun onRestoreEmpty() {
-        toast(msgRes = R.string.no_backup_found)
+        pageViewModel.changeStep(WALLET_RESTORE_BACKUP_NOT_FOUND)
         with(binding.driveRestore) {
             setProgressVisible(false)
         }

@@ -347,3 +347,7 @@ var CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM
 var CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW
     get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmToFlow")
     private set(value) {}
+
+var CADENCE_QUERY_FLOW_BALANCE
+    get() = CadenceApiManager.getCadenceBasicScript("queryFlowBalance")
+    private set(value) {}

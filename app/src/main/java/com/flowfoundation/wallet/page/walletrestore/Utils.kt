@@ -30,6 +30,8 @@ const val WALLET_RESTORE_STEP_GUIDE = 0
 const val WALLET_RESTORE_STEP_DRIVE_USERNAME = 1
 const val WALLET_RESTORE_STEP_DRIVE_PASSWORD = 2
 const val WALLET_RESTORE_STEP_MNEMONIC = 3
+const val WALLET_RESTORE_ERROR = 4
+const val WALLET_RESTORE_BACKUP_NOT_FOUND = 5
 
 const val ERROR_CUSTOM_TOKEN = 1
 const val ERROR_UID = 2
@@ -44,6 +46,8 @@ private val WALLET_STEP_ROOT_ID = mapOf(
     WALLET_RESTORE_STEP_DRIVE_USERNAME to R.id.fragment_wallet_restore_drive_username,
     WALLET_RESTORE_STEP_DRIVE_PASSWORD to R.id.fragment_wallet_restore_drive_password,
     WALLET_RESTORE_STEP_MNEMONIC to R.id.fragment_wallet_restore_mnemonic,
+    WALLET_RESTORE_ERROR to R.id.fragment_restore_error,
+    WALLET_RESTORE_BACKUP_NOT_FOUND to R.id.fragment_restore_error
 )
 
 fun getRootIdByStep(step: Int) = WALLET_STEP_ROOT_ID[step]!!

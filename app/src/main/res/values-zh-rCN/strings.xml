@@ -4,7 +4,7 @@
     <string name="username">用户名</string>
     <string name="username_too_short">太短</string>
     <string name="username_too_long">太长</string>
-    <string name="username_exist">已被采用</string>
+    <string name="username_exist">已被占用</string>
     <string name="username_success">听起来不错</string>
     <string name="register_error">注册错误</string>
     <string name="confirm">确认</string>
@@ -117,7 +117,6 @@
     <string name="verify_pin">验证 PIN 码</string>
     <string name="verify_pin_tip">因此，我们将使用 PIN 码保护您的备份。</string>
     <string name="enter_verify_pin_tip">请在创建此备份时输入 PIN 码。</string>
-    <string name="verify_pin_code_error">请确认输入的 PIN 密码正确无误。</string>
     <string name="enter_current_pin_code">请输入当前的 PIN 码</string>
     <string name="do_not_share_secret">不要分享你的助记词！</string>
     <string name="do_not_share_secret_desc">如果有人获得了你的助记词，他们将对你的钱包拥有完全控制权。</string>
@@ -491,9 +490,6 @@
     <string name="wallet_already_logged_in">此钱包已登录</string>
     <string name="google_drive">Google 云端硬盘</string>
     <string name="add_other_device">添加其他设备</string>
-    <string name="restore_failed">恢复失败。请稍后再试。</string>
-    <string name="restore_failed_option">还原失败。确保备份选项属于同一个
-        钱包。</string>
     <string name="revoke_device">撤销设备</string>
     <string name="wrong_network">切换网络</string>
     <string name="backup_on_mainnet">您只能在 Mainnet 上创建备份。</string>
@@ -578,7 +574,14 @@
     <string name="sync_account_info_failure">同步账户信息失败</string>
     <string name="add_public_key_failure">添加公钥失败</string>
     <string name="send_response_failure">发送响应失败</string>
-    <string name="no_backup_found">未找到备份</string>
     <string name="collection_list">藏品</string>
     <string name="balance_value">余额 %1$d</string>
+    <string name="backup_not_found">未找到备份</string>
+    <string name="backup_not_found_desc">您的账户没有关联备份文件。请验证并重试。</string>
+    <string name="backup_decryption_failed">备份解密失败</string>
+    <string name="backup_decryption_failed_desc">输入的 PIN 码未解密备份。请检查 PIN 码并重试。</string>
+    <string name="no_account_found">未找到备份帐户</string>
+    <string name="no_account_found_desc">您的备份选项未链接多重签名账户。请验证并重试。</string>
+    <string name="restore_failed">恢复失败</string>
+    <string name="restore_failed_desc">请稍后再试。</string>
 </resources>

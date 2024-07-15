@@ -118,7 +118,6 @@
     <string name="verify_pin">Verificar PIN</string>
     <string name="verify_pin_tip">Así que vamos a asegurar su copia de seguridad con código PIN.</string>
     <string name="enter_verify_pin_tip">Por favor, introduzca el PIN cuando cree esta copia de seguridad.</string>
-    <string name="verify_pin_code_error">Confirme que el PIN introducido es correcto.</string>
     <string name="enter_current_pin_code">Introduzca el código PIN actual</string>
     <string name="do_not_share_secret">¡No compartas tu frase secreta!</string>
     <string name="do_not_share_secret_desc">Si alguien tiene tu frase secreta, tendrá el control total de tu cartera.</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">Este monedero ya está conectado</string>
     <string name="google_drive">Google Drive</string>
     <string name="add_other_device">Añadir otro dispositivo</string>
-    <string name="restore_failed">Error de restauración. Vuelva a intentarlo más tarde.</string>
-    <string name="restore_failed_option">Falló la restauración. Asegúrese de que las opciones de copia de seguridad pertenecen al mismo monedero
-        .</string>
     <string name="revoke_device">Dispositivo de revocación</string>
     <string name="wrong_network">Red de conmutación</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -574,13 +570,20 @@ uses to turn your device into a hardware wallet.</string>
     <string name="revoking">Revoking...</string>
     <string name="full_access">Acceso completo</string>
     <string name="multi_sign">Multisigno</string>
-    <string name="can_not_revoke">Can\'t Revoke Current Device Key</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
     <string name="move_nft_failure">Move NFT Failure</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
-    <string name="no_backup_found">No Backup Found</string>
     <string name="collection_list">Collection List</string>
     <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">The entered PIN code did not decrypt the backup. Please check your PIN and try again.</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">Error de restauración</string>
+    <string name="restore_failed_desc">Please try again later.</string>
 </resources>

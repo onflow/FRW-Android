@@ -15,7 +15,10 @@ import com.flowfoundation.wallet.utils.isTesting
 
 
 fun instabugInitialize(application: Application) {
-    if (isDev() || isTesting()) {
+    if (isTesting()) {
+        return
+    }
+    if (isDev()) {
         Instabug.Builder(application, EnvKey.get("INSTABUG_TOKEN_DEV"))
             .setInvocationEvents(InstabugInvocationEvent.SHAKE, InstabugInvocationEvent.FLOATING_BUTTON)
             .setTrackingUserStepsState(Feature.State.ENABLED)

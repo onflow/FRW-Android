@@ -118,7 +118,6 @@
     <string name="verify_pin">Проверка PIN-кода</string>
     <string name="verify_pin_tip">Поэтому мы защитим вашу резервную копию с помощью PIN-кода.</string>
     <string name="enter_verify_pin_tip">Введите PIN-код при создании этой резервной копии.</string>
-    <string name="verify_pin_code_error">Пожалуйста, подтвердите правильность введенного PIN-кода.</string>
     <string name="enter_current_pin_code">Введите текущий PIN-код</string>
     <string name="do_not_share_secret">Не делитесь своей секретной фразой!</string>
     <string name="do_not_share_secret_desc">Если кто-то узнает вашу секретную фразу, он получит полный контроль над вашим кошельком.</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">Этот кошелек уже вошел в систему</string>
     <string name="google_drive">Google Диск</string>
     <string name="add_other_device">Добавить другое устройство</string>
-    <string name="restore_failed">Восстановление не удалось. Пожалуйста, повторите попытку позже.</string>
-    <string name="restore_failed_option">Восстановление не удалось. Убедитесь, что варианты резервного копирования принадлежат одному и тому же кошельку
-        .</string>
     <string name="revoke_device">Отозвать устройство</string>
     <string name="wrong_network">Сеть коммутаторов</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -574,13 +570,20 @@ uses to turn your device into a hardware wallet.</string>
     <string name="revoking">Revoking...</string>
     <string name="full_access">Полный доступ</string>
     <string name="multi_sign">Многозначный</string>
-    <string name="can_not_revoke">Can\'t Revoke Current Device Key</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
     <string name="move_nft_failure">Move NFT Failure</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
-    <string name="no_backup_found">No Backup Found</string>
     <string name="collection_list">Collection List</string>
     <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">The entered PIN code did not decrypt the backup. Please check your PIN and try again.</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">Восстановление не удалось</string>
+    <string name="restore_failed_desc">Please try again later.</string>
 </resources>

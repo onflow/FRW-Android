@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_restore_error"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/iv_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:src="@drawable/ic_restore_error"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_error_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="40dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center_horizontal"
+        android:textColor="@color/text_1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/iv_error"
+        tools:text="Backup Not Found"/>
+
+    <TextView
+        android:id="@+id/tv_error_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center_horizontal"
+        android:textColor="@color/text_2"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_error_title"
+        tools:text="No backup file is associated with your account. Please verify and try again."/>
+
+    <TextView
+        android:id="@+id/tv_try"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="62dp"
+        android:layout_marginTop="80dp"
+        android:background="@drawable/bg_round_24dp"
+        android:backgroundTint="@color/text_1"
+        android:fontFamily="@font/inter_semi_bold"
+        android:gravity="center"
+        android:text="@string/try_it_again"
+        android:textColor="@color/button_text"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_error_desc"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

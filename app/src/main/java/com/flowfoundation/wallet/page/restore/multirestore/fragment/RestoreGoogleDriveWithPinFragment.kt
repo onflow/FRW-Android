@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentRestoreGoogleDriveWithPinBinding
-import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreGoogleDriveOption
 import com.flowfoundation.wallet.page.restore.multirestore.presenter.RestoreGoogleDriveWithPinPresenter
 import com.flowfoundation.wallet.page.restore.multirestore.viewmodel.MultiRestoreViewModel
 
@@ -34,7 +33,7 @@ class RestoreGoogleDriveWithPinFragment: Fragment() {
             googleDriveOptionChangeLiveData.observe(requireActivity()) {
                 withPinPresenter.bind(it)
             }
-            changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_GOOGLE_DRIVE)
+            toGoogleDrive()
         }
     }
 }
