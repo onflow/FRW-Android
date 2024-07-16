@@ -29,6 +29,9 @@ fun dispatchScanResult(context: Context, str: String) {
                 || text.startsWith("frw://wc?") || text.startsWith("fw://wc?"))
         && AppConfig.walletConnectEnable()
     ) {
+        if (WalletManager.isChildAccountSelected()) {
+            return
+        }
         val wcUri = if (text.startsWith("wc:")) {
             text
         } else {
