@@ -17,20 +17,12 @@ class MainContentPresenter(
 ) : BasePresenter<MainContentModel> {
 
     private val menuId by lazy {
-        if (WalletManager.isChildAccountSelected()) {
-            listOf(
-                R.id.bottom_navigation_home,
-                R.id.bottom_navigation_nft,
-                R.id.bottom_navigation_profile,
-            )
-        } else {
-            listOf(
-                R.id.bottom_navigation_home,
-                R.id.bottom_navigation_nft,
-                R.id.bottom_navigation_explore,
-                R.id.bottom_navigation_profile,
-            )
-        }
+        listOf(
+            R.id.bottom_navigation_home,
+            R.id.bottom_navigation_nft,
+            R.id.bottom_navigation_explore,
+            R.id.bottom_navigation_profile,
+        )
     }
 
     init {
