@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.receive.presenter
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import androidx.core.view.drawToBitmap
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -12,13 +13,20 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.receive.model.ReceiveData
 import com.flowfoundation.wallet.page.receive.model.ReceiveModel
+import com.flowfoundation.wallet.utils.CACHE_PATH
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.saveToFile
+import com.flowfoundation.wallet.utils.shareFile
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.widgets.ProgressDialog
+import java.io.File
 
 class ReceivePresenter(
     private val activity: ReceiveActivity,
@@ -28,6 +36,8 @@ class ReceivePresenter(
     private var cadenceQRCode: Drawable? = null
     private var evmQRCode: Drawable? = null
     private var receiveData: ReceiveData? = null
+
+    private var isImageLoaded = false
 
     init {
         setupToolbar()
@@ -50,11 +60,34 @@ class ReceivePresenter(
         with(binding) {
             tvWalletName.text = data.walletName.ifBlank { R.string.wallet.res2String() }
             tvWalletAddress.text = data.address.toAddress()
-            copyButton.setOnClickListener { copy() }
+            shareButton.setOnClickListener {
+                try {
+                    showShareQRCode()
+                } catch (e: Exception) {
+                    copy()
+                }
+            }
             tvCurrentVm.setVisible(EVMWalletManager.haveEVMAddress())
             switchVmLayout.setVisible(EVMWalletManager.haveEVMAddress())
             switchVmLayout.setOnVMSwitchListener { isSwitchToEVM ->
                 updateTextAndQRCode(isSwitchToEVM)
+            }
+            btnCopy.setOnClickListener { copy() }
+        }
+    }
+
+    private fun showShareQRCode() {
+        if (isImageLoaded) {
+            val dialog = ProgressDialog(activity)
+            dialog.show()
+            ioScope {
+                val bitmap = binding.ivQrCode.drawToBitmap()
+                val file = File(CACHE_PATH, "qrcode_share.jpg")
+                bitmap.saveToFile(file)
+                uiScope {
+                    dialog.dismiss()
+                    activity.shareFile(file, title = "QRCode share", text = binding.tvWalletAddress.text.toString(), type = "image/*")
+                }
             }
         }
     }
@@ -72,9 +105,11 @@ class ReceivePresenter(
                 ivQrCode.setImageDrawable(cadenceQRCode)
             }
         }
+        isImageLoaded = true
     }
 
     private fun updateQrcode(qrcode: Drawable) {
+        isImageLoaded = false
         cadenceQRCode = qrcode
         evmQRCode = EVMWalletManager.getEVMAddress()?.toAddress()?.toQRDrawable(isEVM = true)
         updateTextAndQRCode(WalletManager.isEVMAccountSelected())
