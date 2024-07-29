@@ -51,16 +51,15 @@ object NftFavoriteManager {
         contractName ?: return
         tokenId ?: return
         ioScope {
+
             val favorites = favoriteList().toMutableList()
+            val resp = updateFavorite(favorites.map { it.serverId() })
+            if (resp.status == 200) {
+                fetchFromServer()
+            }
             favorites.removeAll { it.contractName() == contractName && it.tokenId() == tokenId }
             dispatchListener(favorites)
             cache().cacheSync(FavoriteCache(favorites))
-
-            val resp = updateFavorite(favorites.map { it.serverId() })
-            if (resp.status == 200) {
-                favorites.removeAll { it.contractName() == contractName && it.tokenId() == tokenId }
-                fetchFromServer()
-            }
         }
     }
 

@@ -308,7 +308,7 @@
         연간 최대 13%</string>
     <string name="stake_guide_desc_2">스테이킹을 할 때 <font color="#60C293"><strong>흐름</strong></font> 을 스테이킹하면 <font color="#60C293"><strong>Flow</strong></font>. 당신은 할 수 있습니다 <font color="#60C293"><strong>거래</strong></font> 이 유동 자산을 언제든지 거래할 수 있습니다.</string>
     <string name="stake_guide_desc_3">적립을 시작하면 <font color="#60C293"><strong>바로</strong></font>.</string>
-    <string name="stake_guide_desc_4">보상은 입금에 자동으로 적립됩니다. <font color="#60C293"><strong>며칠마다</strong></font>.</string>
+    <string name="stake_guide_desc_4">리워드는 입금에 자동으로 적립됩니다. <font color="#60C293"><strong>며칠마다</strong></font>.</string>
     <string name="staking_provider">스테이킹 제공자</string>
     <string name="select_provider">공급자 선택</string>
     <string name="stake">스테이크</string>
@@ -572,7 +572,10 @@ uses to turn your device into a hardware wallet.</string>
     <string name="multi_sign">멀티사인</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
-    <string name="move_nft_failure">Move NFT Failure</string>
+    <string name="move_nft_failed">NFT 이동 실패</string>
+    <string name="move_nft_success">NFT 성공 이동</string>
+    <string name="send_nft_success">NFT 성공 보내기</string>
+    <string name="send_nft_failed">NFT 전송 실패</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>

@@ -14,13 +14,12 @@ import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.page.nft.nftdetail.NftDetailActivity
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTItemModel
+import com.flowfoundation.wallet.page.nft.nftlist.title
 import com.flowfoundation.wallet.page.nft.nftlist.widget.NftItemPopupMenu
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
-import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2pix
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 
 class NFTListItemPresenter(
@@ -37,12 +36,11 @@ class NFTListItemPresenter(
     @SuppressLint("SetTextI18n")
     override fun bind(model: NFTItemModel) {
         val nft = model.nft
-        val config = NftCollectionConfig.get(nft.collectionAddress)
         with(binding) {
             Glide.with(coverView).load(nft.cover()).transform(RoundedCorners(10.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(coverView)
-            nameView.text = config?.name ?: nft.contractName()
-            priceView.text = "#${nft.id}"
+            nameView.text = nft.title() ?: nft.title ?: nft.contractName()
+            priceView.text = nft.postMedia.description ?: ""
 
             coverViewWrapper.setOnClickListener {
                 NftDetailActivity.launch(context, nft.uniqueId())
@@ -62,7 +60,7 @@ class NFTListItemPresenter(
     }
 
     private fun bindAccessible(model: NFTItemModel) {
-        val accessible = ChildAccountCollectionManager.isNFTAccessible(model.nft.id)
+        val accessible = ChildAccountCollectionManager.isNFTAccessible(model.nft.collectionAddress, model.nft.collectionContractName)
         binding.priceView.setVisible(accessible)
         binding.tvInaccessibleTag.setVisible(accessible.not())
     }

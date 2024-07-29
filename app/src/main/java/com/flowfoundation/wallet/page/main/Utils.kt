@@ -58,6 +58,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 import java.math.RoundingMode
 
@@ -200,6 +201,7 @@ private fun ViewGroup.setupWallet(
     }
 
     setOnClickListener {
+        FlowLoadingDialog(context).show()
         WalletManager.selectWalletAddress(data.address)
         ioScope {
             delay(200)
@@ -297,6 +299,7 @@ private fun View.setupWalletItem(
         if (newNetwork != chainNetWorkString()) {
             // network change
             if (network != chainNetWorkString()) {
+                FlowLoadingDialog(context).show()
                 updateChainNetworkPreference(networkId(newNetwork))
                 ioScope {
                     delay(200)
@@ -309,6 +312,7 @@ private fun View.setupWalletItem(
                 }
             }
         } else {
+            FlowLoadingDialog(context).show()
             ioScope {
                 delay(200)
                 doNetworkChangeTask()
@@ -340,7 +344,7 @@ fun bindFlowBalance(balanceView: TextView, address: String) {
             address
         ) ?: 0f
         uiScope {
-            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
+            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
         }
     }
 }
@@ -350,7 +354,7 @@ fun bindEVMFlowBalance(balanceView: TextView) {
     ioScope {
         val balance = cadenceQueryCOATokenBalance() ?: 0f
         uiScope {
-            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
+            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
         }
     }
 }

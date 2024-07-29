@@ -32,6 +32,7 @@ class DeveloperModeActivity : BaseActivity() {
         setContentView(binding.root)
 
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
         setupToolbar()
 
         presenter = DeveloperModePresenter(this, binding)

@@ -99,7 +99,7 @@ fun QuoteMarket.getFlowPricePair(): String {
 
 fun FlowCoin.getPricePair(market: QuoteMarket): String {
     return when (symbol.lowercase()) {
-        FlowCoin.SYMBOL_FLOW, FlowCoin.SYMBOL_STFLOW.lowercase() -> market.getFlowPricePair()
+        FlowCoin.SYMBOL_FLOW -> market.getFlowPricePair()
         FlowCoin.SYMBOL_FUSD, FlowCoin.SYMBOL_USDC -> market.getUSDCPricePair()
         else -> ""
     }

@@ -41,7 +41,7 @@
         app:layout_constraintBottom_toBottomOf="@id/edit_text"
         app:layout_constraintStart_toStartOf="@id/edit_text"
         app:layout_constraintTop_toTopOf="@id/edit_text"
-        app:tint="@color/colorSecondary"/>
+        app:tint="@color/accent_gray"/>
 
     <ProgressBar
         android:id="@+id/progress_bar"
@@ -53,7 +53,7 @@
         app:layout_constraintBottom_toBottomOf="@id/edit_text"
         app:layout_constraintStart_toStartOf="@id/edit_text"
         app:layout_constraintTop_toTopOf="@id/edit_text"
-        app:tint="@color/colorSecondary"/>
+        app:tint="@color/accent_gray"/>
 
     <TextView
         android:id="@+id/cancel_button"
@@ -78,8 +78,8 @@
         android:layout_marginTop="28dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/edit_text"
-        app:tabIconTint="@color/send_tab_icon"
-        app:tabIndicator="@color/colorSecondary"
+        app:tabIconTint="@color/accent_gray"
+        app:tabIndicator="@color/accent_gray"
         app:tabIndicatorColor="@color/send_tab_indicator"
         app:tabIndicatorHeight="2dp"
         app:tabMode="fixed"

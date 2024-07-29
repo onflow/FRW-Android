@@ -17,15 +17,20 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.cadenceWithdrawTokenFromCOAAccount
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
+import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.serialization.Serializable
 
 private val TAG = EVMWalletManager::class.java.simpleName
@@ -207,21 +212,11 @@ object EVMWalletManager {
 
     private suspend fun bridgeNFTToEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val contractAddress = "0x8920ffd3d8768daa"
-            val contractName = "ExampleNFT"
+            val contractAddress = nft.collectionAddress
+            val contractName = nft.collectionContractName
             val id = nft.id
             val txId = cadenceBridgeNFTToEvm(contractAddress, contractName, id)
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge to evm failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge to evm success")
-                    callback.invoke(true)
-                }
-            }
+            postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
             logd(TAG, "bridge to evm failed")
@@ -231,21 +226,11 @@ object EVMWalletManager {
 
     private suspend fun bridgeNFTFromEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val contractAddress = "0x8920ffd3d8768daa"
-            val contractName = "ExampleNFT"
+            val contractAddress = nft.collectionAddress
+            val contractName = nft.collectionContractName
             val id = nft.id
             val txId = cadenceBridgeNFTFromEvm(contractAddress, contractName, id)
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge from evm failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge from evm success")
-                    callback.invoke(true)
-                }
-            }
+            postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
             logd(TAG, "bridge from evm failed")
@@ -254,8 +239,7 @@ object EVMWalletManager {
     }
 
     private suspend fun bridgeTokenFromEVM(
-        coin: FlowCoin, amount: Float, callback: (isSuccess: Boolean)
-        -> Unit
+        coin: FlowCoin, amount: Float, callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
             val address = if (!coin.flowIdentifier.isNullOrEmpty()) {
@@ -405,6 +389,21 @@ object EVMWalletManager {
         }
     }
 
+    private fun postTransaction(nft: Nft, txId: String?, callback: (isSuccess: Boolean) -> Unit) {
+        callback.invoke(txId != null)
+        if (txId.isNullOrBlank()) {
+            return
+        }
+        val transactionState = TransactionState(
+            transactionId = txId,
+            time = System.currentTimeMillis(),
+            state = FlowTransactionStatus.PENDING.num,
+            type = TransactionState.TYPE_MOVE_NFT,
+            data = nft.uniqueId(),
+        )
+        TransactionStateManager.newTransaction(transactionState)
+        pushBubbleStack(transactionState)
+    }
 }
 
 @Serializable

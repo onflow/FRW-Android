@@ -13,7 +13,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="@drawable/bg_round_corner"
-        android:backgroundTint="@color/colorSecondary"
+        android:backgroundTint="@color/accent_gray_16"
         android:fontFamily="@font/inter_medium"
         android:gravity="center"
         android:textColor="@color/white"

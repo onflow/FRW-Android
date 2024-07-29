@@ -42,6 +42,7 @@ class WalletConnectSessionActivity : BaseActivity() {
         binding = ActivityWalletConnectSessionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
 
         viewModel = ViewModelProvider(this)[WalletConnectSessionViewModel::class.java].apply {
             dataListLiveData.observe(this@WalletConnectSessionActivity) {

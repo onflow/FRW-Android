@@ -207,7 +207,7 @@
     <string name="open_in_browser">Open in browser</string>
     <string name="pending_transaction">Pending Transaction</string>
     <string name="welcome_to_wallet">Welcome to Flow Wallet!</string>
-    <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
+    <string name="profile_sign_tips"><![CDATA[加入我們並解鎖所有精彩和新奇的體驗！]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
     <string name="contact_us">Contact us</string>
@@ -304,11 +304,10 @@
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Let\'s Staking</string>
-    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
-        per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_1">每年可賺取高達&lt;font color="#60C293"&gt;&lt;strong&gt;13%&lt;\/strong&gt;&lt;\/font&gt;。</string>
+    <string name="stake_guide_desc_2">當你質押&lt;font color="#60C293"&gt;&lt;strong&gt;Flow&lt;\/strong&gt;&lt;\/font&gt;時，您會收到&lt;font color="#60C293"&gt;&lt;strong&gt;Flow&lt;\/strong&gt;&lt;\/font&gt;。 你可以在任何時候&lt;font color="#60C293"&gt;&lt;strong&gt;交易&lt;\/strong&gt;&lt;\/font&gt;這個流動資產。</string>
+    <string name="stake_guide_desc_3">你會&lt;font color="#60C293"&gt;&lt;strong&gt;立即開始賺取&lt;\/strong&gt;&lt;\/font&gt;。</string>
+    <string name="stake_guide_desc_4">獎勵將每隔幾天自動存入您的賬戶&lt;font color="#60C293"&gt;&lt;strong&gt;&lt;\/strong&gt;&lt;\/font&gt;。</string>
     <string name="staking_provider">Staking Provider</string>
     <string name="select_provider">Select Provider</string>
     <string name="stake">Stake</string>
@@ -572,7 +571,10 @@ uses to turn your device into a hardware wallet.</string>
     <string name="multi_sign">Multi-sign</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
-    <string name="move_nft_failure">Move NFT Failure</string>
+    <string name="move_nft_failed">移動NFT失敗</string>
+    <string name="move_nft_success">移動 NFT 成功</string>
+    <string name="send_nft_success">發送 NFT 成功</string>
+    <string name="send_nft_failed">發送 NFT 失敗</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>

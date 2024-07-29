@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.coin
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.tokenStateCache
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckLinkedAccountTokenListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -41,6 +42,8 @@ object TokenStateManager {
                     tokenStateList.add(TokenState(token.symbol, token.address, true))
                     dispatchListeners()
                 }
+            } else if (WalletManager.isChildAccountSelected()) {
+                fetchLinkedAccountStateSync()
             } else {
                 fetchStateSync()
             }
@@ -61,6 +64,25 @@ object TokenStateManager {
             val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.address, isEnable))
+        }
+        dispatchListeners()
+        tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
+    }
+
+    private fun fetchLinkedAccountStateSync() {
+        val coinList = FlowCoinListManager.coinList()
+        val enabledToken = cadenceCheckLinkedAccountTokenListEnabled()
+        if (enabledToken == null) {
+            logw(TAG, "fetch error")
+            return
+        }
+        coinList.forEach { coin ->
+            val isEnable = enabledToken[coin.contractId()] ?: false
+            val oldState = tokenStateList.firstOrNull {
+                it.symbol == coin.symbol
+            }
+            tokenStateList.remove(oldState)
+            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
         }
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))

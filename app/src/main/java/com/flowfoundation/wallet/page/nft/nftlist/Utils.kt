@@ -58,7 +58,7 @@ fun Nft.name(): String? {
     if (!postMedia.title.isNullOrBlank()) {
         return postMedia.title
     }
-    val config = NftCollectionConfig.get(collectionAddress) ?: return null
+    val config = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return null
     return "${config.name} #${id}"
 }
 

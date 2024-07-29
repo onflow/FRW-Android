@@ -570,7 +570,10 @@
     <string name="multi_sign">多重签名</string>
     <string name="can_not_revoke">无法撤销当前设备密钥</string>
     <string name="login_failure">登录失败</string>
-    <string name="move_nft_failure">移动 NFT 失败</string>
+    <string name="move_nft_failed">移动 NFT 失败</string>
+    <string name="move_nft_success">移动 NFT 成功</string>
+    <string name="send_nft_success">成功发送 NFT</string>
+    <string name="send_nft_failed">发送 NFT 失败</string>
     <string name="sync_account_info_failure">同步账户信息失败</string>
     <string name="add_public_key_failure">添加公钥失败</string>
     <string name="send_response_failure">发送响应失败</string>

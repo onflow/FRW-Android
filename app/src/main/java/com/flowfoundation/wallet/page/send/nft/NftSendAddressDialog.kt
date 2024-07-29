@@ -65,9 +65,6 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
     }
 
     private fun onAddressSelected(contact: AddressBookContact?) {
-        if (WalletManager.isChildAccountSelected()) {
-            return
-        }
         contact ?: return
         ioScope {
             val nft = this@NftSendAddressDialog.nft ?: return@ioScope

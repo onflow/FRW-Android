@@ -207,7 +207,7 @@
     <string name="open_in_browser">Open in browser</string>
     <string name="pending_transaction">Pending Transaction</string>
     <string name="welcome_to_wallet">Welcome to Flow Wallet!</string>
-    <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
+    <string name="profile_sign_tips"><![CDATA[हमसे जुड़ें और सभी उत्कृष्ट और नए अनुभवों को अनलॉक करें!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
     <string name="contact_us">Contact us</string>
@@ -304,11 +304,10 @@
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Let\'s Staking</string>
-    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
-        per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_1">सालाना &lt;font color="#60C293"&gt;&lt;strong&gt;13% तक कमा सकते हैं।&lt;/strong&gt;&lt;\/font&gt;</string>
+    <string name="stake_guide_desc_2">जब आप &lt;font color="#60C293"&gt;&lt;strong&gt;Flow&lt;/strong&gt;&lt;\/font&gt; को स्टेक करते हैं तो आपको &lt;font color="#60C293"&gt;&lt;strong&gt;Flow&lt;/strong&gt;&lt;\/font&gt; प्राप्त होता है। आप इस लिक्विड एसेट को किसी भी समय &lt;font color="#60C293"&gt;&lt;strong&gt;व्यापार&lt;/strong&gt;&lt;\/font&gt; कर सकते हैं।</string>
+    <string name="stake_guide_desc_3">आप तुरंत &lt;font color="#60C293"&gt;&lt;strong&gt;कमाई करना&lt;/strong&gt;&lt;\/font&gt; शुरू कर देते हैं।</string>
+    <string name="stake_guide_desc_4">पुरस्कार स्वचालित रूप से हर कुछ दिनों में आपके जमा खाते में &lt;font color="#60C293"&gt;&lt;strong&gt;क्रेडिट&lt;/strong&gt;&lt;\/font&gt; हो जाते हैं।</string>
     <string name="staking_provider">Staking Provider</string>
     <string name="select_provider">Select Provider</string>
     <string name="stake">Stake</string>
@@ -572,7 +571,10 @@ uses to turn your device into a hardware wallet.</string>
     <string name="multi_sign">Multi-sign</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
-    <string name="move_nft_failure">Move NFT Failure</string>
+    <string name="move_nft_failed">NFT स्थानांतरण असफल</string>
+    <string name="move_nft_success">NFT स्थानांतरण सफल</string>
+    <string name="send_nft_success">NFT भेजना सफल</string>
+    <string name="send_nft_failed">NFT भेजना विफल</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>

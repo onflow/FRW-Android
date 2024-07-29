@@ -23,6 +23,7 @@ class AboutActivity : BaseActivity() {
         binding = ActivityAboutBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
 
         with(binding) {
             versionView.text = getString(R.string.about_version, BuildConfig.VERSION_NAME)

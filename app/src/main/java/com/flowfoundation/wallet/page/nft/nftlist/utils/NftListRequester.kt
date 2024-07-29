@@ -59,13 +59,13 @@ class NftListRequester {
         cache().list(contractName).cacheSync(NftList(list.toList()))
     }
 
-    suspend fun request(collection: NftCollection): List<Nft> {
+    suspend fun request(collection: NftCollection, accountAddress: String = nftWalletAddress()): List<Nft> {
         resetOffset()
         dataList.clear()
         val response = if (isPreviewnet()) {
-            service.getNFTListOfCollection(nftWalletAddress(), collection.id, offset, limit)
+            service.getNFTListOfCollection(accountAddress, collection.id, offset, limit)
         } else {
-            service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)
+            service.nftsOfCollection(accountAddress, collection.id, offset, limit)
         }
         if (response.status > 200) {
             throw Exception("request nft list error: $response")

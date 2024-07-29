@@ -572,7 +572,10 @@ uses to turn your device into a hardware wallet.</string>
     <string name="multi_sign">Mehrere Zeichen</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
-    <string name="move_nft_failure">Move NFT Failure</string>
+    <string name="move_nft_failed">NFT verschieben fehlgeschlagen</string>
+    <string name="move_nft_success">NFT-Erfolg bewegen</string>
+    <string name="send_nft_success">NFT-Erfolg senden</string>
+    <string name="send_nft_failed">NFT senden fehlgeschlagen</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>

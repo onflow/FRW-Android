@@ -52,6 +52,8 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(false).colorRes(R.color.background)
             .light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
+
         binding.root.addStatusBarTopPadding()
         AccountEmojiManager.addListener(this)
         setupToolbar()
@@ -147,7 +149,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                     )
                 } ?: 0f
                 uiScope {
-                    it.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
+                    it.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
                 }
             }
         }

@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_round_8dp"
-                android:backgroundTint="@color/colorSecondary_16"
+                android:backgroundTint="@color/accent_orange_16"
                 android:orientation="horizontal"
                 android:paddingVertical="8dp"
                 android:paddingStart="16dp"
@@ -41,7 +41,7 @@
                     android:layout_height="16dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_tips"
-                    android:tint="@color/accent_green"/>
+                    android:tint="@color/accent_orange"/>
 
                 <TextView
                     android:id="@+id/tv_inaccessible_tip"
@@ -51,7 +51,7 @@
                     android:layout_weight="1"
                     android:gravity="start"
                     android:text="@string/inaccessible_token_tip"
-                    android:textColor="@color/accent_green"
+                    android:textColor="@color/accent_orange"
                     android:textSize="12sp"/>
 
             </androidx.appcompat.widget.LinearLayoutCompat>

@@ -84,7 +84,7 @@
     <ImageView
         android:id="@+id/iv_copy"
         android:layout_width="56dp"
-        android:layout_height="20dp"
+        android:layout_height="0dp"
         android:paddingHorizontal="18dp"
         android:alpha="0.6"
         android:scaleType="centerInside"

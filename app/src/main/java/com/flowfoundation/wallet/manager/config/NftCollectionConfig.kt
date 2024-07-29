@@ -14,10 +14,9 @@ import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
-import com.google.gson.reflect.TypeToken
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import kotlinx.parcelize.Parcelize
 import java.net.URL
-import kotlin.math.log
 
 object NftCollectionConfig {
 
@@ -27,23 +26,23 @@ object NftCollectionConfig {
         ioScope { reloadConfig() }
     }
 
-    fun get(address: String?): NftCollection? {
-        address ?: return null
+    fun get(address: String? = null, contractName: String): NftCollection? {
         if (config.isEmpty()) {
             reloadConfig()
         }
         val list = config.toList()
 
-        return list.firstOrNull { it.address == address }
+        if (address == null) {
+            return list.firstOrNull { it.contractName == contractName }
+        }
+        return list.firstOrNull { it.address == address && it.contractName == contractName }
     }
 
-    fun getByContractName(contractName: String): NftCollection? {
+    fun getByContractId(contractId: String): NftCollection? {
         if (config.isEmpty()) {
             reloadConfig()
         }
-        val list = config.toList()
-
-        return list.firstOrNull { it.contractName == contractName }
+        return config.toList().firstOrNull { it.contractId() == contractId }
     }
 
     fun getByStoragePath(storagePath: String): NftCollection? {
@@ -126,6 +125,8 @@ data class NftCollection(
     val evmAddress: String?,
 ) : Parcelable {
 
+    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+
     fun logo(): String {
         return if (logo.endsWith(".svg")) {
             logo.svgToPng()
@@ -165,6 +166,8 @@ data class NftCollection(
         val publicType: String?,
         @SerializedName("private_type")
         val privateType: String?,
+        @SerializedName("private_path")
+        val privatePath: String?,
     ) : Parcelable
 
     @Parcelize

@@ -65,16 +65,16 @@ class FclTransactionProcessingDialog : BottomSheetDialogFragment(), OnTransactio
     private fun updateProcessing(state: TransactionState) {
         with(binding.progressText) {
             setVisible()
-            var textColor = R.color.salmon_primary
+            var textColor = R.color.accent_gray
             var bgColor = R.color.salmon5
             var text = R.string.pending
-            when (state.state) {
-                FlowTransactionStatus.SEALED.num -> {
+            when {
+                state.isSuccess() -> {
                     textColor = R.color.success3
                     bgColor = R.color.success5
                     text = R.string.success
                 }
-                FlowTransactionStatus.UNKNOWN.num, FlowTransactionStatus.EXPIRED.num -> {
+                state.isFailed() -> {
                     textColor = R.color.warning2
                     bgColor = R.color.warning5
                     text = R.string.failed

@@ -113,7 +113,15 @@ class WalletHeaderPresenter(
                 ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
             }
 
-            cvSend.isEnabled = !WalletManager.isChildAccountSelected()
+            with(cvSend) {
+                if (WalletManager.isChildAccountSelected()) {
+                    isEnabled = false
+                    alpha = 0.5f
+                } else {
+                    isEnabled = true
+                    alpha = 1f
+                }
+            }
 
             cvHide.setOnClickListener {
                 uiScope {

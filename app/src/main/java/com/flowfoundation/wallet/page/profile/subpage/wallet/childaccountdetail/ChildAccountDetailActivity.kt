@@ -44,7 +44,7 @@ class ChildAccountDetailActivity : BaseActivity() {
         viewModel = ViewModelProvider(this)[ChildAccountDetailViewModel::class.java].apply {
             nftCollectionsLiveData.observe(this@ChildAccountDetailActivity) { presenter.bind(ChildAccountDetailModel(nftCollections = it)) }
             coinListLiveData.observe(this@ChildAccountDetailActivity) {presenter.bind(ChildAccountDetailModel(coinList = it))}
-            queryCollection(account!!)
+            queryCollections(account!!)
             queryCoinList(account!!)
         }
 

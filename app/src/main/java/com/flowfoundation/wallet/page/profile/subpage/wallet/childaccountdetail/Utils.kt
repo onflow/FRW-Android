@@ -1,9 +1,10 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail
 
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID
+import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
+import com.flowfoundation.wallet.manager.flowjvm.parseStringList
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import org.json.JSONArray
 import org.json.JSONObject
@@ -32,14 +33,13 @@ fun queryChildAccountTokens(childAddress: String): List<TokenData> {
     return parseTokenList(response.stringValue)
 }
 
-fun queryChildAccountNFTCollectionID(childAddress: String): List<NFTCollectionIDData> {
+fun queryChildAccountNFTCollectionID(childAddress: String): List<String> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID.executeCadence {
+    val response = CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS.executeCadence {
         arg { address(walletAddress) }
         arg { address(childAddress) }
     }
-    response ?: return emptyList()
-    return parseNFTCollectionData(response.stringValue)
+    return response?.parseStringList() ?: emptyList()
 }
 
 data class CoinData(
@@ -54,16 +54,11 @@ data class TokenData(
     val balance: Float
 )
 
-data class NFTCollectionIDData(
-    val id: String,
-    val idList: List<String>
-)
-
 data class CollectionData(
     val id: String,
     val name: String,
     val logo: String,
-    val path: String,
+    val accountAddress: String,
     val contractName: String,
     val idList: List<String>
 )
@@ -172,26 +167,4 @@ fun parseTokenList(json: String): List<TokenData> {
     }
 
     return list
-}
-
-fun parseNFTCollectionData(json: String): List<NFTCollectionIDData> {
-
-    val root = JSONObject(json)
-    val infoArray = root.getJSONArray("info")
-    val infoList = mutableListOf<NFTCollectionIDData>()
-
-    for (i in 0 until infoArray.length()) {
-        val infoObject = infoArray.getJSONObject(i)
-
-        val id = infoObject.getString("id")
-        val idListArray = infoObject.getJSONArray("idList")
-
-        val idList = mutableListOf<String>()
-        for (j in 0 until idListArray.length()) {
-            val idListItem = idListArray.getString(j)
-            idList.add(idListItem)
-        }
-        infoList.add(NFTCollectionIDData(id, idList))
-    }
-    return infoList
 }

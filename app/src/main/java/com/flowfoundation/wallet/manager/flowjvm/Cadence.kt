@@ -30,6 +30,10 @@ var CADENCE_CHECK_TOKEN_LIST_ENABLED
     get() = CadenceApiManager.getCadenceFTScript("isTokenListEnabled")
     private set(value) {}
 
+var CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED
+    get() = CadenceApiManager.getCadenceFTScript("isLinkedAccountTokenListEnabled")
+    private set(value) {}
+
 var CADENCE_ADD_PUBLIC_KEY: String
     get() = CadenceApiManager.getCadenceBasicScript("addKey")
     private set(value) {}
@@ -64,10 +68,6 @@ var CADENCE_NFT_ENABLE
 
 var CADENCE_NFT_TRANSFER
     get() = CadenceApiManager.getCadenceCollectionScript("sendNFT")
-    private set(value) {}
-
-var CADENCE_INBOX_NFT_TRANSFER
-    get() = CadenceApiManager.getCadenceDomainScript("sendInboxNFT")
     private set(value) {}
 
 var CADENCE_NBA_NFT_TRANSFER
@@ -182,6 +182,10 @@ var CADENCE_QUERY_CHILD_ACCOUNT_NFT
 
 var CADENCE_QUERY_CHILD_ACCOUNT_TOKENS
     get() = CadenceApiManager.getCadenceHybridCustodyScript("getAccessibleCoinInfo")
+    private set(value) {}
+
+var CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("getChildAccountAllowTypes")
     private set(value) {}
 
 const val CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID = """
@@ -350,4 +354,16 @@ var CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW
 
 var CADENCE_QUERY_FLOW_BALANCE
     get() = CadenceApiManager.getCadenceBasicScript("queryFlowBalance")
+    private set(value) {}
+
+var CADENCE_MOVE_NFT_FROM_CHILD_TO_PARENT
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("transferChildNFT")
+    private set(value) {}
+
+var CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildNFT")
+    private set(value) {}
+
+var CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("transferNFTToChild")
     private set(value) {}

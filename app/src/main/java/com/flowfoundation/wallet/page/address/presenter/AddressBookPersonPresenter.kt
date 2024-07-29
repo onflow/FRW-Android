@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemAddressBookPersonBinding
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.AddressBookActivity
@@ -52,20 +53,26 @@ class AddressBookPersonPresenter(
     override fun bind(model: AddressBookPersonModel) {
         val data = model.data
         with(binding) {
-            nameView.text = "${data.name()} ${if (!data.username.isNullOrEmpty()) "  (@${data.username})" else ""}"
+            nameView.text = data.name()
+            namePrefixView.text = data.prefixName()
+            namePrefixView.setVisible(data.prefixName().isNotEmpty())
+            val address = data.address?.toAddress().orEmpty()
+            if (address == WalletManager.wallet()?.walletAddress() || EVMWalletManager.isEVMWalletAddress(address)) {
+                val emojiInfo = AccountEmojiManager.getEmojiByAddress(WalletManager.wallet()?.walletAddress())
+                namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
+                namePrefixView.backgroundTintList =
+                    ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+            }
+            if (WalletManager.isChildAccount(address)) {
+                val childAccount = WalletManager.childAccount(address)
+                val avatar = childAccount?.icon
+                avatarView.setVisible(!avatar.isNullOrEmpty(), invisible = true)
+                avatarView.loadAvatar(avatar.orEmpty())
+            }
 
             if ((data.domain?.domainType ?: 0) == 0) {
-                val emojiInfo = AccountEmojiManager.getEmojiByAddress(WalletManager.selectedWalletAddress())
-                if (data.avatar.isNullOrEmpty()) {
-                    namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
-                    namePrefixView.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
-                    avatarView.invisible()
-                    namePrefixView.visible()
-                } else {
-                    avatarView.loadAvatar(data.avatar)
-                    avatarView.visible()
-                    namePrefixView.gone()
-                }
+                avatarView.setVisible(!data.avatar.isNullOrEmpty(), invisible = true)
+                avatarView.loadAvatar(data.avatar.orEmpty())
             } else {
                 bindDomainAvatar(data.domain?.domainType ?: 0)
             }

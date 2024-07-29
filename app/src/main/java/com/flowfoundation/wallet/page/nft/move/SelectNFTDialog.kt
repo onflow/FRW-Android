@@ -100,10 +100,11 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                         uiScope {
                             btnMove.setProgressVisible(false)
                             if (isSuccess) {
+                                toast(msgRes = R.string.move_nft_success)
                                 result?.resume(true)
                                 dismissAllowingStateLoss()
                             } else {
-                                toast(msgRes = R.string.move_nft_failure)
+                                toast(msgRes = R.string.move_nft_failed)
                             }
                         }
                     }

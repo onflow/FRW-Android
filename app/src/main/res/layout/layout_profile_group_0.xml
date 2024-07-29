@@ -14,47 +14,71 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
-            android:id="@+id/linked_account"
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_linked_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:icon="@drawable/ic_linked_account"
-            app:isArrowVisible="true"
-            app:titleId="@string/linked_account"/>
+            android:orientation="vertical">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="8dp"
-            android:background="@color/profile_card_divider"/>
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
+                android:id="@+id/linked_account"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_linked_account"
+                app:isArrowVisible="true"
+                app:titleId="@string/linked_account"/>
 
-        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceState
-            android:id="@+id/backup_preference"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:isArrowVisible="true"
-            app:icon="@drawable/ic_settings_backup"
-            app:titleId="@string/backup"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@color/profile_card_divider"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="8dp"
-            android:background="@color/profile_card_divider"/>
 
-        <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
-            android:id="@+id/security_preference"
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_backup_preference"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:icon="@drawable/ic_settings_security"
-            app:isArrowVisible="true"
-            app:titleId="@string/security"/>
+            android:orientation="vertical">
 
-        <View
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceState
+                android:id="@+id/backup_preference"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_settings_backup"
+                app:isArrowVisible="true"
+                app:titleId="@string/backup"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@color/profile_card_divider"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_security_preference"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="8dp"
-            android:background="@color/profile_card_divider"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
+                android:id="@+id/security_preference"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_settings_security"
+                app:isArrowVisible="true"
+                app:titleId="@string/security"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@color/profile_card_divider"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
 
         <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
             android:id="@+id/developer_mode_preference"
@@ -64,7 +88,6 @@
             app:titleId="@string/developer_mode"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
-
 
 
 </com.google.android.material.card.MaterialCardView>
