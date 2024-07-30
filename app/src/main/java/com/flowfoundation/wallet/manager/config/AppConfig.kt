@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.config
 
+import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
@@ -21,21 +22,21 @@ object AppConfig {
     private var config: Config? = null
     private var flowAddressRegistry: FlowAddressRegistry? = null
 
-    fun isFreeGas() = config().features.freeGas
+    fun isFreeGas() = config().getFeatures().freeGas
 
-    fun payer() = if (isTestnet()) config().payer.testnet else if (isPreviewnet()) config().payer.previewnet else config().payer.mainnet
+    fun payer() = if (isTestnet()) config().getPayer().testnet else if (isPreviewnet()) config().getPayer().previewnet else config().getPayer().mainnet
 
-    fun walletConnectEnable() = config().features.walletConnect
+    fun walletConnectEnable() = config().getFeatures().walletConnect
 
-    fun isInAppSwap() = isDev() || isTesting() || (config().features.swap ?: false)
+    fun isInAppSwap() = isDev() || isTesting() || (config().getFeatures().swap ?: false)
 
-    fun isInAppBuy() = isDev() || isTesting() || (config().features.onRamp ?: false)
+    fun isInAppBuy() = isDev() || isTesting() || (config().getFeatures().onRamp ?: false)
 
-    fun showDappList() = isDev() || isTesting() || (config().features.appList ?: false)
+    fun showDappList() = isDev() || isTesting() || (config().getFeatures().appList ?: false)
 
-    fun useInAppBrowser() = isDev() || isTesting() || (config().features.browser ?: false)
+    fun useInAppBrowser() = isDev() || isTesting() || (config().getFeatures().browser ?: false)
 
-    fun showNFTTransfer() = isDev() || isTesting() || (config().features.nftTransfer ?: false)
+    fun showNFTTransfer() = isDev() || isTesting() || (config().getFeatures().nftTransfer ?: false)
 
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
@@ -53,7 +54,7 @@ object AppConfig {
     }
 
     private fun reloadConfig(): Config {
-        val text = Firebase.remoteConfig.getString("free_gas_config")
+        val text = Firebase.remoteConfig.getString("a_config")
         safeRun {
             config = Gson().fromJson(text, Config::class.java)
         }
@@ -74,12 +75,64 @@ object AppConfig {
 }
 
 private data class Config(
+    @SerializedName("prod")
+    val prod: Prod,
+    @SerializedName("staging")
+    val staging: Staging,
+    @SerializedName("version")
+    val version: String
+) {
+    fun isStagingVersion(): Boolean {
+        val latestVersionClean = BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "")
+
+        val currentParts = version.split(".")
+        val latestParts = latestVersionClean.split(".")
+
+        val maxLength = maxOf(currentParts.size, latestParts.size)
+
+        for (i in 0 until maxLength) {
+            val currentPart = currentParts.getOrNull(i)?.toIntOrNull() ?: 0
+            val latestPart = latestParts.getOrNull(i)?.toIntOrNull() ?: 0
+
+            if (currentPart < latestPart) {
+                return true
+            } else if (currentPart > latestPart) {
+                return false
+            }
+        }
+        return false
+    }
+
+    fun getFeatures(): Features {
+        return if (isStagingVersion()) {
+            staging.features
+        } else {
+            prod.features
+        }
+    }
+
+    fun getPayer(): Payer {
+        return if (isStagingVersion()) {
+            staging.payer
+        } else {
+            prod.payer
+        }
+    }
+}
+
+private data class Prod(
     @SerializedName("features")
     val features: Features,
     @SerializedName("payer")
     val payer: Payer
-) {
-}
+)
+
+private data class Staging(
+    @SerializedName("features")
+    val features: Features,
+    @SerializedName("payer")
+    val payer: Payer
+)
 
 private data class Features(
     @SerializedName("free_gas")

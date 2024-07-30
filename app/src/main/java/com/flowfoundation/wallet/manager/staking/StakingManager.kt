@@ -68,6 +68,13 @@ object StakingManager {
 
     fun stakingCount() = stakingInfo.nodes.sumOf { it.tokensCommitted.toDouble() + it.tokensStaked }.toFloat()
 
+    fun isStaking(): Boolean {
+        val count = stakingInfo.nodes.sumOf { it.tokensCommitted.toDouble() + it.tokensStaked + it
+            .tokensRewarded + it.tokensRequestedToUnstake + it.tokensUnstaking + it.tokensUnstaked}
+            .toFloat()
+        return count > 0.0f
+    }
+
     fun refresh() {
         ioScope {
             updateApy()
