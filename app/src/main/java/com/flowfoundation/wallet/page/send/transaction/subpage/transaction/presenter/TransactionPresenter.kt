@@ -39,7 +39,7 @@ class TransactionPresenter(
 
     override fun bind(model: TransactionDialogModel) {
         model.userInfo?.let {
-            binding.bindUserInfo(it, contact)
+            binding.bindUserInfo(it.address.orEmpty(), contact)
             setupAmount()
         }
         model.amountConvert?.let { updateAmountConvert(it) }

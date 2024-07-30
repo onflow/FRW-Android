@@ -54,27 +54,33 @@ class AddressBookPersonPresenter(
         val data = model.data
         with(binding) {
             nameView.text = data.name()
-            namePrefixView.text = data.prefixName()
-            namePrefixView.setVisible(data.prefixName().isNotEmpty())
             val address = data.address?.toAddress().orEmpty()
-            if (address == WalletManager.wallet()?.walletAddress() || EVMWalletManager.isEVMWalletAddress(address)) {
-                val emojiInfo = AccountEmojiManager.getEmojiByAddress(WalletManager.wallet()?.walletAddress())
-                namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
-                namePrefixView.backgroundTintList =
-                    ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
-            }
             if (WalletManager.isChildAccount(address)) {
                 val childAccount = WalletManager.childAccount(address)
                 val avatar = childAccount?.icon
                 avatarView.setVisible(!avatar.isNullOrEmpty(), invisible = true)
                 avatarView.loadAvatar(avatar.orEmpty())
-            }
-
-            if ((data.domain?.domainType ?: 0) == 0) {
-                avatarView.setVisible(!data.avatar.isNullOrEmpty(), invisible = true)
-                avatarView.loadAvatar(data.avatar.orEmpty())
+                namePrefixView.setVisible(avatar.isNullOrEmpty())
+            } else if (address == WalletManager.wallet()?.walletAddress() || EVMWalletManager
+                    .isEVMWalletAddress(address)
+            ) {
+                val emojiInfo =
+                    AccountEmojiManager.getEmojiByAddress(WalletManager.wallet()?.walletAddress())
+                namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
+                namePrefixView.backgroundTintList =
+                    ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+                namePrefixView.visible()
             } else {
-                bindDomainAvatar(data.domain?.domainType ?: 0)
+                namePrefixView.text = data.prefixName()
+                namePrefixView.setVisible(data.prefixName().isNotEmpty())
+                if ((data.domain?.domainType ?: 0) == 0) {
+                    avatarView.setVisible(!data.avatar.isNullOrEmpty(), invisible = true)
+                    avatarView.loadAvatar(data.avatar.orEmpty())
+                    namePrefixView.setVisible(data.avatar.isNullOrEmpty())
+                } else {
+                    bindDomainAvatar(data.domain?.domainType ?: 0)
+                    namePrefixView.gone()
+                }
             }
 
             addressView.text = data.address?.toAddress().orEmpty()

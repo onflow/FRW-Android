@@ -36,6 +36,7 @@ class NFTListItemPresenter(
     @SuppressLint("SetTextI18n")
     override fun bind(model: NFTItemModel) {
         val nft = model.nft
+        val fromAddress = model.accountAddress
         with(binding) {
             Glide.with(coverView).load(nft.cover()).transform(RoundedCorners(10.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(coverView)
@@ -43,7 +44,7 @@ class NFTListItemPresenter(
             priceView.text = nft.postMedia.description ?: ""
 
             coverViewWrapper.setOnClickListener {
-                NftDetailActivity.launch(context, nft.uniqueId())
+                NftDetailActivity.launch(context, nft.uniqueId(), nft.contractName(), fromAddress)
             }
             coverViewWrapper.setOnLongClickListener {
                 NftItemPopupMenu(coverView, model.nft).show()
@@ -54,7 +55,7 @@ class NFTListItemPresenter(
             view.setPadding(0, 0, 0, 0)
         }
         view.setOnClickListener {
-            NftDetailActivity.launch(context, nft.uniqueId())
+            NftDetailActivity.launch(context, nft.uniqueId(), nft.contractName(), fromAddress)
         }
         bindAccessible(model)
     }

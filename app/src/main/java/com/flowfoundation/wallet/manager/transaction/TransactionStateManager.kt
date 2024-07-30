@@ -56,6 +56,11 @@ object TransactionStateManager {
         onStateChangeCallbacks.add(WeakReference(callback))
     }
 
+    fun removeOnTransactionStateCallback(callback: OnTransactionStateChange) {
+        val index = onStateChangeCallbacks.indexOfLast { weakReference -> weakReference.get() == callback }
+        onStateChangeCallbacks.removeAt(index)
+    }
+
     @MainThread
     fun newTransaction(transactionState: TransactionState) {
         if (stateData.data.toList().firstOrNull { it.transactionId == transactionState.transactionId } != null) {

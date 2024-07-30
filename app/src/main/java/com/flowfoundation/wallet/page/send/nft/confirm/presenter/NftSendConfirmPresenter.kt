@@ -34,7 +34,7 @@ class NftSendConfirmPresenter(
 
     override fun bind(model: NftSendConfirmDialogModel) {
         model.userInfo?.let {
-            binding.bindUserInfo(it, contact)
+            binding.bindUserInfo(sendModel.fromAddress, contact)
             binding.bindNft(sendModel.nft)
         }
         model.isSendSuccess?.let { updateSendState(it) }

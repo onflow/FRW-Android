@@ -48,6 +48,7 @@ private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMAR
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
 private val KEY_ACCOUNT_TRANSFER_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSFER_COUNT")
 private const val KEY_IS_GUIDE_PAGE_SHOWN = "KEY_IS_GUIDE_PAGE_SHOWN"
+private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
 private val KEY_INBOX_READ_LIST = stringPreferencesKey("KEY_INBOX_READ_LIST")
 private val KEY_CURRENCY_FLAG = stringPreferencesKey("KEY_CURRENCY_FLAG")
@@ -199,6 +200,14 @@ fun isGuidePageShown(): Boolean {
 
 fun setGuidePageShown() {
     sharedPreferencesTraditional.edit().putBoolean(KEY_IS_GUIDE_PAGE_SHOWN, true).apply()
+}
+
+fun isStakingGuideDisplayed(): Boolean {
+    return sharedPreferencesTraditional.getBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, false)
+}
+
+fun setStakingGuideDisplayed() {
+    sharedPreferencesTraditional.edit().putBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, true).apply()
 }
 
 fun isNotificationPermissionChecked(): Boolean {

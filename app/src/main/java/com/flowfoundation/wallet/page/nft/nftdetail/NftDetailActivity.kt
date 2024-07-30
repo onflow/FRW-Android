@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.ar.ArActivity
 import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.presenter.NftDetailPresenter
@@ -31,6 +32,8 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
     private val uniqueId by lazy { intent.getStringExtra(EXTRA_NFT_UNIQUE_ID)!! }
+    private val collectionContract by lazy { intent.getStringExtra(EXTRA_COLLECTION_CONTRACT) }
+    private val fromAddress by lazy { intent.getStringExtra(EXTRA_FROM_ADDRESS) }
     private lateinit var binding: ActivityNftDetailBinding
     private lateinit var presenter: NftDetailPresenter
     private lateinit var viewModel: NftDetailViewModel
@@ -44,8 +47,8 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         TransactionStateManager.addOnTransactionStateChange(this)
         presenter = NftDetailPresenter(this, binding)
         viewModel = ViewModelProvider(this)[NftDetailViewModel::class.java].apply {
-            nftLiveData.observe(this@NftDetailActivity) { presenter.bind(NftDetailModel(nft = it)) }
-            load(uniqueId)
+            nftLiveData.observe(this@NftDetailActivity) { presenter.bind(NftDetailModel(nft = it, fromAddress = fromAddress)) }
+            load(uniqueId, collectionContract)
         }
     }
 
@@ -61,6 +64,7 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
     override fun onDestroy() {
         super.onDestroy()
+        TransactionStateManager.removeOnTransactionStateCallback(this)
         presenter.bind(NftDetailModel(onDestroy = true))
     }
 
@@ -99,45 +103,46 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
     companion object {
         private const val EXTRA_NFT_UNIQUE_ID = "extra_nft_unique_id"
+        private const val EXTRA_FROM_ADDRESS = "extra_from_address"
+        private const val EXTRA_COLLECTION_CONTRACT = "extra_collection_contract"
 
-        fun launch(context: Context, uniqueId: String) {
+        fun launch(context: Context, uniqueId: String, collectionContract: String,
+                   fromAddress: String? = WalletManager.selectedWalletAddress()) {
             val intent = Intent(context, NftDetailActivity::class.java)
             intent.putExtra(EXTRA_NFT_UNIQUE_ID, uniqueId)
+            intent.putExtra(EXTRA_COLLECTION_CONTRACT, collectionContract)
+            intent.putExtra(EXTRA_FROM_ADDRESS, fromAddress)
             context.startActivity(intent)
         }
     }
 
     override fun onTransactionStateChange() {
-        val transactionList = TransactionStateManager.getTransactionStateList()
-        val moveTransaction =
-            transactionList.lastOrNull { it.type == TransactionState.TYPE_MOVE_NFT }
-        moveTransaction?.let { state ->
-            logd("NFT", "$uniqueId::state::${state.stateStr()}")
-            if (uniqueId == state.data) {
-                if (state.isSuccess()) {
-                    logd("NFT", "$uniqueId::success")
-                    toast(msgRes = R.string.move_nft_success)
-                    finish()
-                } else if (state.isFailed()) {
-                    logd("NFT", "$uniqueId::failed")
-                    toast(msgRes = R.string.move_nft_failed)
-                }
-            }
-        }
-        val sendTransaction = transactionList.lastOrNull { it.type == TransactionState.TYPE_TRANSFER_NFT }
-        sendTransaction?.let { state ->
-            try {
-                val model = Gson().fromJson(state.data, NftSendModel::class.java)
-                if (uniqueId == model.nft.uniqueId()) {
-                    if (state.isSuccess()) {
-                        toast(msgRes = R.string.send_nft_success)
+        val transaction = TransactionStateManager.getLastVisibleTransaction() ?: return
+        when (transaction.type) {
+            TransactionState.TYPE_MOVE_NFT -> {
+                if (uniqueId == transaction.data) {
+                    if (transaction.isSuccess()) {
+                        toast(msgRes = R.string.move_nft_success)
                         finish()
-                    } else if (state.isFailed()) {
-                        toast(msgRes = R.string.send_nft_failed)
+                    } else if (transaction.isFailed()) {
+                        toast(msgRes = R.string.move_nft_failed)
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            }
+            TransactionState.TYPE_TRANSFER_NFT -> {
+                try {
+                    val model = Gson().fromJson(transaction.data, NftSendModel::class.java)
+                    if (uniqueId == model.nft.uniqueId()) {
+                        if (transaction.isSuccess()) {
+                            toast(msgRes = R.string.send_nft_success)
+                            finish()
+                        } else if (transaction.isFailed()) {
+                            toast(msgRes = R.string.send_nft_failed)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     }

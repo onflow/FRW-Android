@@ -27,7 +27,13 @@ import com.flowfoundation.wallet.utils.registerBarcodeLauncher
 import com.flowfoundation.wallet.utils.uiScope
 
 class NftSendAddressDialog : BottomSheetDialogFragment() {
-    private val nft by lazy { NftCache(nftWalletAddress()).findNftById(arguments?.getString(EXTRA_ID)!!) }
+    private val nft by lazy {
+        NftCache(nftWalletAddress()).findNFTByIdAndContractName(
+            arguments?.getString(EXTRA_ID)!!,
+            arguments?.getString(EXTRA_CONTRACT_NAME)
+        )
+    }
+    private val fromAddress by lazy { arguments?.getString(EXTRA_FROM_ADDRESS) ?: WalletManager.selectedWalletAddress() }
 
     private lateinit var binding: DialogSendNftAddressBinding
     private lateinit var presenter: TransactionSendPresenter
@@ -76,7 +82,7 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
                     NftSendModel(
                         nft = nft,
                         target = contact,
-                        fromAddress = WalletManager.selectedWalletAddress(),
+                        fromAddress = fromAddress,
                     )
                 ).show(activity.supportFragmentManager, "")
             }
@@ -85,10 +91,16 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
 
     companion object {
         private const val EXTRA_ID = "extra_nft"
+        private const val EXTRA_CONTRACT_NAME = "extra_contract_name"
+        private const val EXTRA_FROM_ADDRESS = "extra_from_address"
 
-        fun newInstance(nftUniqueId: String): NftSendAddressDialog {
+        fun newInstance(nftUniqueId: String, fromAddress: String, contractName: String?): NftSendAddressDialog {
             return NftSendAddressDialog().apply {
-                arguments = Bundle().apply { putString(EXTRA_ID, nftUniqueId) }
+                arguments = Bundle().apply {
+                    putString(EXTRA_ID, nftUniqueId)
+                    putString(EXTRA_CONTRACT_NAME, contractName ?: "")
+                    putString(EXTRA_FROM_ADDRESS, fromAddress)
+                }
             }
         }
     }

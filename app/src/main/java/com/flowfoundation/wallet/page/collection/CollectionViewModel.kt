@@ -19,8 +19,10 @@ class CollectionViewModel : ViewModel() {
     private var collection: NftCollection? = null
 
     private val requester by lazy { NftListRequester() }
+    private var accountAddress: String? = null
 
     fun load(contractName: String, accountAddress: String, collectionSize: Int) {
+        this.accountAddress = accountAddress
         viewModelIOScope(this) {
             if (accountAddress.isEmpty()) {
                 val collectionWrapper =
@@ -66,7 +68,7 @@ class CollectionViewModel : ViewModel() {
         collection?.let {
             val list = mutableListOf<Any>().apply {
                 addAll(
-                    requester.dataList(it).map { NFTItemModel(nft = it) })
+                    requester.dataList(it).map { NFTItemModel(nft = it, accountAddress = accountAddress) })
             }
             if (requester.haveMore()) {
                 list.add(NftLoadMoreModel(isListLoadMore = true))

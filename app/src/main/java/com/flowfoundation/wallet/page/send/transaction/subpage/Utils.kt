@@ -22,8 +22,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 
 
 @SuppressLint("SetTextI18n")
-fun DialogSendConfirmBinding.bindUserInfo(userInfo: UserInfoData, contact: AddressBookContact) {
-    val fromAddress = userInfo.address?.toAddress() ?: ""
+fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressBookContact, ) {
     fromAddressView.text = "(${shortenEVMString(fromAddress)})"
     if (WalletManager.isChildAccount(fromAddress)) {
         val childAccount = WalletManager.childAccount(fromAddress)

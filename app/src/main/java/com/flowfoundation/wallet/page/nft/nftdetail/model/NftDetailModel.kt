@@ -7,4 +7,5 @@ class NftDetailModel(
     val onPause: Boolean? = null,
     val onRestart: Boolean? = null,
     val onDestroy: Boolean? = null,
+    val fromAddress: String? = null
 )

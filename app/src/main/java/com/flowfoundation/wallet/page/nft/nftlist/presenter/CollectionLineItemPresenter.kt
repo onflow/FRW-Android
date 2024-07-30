@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemNftListCollectionLineBinding
 import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
-import com.flowfoundation.wallet.page.nft.nftlist.model.NFTItemModel
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible

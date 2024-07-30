@@ -40,7 +40,7 @@ class SendProcessingPresenter(
 
     override fun bind(model: SendProcessingDialogModel) {
         model.userInfo?.let {
-            binding.bindUserInfo(it, contact)
+            binding.bindUserInfo(it.address.orEmpty(), contact)
             when (transactionState.type) {
                 TYPE_TRANSFER_COIN -> setupAmount()
                 TYPE_NFT, TYPE_TRANSFER_NFT -> ioScope {

@@ -6,7 +6,6 @@ import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -51,7 +50,6 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.likebutton.LikeButton
 import com.flowfoundation.wallet.widgets.likebutton.OnLikeListener
-import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlin.math.min
 
@@ -63,6 +61,8 @@ class NftDetailPresenter(
 ) : BasePresenter<NftDetailModel> {
 
     private var nft: Nft? = null
+
+    private var fromAddress: String? = null
 
     private var pageColor: Int = R.color.text_sub.res2color()
 
@@ -102,13 +102,15 @@ class NftDetailPresenter(
             shareButton.setOnClickListener { showShareNft() }
             sendButton.setOnClickListener {
                 val uniqueId = nft?.uniqueId() ?: return@setOnClickListener
-                NftSendAddressDialog.newInstance(uniqueId).show(activity.supportFragmentManager, "")
+                NftSendAddressDialog.newInstance(uniqueId, fromAddress ?: WalletManager
+                    .selectedWalletAddress(), nft?.contractName()).show(activity.supportFragmentManager, "")
             }
 
             moveButton.setOnClickListener {
                 nft?.let {
                     if (EVMWalletManager.haveEVMAddress() || WalletManager.haveChildAccount()) {
-                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId())
+                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId(),
+                            it.contractName(), fromAddress ?: WalletManager.selectedWalletAddress())
                     } else {
                         EnableEVMActivity.launch(activity)
                     }
@@ -143,6 +145,7 @@ class NftDetailPresenter(
     }
 
     override fun bind(model: NftDetailModel) {
+        fromAddress = model.fromAddress
         model.nft?.let { safeRun { bindData(it) } }
         if (!nft?.video().isNullOrBlank()) {
             model.onPause?.let { safeRun { videoPlayer.pause() } }
