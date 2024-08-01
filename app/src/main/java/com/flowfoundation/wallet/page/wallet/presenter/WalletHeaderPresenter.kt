@@ -76,7 +76,8 @@ class WalletHeaderPresenter(
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
-            cvCopy.setOnClickListener {
+            tvBalance.text = WalletManager.selectedWalletAddress().toAddress()
+            ivCopy.setOnClickListener {
                 copyAddress(
                     WalletManager.selectedWalletAddress().toAddress()
                 )
@@ -123,7 +124,7 @@ class WalletHeaderPresenter(
                 }
             }
 
-            cvHide.setOnClickListener {
+            ivHide.setOnClickListener {
                 uiScope {
                     setHideWalletBalance(!isHideWalletBalance())
                     bind(model)
