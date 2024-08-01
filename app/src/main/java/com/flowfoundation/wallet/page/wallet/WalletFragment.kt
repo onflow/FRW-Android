@@ -28,7 +28,6 @@ import com.flowfoundation.wallet.page.wallet.presenter.WalletFragmentPresenter
 import com.flowfoundation.wallet.page.wallet.presenter.WalletHeaderPresenter
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
-import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.isBackupGoogleDrive
 import com.flowfoundation.wallet.utils.isBackupManually
 import com.flowfoundation.wallet.utils.isMultiBackupCreated
@@ -70,14 +69,16 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
 //        headerPlaceholderPresenter = WalletHeaderPlaceholderPresenter(binding.shimmerPlaceHolder.root)
 
         binding.ivScan.setOnClickListener { barcodeLauncher.launch() }
-        binding.ivMove.setVisible(isPreviewnet())
         binding.ivMove.setOnClickListener {
-            if (EVMWalletManager.haveEVMAddress()) {
+            if (WalletManager.haveChildAccount() || WalletManager.isChildAccountSelected() || EVMWalletManager.haveEVMAddress()) {
                 uiScope {
                     MoveDialog().showMove(childFragmentManager)
                 }
             } else {
-                EnableEVMActivity.launch(this.requireContext())
+                if (isPreviewnet() && EVMWalletManager.haveEVMAddress().not()) {
+                    EnableEVMActivity.launch(this.requireContext())
+                    return@setOnClickListener
+                }
             }
         }
         TransitionManager.beginDelayedTransition(binding.root)

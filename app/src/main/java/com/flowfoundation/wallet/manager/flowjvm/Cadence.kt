@@ -188,98 +188,6 @@ var CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS
     get() = CadenceApiManager.getCadenceHybridCustodyScript("getChildAccountAllowTypes")
     private set(value) {}
 
-const val CADENCE_QUERY_CHILD_ACCOUNT_NFT_ID = """
-    import HybridCustody from 0xHybridCustody
-    import MetadataViews from 0xMetadataViews
-    import FungibleToken from 0xFungibleToken
-    import NonFungibleToken from 0xNonFungibleToken
-    
-    pub struct NFTInfo {
-      pub let id: String
-      pub let idList: [UInt64]
-    
-      init(id: String, idList: [UInt64]) {
-        self.id = id
-        self.idList = idList
-      }
-    }
-    
-    pub struct ChildNFTInfo {
-      pub let address: Address
-      pub let info: [NFTInfo]
-    
-      init(address: Address, info: [NFTInfo]) {
-        self.address = address
-        self.info = info
-      }
-    }
-    
-    pub fun main(parent: Address, child: Address): ChildNFTInfo {
-        let manager = getAuthAccount(parent).borrow<&HybridCustody.Manager>(from: HybridCustody.ManagerStoragePath) ?? panic ("manager does not exist")
-    
-        var typeIdsWithProvider: {Address: [Type]} = {}
-    
-        let providerType = Type<Capability<&{NonFungibleToken.Provider}>>()
-        let collectionType: Type = Type<@{NonFungibleToken.CollectionPublic}>()
-    
-        // Iterate through child accounts
-    
-            let acct = getAuthAccount(child)
-            let foundTypes: [Type] = []
-            let nfts: [NFTInfo] = []
-            let childAcct = manager.borrowAccount(addr: child) ?? panic("child account not found")
-            // get all private paths
-            acct.forEachPrivate(fun (path: PrivatePath, type: Type): Bool {
-                // Check which private paths have NFT Provider AND can be borrowed
-                if !type.isSubtype(of: providerType){
-                    return true
-                }
-                if let cap = childAcct.getCapability(path: path, type: Type<&{NonFungibleToken.Provider}>()) {
-                    let providerCap = cap as! Capability<&{NonFungibleToken.Provider}> 
-    
-                    if !providerCap.check(){
-                        // if this isn't a provider capability, exit the account iteration function for this path
-                        return true
-                    }
-                    foundTypes.append(cap.borrow<&AnyResource>()!.getType())
-                }
-                return true
-            })
-            typeIdsWithProvider[child] = foundTypes
-    
-            // iterate storage, check if typeIdsWithProvider contains the typeId, if so, add to nfts
-            acct.forEachStored(fun (path: StoragePath, type: Type): Bool {
-    
-                if typeIdsWithProvider[child] == nil {
-                    return true
-                }
-    
-                for key in typeIdsWithProvider.keys {
-                    for idx, value in typeIdsWithProvider[key]! {
-                        let value = typeIdsWithProvider[key]!
-    
-                        if value[idx] != type {
-                            continue
-                        } else {
-                            if type.isInstance(collectionType) {
-                                continue
-                            }
-                            if let collection = acct.borrow<&{NonFungibleToken.CollectionPublic}>(from: path) { 
-                                nfts.append(
-                                  NFTInfo(id: type.identifier, idList: collection.getIDs())
-                                )
-                            }
-                            continue
-                        }
-                    }
-                }
-                return true
-            })
-    
-        return ChildNFTInfo(address: child, info: nfts)
-    }
-"""
-
 var CADENCE_QUERY_MIN_FLOW_BALANCE
     get() = CadenceApiManager.getCadenceBasicScript("getAccountMinFlow")
     private set(value) {}
@@ -366,4 +274,24 @@ var CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW
 
 var CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD
     get() = CadenceApiManager.getCadenceHybridCustodyScript("transferNFTToChild")
+    private set(value) {}
+
+var CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchTransferNFTToChild")
+    private set(value) {}
+
+var CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchTransferChildNFT")
+    private set(value) {}
+
+var CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("transferChildFT")
+    private set(value) {}
+
+var CADENCE_SEND_FT_FROM_CHILD_TO_FLOW
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildFT")
+    private set(value) {}
+
+var CADENCE_CHECK_CHILD_LINKED_VAULT
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("checkChildLinkedVaults")
     private set(value) {}

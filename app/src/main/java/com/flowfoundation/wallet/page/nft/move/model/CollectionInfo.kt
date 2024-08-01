@@ -15,5 +15,6 @@ data class CollectionDetailInfo(
     val contractAddress: String,
     val count: Int,
     val isFlowCollection: Boolean,
-    val nftList: List<NFTInfo>? = null
+    val nftList: List<NFTInfo>? = null,
+    val identifier: String
 )

@@ -44,7 +44,7 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
 
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
-        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
 
         contentPresenter = MainContentPresenter(this, binding)
         drawerLayoutPresenter = DrawerLayoutPresenter(binding.drawerLayout, binding.drawerLayoutContent)

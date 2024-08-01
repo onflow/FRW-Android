@@ -36,13 +36,15 @@ import kotlin.coroutines.suspendCoroutine
 
 class SelectNFTDialog: BottomSheetDialogFragment() {
     private lateinit var binding: DialogSelectNftBinding
-    private var isMoveToEVM = true
     private val viewModel by lazy { ViewModelProvider(this)[SelectNFTViewModel::class.java] }
     private val listAdapter by lazy {
         SelectNFTListAdapter(viewModel)
     }
     private var selectedCollection: CollectionInfo? = null
     private var result: Continuation<Boolean>? = null
+    private val fromAddress by lazy {
+        WalletManager.selectedWalletAddress()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,18 +79,14 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        isMoveToEVM = WalletManager.isEVMAccountSelected().not()
         with(binding) {
             ivClose.setOnClickListener {
                 result?.resume(false)
                 dismissAllowingStateLoss()
             }
             layoutFromAccount.setAccountInfo(WalletManager.selectedWalletAddress())
-            if (isMoveToEVM) {
-                layoutToAccount.setAccountInfo(EVMWalletManager.getEVMAddress() ?: "")
-            } else {
-                layoutToAccount.setAccountInfo(WalletManager.wallet()?.walletAddress() ?: "")
-            }
+            configureToAccount()
+
             btnMove.isEnabled = false
             btnMove.setOnClickListener {
                 if (btnMove.isProgressVisible()) {
@@ -96,7 +94,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 }
                 btnMove.setProgressVisible(true)
                 ioScope {
-                    viewModel.moveSelectedNFT(isMoveToEVM) { isSuccess ->
+                    viewModel.moveSelectedNFT(layoutToAccount.getAccountAddress()) { isSuccess ->
                         uiScope {
                             btnMove.setProgressVisible(false)
                             if (isSuccess) {
@@ -157,6 +155,59 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
 
     }
 
+    private fun configureToAccount() {
+        with(binding) {
+            if (WalletManager.isChildAccountSelected()) {
+                val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
+                layoutToAccount.setAccountInfo(parentAddress)
+                val addressList = WalletManager.childAccountList(parentAddress)?.get()?.mapNotNull { child ->
+                    child.address.takeIf { address -> address != fromAddress }
+                }?.toMutableList() ?: mutableListOf()
+                addressList.add(0, parentAddress)
+                configureToLayoutAction(addressList)
+            } else if (WalletManager.isEVMAccountSelected()) {
+                val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
+                layoutToAccount.setAccountInfo(parentAddress)
+                configureToLayoutAction(emptyList())
+            } else {
+                val addressList = WalletManager.childAccountList(WalletManager.wallet()?.walletAddress())?.get()?.map { child ->
+                    child.address
+                }?.toMutableList() ?: mutableListOf()
+                val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                if (evmAddress.isNotEmpty()) {
+                    layoutToAccount.setAccountInfo(evmAddress)
+                    addressList.add(evmAddress)
+                } else {
+                    val childAddress = addressList.firstOrNull() ?: return@with
+                    val childAccount = WalletManager.childAccount(childAddress) ?: return@with
+                    layoutToAccount.setAccountInfo(childAccount.address)
+                }
+                configureToLayoutAction(addressList)
+            }
+        }
+    }
+
+    private fun configureToLayoutAction(addressList: List<String>) {
+        with(binding) {
+            if (addressList.size > 1) {
+                layoutToAccount.setSelectMoreAccount(true)
+                layoutToAccount.setOnClickListener {
+                    uiScope {
+                        SelectAccountDialog().show(
+                            layoutToAccount.getAccountAddress(),
+                            addressList,
+                            childFragmentManager
+                        )?.let { address ->
+                            layoutToAccount.setAccountInfo(address)
+                        }
+                    }
+                }
+            } else {
+                layoutToAccount.setSelectMoreAccount(false)
+            }
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     private fun showEmptyCollection() {
         with(binding) {
@@ -172,10 +223,10 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         this.selectedCollection = collection
         with(binding) {
             ivCollectionVm.setImageResource(
-                if (isMoveToEVM) {
-                    R.drawable.ic_switch_vm_cadence
-                } else {
+                if (WalletManager.isEVMAccountSelected()) {
                     R.drawable.ic_switch_vm_evm
+                } else {
+                    R.drawable.ic_switch_vm_cadence
                 }
             )
             tvCollectionName.text = collection.name.ifEmpty {
