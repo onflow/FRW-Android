@@ -319,6 +319,24 @@ suspend fun cadenceSendNFTListFromParentToChild(
     return transactionId
 }
 
+suspend fun cadenceSendNFTListFromChildToChild(
+    childAddress: String, toAddress: String,
+    identifier: String, collection: NftCollection, nftIdList: List<String>
+): String? {
+    logd(TAG, "cadenceSendNFTListFromChildToChild()")
+    val transactionId =
+        collection.formatCadence(
+            CADENCE_SEND_NFT_LIST_FROM_CHILD_TO_CHILD
+        ).transactionByMainWallet {
+            arg { address(childAddress.toAddress()) }
+            arg { address(toAddress.toAddress()) }
+            arg { string(identifier) }
+            arg { array(nftIdList.map { uint64(it) }) }
+        }
+    logd(TAG, "cadenceSendNFTListFromChildToChild() transactionId:$transactionId")
+    return transactionId
+}
+
 suspend fun cadenceSendNFTFromChildToFlow(
     childAddress: String, toAddress: String,
     identifier: String, nft: Nft
@@ -334,6 +352,24 @@ suspend fun cadenceSendNFTFromChildToFlow(
             arg { uint64(nft.id) }
         }
     logd(TAG, "cadenceSendNFTFromChildToFlow() transactionId:$transactionId")
+    return transactionId
+}
+
+suspend fun cadenceSendNFTFromChildToChild(
+    childAddress: String, toAddress: String,
+    identifier: String, nft: Nft
+): String? {
+    logd(TAG, "cadenceSendNFTFromChildToChild()")
+    val transactionId =
+        nft.formatCadence(
+            CADENCE_SEND_NFT_FROM_CHILD_TO_CHILD
+        ).transactionByMainWallet {
+            arg { address(childAddress.toAddress()) }
+            arg { address(toAddress.toAddress()) }
+            arg { string(identifier) }
+            arg { uint64(nft.id) }
+        }
+    logd(TAG, "cadenceSendNFTFromChildToChild() transactionId:$transactionId")
     return transactionId
 }
 

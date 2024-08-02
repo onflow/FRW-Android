@@ -50,7 +50,7 @@ class WalletFragmentPresenter(
             addItemDecoration(
                 ColorDividerItemDecoration(
                     Color.TRANSPARENT,
-                    5.dp2px().toInt(),
+                    2.dp2px().toInt(),
                     LinearLayout.VERTICAL
                 )
             )

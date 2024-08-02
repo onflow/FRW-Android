@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromEVMToFlow
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromFlowToEVM
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
+import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToFlow
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceTransferNft
@@ -98,7 +99,11 @@ class NftSendConfirmViewModel : ViewModel() {
                         }
                     } else if (WalletManager.isChildAccount(sendModel.fromAddress)) {
                         if (isFlowAddress(toAddress)) {
-                            sendNFTFromChildToFlow()
+                            if (WalletManager.isChildAccount(toAddress)) {
+                                sendNFTFromChildToChild()
+                            } else {
+                                sendNFTFromChildToFlow()
+                            }
                         }
                     } else {
                         if (isFlowAddress(toAddress)) {
@@ -176,6 +181,19 @@ class NftSendConfirmViewModel : ViewModel() {
             }
         }
     }
+
+    private suspend fun sendNFTFromChildToChild() {
+        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.collectionContractName)
+        val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
+        val txId = cadenceSendNFTFromChildToChild(
+            sendModel.fromAddress,
+            sendModel.target.address!!,
+            identifier,
+            sendModel.nft
+        )
+        postTransaction(txId)
+    }
+
 
     private suspend fun sendNFTFromChildToFlow() {
         val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.collectionContractName)

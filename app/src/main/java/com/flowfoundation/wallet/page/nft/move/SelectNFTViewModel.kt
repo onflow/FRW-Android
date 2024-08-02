@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTListFromChildToParent
+import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTListFromChildToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTListFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
@@ -167,8 +168,8 @@ class SelectNFTViewModel : ViewModel() {
                     callback
                 )
             } else if (WalletManager.isChildAccount(toAddress)) {
-                // todo batch move from child to child
-
+                // batch move from child to child
+                sendNFTListFromChildToChild(toAddress, selectedNFTIdList, callback)
             } else {
                 // batch move from child to parent/child
                 moveNFTListFromChildToParent(selectedNFTIdList, callback)
@@ -230,6 +231,41 @@ class SelectNFTViewModel : ViewModel() {
         } catch (e: Exception) {
             callback.invoke(false)
             logd(TAG, "move to parent failed")
+            e.printStackTrace()
+        }
+    }
+
+    private suspend fun sendNFTListFromChildToChild(
+        toAddress: String,
+        idList: List<String>,
+        callback: (isSuccess: Boolean) -> Unit
+    ) {
+        try {
+            val collection = NftCollectionConfig.get(collectionAddress, collectionContract.orEmpty())
+            if (collection == null) {
+                callback.invoke(false)
+                return
+            }
+            val txId = cadenceSendNFTListFromChildToChild(
+                WalletManager.selectedWalletAddress(), toAddress, identifier.orEmpty(), collection, idList
+            )
+            if (txId.isNullOrBlank()) {
+                logd(TAG, "send to child failed")
+                callback.invoke(false)
+                return
+            }
+            TransactionStateWatcher(txId).watch { result ->
+                if (result.isExecuteFinished()) {
+                    logd(TAG, "send to child success")
+                    callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "send to child failed")
+                    callback.invoke(false)
+                }
+            }
+        } catch (e: Exception) {
+            callback.invoke(false)
+            logd(TAG, "send to child failed")
             e.printStackTrace()
         }
     }

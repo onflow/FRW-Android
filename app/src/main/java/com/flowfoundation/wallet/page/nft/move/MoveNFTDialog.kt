@@ -14,7 +14,7 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTFromChildToParent
-import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToFlow
+import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -232,7 +232,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             }
                         }
                     } else {
-                        sendNFTFromChildToFlow(fromAddress, toAddress, it) { isSuccess ->
+                        sendNFTFromChildToChild(fromAddress, toAddress, it) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
@@ -283,11 +283,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         }
     }
 
-    private suspend fun sendNFTFromChildToFlow(childAddress: String, toAddress: String, nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
+    private suspend fun sendNFTFromChildToChild(childAddress: String, toAddress: String, nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
             val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
-            val txId = cadenceSendNFTFromChildToFlow(
+            val txId = cadenceSendNFTFromChildToChild(
                 childAddress,
                 toAddress,
                 identifier,

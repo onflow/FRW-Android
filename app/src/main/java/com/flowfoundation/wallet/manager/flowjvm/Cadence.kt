@@ -272,6 +272,14 @@ var CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW
     get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildNFT")
     private set(value) {}
 
+var CADENCE_SEND_NFT_FROM_CHILD_TO_CHILD
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildNFTToChild")
+    private set(value) {}
+
+var CADENCE_SEND_NFT_LIST_FROM_CHILD_TO_CHILD
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchSendChildNFTToChild")
+    private set(value) {}
+
 var CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD
     get() = CadenceApiManager.getCadenceHybridCustodyScript("transferNFTToChild")
     private set(value) {}
