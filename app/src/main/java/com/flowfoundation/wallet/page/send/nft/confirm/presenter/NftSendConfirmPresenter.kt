@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
-import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.send.nft.confirm.NftSendConfirmDialog
 import com.flowfoundation.wallet.page.send.nft.confirm.NftSendConfirmViewModel
 import com.flowfoundation.wallet.page.send.nft.confirm.model.NftSendConfirmDialogModel
@@ -49,7 +48,7 @@ class NftSendConfirmPresenter(
                 list.add(0, sendModel.target)
                 recentCache.contacts = list
                 recentTransactionCache().cache(recentCache)
-                uiScope { MainActivity.launch(fragment.requireContext()) }
+                uiScope { fragment.dismissAllowingStateLoss() }
             }
         }
     }

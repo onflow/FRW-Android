@@ -193,7 +193,7 @@ class DrawerLayoutPresenter(
                     nickNameView.text = userInfo.nickname
 
                     val avatarUrl = userInfo.avatar.parseAvatarUrl()
-                    val avatar = if (avatarUrl.contains("boringavatars.com") || avatarUrl.contains("flovatar.com")) {
+                    val avatar = if (avatarUrl.contains("flovatar.com")) {
                         avatarUrl.svgToPng()
                     } else {
                         avatarUrl

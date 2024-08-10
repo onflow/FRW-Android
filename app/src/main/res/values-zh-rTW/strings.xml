@@ -588,4 +588,10 @@
     <string name="no_account_found_desc">您的備份選項未關聯任何多簽帳戶。請驗證後再試一次。</string>
     <string name="restore_failed">Restore Failed</string>
     <string name="restore_failed_desc">請稍後再試。</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">檢視復原短語</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
 </resources>

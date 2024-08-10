@@ -16,7 +16,7 @@ fun String?.parseAvatarUrl(): String {
         return ""
     }
     val url = this.firebaseImage()
-    return url
+    return url.parseBoringAvatar()
 }
 
 fun isDev() = BuildConfig.APPLICATION_ID.contains("dev")

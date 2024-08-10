@@ -126,6 +126,9 @@
         <activity
             android:name="com.flowfoundation.wallet.page.backup.BackupDetailActivity"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name="com.flowfoundation.wallet.page.backup.BackupViewMnemonicActivity"
+            android:screenOrientation="portrait"/>
 
         <activity
             android:name="com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity"

@@ -587,4 +587,10 @@
     <string name="no_account_found_desc">您的备份选项未链接多重签名账户。请验证并重试。</string>
     <string name="restore_failed">恢复失败</string>
     <string name="restore_failed_desc">请稍后再试。</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">查看恢复短语</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
 </resources>

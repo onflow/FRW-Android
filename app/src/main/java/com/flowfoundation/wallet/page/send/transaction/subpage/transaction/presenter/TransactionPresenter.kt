@@ -55,7 +55,7 @@ class TransactionPresenter(
                 list.add(0, transaction.target)
                 recentCache.contacts = list
                 recentTransactionCache().cache(recentCache)
-                uiScope { MainActivity.launch(fragment.requireContext()) }
+                uiScope { fragment.dismissAllowingStateLoss() }
             }
         }
     }

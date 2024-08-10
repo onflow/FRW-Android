@@ -258,6 +258,7 @@ class SelectNFTViewModel : ViewModel() {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "send to child success")
                     callback.invoke(true)
+
                 } else if (result.isFailed()) {
                     logd(TAG, "send to child failed")
                     callback.invoke(false)

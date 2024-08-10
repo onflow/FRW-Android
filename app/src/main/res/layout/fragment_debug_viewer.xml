@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/debug_viewer_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        android:translationZ="50dp">
+
+        <RelativeLayout
+            android:layout_width="300dp"
+            android:layout_height="400dp"
+            android:translationX="50dp"
+            android:translationY="50dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:background="@color/bg_1"
+            android:id="@+id/debug_events_view"
+            android:translationZ="200dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@color/bg_2"
+                android:id="@+id/events_header">
+
+                <RelativeLayout
+                    android:id="@+id/collapse_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:layout_weight="0">
+
+                    <View
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:background="@color/text_3" />
+                </RelativeLayout>
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tab_layout"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="match_parent"
+                    app:tabMaxWidth="0dp"
+                    app:tabGravity="start"
+                    app:tabMode="auto"
+                    app:tabTextColor="@color/text_1"
+                    app:tabIndicatorColor="@color/text_1"
+                    android:contentDescription="debug_viewer_tab_layout" />
+
+                <TextView
+                    android:id="@+id/tv_clear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="2dp"
+                    android:textSize="14sp"
+                    android:text="@string/clear"
+                    android:gravity="center"
+                    android:background="@color/bg"/>
+
+            </LinearLayout>
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/view_pager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/events_header" />
+
+            <RelativeLayout
+                android:id="@+id/resize_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dp"
+                android:paddingTop="20dp"
+                android:paddingEnd="3dp"
+                android:paddingBottom="3dp"
+                android:translationZ="20dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true">
+
+                <View
+                    android:rotation="180"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:background="@drawable/ic_triangle" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

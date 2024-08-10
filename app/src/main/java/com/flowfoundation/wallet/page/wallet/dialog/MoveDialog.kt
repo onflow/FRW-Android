@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.nft.move.SelectNFTDialog
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.utils.extensions.gone
@@ -16,6 +17,7 @@ import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.setDoNotShowMoveDialog
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
@@ -54,11 +56,15 @@ class MoveDialog : BottomSheetDialogFragment() {
                 }
             }
             clMoveToken.setOnClickListener {
-                uiScope {
-                    MoveTokenDialog().showDialog(requireActivity(), FlowCoin.SYMBOL_FLOW).let {
-                        result?.resume(true)
+                if (EVMWalletManager.haveEVMAddress()) {
+                    uiScope {
+                        MoveTokenDialog().showDialog(requireActivity(), FlowCoin.SYMBOL_FLOW).let {
+                            result?.resume(true)
+                        }
+                        dismissAllowingStateLoss()
                     }
-                    dismissAllowingStateLoss()
+                } else {
+                    toast(msgRes = R.string.features_coming)
                 }
             }
 

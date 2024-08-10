@@ -162,7 +162,11 @@ class NftSendConfirmViewModel : ViewModel() {
                         postTransaction(txId)
                     } else if (WalletManager.isChildAccount(sendModel.fromAddress)) {
                         if (isFlowAddress(toAddress)) {
-                            sendNFTFromChildToFlow()
+                            if (WalletManager.isChildAccount(toAddress)) {
+                                sendNFTFromChildToChild()
+                            } else {
+                                sendNFTFromChildToFlow()
+                            }
                         }
                     } else {
                         if (isFlowAddress(toAddress)) {

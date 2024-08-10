@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
+import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.FlowScriptResponse
@@ -16,6 +17,7 @@ import com.flowfoundation.wallet.page.address.FlowDomainServer
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
+import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
 
@@ -671,11 +673,12 @@ fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? 
     )
     return try {
         FlowApi.get().simpleFlowScript {
-            script { this@executeCadence.trimIndent() }
+            script { this@executeCadence.addPlatformInfo().trimIndent() }
             block()
         }
     } catch (e: Throwable) {
         loge(e)
+//        reportCadenceErrorToDebugView()
         return null
     }
 }
@@ -688,12 +691,16 @@ suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.()
         sendTransaction {
             args.build().forEach { arg(it) }
             walletAddress(walletAddress)
-            script(this@transactionByMainWallet)
+            script(this@transactionByMainWallet.addPlatformInfo())
         }
     } catch (e: Exception) {
         loge(e)
         null
     }
+}
+
+private fun String.addPlatformInfo(): String {
+    return this.replace("<platform_info>", "Android - ${BuildConfig.VERSION_NAME} - ${BuildConfig.VERSION_CODE}")
 }
 
 suspend fun String.executeTransaction(arguments: CadenceArgumentsBuilder.() -> Unit): String? {

@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.profile.subpage.developer.model.DeveloperPageModel
 import com.flowfoundation.wallet.page.profile.subpage.developer.presenter.DeveloperModePresenter
+import com.flowfoundation.wallet.utils.debug.DebugManager
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -65,6 +66,7 @@ class DeveloperModeActivity : BaseActivity() {
                 MainActivity.relaunch(this)
             }
         }
+        DebugManager.dismissDebugViewer()
     }
 
     private fun setupToolbar() {

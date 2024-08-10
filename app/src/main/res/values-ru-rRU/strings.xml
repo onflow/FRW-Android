@@ -589,4 +589,10 @@ uses to turn your device into a hardware wallet.</string>
     <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
     <string name="restore_failed">Восстановление не удалось</string>
     <string name="restore_failed_desc">Please try again later.</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">Просмотр фразы восстановления</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
 </resources>
