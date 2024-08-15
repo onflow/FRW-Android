@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
 import android.animation.ObjectAnimator
-import android.net.Uri
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import com.flowfoundation.wallet.R
@@ -10,8 +9,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutBrowserBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
-import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.*
 import com.flowfoundation.wallet.page.browser.model.BrowserModel
 import com.flowfoundation.wallet.page.browser.tools.*
@@ -55,7 +53,7 @@ class BrowserPresenter(
                 refreshButton.setOnClickListener { webview()?.reload() }
                 backButton.setOnClickListener { handleBackPressed() }
                 moveButton.setOnClickListener {
-                    if (isPreviewnet()) {
+                    if (EVMWalletManager.evmFeatureAvailable()) {
                         val activity =
                             BaseActivity.getCurrentActivity() ?: return@setOnClickListener
                         uiScope {

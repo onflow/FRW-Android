@@ -47,7 +47,7 @@ fun dispatchScanResult(context: Context, str: String) {
         if (WalletManager.isChildAccountSelected()) {
             return
         }
-        if (isPreviewnet().not() || EVMWalletManager.haveEVMAddress().not()) {
+        if (EVMWalletManager.haveEVMAddress().not()) {
             return
         }
         SendAmountActivity.launch(

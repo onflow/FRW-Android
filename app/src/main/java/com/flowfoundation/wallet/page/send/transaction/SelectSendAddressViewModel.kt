@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.addressBookCache
 import com.flowfoundation.wallet.cache.recentTransactionCache
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AddressBookContact
@@ -61,7 +62,11 @@ class SelectSendAddressViewModel : ViewModel() {
             val linkedAccounts = WalletManager.childAccountList(parentAddress)?.get()?.map{
                     child ->
                 AddressBookAccountModel(child.address)
-            }?.toList() ?: emptyList()
+            }?.toMutableList() ?: mutableListOf()
+            val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+            if (evmAddress.isNotEmpty()) {
+                linkedAccounts.add(0, AddressBookAccountModel(evmAddress))
+            }
             if (linkedAccounts.isNotEmpty()) {
                 accountList.add(AddressBookTitleModel(R.string.linked_account.res2String()))
                 accountList.addAll(linkedAccounts)

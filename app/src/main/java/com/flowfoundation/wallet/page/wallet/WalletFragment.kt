@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.fragment.BaseFragment
 import com.flowfoundation.wallet.databinding.FragmentCoordinatorWalletBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.notification.OnNotificationUpdate
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
@@ -75,7 +74,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
                     MoveDialog().showMove(childFragmentManager)
                 }
             } else {
-                if (isPreviewnet() && EVMWalletManager.haveEVMAddress().not()) {
+                if (EVMWalletManager.evmFeatureAvailable()) {
                     EnableEVMActivity.launch(this.requireContext())
                     return@setOnClickListener
                 }

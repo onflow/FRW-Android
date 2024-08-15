@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.nft.nftlist.utils
 
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.config.NftCollection
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
@@ -30,7 +30,7 @@ class NftListRequester {
         if (address.isEmpty()) {
             return emptyList()
         }
-        val collectionResponse = if (isPreviewnet()) {
+        val collectionResponse = if (EVMWalletManager.evmFeatureAvailable()) {
             service.getNFTCollections(nftWalletAddress())
         } else {
             service.nftCollectionsOfAccount(nftWalletAddress())
@@ -38,7 +38,7 @@ class NftListRequester {
         if (collectionResponse.status > 200) {
             throw Exception("request nft list error: $collectionResponse")
         }
-        val collections = if (isPreviewnet()) {
+        val collections = if (EVMWalletManager.evmFeatureAvailable()) {
             collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true && it.ids?.isNotEmpty() == true }.orEmpty()
         } else {
             collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true }.orEmpty()
@@ -62,7 +62,7 @@ class NftListRequester {
     suspend fun request(collection: NftCollection, accountAddress: String = nftWalletAddress()): List<Nft> {
         resetOffset()
         dataList.clear()
-        val response = if (isPreviewnet()) {
+        val response = if (EVMWalletManager.evmFeatureAvailable()) {
             service.getNFTListOfCollection(accountAddress, collection.id, offset, limit)
         } else {
             service.nftsOfCollection(accountAddress, collection.id, offset, limit)
@@ -92,7 +92,7 @@ class NftListRequester {
         isLoadMoreRequesting = true
 
         offset += limit
-        val response = if (isPreviewnet()) {
+        val response = if (EVMWalletManager.evmFeatureAvailable()) {
             service.getNFTListOfCollection(nftWalletAddress(), collection.id, offset, limit)
         } else {
             service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)

@@ -1,10 +1,9 @@
 package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CREATE_COA_ACCOUNT
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_COA_EVM_ADDRESS
@@ -28,7 +27,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.serialization.Serializable
@@ -51,12 +49,16 @@ object EVMWalletManager {
         return canEnableEVM() && haveEVMAddress().not()
     }
 
+    fun evmFeatureAvailable(): Boolean {
+        return CadenceApiManager.getCadenceScriptVersion() >= 1.0f
+    }
+
     private fun canEnableEVM(): Boolean {
-        return isPreviewnet() && CADENCE_CREATE_COA_ACCOUNT.isNotEmpty()
+        return CADENCE_CREATE_COA_ACCOUNT.isNotEmpty()
     }
 
     private fun canFetchEVMAddress(): Boolean {
-        return isPreviewnet() && CADENCE_QUERY_COA_EVM_ADDRESS.isNotEmpty()
+        return CADENCE_QUERY_COA_EVM_ADDRESS.isNotEmpty()
     }
 
     fun updateEVMAddress() {

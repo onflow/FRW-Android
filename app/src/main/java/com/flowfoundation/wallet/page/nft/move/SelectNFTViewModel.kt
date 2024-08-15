@@ -42,7 +42,7 @@ class SelectNFTViewModel : ViewModel() {
     fun loadCollections() {
         viewModelIOScope(this) {
             val address = nftWalletAddress()
-            val collectionResponse = if(isPreviewnet())
+            val collectionResponse = if(EVMWalletManager.evmFeatureAvailable())
                 service.getNFTCollections(address)
             else
                 service.nftCollectionsOfAccount(address)
@@ -131,7 +131,7 @@ class SelectNFTViewModel : ViewModel() {
 
     private fun loadNFTList(collectionId: String) {
         viewModelIOScope(this) {
-            val nftListResponse = if (isPreviewnet()) {
+            val nftListResponse = if (EVMWalletManager.evmFeatureAvailable()) {
                 service.getNFTListOfCollection(
                     nftWalletAddress(), collectionId,
                     0, 20

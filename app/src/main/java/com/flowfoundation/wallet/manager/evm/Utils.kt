@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
@@ -31,14 +33,34 @@ import wallet.core.jni.Hash
 
 const val PREVIEWNET_CHAIN_ID = 646
 const val PREVIEWNET_RPC_URL = "https://previewnet.evm.nodes.onflow.org"
+const val TESTNET_CHAIN_ID = 545
+const val TESTNET_RPC_URL = "https://testnet.evm.nodes.onflow.org"
+const val MAINNET_CHAIN_ID = 747
+const val MAINNET_RPC_URL = "https://mainnet.evm.nodes.onflow.org"
+
+fun getChainID(): Int {
+    return when {
+        isPreviewnet() -> PREVIEWNET_CHAIN_ID
+        isTestnet() -> TESTNET_CHAIN_ID
+        else -> MAINNET_CHAIN_ID
+    }
+}
+
+fun getRPCUrl(): String {
+    return when {
+        isPreviewnet() -> PREVIEWNET_RPC_URL
+        isTestnet() -> TESTNET_RPC_URL
+        else -> MAINNET_RPC_URL
+    }
+}
 
 fun loadInitJS(): String {
     return """
         (function() {
             var config = {                
                 ethereum: {
-                    chainId: $PREVIEWNET_CHAIN_ID,
-                    rpcUrl: "$PREVIEWNET_RPC_URL"
+                    chainId: ${getChainID()},
+                    rpcUrl: "${getRPCUrl()}"
                 },
                 isDebug: true
             };

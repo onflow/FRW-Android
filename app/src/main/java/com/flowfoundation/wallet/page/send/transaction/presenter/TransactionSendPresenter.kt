@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutSendAddressSelectBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.addressVerify
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -73,7 +73,7 @@ class TransactionSendPresenter(
     override fun bind(model: TransactionSendModel) {
         model.qrcode?.let {
             if (it.startsWith(METAMASK_ETH_SCHEME)) {
-                if (isPreviewnet().not()) {
+                if (isMainnet()) {
                     return
                 }
                 val addressText = Uri.parse(it).schemeSpecificPart
@@ -91,7 +91,7 @@ class TransactionSendPresenter(
                 }
             } else {
                 if (evmAddressPattern.matches(it)) {
-                    if (isPreviewnet().not()) {
+                    if (isMainnet()) {
                         return
                     }
                     if (EVMWalletManager.haveEVMAddress()) {
@@ -166,7 +166,7 @@ class TransactionSendPresenter(
                 }
             }
         } else if (isEVMMatched) {
-            if (isPreviewnet().not()) {
+            if (isMainnet()) {
                 return
             }
             if (EVMWalletManager.haveEVMAddress().not()) {

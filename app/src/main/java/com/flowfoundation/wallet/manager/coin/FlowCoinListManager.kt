@@ -69,7 +69,7 @@ object FlowCoinListManager {
             }
         } else if (isTestnet()) {
             return if (WalletManager.isEVMAccountSelected()) {
-                ""
+                "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/testnet/evm/default.json"
             } else {
                 "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/testnet/flow/reviewers/0xa51d7fe9e0080662.json"
             }

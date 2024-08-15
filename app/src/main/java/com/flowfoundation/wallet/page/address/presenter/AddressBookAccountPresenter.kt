@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewMode
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
+import com.flowfoundation.wallet.utils.shortenEVMString
 
 
 class AddressBookAccountPresenter(
@@ -28,7 +29,7 @@ class AddressBookAccountPresenter(
 
     override fun bind(model: AddressBookAccountModel) {
         with(binding) {
-            tvAddress.text = model.address
+            tvAddress.text = shortenEVMString(model.address)
 
             if (WalletManager.childAccount(model.address) != null) {
                 val childAccount = WalletManager.childAccount(model.address)!!
