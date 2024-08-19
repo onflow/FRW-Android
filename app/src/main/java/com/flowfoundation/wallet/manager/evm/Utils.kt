@@ -74,7 +74,7 @@ fun loadInitJS(): String {
 }
 
 fun loadProviderJS(): String {
-    return Env.getApp().resources.openRawResource(R.raw.trust_min).bufferedReader().use { it.readText() }
+    return Env.getApp().resources.openRawResource(R.raw.flow_web3_min).bufferedReader().use { it.readText() }
 }
 
 fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: String) -> Unit) {
