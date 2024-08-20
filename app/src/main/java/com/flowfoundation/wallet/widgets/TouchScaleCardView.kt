@@ -6,7 +6,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import com.google.android.material.card.MaterialCardView
-import com.sackcentury.shinebuttonlib.listener.SimpleAnimatorListener
 import com.flowfoundation.wallet.utils.createScaleObjectAnimation
 
 open class TouchScaleCardView : MaterialCardView {
@@ -85,11 +84,16 @@ open class TouchScaleCardView : MaterialCardView {
 
         touchUpAnim?.cancel()
         if (touchDownAnim?.isRunning == true) {
-            touchDownAnim?.addListener(object : SimpleAnimatorListener() {
+            touchDownAnim?.addListener(object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {}
+
                 override fun onAnimationEnd(animation: Animator) {
-                    super.onAnimationEnd(animation)
                     start()
                 }
+
+                override fun onAnimationCancel(animation: Animator) {}
+
+                override fun onAnimationRepeat(animation: Animator) {}
             })
         } else {
             start()

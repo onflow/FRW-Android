@@ -149,3 +149,6 @@
 }
 
 -keep class com.translized.translized_ota.** { *; }
+
+-keep class com.zackratos.ultimatebarx.ultimatebarx.** { *; }
+-keep public class * extends androidx.fragment.app.Fragment { *; }

@@ -6,7 +6,6 @@ import android.view.animation.AlphaAnimation
 import android.view.animation.Interpolator
 import androidx.annotation.ColorInt
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
-import com.sackcentury.shinebuttonlib.listener.SimpleAnimatorListener
 
 fun createScaleObjectAnimation(
     view: View,
@@ -69,22 +68,6 @@ fun createTranslationYAnimation(
         this.duration = duration
         this.interpolator = interpolator
     }
-}
-
-inline fun Animator.addEndListener(crossinline onEnd: (animator: Animator) -> Unit = {}): Animator.AnimatorListener {
-    val listener = object : SimpleAnimatorListener() {
-        override fun onAnimationEnd(animation: Animator) = onEnd(animation)
-    }
-    addListener(listener)
-    return listener
-}
-
-inline fun Animator.addStartListener(crossinline onStart: (animator: Animator) -> Unit = {}): Animator.AnimatorListener {
-    val listener = object : SimpleAnimatorListener() {
-        override fun onAnimationStart(animation: Animator) = onStart(animation)
-    }
-    addListener(listener)
-    return listener
 }
 
 fun View.alphaIn(duration: Long) {
