@@ -37,6 +37,24 @@ data class WCAccountRequest(
     val data: WCAccountInfo? = null
 )
 
+data class WCProxyAccountRequest(
+    @SerializedName("method")
+    val method: String? = "",
+    @SerializedName("status")
+    val status: String? = "",
+    @SerializedName("message")
+    val message: String? = "",
+    @SerializedName("data")
+    val data: WCProxyAccountInfo? = null
+)
+
+data class WCProxyAccountInfo(
+    @SerializedName("deviceInfo")
+    val deviceInfo: WCDeviceInfo?,
+    @SerializedName("jwt")
+    val jwt: String,
+)
+
 data class WCAccountInfo(
     @SerializedName("accountKey")
     val accountKey: WCAccountKey,
@@ -140,6 +158,41 @@ private fun walletInfo(
             "userId": "$userId",
             "userAvatar": "$userAvatar",
             "userName": "$userName",
+            "walletAddress": "$walletAddress"
+        }
+    """.trimIndent()
+}
+
+fun walletConnectProxyAccountResponse(
+    signature: String,
+    publicKey: String,
+    hashAlgo: Int,
+    signAlgo: Int,
+    walletAddress: String
+): String {
+    return """
+        {
+            "method": "${WalletConnectMethod.PROXY_ACCOUNT.value}",
+            "status": "200",
+            "message": "success",
+            "data": ${proxyAccountInfo(signature, publicKey, hashAlgo, signAlgo, walletAddress)}
+        }
+    """.trimIndent()
+}
+
+private fun proxyAccountInfo(
+    signature: String,
+    publicKey: String,
+    hashAlgo: Int,
+    signAlgo: Int,
+    walletAddress: String
+): String {
+    return """
+        {
+            "signature": "$signature",
+            "publicKey": "$publicKey",
+            "hashAlgo": "$hashAlgo",
+            "signAlgo": "$signAlgo",
             "walletAddress": "$walletAddress"
         }
     """.trimIndent()

@@ -10,6 +10,8 @@ enum class WalletConnectMethod(val value: String) {
     ACCOUNT_PROOF("flow_account_proof"),
     ACCOUNT_INFO("frw_account_info"),
     ADD_DEVICE_KEY("frw_add_device_key"),
+    PROXY_ACCOUNT("frw_proxy_account"),
+    PROXY_SIGN("frw_proxy_sign"),
     EVM_SIGN_MESSAGE("personal_sign"),
     EVM_SEND_TRANSACTION("eth_sendTransaction")
 }

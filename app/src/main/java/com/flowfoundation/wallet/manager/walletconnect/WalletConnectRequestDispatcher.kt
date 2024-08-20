@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.PollingResponse
 import com.flowfoundation.wallet.manager.walletconnect.model.ResponseStatus
 import com.flowfoundation.wallet.manager.walletconnect.model.Service
 import com.flowfoundation.wallet.manager.walletconnect.model.WCAccountRequest
+import com.flowfoundation.wallet.manager.walletconnect.model.WCProxyAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.manager.walletconnect.model.walletConnectWalletInfoResponse
@@ -27,6 +28,7 @@ import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.wallet.confirm.WalletConfirmationDialog
+import com.flowfoundation.wallet.page.wallet.proxy.WalletProxyConfirmationDialog
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -75,6 +77,8 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.SIGN_PROPOSER.value -> respondSignProposer()
         WalletConnectMethod.ACCOUNT_INFO.value -> respondAccountInfo()
         WalletConnectMethod.ADD_DEVICE_KEY.value -> respondAddDeviceKey()
+        WalletConnectMethod.PROXY_ACCOUNT.value -> respondProxyAccount()
+        WalletConnectMethod.PROXY_SIGN.value -> respondProxySign()
         WalletConnectMethod.EVM_SIGN_MESSAGE.value -> evmSignMessage()
         WalletConnectMethod.EVM_SEND_TRANSACTION.value -> evmSendTransaction()
     }
@@ -139,6 +143,18 @@ private suspend fun WCRequest.respondAddDeviceKey() {
     val request = Gson().fromJson(params, WCAccountRequest::class.java)
     val accountInfo = request.data
     WalletConfirmationDialog.show(activity, requestId, topic, Gson().toJson(accountInfo) ?: "")
+}
+
+private suspend fun WCRequest.respondProxyAccount() {
+    val activity = topActivity() ?: return
+    val request = Gson().fromJson(params, WCProxyAccountRequest::class.java)
+    val accountInfo = request.data
+    WalletProxyConfirmationDialog.show(activity, requestId, topic, accountInfo?.jwt ?: "", Gson().toJson(accountInfo?.deviceInfo) ?: "")
+}
+
+private suspend fun WCRequest.respondProxySign() {
+    val request = Gson().fromJson(params, WCRequest::class.java)
+    request.dispatch()
 }
 
 private fun WCRequest.respondAccountInfo() {
