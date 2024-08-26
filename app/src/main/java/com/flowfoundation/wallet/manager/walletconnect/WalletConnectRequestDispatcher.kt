@@ -149,7 +149,7 @@ private suspend fun WCRequest.respondProxyAccount() {
     val activity = topActivity() ?: return
     val request = Gson().fromJson(params, WCProxyAccountRequest::class.java)
     val accountInfo = request.data
-    WalletProxyConfirmationDialog.show(activity, requestId, topic, accountInfo?.jwt ?: "", Gson().toJson(accountInfo?.deviceInfo) ?: "")
+    WalletProxyConfirmationDialog.show(activity, requestId, topic, Gson().toJson(accountInfo?.deviceInfo) ?: "")
 }
 
 private suspend fun WCRequest.respondProxySign() {
