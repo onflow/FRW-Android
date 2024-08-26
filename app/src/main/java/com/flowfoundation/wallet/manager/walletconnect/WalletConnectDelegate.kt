@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclAuthnDialog
+import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
@@ -82,13 +83,18 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         )
                     )
                 } else {
+                    val data = FclDialogModel(
+                        title = description,
+                        url = url,
+                        logo = icons.firstOrNull()?.toString()
+                    )
+                    if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
+                        reject()
+                        return@uiScope
+                    }
                     FclAuthnDialog().show(
                         activity.supportFragmentManager,
-                        FclDialogModel(
-                            title = description,
-                            url = url,
-                            logo = icons.firstOrNull()?.toString()
-                        )
+                        data
                     )
                 }
                 if (approve) {

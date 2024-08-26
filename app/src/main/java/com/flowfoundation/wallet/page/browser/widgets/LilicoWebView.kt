@@ -121,7 +121,8 @@ class LilicoWebView : WebView {
             request: WebResourceRequest?
         ): Boolean {
             request?.url?.let {
-                if (it.scheme == "wc") {
+                if (it.scheme == "wc" || it.host == "link.lilico.app" || it.host == "frw-link" +
+                    ".lilico.app" || it.host == "fcw-link.lilico.app") {
                     WalletConnect.get().pair(it.toString())
                     return true
                 }
