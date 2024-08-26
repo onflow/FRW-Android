@@ -33,6 +33,9 @@ interface ApiService {
     @POST("/v3/login")
     suspend fun login(@Body params: LoginRequest): LoginResponse
 
+    @POST("/v3/import")
+    suspend fun import(@Body params: ImportRequest): LoginResponse
+
     @POST("/v3/sync")
     suspend fun syncAccount(@Body params: AccountSyncRequest): CommonResponse
 
@@ -237,4 +240,6 @@ interface ApiService {
         @Query("network") network: String
     ): EVMTokenBalanceResponse
 
+    @GET("/v3/checkimport")
+    suspend fun checkKeystorePublicKeyImport(@Query("key") publicKey: String): CommonResponse
 }

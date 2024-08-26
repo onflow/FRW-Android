@@ -297,6 +297,8 @@ data class Account(
     var evmAddressData: EVMAddressData? = null,
     @SerializedName("walletEmojiList")
     var walletEmojiList: List<WalletEmojiInfo>? = null,
+
+    var keyStoreInfo: String? = null
 )
 
 class Accounts : ArrayList<Account>()

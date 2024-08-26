@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.key
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.wallet.Wallet
 import io.outblock.wallet.CryptoProvider
 import io.outblock.wallet.KeyStoreCryptoProvider
@@ -33,6 +34,8 @@ object CryptoProviderManager {
                 return null
             }
             return HDWalletCryptoProvider(wallet)
+        } else if (account.keyStoreInfo != null) {
+            return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
         } else {
             return KeyStoreCryptoProvider(account.prefix!!)
         }

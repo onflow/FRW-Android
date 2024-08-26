@@ -479,6 +479,12 @@
     <string name="import_wallet_note">Restore your wallet using a backup.</string>
     <string name="from_device_backup">From Device Backup</string>
     <string name="from_device_backup_note">Restore from another mobile or extension wallet</string>
+    <string name="from_key_store">From Keystore</string>
+    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="key_store">Keystore</string>
+    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
@@ -637,5 +643,9 @@ uses to turn your device into a hardware wallet.</string>
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
     <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
 
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="keystore_select_account_tips">Choose an account you want to import</string>
+    <string name="keystore_select_account_title">%1$d Accounts Found</string>
 
 </resources>
