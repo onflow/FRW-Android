@@ -164,7 +164,7 @@ private fun walletInfo(
 }
 
 fun walletConnectProxyAccountResponse(
-    signature: String,
+    jwt: String,
     publicKey: String,
     hashAlgo: Int,
     signAlgo: Int,
@@ -175,13 +175,13 @@ fun walletConnectProxyAccountResponse(
             "method": "${WalletConnectMethod.PROXY_ACCOUNT.value}",
             "status": "200",
             "message": "success",
-            "data": ${proxyAccountInfo(signature, publicKey, hashAlgo, signAlgo, weight)}
+            "data": ${proxyAccountInfo(jwt, publicKey, hashAlgo, signAlgo, weight)}
         }
     """.trimIndent()
 }
 
 private fun proxyAccountInfo(
-    signature: String,
+    jwt: String,
     publicKey: String,
     hashAlgo: Int,
     signAlgo: Int,
@@ -189,7 +189,8 @@ private fun proxyAccountInfo(
 ): String {
     return """
         {
-            "signature": "$signature",
+            "jwt": "$jwt",
+            "userId": "${firebaseUid().orEmpty()}",
             "publicKey": "$publicKey",
             "hashAlgo": "$hashAlgo",
             "signAlgo": "$signAlgo",
