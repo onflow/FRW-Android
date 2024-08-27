@@ -79,11 +79,11 @@ class WalletProxyConfirmationDialog: BottomSheetDialogFragment(), OnMapReadyCall
             sessionTopic = topic,
             jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(
                 requestId, walletConnectProxyAccountResponse(
-                    getFirebaseJwt(),
+                    cryptoProvider.getUserSignature(getFirebaseJwt()),
                     cryptoProvider.getPublicKey(),
                     cryptoProvider.getHashAlgorithm().index,
                     cryptoProvider.getSignatureAlgorithm().index,
-                    WalletManager.selectedWalletAddress())
+                    cryptoProvider.getKeyWeight())
             )
         )
         logd(TAG, "respondAccountInfo:\n$response")

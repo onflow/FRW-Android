@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.walletconnect.model
 
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -163,37 +164,37 @@ private fun walletInfo(
 }
 
 fun walletConnectProxyAccountResponse(
-    jwt: String,
+    signature: String,
     publicKey: String,
     hashAlgo: Int,
     signAlgo: Int,
-    walletAddress: String
+    weight: Int
 ): String {
     return """
         {
             "method": "${WalletConnectMethod.PROXY_ACCOUNT.value}",
             "status": "200",
             "message": "success",
-            "data": ${proxyAccountInfo(jwt, publicKey, hashAlgo, signAlgo, walletAddress)}
+            "data": ${proxyAccountInfo(signature, publicKey, hashAlgo, signAlgo, weight)}
         }
     """.trimIndent()
 }
 
 private fun proxyAccountInfo(
-    jwt: String,
+    signature: String,
     publicKey: String,
     hashAlgo: Int,
     signAlgo: Int,
-    walletAddress: String
+    weight: Int
 ): String {
     return """
         {
-            "jwt": "$jwt",
-            "userId": "${firebaseUid().orEmpty()}",
+            "signature": "$signature",
             "publicKey": "$publicKey",
             "hashAlgo": "$hashAlgo",
             "signAlgo": "$signAlgo",
-            "walletAddress": "$walletAddress"
+            "weight": "$weight",
+            "walletAddress": "${WalletManager.selectedWalletAddress()}"
         }
     """.trimIndent()
 }
