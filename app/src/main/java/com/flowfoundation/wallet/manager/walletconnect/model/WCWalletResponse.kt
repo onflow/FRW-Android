@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.walletconnect.model
 
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -188,6 +189,7 @@ private fun proxyAccountInfo(
     return """
         {
             "jwt": "$jwt",
+            "userId": "${firebaseUid().orEmpty()}",
             "publicKey": "$publicKey",
             "hashAlgo": "$hashAlgo",
             "signAlgo": "$signAlgo",
