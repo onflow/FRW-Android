@@ -6,13 +6,21 @@ import java.util.Date
 
 
 data class WalletNotification(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("priority")
     val priority: Priority,
+    @SerializedName("type")
     val type: Type,
+    @SerializedName("title")
     val title: String? = null,
+    @SerializedName("body")
     val body: String? = null,
+    @SerializedName("icon")
     val icon: String? = null,
+    @SerializedName("image")
     val image: String? = null,
+    @SerializedName("url")
     val url: String? = null,
     @SerializedName("expiry_time")
     val expiryTime: Date,
@@ -41,6 +49,7 @@ enum class Type {
     @SerializedName("image")
     IMAGE,
 
+    @SerializedName("pending_request")
     PENDING_REQUEST
 }
 
