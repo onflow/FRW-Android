@@ -61,7 +61,7 @@ fun parseFirebaseMessaging(message: RemoteMessage) {
     val title = message.notification?.title
 
     logd(TAG, "parseFirebaseMessaging => data:$data,title:$title,body:$body")
-    sendNotification(message)
+//    sendNotification(message)
 }
 
 fun uploadPushToken(isNewToken: Boolean = false) {
