@@ -42,6 +42,25 @@ fun Sign.Model.SessionProposal.approveSession() {
     SignClient.approveSession(Sign.Params.Approve(proposerPublicKey, namespaces)) { error -> loge(error.throwable) }
 }
 
+fun Sign.Model.SessionProposal.network(): String? {
+    val chains = requiredNamespaces[nameTag()]?.chains
+    val reference = chains?.firstOrNull { it.contains(nameTag()) }
+    return reference?.split(":")?.get(1)
+}
+
+fun String.toNetwork(): String? {
+    val list = split(":")
+    return if (list.size > 1) {
+        list[1]
+    } else {
+        null
+    }
+}
+
+private fun nameTag(): String {
+    return "flow"
+}
+
 fun getWalletAddress(namespace: String): String {
     return if (namespace == "eip155") {
         EVMWalletManager.getEVMAddress() ?: ""

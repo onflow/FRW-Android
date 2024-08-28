@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -198,6 +197,7 @@ private suspend fun WCRequest.respondAuthz() {
             logo = metaData?.icons?.firstOrNull(),
             url = metaData?.url,
             cadence = signable.cadence,
+            network = chainId?.toNetwork()
         )
         if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             reject()
@@ -265,6 +265,7 @@ private suspend fun WCRequest.respondUserSign() {
             logo = metaData?.icons?.firstOrNull(),
             url = metaData?.url,
             signMessage = message,
+            network = chainId?.toNetwork()
         )
 
         if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
@@ -325,6 +326,7 @@ private suspend fun WCRequest.respondSignProposer() {
         logo = metaData?.icons?.firstOrNull(),
         url = metaData?.url,
         cadence = signable?.voucher?.cadence,
+        network = chainId?.toNetwork()
     )
 
     if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
