@@ -7,6 +7,7 @@ import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
@@ -49,8 +50,14 @@ object AppConfig {
     fun sync() {
         ioScope {
             reloadConfig()
+            reloadNotification()
             reloadFlowAddressRegistry()
         }
+    }
+
+    private fun reloadNotification() {
+        val text = Firebase.remoteConfig.getString("news")
+        WalletNotificationManager.setNotificationList(text)
     }
 
     private fun reloadConfig(): Config {

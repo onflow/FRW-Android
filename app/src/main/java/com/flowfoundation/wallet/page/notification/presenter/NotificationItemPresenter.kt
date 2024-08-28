@@ -7,14 +7,21 @@ import android.view.View
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemWalletNotificationBinding
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
+import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.notification.model.DisplayType
+import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.findActivity
+import jp.wasabeef.glide.transformations.BlurTransformation
 
 
 class NotificationItemPresenter(
@@ -34,19 +41,43 @@ class NotificationItemPresenter(
                     .into(ivIcon)
                 ivIcon.visible()
             }
-            tvTitle.text = model.title
-            tvContent.text = if (model.clickable) {
-                SpannableString(model.content).apply {
-                    setSpan(UnderlineSpan(), 0, model.content.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            tvTitle.text = model.title.orEmpty()
+            val content = model.body.orEmpty()
+            tvContent.text = if (model.url.isNullOrEmpty()) {
+                content
+            } else {
+                SpannableString(content).apply {
+                    setSpan(UnderlineSpan(), 0, content.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
-            } else model.content
+            }
+            if (model.type == Type.IMAGE) {
+                model.image?.let {
+                    Glide.with(ivImage).load(it)
+                        .transition(DrawableTransitionOptions.withCrossFade(100))
+                        .into(ivImage)
+                }
+            }
+            if (model.displayType == DisplayType.ONCE) {
+                WalletNotificationManager.markAsRead(model.id)
+            }
 
             flClose.setOnClickListener {
+                if (model.displayType == DisplayType.CLICK) {
+                    if (model.type == Type.PENDING_REQUEST) {
+                        return@setOnClickListener
+                    }
+                    WalletNotificationManager.markAsRead(model.id)
+                }
                 WalletNotificationManager.removeNotification(model)
             }
             binding.root.setOnClickListener {
-                when(model.deepLink) {
-                    "pending_request" -> WalletConnectSessionActivity.launch(view.context)
+                if (model.type == Type.PENDING_REQUEST) {
+                    WalletConnectSessionActivity.launch(view.context)
+                    return@setOnClickListener
+                }
+                model.url?.let {
+                    val activity = findActivity(view) ?: return@setOnClickListener
+                    openBrowser(activity, it)
                 }
             }
         }

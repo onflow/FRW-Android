@@ -22,6 +22,9 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.notification.model.DisplayType
+import com.flowfoundation.wallet.page.notification.model.Priority
+import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
@@ -39,6 +42,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.wallet.toAddress
+import java.util.Date
 
 class WalletHeaderPresenter(
     private val view: View,
@@ -160,21 +164,21 @@ class WalletHeaderPresenter(
                     metadata = sessions.firstOrNull { request.topic == it.topic }?.metaData
                 )
             }.filter { it.metadata != null }
-            if (requests.isEmpty()) {
-                WalletNotificationManager.clear()
-            }
-            requests.firstOrNull()?.metadata?.let {
+            requests.firstOrNull()?.let {
                 logd("notification", "pendingRequest::$it")
-                if (WalletNotificationManager.alreadyExist(it.name)) {
+                if (WalletNotificationManager.alreadyExist(it.request.requestId.toString())) {
                     return@ioScope
                 }
                 WalletNotificationManager.addNotification(
                     WalletNotification(
-                        icon = it.icons.firstOrNull(),
-                        title = it.name,
-                        content = "View More",
-                        clickable = true,
-                        deepLink = "pending_request"
+                        id = it.request.requestId.toString(),
+                        icon = it.metadata?.icons?.firstOrNull(),
+                        title = it.metadata?.name.orEmpty(),
+                        body = "View More",
+                        priority = Priority.URGENT,
+                        type = Type.PENDING_REQUEST,
+                        expiryTime = Date(),
+                        displayType = DisplayType.CLICK
                     )
                 )
             }

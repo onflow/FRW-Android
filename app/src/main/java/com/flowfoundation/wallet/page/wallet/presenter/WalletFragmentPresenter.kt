@@ -111,7 +111,10 @@ class WalletFragmentPresenter(
                     binding.ivAvatar.gone()
                 }
             }
-            binding.viewMask.setVisible(WalletNotificationManager.haveNotification() || isNightMode())
+            val haveNotification = WalletNotificationManager.haveNotification()
+            uiScope {
+                binding.viewMask.setVisible(haveNotification || isNightMode())
+            }
         }
     }
 
