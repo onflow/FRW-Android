@@ -53,6 +53,8 @@ data class WCProxyAccountRequest(
 data class WCProxyAccountInfo(
     @SerializedName("deviceInfo")
     val deviceInfo: WCDeviceInfo?,
+    @SerializedName("jwt")
+    val jwt: String?,
 )
 
 data class WCAccountInfo(
@@ -164,7 +166,7 @@ private fun walletInfo(
 }
 
 fun walletConnectProxyAccountResponse(
-    jwt: String,
+    signature: String,
     publicKey: String,
     hashAlgo: Int,
     signAlgo: Int,
@@ -175,13 +177,13 @@ fun walletConnectProxyAccountResponse(
             "method": "${WalletConnectMethod.PROXY_ACCOUNT.value}",
             "status": "200",
             "message": "success",
-            "data": ${proxyAccountInfo(jwt, publicKey, hashAlgo, signAlgo, weight)}
+            "data": ${proxyAccountInfo(signature, publicKey, hashAlgo, signAlgo, weight)}
         }
     """.trimIndent()
 }
 
 private fun proxyAccountInfo(
-    jwt: String,
+    signature: String,
     publicKey: String,
     hashAlgo: Int,
     signAlgo: Int,
@@ -189,7 +191,7 @@ private fun proxyAccountInfo(
 ): String {
     return """
         {
-            "jwt": "$jwt",
+            "signature": "$signature",
             "userId": "${firebaseUid().orEmpty()}",
             "publicKey": "$publicKey",
             "hashAlgo": "$hashAlgo",
