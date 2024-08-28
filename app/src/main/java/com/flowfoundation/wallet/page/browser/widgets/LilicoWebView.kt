@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.*
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
+import java.net.URLDecoder
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -121,9 +122,14 @@ class LilicoWebView : WebView {
             request: WebResourceRequest?
         ): Boolean {
             request?.url?.let {
-                if (it.scheme == "wc" || it.host == "link.lilico.app" || it.host == "frw-link" +
-                    ".lilico.app" || it.host == "fcw-link.lilico.app") {
+                if (it.scheme == "wc") {
                     WalletConnect.get().pair(it.toString())
+                    return true
+                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it.host == "fcw-link.lilico.app") {
+                    safeRun {
+                        val wcUri = URLDecoder.decode(it.getQueryParameter("uri"), "UTF-8")
+                        WalletConnect.get().pair(wcUri)
+                    }
                     return true
                 }
             }

@@ -62,10 +62,11 @@ class NotificationItemPresenter(
             }
 
             flClose.setOnClickListener {
+                if (model.type == Type.PENDING_REQUEST) {
+                    WalletNotificationManager.removeNotification(model)
+                    return@setOnClickListener
+                }
                 if (model.displayType == DisplayType.CLICK) {
-                    if (model.type == Type.PENDING_REQUEST) {
-                        return@setOnClickListener
-                    }
                     WalletNotificationManager.markAsRead(model.id)
                 }
                 WalletNotificationManager.removeNotification(model)
