@@ -94,11 +94,12 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
     }
 
     private fun isARCameraSupported(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_AR)
-        } else {
-            false
-        }
+        return false
+//        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//            packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_AR)
+//        } else {
+//            false
+//        }
     }
 
     companion object {

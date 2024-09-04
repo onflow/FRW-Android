@@ -243,7 +243,7 @@
     <string name="reset">Zurücksetzen</string>
     <string name="skip">Überspringen</string>
     <string name="start">Start</string>
-    <string name="guide_title_1">Spielplatz\nfür Ihre NFTs</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">Teilen Sie ausgezeichnete NFT-Sammlungen mit Freunden</string>
     <string name="guide_title_2">Sammeln Sie\nalle Ihre Spielsteine</string>
     <string name="guide_desc_2">Teilen Sie ausgezeichnete NFT-Sammlungen mit Freunden</string>
@@ -304,11 +304,11 @@
     <string name="stake_guide_header1">Verdienen Sie Belohnungen, wenn Sie</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Abstecken</string>
-    <string name="stake_guide_desc_1">Verdienen Sie bis zu <font color="#60C293"><strong>13%</strong></font>
-        pro Jahr.</string>
-    <string name="stake_guide_desc_2">Wenn Sie einen Einsatz machen <font color="#60C293"><strong>Durchfluss</strong></font> erhalten Sie <font color="#60C293"><strong>Flow</strong></font>. Sie können <font color="#60C293"><strong>handeln</strong></font> diesen liquiden Vermögenswert jederzeit handeln.</string>
-    <string name="stake_guide_desc_3">Sie beginnen zu verdienen <font color="#60C293"><strong>sofort</strong></font>.</string>
-    <string name="stake_guide_desc_4">Die Belohnungen werden automatisch auf Ihre Einzahlung gutgeschrieben <font color="#60C293"><strong>alle paar Tage</strong></font>.</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">Absteckdienstleister</string>
     <string name="select_provider">Anbieter auswählen</string>
     <string name="stake">Pfahl</string>
@@ -584,7 +584,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="backup_not_found">Backup Not Found</string>
     <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
     <string name="backup_decryption_failed">Backup Decryption Failed</string>
-    <string name="backup_decryption_failed_desc">The entered PIN code did not decrypt the backup. Please check your PIN and try again.</string>
+    <string name="backup_decryption_failed_desc">Der eingegebene PIN-Code hat das Backup nicht entschlüsselt. Bitte überprüfen Sie Ihre PIN und versuchen Sie es erneut.</string>
     <string name="no_account_found">No Backup Account Found</string>
     <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
     <string name="restore_failed">Wiederherstellung fehlgeschlagen</string>
@@ -595,4 +595,6 @@ uses to turn your device into a hardware wallet.</string>
     <string name="clear">Clear</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
 </resources>

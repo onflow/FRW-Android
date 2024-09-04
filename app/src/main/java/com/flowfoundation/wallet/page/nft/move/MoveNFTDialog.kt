@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
@@ -143,7 +144,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                     configureToLayoutAction(addressList)
                 }
             }
-            Glide.with(ivNftImage).load(nft?.cover()).transform(RoundedCorners(16.dp2px().toInt()))
+            Glide.with(ivNftImage).load(nft?.getNFTCover())
+                .transform(RoundedCorners(16.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(ivNftImage)
             ivCollectionVm.setImageResource(
                 if (isEVMAccountSelected.not()) {

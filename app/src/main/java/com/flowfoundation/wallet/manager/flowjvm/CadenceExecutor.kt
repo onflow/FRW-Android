@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.address.FlowDomainServer
+import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
@@ -444,7 +445,7 @@ suspend fun cadenceCreateCOAAccount(): String? {
 
 fun cadenceQueryEVMAddress(): String? {
     logd(TAG, "cadenceQueryEVMAddress()")
-    val walletAddress = WalletManager.selectedWalletAddress() ?: return null
+    val walletAddress = WalletManager.selectedWalletAddress()
     val result = CADENCE_QUERY_COA_EVM_ADDRESS.executeCadence {
         arg { address(walletAddress) }
     }
@@ -700,7 +701,16 @@ suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.()
 }
 
 private fun String.addPlatformInfo(): String {
-    return this.replace("<platform_info>", "Android - ${BuildConfig.VERSION_NAME} - ${BuildConfig.VERSION_CODE}")
+    return this.replace("<platform_info>", "Android - ${BuildConfig.VERSION_NAME} - ${BuildConfig
+        .VERSION_CODE} ${devPrefix()}")
+}
+
+private fun devPrefix(): String {
+    return if (isDev()) {
+        "- dev"
+    } else {
+        ""
+    }
 }
 
 suspend fun String.executeTransaction(arguments: CadenceArgumentsBuilder.() -> Unit): String? {

@@ -326,6 +326,7 @@
                 <data android:scheme="fw"/>
                 <data android:scheme="wc"/>
                 <data android:scheme="frw"/>
+                <data android:scheme="fcw"/>
                 <data android:scheme="lilico"/>
             </intent-filter>
         </activity>

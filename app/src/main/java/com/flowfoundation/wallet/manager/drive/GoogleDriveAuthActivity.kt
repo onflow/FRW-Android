@@ -22,10 +22,8 @@ import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.backup.restoreFromGoogleDrive
 import com.flowfoundation.wallet.manager.backup.uploadGoogleDriveBackup
 import com.flowfoundation.wallet.manager.backup.viewFromGoogleDrive
-import com.flowfoundation.wallet.page.nft.nftlist.findParentAppBarLayout
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.logd
 import wallet.core.jni.HDWallet
 import java.util.*
@@ -146,6 +144,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             } catch (authIOException: UserRecoverableAuthIOException) {
                 signOutAndSignInAgain()
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

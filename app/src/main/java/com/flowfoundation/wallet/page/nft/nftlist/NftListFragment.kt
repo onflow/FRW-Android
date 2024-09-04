@@ -151,7 +151,7 @@ internal class NftListFragment : Fragment() {
                 }
                 val oldUrl = binding.backgroundImage.tag as? String
                 Glide.with(binding.backgroundImage)
-                    .load(nft.cover())
+                    .load(nft.getNFTCover())
                     .thumbnail(Glide.with(requireContext()).load(oldUrl).transform(BlurTransformation(10, 20)))
                     .transition(DrawableTransitionOptions.withCrossFade(250))
                     .transform(BlurTransformation(10, 20))

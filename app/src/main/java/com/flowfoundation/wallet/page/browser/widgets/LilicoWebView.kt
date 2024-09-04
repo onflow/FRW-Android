@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.net.http.SslError
 import android.util.AttributeSet
 import android.webkit.CookieManager
-import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
@@ -17,13 +15,13 @@ import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFilePicker
+import com.flowfoundation.wallet.page.component.deeplinking.getWalletConnectUri
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.*
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
-import java.net.URLDecoder
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -127,8 +125,7 @@ class LilicoWebView : WebView {
                     return true
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it.host == "fcw-link.lilico.app") {
                     safeRun {
-                        val wcUri = URLDecoder.decode(it.getQueryParameter("uri"), "UTF-8")
-                        WalletConnect.get().pair(wcUri)
+                        WalletConnect.get().pair(getWalletConnectUri(it).toString())
                     }
                     return true
                 }

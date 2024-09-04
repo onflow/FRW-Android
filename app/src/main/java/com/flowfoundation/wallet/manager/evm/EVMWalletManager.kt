@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
@@ -177,6 +178,9 @@ object EVMWalletManager {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "bridge to evm success")
                     callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "bridge to evm failed")
+                    callback.invoke(false)
                 }
             }
         } catch (e: Exception) {
@@ -203,6 +207,9 @@ object EVMWalletManager {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "bridge to evm success")
                     callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "bridge to evm failed")
+                    callback.invoke(false)
                 }
             }
         } catch (e: Exception) {
@@ -283,6 +290,9 @@ object EVMWalletManager {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "bridge from evm success")
                     callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "bridge from evm failed")
+                    callback.invoke(false)
                 }
             }
         } catch (e: Exception) {
@@ -338,6 +348,9 @@ object EVMWalletManager {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "bridge to evm success")
                     callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "bridge to evm failed")
+                    callback.invoke(false)
                 }
             }
         } catch (e: Exception) {
@@ -359,6 +372,9 @@ object EVMWalletManager {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "fund flow to evm success")
                     callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "fund flow to evm failed")
+                    callback.invoke(false)
                 }
             }
         } catch (e: Exception) {
@@ -381,6 +397,9 @@ object EVMWalletManager {
                 if (result.isExecuteFinished()) {
                     logd(TAG, "withdraw flow from evm success")
                     callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "withdraw flow from evm failed")
+                    callback.invoke(false)
                 }
             }
 

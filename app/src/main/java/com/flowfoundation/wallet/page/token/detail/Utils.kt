@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.plusMonth
 import com.flowfoundation.wallet.utils.plusYear
+import com.google.gson.annotations.SerializedName
 
 enum class Period(val value: String) {
     DAY("1d"),
@@ -54,12 +55,19 @@ QuoteVolume
 ]
  */
 data class Quote(
+    @SerializedName("closeTime")
     val closeTime: Long,
+    @SerializedName("openPrice")
     val openPrice: Float,
+    @SerializedName("highPrice")
     val highPrice: Float,
+    @SerializedName("lowPrice")
     val lowPrice: Float,
+    @SerializedName("closePrice")
     val closePrice: Float,
+    @SerializedName("volume")
     val volume: Float,
+    @SerializedName("quoteVolume")
     val quoteVolume: Float,
 )
 

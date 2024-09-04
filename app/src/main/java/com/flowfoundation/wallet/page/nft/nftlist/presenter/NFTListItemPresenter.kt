@@ -9,10 +9,9 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemNftListBinding
-import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.page.nft.nftdetail.NftDetailActivity
-import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.title
 import com.flowfoundation.wallet.page.nft.nftlist.widget.NftItemPopupMenu
@@ -38,7 +37,8 @@ class NFTListItemPresenter(
         val nft = model.nft
         val fromAddress = model.accountAddress
         with(binding) {
-            Glide.with(coverView).load(nft.cover()).transform(RoundedCorners(10.dp2px().toInt()))
+            Glide.with(coverView).load(nft.getNFTCover())
+                .transform(RoundedCorners(10.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(coverView)
             nameView.text = nft.title() ?: nft.title ?: nft.contractName()
             priceView.text = nft.postMedia.description ?: ""

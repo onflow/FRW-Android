@@ -241,7 +241,7 @@
     <string name="reset">重置</string>
     <string name="skip">跳过</string>
     <string name="start">开始</string>
-    <string name="guide_title_1">游乐场\n</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">与朋友分享优秀的 NFT 藏品</string>
     <string name="guide_title_2">收集\n所有代币</string>
     <string name="guide_desc_2">与朋友分享优秀的 NFT 藏品</string>
@@ -302,11 +302,11 @@
     <string name="stake_guide_header1">赚取奖励</string>
     <string name="stake_guide_header2">质押你的 Flow</string>
     <string name="lets_staking">让我们开始质押</string>
-    <string name="stake_guide_desc_1">赚取高达 <font color="#60C293"><strong>13%</strong></font>
-        每年收益高达 13%。</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
     <string name="stake_guide_desc_2">当您质押 <font color="#60C293"><strong>Flow</strong></font>您将获得 <font color="#60C293"><strong>Flow</strong></font>. 您可以 <font color="#60C293"><strong>交易</strong></font>这种流动资产。</string>
-    <string name="stake_guide_desc_3">您可以 <font color="#60C293"><strong>马上</strong></font>.</string>
-    <string name="stake_guide_desc_4">奖励自动存入您的存款 <font color="#60C293"><strong>每隔几天</strong></font>.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">质押提供者</string>
     <string name="select_provider">选择提供者</string>
     <string name="stake">质押</string>
@@ -593,4 +593,6 @@
     <string name="clear">Clear</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
 </resources>

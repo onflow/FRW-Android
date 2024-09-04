@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_TOK
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.flowjvm.parseStringList
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.google.gson.annotations.SerializedName
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -43,36 +44,55 @@ fun queryChildAccountNFTCollectionID(childAddress: String): List<String> {
 }
 
 data class CoinData(
+    @SerializedName("name")
     val name: String,
+    @SerializedName("icon")
     val icon: String,
+    @SerializedName("symbol")
     val symbol: String,
+    @SerializedName("balance")
     val balance: Float
 )
 
 data class TokenData(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("balance")
     val balance: Float
 )
 
 data class CollectionData(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("name")
     val name: String,
+    @SerializedName("logo")
     val logo: String,
+    @SerializedName("accountAddress")
     val accountAddress: String,
+    @SerializedName("contractName")
     val contractName: String,
+    @SerializedName("idList")
     val idList: List<String>
 )
 
 data class NFTCollectionData(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("path")
     val path: String,
+    @SerializedName("display")
     val display: DisplayData,
+    @SerializedName("idList")
     val idList: List<String>
 )
 
 data class DisplayData(
+    @SerializedName("name")
     val name: String,
+    @SerializedName("squareImage")
     val squareImage: String,
+    @SerializedName("mediaType")
     val mediaType: String
 )
 

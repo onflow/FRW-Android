@@ -14,9 +14,15 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
+import com.walletconnect.android.internal.common.scope
+import com.walletconnect.android.relay.WSSConnectionState
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 private val TAG = WalletConnect::class.java.simpleName
@@ -26,25 +32,22 @@ private val projectId by lazy { EnvKey.get("WALLET_CONNECT_PROJECT_ID") }
 @OptIn(DelicateCoroutinesApi::class)
 class WalletConnect {
 
-    init {
-        GlobalScope.launch {
-            CoreClient.Relay.isConnectionAvailable.collect { isConnected ->
-                logd(TAG, "CoreClient.Relay connect change:$isConnected")
-                if (!isConnected) {
-                    safeRun {
-                        CoreClient.Relay.connect { error: Core.Model.Error -> logw(TAG, "CoreClient.Relay connect error: $error") }
-                    }
-                }
-            }
-        }
+    private val isConnectionAvailable: StateFlow<Boolean> by lazy {
+        combine(CoreClient.Relay.isNetworkAvailable, CoreClient.Relay.wssConnectionState) {
+            networkAvailable, wss -> networkAvailable == true && wss is WSSConnectionState.Connected
+        }.stateIn(
+            scope = scope,
+            started = SharingStarted.Eagerly,
+            initialValue = false
+        )
     }
 
     fun pair(uri: String) {
-        logd(TAG, "CoreClient.Relay isConnectionAvailable :${CoreClient.Relay.isConnectionAvailable.value}")
-        if (!CoreClient.Relay.isConnectionAvailable.value) {
+        logd(TAG, "CoreClient.Relay isConnectionAvailable :${isConnectionAvailable.value}")
+        if (!isConnectionAvailable.value) {
             var job: kotlinx.coroutines.Job? = null
             job = ioScope {
-                CoreClient.Relay.isConnectionAvailable.collect { isConnected ->
+                isConnectionAvailable.collect { isConnected ->
                     if (isConnected) {
                         delay(1000)
                         logd(TAG, "Pair on connected")
@@ -85,13 +88,28 @@ class WalletConnect {
         ) { error -> loge(error.throwable) }
     }
 
+    private fun initCombine() {
+        GlobalScope.launch {
+            isConnectionAvailable.collect { isConnected ->
+                logd(TAG, "CoreClient.Relay connect change:$isConnected")
+                if (!isConnected) {
+                    safeRun {
+                        CoreClient.Relay.connect { error: Core.Model.Error -> logw(TAG, "CoreClient.Relay connect error: $error") }
+                    }
+                }
+            }
+        }
+    }
+
     companion object {
         private var instance: WalletConnect? = null
 
         fun init(application: Application) {
             ioScope {
                 setup(application)
-                instance = WalletConnect()
+                instance = WalletConnect().apply {
+                    initCombine()
+                }
             }
         }
 
@@ -109,12 +127,11 @@ private fun setup(application: Application) {
         icons = listOf("https://lilico.app/fcw-logo.png"),
         redirect = null,
     )
-
     CoreClient.initialize(
-        metaData = appMetaData,
-        relayServerUrl = "wss://relay.walletconnect.com?projectId=${projectId}",
-        connectionType = ConnectionType.MANUAL,
         application = application,
+        projectId = projectId,
+        metaData = appMetaData,
+        connectionType = ConnectionType.MANUAL
     ) {
         logw(TAG, "WalletConnect init error: $it")
     }

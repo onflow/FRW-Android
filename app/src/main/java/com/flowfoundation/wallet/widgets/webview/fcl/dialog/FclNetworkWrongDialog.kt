@@ -24,12 +24,12 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
+import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import kotlinx.coroutines.delay
@@ -79,9 +79,13 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
                 delay(200)
                 refreshChainNetworkSync()
                 doNetworkChangeTask()
+                FlowApi.refreshConfig()
                 uiScope {
-                    delay(200)
-                    changeNetworkFetchServer()
+                    FlowLoadingDialog(requireContext()).show()
+                    WalletManager.changeNetwork()
+                    clearUserCache()
+                    MainActivity.relaunch(requireContext(), true)
+                    dismiss()
                 }
             }
         }

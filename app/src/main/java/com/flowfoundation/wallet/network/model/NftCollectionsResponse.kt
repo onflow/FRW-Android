@@ -15,6 +15,7 @@ data class NftCollectionsResponse(
 )
 
 data class NftCollections(
+    @SerializedName("collections")
     val collections: List<NftCollectionWrapper> = listOf(),
 )
 

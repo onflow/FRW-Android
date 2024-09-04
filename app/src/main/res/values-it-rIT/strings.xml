@@ -243,7 +243,7 @@
     <string name="reset">Reset</string>
     <string name="skip">Salto</string>
     <string name="start">Inizio</string>
-    <string name="guide_title_1">Parco giochi\nper i vostri NFT</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">Condividete con gli amici le collezioni eccellenti di NFT</string>
     <string name="guide_title_2">Raccogliete\ntutti i vostri gettoni</string>
     <string name="guide_desc_2">Condividete con gli amici le collezioni eccellenti di NFT</string>
@@ -304,11 +304,11 @@
     <string name="stake_guide_header1">Guadagnate premi quando</string>
     <string name="stake_guide_header2">Puntate sul vostro flusso</string>
     <string name="lets_staking">Puntiamo</string>
-    <string name="stake_guide_desc_1">Guadagna fino al <font color="#60C293"><strong>13%</strong></font>
-        all\'anno.</string>
-    <string name="stake_guide_desc_2">Quando si punta <font color="#60C293"><strong>Flusso</strong></font> si riceve <font color="#60C293"><strong>Flusso</strong></font>. Potete <font color="#60C293"><strong>negoziare</strong></font> questo bene liquido in qualsiasi momento.</string>
-    <string name="stake_guide_desc_3">Iniziate a guadagnare <font color="#60C293"><strong>subito</strong></font>.</string>
-    <string name="stake_guide_desc_4">I premi vengono accreditati automaticamente sul vostro deposito <font color="#60C293"><strong>ogni pochi giorni</strong></font>.</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">Fornitore di palificazione</string>
     <string name="select_provider">Selezionare il fornitore</string>
     <string name="stake">Palo</string>
@@ -595,4 +595,6 @@ uses to turn your device into a hardware wallet.</string>
     <string name="clear">Clear</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
 </resources>

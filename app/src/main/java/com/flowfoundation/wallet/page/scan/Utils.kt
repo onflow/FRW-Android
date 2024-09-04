@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.component.deeplinking.getWalletConnectUri
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.utils.addressPattern
 import com.flowfoundation.wallet.utils.evmAddressPattern
@@ -35,7 +36,7 @@ fun dispatchScanResult(context: Context, str: String) {
         val wcUri = if (text.startsWith("wc:")) {
             text
         } else {
-            Uri.parse(text).getQueryParameter("uri")
+            getWalletConnectUri(Uri.parse(text))
         } ?: return
         logd("wc", "wcUri: $wcUri")
         WalletConnect.get().pair(wcUri)

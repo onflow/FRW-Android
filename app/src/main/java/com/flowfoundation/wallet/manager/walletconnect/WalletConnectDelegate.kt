@@ -83,7 +83,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                     )
                 } else {
                     val data = FclDialogModel(
-                        title = description,
+                        title = name,
                         url = url,
                         logo = icons.firstOrNull()?.toString(),
                         network = network()

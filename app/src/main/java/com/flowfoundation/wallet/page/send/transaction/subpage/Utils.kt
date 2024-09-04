@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.network.model.AddressBookDomain
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -22,7 +23,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 
 
 @SuppressLint("SetTextI18n")
-fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressBookContact, ) {
+fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressBookContact) {
     fromAddressView.text = "(${shortenEVMString(fromAddress)})"
     if (WalletManager.isChildAccount(fromAddress)) {
         val childAccount = WalletManager.childAccount(fromAddress)
@@ -64,10 +65,10 @@ fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressB
 }
 
 fun DialogSendConfirmBinding.bindNft(nft: Nft) {
-    val config = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName) ?: return
-    Glide.with(nftCover).load(nft.cover()).into(nftCover)
+    val config = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+    Glide.with(nftCover).load(nft.getNFTCover()).into(nftCover)
     nftName.text = nft.name()
-    Glide.with(nftCollectionIcon).load(config.logo()).into(nftCollectionIcon)
-    nftCollectionName.text = config.name
+    Glide.with(nftCollectionIcon).load(config?.logo() ?: nft.collectionSquareImage).into(nftCollectionIcon)
+    nftCollectionName.text = config?.name ?: nft.collectionName
     nftCoinTypeIcon.setImageResource(R.drawable.ic_coin_flow)
 }

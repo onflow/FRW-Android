@@ -83,7 +83,7 @@ class BrowserPresenter(
     }
 
     override fun onWindowColorChange(color: Int) {
-        binding.statusBarHolder.setBackgroundColor(color)
+//        binding.statusBarHolder.setBackgroundColor(color)
     }
 
     private fun removeTab(tab: BrowserTab) {

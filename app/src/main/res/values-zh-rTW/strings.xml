@@ -239,15 +239,15 @@
     <string name="reset">重置</string>
     <string name="skip">跳過</string>
     <string name="start">開始</string>
-    <string name="guide_title_1">你的 NFT 遊樂場</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">與朋友分享優秀的 NFT 收藏</string>
-    <string name="guide_title_2">收集中所有代幣</string>
+    <string name="guide_title_2">Gather\nall your tokens</string>
     <string name="guide_desc_2">與朋友分享優秀的 NFT 收藏</string>
-    <string name="guide_title_4">探索您喜歡的網站</string>
+    <string name="guide_title_4">Explore\nyour favourite site</string>
     <string name="guide_desc_4">與朋友分享優秀的 NFT 收藏</string>
     <string name="import_wallet">導入錢包</string>
     <string name="import_str">Import</string>
-    <string name="welcome_desc">提供更多安全性信息</string>
+    <string name="welcome_desc">Provide More About The Security</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">網絡錯誤</string>
     <string name="claim">領取</string>
@@ -302,10 +302,11 @@
     <string name="stake_guide_header1">當你</string>
     <string name="stake_guide_header2">質押你的Flow</string>
     <string name="lets_staking">開始質押</string>
-    <string name="stake_guide_desc_1">按年賺取最高 &lt;font color=\'#60C293\'&gt;&lt;strong&gt;13%&lt;/strong&gt;&lt;/font&gt;。</string>
-    <string name="stake_guide_desc_2">當你質押 &lt;font color=\'#60C293\'&gt;&lt;strong&gt;Flow&lt;/strong&gt;&lt;/font&gt; 時，你會收到 &lt;font color=\'#60C293\'&gt;&lt;strong&gt;Flow&lt;/strong&gt;&lt;/font&gt;。你可以在任何時候&lt;font color=\'#60C293\'&gt;&lt;strong&gt;交易&lt;/strong&gt;&lt;/font&gt;這個流動資產。</string>
-    <string name="stake_guide_desc_3">你會立即開始賺取 &lt;font color=\'#60C293\'&gt;&lt;strong&gt;收益&lt;/strong&gt;&lt;/font&gt;。</string>
-    <string name="stake_guide_desc_4">獎勵會自動在&lt;font color=\'#60C293\'&gt;&lt;strong&gt;數日內&lt;/strong&gt;&lt;/font&gt;存入你的存款。</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">質押提供者</string>
     <string name="select_provider">選擇提供商</string>
     <string name="stake">質押</string>
@@ -537,12 +538,9 @@
     <string name="select_collection">選擇收藏</string>
     <string name="import_profile">導入個人資料</string>
     <string name="notification">通知</string>
-    <string name="landing_step_one_title">安全，
-由 KeyStore 提供支援。</string>
-    <string name="landing_step_two_title">您的裝置，
-現在是一個硬體錢包。</string>
-    <string name="landing_step_three_title">您剛剛，
-解鎖了真正的所有權。</string>
+    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
+    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
+    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
     <string name="landing_step_four_title">準備開始</string>
     <string name="landing_step_one_desc">Flow Wallet 使用您的裝置的 KeyStore 來保護您的 Flow 帳戶。</string>
     <string name="landing_step_two_desc">KeyStore 是您裝置上的特殊硬體，Flow Wallet 用它把您的裝置變成一個硬體錢包。</string>
@@ -550,7 +548,7 @@
     <string name="landing_step_four_desc">您的 Flow 帳戶已就緒，
 讓我們開始吧！</string>
     <string name="landing_step_loading">創建您的個人資料</string>
-    <string name="landing_step_done">跟隨 FLOW</string>
+    <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d 代幣</string>
     <string name="wallpaper_static">靜態</string>
     <string name="wallpaper_dynamic">動態</string>
@@ -594,4 +592,6 @@
     <string name="clear">Clear</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
 </resources>

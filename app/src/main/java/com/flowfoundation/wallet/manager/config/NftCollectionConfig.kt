@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionsCache
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.NftCollectionListResponse
@@ -60,10 +61,8 @@ object NftCollectionConfig {
             config.clear()
             config.addAll(loadFromCache())
 
-            val response = if (isPreviewnet()) {
-                val text = URL("https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/previewnet/flow/nfts.json").readText()
-                val listResponse = Gson().fromJson(text, PreviewnetNftCollectionListResponse::class.java)
-                NftCollectionListResponse(data = listResponse.tokens, status = 200)
+            val response = if (EVMWalletManager.evmFeatureAvailable()) {
+                retrofitApi().create(ApiService::class.java).getNFTCollections()
             } else {
                 retrofitApi().create(ApiService::class.java).nftCollections()
             }

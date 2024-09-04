@@ -3,12 +3,10 @@ package com.flowfoundation.wallet.utils
 import android.graphics.Bitmap
 import android.net.Uri
 import android.widget.ImageView
-import coil.ImageLoader
-import coil.decode.SvgDecoder
-import coil.load
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
 import java.net.URLEncoder
 
 
@@ -35,7 +33,7 @@ fun String.parseBoringAvatar(): String {
 }
 
 private fun ImageView.loadAvatarNormal(url: String, placeholderEnable: Boolean = true, transformation: Transformation<Bitmap>? = null) {
-    var request = Glide.with(this).load(url)
+    var request = Glide.with(this).load(url.getBase64SvgModel() ?: url)
 
     if (placeholderEnable) {
         request = request.placeholder(R.drawable.ic_placeholder)
@@ -44,15 +42,4 @@ private fun ImageView.loadAvatarNormal(url: String, placeholderEnable: Boolean =
         request = request.transform(transformation)
     }
     request.into(this)
-}
-
-private fun ImageView.loadAvatarSvg(url: String, placeholderEnable: Boolean = true) {
-    val loader = ImageLoader.Builder(context).componentRegistry {
-        add(SvgDecoder(context))
-    }.build()
-    load(url, loader) {
-        if (placeholderEnable) {
-            placeholder(R.drawable.ic_placeholder)
-        }
-    }
 }

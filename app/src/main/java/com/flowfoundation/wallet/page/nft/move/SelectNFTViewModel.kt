@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.nft.move
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
@@ -73,7 +74,7 @@ class SelectNFTViewModel : ViewModel() {
     fun loadEVMCollections() {
         viewModelIOScope(this) {
             val address = WalletManager.selectedWalletAddress()
-            val collectionsResponse = service.getEVMNFTCollections(address)
+            val collectionsResponse = service.getEVMNFTCollections(address, chainNetWorkString())
             if (collectionsResponse.data.isNullOrEmpty()) {
                 postEmpty()
                 return@viewModelIOScope

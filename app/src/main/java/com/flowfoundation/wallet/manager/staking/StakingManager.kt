@@ -227,6 +227,7 @@ interface StakingInfoUpdateListener {
 }
 
 data class StakingInfo(
+    @SerializedName("nodes")
     val nodes: List<StakingNode> = emptyList(),
 )
 

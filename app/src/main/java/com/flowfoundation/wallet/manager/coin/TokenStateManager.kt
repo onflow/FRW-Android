@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.coin
 
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.tokenStateCache
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckLinkedAccountTokenListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
@@ -53,7 +54,7 @@ object TokenStateManager {
     private suspend fun fetchEVMTokenStateSync() {
         val address = EVMWalletManager.getEVMAddress() ?: return
         val apiService = retrofitApi().create(ApiService::class.java)
-        val balanceResponse = apiService.getEVMTokenBalance(address)
+        val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
         balanceResponse.data?.forEach { token ->
             if (token.balance.isBlank()) {
                 return@forEach

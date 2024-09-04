@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -72,7 +73,9 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
             isCollectionExpanded = isNftCollectionExpanded()
 
             val service = retrofitApi().create(ApiService::class.java)
-            val response = service.getEVMNFTCollections(WalletManager.selectedWalletAddress())
+            val response = service.getEVMNFTCollections(WalletManager.selectedWalletAddress(),
+                chainNetWorkString()
+            )
             val collections = response.data?.filter { it.nftList.isNotEmpty() }
             if (collections.isNullOrEmpty()) {
                 emptyLiveData.postValue(true)
