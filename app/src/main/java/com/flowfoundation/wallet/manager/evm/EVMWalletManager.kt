@@ -235,8 +235,31 @@ object EVMWalletManager {
 
     private suspend fun bridgeNFTFromEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val contractAddress = nft.collectionAddress
-            val contractName = nft.collectionContractName
+            val contractAddress = if (nft.flowIdentifier != null) {
+                val identifier = nft.flowIdentifier.split(".")
+                if (identifier.size > 1) {
+                    identifier[1].toAddress()
+                } else {
+                    ""
+                }
+            } else {
+                ""
+            }
+            val contractName = if (nft.flowIdentifier != null) {
+                val identifier = nft.flowIdentifier.split(".")
+                if (identifier.size > 2) {
+                    identifier[2]
+                } else {
+                    ""
+                }
+            } else {
+                ""
+            }
+            if (contractAddress.isEmpty() || contractName.isEmpty()) {
+                callback.invoke(false)
+                logd(TAG, "bridge from evm failed")
+                return
+            }
             val id = nft.id
             val txId = cadenceBridgeNFTFromEvm(contractAddress, contractName, id)
             postTransaction(nft, txId, callback)

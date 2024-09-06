@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
+import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
@@ -320,7 +321,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             sendTransactionWithMultiSignature(providers = providers, builder = {
                 args.build().forEach { arg(it) }
                 walletAddress(restoreAddress)
-                script(this@executeTransactionWithMultiKey)
+                script(this@executeTransactionWithMultiKey.addPlatformInfo())
             })
         } catch (e: Exception) {
             loge(e)

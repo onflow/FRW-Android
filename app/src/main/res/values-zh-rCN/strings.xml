@@ -595,4 +595,6 @@
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
     <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="update_avatar_success">Update Avatar Success</string>
+    <string name="update_avatar_failed">Update Avatar Failed</string>
 </resources>

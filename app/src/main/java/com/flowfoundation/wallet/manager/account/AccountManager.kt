@@ -206,9 +206,6 @@ object AccountManager {
 
     fun switch(account: Account, onFinish: () -> Unit) {
         ioScope {
-            if (account.wallet == null) {
-                return@ioScope
-            }
             if (isSwitching) {
                 return@ioScope
             }

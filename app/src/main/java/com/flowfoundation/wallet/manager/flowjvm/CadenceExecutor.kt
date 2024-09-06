@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.FlowScriptResponse
 import com.nftco.flow.sdk.ScriptBuilder
@@ -18,7 +17,6 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
-import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
 
@@ -558,13 +556,13 @@ suspend fun cadenceBridgeNFTFromEvm(
     contractName: String,
     nftId: String
 ): String? {
-    logd(TAG, "cadenceBridgeNFTToEvm")
+    logd(TAG, "cadenceBridgeNFTFromEvm")
     val transactionId = CADENCE_BRIDGE_NFT_FROM_EVM.transactionByMainWallet {
         arg { address(contractAddress) }
         arg { string(contractName) }
         arg { uint256(nftId) }
     }
-    logd(TAG, "cadenceBridgeNFTToEvm transactionId:$transactionId")
+    logd(TAG, "cadenceBridgeNFTFromEvm transactionId:$transactionId")
     return transactionId
 }
 
@@ -700,7 +698,7 @@ suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.()
     }
 }
 
-private fun String.addPlatformInfo(): String {
+fun String.addPlatformInfo(): String {
     return this.replace("<platform_info>", "Android - ${BuildConfig.VERSION_NAME} - ${BuildConfig
         .VERSION_CODE} ${devPrefix()}")
 }

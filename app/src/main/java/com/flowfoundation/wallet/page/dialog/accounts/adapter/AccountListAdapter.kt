@@ -61,7 +61,7 @@ private class AccountViewHolder(
         with(binding) {
             val userInfo = model.userInfo
             avatarView.loadAvatar(userInfo.avatar)
-            usernameView.text = userInfo.username
+            usernameView.text = userInfo.nickname
             addressView.text = model.wallet?.walletAddress()
             checkedView.setVisible(model.isActive)
         }

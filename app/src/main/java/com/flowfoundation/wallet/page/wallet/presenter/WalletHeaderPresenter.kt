@@ -112,9 +112,9 @@ class WalletHeaderPresenter(
                 }
                 cvStake.setOnClickListener { openStakingPage(view.context) }
                 cvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
-                cvBuy.setVisible(AppConfig.isInAppBuy())
-                cvSwap.setVisible(AppConfig.isInAppSwap())
-                cvStake.visible()
+                cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
+                cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
+                cvStake.setVisible(isMainnet() && WalletManager.isEVMAccountSelected().not())
                 ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
             }
 

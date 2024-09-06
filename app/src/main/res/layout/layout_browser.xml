@@ -52,7 +52,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="84dp"
+            android:layout_height="74dp"
             android:paddingBottom="24dp"
             app:layout_constraintBottom_toBottomOf="parent">
 
@@ -60,7 +60,7 @@
                 android:id="@+id/text_wrapper"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_marginVertical="10dp"
+                android:layout_marginTop="10dp"
                 android:background="@drawable/bg_round_12dp"
                 android:backgroundTint="@color/fill_3"
                 android:gravity="center_vertical"
