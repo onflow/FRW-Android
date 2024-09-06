@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityDeveloperModeSettingBinding
 import com.flowfoundation.wallet.manager.app.*
+import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.PreviewnetTransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -89,6 +90,7 @@ class DeveloperModePresenter(
                 tvExportLog.setOnClickListener {
                     DebugViewerDataSource.exportDebugMessagesAndShare(activity)
                 }
+                tvCadenceScriptVersion.text = activity.getString(R.string.cadence_script_version, CadenceApiManager.getCadenceScriptVersion())
             }
         }
     }

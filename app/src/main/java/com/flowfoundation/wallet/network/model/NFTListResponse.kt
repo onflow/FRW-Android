@@ -17,18 +17,10 @@ data class NFTListResponse(
 )
 
 data class NFTListData(
-    @SerializedName("chain")
-    val chain: String,
-    @SerializedName("network")
-    val network: String,
     @SerializedName("nftCount")
     val nftCount: Int,
     @SerializedName("nfts")
     var nfts: List<Nft>?,
-    @SerializedName("offset")
-    val offset: Int,
-    @SerializedName("ownerAddress")
-    val ownerAddress: String
 )
 
 @Parcelize

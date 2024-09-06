@@ -213,6 +213,18 @@
 
     </com.google.android.material.card.MaterialCardView>
 
+    <TextView
+        android:id="@+id/tv_cadence_script_version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_medium"
+        android:paddingHorizontal="18dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/text"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/cv_debug"/>
+
     <FrameLayout
         android:id="@+id/debug_container"
         android:layout_width="match_parent"

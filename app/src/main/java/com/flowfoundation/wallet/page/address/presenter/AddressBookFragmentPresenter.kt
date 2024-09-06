@@ -6,10 +6,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentAddressBookBinding
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.AddressBookFragment
 import com.flowfoundation.wallet.page.address.AddressBookViewModel
 import com.flowfoundation.wallet.page.address.adapter.AddressBookAdapter
 import com.flowfoundation.wallet.page.address.model.AddressBookFragmentModel
+import com.flowfoundation.wallet.page.evm.EnableEVMDialog
+import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewModel
+import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setSpannableText
@@ -26,6 +31,7 @@ class AddressBookFragmentPresenter(
     private val activity = fragment.requireActivity()
 
     private val viewModel by lazy { ViewModelProvider(fragment.requireActivity())[AddressBookViewModel::class.java] }
+    private val sendAddressViewModel by lazy { ViewModelProvider(fragment.requireActivity())[SelectSendAddressViewModel::class.java] }
 
     init {
         with(binding.recyclerView) {
@@ -37,7 +43,17 @@ class AddressBookFragmentPresenter(
         }
 
         binding.localEmptyWrapper.setOnClickListener {
-            viewModel.searchRemote(viewModel.searchKeyword())
+            val text = viewModel.searchKeyword()
+            val isEVMMatched = evmAddressPattern.matches(text)
+            if (isEVMMatched) {
+                if (EVMWalletManager.haveEVMAddress()) {
+                    sendAddressViewModel.onAddressSelectedLiveData.postValue(AddressBookContact(address = text))
+                } else {
+                    EnableEVMDialog.show(fragment.childFragmentManager)
+                }
+            } else {
+                viewModel.searchRemote(text)
+            }
             viewModel.clearInputFocus()
             binding.localEmptyWrapper.setVisible(false)
         }

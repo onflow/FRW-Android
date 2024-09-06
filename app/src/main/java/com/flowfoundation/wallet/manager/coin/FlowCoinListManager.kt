@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.manager.coin
 
 import android.os.Parcelable
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -10,7 +9,6 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
-import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng

@@ -51,7 +51,7 @@ object EVMWalletManager {
     }
 
     fun evmFeatureAvailable(): Boolean {
-        return CadenceApiManager.getCadenceScriptVersion() >= 1.0f
+        return CadenceApiManager.getCadenceVersion() >= 1.0f
     }
 
     private fun canEnableEVM(): Boolean {

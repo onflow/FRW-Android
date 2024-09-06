@@ -15,7 +15,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutSendAddressSelectBinding
-import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.addressVerify
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -73,9 +72,6 @@ class TransactionSendPresenter(
     override fun bind(model: TransactionSendModel) {
         model.qrcode?.let {
             if (it.startsWith(METAMASK_ETH_SCHEME)) {
-                if (isMainnet()) {
-                    return
-                }
                 val addressText = Uri.parse(it).schemeSpecificPart
                 if (evmAddressPattern.matches(addressText).not()) {
                     return
@@ -91,9 +87,6 @@ class TransactionSendPresenter(
                 }
             } else {
                 if (evmAddressPattern.matches(it)) {
-                    if (isMainnet()) {
-                        return
-                    }
                     if (EVMWalletManager.haveEVMAddress()) {
                         binding.editText.setText(it)
                     } else {
@@ -117,7 +110,17 @@ class TransactionSendPresenter(
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     hideKeyboard()
-                    searchViewModel.searchRemote(text.toString().trim(), includeLocal = true)
+                    val searchText = text.toString().trim()
+                    val isEVMMatched = evmAddressPattern.matches(searchText)
+                    if (isEVMMatched) {
+                        if (EVMWalletManager.haveEVMAddress()) {
+                            viewModel.onAddressSelectedLiveData.postValue(AddressBookContact(address = searchText))
+                        } else {
+                            EnableEVMDialog.show(fragmentManager)
+                        }
+                    } else {
+                        searchViewModel.searchRemote(searchText, includeLocal = true)
+                    }
                     clearFocus()
                 }
                 return@setOnEditorActionListener false
@@ -166,9 +169,6 @@ class TransactionSendPresenter(
                 }
             }
         } else if (isEVMMatched) {
-            if (isMainnet()) {
-                return
-            }
             if (EVMWalletManager.haveEVMAddress().not()) {
                 EnableEVMDialog.show(fragmentManager)
                 return

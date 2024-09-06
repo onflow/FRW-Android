@@ -80,12 +80,16 @@ object CadenceApiManager {
         }
     }
 
-    fun getCadenceScriptVersion(): Float {
+    fun getCadenceVersion(): Float {
         return when (chainNetwork()) {
             NETWORK_TESTNET -> cadenceApi?.scripts?.testnet?.version.toSafeFloat()
             NETWORK_PREVIEWNET -> cadenceApi?.scripts?.previewnet?.version.toSafeFloat()
             else -> cadenceApi?.scripts?.mainnet?.version.toSafeFloat()
         }
+    }
+
+    fun getCadenceScriptVersion(): String {
+        return cadenceApi?.version.orEmpty()
     }
 
     fun getCadenceBasicScript(method: String): String {

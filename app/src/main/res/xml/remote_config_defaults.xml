@@ -156,8 +156,7 @@
             "receiver": "/public/starlyTokenReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.142fa6570b62fd97.StarlyToken/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.142fa6570b62fd97.StarlyToken/logo.png",
             "symbol": "STARLY",
             "website": "https://starly.io/"
             },
@@ -209,8 +208,7 @@
             },
             "decimal": 8,
             "symbol": "BFC",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.4ea047c3e73ca460.BallerzFC/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.4ea047c3e73ca460.BallerzFC/logo.png",
             "website": "https://toucans.ecdao.org/p/BallerzFC"
             },
             {
@@ -227,8 +225,7 @@
             },
             "decimal": 8,
             "symbol": "BR",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.7bf07d719dcb8480.brasil/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.7bf07d719dcb8480.brasil/logo.png",
             "website": "https://toucans.ecdao.org/p/brasil"
             },
             {
@@ -245,8 +242,7 @@
             },
             "decimal": 8,
             "symbol": "SDM",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.c8c340cebd11f690.SdmToken/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.c8c340cebd11f690.SdmToken/logo.png",
             "website": "https://flow.darkcountry.io/"
             },
             {
@@ -263,8 +259,7 @@
             },
             "decimal": 8,
             "symbol": "tUSDT",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.cfdd90d4a00f7b5b.TeleportedTetherToken/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.cfdd90d4a00f7b5b.TeleportedTetherToken/logo.png",
             "website": "https://blocto.app/"
             },
             {
@@ -298,8 +293,7 @@
             },
             "decimal": 8,
             "symbol": "Ozone",
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.d756450f386fb4ac.OzoneToken/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.d756450f386fb4ac.OzoneToken/logo.png",
             "website": "https://ozoneuniverse.com/"
             },
             {
@@ -315,8 +309,7 @@
             "receiver": "/public/RLYReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.RLY/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.RLY/logo.png",
             "symbol": "RLY",
             "website": null
             },
@@ -333,8 +326,7 @@
             "receiver": "/public/revvReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.d01e482eb680ec9f.REVV/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.d01e482eb680ec9f.REVV/logo.png",
             "symbol": "REVV",
             "website": "https://revvmotorsport.com/"
             },
@@ -351,8 +343,7 @@
             "receiver": "/public/ceAVAXReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceAVAX/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceAVAX/logo.png",
             "symbol": "ceAVAX",
             "website": "https://snowtrace.io/token/0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7"
             },
@@ -369,8 +360,7 @@
             "receiver": "/public/ceBNBReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceBNB/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceBNB/logo.png",
             "symbol": "ceBNB",
             "website": "https://bscscan.com/address/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c"
             },
@@ -387,8 +377,7 @@
             "receiver": "/public/ceBUSDReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceBUSD/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceBUSD/logo.png",
             "symbol": "ceBUSD",
             "website": "https://bscscan.com/address/0xe9e7cea3dedca5984780bafc599bd69add087d56"
             },
@@ -405,8 +394,7 @@
             "receiver": "/public/ceDAIReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceDAI/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceDAI/logo.png",
             "symbol": "ceDAI",
             "website": "https://etherscan.io/address/0x6b175474e89094c44da98b954eedeac495271d0f"
             },
@@ -423,8 +411,7 @@
             "receiver": "/public/ceFTMReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceFTM/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceFTM/logo.png",
             "symbol": "ceFTM",
             "website": "https://celer.network"
             },
@@ -441,8 +428,7 @@
             "receiver": "/public/ceMATICReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceMATIC/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceMATIC/logo.png",
             "symbol": "ceMATIC",
             "website": "https://celer.network"
             },
@@ -459,8 +445,7 @@
             "receiver": "/public/ceUSDTReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceUSDT/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceUSDT/logo.png",
             "symbol": "ceUSDT",
             "website": "https://tether.to/"
             },
@@ -477,8 +462,7 @@
             "receiver": "/public/ceWBTCReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceWBTC/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceWBTC/logo.png",
             "symbol": "ceWBTC",
             "website": "https://celer.network"
             },
@@ -495,8 +479,7 @@
             "receiver": "/public/ceWETHReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceWETH/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.231cc0dbbcffc4b7.ceWETH/logo.png",
             "symbol": "ceWETH",
             "website": "https://celer.network"
             },
@@ -513,8 +496,7 @@
             "receiver": "/public/TeleportedSportiumTokenReceiver"
             },
             "decimal": 8,
-            "icon":
-            "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.475755d2c9dccc3a.TeleportedSportiumToken/logo.png",
+            "icon": "https://cdn.jsdelivr.net/gh/FlowFans/flow-token-list@main/token-registry/A.475755d2c9dccc3a.TeleportedSportiumToken/logo.png",
             "symbol": "SPRT",
             "website": null
             }
@@ -527,20 +509,11 @@
         <value>
             [
             {
-            "name": "FLOAT",
-            "url": "https://floats.city/",
-            "testnet_url": "https://testnet.floats.city/",
-            "description": "A Flow-enabled proof of attendance platform built by Emerald DAO",
-            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/float/logo.png",
-            "category": "Collectible"
-            },
-            {
-            "name": "Increment",
-            "url": "https://swap.increment.fi/swap",
-            "testnet_url": "https://demo.increment.fi/swap",
-            "description": "Decentralized money market and one-stop DeFi suites to boost yield
-            &amp; liquidity opportunities on the Flow blockchain",
-            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/increment/logo.jpeg",
+            "name": "FLOW Community Rewards",
+            "url": "https://rewards.flow.com/",
+            "testnet_url": null,
+            "description": "Lock in $FLOW for 3 months to get a Boost on your $FLOW",
+            "logo": "https://gateway.pinata.cloud/ipfs/QmXPXRZwZByuC5jFV8Lhk5E6HQCkBxYYMkrkJ4b1FYNmf6/",
             "category": "Defi"
             },
             {
@@ -549,6 +522,47 @@
             "testnet_url": "https://port.testnet.onflow.org/",
             "description": "Welcome to Flow Port, your portal to the decentralized world of Flow.",
             "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/flow/logo.png",
+            "category": "Tool"
+            },
+            {
+            "name": "Increment",
+            "url": "https://app.increment.fi/swap",
+            "testnet_url": "https://demo.increment.fi/swap",
+            "description": "Decentralized money market and one-stop DeFi suites to boost yield &amp;
+            liquidity opportunities on the Flow blockchain",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/increment/logo.jpeg",
+            "category": "Defi"
+            },
+            {
+            "name": "Flovatar",
+            "url": "https://flovatar.com",
+            "testnet_url": null,
+            "description": "Flovatar is a next generation NFT creativity platform where people can become creator and make their characters with any combination they like.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flovatar/logo.png",
+            "category": "Collectible"
+            },
+            {
+            "name": "FLOAT",
+            "url": "https://floats.city/",
+            "testnet_url": "https://testnet.floats.city/",
+            "description": "A Flow-enabled proof of attendance platform built by Emerald DAO",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/float/logo.png",
+            "category": "Collectible"
+            },
+            {
+            "name": "Find",
+            "url": "https://find.xyz/",
+            "testnet_url": "https://test.find.xyz/",
+            "description": "A place to find people and things on the Flow Blockchain",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/find/logo.png",
+            "category": "Domain"
+            },
+            {
+            "name": "Flowty",
+            "url": "https://flowty.io/",
+            "testnet_url": null,
+            "description": "P2P NFT Loans and Rentals on the Flow Blockchain.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowty/logo.jpeg",
             "category": "Tool"
             },
             {
@@ -568,20 +582,12 @@
             "category": "Marketplace"
             },
             {
-            "name": "Flowscan",
-            "url": "https://flowscan.org/",
-            "testnet_url": "https://testnet.flowscan.org/",
-            "description": "Search the Flow blockchain for transactions, accounts, and other activities taking place on Flow.",
-            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowscan/logo.png",
-            "category": "Tool"
-            },
-            {
-            "name": "Find",
-            "url": "https://find.xyz/",
-            "testnet_url": "https://test.find.xyz/",
-            "description": "A place to find people and things on the Flow Blockchain",
-            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/find/logo.png",
-            "category": "Domain"
+            "name": "Flowverse",
+            "url": "https://www.flowverse.co/",
+            "testnet_url": null,
+            "description": "Flowverse provides a list of Flow Blockchain projects and upcoming NFT drops, as well as Flow Blockchain ecosystem news and opportunities.",
+            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowverse/logo.png",
+            "category": "Marketplace"
             },
             {
             "name": "MyNFT",
@@ -600,14 +606,6 @@
             "category": "Collectible"
             },
             {
-            "name": "Flowty",
-            "url": "https://flowty.io/",
-            "testnet_url": null,
-            "description": "P2P NFT Loans and Rentals on the Flow Blockchain.",
-            "logo": "https://raw.githubusercontent.com/Outblock/Assets/main/dapp/flowty/logo.jpeg",
-            "category": "Tool"
-            },
-            {
             "name": "Hype Day",
             "url": "https://hype.day/public-projects",
             "testnet_url": null,
@@ -621,7 +619,7 @@
             "testnet_url": null,
             "description": "N(W)A(H)N(A)I(T)!!? A cat birth in Monoverse? Just come and grab your fellow.",
             "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/mono/logo.png",
-            "category": "Game"
+            "category": "Collectible"
             },
             {
             "name": "DAY-NFT",
@@ -638,6 +636,38 @@
             "description": "Relation Labs is building a multi-chain decentralized Web3 social graph.",
             "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/relationlabs/logo.png",
             "category": "Social"
+            },
+            {
+            "name": "Flowview",
+            "url": "https://www.flowview.app/",
+            "testnet_url": "https://testnet.flowview.app/",
+            "description": "Tool to help users see items in their Flow account",
+            "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/flowview/logo.png",
+            "category": "Tool"
+            },
+            {
+            "name": "Bayou",
+            "url": "https://www.bayou33.app/",
+            "testnet_url": null,
+            "description": "Batch transfer tool #onFlow",
+            "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/bayou/logo.png",
+            "category": "Tool"
+            },
+            {
+            "name": "Drizzle",
+            "url": "https://www.drizzle33.app/",
+            "testnet_url": null,
+            "description": "A way to easily airdrop and raffle away NFTs and tokens on the Flow blockchain",
+            "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/drizzle/logo.png",
+            "category": "Tool"
+            },
+            {
+            "name": "Link",
+            "url": "https://link.ecdao.org/",
+            "testnet_url": null,
+            "description": "Helps users on Flow make sure their NFT Collections and fungible tokens are set up properly",
+            "logo": "https://raw.githubusercontent.com/Outblock/assets/main/dapp/link/logo.png",
+            "category": "Tool"
             }
             ]
         </value>
@@ -645,15 +675,16 @@
 
     <entry>
         <key>a_config</key>
-        <value>{
-            "version": "2.3.0",
+        <value>
+            {
+            "version": "2.4.4",
             "prod": {
             "features": {
             "free_gas": true,
             "wallet_connect": true,
             "on_ramp": true,
             "app_list": true,
-            "swap": true,
+            "swap": false,
             "browser": true,
             "nft_transfer": true
             },
@@ -718,44 +749,6 @@
     </entry>
 
     <entry>
-        <key>free_gas_config</key>
-        <value>{
-            "features": {
-            "free_gas": true,
-            "wallet_connect": true,
-            "on_ramp": false,
-            "app_list": false,
-            "swap": false,
-            "browser": false,
-            "nft_transfer": false
-            },
-            "payer": {
-            "mainnet": {
-            "address": "0x319e67f2ef9d937f",
-            "keyId": 0
-            },
-            "testnet": {
-            "address": "0xcb1cf3196916f9e2",
-            "keyId": 0
-            },
-            "previewnet": {
-            "address": "0xa460a24643b45e74",
-            "keyId": 0
-            },
-            "sandboxnet": {
-            "address": "0x41e6dda4c0240c16",
-            "keyId": 0
-            },
-            "crescendo": {
-            "address": "0xcb1cf3196916f9e2",
-            "keyId": 0
-            }
-            }
-            }
-        </value>
-    </entry>
-
-    <entry>
         <key>contract_address</key>
         <value>
             {
@@ -776,7 +769,9 @@
             "0xFlowStakingCollection": "0x8d0e87b65159ae63",
             "0xStakingProxy": "0x62430cf28c26d095",
             "0xSwapError": "0xb78ef7afa52ff906",
-            "0xSwapRouter": "0xa6850776a94e6551"
+            "0xSwapRouter": "0xa6850776a94e6551",
+            "0xEVM": "0xe467b9dd11fa00df",
+            "0xFlowEVMBridge": "0x1e4aa0b87d10b141"
             },
             "testnet": {
             "0xDomains": "0xb05b2abb42335e88",
@@ -795,9 +790,12 @@
             "0xFlowStakingCollection": "0x95e019a17d0e23d7",
             "0xStakingProxy": "0x7aad92e5a0715d21",
             "0xSwapError": "0xddb929038d45d4b3",
-            "0xSwapRouter": "0x2f8af5ed05bbde0d"
+            "0xSwapRouter": "0x2f8af5ed05bbde0d",
+            "0xEVM": "0x8c5303eaa26202d6",
+            "0xFlowEVMBridge": "0xdfc20aee650fcbdf"
             },
             "previewnet": {
+            "0xFlowEVMBridge": "0x634acef27f871527",
             "0xFlowFees": "0xab086ce9cc29fc80",
             "0xFlowIDTableStaking": "0xb6763b4399a888c8",
             "0xFlowTableStaking": "0xb6763b4399a888c8",

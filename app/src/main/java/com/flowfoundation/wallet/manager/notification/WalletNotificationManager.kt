@@ -28,7 +28,7 @@ object WalletNotificationManager {
     init {
         ioScope {
             val cachedReadList = getNotificationReadList()
-            val list = Gson().fromJson<List<String>>(cachedReadList, object : TypeToken<List<String>>() {}.type)
+            val list = Gson().fromJson<List<String>>(cachedReadList, object : TypeToken<List<String>>() {}.type) ?: emptyList()
             readList.clear()
             readList.addAll(list)
         }
@@ -47,7 +47,7 @@ object WalletNotificationManager {
                 dateFormat.parse(json.asString)
             })
             .create()
-        val list = gson.fromJson<List<WalletNotification>>(listStr, object : TypeToken<List<WalletNotification>>() {}.type)
+        val list = gson.fromJson<List<WalletNotification>>(listStr, object : TypeToken<List<WalletNotification>>() {}.type) ?: emptyList()
         logd(TAG, "list::$list")
         notificationList.clear()
         notificationList.addAll(list.sortedBy { it.priority })

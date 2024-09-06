@@ -606,5 +606,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="landing_tips">😃It might take 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+
 
 </resources>
