@@ -116,7 +116,7 @@ private fun existingData(driveService: Drive): List<DriveItem> {
         Gson().fromJson(json, object : TypeToken<List<DriveItem>>() {}.type)
     } catch (e: Exception) {
         loge(e)
-        emptyList()
+        throw e
     }
 }
 

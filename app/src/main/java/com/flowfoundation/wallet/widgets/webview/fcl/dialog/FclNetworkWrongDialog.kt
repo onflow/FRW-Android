@@ -15,19 +15,21 @@ import com.flowfoundation.wallet.databinding.DialogFclWrongNetworkBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
+import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
+import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import kotlinx.coroutines.delay
@@ -49,18 +51,18 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
         data ?: return
         val data = data ?: return
         with(binding) {
-            val descSb = SpannableStringBuilder(getString(R.string.network_error_dialog_desc, data.network, chainNetWorkString()))
-            val index1 = descSb.indexOf(data.network.orEmpty())
-            descSb.setSpan(StyleSpan(Typeface.BOLD), index1, index1 + (data.network?.length ?: 0), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            val index2 = descSb.indexOf(chainNetWorkString())
-            descSb.setSpan(StyleSpan(Typeface.BOLD), index2, index2 + (chainNetWorkString().length), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val descSb = SpannableStringBuilder(getString(R.string.network_error_dialog_desc,
+                chainNetWorkString(), data.network))
+            val index1 = descSb.indexOf(chainNetWorkString())
+            descSb.setSpan(StyleSpan(Typeface.BOLD), index1, index1 + (chainNetWorkString().length), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val index2 = descSb.indexOf(data.network.orEmpty())
+            descSb.setSpan(StyleSpan(Typeface.BOLD), index2, index2 + (data.network?.length ?: 0), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             descView.text = descSb
 
-            fromNetworkNameView.text = data.network?.capitalizeV2()
-            toNetworkNameView.text = chainNetWorkString().capitalizeV2()
-            val isFromMainnet = networkId(data.network.orEmpty().lowercase()) == NETWORK_MAINNET
-            fromNetworkIcon.setImageResource(if (isFromMainnet) R.drawable.ic_network_mainnet else R.drawable.ic_network_testnet)
-            toNetworkIcon.setImageResource(if (isFromMainnet) R.drawable.ic_network_testnet else R.drawable.ic_network_mainnet)
+            fromNetworkNameView.text = chainNetWorkString().capitalizeV2()
+            toNetworkNameView.text = data.network?.capitalizeV2()
+            fromNetworkIcon.setImageResource(if (isMainnet()) R.drawable.ic_network_mainnet else R.drawable.ic_network_testnet)
+            toNetworkIcon.setImageResource(if (isMainnet()) R.drawable.ic_network_testnet else R.drawable.ic_network_mainnet)
 
             cancelButton.setOnClickListener {
                 dismiss()
@@ -77,9 +79,13 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
                 delay(200)
                 refreshChainNetworkSync()
                 doNetworkChangeTask()
+                FlowApi.refreshConfig()
                 uiScope {
-                    delay(200)
-                    changeNetworkFetchServer()
+                    FlowLoadingDialog(requireContext()).show()
+                    WalletManager.changeNetwork()
+                    clearUserCache()
+                    MainActivity.relaunch(requireContext(), true)
+                    dismiss()
                 }
             }
         }

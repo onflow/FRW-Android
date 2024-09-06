@@ -23,6 +23,8 @@ import com.flowfoundation.wallet.databinding.FragmentWalletRestoreMnemonicBindin
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletrestore.AccountNotFoundDialog
 import com.flowfoundation.wallet.page.walletrestore.ERROR_ACCOUNT_NOT_FOUND
+import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_ERROR
+import com.flowfoundation.wallet.page.walletrestore.WalletRestoreViewModel
 import com.flowfoundation.wallet.page.walletrestore.fragments.mnemonic.WalletRestoreMnemonicFragment
 import com.flowfoundation.wallet.page.walletrestore.fragments.mnemonic.WalletRestoreMnemonicViewModel
 import com.flowfoundation.wallet.page.walletrestore.fragments.mnemonic.adapter.MnemonicSuggestAdapter
@@ -48,6 +50,7 @@ class WalletRestoreMnemonicPresenter(
     private val mnemonicAdapter by lazy { MnemonicSuggestAdapter() }
 
     private val viewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletRestoreMnemonicViewModel::class.java] }
+    private val pageViewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletRestoreViewModel::class.java] }
 
     private val errorColor by lazy { R.color.error.res2color() }
 
@@ -90,7 +93,7 @@ class WalletRestoreMnemonicPresenter(
                         if (reason == ERROR_ACCOUNT_NOT_FOUND) {
                             AccountNotFoundDialog(context, mnemonic).show()
                         } else {
-                            toast(msgRes = R.string.network_error)
+                            pageViewModel.changeStep(WALLET_RESTORE_ERROR)
                         }
                     }
                 }

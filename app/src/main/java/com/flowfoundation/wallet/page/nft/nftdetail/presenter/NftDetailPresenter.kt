@@ -2,25 +2,16 @@ package com.flowfoundation.wallet.page.nft.nftdetail.presenter
 
 import android.animation.ArgbEvaluator
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
-import android.graphics.Bitmap
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.children
 import androidx.core.widget.NestedScrollView
-import androidx.palette.graphics.Palette
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
-import com.bumptech.glide.request.target.SimpleTarget
-import com.bumptech.glide.request.transition.Transition
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
@@ -35,21 +26,34 @@ import com.flowfoundation.wallet.page.nft.move.MoveNFTDialog
 import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.shareNft
 import com.flowfoundation.wallet.page.nft.nftdetail.widget.NftMorePopupMenu
-import com.flowfoundation.wallet.page.nft.nftlist.*
+import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.desc
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
+import com.flowfoundation.wallet.page.nft.nftlist.isDomain
+import com.flowfoundation.wallet.page.nft.nftlist.name
+import com.flowfoundation.wallet.page.nft.nftlist.title
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftFavoriteManager
+import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.send.nft.NftSendAddressDialog
-import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
-import com.flowfoundation.wallet.utils.*
+import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.exoplayer.createExoPlayer
+import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.shareFile
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.likebutton.LikeButton
 import com.flowfoundation.wallet.widgets.likebutton.OnLikeListener
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import jp.wasabeef.glide.transformations.BlurTransformation
 import kotlin.math.min
 
@@ -62,19 +66,18 @@ class NftDetailPresenter(
 
     private var nft: Nft? = null
 
+    private var fromAddress: String? = null
+
     private var pageColor: Int = R.color.text_sub.res2color()
 
     private val screenHeight by lazy { ScreenUtils.getScreenHeight() }
 
     private val videoPlayer by lazy { createExoPlayer(activity) }
 
-    private var coverRatio = "1:1"
-
     init {
         setupToolbar()
         with(binding) {
             toolbar.addStatusBarTopPadding()
-
             collectButton.setOnLikeListener(object : OnLikeListener {
                 override fun liked(likeButton: LikeButton?) {
                     val nft = nft ?: return
@@ -97,38 +100,56 @@ class NftDetailPresenter(
             moreButton.setOnClickListener {
                 nft?.let { NftMorePopupMenu(it, moreButton, pageColor).show() }
             }
-            collectButton.setLikeDrawableTint(R.color.colorSecondary.res2color())
+            collectButton.setLikeDrawableTint(pageColor)
             shareButton.setOnClickListener { showShareNft() }
             sendButton.setOnClickListener {
                 val uniqueId = nft?.uniqueId() ?: return@setOnClickListener
-                NftSendAddressDialog.newInstance(uniqueId).show(activity.supportFragmentManager, "")
+                NftSendAddressDialog.newInstance(uniqueId, fromAddress ?: WalletManager
+                    .selectedWalletAddress(), nft?.contractName()).show(activity.supportFragmentManager, "")
             }
-            sendButton.isEnabled = !WalletManager.isChildAccountSelected()
 
             moveButton.setOnClickListener {
                 nft?.let {
-                    if (EVMWalletManager.haveEVMAddress()) {
-                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId())
+                    if (EVMWalletManager.haveEVMAddress() || WalletManager.haveChildAccount()) {
+                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId(),
+                            it.contractName(), fromAddress ?: WalletManager.selectedWalletAddress())
                     } else {
                         EnableEVMActivity.launch(activity)
                     }
                 }
             }
+            val shareLayoutParams = (shareButtonWrapper.layoutParams as ConstraintLayout.LayoutParams).apply {
+                marginEnd = if (WalletManager.isChildAccountSelected()) {
+                    18.dp2px().toInt()
+                } else {
+                    74.dp2px().toInt()
+                }
+            }
+            collectButton.setVisible(WalletManager.isChildAccountSelected().not())
+            shareButtonWrapper.layoutParams = shareLayoutParams
         }
     }
 
     private fun showShareNft() {
         nft?.let {
-            val dialog = ProgressDialog(activity)
-            dialog.show()
-            shareNft(binding.shareScreenshotWrapper, it) { file ->
-                dialog.dismiss()
-                activity.shareFile(file, title = "Nft share", text = it.name().orEmpty(), type = "image/*")
+            if (NftCollectionConfig.get(it.collectionAddress, it.collectionContractName) != null) {
+                val dialog = ProgressDialog(activity)
+                dialog.show()
+                shareNft(binding.shareScreenshotWrapper, it) { file ->
+                    dialog.dismiss()
+                    activity.shareFile(
+                        file,
+                        title = "Nft share",
+                        text = it.name().orEmpty(),
+                        type = "image/*"
+                    )
+                }
             }
         }
     }
 
     override fun bind(model: NftDetailModel) {
+        fromAddress = model.fromAddress
         model.nft?.let { safeRun { bindData(it) } }
         if (!nft?.video().isNullOrBlank()) {
             model.onPause?.let { safeRun { videoPlayer.pause() } }
@@ -141,7 +162,7 @@ class NftDetailPresenter(
     private fun bindData(nft: Nft) {
         this.nft = nft
         with(binding) {
-            val config = NftCollectionConfig.get(nft.collectionAddress)
+            val config = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
             val name = config?.name ?: nft.contractName()
             val title = "$name #${nft.id}"
             toolbar.title = title
@@ -149,12 +170,12 @@ class NftDetailPresenter(
             ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }
 
             bindCover(nft)
-            Glide.with(backgroundImage).load(nft.cover())
+            Glide.with(backgroundImage).load(nft.getNFTCover())
                 .transition(DrawableTransitionOptions.withCrossFade(100))
                 .transform(BlurTransformation(15, 30))
                 .into(backgroundImage)
 
-            titleView.text = title
+            titleView.text = nft.title()
             subtitleView.text = name
             Glide.with(collectionIcon).load(config?.logo()).transform(CenterCrop(), CircleCrop())
                 .into(collectionIcon)
@@ -176,18 +197,41 @@ class NftDetailPresenter(
             ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }
 
             sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
-            moveButton.setVisible(nft.canBridgeToFlow() || nft.canBridgeToEVM())
+            if (nft.canBridgeToFlow() || nft.canBridgeToEVM() || WalletManager
+                    .isChildAccountSelected() || WalletManager.haveChildAccount()
+            ) {
+                moveButton.visible()
+            } else {
+                moveButton.gone()
+            }
         }
     }
 
     private fun bindAccessible(title: String, nft: Nft) {
-        if (ChildAccountCollectionManager.isNFTAccessible(nft.id)) {
+        if (ChildAccountCollectionManager.isNFTAccessible(nft.collectionAddress, nft.contractName())) {
             binding.inaccessibleTip.gone()
+            bindAccessibleButton(true)
             return
         }
-        val accountName = WalletManager.childAccount(WalletManager.selectedWalletAddress())?.name ?: R.string.default_child_account_name.res2String()
-        binding.tvInaccessibleTip.text = activity.getString(R.string.inaccessible_token_tip, title, accountName)
+        val accountName = WalletManager.childAccount(WalletManager.selectedWalletAddress())?.name
+            ?: R.string.default_child_account_name.res2String()
+        binding.tvInaccessibleTip.text =
+            activity.getString(R.string.inaccessible_token_tip, title, accountName)
         binding.inaccessibleTip.visible()
+        bindAccessibleButton(false)
+    }
+
+    private fun bindAccessibleButton(isEnable: Boolean) {
+        with(binding) {
+            sendButton.apply {
+                this.isEnabled = isEnable
+                this.alpha = if (isEnable) 1f else 0.5f
+            }
+            moveButton.apply {
+                this.isEnabled = isEnable
+                this.alpha = if (isEnable) 1f else 0.5f
+            }
+        }
     }
 
     private fun bindVideo(nft: Nft) {
@@ -207,49 +251,21 @@ class NftDetailPresenter(
 
     private fun bindCover(nft: Nft) {
         Glide.with(binding.coverView)
-            .asBitmap()
-            .load(nft.cover())
-            .into(object : SimpleTarget<Bitmap>() {
-                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    ioScope {
-                        coverRatio = "${resource.width}:${resource.height}"
-                        val color = Palette.from(resource).generate().getDominantColor(R.color.text_sub.res2color())
-                        uiScope {
-//                            updatePageColor(color)
-                            binding.coverView.setImageBitmap(resource)
-                        }
-                    }
-                }
-            })
-    }
-
-    private fun updatePageColor(color: Int) {
-        pageColor = color
-        with(binding) {
-            with(mediaWrapper.layoutParams as ConstraintLayout.LayoutParams) {
-                dimensionRatio = coverRatio
-                mediaWrapper.layoutParams = this
-            }
-
-            shareButton.setColorFilter(color)
-            ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft!!)) }
-            tags.children.forEach { tag ->
-                tag.background.setTint(color)
-                tag.findViewById<TextView>(R.id.title_view).setTextColor(color)
-            }
-
-            sendButton.iconTint = ColorStateList.valueOf(color)
-            moveButton.iconTint = ColorStateList.valueOf(color)
-            moreButton.iconTint = ColorStateList.valueOf(color)
-        }
+            .load(nft.getNFTCover())
+            .into(binding.coverView)
     }
 
     private fun bindTags(nft: Nft) {
         val tags = nft.traits ?: return
         with(binding.tags) {
-            tags.filter { !filterMetadata.contains(it.name.lowercase()) && it.value.isNotBlank() && !it.value.startsWith("https://") }
+            tags.filter {
+                !filterMetadata.contains(it.name.lowercase()) && it.value.isNotBlank() && !it.value.startsWith(
+                    "https://"
+                )
+            }
                 .forEach { metadata ->
-                    val tagView = (LayoutInflater.from(activity).inflate(R.layout.item_nft_tag, this, false) as ViewGroup)
+                    val tagView = (LayoutInflater.from(activity)
+                        .inflate(R.layout.item_nft_tag, this, false) as ViewGroup)
                     tagView.background.setTint(pageColor)
                     tagView.background.alpha = (0.4f * 255).toInt()
                     val titleView = tagView.findViewById<TextView>(R.id.title_view)

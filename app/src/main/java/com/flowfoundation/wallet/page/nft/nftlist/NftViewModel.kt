@@ -4,7 +4,11 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.NftCollection
+import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.EVMNFTCollection
@@ -33,7 +37,8 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 
 private val TAG = NftViewModel::class.java.simpleName
 
-class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdate {
+class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdate,
+    OnTransactionStateChange {
 
     val collectionsLiveData = MutableLiveData<List<CollectionItemModel>>()
     val collectionTitleLiveData = MutableLiveData<CollectionTitleModel>()
@@ -55,6 +60,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
 
     init {
         NftFavoriteManager.addOnNftSelectionChangeListener(this)
+        TransactionStateManager.addOnTransactionStateChange(this)
         observeWalletUpdate()
     }
 
@@ -67,7 +73,9 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
             isCollectionExpanded = isNftCollectionExpanded()
 
             val service = retrofitApi().create(ApiService::class.java)
-            val response = service.getEVMNFTCollections(WalletManager.selectedWalletAddress())
+            val response = service.getEVMNFTCollections(WalletManager.selectedWalletAddress(),
+                chainNetWorkString()
+            )
             val collections = response.data?.filter { it.nftList.isNotEmpty() }
             if (collections.isNullOrEmpty()) {
                 emptyLiveData.postValue(true)
@@ -92,7 +100,8 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
                             storagePath = "",
                             publicCollectionName = "",
                             publicType = "",
-                            privateType = ""
+                            privateType = "",
+                            privatePath = ""
                         ),
                         secureCadenceCompatible = null,
                         marketplace = "",
@@ -249,13 +258,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
-        if (WalletManager.isEVMAccountSelected()) {
-            requestEVMList()
-        } else {
-            requestList()
-            requestGrid()
-            requestChildAccountCollectionList()
-        }
+        refresh()
     }
 
     private fun observeWalletUpdate() {
@@ -382,4 +385,27 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
         }
         gridNftLiveData.postValue(list)
     }
+
+    fun refresh() {
+        if (WalletManager.isEVMAccountSelected()) {
+            requestEVMList()
+        } else {
+            requestList()
+            requestGrid()
+            requestChildAccountCollectionList()
+        }
+    }
+
+    override fun onTransactionStateChange() {
+        val transactionList = TransactionStateManager.getTransactionStateList()
+        val transaction =
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_MOVE_NFT || it.type == TransactionState.TYPE_TRANSFER_NFT}
+        transaction?.let { state ->
+            if (state.isSuccess()) {
+                refresh()
+            }
+        }
+    }
+
+
 }

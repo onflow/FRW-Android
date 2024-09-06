@@ -1,5 +1,7 @@
 package com.flowfoundation.wallet.manager.walletconnect.model
 
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -35,6 +37,24 @@ data class WCAccountRequest(
     val message: String? = "",
     @SerializedName("data")
     val data: WCAccountInfo? = null
+)
+
+data class WCProxyAccountRequest(
+    @SerializedName("method")
+    val method: String? = "",
+    @SerializedName("status")
+    val status: String? = "",
+    @SerializedName("message")
+    val message: String? = "",
+    @SerializedName("data")
+    val data: WCProxyAccountInfo? = null
+)
+
+data class WCProxyAccountInfo(
+    @SerializedName("deviceInfo")
+    val deviceInfo: WCDeviceInfo?,
+    @SerializedName("jwt")
+    val jwt: String?,
 )
 
 data class WCAccountInfo(
@@ -141,6 +161,43 @@ private fun walletInfo(
             "userAvatar": "$userAvatar",
             "userName": "$userName",
             "walletAddress": "$walletAddress"
+        }
+    """.trimIndent()
+}
+
+fun walletConnectProxyAccountResponse(
+    signature: String,
+    publicKey: String,
+    hashAlgo: Int,
+    signAlgo: Int,
+    weight: Int
+): String {
+    return """
+        {
+            "method": "${WalletConnectMethod.PROXY_ACCOUNT.value}",
+            "status": "200",
+            "message": "success",
+            "data": ${proxyAccountInfo(signature, publicKey, hashAlgo, signAlgo, weight)}
+        }
+    """.trimIndent()
+}
+
+private fun proxyAccountInfo(
+    signature: String,
+    publicKey: String,
+    hashAlgo: Int,
+    signAlgo: Int,
+    weight: Int
+): String {
+    return """
+        {
+            "signature": "$signature",
+            "userId": "${firebaseUid().orEmpty()}",
+            "publicKey": "$publicKey",
+            "hashAlgo": "$hashAlgo",
+            "signAlgo": "$signAlgo",
+            "weight": "$weight",
+            "walletAddress": "${WalletManager.selectedWalletAddress()}"
         }
     """.trimIndent()
 }

@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemSelectNftBinding
 import com.flowfoundation.wallet.page.nft.move.SelectNFTViewModel
 import com.flowfoundation.wallet.page.nft.move.model.NFTInfo
+import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.toast
@@ -63,7 +64,9 @@ private class SelectNFTItemViewHolder(
     override fun bind(model: NFTInfo) {
         this.nft = model
         with(binding) {
-            Glide.with(ivNftImage).load(model.cover).transform(RoundedCorners(16.dp2px().toInt()))
+            Glide.with(ivNftImage)
+                .load(model.cover.getBase64SvgModel() ?: model.cover)
+                .transform(RoundedCorners(16.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(ivNftImage)
         }
         changeSelectStatus(false)

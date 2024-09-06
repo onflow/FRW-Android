@@ -14,6 +14,7 @@ import com.google.android.material.card.MaterialCardView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 
 class NftCardView : MaterialCardView {
 
@@ -43,7 +44,7 @@ class NftCardView : MaterialCardView {
         this.nft = nft
         cover = nft.cover()
         Glide.with(imageView)
-            .load(nft.cover())
+            .load(nft.getNFTCover())
             .placeholder(getSameDrawable())
             .transition(DrawableTransitionOptions.withCrossFade(50))
             .into(imageView)

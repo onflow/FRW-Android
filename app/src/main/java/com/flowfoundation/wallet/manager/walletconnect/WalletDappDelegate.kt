@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
@@ -155,7 +156,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                 if (isSuccess) {
                     delay(200)
                 } else {
-                    toast(msg = "login failure")
+                    toast(msgRes = R.string.login_failure)
                 }
                 MainActivity.relaunch(activity, clearTop = isSuccess)
             }

@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.nft.nftlist.utils
 
 import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
@@ -30,7 +31,7 @@ class NftGridRequester {
             count = 0
             return NftList()
         }
-        val response = if (isPreviewnet()) {
+        val response = if (EVMWalletManager.evmFeatureAvailable()) {
             service.getNFTList(address, offset, limit)
         } else {
             service.nftList(address, offset, limit)
@@ -65,7 +66,7 @@ class NftGridRequester {
 
         isLoadMoreRequesting = true
         offset += limit
-        val response = if (isPreviewnet()) {
+        val response = if (EVMWalletManager.evmFeatureAvailable()) {
             service.getNFTList(nftWalletAddress(), offset, limit)
         } else {
             service.nftList(nftWalletAddress(), offset, limit)

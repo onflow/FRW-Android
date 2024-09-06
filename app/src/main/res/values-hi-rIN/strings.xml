@@ -118,7 +118,6 @@
     <string name="verify_pin">Verify PIN</string>
     <string name="verify_pin_tip">So we will secure your backup with PIN code.</string>
     <string name="enter_verify_pin_tip">Please enter the PIN when you create this backup.</string>
-    <string name="verify_pin_code_error">Please confirm the correct PIN entered.</string>
     <string name="enter_current_pin_code">Please enter current PIN code</string>
     <string name="do_not_share_secret">Do not share your secret phrase!</string>
     <string name="do_not_share_secret_desc">If someone has your secret phrase, they will have full control of your wallet.</string>
@@ -208,7 +207,7 @@
     <string name="open_in_browser">Open in browser</string>
     <string name="pending_transaction">Pending Transaction</string>
     <string name="welcome_to_wallet">Welcome to Flow Wallet!</string>
-    <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
+    <string name="profile_sign_tips"><![CDATA[हमसे जुड़ें और सभी उत्कृष्ट और नए अनुभवों को अनलॉक करें!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
     <string name="contact_us">Contact us</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">This wallet is already logged in</string>
     <string name="google_drive">Google Drive</string>
     <string name="add_other_device">Add Other Device</string>
-    <string name="restore_failed">Restore failed. Please try again later.</string>
-    <string name="restore_failed_option">Restore failed. Ensure backup options belong to the same
-        wallet.</string>
     <string name="revoke_device">Revoke Device</string>
     <string name="wrong_network">Switch Network</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -553,8 +549,7 @@
         Wallet
 uses to turn your device into a hardware wallet.</string>
     <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready,
-let’s get started!</string>
+    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
@@ -563,4 +558,45 @@ let’s get started!</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
     <string name="appearance">Appearance</string>
+    <string name="current_device">Current Device</string>
+    <string name="create_username_tip">Other Flow Wallet users can find you and send you payments via your unique username.</string>
+    <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
+    <string name="create_backup">Create Backup</string>
+    <string name="upload_again">Upload Again</string>
+    <string name="backup_uploaded">Backup Uploaded</string>
+    <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="try_to_connect">Try to Connect</string>
+    <string name="revoked">Revoked</string>
+    <string name="revoking">Revoking...</string>
+    <string name="full_access">Full Access</string>
+    <string name="multi_sign">Multi-sign</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
+    <string name="login_failure">Login Failure</string>
+    <string name="move_nft_failed">NFT स्थानांतरण असफल</string>
+    <string name="move_nft_success">NFT स्थानांतरण सफल</string>
+    <string name="send_nft_success">NFT भेजना सफल</string>
+    <string name="send_nft_failed">NFT भेजना विफल</string>
+    <string name="sync_account_info_failure">Sync Account Info Failure</string>
+    <string name="add_public_key_failure">Add Public Key Failure</string>
+    <string name="send_response_failure">Send Response Failure</string>
+    <string name="collection_list">Collection List</string>
+    <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">The entered PIN code did not decrypt the backup. Please check your PIN and try again.</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">Restore Failed</string>
+    <string name="restore_failed_desc">Please try again later.</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">रिकवरी वाक्यांश देखें</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="update_avatar_success">Update Avatar Success</string>
+    <string name="update_avatar_failed">Update Avatar Failed</string>
 </resources>

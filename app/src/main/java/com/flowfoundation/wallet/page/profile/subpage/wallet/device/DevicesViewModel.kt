@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.profile.subpage.wallet.device
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.R
 import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
@@ -11,6 +12,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceKeyModel
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceTitle
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import okhttp3.internal.filterList
@@ -56,14 +58,14 @@ class DevicesViewModel : ViewModel() {
                     val currentDevice =
                         deviceList.filterList { DeviceInfoManager.isCurrentDevice(deviceId) }
                     if (currentDevice.isNotEmpty()) {
-                        devices.add(DeviceTitle("Current Device"))
+                        devices.add(DeviceTitle(R.string.current_device.res2String()))
                         devices.addAll(currentDevice)
                     }
                     val otherDevice = deviceList.filterList {
                         DeviceInfoManager.isCurrentDevice(deviceId).not()
                     }
                     if (otherDevice.isNotEmpty()) {
-                        devices.add(DeviceTitle("Other Devices"))
+                        devices.add(DeviceTitle(R.string.other_devices.res2String()))
                         devices.addAll(otherDevice)
                     }
                     devicesLiveData.postValue(devices)

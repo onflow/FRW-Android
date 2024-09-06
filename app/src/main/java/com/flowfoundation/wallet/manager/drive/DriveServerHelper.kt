@@ -66,20 +66,16 @@ class DriveServerHelper(private val driveService: Drive) {
     @Throws(IOException::class)
     @WorkerThread
     fun getFileId(fileName: String): String? {
-        try {
-            val files = driveService.files().list()
-                .setSpaces("appDataFolder")
-                .setFields("nextPageToken, files(id, name)")
-                .setPageSize(10)
-                .execute()
-                .files.filterNotNull()
-            for (file in files) {
-                if (file.name == fileName) {
-                    return file.id
-                }
+        val files = driveService.files().list()
+            .setSpaces("appDataFolder")
+            .setFields("nextPageToken, files(id, name)")
+            .setPageSize(10)
+            .execute()
+            .files.filterNotNull()
+        for (file in files) {
+            if (file.name == fileName) {
+                return file.id
             }
-        } catch (e: Exception) {
-            loge(e)
         }
         return null
     }
@@ -87,16 +83,11 @@ class DriveServerHelper(private val driveService: Drive) {
     @Throws(IOException::class)
     @WorkerThread
     fun fileList(): FileList? {
-        try {
-            return driveService.files().list()
-                .setSpaces("appDataFolder")
-                .setFields("nextPageToken, files(id, name)")
-                .setPageSize(10)
-                .execute()
-        } catch (e: Exception) {
-            loge(e)
-        }
-        return null
+        return driveService.files().list()
+            .setSpaces("appDataFolder")
+            .setFields("nextPageToken, files(id, name)")
+            .setPageSize(10)
+            .execute()
     }
 
     @Throws(IOException::class)

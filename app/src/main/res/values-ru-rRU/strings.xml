@@ -118,7 +118,6 @@
     <string name="verify_pin">Проверка PIN-кода</string>
     <string name="verify_pin_tip">Поэтому мы защитим вашу резервную копию с помощью PIN-кода.</string>
     <string name="enter_verify_pin_tip">Введите PIN-код при создании этой резервной копии.</string>
-    <string name="verify_pin_code_error">Пожалуйста, подтвердите правильность введенного PIN-кода.</string>
     <string name="enter_current_pin_code">Введите текущий PIN-код</string>
     <string name="do_not_share_secret">Не делитесь своей секретной фразой!</string>
     <string name="do_not_share_secret_desc">Если кто-то узнает вашу секретную фразу, он получит полный контроль над вашим кошельком.</string>
@@ -244,7 +243,7 @@
     <string name="reset">Сброс</string>
     <string name="skip">Скип</string>
     <string name="start">Начало</string>
-    <string name="guide_title_1">Игровая площадка\nдля ваших NFT</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">Поделитесь отличными коллекциями NFT с друзьями</string>
     <string name="guide_title_2">Соберите\nвсе свои жетоны.</string>
     <string name="guide_desc_2">Поделитесь отличными коллекциями NFT с друзьями</string>
@@ -305,11 +304,11 @@
     <string name="stake_guide_header1">Получайте вознаграждения, когда</string>
     <string name="stake_guide_header2">Ставка на свой поток</string>
     <string name="lets_staking">Делаем ставку</string>
-    <string name="stake_guide_desc_1">Зарабатывайте до <font color="#60C293"><strong>13%</strong></font>
-        в год.</string>
-    <string name="stake_guide_desc_2">Когда вы делаете ставку <font color="#60C293"><strong>Flow</strong></font> вы получаете <font color="#60C293"><strong>Flow</strong></font>. Вы можете <font color="#60C293"><strong>торговать</strong></font> этим ликвидным активом в любое время.</string>
-    <string name="stake_guide_desc_3">Вы начинаете зарабатывать <font color="#60C293"><strong>сразу же</strong></font>.</string>
-    <string name="stake_guide_desc_4">Вознаграждения автоматически начисляются на ваш депозит <font color="#60C293"><strong>каждые несколько дней</strong></font>.</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">Поставщик статеек</string>
     <string name="select_provider">Выберите поставщика</string>
     <string name="stake">Колышек</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">Этот кошелек уже вошел в систему</string>
     <string name="google_drive">Google Диск</string>
     <string name="add_other_device">Добавить другое устройство</string>
-    <string name="restore_failed">Восстановление не удалось. Пожалуйста, повторите попытку позже.</string>
-    <string name="restore_failed_option">Восстановление не удалось. Убедитесь, что варианты резервного копирования принадлежат одному и тому же кошельку
-        .</string>
     <string name="revoke_device">Отозвать устройство</string>
     <string name="wrong_network">Сеть коммутаторов</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -553,8 +549,7 @@
         Wallet
 uses to turn your device into a hardware wallet.</string>
     <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready,
-let’s get started!</string>
+    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
@@ -563,4 +558,45 @@ let’s get started!</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
     <string name="appearance">Appearance</string>
+    <string name="current_device">Текущее устройство</string>
+    <string name="create_username_tip">Другие пользователи Flow Wallet могут найти вас и отправлять вам платежи по вашему уникальному имени пользователя.</string>
+    <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
+    <string name="create_backup">Создание резервной копии</string>
+    <string name="upload_again">Загрузить снова</string>
+    <string name="backup_uploaded">Резервная копия загружена</string>
+    <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="try_to_connect">Try to Connect</string>
+    <string name="revoked">Отозвано</string>
+    <string name="revoking">Revoking...</string>
+    <string name="full_access">Полный доступ</string>
+    <string name="multi_sign">Многозначный</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
+    <string name="login_failure">Login Failure</string>
+    <string name="move_nft_failed">Перемещение NFT не удалось</string>
+    <string name="move_nft_success">Движение к успеху NFT</string>
+    <string name="send_nft_success">Отправить NFT Успех</string>
+    <string name="send_nft_failed">Отправка NFT не удалась</string>
+    <string name="sync_account_info_failure">Sync Account Info Failure</string>
+    <string name="add_public_key_failure">Add Public Key Failure</string>
+    <string name="send_response_failure">Send Response Failure</string>
+    <string name="collection_list">Collection List</string>
+    <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">Введенный PIN-код не расшифровал резервную копию. Пожалуйста, проверьте PIN-код и повторите попытку.</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">Восстановление не удалось</string>
+    <string name="restore_failed_desc">Please try again later.</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">Просмотр фразы восстановления</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="update_avatar_success">Update Avatar Success</string>
+    <string name="update_avatar_failed">Update Avatar Failed</string>
 </resources>

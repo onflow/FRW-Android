@@ -22,7 +22,7 @@ class InboxNftItemPresenter(
 
     @SuppressLint("SetTextI18n")
     override fun bind(model: InboxNft) {
-        val collection = NftCollectionConfig.get(model.collectionAddress) ?: return
+        val collection = NftCollectionConfig.get(model.collectionAddress, model.collectionName) ?: return
         with(binding) {
             titleView.text = collection.name
             tokenIdView.text = "ID: ${model.tokenId}"

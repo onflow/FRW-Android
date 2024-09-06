@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.page.collection
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.config.NftCollection
+import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.NftLoadMoreModel
@@ -14,44 +16,64 @@ class CollectionViewModel : ViewModel() {
     val dataLiveData = MutableLiveData<List<Any>>()
     val collectionLiveData = MutableLiveData<NftCollectionWrapper>()
 
-    private var collectionWrapper: NftCollectionWrapper? = null
-
-    private val nftCache by lazy { NftCache(nftWalletAddress()) }
+    private var collection: NftCollection? = null
 
     private val requester by lazy { NftListRequester() }
+    private var accountAddress: String? = null
 
-    fun load(contractName: String) {
+    fun load(contractName: String, accountAddress: String, collectionSize: Int) {
+        this.accountAddress = accountAddress
         viewModelIOScope(this) {
-            val collectionWrapper = nftCache.collection()
-                .read()?.collections
-                ?.firstOrNull { it.collection?.contractName == contractName } ?: return@viewModelIOScope
+            if (accountAddress.isEmpty()) {
+                val collectionWrapper =
+                    NftCache(nftWalletAddress())
+                        .collection()
+                        .read()?.collections
+                        ?.firstOrNull { it.collection?.contractName == contractName }
+                        ?: return@viewModelIOScope
 
-            this.collectionWrapper = collectionWrapper
+                this.collection = collectionWrapper.collection
 
-            val collection = collectionWrapper.collection ?: return@viewModelIOScope
+                collection?.let {
+                    collectionLiveData.postValue(collectionWrapper)
+                    notifyNftList()
 
-            collectionLiveData.postValue(collectionWrapper)
-            notifyNftList()
-
-            requester.request(collection)
-            notifyNftList()
+                    requester.request(it, nftWalletAddress())
+                    notifyNftList()
+                }
+            } else {
+                val collection = NftCollectionConfig.get(contractName = contractName) ?: return@viewModelIOScope
+                this.collection = collection
+                collectionLiveData.postValue(NftCollectionWrapper(
+                    collection = collection,
+                    count = collectionSize,
+                    ids = emptyList()
+                ))
+                requester.request(collection, accountAddress)
+                notifyNftList()
+            }
         }
     }
 
     fun requestListNextPage() {
         viewModelIOScope(this) {
-            val collection = collectionWrapper?.collection ?: return@viewModelIOScope
-            requester.nextPage(collection)
-            notifyNftList()
+            collection?.let {
+                requester.nextPage(it)
+                notifyNftList()
+            }
         }
     }
 
     private fun notifyNftList() {
-        val collection = collectionWrapper?.collection ?: return
-        val list = mutableListOf<Any>().apply { addAll(requester.dataList(collection).map { NFTItemModel(nft = it) }) }
-        if (requester.haveMore()) {
-            list.add(NftLoadMoreModel(isListLoadMore = true))
+        collection?.let {
+            val list = mutableListOf<Any>().apply {
+                addAll(
+                    requester.dataList(it).map { NFTItemModel(nft = it, accountAddress = accountAddress) })
+            }
+            if (requester.haveMore()) {
+                list.add(NftLoadMoreModel(isListLoadMore = true))
+            }
+            dataLiveData.postValue(list)
         }
-        dataLiveData.postValue(list)
     }
 }

@@ -39,7 +39,7 @@ class BrowserInputPresenter(
     private val keyboardObserver by lazy { keyboardObserver() }
 
     init {
-        binding.toolbar.textWrapper.setOnClickListener { openFromWebViewTitle() }
+        binding.textWrapper.setOnClickListener { openFromWebViewTitle() }
         with(inputBinding.recyclerView) {
             adapter = recommendAdapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, true)

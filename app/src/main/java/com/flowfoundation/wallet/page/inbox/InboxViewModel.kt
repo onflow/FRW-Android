@@ -85,7 +85,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         claimExecutingLiveData.postValue(true)
         viewModelIOScope(this) {
             try {
-                val collection = NftCollectionConfig.get(nft.collectionAddress)!!
+                val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionName)!!
                 val txid = cadenceClaimInboxNft(meowDomainHost()!!, nft.key, collection, nft.tokenId.toSafeInt())!!
                 val transactionState = TransactionState(
                     transactionId = txid,

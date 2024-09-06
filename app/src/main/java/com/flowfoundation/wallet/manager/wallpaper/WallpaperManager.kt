@@ -15,10 +15,10 @@ object WallpaperManager {
     private val listeners = CopyOnWriteArrayList<WeakReference<OnWallpaperChange>>()
     private var position = -1
     private val wallpaperList = listOf<Any>(
-        R.string.wallpaper_dynamic.res2String(),
+        R.string.wallpaper_dynamic,
         Wallpaper.DYNAMIC_FLOW,
         Wallpaper.DYNAMIC_ETH,
-        R.string.wallpaper_static.res2String(),
+        R.string.wallpaper_static,
         Wallpaper.STATIC_LIGHT_RED,
         Wallpaper.STATIC_PURPLE,
         Wallpaper.STATIC_GREEN,

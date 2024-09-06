@@ -31,7 +31,6 @@ import com.flowfoundation.wallet.page.restore.multirestore.viewmodel.MultiRestor
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 
 
@@ -77,7 +76,7 @@ class RestoreGoogleDriveFragment: Fragment() {
     }
 
     private fun onRestoreEmpty() {
-        toast(msg = "No backup found")
+        restoreViewModel.toBackupNotFound()
         binding.btnNext.setProgressVisible(false)
     }
 

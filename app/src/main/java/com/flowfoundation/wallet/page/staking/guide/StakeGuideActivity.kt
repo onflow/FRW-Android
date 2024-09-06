@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.page.staking.providers.StakingProviderActivity
+import com.flowfoundation.wallet.utils.setStakingGuideDisplayed
 
 class StakeGuideActivity : BaseActivity() {
 
@@ -23,6 +24,7 @@ class StakeGuideActivity : BaseActivity() {
             }
         }
         setupToolbar()
+        setStakingGuideDisplayed()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

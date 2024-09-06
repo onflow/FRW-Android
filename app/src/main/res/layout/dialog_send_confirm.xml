@@ -244,17 +244,14 @@
 
                 <!-- from -->
 
-                <androidx.constraintlayout.utils.widget.ImageFilterView
+                <com.flowfoundation.wallet.page.emoji.EmojiAvatarView
                     android:id="@+id/from_avatar_view"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginTop="16dp"
-                    android:scaleType="centerCrop"
                     app:layout_constraintEnd_toStartOf="@id/center_guideline"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:round="40dp"
-                    tools:background="#999"/>
+                    app:layout_constraintTop_toTopOf="parent"/>
 
                 <TextView
                     android:id="@+id/from_name_view"
@@ -290,23 +287,21 @@
                     tools:text="(0x198263dfe21847)"/>
 
                 <!-- to -->
-                <androidx.constraintlayout.utils.widget.ImageFilterView
+
+                <com.flowfoundation.wallet.page.emoji.EmojiAvatarView
                     android:id="@+id/to_avatar_view"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:scaleType="centerCrop"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/center_guideline"
-                    app:layout_constraintTop_toTopOf="@id/from_avatar_view"
-                    app:round="40dp"
-                    tools:background="#999"/>
+                    app:layout_constraintTop_toTopOf="@id/from_avatar_view"/>
 
                 <TextView
                     android:id="@+id/name_prefix_view"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:background="@drawable/bg_round_corner"
-                    android:backgroundTint="@color/colorSecondary"
+                    android:backgroundTint="@color/accent_gray"
                     android:fontFamily="@font/inter_medium"
                     android:gravity="center"
                     android:textColor="@color/white"

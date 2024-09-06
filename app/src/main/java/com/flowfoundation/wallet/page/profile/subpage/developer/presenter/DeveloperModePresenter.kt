@@ -22,6 +22,9 @@ import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeVie
 import com.flowfoundation.wallet.page.profile.subpage.developer.model.DeveloperPageModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
+import com.flowfoundation.wallet.utils.debug.DebugLogManager
+import com.flowfoundation.wallet.utils.debug.DebugManager
+import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.widgets.ProgressDialog
@@ -76,12 +79,23 @@ class DeveloperModePresenter(
                         changeNetwork(NETWORK_MAINNET)
                     }
                 }
+
+                DebugManager.setFragmentManger(activity.supportFragmentManager, R.id.debug_container)
+
+                DebugManager.initialize(DebugLogManager.tweaks)
+                debugViewPreference.setOnCheckedChangeListener {
+                    DebugManager.toggleDebugViewer()
+                }
+                tvExportLog.setOnClickListener {
+                    DebugViewerDataSource.exportDebugMessagesAndShare(activity)
+                }
             }
         }
     }
 
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
+        binding.cvDebug.setVisible(visible)
     }
 
     override fun bind(model: DeveloperPageModel) {

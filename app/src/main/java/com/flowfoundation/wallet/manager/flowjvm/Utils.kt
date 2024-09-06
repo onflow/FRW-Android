@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringMapResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
@@ -53,6 +54,15 @@ internal fun FlowScriptResponse.parseBoolList(): List<Boolean>? {
     return try {
         val result = Gson().fromJson(String(bytes), FlowBoolListResult::class.java)
         return result.value.map { it.value }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+internal fun FlowScriptResponse.parseStringList(): List<String>? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringListResult::class.java)
+        return result.value.value.map { it.value }
     } catch (e: Exception) {
         null
     }
@@ -123,7 +133,7 @@ fun addressVerify(address: String): Boolean {
 }
 
 fun Nft.formatCadence(script: String): String {
-    val config = NftCollectionConfig.get(collectionAddress) ?: return script
+    val config = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return script
     return config.formatCadence(script)
 }
 

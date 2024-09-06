@@ -32,6 +32,7 @@ private val AES_PASSWORD by lazy {
 const val ACTION_GOOGLE_DRIVE_UPLOAD_FINISH = "ACTION_GOOGLE_DRIVE_UPLOAD_FINISH"
 const val ACTION_GOOGLE_DRIVE_DELETE_FINISH = "ACTION_GOOGLE_DRIVE_DELETE_FINISH"
 const val ACTION_GOOGLE_DRIVE_RESTORE_FINISH = "ACTION_GOOGLE_DRIVE_RESTORE_FINISH"
+const val ACTION_GOOGLE_DRIVE_VIEW_FINISH = "ACTION_GOOGLE_DRIVE_VIEW_FINISH"
 const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
 
@@ -89,7 +90,7 @@ private fun existingData(driveService: Drive): List<BackupItem> {
         Gson().fromJson(json, object : TypeToken<List<BackupItem>>() {}.type)
     } catch (e: Exception) {
         loge(e)
-        emptyList()
+        throw e
     }
 }
 
@@ -144,6 +145,21 @@ fun restoreFromGoogleDrive(driveService: Drive) {
     }
 }
 
+@WorkerThread
+fun viewFromGoogleDrive(driveService: Drive) {
+    try {
+        logd(TAG, "restoreMnemonicFromGoogleDrive")
+        val data = existingData(driveService)
+        LocalBroadcastManager.getInstance(Env.getApp())
+            .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_VIEW_FINISH).apply {
+                putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
+            })
+    } catch (e: Exception) {
+        loge(e)
+        sendCallback(false)
+        throw e
+    }
+}
 
 @WorkerThread
 fun deleteFromGoogleDrive(driveService: Drive) {

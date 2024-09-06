@@ -8,11 +8,14 @@ fun FlowTransactionResult.isProcessing(): Boolean {
 }
 
 fun FlowTransactionResult.isExecuteFinished(): Boolean {
-    return !status.num.isProcessing() || errorMessage.isNotBlank()
+    return !status.num.isProcessing() && errorMessage.isBlank()
 }
 
-fun FlowTransactionResult.isSuccessFinished(): Boolean {
-    return this.status.num == FlowTransactionStatus.SEALED.num && errorMessage.isBlank()
+fun FlowTransactionResult.isFailed(): Boolean {
+    if (isProcessing()) {
+        return false
+    }
+    return errorMessage.isNotBlank()
 }
 
 private fun Int.isProcessing() = this < FlowTransactionStatus.SEALED.num && this >= FlowTransactionStatus.UNKNOWN.num

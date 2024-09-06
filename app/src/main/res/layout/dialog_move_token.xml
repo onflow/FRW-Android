@@ -310,11 +310,12 @@
 
         <TextView
             android:id="@+id/tv_max"
-            android:layout_width="40dp"
+            android:layout_width="wrap_content"
             android:layout_height="24dp"
             android:background="@drawable/bg_round_16dp"
             android:backgroundTint="@color/accent_gray_16"
             android:fontFamily="@font/inter_medium"
+            android:paddingHorizontal="10dp"
             android:gravity="center"
             android:text="@string/max"
             android:textAllCaps="false"

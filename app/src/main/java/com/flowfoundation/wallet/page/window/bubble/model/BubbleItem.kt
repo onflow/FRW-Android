@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.tools.BrowserTab
 import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.utils.extensions.res2String
 
 class BubbleItem(
@@ -36,11 +37,11 @@ fun BubbleItem.title(): String {
 
 private fun TransactionState.icon(): Any {
     return when (type) {
-        TYPE_NFT -> nftData().nft.cover().orEmpty()
+        TYPE_NFT -> nftData().nft.getNFTCover() ?: ""
         TYPE_TRANSFER_COIN -> FlowCoinListManager.getCoin(coinData().coinSymbol)?.icon().orEmpty()
         TYPE_ADD_TOKEN -> tokenData()?.icon().orEmpty()
         TYPE_ENABLE_NFT -> nftCollectionData()?.logo().orEmpty()
-        TYPE_TRANSFER_NFT -> nftSendData().nft.cover().orEmpty()
+        TYPE_TRANSFER_NFT -> nftSendData().nft.getNFTCover() ?: ""
         TYPE_FCL_TRANSACTION -> fclTransactionData().url?.toFavIcon().orEmpty()
         else -> R.mipmap.ic_launcher_round
     }

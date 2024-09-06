@@ -50,6 +50,11 @@ object WalletManager {
         return wallets.firstOrNull { it.address() == selectedWalletAddress } == null && isEVMAccountSelected().not()
     }
 
+    fun haveChildAccount(): Boolean {
+        val accountList = childAccountList(wallet()?.walletAddress())
+        return accountList != null && accountList.get().isNotEmpty()
+    }
+
     fun childAccountList(walletAddress: String? = null): ChildAccountList? {
         val address = (walletAddress ?: wallet()?.walletAddress()) ?: return null
         return childAccountMap[address]
@@ -57,6 +62,10 @@ object WalletManager {
 
     fun childAccount(childAddress: String): ChildAccount? {
         return childAccountMap.toMap().values.flatMap { it.get() }.firstOrNull { it.address == childAddress }
+    }
+
+    fun isChildAccount(address: String): Boolean {
+        return childAccount(address) != null
     }
 
     fun refreshChildAccount() {

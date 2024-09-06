@@ -92,6 +92,9 @@ interface ApiService {
     @GET("/api/nft/collections")
     suspend fun nftCollections(): NftCollectionListResponse
 
+    @GET("/api/v2/nft/collections")
+    suspend fun getNFTCollections(): NftCollectionListResponse
+
     @GET("/v3/nft/favorite")
     suspend fun getNftFavorite(
         @Query("address") address: String,
@@ -231,13 +234,15 @@ interface ApiService {
     @GET("/api/v2/scripts")
     suspend fun getCadenceScript(): CadenceScriptResponse
 
-    @GET("/api/evm/{evmAddress}/fts")
+    @GET("/api/v2/evm/{evmAddress}/fts")
     suspend fun getEVMTokenBalance(
-        @Path("evmAddress") address: String
+        @Path("evmAddress") address: String,
+        @Query("network") network: String
     ): EVMTokenBalanceResponse
 
-    @GET("/api/evm/{evmAddress}/nfts")
+    @GET("/api/v2/evm/{evmAddress}/nfts")
     suspend fun getEVMNFTCollections(
-        @Path("evmAddress") address: String
+        @Path("evmAddress") address: String,
+        @Query("network") network: String
     ): EVMNFTCollectionsResponse
 }

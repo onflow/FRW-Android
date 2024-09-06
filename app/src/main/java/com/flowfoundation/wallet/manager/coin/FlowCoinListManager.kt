@@ -9,6 +9,8 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isDev
+import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
@@ -61,26 +63,26 @@ object FlowCoinListManager {
     fun getEnabledCoinList() = coinList.toList().filter { TokenStateManager.isTokenAdded(it.address) }
 
     private fun getTokenListUrl(): String {
-        if (isMainnet()) {
-            return if (WalletManager.isEVMAccountSelected()) {
-                ""
-            } else {
-                "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/mainnet/flow/reviewers/0xa2de93114bae3e73.json"
-            }
-        } else if (isTestnet()) {
-            return if (WalletManager.isEVMAccountSelected()) {
-                ""
-            } else {
-                "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/testnet/flow/reviewers/0xa51d7fe9e0080662.json"
-            }
-        } else if (isPreviewnet()) {
-            return if (WalletManager.isEVMAccountSelected()) {
-                "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/previewnet/evm/default.json"
-            } else {
-                "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/previewnet/flow/default.json"
-            }
+        return "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/${chainNetWorkString()}/${getTokenType()}/${getFileName()}"
+    }
+
+    private fun getFileName(): String {
+        return if (isPreviewnet() || WalletManager.isEVMAccountSelected()) {
+            "default.json"
         } else {
-            return ""
+            if (isDev()) {
+                "dev.json"
+            } else {
+                "default.json"
+            }
+        }
+    }
+
+    private fun getTokenType(): String {
+        return if (WalletManager.isEVMAccountSelected()) {
+            "evm"
+        } else {
+            "flow"
         }
     }
 }

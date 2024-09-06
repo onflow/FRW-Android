@@ -16,11 +16,11 @@ import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_RESTORE_FINIS
 import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_BACKUP_NOT_FOUND
 import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_STEP_DRIVE_PASSWORD
 import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_STEP_DRIVE_USERNAME
 import com.flowfoundation.wallet.page.walletrestore.WALLET_RESTORE_STEP_MNEMONIC
 import com.flowfoundation.wallet.page.walletrestore.WalletRestoreViewModel
-import com.flowfoundation.wallet.utils.toast
 
 class WalletRestoreGuideFragment : Fragment() {
 
@@ -68,7 +68,7 @@ class WalletRestoreGuideFragment : Fragment() {
     }
 
     private fun onRestoreEmpty() {
-        toast(msg = "No backup found")
+        pageViewModel.changeStep(WALLET_RESTORE_BACKUP_NOT_FOUND)
         with(binding.driveRestore) {
             setProgressVisible(false)
         }

@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.model.*
+import com.flowfoundation.wallet.utils.image.SvgModel
 import java.net.URLEncoder
 import kotlin.math.min
 
@@ -44,6 +45,24 @@ val nftListDiffCallback = object : DiffUtil.ItemCallback<Any>() {
     }
 }
 
+fun Nft.getNFTCover(): Any? {
+    return cover()?.getBase64SvgModel() ?: cover()
+}
+
+fun String?.getBase64SvgModel(): SvgModel? {
+    try {
+        if (this?.startsWith("data:image/svg+xml;base64,") == true) {
+            val base64Data = this.substringAfter("base64,")
+            return SvgModel(base64Data)
+        } else {
+            return null
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+
 fun Nft.cover(): String? {
     var image = postMedia.image
 
@@ -58,7 +77,7 @@ fun Nft.name(): String? {
     if (!postMedia.title.isNullOrBlank()) {
         return postMedia.title
     }
-    val config = NftCollectionConfig.get(collectionAddress) ?: return null
+    val config = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return null
     return "${config.name} #${id}"
 }
 

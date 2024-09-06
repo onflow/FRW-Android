@@ -11,12 +11,12 @@ import com.flowfoundation.wallet.databinding.LayoutKeyListItemBinding
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyRevokeDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.model.AccountKey
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.wallet.Wallet
 
 class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view),
     BasePresenter<AccountKey> {
@@ -36,7 +36,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             val keyType: String
             val typeColor: Int
             if (model.isCurrentDevice) {
-                keyType = "Current Device"
+                keyType = R.string.current_device.res2String()
                 typeColor = R.color.accent_blue.res2color()
             } else {
                 keyType = model.deviceName
@@ -48,16 +48,16 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             val statusType: String
             val statusColor: Int
             if (model.revoked) {
-                statusType = "Revoked"
+                statusType = R.string.revoked.res2String()
                 statusColor = R.color.accent_red.res2color()
             } else if (model.isRevoking) {
-                statusType = "Revoking..."
+                statusType = R.string.revoking.res2String()
                 statusColor = R.color.accent_orange.res2color()
             } else if (weight >= 1000){
-                statusType = "Full Access"
+                statusType = R.string.full_access.res2String()
                 statusColor = R.color.accent_green.res2color()
             } else {
-                statusType = "Multi-sign"
+                statusType = R.string.multi_sign.res2String()
                 statusColor = R.color.text_3.res2color()
             }
             tvStatusLabel.text = statusType
@@ -85,7 +85,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             }
             tvRevoke.setOnClickListener {
                 if (model.isCurrentDevice) {
-                    toast(msg = "Can't Revoke Current Device Key")
+                    toast(msgRes = R.string.can_not_revoke)
                     return@setOnClickListener
                 }
                 if (model.revoked || model.isRevoking) {

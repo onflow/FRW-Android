@@ -4,9 +4,6 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -89,7 +86,7 @@ class TokenDetailPresenter(
             } else if (coin.evmAddress.isNullOrBlank().not()) {
                 true
             } else coin.flowIdentifier.isNullOrBlank().not()
-            llEvmMoveToken.setVisible(isPreviewnet() && moveVisible)
+            llEvmMoveToken.setVisible(EVMWalletManager.evmFeatureAvailable() && moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
@@ -106,13 +103,13 @@ class TokenDetailPresenter(
             binding.chartWrapper.root.setVisible(false)
         }
 
-        if (!StakingManager.isStaked() && coin.isFlowCoin() && isMainnet()) {
+        if (!StakingManager.isStaking() && coin.isFlowCoin() && isMainnet()) {
             binding.stakingBanner.root.setVisible(true)
             binding.getMoreWrapper.setVisible(false)
             binding.stakingBanner.root.setOnClickListener { openStakingPage(activity) }
         }
 
-        if (StakingManager.isStaked() && coin.isFlowCoin() && isMainnet()) {
+        if (StakingManager.isStaking() && coin.isFlowCoin() && isMainnet()) {
             binding.getMoreWrapper.setVisible(false)
             setupStakingRewards()
         }

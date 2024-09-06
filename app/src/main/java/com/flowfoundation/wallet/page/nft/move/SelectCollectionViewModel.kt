@@ -2,6 +2,9 @@ package com.flowfoundation.wallet.page.nft.move
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -24,7 +27,10 @@ class SelectCollectionViewModel : ViewModel() {
         viewModelIOScope(this) {
             collectionList.clear()
             val address = nftWalletAddress()
-            val collectionResponse = service.getNFTCollections(address)
+            val collectionResponse = if(EVMWalletManager.evmFeatureAvailable())
+                service.getNFTCollections(address)
+            else
+                service.nftCollectionsOfAccount(address)
             if (collectionResponse.data.isNullOrEmpty()) {
                 collectionListLiveData.postValue(emptyList())
                 return@viewModelIOScope
@@ -40,7 +46,8 @@ class SelectCollectionViewModel : ViewModel() {
                     contractName = collection.contractName,
                     contractAddress = collection.address,
                     count = it.count ?: 0,
-                    isFlowCollection = true
+                    isFlowCollection = true,
+                    identifier = collection.path.privatePath?.removePrefix("/private/") ?: ""
                 )
             }
             collectionList.addAll(collections)
@@ -54,7 +61,7 @@ class SelectCollectionViewModel : ViewModel() {
         viewModelIOScope(this) {
             collectionList.clear()
             val address = WalletManager.selectedWalletAddress()
-            val collectionsResponse = service.getEVMNFTCollections(address)
+            val collectionsResponse = service.getEVMNFTCollections(address, chainNetWorkString())
             if (collectionsResponse.data.isNullOrEmpty()) {
                 collectionListLiveData.postValue(emptyList())
                 return@viewModelIOScope
@@ -69,6 +76,7 @@ class SelectCollectionViewModel : ViewModel() {
                     contractName = it.getContractName(),
                     contractAddress = it.getContractAddress(),
                     count = it.nftList.size,
+                    identifier = "",
                     isFlowCollection = false,
                     nftList = it.nftList.map { nft ->
                         NFTInfo(

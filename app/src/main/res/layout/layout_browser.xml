@@ -20,38 +20,134 @@
             tools:background="@color/red_1"
             tools:layout_height="30dp"/>
 
-        <FrameLayout
-            android:id="@+id/webview_container"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/status_bar_holder"/>
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:rippleColor="@color/transparent"
+            app:shapeAppearanceOverlay="@style/BottomRoundedCornersShapeAppearance"
+            app:layout_constraintTop_toBottomOf="@id/status_bar_holder"
+            app:layout_constraintBottom_toTopOf="@id/cl_toolbar">
+            <FrameLayout
+                android:id="@+id/webview_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </com.google.android.material.card.MaterialCardView>
 
-        <include
-            android:id="@+id/toolbar"
-            layout="@layout/layout_browser_toolbar"
-            android:visibility="visible"/>
-
-        <FrameLayout
-            android:id="@+id/fl_toolbar_collapsed"
-            android:layout_width="20dp"
-            android:layout_height="60dp"
-            android:background="@drawable/bg_round_left_16dp"
-            android:backgroundTint="@color/black_30"
-            android:layout_marginBottom="22dp"
+        <com.flowfoundation.wallet.page.browser.widgets.BrowserProgressView
+            android:id="@+id/progress_bar"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:background="@drawable/bg_browser_progress"
+            android:backgroundTint="@color/accent_purple"
             android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/cl_toolbar"
+            app:layout_constraintWidth_percent="0.0"
+            tools:layout_constraintWidth_percent="0.3"
+            tools:visibility="visible"/>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="74dp"
+            android:paddingBottom="24dp"
             app:layout_constraintBottom_toBottomOf="parent">
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:rotation="180"
-                android:src="@drawable/ic_arrow_right"
-                app:tint="@color/white"/>
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/text_wrapper"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_round_12dp"
+                android:backgroundTint="@color/fill_3"
+                android:gravity="center_vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintWidth_percent="0.4">
 
-        </FrameLayout>
+                <TextView
+                    android:id="@+id/title_view"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/inter_semi_bold"
+                    android:maxLines="1"
+                    android:textColor="@color/text_1"
+                    android:textSize="14sp"
+                    tools:text="Flow scan website is here"/>
+
+                <androidx.constraintlayout.utils.widget.ImageFilterButton
+                    android:id="@+id/refresh_button"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="?attr/actionBarItemBackground"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_baseline_refresh_24"
+                    app:tint="@color/text_1"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.constraintlayout.utils.widget.ImageFilterButton
+                android:id="@+id/back_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/actionBarItemBackground"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_arrow_left_border"
+                android:tint="@color/text_1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/move_button"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.constraintlayout.utils.widget.ImageFilterButton
+                android:id="@+id/move_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/actionBarItemBackground"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_move"
+                android:tint="@color/text_1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/text_wrapper"
+                app:layout_constraintStart_toEndOf="@id/back_button"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.constraintlayout.utils.widget.ImageFilterButton
+                android:id="@+id/menu_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/actionBarItemBackground"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_webview_menu"
+                android:tint="@color/text_1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/float_button"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintStart_toEndOf="@id/text_wrapper"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <androidx.constraintlayout.utils.widget.ImageFilterButton
+                android:id="@+id/float_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?attr/actionBarItemBackground"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_webview_float"
+                android:tint="@color/text_1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/menu_button"
+                app:layout_constraintTop_toTopOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

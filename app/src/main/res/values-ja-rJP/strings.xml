@@ -118,7 +118,6 @@
     <string name="verify_pin">PINの確認</string>
     <string name="verify_pin_tip">そのため、PINコードでバックアップを保護します。</string>
     <string name="enter_verify_pin_tip">このバックアップを作成する際にPINを入力してください。</string>
-    <string name="verify_pin_code_error">入力されたPINが正しいことを確認してください。</string>
     <string name="enter_current_pin_code">現在のPINコードを入力してください</string>
     <string name="do_not_share_secret">秘密のフレーズを共有しないこと！</string>
     <string name="do_not_share_secret_desc">もし誰かがあなたの秘密のフレーズを持っていたら、彼らはあなたの財布を完全にコントロールすることができる。</string>
@@ -244,7 +243,7 @@
     <string name="reset">リセット</string>
     <string name="skip">スキップ</string>
     <string name="start">スタート</string>
-    <string name="guide_title_1">遊び場\nあなたのNFTのために</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">優れたNFTコレクションを友人と共有する</string>
     <string name="guide_title_2">\nすべてのトークンを集める</string>
     <string name="guide_desc_2">優れたNFTコレクションを友人と共有する</string>
@@ -305,11 +304,11 @@
     <string name="stake_guide_header1">特典を獲得する</string>
     <string name="stake_guide_header2">流れに乗る</string>
     <string name="lets_staking">レッツ・ステーキング</string>
-    <string name="stake_guide_desc_1">最大 <font color="#60C293"><strong>13%</strong></font>
-        年間最大13％の収入</string>
-    <string name="stake_guide_desc_2">杭を打つとき <font color="#60C293"><strong>フロー</strong></font>を受け取ると <font color="#60C293"><strong>フロー</strong></font>.あなたは <font color="#60C293"><strong>取引できる。</strong></font>この流動資産はいつでも取引できる。</string>
-    <string name="stake_guide_desc_3">すぐに稼ぎ始める <font color="#60C293"><strong>すぐに</strong></font>.</string>
-    <string name="stake_guide_desc_4">特典は自動的に入金されます。 <font color="#60C293"><strong>数日毎</strong></font>.</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">ステーキング・プロバイダー</string>
     <string name="select_provider">プロバイダーを選択</string>
     <string name="stake">杭</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">このウォレットはすでにログインしています</string>
     <string name="google_drive">グーグルドライブ</string>
     <string name="add_other_device">その他のデバイスの追加</string>
-    <string name="restore_failed">リストアに失敗しました。後で再試行してください。</string>
-    <string name="restore_failed_option">リストアに失敗しました。バックアップオプションが同じ
-        ウォレットに属していることを確認してください。</string>
     <string name="revoke_device">デバイスの失効</string>
     <string name="wrong_network">スイッチ・ネットワーク</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -553,8 +549,7 @@
         Wallet
 uses to turn your device into a hardware wallet.</string>
     <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready,
-let’s get started!</string>
+    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
@@ -563,4 +558,45 @@ let’s get started!</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
     <string name="appearance">Appearance</string>
+    <string name="current_device">現在のデバイス</string>
+    <string name="create_username_tip">他のFlow Walletユーザーは、あなたのユニークなユーザー名を通じてあなたを見つけ、支払いを送ることができます。</string>
+    <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
+    <string name="create_backup">バックアップの作成</string>
+    <string name="upload_again">再度アップロード</string>
+    <string name="backup_uploaded">バックアップのアップロード</string>
+    <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="try_to_connect">Try to Connect</string>
+    <string name="revoked">取り消された</string>
+    <string name="revoking">Revoking...</string>
+    <string name="full_access">フルアクセス</string>
+    <string name="multi_sign">マルチサイン</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
+    <string name="login_failure">Login Failure</string>
+    <string name="move_nft_failed">ムーブNFT失敗</string>
+    <string name="move_nft_success">ムーブNFTの成功</string>
+    <string name="send_nft_success">NFTサクセスを送る</string>
+    <string name="send_nft_failed">NFT送信失敗</string>
+    <string name="sync_account_info_failure">Sync Account Info Failure</string>
+    <string name="add_public_key_failure">Add Public Key Failure</string>
+    <string name="send_response_failure">Send Response Failure</string>
+    <string name="collection_list">Collection List</string>
+    <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">入力されたPINコードはバックアップを復号化しませんでした。PINコードを確認して、もう一度やり直してください。</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">リストアに失敗しました</string>
+    <string name="restore_failed_desc">Please try again later.</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">リカバリーフレーズを見る</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="update_avatar_success">Update Avatar Success</string>
+    <string name="update_avatar_failed">Update Avatar Failed</string>
 </resources>

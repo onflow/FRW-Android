@@ -4,6 +4,7 @@ import androidx.viewpager.widget.ViewPager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.activeColor
 import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
@@ -51,7 +52,11 @@ class MainContentPresenter(
         }
 
         binding.navigationView.post {
-            with(binding.navigationView.menu) {
+            val menu = binding.navigationView.menu
+            if (WalletManager.isChildAccountSelected()) {
+                menu.findItem(R.id.bottom_navigation_explore).setVisible(false)
+            }
+            with(menu) {
                 (0 until size()).forEach { binding.navigationView.setLottieDrawable(it, it == 0) }
             }
         }

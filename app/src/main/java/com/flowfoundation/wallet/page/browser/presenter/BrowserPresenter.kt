@@ -1,17 +1,12 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
-import android.animation.ObjectAnimator
-import android.net.Uri
-import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutBrowserBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
-import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.*
 import com.flowfoundation.wallet.page.browser.model.BrowserModel
 import com.flowfoundation.wallet.page.browser.tools.*
@@ -20,13 +15,10 @@ import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
-import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import kotlin.math.abs
 
 class BrowserPresenter(
     private val browser: Browser,
@@ -35,8 +27,6 @@ class BrowserPresenter(
 ) : BasePresenter<BrowserModel>, WebviewCallback {
 
     private fun webview() = browserTabLast()?.webView
-
-    private var toolbarTranslationAnimator: ObjectAnimator? = null
 
     init {
         with(binding) {
@@ -47,15 +37,11 @@ class BrowserPresenter(
                     setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom + navBarHeight)
                 }
             }
-            flToolbarCollapsed.setOnClickListener {
-                showToolbar()
-            }
-            flToolbarCollapsed.gone()
-            with(binding.toolbar) {
+            with(binding) {
                 refreshButton.setOnClickListener { webview()?.reload() }
                 backButton.setOnClickListener { handleBackPressed() }
                 moveButton.setOnClickListener {
-                    if (isPreviewnet()) {
+                    if (EVMWalletManager.evmFeatureAvailable()) {
                         val activity =
                             BaseActivity.getCurrentActivity() ?: return@setOnClickListener
                         uiScope {
@@ -67,84 +53,37 @@ class BrowserPresenter(
                 }
                 floatButton.setOnClickListener { shrinkBrowser() }
                 menuButton.setOnClickListener { browserTabLast()?.let {
-                    BrowserPopupMenu(menuButton, it) {
-                        hideToolbar()
-                    }.show()
+                    BrowserPopupMenu(menuButton, it).show()
                 } }
             }
         }
     }
 
-    private fun hideToolbar() {
-        val slideOut = AnimationUtils.loadAnimation(browser.context, R.anim.slide_out_right)
-        binding.toolbar.root.startAnimation(slideOut)
-        slideOut.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {}
-
-            override fun onAnimationEnd(animation: Animation) {
-                binding.toolbar.root.gone()
-                binding.flToolbarCollapsed.visible()
-            }
-
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
-    }
-
-    private fun showToolbar() {
-        val slideIn = AnimationUtils.loadAnimation(browser.context, R.anim.slide_in_right)
-        binding.toolbar.root.startAnimation(slideIn)
-        slideIn.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {
-                binding.toolbar.root.visible()
-            }
-
-            override fun onAnimationEnd(animation: Animation) {
-                binding.flToolbarCollapsed.gone()
-            }
-
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
-    }
-
     override fun bind(model: BrowserModel) {
         model.url?.let { onOpenNewUrl(it) }
         model.onPageClose?.let { browserTabLast()?.webView?.saveRecentRecord() }
-        model.params?.hideToolBar?.let { binding.toolbar.root.setVisible(false) }
         model.removeTab?.let { removeTab(it) }
         model.onTabChange?.let { onBrowserTabChange() }
     }
 
     override fun onScrollChange(scrollY: Int, offset: Int) {
-        if (abs(offset) > 300) return
-        val max = binding.toolbar.root.height * 2f
-        with(binding.toolbar.root) {
-            // offset > 0 -> scroll up
-            if (toolbarTranslationAnimator?.isRunning == true || (offset > 0 && translationY > 0) || (offset < 0 && translationY == 0.0f)) {
-                return
-            }
-            val toTranslationY = if (offset > 0) height.toFloat() * 2 else 0.0f
-            binding.toolbar.root.setVisible(true)
-            toolbarTranslationAnimator = ObjectAnimator.ofFloat(this, "translationY", translationY, toTranslationY).apply {
-                duration = 200
-                start()
-            }
-        }
+
     }
 
+
     override fun onProgressChange(progress: Float) {
-        binding.toolbar.progressBar.setProgress(progress)
+        binding.progressBar.setProgress(progress)
     }
 
     override fun onTitleChange(title: String) {
-        binding.toolbar.titleView.text = title.ifBlank { webview()?.url }
+        binding.titleView.text = title.ifBlank { webview()?.url }
     }
 
     override fun onPageUrlChange(url: String, isReload: Boolean) {
-        binding.toolbar.root.translationY = 0f
     }
 
     override fun onWindowColorChange(color: Int) {
-        binding.statusBarHolder.setBackgroundColor(color)
+//        binding.statusBarHolder.setBackgroundColor(color)
     }
 
     private fun removeTab(tab: BrowserTab) {

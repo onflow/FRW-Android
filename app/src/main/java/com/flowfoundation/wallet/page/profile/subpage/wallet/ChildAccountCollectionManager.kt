@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet
 
+import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.NFTCollectionIDData
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.TokenData
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.queryChildAccountNFTCollectionID
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.queryChildAccountTokens
@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.utils.ioScope
 object ChildAccountCollectionManager {
 
     private val tokenList = mutableListOf<TokenData>()
-    private val collectionList = mutableListOf<NFTCollectionIDData>()
+    private val collectionIdList = mutableListOf<String>()
 
     fun loadChildAccountTokenList() {
         if (WalletManager.isChildAccountSelected().not()) {
@@ -30,8 +30,8 @@ object ChildAccountCollectionManager {
             return
         }
         ioScope {
-            collectionList.clear()
-            collectionList.addAll(queryChildAccountNFTCollectionID(WalletManager.selectedWalletAddress()))
+            collectionIdList.clear()
+            collectionIdList.addAll(queryChildAccountNFTCollectionID(WalletManager.selectedWalletAddress()))
         }
     }
 
@@ -47,18 +47,20 @@ object ChildAccountCollectionManager {
         } != null
     }
 
-    fun isNFTCollectionAccessible(id: String): Boolean {
+    fun isNFTCollectionAccessible(contractId: String): Boolean {
         if (WalletManager.isChildAccountSelected().not()) {
             return true
         }
-        return collectionList.firstOrNull { it.id == id } != null
+        return collectionIdList.firstOrNull { it == contractId } != null
     }
 
-    fun isNFTAccessible(id: String): Boolean {
+    fun isNFTAccessible(collectionAddress: String, collectionContractName: String): Boolean {
         if (WalletManager.isChildAccountSelected().not()) {
             return true
         }
-        return collectionList.firstOrNull { it.idList.contains(id) } != null
+        val collection = NftCollectionConfig.get(collectionAddress, collectionContractName)
+
+        return collectionIdList.firstOrNull { it == collection?.contractId() } != null
     }
 }
 

@@ -48,12 +48,14 @@ private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMAR
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
 private val KEY_ACCOUNT_TRANSFER_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSFER_COUNT")
 private const val KEY_IS_GUIDE_PAGE_SHOWN = "KEY_IS_GUIDE_PAGE_SHOWN"
+private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
 private val KEY_INBOX_READ_LIST = stringPreferencesKey("KEY_INBOX_READ_LIST")
 private val KEY_CURRENCY_FLAG = stringPreferencesKey("KEY_CURRENCY_FLAG")
 private val KEY_IS_ROOT_DETECTED_DIALOG_SHOWN = booleanPreferencesKey("KEY_IS_ROOT_DETECTED_DIALOG_SHOWN")
 private val KEY_IS_PROFILE_SWITCH_TIPS_SHOWN = booleanPreferencesKey("KEY_IS_PROFILE_SWITCH_TIPS_SHOWN")
 private val KEY_DO_NOT_SHOW_MOVE_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SHOW_MOVE_DIALOG")
+private val KEY_NOTIFICATION_READ_LIST = stringPreferencesKey("KEY_NOTIFICATION_READ_LIST")
 
 private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
 
@@ -201,6 +203,14 @@ fun setGuidePageShown() {
     sharedPreferencesTraditional.edit().putBoolean(KEY_IS_GUIDE_PAGE_SHOWN, true).apply()
 }
 
+fun isStakingGuideDisplayed(): Boolean {
+    return sharedPreferencesTraditional.getBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, false)
+}
+
+fun setStakingGuideDisplayed() {
+    sharedPreferencesTraditional.edit().putBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, true).apply()
+}
+
 fun isNotificationPermissionChecked(): Boolean {
     return sharedPreferencesTraditional.getBoolean(KEY_IS_NOTIFICATION_PERMISSION_CHECKED, false)
 }
@@ -221,6 +231,12 @@ suspend fun updateInboxReadListPref(list: String) {
     dataStore.edit { it[KEY_INBOX_READ_LIST] = list }
 }
 
+suspend fun getNotificationReadList(): String = dataStore.data.map {
+    it[KEY_NOTIFICATION_READ_LIST] ?: "" }.first()
+
+suspend fun updateNotificationListPref(list: String) {
+    dataStore.edit { it[KEY_NOTIFICATION_READ_LIST] = list }
+}
 
 suspend fun getCurrencyFlag(): String = dataStore.data.map { it[KEY_CURRENCY_FLAG] ?: Currency.USD.flag }.first()
 

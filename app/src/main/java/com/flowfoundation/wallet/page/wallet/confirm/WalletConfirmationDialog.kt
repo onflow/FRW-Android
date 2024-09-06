@@ -89,7 +89,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
             ioScope {
                 val isAddSuccess = addPublicKey(it.accountKey)
                 if (isAddSuccess.not()) {
-                    toast(msg = "add public key failure")
+                    toast(msgRes = R.string.add_public_key_failure)
                 }
             }
         }
@@ -108,7 +108,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
             dismiss()
         }) { error ->
             loge(error.throwable)
-            toast(msg = "send response failure")
+            toast(msgRes = R.string.send_response_failure)
         }
     }
 
@@ -195,7 +195,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
                         if (isSyncSuccess) {
                             sendWCResponse()
                         } else {
-                            toast(msg = "sync account info failure")
+                            toast(msgRes = R.string.sync_account_info_failure)
                         }
                     }
                 }

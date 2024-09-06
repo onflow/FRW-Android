@@ -2,25 +2,15 @@ package com.flowfoundation.wallet.base.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.BaseContextWrappingDelegate
 import java.lang.ref.WeakReference
 
 open class BaseActivity : AppCompatActivity() {
     private var firstVisible = true
 
-
-//    override fun attachBaseContext(newBase: Context?) {
-//        super.attachBaseContext(Translized.wrapContext(newBase))
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         currentActivity = WeakReference(this)
         super.onCreate(savedInstanceState)
-
-//        if (!BuildConfig.DEBUG) {
-//            window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
-//        }
     }
 
     override fun getDelegate() = BaseContextWrappingDelegate(super.getDelegate())
@@ -31,7 +21,7 @@ open class BaseActivity : AppCompatActivity() {
         if (firstVisible) {
             onFirstVisible()
         } else {
-            onRevisible()
+            onReVisible()
         }
         firstVisible = false
     }
@@ -45,7 +35,7 @@ open class BaseActivity : AppCompatActivity() {
 
     open fun onFirstVisible() {}
 
-    open fun onRevisible() {}
+    open fun onReVisible() {}
 
     fun isFirstVisible() = firstVisible
 

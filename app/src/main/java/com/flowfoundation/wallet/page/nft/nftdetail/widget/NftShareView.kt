@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.nft.nftlist.cover
+import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -48,14 +49,14 @@ class NftShareView(
     }
 
     private fun setupNft() {
-        val config = NftCollectionConfig.get(nft.collectionAddress) ?: return
+        val config = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName) ?: return
         with(binding) {
             nftNameView.text = nft.name()
             Glide.with(nftCollectionIconView).load(config.logo()).transform(RoundedCorners(20
                 .dp2px().toInt())).into(nftCollectionIconView)
             nftCollectionNameView.text = config.name
 
-            Glide.with(backgroundImage).load(nft.cover())
+            Glide.with(backgroundImage).load(nft.getNFTCover())
                 .transform(BlurTransformation(15, 30))
                 .into(backgroundImage)
 
@@ -68,7 +69,7 @@ class NftShareView(
     private fun loadNftCover() {
         Glide.with(binding.nftCoverView)
             .asBitmap()
-            .load(nft.cover())
+            .load(nft.getNFTCover())
             .transform(RoundedCorners(12.dp2px().toInt()))
             .into(object : SimpleTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {

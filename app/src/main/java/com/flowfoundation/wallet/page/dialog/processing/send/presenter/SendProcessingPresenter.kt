@@ -3,10 +3,6 @@ package com.flowfoundation.wallet.page.dialog.processing.send.presenter
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
@@ -44,7 +40,7 @@ class SendProcessingPresenter(
 
     override fun bind(model: SendProcessingDialogModel) {
         model.userInfo?.let {
-            binding.bindUserInfo(it, contact)
+            binding.bindUserInfo(it.address.orEmpty(), contact)
             when (transactionState.type) {
                 TYPE_TRANSFER_COIN -> setupAmount()
                 TYPE_NFT, TYPE_TRANSFER_NFT -> ioScope {
@@ -61,18 +57,18 @@ class SendProcessingPresenter(
     private fun updateState(state: TransactionState) {
         with(binding) {
             progressText.setVisible()
-            var textColor = R.color.salmon_primary
+            var textColor = R.color.accent_gray
             var bgColor = R.color.salmon5
             var text = R.string.pending
             var lineRes = R.drawable.ic_transaction_line
-            when (state.state) {
-                FlowTransactionStatus.SEALED.num -> {
+            when {
+                state.isSuccess() -> {
                     textColor = R.color.success3
                     bgColor = R.color.success5
                     text = R.string.success
                     lineRes = R.drawable.ic_transaction_line_success
                 }
-                FlowTransactionStatus.UNKNOWN.num, FlowTransactionStatus.EXPIRED.num -> {
+                state.isFailed() -> {
                     textColor = R.color.warning2
                     bgColor = R.color.warning5
                     text = R.string.failed
@@ -109,11 +105,5 @@ class SendProcessingPresenter(
     @SuppressLint("SetTextI18n")
     private fun updateAmountConvert(amountConvert: Float) {
         binding.amountConvertView.text = "≈ ${amountConvert.formatPrice(includeSymbol = true, includeSymbolSpace = true)}"
-    }
-
-    private fun TransactionState.progressText() = when (state) {
-        FlowTransactionStatus.SEALED.num -> R.string.success
-        FlowTransactionStatus.UNKNOWN.num, FlowTransactionStatus.EXPIRED.num -> R.string.failed
-        else -> R.string.pending
     }
 }

@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.databinding.FragmentWalletUnregisteredBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.wallet.adapter.WalletAccountAdapter
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
@@ -54,7 +55,7 @@ class WalletUnregisteredFragment : Fragment() {
                 }
             }
             createButton.setOnClickListener {
-                if (isPreviewnet()) {
+                if (isTestnet() || isPreviewnet()) {
                     SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
                 } else {
                     WalletCreateActivity.launch(requireContext())

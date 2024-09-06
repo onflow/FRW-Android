@@ -50,7 +50,7 @@ class WalletFragmentPresenter(
             addItemDecoration(
                 ColorDividerItemDecoration(
                     Color.TRANSPARENT,
-                    5.dp2px().toInt(),
+                    2.dp2px().toInt(),
                     LinearLayout.VERTICAL
                 )
             )
@@ -111,7 +111,10 @@ class WalletFragmentPresenter(
                     binding.ivAvatar.gone()
                 }
             }
-            binding.viewMask.setVisible(WalletNotificationManager.haveNotification() || isNightMode())
+            val haveNotification = WalletNotificationManager.haveNotification()
+            uiScope {
+                binding.viewMask.setVisible(haveNotification || isNightMode())
+            }
         }
     }
 

@@ -187,6 +187,5 @@ fun openInFlowScan(activity: Activity, transactionId: String) {
 
 class BrowserParams(
     val searchBoxPosition: Point? = null,
-    val hideToolBar: Boolean? = null,
 )
 

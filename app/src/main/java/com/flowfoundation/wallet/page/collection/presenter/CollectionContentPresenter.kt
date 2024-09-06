@@ -52,7 +52,7 @@ class CollectionContentPresenter(
                 }
             }
             addItemDecoration(
-                GridSpaceItemDecoration(vertical = dividerSize, horizontal = dividerSize, start = dividerSize, end = dividerSize)
+                GridSpaceItemDecoration(vertical = dividerSize, horizontal = dividerSize)
             )
             minimumHeight = screenHeight - 222.dp2px().toInt()
         }
@@ -112,7 +112,7 @@ class CollectionContentPresenter(
     }
 
     private fun bindAccessible(collection: NftCollection) {
-        if (ChildAccountCollectionManager.isNFTCollectionAccessible(collection.id)) {
+        if (ChildAccountCollectionManager.isNFTCollectionAccessible(collection.contractId())) {
             binding.inaccessibleTip.gone()
             return
         }

@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.account
 
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
@@ -69,7 +70,7 @@ object BalanceManager {
         ioScope {
             val address = EVMWalletManager.getEVMAddress() ?: return@ioScope
             val apiService = retrofitApi().create(ApiService::class.java)
-            val balanceResponse = apiService.getEVMTokenBalance(address)
+            val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
             balanceResponse.data?.forEach { tokenBalance ->
                 balanceList.firstOrNull { tokenBalance.symbol == it.symbol }?.let {
                     FlowCoinListManager.getCoin(it.symbol)?.let { coin ->
@@ -98,7 +99,7 @@ object BalanceManager {
     suspend fun getEVMBalanceByCoin(symbol: String): Float {
         val address = EVMWalletManager.getEVMAddress() ?: return 0f
         val apiService = retrofitApi().create(ApiService::class.java)
-        val balanceResponse = apiService.getEVMTokenBalance(address)
+        val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
         val evmBalance = balanceResponse.data?.firstOrNull { it.symbol.lowercase() == symbol.lowercase() } ?: return 0f
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal).toFloat()
     }

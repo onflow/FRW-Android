@@ -64,6 +64,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
                 tvButtonTitle.setText(R.string.landing_step_loading)
                 tvButtonTitle.setTextColor(R.color.accent_green.res2color())
                 pbButtonLoading.visible()
+                tvTips.visible()
             } else {
                 autoScroll?.stopAutoScroll()
                 flLandingDone.visible()
@@ -77,6 +78,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
                 tvButtonTitle.setText(R.string.landing_step_done)
                 tvButtonTitle.setTextColor(R.color.white_90.res2color())
                 pbButtonLoading.gone()
+                tvTips.invisible()
             }
         }
     }

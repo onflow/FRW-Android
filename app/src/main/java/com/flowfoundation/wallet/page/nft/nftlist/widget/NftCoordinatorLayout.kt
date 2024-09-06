@@ -32,7 +32,8 @@ class NftCoordinatorLayout : CoordinatorLayout, GestureDetector.OnGestureListene
 
     override fun onSingleTapUp(e: MotionEvent): Boolean = false
 
-    override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+    override fun onScroll(e1: MotionEvent?, e2: MotionEvent, distanceX: Float, distanceY: Float):
+            Boolean {
         logd("xxx", "NftCoordinatorLayout onScroll distanceX:$distanceX-distanceY: $distanceY")
         if (distanceX.absoluteValue > distanceY.absoluteValue) {
             logd("xxx", "NftCoordinatorLayout requestDisallowInterceptTouchEvent")
@@ -45,5 +46,6 @@ class NftCoordinatorLayout : CoordinatorLayout, GestureDetector.OnGestureListene
 
     override fun onLongPress(e: MotionEvent) {}
 
-    override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean = false
+    override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float):
+            Boolean = false
 }

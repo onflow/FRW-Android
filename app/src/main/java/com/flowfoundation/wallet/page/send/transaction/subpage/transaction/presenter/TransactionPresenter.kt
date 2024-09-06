@@ -39,7 +39,7 @@ class TransactionPresenter(
 
     override fun bind(model: TransactionDialogModel) {
         model.userInfo?.let {
-            binding.bindUserInfo(it, contact)
+            binding.bindUserInfo(it.address.orEmpty(), contact)
             setupAmount()
         }
         model.amountConvert?.let { updateAmountConvert(it) }
@@ -55,7 +55,7 @@ class TransactionPresenter(
                 list.add(0, transaction.target)
                 recentCache.contacts = list
                 recentTransactionCache().cache(recentCache)
-                uiScope { MainActivity.launch(fragment.requireContext()) }
+                uiScope { fragment.dismissAllowingStateLoss() }
             }
         }
     }

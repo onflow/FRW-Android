@@ -118,7 +118,6 @@
     <string name="verify_pin">Verifica del PIN</string>
     <string name="verify_pin_tip">Per questo motivo proteggeremo il vostro backup con un codice PIN.</string>
     <string name="enter_verify_pin_tip">Inserire il PIN quando si crea il backup.</string>
-    <string name="verify_pin_code_error">Confermare l\'inserimento del PIN corretto.</string>
     <string name="enter_current_pin_code">Inserire il codice PIN attuale</string>
     <string name="do_not_share_secret">Non condividete la vostra frase segreta!</string>
     <string name="do_not_share_secret_desc">Se qualcuno possiede la vostra frase segreta, avrà il pieno controllo del vostro portafoglio.</string>
@@ -244,7 +243,7 @@
     <string name="reset">Reset</string>
     <string name="skip">Salto</string>
     <string name="start">Inizio</string>
-    <string name="guide_title_1">Parco giochi\nper i vostri NFT</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">Condividete con gli amici le collezioni eccellenti di NFT</string>
     <string name="guide_title_2">Raccogliete\ntutti i vostri gettoni</string>
     <string name="guide_desc_2">Condividete con gli amici le collezioni eccellenti di NFT</string>
@@ -305,11 +304,11 @@
     <string name="stake_guide_header1">Guadagnate premi quando</string>
     <string name="stake_guide_header2">Puntate sul vostro flusso</string>
     <string name="lets_staking">Puntiamo</string>
-    <string name="stake_guide_desc_1">Guadagna fino al <font color="#60C293"><strong>13%</strong></font>
-        all\'anno.</string>
-    <string name="stake_guide_desc_2">Quando si punta <font color="#60C293"><strong>Flusso</strong></font> si riceve <font color="#60C293"><strong>Flusso</strong></font>. Potete <font color="#60C293"><strong>negoziare</strong></font> questo bene liquido in qualsiasi momento.</string>
-    <string name="stake_guide_desc_3">Iniziate a guadagnare <font color="#60C293"><strong>subito</strong></font>.</string>
-    <string name="stake_guide_desc_4">I premi vengono accreditati automaticamente sul vostro deposito <font color="#60C293"><strong>ogni pochi giorni</strong></font>.</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">Fornitore di palificazione</string>
     <string name="select_provider">Selezionare il fornitore</string>
     <string name="stake">Palo</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">Questo portafoglio è già loggato</string>
     <string name="google_drive">Google Drive</string>
     <string name="add_other_device">Aggiungi altro dispositivo</string>
-    <string name="restore_failed">Ripristino non riuscito. Riprovare più tardi.</string>
-    <string name="restore_failed_option">Ripristino non riuscito. Assicurarsi che le opzioni di backup appartengano allo stesso portafoglio
-        .</string>
     <string name="revoke_device">Revoca del dispositivo</string>
     <string name="wrong_network">Rete di interruttori</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -553,8 +549,7 @@
         Wallet
 uses to turn your device into a hardware wallet.</string>
     <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready,
-let’s get started!</string>
+    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
@@ -563,4 +558,45 @@ let’s get started!</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
     <string name="appearance">Appearance</string>
+    <string name="current_device">Dispositivo attuale</string>
+    <string name="create_username_tip">Gli altri utenti di Flow Wallet possono trovarvi e inviarvi pagamenti tramite il vostro nome utente unico.</string>
+    <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
+    <string name="create_backup">Creare il backup</string>
+    <string name="upload_again">Carica di nuovo</string>
+    <string name="backup_uploaded">Backup caricato</string>
+    <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="try_to_connect">Try to Connect</string>
+    <string name="revoked">Revocato</string>
+    <string name="revoking">Revoking...</string>
+    <string name="full_access">Accesso completo</string>
+    <string name="multi_sign">Multi-segno</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
+    <string name="login_failure">Login Failure</string>
+    <string name="move_nft_failed">Spostamento NFT non riuscito</string>
+    <string name="move_nft_success">Spostare il successo di NFT</string>
+    <string name="send_nft_success">Invia il successo NFT</string>
+    <string name="send_nft_failed">Invio NFT non riuscito</string>
+    <string name="sync_account_info_failure">Sync Account Info Failure</string>
+    <string name="add_public_key_failure">Add Public Key Failure</string>
+    <string name="send_response_failure">Send Response Failure</string>
+    <string name="collection_list">Collection List</string>
+    <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">The entered PIN code did not decrypt the backup. Please check your PIN and try again.</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">Ripristino non riuscito</string>
+    <string name="restore_failed_desc">Please try again later.</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">Visualizza la frase di recupero</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="update_avatar_success">Update Avatar Success</string>
+    <string name="update_avatar_failed">Update Avatar Failed</string>
 </resources>

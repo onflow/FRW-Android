@@ -7,10 +7,12 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityRestoreWalletBinding
 import com.flowfoundation.wallet.manager.drive.DriveItem
+import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreErrorOption
 import com.flowfoundation.wallet.page.walletcreate.getRootIdByStep
 import com.flowfoundation.wallet.page.walletrestore.*
 import com.flowfoundation.wallet.page.walletrestore.fragments.drivepwd.WalletRestoreDrivePasswordFragment
 import com.flowfoundation.wallet.page.walletrestore.fragments.driveusername.WalletRestoreDriveUsernameFragment
+import com.flowfoundation.wallet.page.walletrestore.fragments.error.WalletRestoreErrorFragment
 import com.flowfoundation.wallet.page.walletrestore.fragments.guide.WalletRestoreGuideFragment
 import com.flowfoundation.wallet.page.walletrestore.fragments.mnemonic.WalletRestoreMnemonicFragment
 import com.flowfoundation.wallet.page.walletrestore.model.WalletRestoreContentModel
@@ -38,6 +40,8 @@ class WalletRestoreContentPresenter(
                 WalletRestoreDrivePasswordFragment.instance(data)
             }
             WALLET_RESTORE_STEP_MNEMONIC -> WalletRestoreMnemonicFragment()
+            WALLET_RESTORE_ERROR -> WalletRestoreErrorFragment(RestoreErrorOption.RESTORE_FAILED)
+            WALLET_RESTORE_BACKUP_NOT_FOUND-> WalletRestoreErrorFragment(RestoreErrorOption.BACKUP_NOT_FOUND)
             else -> WalletRestoreGuideFragment()
         }
         fragment.enterTransition = transition

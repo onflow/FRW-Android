@@ -56,6 +56,11 @@ object TransactionStateManager {
         onStateChangeCallbacks.add(WeakReference(callback))
     }
 
+    fun removeOnTransactionStateCallback(callback: OnTransactionStateChange) {
+        val index = onStateChangeCallbacks.indexOfLast { weakReference -> weakReference.get() == callback }
+        onStateChangeCallbacks.removeAt(index)
+    }
+
     @MainThread
     fun newTransaction(transactionState: TransactionState) {
         if (stateData.data.toList().firstOrNull { it.transactionId == transactionState.transactionId } != null) {
@@ -125,18 +130,18 @@ object TransactionStateManager {
             }
         }
         ioScope {
-            if (state.type == TransactionState.Companion.TYPE_ADD_TOKEN && state.isSuccess()) {
+            if (state.type == TransactionState.TYPE_ADD_TOKEN && state.isSuccess()) {
                 TokenStateManager.fetchStateSingle(state.tokenData(), cache = true)
             }
 
-            if (state.type == TransactionState.Companion.TYPE_ENABLE_NFT && state.isSuccess()) {
+            if (state.type == TransactionState.TYPE_ENABLE_NFT && state.isSuccess()) {
                 NftCollectionStateManager.fetchStateSingle(state.nftCollectionData(), cache = true)
             }
 
-            if (state.type == TransactionState.Companion.TYPE_CLAIM_DOMAIN && state.isSuccess()) {
+            if (state.type == TransactionState.TYPE_CLAIM_DOMAIN && state.isSuccess()) {
                 checkMeowDomainClaimed()
             }
-            if (state.type == TransactionState.Companion.TYPE_STAKE_FLOW && state.isSuccess()) {
+            if (state.type == TransactionState.TYPE_STAKE_FLOW && state.isSuccess()) {
                 StakingManager.refresh()
             }
         }
@@ -213,6 +218,8 @@ data class TransactionState(
         const val TYPE_REVOKE_KEY = 9
 
         const val TYPE_ADD_PUBLIC_KEY = 10
+
+        const val TYPE_MOVE_NFT = 11
     }
 
     fun coinData() = Gson().fromJson(data, TransactionModel::class.java)
@@ -231,13 +238,19 @@ data class TransactionState(
 
     fun isSuccess() = state == FlowTransactionStatus.SEALED.num && errorMsg.isNullOrBlank()
 
-    fun isFailed() = state >= FlowTransactionStatus.SEALED.num && !errorMsg.isNullOrBlank()
+    fun isFailed(): Boolean {
+        if (isProcessing()) {
+            return false
+        }
+        if (isExpired()) {
+            return true
+        }
+        return !errorMsg.isNullOrBlank()
+    }
 
     fun isProcessing() = state < FlowTransactionStatus.SEALED.num
 
-    fun isUnknown() = state == FlowTransactionStatus.UNKNOWN.num || state == FlowTransactionStatus.EXPIRED.num
-
-    fun isSealed() = state == FlowTransactionStatus.SEALED.num
+    private fun isExpired() = state == FlowTransactionStatus.EXPIRED.num
 
     fun stateStr() = if (isSuccess()) {
         R.string.success.res2String()
@@ -249,10 +262,10 @@ data class TransactionState(
 
     fun progress(): Float {
         return when (state) {
-            FlowTransactionStatus.PENDING.num -> 0.25f
+            FlowTransactionStatus.UNKNOWN.num, FlowTransactionStatus.PENDING.num -> 0.25f
             FlowTransactionStatus.FINALIZED.num -> 0.50f
             FlowTransactionStatus.EXECUTED.num -> 0.75f
-            FlowTransactionStatus.SEALED.num -> 1.0f
+            FlowTransactionStatus.SEALED.num-> 1.0f
             else -> 0.0f
         }
     }

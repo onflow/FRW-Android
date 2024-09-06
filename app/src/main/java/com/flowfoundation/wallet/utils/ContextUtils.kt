@@ -73,10 +73,6 @@ fun Context.startActivitySafe(intent: Intent) {
 
 
 fun Context.startServiceSafe(intent: Intent) {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-        startService(intent)
-        return
-    }
 
     bindService(intent, object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {

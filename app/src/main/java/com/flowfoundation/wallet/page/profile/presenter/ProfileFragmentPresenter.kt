@@ -112,7 +112,7 @@ class ProfileFragmentPresenter(
         }
 
         updatePreferenceState()
-        updateClaimDomainState()
+//        updateClaimDomainState()
         observeMeowDomainClaimedStateChange(this)
     }
 
@@ -124,7 +124,7 @@ class ProfileFragmentPresenter(
     }
 
     override fun onDomainClaimedStateChange(isClaimed: Boolean) {
-        updateClaimDomainState()
+//        updateClaimDomainState()
     }
 
     private fun bindUserInfo(userInfo: UserInfoData) {
@@ -157,9 +157,9 @@ class ProfileFragmentPresenter(
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
                     actionGroup.root.setVisible(isSignIn)
-                    group0.linkedAccount.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
-                    group0.backupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
-                    group0.securityPreference.setVisible(isSignIn)
+                    group0.llLinkedAccount.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
+                    group0.llBackupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
+                    group0.llSecurityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
                     group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark else R.string.light)
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)

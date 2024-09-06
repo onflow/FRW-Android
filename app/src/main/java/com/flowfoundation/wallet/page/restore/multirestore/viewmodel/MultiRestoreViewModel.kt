@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
+import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
@@ -84,7 +85,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         optionChangeLiveData.postValue(RestoreOptionModel(option, index))
     }
 
-    fun changeGoogleDriveOption(option: RestoreGoogleDriveOption) {
+    private fun changeGoogleDriveOption(option: RestoreGoogleDriveOption) {
         googleDriveOptionChangeLiveData.postValue(option)
     }
 
@@ -97,6 +98,18 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_PIN)
     }
 
+    fun toBackupNotFound() {
+        changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_ERROR_BACKUP)
+    }
+
+    fun toBackupDecryptionFailed() {
+        changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_ERROR_PIN)
+    }
+
+    fun toGoogleDrive() {
+        changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_GOOGLE_DRIVE)
+    }
+
     fun isRestoreValid(): Boolean {
         return optionList.size >= 2
     }
@@ -104,6 +117,14 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     fun startRestore() {
         addCompleteOption()
         changeOption(optionList[0], 0)
+    }
+
+    private fun restoreFailed() {
+        changeOption(RestoreOption.RESTORE_FAILED, -1)
+    }
+
+    private fun restoreNoAccount() {
+        changeOption(RestoreOption.RESTORE_FAILED_NO_ACCOUNT, -1)
     }
 
     private fun toNext() {
@@ -167,12 +188,10 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             } catch (e: Exception) {
                 loge(e)
                 if (e is NoSuchElementException) {
-                    toast(msgRes = R.string.restore_failed_option, duration = Toast.LENGTH_LONG)
+                    restoreNoAccount()
                 } else {
-                    toast(msgRes = R.string.restore_failed, duration = Toast.LENGTH_LONG)
+                    restoreFailed()
                 }
-                val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-                activity.finish()
             }
         }
     }
@@ -214,7 +233,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 delay(200)
                                 MainActivity.relaunch(activity, clearTop = true)
                             } else {
-                                toast(msg = "login failure")
+                                toast(msgRes = R.string.login_failure)
                                 activity.finish()
                             }
                         }
@@ -302,7 +321,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             sendTransactionWithMultiSignature(providers = providers, builder = {
                 args.build().forEach { arg(it) }
                 walletAddress(restoreAddress)
-                script(this@executeTransactionWithMultiKey)
+                script(this@executeTransactionWithMultiKey.addPlatformInfo())
             })
         } catch (e: Exception) {
             loge(e)

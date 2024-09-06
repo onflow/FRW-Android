@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionsCache
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.NftCollectionListResponse
@@ -14,10 +15,9 @@ import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
-import com.google.gson.reflect.TypeToken
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import kotlinx.parcelize.Parcelize
 import java.net.URL
-import kotlin.math.log
 
 object NftCollectionConfig {
 
@@ -27,23 +27,23 @@ object NftCollectionConfig {
         ioScope { reloadConfig() }
     }
 
-    fun get(address: String?): NftCollection? {
-        address ?: return null
+    fun get(address: String? = null, contractName: String): NftCollection? {
         if (config.isEmpty()) {
             reloadConfig()
         }
         val list = config.toList()
 
-        return list.firstOrNull { it.address == address }
+        if (address == null) {
+            return list.firstOrNull { it.contractName == contractName }
+        }
+        return list.firstOrNull { it.address == address && it.contractName == contractName }
     }
 
-    fun getByContractName(contractName: String): NftCollection? {
+    fun getByContractId(contractId: String): NftCollection? {
         if (config.isEmpty()) {
             reloadConfig()
         }
-        val list = config.toList()
-
-        return list.firstOrNull { it.contractName == contractName }
+        return config.toList().firstOrNull { it.contractId() == contractId }
     }
 
     fun getByStoragePath(storagePath: String): NftCollection? {
@@ -61,10 +61,8 @@ object NftCollectionConfig {
             config.clear()
             config.addAll(loadFromCache())
 
-            val response = if (isPreviewnet()) {
-                val text = URL("https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/previewnet/flow/nfts.json").readText()
-                val listResponse = Gson().fromJson(text, PreviewnetNftCollectionListResponse::class.java)
-                NftCollectionListResponse(data = listResponse.tokens, status = 200)
+            val response = if (EVMWalletManager.evmFeatureAvailable()) {
+                retrofitApi().create(ApiService::class.java).getNFTCollections()
             } else {
                 retrofitApi().create(ApiService::class.java).nftCollections()
             }
@@ -126,6 +124,8 @@ data class NftCollection(
     val evmAddress: String?,
 ) : Parcelable {
 
+    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+
     fun logo(): String {
         return if (logo.endsWith(".svg")) {
             logo.svgToPng()
@@ -165,6 +165,8 @@ data class NftCollection(
         val publicType: String?,
         @SerializedName("private_type")
         val privateType: String?,
+        @SerializedName("private_path")
+        val privatePath: String?,
     ) : Parcelable
 
     @Parcelize

@@ -161,7 +161,9 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
             if (matched) {
                 if (exactToken == ExactToken.FROM) onEstimateToUpdate.postValue(data.tokenOutAmount) else onEstimateFromUpdate.postValue(data.tokenInAmount)
                 onEstimateLoading.postValue(false)
-                estimateLiveData.postValue(data)
+                data.let {
+                    estimateLiveData.postValue(it)
+                }
             }
         }
     }

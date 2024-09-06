@@ -82,7 +82,7 @@ data class Nft(
     }
 
     fun canBridgeToEVM(): Boolean {
-        val collection = NftCollectionConfig.getByContractName(collectionContractName) ?: return false
+        val collection = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return false
         return collection.evmAddress.isNullOrEmpty().not()
     }
 }
@@ -99,7 +99,7 @@ data class PostMedia(
     val image: String? = null,
     @SerializedName("music")
     val music: String? = null,
-    @SerializedName("isSVG")
+    @SerializedName("isSvg")
     val isSvg: String? = null,
 ) : Parcelable
 

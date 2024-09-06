@@ -82,13 +82,15 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         )
                     )
                 } else {
+                    val data = FclDialogModel(
+                        title = name,
+                        url = url,
+                        logo = icons.firstOrNull()?.toString(),
+                        network = network()
+                    )
                     FclAuthnDialog().show(
                         activity.supportFragmentManager,
-                        FclDialogModel(
-                            title = description,
-                            url = url,
-                            logo = icons.firstOrNull()?.toString()
-                        )
+                        data
                     )
                 }
                 if (approve) {

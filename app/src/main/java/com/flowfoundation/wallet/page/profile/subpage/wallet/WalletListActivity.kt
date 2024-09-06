@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletListBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isPreviewnet
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -52,6 +53,8 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(false).colorRes(R.color.background)
             .light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
+
         binding.root.addStatusBarTopPadding()
         AccountEmojiManager.addListener(this)
         setupToolbar()
@@ -147,7 +150,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                     )
                 } ?: 0f
                 uiScope {
-                    it.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} Flow"
+                    it.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
                 }
             }
         }
@@ -157,7 +160,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.action_add -> {
-                if (isPreviewnet()) {
+                if (isTestnet() || isPreviewnet()) {
                     SwitchNetworkDialog(this, DialogType.CREATE).show()
                 } else {
                     WalletCreateActivity.launch(this, step = WALLET_CREATE_STEP_USERNAME)

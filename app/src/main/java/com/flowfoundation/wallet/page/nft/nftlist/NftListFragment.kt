@@ -73,9 +73,13 @@ internal class NftListFragment : Fragment() {
             favoriteLiveData.observe(viewLifecycleOwner) { updateFavorite(it) }
             favoriteIndexLiveData.observe(viewLifecycleOwner) { updateSelection(it) }
         }
+        binding.topSelectionHeader.setVisible(WalletManager.isChildAccountSelected().not())
     }
 
     private fun updateFavorite(nfts: List<Nft>) {
+        if (WalletManager.isChildAccountSelected()) {
+            return
+        }
         selectionPresenter.bind(NftSelections(nfts.toMutableList()))
         binding.backgroundWrapper.setVisible(nfts.isNotEmpty())
         if (nfts.isEmpty()) {
@@ -133,6 +137,9 @@ internal class NftListFragment : Fragment() {
     }
 
     private fun updateSelection(index: Int) {
+        if (WalletManager.isChildAccountSelected()) {
+            return
+        }
         if (index < 0) {
             Glide.with(binding.backgroundImage).clear(binding.backgroundImage)
         }
@@ -144,7 +151,7 @@ internal class NftListFragment : Fragment() {
                 }
                 val oldUrl = binding.backgroundImage.tag as? String
                 Glide.with(binding.backgroundImage)
-                    .load(nft.cover())
+                    .load(nft.getNFTCover())
                     .thumbnail(Glide.with(requireContext()).load(oldUrl).transform(BlurTransformation(10, 20)))
                     .transition(DrawableTransitionOptions.withCrossFade(250))
                     .transform(BlurTransformation(10, 20))

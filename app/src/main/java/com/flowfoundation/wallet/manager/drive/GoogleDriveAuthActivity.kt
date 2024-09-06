@@ -21,6 +21,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.backup.restoreFromGoogleDrive
 import com.flowfoundation.wallet.manager.backup.uploadGoogleDriveBackup
+import com.flowfoundation.wallet.manager.backup.viewFromGoogleDrive
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -34,6 +35,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
     private val isRestore by lazy { intent.getBooleanExtra(EXTRA_RESTORE, false) }
     private val isRestoreWithSignOut by lazy { intent.getBooleanExtra(EXTRA_RESTORE_WITH_SIGN_OUT, false) }
     private val isDeleteBackup by lazy { intent.getBooleanExtra(EXTRA_DELETE_BACKUP, false) }
+    private val isViewBackup by lazy { intent.getBooleanExtra(EXTRA_VIEW_BACKUP, false) }
     private val isMultiBackup by lazy { intent.getBooleanExtra(EXTRA_MULTI_BACKUP, false) }
     private val isMultiRestoreWithSignOut by lazy {
         intent.getBooleanExtra(EXTRA_MULTI_RESTORE_WITH_SIGN_OUT, false)
@@ -46,6 +48,8 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(View(this))
         UltimateBarX.with(this).color(Color.TRANSPARENT).fitWindow(false).light(false).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
+
 
         val signInOptions = GoogleSignInOptions.Builder()
             .requestEmail()
@@ -53,7 +57,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             .build()
         mClient = GoogleSignIn.getClient(this, signInOptions)
 
-        if (isRestoreWithSignOut || isMultiRestoreWithSignOut || isMultiBackup) {
+        if (isRestoreWithSignOut || isMultiRestoreWithSignOut || isMultiBackup || isViewBackup) {
             signOutAndSignInAgain()
         } else {
             mClient?.let {
@@ -129,6 +133,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         ioScope {
             try {
                 when {
+                    isViewBackup -> viewFromGoogleDrive(googleDriveService)
                     isDeleteBackup -> deleteMnemonicFromGoogleDrive(googleDriveService)
                     isRestore || isRestoreWithSignOut -> restoreMnemonicFromGoogleDrive(googleDriveService)
                     isMultiBackup -> uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(HDWallet(mnemonic, "")))
@@ -139,6 +144,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             } catch (authIOException: UserRecoverableAuthIOException) {
                 signOutAndSignInAgain()
             } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
@@ -165,10 +171,17 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         private const val EXTRA_RESTORE_WITH_SIGN_OUT = "extra_restore_with_sign_out"
 
         private const val EXTRA_DELETE_BACKUP = "extra_delete_backup"
+        private const val EXTRA_VIEW_BACKUP = "extra_view_backup"
 
         fun uploadMnemonic(context: Context, password: String) {
             context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
                 putExtra(EXTRA_PASSWORD, password)
+            })
+        }
+
+        fun viewMnemonic(context: Context) {
+            context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
+                putExtra(EXTRA_VIEW_BACKUP, true)
             })
         }
 

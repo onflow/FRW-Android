@@ -4,83 +4,85 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@color/home_page_background"
     android:paddingBottom="8dp">
 
-    <TextView
-        android:id="@+id/tv_balance"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_info_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="5dp"
-        android:fontFamily="@font/montsettat"
-        android:includeFontPadding="false"
-        android:textColor="@color/text_1"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constrainedWidth="true"
-        app:layout_constraintEnd_toStartOf="@id/cv_hide"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="$123093"/>
+        android:background="@color/home_page_card_background"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cv_hide"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginHorizontal="16dp"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="@id/tv_balance"
-        app:layout_constraintEnd_toStartOf="@id/cv_copy"
-        app:layout_constraintStart_toEndOf="@id/tv_balance"
-        app:layout_constraintTop_toTopOf="@id/tv_balance"
-        app:rippleColor="?attr/colorControlHighlight">
+        <TextView
+            android:id="@+id/tv_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="5dp"
+            android:fontFamily="@font/inter"
+            android:includeFontPadding="false"
+            android:textColor="@color/text_1"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintEnd_toStartOf="@id/iv_hide"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="$123093"/>
 
         <ImageView
             android:id="@+id/iv_hide"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@drawable/bg_round_corner"
-            android:backgroundTint="@color/bg_2"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_eye_on"/>
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="16dp"
+            android:padding="10dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_eye_on"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_balance"
+            app:layout_constraintBottom_toBottomOf="@id/tv_balance"/>
 
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cv_copy"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginEnd="16dp"
-        app:cardCornerRadius="32dp"
-        app:cardElevation="0dp"
-        app:layout_constraintBottom_toBottomOf="@id/tv_balance"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_balance"
-        app:rippleColor="?attr/colorControlHighlight">
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="17dp"
+            android:layout_marginBottom="25dp"
+            android:fontFamily="@font/inter_semi_bold"
+            android:textColor="@color/text_2"
+            android:textSize="14sp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintEnd_toStartOf="@id/iv_copy"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_balance"
+            app:layout_constraintTop_toBottomOf="@id/tv_balance"
+            tools:text="0x0c666c888d8fb999"/>
 
         <ImageView
             android:id="@+id/iv_copy"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="@drawable/bg_round_corner"
-            android:backgroundTint="@color/bg_2"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_address_copy_with_gap"/>
-
-    </com.google.android.material.card.MaterialCardView>
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:padding="13dp"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_address_copy_with_gap"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_address"
+            app:layout_constraintBottom_toBottomOf="@id/tv_address"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_action_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:paddingHorizontal="12dp"
-        app:layout_constraintTop_toBottomOf="@id/tv_balance">
+        app:layout_constraintTop_toBottomOf="@id/cl_info_layout">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_send"
@@ -281,9 +283,9 @@
             android:id="@+id/iv_add_token"
             android:layout_width="wrap_content"
             android:layout_height="24dp"
+            android:background="?attr/selectableItemBackground"
             android:paddingHorizontal="4dp"
             android:scaleType="centerInside"
-            android:background="?attr/selectableItemBackground"
             android:src="@drawable/ic_account_add"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -306,7 +308,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="24dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/bg_2"
+                android:backgroundTint="@color/home_page_card_background"
                 android:drawablePadding="4dp"
                 android:fontFamily="@font/inter_semi_bold"
                 android:gravity="center_vertical"

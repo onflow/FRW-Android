@@ -118,7 +118,6 @@
     <string name="verify_pin">PIN 확인</string>
     <string name="verify_pin_tip">따라서 PIN 로 백업을 보호합니다.</string>
     <string name="enter_verify_pin_tip">이 백업을 만들 때 PIN 를 입력하세요.</string>
-    <string name="verify_pin_code_error">올바른 PIN 를 입력했는지 확인하세요.</string>
     <string name="enter_current_pin_code">현재 PIN 코드를 입력하세요.</string>
     <string name="do_not_share_secret">비밀 문구를 공유하지 마세요!</string>
     <string name="do_not_share_secret_desc">누군가 내 비밀 문구를 알고 있다면 지갑을 완전히 제어할 수 있습니다.</string>
@@ -244,7 +243,7 @@
     <string name="reset">초기화</string>
     <string name="skip">건너뛰기</string>
     <string name="start">시작</string>
-    <string name="guide_title_1">NFT를 위한 플레이그라운드\n</string>
+    <string name="guide_title_1">Playground\nfor your NFTs</string>
     <string name="guide_desc_1">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
     <string name="guide_title_2">\n모든 토큰을 모으십시오.</string>
     <string name="guide_desc_2">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
@@ -305,11 +304,11 @@
     <string name="stake_guide_header1">다음과 같은 경우 리워드 적립</string>
     <string name="stake_guide_header2">흐름 관리</string>
     <string name="lets_staking">스테이킹 시작하기</string>
-    <string name="stake_guide_desc_1">최대 <font color="#60C293"><strong>13%</strong></font>
-        연간 최대 13%</string>
-    <string name="stake_guide_desc_2">스테이킹을 할 때 <font color="#60C293"><strong>흐름</strong></font> 을 스테이킹하면 <font color="#60C293"><strong>Flow</strong></font>. 당신은 할 수 있습니다 <font color="#60C293"><strong>거래</strong></font> 이 유동 자산을 언제든지 거래할 수 있습니다.</string>
-    <string name="stake_guide_desc_3">적립을 시작하면 <font color="#60C293"><strong>바로</strong></font>.</string>
-    <string name="stake_guide_desc_4">보상은 입금에 자동으로 적립됩니다. <font color="#60C293"><strong>며칠마다</strong></font>.</string>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+        per year.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
     <string name="staking_provider">스테이킹 제공자</string>
     <string name="select_provider">공급자 선택</string>
     <string name="stake">스테이크</string>
@@ -493,9 +492,6 @@
     <string name="wallet_already_logged_in">이 지갑은 이미 로그인되어 있습니다.</string>
     <string name="google_drive">Google 드라이브</string>
     <string name="add_other_device">다른 장치 추가</string>
-    <string name="restore_failed">복원에 실패했습니다. 나중에 다시 시도하세요.</string>
-    <string name="restore_failed_option">복원에 실패했습니다. 백업 옵션이 동일한
-        지갑에 속하는지 확인합니다.</string>
     <string name="revoke_device">장치 해지</string>
     <string name="wrong_network">스위치 네트워크</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -553,8 +549,7 @@
         Wallet
 uses to turn your device into a hardware wallet.</string>
     <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready,
-let’s get started!</string>
+    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
@@ -563,4 +558,45 @@ let’s get started!</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
     <string name="appearance">Appearance</string>
+    <string name="current_device">현재 장치</string>
+    <string name="create_username_tip">다른 플로우 월렛 사용자는 고유한 사용자 이름을 통해 사용자를 찾아 결제를 보낼 수 있습니다.</string>
+    <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
+    <string name="create_backup">백업 만들기</string>
+    <string name="upload_again">다시 업로드</string>
+    <string name="backup_uploaded">백업 업로드</string>
+    <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="try_to_connect">Try to Connect</string>
+    <string name="revoked">취소됨</string>
+    <string name="revoking">Revoking...</string>
+    <string name="full_access">전체 액세스</string>
+    <string name="multi_sign">멀티사인</string>
+    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
+    <string name="login_failure">Login Failure</string>
+    <string name="move_nft_failed">NFT 이동 실패</string>
+    <string name="move_nft_success">NFT 성공 이동</string>
+    <string name="send_nft_success">NFT 성공 보내기</string>
+    <string name="send_nft_failed">NFT 전송 실패</string>
+    <string name="sync_account_info_failure">Sync Account Info Failure</string>
+    <string name="add_public_key_failure">Add Public Key Failure</string>
+    <string name="send_response_failure">Send Response Failure</string>
+    <string name="collection_list">Collection List</string>
+    <string name="balance_value">Balance %1$d</string>
+    <string name="backup_not_found">Backup Not Found</string>
+    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
+    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="backup_decryption_failed_desc">The entered PIN code did not decrypt the backup. Please check your PIN and try again.</string>
+    <string name="no_account_found">No Backup Account Found</string>
+    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="restore_failed">복원에 실패했습니다</string>
+    <string name="restore_failed_desc">Please try again later.</string>
+    <string name="debug_view">Debug View</string>
+    <string name="export_log">Export Log</string>
+    <string name="view_recovery_phrase">복구 문구 보기</string>
+    <string name="clear">Clear</string>
+    <string name="send_success">Send Success</string>
+    <string name="send_failed">Send Failed</string>
+    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
+    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="update_avatar_success">Update Avatar Success</string>
+    <string name="update_avatar_failed">Update Avatar Failed</string>
 </resources>

@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
@@ -12,11 +14,7 @@ class ChildAccountDetailViewModel : ViewModel() {
     val nftCollectionsLiveData = MutableLiveData<List<CollectionData>>()
     val coinListLiveData = MutableLiveData<List<CoinData>>()
 
-    fun queryCollection(account: ChildAccount) {
-        viewModelIOScope(this) {
-            queryNft(account)
-        }
-    }
+    private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
     // id format A.a60698727837eccf.GamePieceNFT.Collection
     fun queryCoinList(account: ChildAccount) {
@@ -45,21 +43,23 @@ class ChildAccountDetailViewModel : ViewModel() {
         }
     }
 
-    private fun queryNft(account: ChildAccount) {
+    fun queryCollections(account: ChildAccount) {
         viewModelIOScope(this) {
-            val collections = queryChildAccountNftCollections(account.address)
-            logd("ChildAccountDetailViewModel", collections)
+            val collectionIds = queryChildAccountNFTCollectionID(account.address)
             val collectionList = mutableListOf<CollectionData>()
-            collections.forEach{
-                val nftCollection = NftCollectionConfig.getByStoragePath(it.path)
+            val nftCollection = service.nftCollectionsOfAccount(account.address)
+            collectionIds.forEach { contractId ->
+                val collectionWrapper = nftCollection.data?.firstOrNull { it.collection?.contractId() == contractId }
+                val collection = collectionWrapper?.collection ?: NftCollectionConfig.getByContractId(contractId)
+                val contractName = contractId.split(".", ignoreCase = true, limit = 0)[2]
                 collectionList.add(
                     CollectionData(
-                        it.id,
-                        nftCollection?.name ?: it.display.name,
-                        nftCollection?.logo() ?: it.display.squareImage,
-                        it.path,
-                        it.id.split(".", ignoreCase = true, limit = 0)[2],
-                        it.idList
+                        contractId,
+                        collection?.name ?: contractName,
+                        collection?.logo() ?: "",
+                        account.address,
+                        collection?.contractName ?: contractName,
+                        collectionWrapper?.ids ?: emptyList()
                     )
                 )
             }

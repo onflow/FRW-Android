@@ -1,11 +1,15 @@
 package com.flowfoundation.wallet.widgets.webview.evm
 
-import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.fragment.app.FragmentActivity
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.evm.MAINNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.evm.PREVIEWNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.evm.TESTNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.evm.getNetworkStringByChainId
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
@@ -14,12 +18,14 @@ import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
+import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.google.gson.Gson
 import com.nftco.flow.sdk.bytesToHex
@@ -54,15 +60,32 @@ class EvmInterface(
                     )
                     if (connect) {
                         val address = EVMWalletManager.getEVMAddress()
-                        val setAddress = "window.$network.setAddress(\"$address\");"
-                        val callback = "window.$network.sendResponse($id, [\"$address\"])"
-                        webView.post {
-                            webView.evaluateJavascript(setAddress) {
-                                // ignore
+                        webView.setAddress(network, address.orEmpty(), id)
+                    }
+                }
+            }
+            DAppMethod.SWITCH_ETHEREUM_CHAIN -> {
+                uiScope {
+                    when (val rpcChainId = extractRPCChainId(obj)) {
+                        MAINNET_CHAIN_ID, TESTNET_CHAIN_ID, PREVIEWNET_CHAIN_ID -> {
+                            if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager,
+                                FclDialogModel(
+                                    title = webView.title,
+                                    url = webView.url,
+                                    network = getNetworkStringByChainId(rpcChainId)
+                                )
+                            )) {
+                                logd(TAG, "switch network to::${getNetworkStringByChainId(rpcChainId)}")
+                                return@uiScope
                             }
-                            webView.evaluateJavascript(callback) { value ->
-                                println(value)
-                            }
+                            logd(TAG, "no need to switch")
+                            webView.sendNull(network, id)
+                        }
+                        else -> {
+                            logd(TAG, "Unsupported ChainId::$rpcChainId")
+                            val message = activity().getString(R.string.unsupported_chain_id, rpcChainId)
+                            toast(msg = message)
+                            webView.sendError(network, message, id)
                         }
                     }
                 }
@@ -82,9 +105,9 @@ class EvmInterface(
             }
             DAppMethod.SIGN_TRANSACTION -> {
                 if (network == ETH_NETWORK) {
-                    Log.d(TAG, "transaction obj::${obj.toString()}")
+                    logd(TAG, "transaction obj::$obj")
                     val transaction = Gson().fromJson(obj.optString("object"), EvmTransaction::class.java)
-                    Log.d(TAG, "transaction::${transaction.toString()}")
+                    logd(TAG, "transaction::$transaction")
                     uiScope {
                         handleTransaction(transaction, id, network)
                     }
@@ -120,6 +143,12 @@ class EvmInterface(
                 }
             }
         }
+    }
+
+    private fun extractRPCChainId(json: JSONObject): Int {
+        val param = json.getJSONObject("object")
+        val chainId = param.getString("chainId")
+        return chainId.removePrefix("0x").toInt(radix = 16)
     }
 
     private fun extractMessage(json: JSONObject): ByteArray {

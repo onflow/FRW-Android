@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setSpannableText
-import com.flowfoundation.wallet.utils.toast
 import wallet.core.jni.HDWallet
 
 
@@ -59,7 +58,7 @@ class RestorePinCodePresenter(
         try {
             val data = restoreViewModel.getMnemonicData()
             if (data.isEmpty()) {
-                toast(msg = "No backup found")
+                restoreViewModel.toBackupNotFound()
                 return
             }
             val mnemonic = decryptMnemonic(data, pinCode)
@@ -67,8 +66,8 @@ class RestorePinCodePresenter(
             HDWallet(mnemonic, "")
             restoreViewModel.addMnemonicToTransaction(mnemonic)
         } catch (e: Exception) {
-            toast(msgRes = R.string.verify_pin_code_error)
             binding.pinInput.shakeAndClear(keysCLear = true)
+            restoreViewModel.toBackupDecryptionFailed()
         }
     }
 }

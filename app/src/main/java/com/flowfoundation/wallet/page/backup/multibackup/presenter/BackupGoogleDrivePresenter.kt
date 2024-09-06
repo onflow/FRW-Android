@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveState
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.getPinCode
 
@@ -61,54 +62,53 @@ class BackupGoogleDrivePresenter(
             when (model) {
                 BackupGoogleDriveState.CREATE_BACKUP -> {
                     btnNext.setProgressVisible(false)
-                    tvOptionTitle.text = "Backup " + (withPinViewModel.getCurrentIndex() + 1) + ":" +
-                            " Google Drive Backup"
+                    tvOptionTitle.text = fragment.requireContext().getString(R.string.backup_step_google_drive, (withPinViewModel.getCurrentIndex() + 1))
                     clStatusLayout.visibility = View.GONE
-                    btnNext.text = "Create Backup"
+                    btnNext.text = R.string.create_backup.res2String()
                 }
                 BackupGoogleDriveState.UPLOAD_BACKUP -> {
                     btnNext.setProgressVisible(false)
-                    tvOptionTitle.text = "Upload Backup"
+                    tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
                     viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
                     tvUpload.setTextColor(R.color.text_2.res2color())
                     viewLine.setBackgroundColor(R.color.text_3.res2color())
                     viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.text_3.res2color())
                     tvRegistration.setTextColor(R.color.text_3.res2color())
-                    btnNext.text = "Upload Backup"
+                    btnNext.text = R.string.upload_backup.res2String()
                 }
                 BackupGoogleDriveState.UPLOAD_BACKUP_FAILURE -> {
                     btnNext.setProgressVisible(false)
-                    tvOptionTitle.text = "Upload Backup"
+                    tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
                     viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.accent_red.res2color())
                     tvUpload.setTextColor(R.color.accent_red.res2color())
                     viewLine.setBackgroundColor(R.color.text_3.res2color())
                     viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.text_3.res2color())
                     tvRegistration.setTextColor(R.color.text_3.res2color())
-                    btnNext.text = "Upload Again"
+                    btnNext.text = R.string.upload_again.res2String()
                 }
                 BackupGoogleDriveState.REGISTRATION_KEY_LIST -> {
-                    tvOptionTitle.text = "Upload Backup"
+                    tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
                     viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
                     tvUpload.setTextColor(R.color.text_2.res2color())
                     viewLine.setBackgroundColor(R.color.text_2.res2color())
                     viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
                     tvRegistration.setTextColor(R.color.text_2.res2color())
-                    btnNext.text = "Upload Backup"
+                    btnNext.text = R.string.upload_backup.res2String()
                 }
                 BackupGoogleDriveState.NETWORK_ERROR -> {
                     btnNext.setProgressVisible(false)
-                    tvOptionTitle.text = "Network Connection Lost"
+                    tvOptionTitle.text = R.string.network_connect_lost.res2String()
                     clStatusLayout.visibility = View.GONE
-                    btnNext.text = "Try to Connect"
+                    btnNext.text = R.string.try_to_connect.res2String()
                 }
                 BackupGoogleDriveState.BACKUP_SUCCESS -> {
                     btnNext.setProgressVisible(false)
-                    tvOptionTitle.text = "Backup Uploaded"
+                    tvOptionTitle.text = R.string.backup_uploaded.res2String()
                     clStatusLayout.visibility = View.VISIBLE
-                    btnNext.text = "Next"
+                    btnNext.text = R.string.next.res2String()
                 }
             }
         }

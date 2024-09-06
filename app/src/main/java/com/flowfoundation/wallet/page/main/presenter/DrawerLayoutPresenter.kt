@@ -183,8 +183,8 @@ class DrawerLayoutPresenter(
             }
         }
         ioScope {
-            val address = WalletManager.selectedWalletAddress()
-            drawer.setDrawerLockMode(if (address.isBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED)
+            val address = WalletManager.wallet()?.walletAddress()
+            drawer.setDrawerLockMode(if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED)
 
             val userInfo = AccountManager.userInfo() ?: return@ioScope
             uiScope {
@@ -193,7 +193,7 @@ class DrawerLayoutPresenter(
                     nickNameView.text = userInfo.nickname
 
                     val avatarUrl = userInfo.avatar.parseAvatarUrl()
-                    val avatar = if (avatarUrl.contains("boringavatars.com") || avatarUrl.contains("flovatar.com")) {
+                    val avatar = if (avatarUrl.contains("flovatar.com")) {
                         avatarUrl.svgToPng()
                     } else {
                         avatarUrl

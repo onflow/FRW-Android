@@ -3,8 +3,10 @@ package com.flowfoundation.wallet.page.nft.nftlist.utils
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
+import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollections
+import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 
 
 class NftCache(
@@ -34,6 +36,18 @@ class NftCache(
             return nfts.firstOrNull { it.uniqueId() == uniqueId } ?: continue
         }
         return null
+    }
+
+    fun findNFTByIdAndContractName(uniqueId: String, contractName: String?): Nft? {
+        val nft = findNftById(uniqueId)
+        if (nft != null) {
+            return nft
+        } else {
+            if (contractName.isNullOrBlank()) {
+                return null
+            }
+            return list(contractName).read()?.list?.firstOrNull{ it.uniqueId() == uniqueId }
+        }
     }
 }
 

@@ -39,7 +39,7 @@ class NFTFragmentPresenter(
 
             with(refreshLayout) {
                 isEnabled = true
-                setOnRefreshListener { refresh() }
+                setOnRefreshListener { viewModel.refresh() }
                 setColorSchemeColors(R.color.colorSecondary.res2color())
             }
         }
@@ -100,19 +100,6 @@ class NFTFragmentPresenter(
                     ) as Int
                 )
             }
-        }
-    }
-
-    private fun refresh() {
-        if (WalletManager.isEVMAccountSelected()) {
-            viewModel.requestEVMList()
-        } else {
-            if (isGridTabSelected()) {
-                viewModel.requestGrid()
-            } else {
-                viewModel.requestList()
-            }
-            viewModel.requestChildAccountCollectionList()
         }
     }
 

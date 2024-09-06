@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -172,6 +173,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initView() {
         with(binding) {
             val walletAddress = WalletManager.wallet()?.walletAddress()
@@ -230,7 +232,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             } ?: 0f
 
             uiScope {
-                binding.tvBalance.text = "Balance $fromBalance"
+                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance)
             }
         }
     }

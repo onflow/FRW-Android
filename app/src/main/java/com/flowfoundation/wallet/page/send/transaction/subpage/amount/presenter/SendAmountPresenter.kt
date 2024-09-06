@@ -90,11 +90,12 @@ class SendAmountPresenter(
             } catch (e: Exception) {
                 0.001f
             }
+            logd("send", "minFlowBalance $minFlowBalance")
         }
     }
 
     private fun minBalance(): Float {
-        return if (WalletManager.isEVMAccountSelected() || viewModel.currentCoin() != FlowCoin.SYMBOL_FLOW) {
+        return if (WalletManager.isEVMAccountSelected() || viewModel.currentCoin().lowercase() != FlowCoin.SYMBOL_FLOW.lowercase()) {
             0f
         } else {
             max(minFlowBalance, 0.001f)
@@ -200,6 +201,7 @@ class SendAmountPresenter(
     }
 
     private fun setMaxAmount() {
+        logd("send", "minBalance ${minBalance()}")
         val balance = (balance()?.balance ?: 0f) - minBalance()
         val coinRate = balance()?.coinRate ?: 0f
         val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).formatNum()
