@@ -49,9 +49,9 @@ class NftGridRequester {
 
         count = response.data.nftCount
 
-        cache().grid().cacheSync(NftList(dataList.toList(), count = count))
-
         dataList.addAll(response.data.nfts.orEmpty())
+
+        cache().grid().cacheSync(NftList(dataList.toList(), count = count))
 
         return NftList(list = response.data.nfts.orEmpty(), count = response.data.nftCount)
     }
