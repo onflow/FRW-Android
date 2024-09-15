@@ -15,6 +15,10 @@ import wallet.core.jni.Hash
 
 class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
 
+    fun getMnemonic(): String {
+        return wallet.mnemonic()
+    }
+
     override fun getPublicKey(): String {
         val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
         val publicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex()

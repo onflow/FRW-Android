@@ -10,6 +10,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_LOGIN_FINISH
 import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
 import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
@@ -54,11 +55,27 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
+    private val loginFinishReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val isSuccess = intent?.getBooleanExtra(EXTRA_SUCCESS, false) ?: false
+            if (isSuccess) {
+                createBackup()
+            } else {
+                backupStateLiveData.postValue(BackupGoogleDriveState.CREATE_BACKUP)
+            }
+        }
+    }
+
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
         LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
             uploadReceiver, IntentFilter(
                 ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
+            )
+        )
+        LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
+            loginFinishReceiver, IntentFilter(
+                ACTION_GOOGLE_DRIVE_LOGIN_FINISH
             )
         )
     }
@@ -97,7 +114,12 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
 
     override fun onCleared() {
         LocalBroadcastManager.getInstance(Env.getApp()).unregisterReceiver(uploadReceiver)
+        LocalBroadcastManager.getInstance(Env.getApp()).unregisterReceiver(loginFinishReceiver)
         super.onCleared()
+    }
+
+    fun getMnemonic(): String {
+        return backupCryptoProvider?.getMnemonic() ?: ""
     }
 
     fun registrationKeyList() {

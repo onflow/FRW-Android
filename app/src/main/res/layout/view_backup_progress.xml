@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingHorizontal="55dp">
+
+    <ImageView
+        android:id="@+id/iv_first_option"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_backup_google_drive"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <ImageView
+        android:id="@+id/iv_first_selected"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:visibility="visible"
+        android:src="@drawable/bg_border_circle_1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@id/iv_first_option"
+        app:layout_constraintEnd_toEndOf="@id/iv_first_option"/>
+
+    <View
+        android:id="@+id/line_one"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/bg_3"
+        app:layout_constraintTop_toTopOf="@id/iv_first_option"
+        app:layout_constraintBottom_toBottomOf="@id/iv_first_option"
+        app:layout_constraintStart_toEndOf="@id/iv_first_option"
+        app:layout_constraintEnd_toStartOf="@id/iv_second_option"/>
+
+    <ImageView
+        android:id="@+id/iv_second_option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_backup_recovery_phrase_gray"
+        app:layout_constraintStart_toEndOf="@id/iv_first_option"
+        app:layout_constraintEnd_toStartOf="@id/iv_complete_option"
+        app:layout_constraintTop_toTopOf="@id/iv_first_option"
+        app:layout_constraintBottom_toBottomOf="@id/iv_first_option"/>
+
+    <ImageView
+        android:id="@+id/iv_second_selected"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:visibility="gone"
+        android:src="@drawable/bg_border_circle_1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@id/iv_second_option"
+        app:layout_constraintEnd_toEndOf="@id/iv_second_option"/>
+
+    <View
+        android:id="@+id/line_two"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/bg_3"
+        app:layout_constraintTop_toTopOf="@id/iv_second_option"
+        app:layout_constraintBottom_toBottomOf="@id/iv_second_option"
+        app:layout_constraintStart_toEndOf="@id/iv_second_option"
+        app:layout_constraintEnd_toStartOf="@id/iv_complete_option"/>
+
+    <ImageView
+        android:id="@+id/iv_complete_option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_backup_complete_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/iv_first_option"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.BackupListManager
 import com.flowfoundation.wallet.page.backup.model.BackupKey
 import com.flowfoundation.wallet.page.backup.model.BackupListTitle
+import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceKeyModel
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
@@ -26,10 +27,13 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
 
     val devicesLiveData = MutableLiveData<List<Any>>()
     val backupListLiveData = MutableLiveData<List<Any>>()
+    val seedPhraseListLiveData = MutableLiveData<List<Any>>()
 
     private val devices = mutableListOf<Any>()
 
     private val backupList = mutableListOf<Any>()
+
+    private val seedPhraseList = mutableListOf<Any>()
 
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
@@ -49,6 +53,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
             if (backupKeyList.isNullOrEmpty()) {
                 BackupListManager.clear()
                 backupListLiveData.postValue(emptyList())
+                seedPhraseListLiveData.postValue(emptyList())
                 return@viewModelIOScope
             }
             val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
@@ -64,13 +69,20 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         }
                 }
-                BackupListManager.setBackupTypeList(keyList)
+                val multiKeyList = keyList.filterList { info?.backupInfo?.type != BackupType.FULL_WEIGHT_SEED_PHRASE.index}
+                BackupListManager.setBackupTypeList(multiKeyList)
                 backupList.clear()
-                backupList.addAll(keyList)
+                backupList.addAll(multiKeyList)
                 if (backupList.size > 0) {
                     backupList.add(0, BackupListTitle.MULTI_BACKUP)
                 }
                 backupListLiveData.postValue(backupList)
+                seedPhraseList.clear()
+                seedPhraseList.addAll(keyList.filterList { info?.backupInfo?.type == BackupType.FULL_WEIGHT_SEED_PHRASE.index})
+                if (seedPhraseList.isNotEmpty()) {
+                    seedPhraseList.add(0, BackupListTitle.FULL_WEIGHT_SEED_PHRASE)
+                }
+                seedPhraseListLiveData.postValue(seedPhraseList)
             }
         }
     }
@@ -144,6 +156,13 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             isRevoking = state.isProcessing()
                         )
                         backupListLiveData.value = backupList
+                    }
+                seedPhraseList.firstOrNull { (it is BackupKey) && it.keyId == AccountKeyManager.getRevokingIndexId() }
+                    ?.let { key ->
+                        seedPhraseList[seedPhraseList.indexOf(key)] = (key as BackupKey).copy(
+                            isRevoking = state.isProcessing()
+                        )
+                        seedPhraseListLiveData.value = seedPhraseList
                     }
             }
         }

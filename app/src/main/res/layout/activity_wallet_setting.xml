@@ -99,19 +99,26 @@
                 app:isArrowVisible="true"
                 app:titleId="@string/private_key"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="8dp"
-                android:background="@color/background"/>
-
-            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
-                android:id="@+id/recovery_preference"
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_recovery_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:iconEnable="false"
-                app:isArrowVisible="true"
-                app:titleId="@string/recovery_phrase"/>
+                android:orientation="vertical">
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginHorizontal="8dp"
+                    android:background="@color/background"/>
+
+                <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
+                    android:id="@+id/recovery_preference"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:iconEnable="false"
+                    app:isArrowVisible="true"
+                    app:titleId="@string/recovery_phrase"/>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
         </androidx.appcompat.widget.LinearLayoutCompat>
     </com.google.android.material.card.MaterialCardView>

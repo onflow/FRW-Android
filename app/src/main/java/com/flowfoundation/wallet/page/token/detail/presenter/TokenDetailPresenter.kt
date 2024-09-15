@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
@@ -81,11 +82,34 @@ class TokenDetailPresenter(
                 SwapDialog.show(activity.supportFragmentManager)
             }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
-            val moveVisible = if (coin.isFlowCoin()) {
-                true
-            } else if (coin.evmAddress.isNullOrBlank().not()) {
-                true
-            } else coin.flowIdentifier.isNullOrBlank().not()
+            val bgColor = if (WalletManager.isChildAccountSelected()) {
+                R.color.accent_gray_8.res2color()
+            } else {
+                R.color.accent_green_8.res2color()
+            }
+            val icColor = if (WalletManager.isChildAccountSelected()) {
+                R.color.accent_gray.res2color()
+            } else {
+                R.color.accent_green.res2color()
+            }
+            val bgTintColor = ColorStateList.valueOf(bgColor)
+            val icTintColor = ColorStateList.valueOf(icColor)
+            ivSend.imageTintList = icTintColor
+            ivSwap.imageTintList = icTintColor
+            ivTrade.imageTintList = icTintColor
+            btnSwap.setBackgroundColor(bgColor)
+            btnSend.backgroundTintList = bgTintColor
+            btnTrade.backgroundTintList = bgTintColor
+
+            val moveVisible = if (WalletManager.isChildAccountSelected()) {
+                false
+            } else {
+                if (coin.isFlowCoin()) {
+                    true
+                } else if (coin.evmAddress.isNullOrBlank().not()) {
+                    true
+                } else coin.flowIdentifier.isNullOrBlank().not()
+            }
             llEvmMoveToken.setVisible(EVMWalletManager.evmFeatureAvailable() && moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {

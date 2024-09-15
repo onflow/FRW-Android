@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupComplete
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveWithPinFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupRecoveryPhraseFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartFragment
+import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartWithAboutFragment
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOptionModel
 
@@ -28,7 +29,7 @@ class MultiBackupPresenter(private val activity: MultiBackupActivity) :
     private fun onOptionChange(model: BackupOptionModel) {
         val transition = createTransition(currentModel, model)
         val fragment = when (model.option) {
-            BackupOption.BACKUP_START -> BackupStartFragment()
+            BackupOption.BACKUP_START -> BackupStartWithAboutFragment()
             BackupOption.BACKUP_WITH_GOOGLE_DRIVE -> BackupGoogleDriveWithPinFragment()
             BackupOption.BACKUP_WITH_RECOVERY_PHRASE -> BackupRecoveryPhraseFragment()
             BackupOption.BACKUP_COMPLETED -> BackupCompletedFragment()

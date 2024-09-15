@@ -148,7 +148,7 @@
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:src="@drawable/ic_backup_recovery_phrase"
+            android:src="@drawable/ic_key_type_recovery_phrase"
             android:tint="@color/accent_green"/>
 
         <TextView

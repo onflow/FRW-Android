@@ -35,6 +35,10 @@ class WalletBackupActivity: BaseActivity() {
             devicesLiveData.observe(this@WalletBackupActivity) {
                 presenter.bindDeviceList(it)
             }
+            seedPhraseListLiveData.observe(this@WalletBackupActivity) {
+                presenter.bindSeedPhraseList(it)
+            }
+
         }
         setupToolbar()
     }

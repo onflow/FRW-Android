@@ -10,10 +10,10 @@
         android:id="@+id/iv_option_icon_first"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_marginTop="86dp"
+        android:layout_marginTop="24dp"
         android:src="@drawable/ic_backup_google_drive"
-        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintEnd_toStartOf="@id/iv_option_icon_plus"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
@@ -22,18 +22,18 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginHorizontal="16dp"
-        android:visibility="gone"
         android:src="@drawable/icon_backup_option_plus"
-        app:layout_constraintTop_toTopOf="@id/iv_option_icon_first"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/iv_option_icon_first"
+        app:layout_constraintEnd_toStartOf="@id/iv_option_icon_second"
         app:layout_constraintStart_toEndOf="@id/iv_option_icon_first"
-        app:layout_constraintEnd_toStartOf="@id/iv_option_icon_second"/>
+        app:layout_constraintTop_toTopOf="@id/iv_option_icon_first"/>
 
     <ImageView
         android:id="@+id/iv_option_icon_second"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:layout_marginTop="86dp"
+        android:layout_marginTop="24dp"
         android:src="@drawable/ic_backup_recovery_phrase"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
@@ -48,10 +48,10 @@
         android:layout_marginTop="24dp"
         android:fontFamily="@font/inter"
         android:gravity="center_horizontal"
+        android:text="@string/backup_completed"
         android:textColor="@color/text_1"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:text="@string/backup_completed"
         app:layout_constraintTop_toBottomOf="@id/iv_option_icon_first"/>
 
     <TextView
@@ -67,6 +67,35 @@
         android:textColor="@color/accent_gray"
         android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@id/tv_option_title"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingVertical="24dp"
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toTopOf="@id/btn_next"
+        app:layout_constraintTop_toBottomOf="@id/tv_option_title">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_item_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="18dp"
+            android:orientation="vertical"/>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lav_loading"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/lottie_loading"/>
 
     <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_next"

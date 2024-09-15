@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.network.model.AccountSyncRequest
 import com.flowfoundation.wallet.network.model.BackupInfoRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.model.BackupType
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseOption
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.ioScope
@@ -33,12 +34,22 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
 
     val mnemonicListLiveData = MutableLiveData<List<MnemonicModel>>()
 
+    val optionChangeLiveData = MutableLiveData<BackupRecoveryPhraseOption>()
+
     private val backupCryptoProvider: BackupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
 
     private var currentTxId: String? = null
 
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
+    }
+
+    fun changeOption(option: BackupRecoveryPhraseOption) {
+        optionChangeLiveData.postValue(option)
+    }
+
+    fun getMnemonic(): String {
+        return backupCryptoProvider.getMnemonic()
     }
 
     fun loadMnemonic() {

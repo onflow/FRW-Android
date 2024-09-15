@@ -227,6 +227,7 @@
     <color name="key_card_background">#ffffff</color>
     <color name="inaccessible_tag_background_gray">#408C9BAB</color>
     <color name="accent_blue_16">#29579AF2</color>
+    <color name="accent_blue_12">#1c579AF2</color>
     <color name="accent_purple_16">#297678ED</color>
     <color name="accent_gray_16">#298C9BAB</color>
     <color name="accent_gray_8">#148C9BAB</color>
@@ -282,4 +283,6 @@
     <color name="home_page_action_background">#A1FFFFFF</color>
 
     <color name="fill_3">#1476767E</color>
+    <color name="info_success_green">#0AC26C</color>
+    <color name="info_success_green_16">#290AC26C</color>
 </resources>

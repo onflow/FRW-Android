@@ -28,6 +28,7 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.utils.cleanBackupMnemonicPreference
 import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -199,6 +200,7 @@ suspend fun clearUserCache() {
     StakingManager.clear()
     CryptoProviderManager.clear()
     updateAccountTransferCount(0)
+    cleanBackupMnemonicPreference()
     delay(1000)
 }
 

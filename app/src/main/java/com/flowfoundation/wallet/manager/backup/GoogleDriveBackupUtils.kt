@@ -32,6 +32,7 @@ private val AES_PASSWORD by lazy {
 const val ACTION_GOOGLE_DRIVE_UPLOAD_FINISH = "ACTION_GOOGLE_DRIVE_UPLOAD_FINISH"
 const val ACTION_GOOGLE_DRIVE_DELETE_FINISH = "ACTION_GOOGLE_DRIVE_DELETE_FINISH"
 const val ACTION_GOOGLE_DRIVE_RESTORE_FINISH = "ACTION_GOOGLE_DRIVE_RESTORE_FINISH"
+const val ACTION_GOOGLE_DRIVE_CHECK_FINISH = "ACTION_GOOGLE_DRIVE_CHECK_FINISH"
 const val ACTION_GOOGLE_DRIVE_VIEW_FINISH = "ACTION_GOOGLE_DRIVE_VIEW_FINISH"
 const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
@@ -69,6 +70,21 @@ suspend fun uploadGoogleDriveBackup(
         sendCallback(false)
         throw e
     }
+}
+
+fun checkGoogleDriveBackup(
+    driveService: Drive,
+    provider: BackupCryptoProvider
+) {
+    val data = existingData(driveService).toMutableList()
+    val wallet = AccountManager.get()?.wallet
+    val exist = data.firstOrNull { it.userId == wallet?.id } != null
+    val blockAccount = FlowAddress(wallet?.walletAddress().orEmpty()).lastBlockAccount()
+    val keyExist = blockAccount?.keys?.firstOrNull { provider.getPublicKey() == it.publicKey.base16Value } != null
+    LocalBroadcastManager.getInstance(Env.getApp())
+        .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_CHECK_FINISH).apply {
+            putExtra(EXTRA_SUCCESS, exist && keyExist)
+        })
 }
 
 private fun existingData(driveService: Drive): List<BackupItem> {
