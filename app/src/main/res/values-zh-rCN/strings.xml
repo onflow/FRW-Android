@@ -31,6 +31,8 @@
     <string name="create_pin">创建 PIN 密码</string>
     <string name="pin">PIN</string>
     <string name="check_pin">请再次输入\n您的 PIN 码</string>
+    <string name="reset_pin">Please type\nyour new PIN</string>
+    <string name="reset_check_pin">Please type\nyour new PIN again</string>
     <string name="check_pin_tip">请确保您能记住自己的 PIN 码。</string>
     <string name="create_pin_tip">只有你自己可以解锁你的钱包。</string>
     <string name="backup_pin_tip">您的PIN码将用于安全地加密您的账户备份</string>
@@ -46,6 +48,7 @@
     <string name="backup_manually">手动备份</string>
     <string name="backup_to_google_drive">备份到谷歌硬盘</string>
     <string name="recovery_phrase">助记词</string>
+    <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">恢复</string>
     <string name="phrase">短语</string>
     <string name="nft">NFT</string>
@@ -136,7 +139,7 @@
     <string name="add_address">添加地址</string>
     <string name="checking">检查中</string>
     <string name="address_check_format_error">无效地址</string>
-    <string name="address_check_chain_error">\"在链中找不到地址</string>
+    <string name="address_check_chain_error">在链上找不到地址</string>
     <string name="address_check_success">已验证地址</string>
     <string name="address_search_empty_tip">抱歉，未找到相关账户，请检查您的输入并重试。</string>
     <string name="search_the_id">搜索 ID： %1$s</string>
@@ -454,7 +457,9 @@
     <string name="create_device_backup">创建设备备份</string>
     <string name="google_backup_note">注意：您的备份密钥经过端到端加密，绝不会发送至 Flow Wallet 服务器</string>
     <string name="create_multi_backup">创建多重备份</string>
+    <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">多重备份</string>
+    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
     <string name="device_backup">设备备份</string>
     <string name="other_devices">其他设备</string>
     <string name="multi_backup_tip">请选择两个或更多备份选项</string>
@@ -481,6 +486,7 @@
     <string name="device_backup_note">扫描 Flow Wallet 浏览器扩展程序显示的二维码，在设备之间同步钱包</string>
     <string name="create_device_backup_note">将设备用作备份钱包，轻松保护和恢复数字资产</string>
     <string name="create_multi_backup_note">使用 Google Drive、Passkey 等可信提供商创建云备份，并确保助记词的安全</string>
+    <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
     <string name="scan_desktop_device">扫描桌面设备</string>
     <string name="backup_detail">备份详情</string>
     <string name="backup_info">备份信息</string>
@@ -597,4 +603,25 @@
     <string name="landing_tips">😃It might take 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
+    <string name="backup_failed">Backup Failed</string>
+    <string name="backup_failed_desc">Your backup creation failed. Please try again later.</string>
+    <string name="backup_recovery_phrase_warning_note">You will be able to review your recovery phrase after you create the backup.</string>
+    <string name="backup_recovery_phrase_warning_1">I understand if I lose my recovery phrase, I may not be able to recover my account.</string>
+    <string name="backup_recovery_phrase_warning_2">I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.</string>
+    <string name="backup_recovery_phrase_warning_3">I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.</string>
+    <string name="backup_recovery_phrase_about_title">About Your</string>
+    <string name="backup_recovery_phrase_about_note">You have selected to use a 15-word
+        partial-weight recovery phrase. \n \nYour partial-weight recovery will correspond to a
+        partial-weight recovery key on your Flow account. \n \nYour partial-weight recovery
+        phrase on its own does not secure full access to your account. It must be used together with your other multi-backups to recover access to your account.</string>
+    <string name="recommended">Recommended</string>
+    <string name="backup_start_about_title">What is a</string>
+    <string name="backup_start_about_content">多重备份</string>
+    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
+    <string name="what_is_multi_backup">What is Multi-Backup?</string>
+    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
+    <string name="secured_by_key_store">Secured by KeyStore</string>
+    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
+        and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
+        using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
 </resources>

@@ -32,6 +32,8 @@
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
+    <string name="reset_pin">Please type\nyour new PIN</string>
+    <string name="reset_check_pin">Please type\nyour new PIN again</string>
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
     <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>

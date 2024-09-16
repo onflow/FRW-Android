@@ -31,6 +31,8 @@
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
+    <string name="reset_pin">Please type\nyour new PIN</string>
+    <string name="reset_check_pin">Please type\nyour new PIN again</string>
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
     <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>
@@ -46,6 +48,7 @@
     <string name="backup_manually">Backup Manually</string>
     <string name="backup_to_google_drive">Backup to google drive</string>
     <string name="recovery_phrase">Recovery Phrase</string>
+    <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFT</string>
@@ -137,7 +140,7 @@
     <string name="add_address">Add address</string>
     <string name="checking">Checking</string>
     <string name="address_check_format_error">Invalid address</string>
-    <string name="address_check_chain_error">\"Can\'t find address in chain</string>
+    <string name="address_check_chain_error">Can\'t find address in chain</string>
     <string name="address_check_success">Validated address</string>
     <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
@@ -456,7 +459,9 @@
     <string name="create_device_backup">Create Device Backup</string>
     <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">Create Multi-Backup</string>
+    <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">Multi-Backup</string>
+    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
@@ -483,6 +488,7 @@
     <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
     <string name="create_device_backup_note">Utilise Your Device as a Backup Wallet to Safeguard and Restore Your Digital Assets with Ease</string>
     <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
+    <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
     <string name="backup_info">Backup Info</string>
@@ -599,4 +605,25 @@ uses to turn your device into a hardware wallet.</string>
     <string name="landing_tips">😃It might take 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
+    <string name="backup_failed">Backup Failed</string>
+    <string name="backup_failed_desc">Your backup creation failed. Please try again later.</string>
+    <string name="backup_recovery_phrase_warning_note">You will be able to review your recovery phrase after you create the backup.</string>
+    <string name="backup_recovery_phrase_warning_1">I understand if I lose my recovery phrase, I may not be able to recover my account.</string>
+    <string name="backup_recovery_phrase_warning_2">I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.</string>
+    <string name="backup_recovery_phrase_warning_3">I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.</string>
+    <string name="backup_recovery_phrase_about_title">About Your</string>
+    <string name="backup_recovery_phrase_about_note">You have selected to use a 15-word
+        partial-weight recovery phrase. \n \nYour partial-weight recovery will correspond to a
+        partial-weight recovery key on your Flow account. \n \nYour partial-weight recovery
+        phrase on its own does not secure full access to your account. It must be used together with your other multi-backups to recover access to your account.</string>
+    <string name="recommended">Recommended</string>
+    <string name="backup_start_about_title">What is a</string>
+    <string name="backup_start_about_content">Multi-Backup</string>
+    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
+    <string name="what_is_multi_backup">What is Multi-Backup?</string>
+    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
+    <string name="secured_by_key_store">Secured by KeyStore</string>
+    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
+        and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
+        using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
 </resources>
