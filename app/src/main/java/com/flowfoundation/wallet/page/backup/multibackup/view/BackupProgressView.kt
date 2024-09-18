@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.databinding.ViewBackupProgressBinding
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 
 
@@ -22,8 +23,9 @@ class BackupProgressView @JvmOverloads constructor(
         addView(binding.root)
     }
 
-    fun setProgressInfo(currentOption: BackupOption, isCompleted: Boolean) {
+    fun setProgressInfo(currentOption: BackupOption, isCompleted: Boolean, isOnlyGoogleDrive: Boolean = false) {
         with(binding) {
+            ivSecondOption.setVisible(isOnlyGoogleDrive.not())
             if (isCompleted) {
                 ivSecondOption.setImageResource(R.drawable.ic_backup_recovery_phrase_green)
                 lineOne.setBackgroundResource(R.color.accent_green)

@@ -91,7 +91,8 @@ class BackupCompletedFragment : Fragment() {
                 ivOptionIconPlus.setVisible(false)
                 ivOptionIconSecond.setVisible(false)
             }
-            checkLoadingStatus()
+            binding.lavLoading.visible()
+            binding.btnNext.isEnabled = false
 
             btnNext.setOnClickListener {
                 if (isGoogleDriveBackupSuccess == null) {

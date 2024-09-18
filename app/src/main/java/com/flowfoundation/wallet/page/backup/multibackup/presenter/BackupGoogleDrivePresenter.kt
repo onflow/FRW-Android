@@ -9,6 +9,8 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentBackupGoogleDriveBinding
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.page.backup.BackupListManager
+import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveState
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
@@ -34,7 +36,14 @@ class BackupGoogleDrivePresenter(
 
     init {
         with(binding) {
-            backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE, false)
+            if (BackupListManager.hadBackupOption(BackupType.MANUAL)) {
+                backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE,
+                    isCompleted = false,
+                    isOnlyGoogleDrive = true
+                )
+            } else {
+                backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE, false)
+            }
             clStatusLayout.visibility = View.GONE
             btnNext.setOnClickListener {
                 if (btnNext.isProgressVisible()) {
@@ -107,6 +116,12 @@ class BackupGoogleDrivePresenter(
                     btnNext.text = R.string.try_to_connect.res2String()
                 }
                 BackupGoogleDriveState.BACKUP_SUCCESS -> {
+                    if (BackupListManager.hadBackupOption(BackupType.MANUAL)) {
+                        backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE,
+                            isCompleted = true,
+                            isOnlyGoogleDrive = true
+                        )
+                    }
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.backup_uploaded.res2String()
                     clStatusLayout.visibility = View.VISIBLE
