@@ -41,7 +41,7 @@ class WalletFragmentPresenter(
     private val recyclerView = binding.recyclerView
     private val adapter by lazy { WalletFragmentAdapter() }
 
-    private val viewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletFragmentViewModel::class.java] }
+    private val viewModel by lazy { ViewModelProvider(fragment)[WalletFragmentViewModel::class.java] }
 
     init {
         with(recyclerView) {

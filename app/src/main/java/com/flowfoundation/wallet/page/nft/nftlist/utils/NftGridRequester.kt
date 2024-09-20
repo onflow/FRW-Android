@@ -1,17 +1,15 @@
 package com.flowfoundation.wallet.page.nft.nftlist.utils
 
-import com.flowfoundation.wallet.manager.app.isPreviewnet
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
-import com.flowfoundation.wallet.network.model.NftCollectionWrapper
-import com.flowfoundation.wallet.network.model.NftCollectionsResponse
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 
 class NftGridRequester {
     private val limit = 24
     private var offset = 0
+    private var evmOffset = ""
 
     private var count = -1
 
@@ -31,11 +29,12 @@ class NftGridRequester {
             count = 0
             return NftList()
         }
-        val response = if (EVMWalletManager.evmFeatureAvailable()) {
-            service.getNFTList(address, offset, limit)
+        val response = if (WalletManager.isEVMAccountSelected()) {
+            service.getEVMNFTList(address, evmOffset, limit)
         } else {
-            service.nftList(address, offset, limit)
+            service.getNFTList(address, offset, limit)
         }
+
         if (response.status > 200) {
             throw Exception("request grid list error: $response")
         }
@@ -45,6 +44,10 @@ class NftGridRequester {
         if (response.data == null) {
             count = 0
             return NftList()
+        }
+
+        if (WalletManager.isEVMAccountSelected()) {
+            evmOffset = response.data.offset.orEmpty()
         }
 
         count = response.data.nftCount
@@ -66,12 +69,18 @@ class NftGridRequester {
 
         isLoadMoreRequesting = true
         offset += limit
-        val response = if (EVMWalletManager.evmFeatureAvailable()) {
-            service.getNFTList(nftWalletAddress(), offset, limit)
+        val response = if (WalletManager.isEVMAccountSelected()) {
+            service.getEVMNFTList(address, evmOffset, limit)
         } else {
-            service.nftList(nftWalletAddress(), offset, limit)
+            service.getNFTList(nftWalletAddress(), offset, limit)
         }
+
         response.data ?: return NftList()
+
+        if (WalletManager.isEVMAccountSelected()) {
+            evmOffset = response.data.offset.orEmpty()
+        }
+
         count = response.data.nftCount
 
         dataList.addAll(response.data.nfts.orEmpty())

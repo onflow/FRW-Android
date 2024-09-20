@@ -8,6 +8,8 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogBackupTipsBinding
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.setDoNotShowBackupDialog
 
 class BackupTipsDialog : BottomSheetDialogFragment() {
 
@@ -19,13 +21,21 @@ class BackupTipsDialog : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.root.requestFocus()
+        with(binding) {
+            root.requestFocus()
 
-        binding.closeButton.setOnClickListener { dismiss() }
-        binding.skipButton.setOnClickListener { dismiss() }
-        binding.startButton.setOnClickListener {
-            WalletBackupActivity.launch(requireContext())
-            dismiss()
+            llCheck.setOnClickListener {
+                checkBox.isChecked = checkBox.isChecked.not()
+                ioScope {
+                    setDoNotShowBackupDialog(checkBox.isChecked)
+                }
+            }
+            closeButton.setOnClickListener { dismiss() }
+            skipButton.setOnClickListener { dismiss() }
+            startButton.setOnClickListener {
+                WalletBackupActivity.launch(requireContext())
+                dismiss()
+            }
         }
     }
 

@@ -34,7 +34,7 @@ class StakingAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
             val coin = FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW) ?: return@ioScope
             if (isUnstake) {
                 val node = StakingManager.stakingNode(provider) ?: return@ioScope
-                balanceLiveData.postValue(node.tokensStaked)
+                balanceLiveData.postValue(node.tokensStaked + node.tokensCommitted)
             } else {
                 BalanceManager.getBalanceByCoin(coin)
             }

@@ -146,11 +146,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     }
                 }
             }
-            if (WalletManager.isEVMAccountSelected()) {
-                loadEVMCollections()
-            } else {
-                loadCollections()
-            }
+            loadCollections()
         }
 
     }

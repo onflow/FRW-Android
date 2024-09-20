@@ -82,7 +82,7 @@ fun Nft.name(): String? {
 }
 
 fun Nft.desc(): String? {
-    return postMedia.description ?: metadata.metadata?.firstOrNull { it.name == "description" }?.value
+    return postMedia.description ?: metadata?.metadata?.firstOrNull { it.name == "description" }?.value
 }
 
 fun Nft.video(): String? {

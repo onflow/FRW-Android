@@ -63,7 +63,12 @@ private fun authn(address: String, keyId: Int): String {
         "f_type": "ServiceProvider",
         "f_vsn": "1.0.0",
         "name": "Flow Wallet",
-        "address": "$address"
+        "address": "$address",
+        "description": "Flow Wallet is built from the ground up for Flow Blockchain!",
+        "color": "#41CC5D",
+        "supportEmail": "wallet@flow.com",
+        "website": "https://link.lilico.app/wc",
+        "icon": "https://lilico.app/fcw-logo.png"
     },
     "id": "$address",
     "f_vsn": "1.0.0",

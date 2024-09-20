@@ -15,7 +15,7 @@ import com.flowfoundation.wallet.page.wallet.walletListDiffCallback
 class WalletFragmentAdapter : BaseAdapter<Any>(walletListDiffCallback) {
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
-            is WalletHeaderModel -> TYPE_WALLET_HEADER
+//            is WalletHeaderModel -> TYPE_WALLET_HEADER
             is WalletCoinItemModel -> TYPE_WALLET_COIN_ITEM
             else -> TYPE_WALLET_COIN_ITEM
         }
@@ -23,7 +23,7 @@ class WalletFragmentAdapter : BaseAdapter<Any>(walletListDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            TYPE_WALLET_HEADER -> WalletHeaderPresenter(parent.inflate(R.layout.layout_wallet_header))
+//            TYPE_WALLET_HEADER -> WalletHeaderPresenter(parent.inflate(R.layout.layout_wallet_header))
             TYPE_WALLET_COIN_ITEM -> WalletCoinItemPresenter(parent.inflate(R.layout.layout_wallet_coin_item))
             else -> BaseViewHolder(View(parent.context))
         }

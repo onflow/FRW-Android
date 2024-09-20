@@ -32,6 +32,11 @@ class DataClasses {
 
     data class ComplexValue1(
         @SerializedName("value")
+        val value: ComplexValue2?
+    )
+
+    data class ComplexValue2(
+        @SerializedName("value")
         val value: FieldContainer?
     )
 
@@ -62,7 +67,7 @@ fun FlowScriptResponse.parseAccountMetas(): List<ChildAccount> {
         var icon: String? = null
         var description: String? = null
 
-        valueItem.value.value?.value?.fields?.forEach { fieldItem ->
+        valueItem.value.value?.value?.value?.fields?.forEach { fieldItem ->
             when (fieldItem.name) {
                 "name" -> {
                     if (fieldItem.value.value.isJsonPrimitive) {

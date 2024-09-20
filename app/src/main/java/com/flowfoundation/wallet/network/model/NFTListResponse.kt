@@ -21,6 +21,8 @@ data class NFTListData(
     val nftCount: Int,
     @SerializedName("nfts")
     var nfts: List<Nft>?,
+    @SerializedName("offset")
+    var offset: String?
 )
 
 @Parcelize
@@ -34,7 +36,7 @@ data class Nft(
     @SerializedName("media")
     val media: List<NFTMedia>?,
     @SerializedName("metadata")
-    val metadata: NFTMetadata,
+    val metadata: NFTMetadata?,
     @SerializedName("title")
     val title: String?,
     @SerializedName("postMedia")

@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.coin
 import android.text.format.DateUtils
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitApi
@@ -63,7 +64,11 @@ object CoinRateManager {
                         val tokenPriceResponse = apiService.getTokenPrices()
                         val tokenPriceList = tokenPriceResponse.data
                         tokenPriceList?.find {
-                            coin.contractName() == it.contractName
+                            if (WalletManager.isEVMAccountSelected()) {
+                                coin.address == it.evmAddress
+                            } else {
+                                coin.contractName() == it.contractName
+                            }
                         }?.let {
                             val rate = it.rateToUSD.toFloat()
                             updateCache(coin, rate, 0f)
@@ -102,7 +107,11 @@ object CoinRateManager {
 
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
-                                coin.contractName() == it.contractName
+                                if (WalletManager.isEVMAccountSelected()) {
+                                    coin.address == it.evmAddress
+                                } else {
+                                    coin.contractName() == it.contractName
+                                }
                             }?.let {
                                 val rate = it.rateToUSD.toFloat()
                                 updateCache(coin, rate, 0f)

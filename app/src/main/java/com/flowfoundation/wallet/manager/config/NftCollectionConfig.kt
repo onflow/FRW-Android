@@ -6,18 +6,15 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionsCache
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.NftCollectionListResponse
-import com.flowfoundation.wallet.network.model.PreviewnetNftCollectionListResponse
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import kotlinx.parcelize.Parcelize
-import java.net.URL
 
 object NftCollectionConfig {
 
@@ -51,7 +48,7 @@ object NftCollectionConfig {
             reloadConfig()
         }
         val list = config.toList()
-        return list.firstOrNull { it.path.storagePath == storagePath }
+        return list.firstOrNull { it.path?.storagePath == storagePath }
     }
 
     fun list() = config.toList()
@@ -61,11 +58,7 @@ object NftCollectionConfig {
             config.clear()
             config.addAll(loadFromCache())
 
-            val response = if (EVMWalletManager.evmFeatureAvailable()) {
-                retrofitApi().create(ApiService::class.java).getNFTCollections()
-            } else {
-                retrofitApi().create(ApiService::class.java).nftCollections()
-            }
+            val response = retrofitApi().create(ApiService::class.java).getNFTCollections()
             if (response.data.isNotEmpty()) {
                 config.clear()
                 config.addAll(response.data)
@@ -119,9 +112,11 @@ data class NftCollection(
     @SerializedName("official_website")
     val officialWebsite: String?,
     @SerializedName("path")
-    val path: Path,
+    val path: Path?,
     @SerializedName("evmAddress")
     val evmAddress: String?,
+    @SerializedName("flowIdentifier")
+    val flowIdentifier: String?,
 ) : Parcelable {
 
     fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"

@@ -55,6 +55,7 @@ private val KEY_CURRENCY_FLAG = stringPreferencesKey("KEY_CURRENCY_FLAG")
 private val KEY_IS_ROOT_DETECTED_DIALOG_SHOWN = booleanPreferencesKey("KEY_IS_ROOT_DETECTED_DIALOG_SHOWN")
 private val KEY_IS_PROFILE_SWITCH_TIPS_SHOWN = booleanPreferencesKey("KEY_IS_PROFILE_SWITCH_TIPS_SHOWN")
 private val KEY_DO_NOT_SHOW_MOVE_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SHOW_MOVE_DIALOG")
+private val KEY_DO_NOT_SHOW_BACKUP_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SHOW_BACKUP_DIALOG")
 private val KEY_NOTIFICATION_READ_LIST = stringPreferencesKey("KEY_NOTIFICATION_READ_LIST")
 
 private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
@@ -269,6 +270,14 @@ suspend fun isShowMoveDialog(): Boolean {
 
 suspend fun setDoNotShowMoveDialog(notShow: Boolean) {
     dataStore.edit { it[KEY_DO_NOT_SHOW_MOVE_DIALOG] = notShow }
+}
+
+suspend fun isShowBackupDialog(): Boolean {
+    return dataStore.data.map { it[KEY_DO_NOT_SHOW_BACKUP_DIALOG] ?: false }.first().not()
+}
+
+suspend fun setDoNotShowBackupDialog(notShow: Boolean) {
+    dataStore.edit { it[KEY_DO_NOT_SHOW_BACKUP_DIALOG] = notShow }
 }
 
 fun getSelectedWalletAddress(): String? {

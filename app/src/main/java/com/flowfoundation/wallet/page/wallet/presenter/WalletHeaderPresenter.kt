@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
@@ -45,12 +46,13 @@ import com.flowfoundation.wallet.wallet.toAddress
 import java.util.Date
 
 class WalletHeaderPresenter(
+    private val fragment: Fragment,
     private val view: View,
 ) : BaseViewHolder(view), BasePresenter<WalletHeaderModel?> {
 
     private val binding by lazy { LayoutWalletCoordinatorHeaderBinding.bind(view) }
 
-    private val viewModel by lazy { ViewModelProvider(findActivity(view) as FragmentActivity)[WalletFragmentViewModel::class.java] }
+    private val viewModel by lazy { ViewModelProvider(fragment)[WalletFragmentViewModel::class.java] }
 
     private val activity by lazy { findActivity(view) as? FragmentActivity }
 
@@ -98,16 +100,12 @@ class WalletHeaderPresenter(
                 llReceive.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
                 ivAddToken.setOnClickListener { AddTokenActivity.launch(view.context) }
                 cvSwap.setOnClickListener {
-                    if (AppConfig.isInAppSwap()) {
-                        SwapActivity.launch(view.context)
-                    } else {
-                        activity?.let {
-                            openBrowser(
-                                it,
-                                "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
-                                        ".increment.fi/swap"
-                            )
-                        }
+                    activity?.let {
+                        openBrowser(
+                            it,
+                            "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                                    ".increment.fi/swap"
+                        )
                     }
                 }
                 cvStake.setOnClickListener { openStakingPage(view.context) }

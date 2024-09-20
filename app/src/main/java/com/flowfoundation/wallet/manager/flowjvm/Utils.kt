@@ -140,16 +140,16 @@ fun Nft.formatCadence(script: String): String {
 fun NftCollection.formatCadence(script: String): String {
     return script.replace("<NFT>", contractName)
         .replace("<NFTAddress>", address)
-        .replace("<CollectionStoragePath>", path.storagePath)
-        .replace("<CollectionPublic>", path.publicCollectionName ?: "")
-        .replace("<CollectionPublicPath>", path.publicPath)
+        .replace("<CollectionStoragePath>", path?.storagePath ?: "")
+        .replace("<CollectionPublic>", path?.publicCollectionName ?: "")
+        .replace("<CollectionPublicPath>", path?.publicPath ?: "")
         .replace("<Token>", contractName)
         .replace("<TokenAddress>", address)
-        .replace("<TokenCollectionStoragePath>", path.storagePath)
-        .replace("<TokenCollectionPublic>", path.publicCollectionName ?: "")
-        .replace("<TokenCollectionPublicPath>", path.publicPath)
-        .replace("<CollectionPublicType>", path.publicType ?: "")
-        .replace("<CollectionPrivateType>", path.privateType ?: "")
+        .replace("<TokenCollectionStoragePath>", path?.storagePath ?: "")
+        .replace("<TokenCollectionPublic>", path?.publicCollectionName ?: "")
+        .replace("<TokenCollectionPublicPath>", path?.publicPath ?: "")
+        .replace("<CollectionPublicType>", path?.publicType ?: "")
+        .replace("<CollectionPrivateType>", path?.privateType ?: "")
 }
 
 class CadenceArgumentsBuilder {

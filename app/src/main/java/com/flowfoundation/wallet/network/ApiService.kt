@@ -42,26 +42,6 @@ interface ApiService {
     @GET("/v1/account/info")
     suspend fun getAddressInfo(@Query("address") address: String): AddressInfoResponse
 
-    @GET("/api/nft/list")
-    suspend fun nftList(
-        @Query("address") address: String,
-        @Query("offset") offset: Int = 0,
-        @Query("limit") limit: Int = 25,
-    ): NFTListResponse
-
-    @GET("/api/nft/collectionList")
-    suspend fun nftsOfCollection(
-        @Query("address") address: String,
-        @Query("collectionIdentifier") collectionIdentifier: String,
-        @Query("offset") offset: Int = 0,
-        @Query("limit") limit: Int = 25,
-    ): NFTListResponse
-
-    @GET("/api/nft/id")
-    suspend fun nftCollectionsOfAccount(
-        @Query("address") address: String,
-    ): NftCollectionsResponse
-
     @GET("/api/v2/nft/list")
     suspend fun getNFTList(
         @Query("address") address: String,
@@ -82,15 +62,32 @@ interface ApiService {
         @Query("address") address: String,
     ): NftCollectionsResponse
 
+    @GET("/api/v3/evm/nft/list")
+    suspend fun getEVMNFTList(
+        @Query("address") address: String,
+        @Query("offset") offset: String = "",
+        @Query("limit") limit: Int = 25,
+    ): NFTListResponse
+
+    @GET("/api/v3/evm/nft/collectionList")
+    suspend fun getEVMNFTListOfCollection(
+        @Query("address") address: String,
+        @Query("collectionIdentifier") collectionIdentifier: String,
+        @Query("offset") offset: String = "",
+        @Query("limit") limit: Int = 25,
+    ): NFTListResponse
+
+    @GET("/api/v3/evm/nft/id")
+    suspend fun getEVMNFTCollections(
+        @Query("address") address: String,
+    ): NftCollectionsResponse
+
     @GET("/v2/nft/detail")
     suspend fun nftMeta(
         @Query("address") address: String,
         @Query("nftCollection") contractName: String,
         @Query("nftID") tokenId: String,
     ): CommonResponse
-
-    @GET("/api/nft/collections")
-    suspend fun nftCollections(): NftCollectionListResponse
 
     @GET("/api/v2/nft/collections")
     suspend fun getNFTCollections(): NftCollectionListResponse
@@ -234,15 +231,10 @@ interface ApiService {
     @GET("/api/v2/scripts")
     suspend fun getCadenceScript(): CadenceScriptResponse
 
-    @GET("/api/v2/evm/{evmAddress}/fts")
+    @GET("/api/v3/evm/{evmAddress}/fts")
     suspend fun getEVMTokenBalance(
         @Path("evmAddress") address: String,
         @Query("network") network: String
     ): EVMTokenBalanceResponse
 
-    @GET("/api/v2/evm/{evmAddress}/nfts")
-    suspend fun getEVMNFTCollections(
-        @Path("evmAddress") address: String,
-        @Query("network") network: String
-    ): EVMNFTCollectionsResponse
 }

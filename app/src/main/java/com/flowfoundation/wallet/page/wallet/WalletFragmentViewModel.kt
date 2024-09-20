@@ -9,6 +9,8 @@ import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
 import com.flowfoundation.wallet.manager.account.OnUserInfoReload
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.manager.app.chainNetwork
+import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -71,6 +73,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         viewModelIOScope(this) {
             loadWallet(true)
         }
+    }
+
+    fun clearDataList() {
+        dataList.clear()
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
@@ -141,7 +147,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                 loadCoinList()
             }
             TokenStateManager.fetchState()
-            StakingManager.refresh()
+            if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
+                StakingManager.refresh()
+            }
             ChildAccountCollectionManager.loadChildAccountTokenList()
             ioScope {
                 loadTransactionCount()

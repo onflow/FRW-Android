@@ -119,11 +119,11 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         if (contractAddress.isEmpty() || contractName.isEmpty()) {
                             return@viewModelIOScope
                         }
-                        val amount = transaction.amount.toBigDecimal().movePointRight(18)
+                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
                         bridgeTokenToFlow(contractAddress, contractName, amount, toAddress)
                     } else {
                         // COA -> EOA/COA
-                        val amount = transaction.amount.toBigDecimal().movePointRight(18).toBigInteger()
+                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
                         val function = Function(
                             "transfer",
                             listOf(Address(toAddress), Uint256(amount)), emptyList()
@@ -138,7 +138,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         transferToken(coin)
                     } else {
                         // Flow -> EOA/COA
-                        val amount = transaction.amount.toBigDecimal().movePointRight(18).toBigInteger()
+                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
                         val function = Function(
                             "transfer",
                             listOf(Address(toAddress), Uint256(amount)), emptyList()

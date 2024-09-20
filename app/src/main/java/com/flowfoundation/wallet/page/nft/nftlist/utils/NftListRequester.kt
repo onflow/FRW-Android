@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.nft.nftlist.utils
 
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
@@ -12,6 +13,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 class NftListRequester {
     private val limit = 24
     private var offset = 0
+    private var evmOffset = ""
 
     private var count = -1
 
@@ -30,19 +32,17 @@ class NftListRequester {
         if (address.isEmpty()) {
             return emptyList()
         }
-        val collectionResponse = if (EVMWalletManager.evmFeatureAvailable()) {
-            service.getNFTCollections(nftWalletAddress())
+
+        val collectionResponse = if (WalletManager.isEVMAccountSelected()) {
+            service.getEVMNFTCollections(address)
         } else {
-            service.nftCollectionsOfAccount(nftWalletAddress())
+            service.getNFTCollections(address)
         }
         if (collectionResponse.status > 200) {
             throw Exception("request nft list error: $collectionResponse")
         }
-        val collections = if (EVMWalletManager.evmFeatureAvailable()) {
-            collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true && it.ids?.isNotEmpty() == true }.orEmpty()
-        } else {
-            collectionResponse.data?.filter { it.collection?.address?.isNotBlank() == true }.orEmpty()
-        }
+        val collections = collectionResponse.data?.filter { it.collection?.address?.isNotBlank()== true && it.ids?.isNotEmpty() == true }.orEmpty()
+
         collectionList.clear()
         collectionList.addAll(collections)
         cache().collection().cacheSync(NftCollections(collections))
@@ -62,11 +62,10 @@ class NftListRequester {
     suspend fun request(collection: NftCollection, accountAddress: String = nftWalletAddress()): List<Nft> {
         resetOffset()
         dataList.clear()
-        val response = if (EVMWalletManager.evmFeatureAvailable()) {
+        val response = if (EVMWalletManager.isEVMWalletAddress(accountAddress)) {
+            service.getEVMNFTListOfCollection(accountAddress, collection.id, evmOffset, limit)
+        } else
             service.getNFTListOfCollection(accountAddress, collection.id, offset, limit)
-        } else {
-            service.nftsOfCollection(accountAddress, collection.id, offset, limit)
-        }
         if (response.status > 200) {
             throw Exception("request nft list error: $response")
         }
@@ -76,6 +75,10 @@ class NftListRequester {
         if (response.data == null) {
             count = 0
             return emptyList()
+        }
+
+        if (EVMWalletManager.isEVMWalletAddress(accountAddress)) {
+            evmOffset = response.data.offset.orEmpty()
         }
 
         count = response.data.nftCount
@@ -92,11 +95,12 @@ class NftListRequester {
         isLoadMoreRequesting = true
 
         offset += limit
-        val response = if (EVMWalletManager.evmFeatureAvailable()) {
-            service.getNFTListOfCollection(nftWalletAddress(), collection.id, offset, limit)
+        val response = if (WalletManager.isEVMAccountSelected()) {
+            service.getEVMNFTListOfCollection(nftWalletAddress(), collection.id, evmOffset, limit)
         } else {
-            service.nftsOfCollection(nftWalletAddress(), collection.id, offset, limit)
+            service.getNFTListOfCollection(nftWalletAddress(), collection.id, offset, limit)
         }
+
         response.data ?: return emptyList()
         count = response.data.nftCount
 

@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.databinding.ActivitySecurityPrivateKeyBinding
 import com.flowfoundation.wallet.databinding.ActivitySecurityPublicKeyBinding
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
@@ -41,6 +42,7 @@ class SecurityPublicKeyActivity : BaseActivity() {
             publicKeyView.text = cryptoProvider.getPublicKey()
 
             publicKeyCopyButton.setOnClickListener { copyToClipboard(cryptoProvider.getPublicKey()) }
+            tvLearnMore.setOnClickListener { openBrowser(this@SecurityPublicKeyActivity, "https://frw.gitbook.io/doc/faq/faq#where-is-my-seed-phrase-i-cant-find-it-on-flow-wallet-ios-or-android") }
 
             hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
             signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().id)

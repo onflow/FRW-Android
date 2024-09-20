@@ -47,7 +47,7 @@ class ChildAccountDetailViewModel : ViewModel() {
         viewModelIOScope(this) {
             val collectionIds = queryChildAccountNFTCollectionID(account.address)
             val collectionList = mutableListOf<CollectionData>()
-            val nftCollection = service.nftCollectionsOfAccount(account.address)
+            val nftCollection = service.getNFTCollections(account.address)
             collectionIds.forEach { contractId ->
                 val collectionWrapper = nftCollection.data?.firstOrNull { it.collection?.contractId() == contractId }
                 val collection = collectionWrapper?.collection ?: NftCollectionConfig.getByContractId(contractId)

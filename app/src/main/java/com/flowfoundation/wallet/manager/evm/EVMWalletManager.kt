@@ -50,10 +50,6 @@ object EVMWalletManager {
         return canEnableEVM() && haveEVMAddress().not()
     }
 
-    fun evmFeatureAvailable(): Boolean {
-        return CadenceApiManager.getCadenceVersion() >= 1.0f
-    }
-
     private fun canEnableEVM(): Boolean {
         return CADENCE_CREATE_COA_ACCOUNT.isNotEmpty()
     }
@@ -63,7 +59,7 @@ object EVMWalletManager {
     }
 
     fun updateEVMAddress() {
-        if (evmAddressMap.isEmpty() || evmAddressMap[chainNetWorkString()].isNullOrBlank()) {
+        if (evmAddressMap.isEmpty() || getEVMAddress().isNullOrBlank()) {
             fetchEVMAddress()
         }
     }
@@ -77,14 +73,13 @@ object EVMWalletManager {
         logd(TAG, "fetchEVMAddress()")
         ioScope {
             val address = cadenceQueryEVMAddress()
-            val prefixAddress = address?.toAddress()
-            logd(TAG, "fetchEVMAddress address::$prefixAddress")
-            if (prefixAddress != null) {
-                evmAddressMap[chainNetWorkString()] = prefixAddress
+            logd(TAG, "fetchEVMAddress address::$address")
+            if (address.isNullOrEmpty()) {
+                callback?.invoke(false)
+            } else {
+                evmAddressMap[chainNetWorkString()] = address.toAddress()
                 AccountManager.updateEVMAddressInfo(evmAddressMap)
                 callback?.invoke(true)
-            } else {
-                callback?.invoke(false)
             }
         }
     }
@@ -109,7 +104,12 @@ object EVMWalletManager {
     }
 
     fun getEVMAddress(): String? {
-        return evmAddressMap[chainNetWorkString()]
+        val address = evmAddressMap[chainNetWorkString()]
+        return if (address.equals("0x")) {
+            return null
+        } else {
+            evmAddressMap[chainNetWorkString()]
+        }
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
@@ -301,7 +301,7 @@ object EVMWalletManager {
                 callback.invoke(false)
                 return
             }
-            val decimalAmount = amount.toBigDecimal().movePointRight(18)
+            val decimalAmount = amount.toBigDecimal().movePointRight(coin.decimal)
 
             val txId = cadenceBridgeFTFromEvm(address, contractName, decimalAmount)
             if (txId.isNullOrBlank()) {

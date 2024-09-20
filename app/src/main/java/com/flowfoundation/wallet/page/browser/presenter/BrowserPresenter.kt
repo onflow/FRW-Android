@@ -1,23 +1,23 @@
 package com.flowfoundation.wallet.page.browser.presenter
 
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.navigationBarHeight
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutBrowserBinding
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.*
 import com.flowfoundation.wallet.page.browser.model.BrowserModel
 import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
+import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 
 class BrowserPresenter(
@@ -41,14 +41,14 @@ class BrowserPresenter(
                 refreshButton.setOnClickListener { webview()?.reload() }
                 backButton.setOnClickListener { handleBackPressed() }
                 moveButton.setOnClickListener {
-                    if (EVMWalletManager.evmFeatureAvailable()) {
-                        val activity =
-                            BaseActivity.getCurrentActivity() ?: return@setOnClickListener
+                    val activity =
+                        BaseActivity.getCurrentActivity() ?: return@setOnClickListener
+                    if (WalletManager.haveChildAccount() || WalletManager.isChildAccountSelected() || EVMWalletManager.haveEVMAddress()) {
                         uiScope {
                             MoveDialog().showMove(activity.supportFragmentManager)
                         }
                     } else {
-                        toast(R.string.features_coming)
+                        EnableEVMActivity.launch(activity)
                     }
                 }
                 floatButton.setOnClickListener { shrinkBrowser() }

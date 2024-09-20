@@ -18,7 +18,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogSelectCollectionBinding
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.move.adapter.SelectCollectionAdapter
 import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -115,11 +114,7 @@ class SelectCollectionDialog: BottomSheetDialogFragment() {
             collectionListLiveData.observe(this@SelectCollectionDialog) { list ->
                 adapter.setNewDiffData(list)
             }
-            if (WalletManager.isEVMAccountSelected()) {
-                loadEVMCollections()
-            } else {
-                loadCollections()
-            }
+            loadCollections()
         }
     }
 

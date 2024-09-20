@@ -124,14 +124,6 @@ var CADENCE_SETUP_STAKING
     get() = CadenceApiManager.getCadenceStakingScript("setup")
     private set(value) {}
 
-const val CADENCE_CHECK_STAKING_ENABLED = """
-    import FlowIDTableStaking from 0xFlowIDTableStaking
-
-    pub fun main():Bool {
-      return FlowIDTableStaking.stakingEnabled()
-    }
-"""
-
 var CADENCE_GET_DELEGATOR_INFO
     get() = CadenceApiManager.getCadenceStakingScript("getDelegatesIndo")
     private set(value) {}

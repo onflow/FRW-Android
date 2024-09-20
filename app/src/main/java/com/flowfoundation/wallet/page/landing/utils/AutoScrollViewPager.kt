@@ -39,7 +39,7 @@ class AutoScrollViewPager(
 
     private fun startAutoScroll() {
         stopAutoScroll()
-        scheduledFuture = scheduler.scheduleAtFixedRate({
+        scheduledFuture = scheduler.scheduleWithFixedDelay({
             viewPager.post {
                 val nextItem = viewPager.currentItem + 1
                 if (nextItem < (viewPager.adapter?.itemCount ?: 0)) {

@@ -84,6 +84,11 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
         bindInfo()
     }
 
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(googleDriveViewReceiver)
+        super.onDestroy()
+    }
+
     @SuppressLint("SetTextI18n")
     private fun bindInfo() {
         with(binding) {

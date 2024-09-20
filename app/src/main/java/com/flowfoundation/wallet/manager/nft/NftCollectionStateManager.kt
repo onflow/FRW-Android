@@ -4,8 +4,10 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionStateCache
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckNFTListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceNftCheckEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceNftListCheckEnabled
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.logw
@@ -27,6 +29,9 @@ object NftCollectionStateManager {
     }
 
     fun fetchState(onFinish: (() -> Unit)? = null) {
+        if (WalletManager.isEVMAccountSelected()) {
+            return
+        }
         ioScope { fetchStateSync(onFinish) }
     }
 
@@ -36,6 +41,9 @@ object NftCollectionStateManager {
         val isEnableList = if (collectionCount > 60) {
             cadenceNftListCheckEnabled(collectionList.take(60)).orEmpty() + cadenceNftListCheckEnabled(collectionList.takeLast(collectionCount - 60)).orEmpty()
         } else cadenceNftListCheckEnabled(collectionList).orEmpty()
+
+        val collectionMap = cadenceCheckNFTListEnabled()
+        logd(TAG, "enable nft list:: ${collectionMap.toString()}")
 
         if (collectionList.size != isEnableList.size) {
             logw(TAG, "fetch error")

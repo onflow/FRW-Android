@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.nft.move
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTListFromChildToParent
@@ -42,16 +41,17 @@ class SelectNFTViewModel : ViewModel() {
     fun loadCollections() {
         viewModelIOScope(this) {
             val address = nftWalletAddress()
-            val collectionResponse = if(EVMWalletManager.evmFeatureAvailable())
+            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(address)) {
+                service.getEVMNFTCollections(address)
+            } else {
                 service.getNFTCollections(address)
-            else
-                service.nftCollectionsOfAccount(address)
+            }
             if (collectionResponse.data.isNullOrEmpty()) {
                 postEmpty()
                 return@viewModelIOScope
             }
-            val collection =
-                collectionResponse.data.firstOrNull { it.collection != null }?.collection
+            val collection =collectionResponse.data.firstOrNull { it.collection != null }?.collection
+
             if (collection == null) {
                 postEmpty()
                 return@viewModelIOScope
@@ -65,42 +65,8 @@ class SelectNFTViewModel : ViewModel() {
             )
             this.collectionContract = collection.contractName
             this.collectionAddress = collection.address
-            this.identifier = collection.path.privatePath?.removePrefix("/private/") ?: ""
+            this.identifier = collection.path?.privatePath?.removePrefix("/private/") ?: ""
             loadNFTList(collection.id)
-        }
-    }
-
-    fun loadEVMCollections() {
-        viewModelIOScope(this) {
-            val address = WalletManager.selectedWalletAddress()
-            val collectionsResponse = service.getEVMNFTCollections(address, chainNetWorkString())
-            if (collectionsResponse.data.isNullOrEmpty()) {
-                postEmpty()
-                return@viewModelIOScope
-            }
-            val collection = collectionsResponse.data.firstOrNull { it.flowIdentifier.isNullOrEmpty().not() && it.nftList.isNotEmpty() }
-            if (collection == null) {
-                postEmpty()
-                return@viewModelIOScope
-            }
-            collectionLiveData.postValue(
-                CollectionInfo(
-                    id = collection.getId(),
-                    name = collection.name,
-                    logo = collection.logo()
-                )
-            )
-            val list = collection.nftList.map {
-                NFTInfo(
-                    id = it.id,
-                    cover = it.thumb
-                )
-            }.toList()
-            this.collectionContract = collection.getContractName()
-            this.collectionAddress = collection.getContractAddress()
-            this.identifier = ""
-            nftListLiveData.postValue(list)
-            selectedNFTIdList.clear()
         }
     }
 
@@ -122,26 +88,20 @@ class SelectNFTViewModel : ViewModel() {
             )
         )
         selectedNFTIdList.clear()
-        if (detailInfo.isFlowCollection) {
-            loadNFTList(detailInfo.id)
-        } else {
-            nftListLiveData.postValue(detailInfo.nftList ?: emptyList())
-        }
+        loadNFTList(detailInfo.id)
     }
 
     private fun loadNFTList(collectionId: String) {
         viewModelIOScope(this) {
-            val nftListResponse = if (EVMWalletManager.evmFeatureAvailable()) {
-                service.getNFTListOfCollection(
-                    nftWalletAddress(), collectionId,
-                    0, 20
+            val nftListResponse = if (WalletManager.isEVMAccountSelected()) {
+                service.getEVMNFTListOfCollection(
+                    nftWalletAddress(), collectionId, "", 40
                 )
             } else {
-                service.nftsOfCollection(
-                    nftWalletAddress(), collectionId,
-                    0, 20
-                )
+                service.getNFTListOfCollection(
+                    nftWalletAddress(), collectionId, 0, 40)
             }
+
             val list = nftListResponse.data?.nfts?.map {
                 NFTInfo(
                     id = it.id,

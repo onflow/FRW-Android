@@ -123,24 +123,38 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/private_key_view"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
+        android:orientation="vertical"
         android:background="@drawable/bg_round_16dp"
-        android:backgroundTint="@color/accent_blue_12"
-        android:fontFamily="@font/inter_medium"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="19dp"
-        android:textColor="@color/text"
-        android:text="@string/secured_note"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/private_key_title"/>
+        android:backgroundTint="@color/accent_blue_12">
+
+        <TextView
+            android:id="@+id/private_key_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/text"
+            android:text="@string/secured_note"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/tv_learn_more"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="8dp"
+            android:paddingVertical="16dp"
+            android:fontFamily="@font/inter"
+            android:textStyle="bold"
+            android:text="@string/learn_more"
+            android:textColor="@color/info_notification_blue"/>
 
 
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
