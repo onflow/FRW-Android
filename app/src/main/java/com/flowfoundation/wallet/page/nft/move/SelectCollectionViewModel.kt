@@ -44,7 +44,8 @@ class SelectCollectionViewModel : ViewModel() {
                     contractAddress = collection.address,
                     count = it.count ?: 0,
                     isFlowCollection = EVMWalletManager.isEVMWalletAddress(address).not(),
-                    identifier = collection.path?.privatePath?.removePrefix("/private/") ?: ""
+                    identifier = collection.path?.privatePath?.removePrefix("/private/") ?: "",
+                    nftIdentifier = collection.getNFTIdentifier()
                 )
             }
             collectionList.addAll(collections)

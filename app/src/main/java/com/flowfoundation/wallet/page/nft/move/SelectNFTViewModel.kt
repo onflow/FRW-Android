@@ -34,9 +34,8 @@ class SelectNFTViewModel : ViewModel() {
     val moveCountLiveData = MutableLiveData<Int>()
     private val selectedNFTIdList = mutableListOf<String>()
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
-    private var collectionContract: String? = null
-    private var collectionAddress: String? = null
     private var identifier: String? = null
+    private var nftIdentifier: String? = null
 
     fun loadCollections() {
         viewModelIOScope(this) {
@@ -63,8 +62,7 @@ class SelectNFTViewModel : ViewModel() {
                     logo = collection.logo()
                 )
             )
-            this.collectionContract = collection.contractName
-            this.collectionAddress = collection.address
+            this.nftIdentifier = collection.getNFTIdentifier()
             this.identifier = collection.path?.privatePath?.removePrefix("/private/") ?: ""
             loadNFTList(collection.id)
         }
@@ -77,8 +75,7 @@ class SelectNFTViewModel : ViewModel() {
     }
 
     fun setCollectionInfo(detailInfo: CollectionDetailInfo) {
-        this.collectionContract = detailInfo.contractName
-        this.collectionAddress = detailInfo.contractAddress
+        this.nftIdentifier = detailInfo.nftIdentifier
         this.identifier = detailInfo.identifier
         collectionLiveData.postValue(
             CollectionInfo(
@@ -114,15 +111,14 @@ class SelectNFTViewModel : ViewModel() {
     }
 
     suspend fun moveSelectedNFT(toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
-        if (collectionContract == null || collectionAddress == null) {
+        if (nftIdentifier == null) {
             callback.invoke(false)
             return
         }
         if (WalletManager.isChildAccountSelected()) {
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                 EVMWalletManager.moveNFTList(
-                    collectionContract!!,
-                    collectionAddress!!,
+                    nftIdentifier!!,
                     selectedNFTIdList,
                     isMoveToEVM = true,
                     callback
@@ -137,8 +133,7 @@ class SelectNFTViewModel : ViewModel() {
         } else if (WalletManager.isEVMAccountSelected()) {
             // batch move from evm to parent
             EVMWalletManager.moveNFTList(
-                collectionContract!!,
-                collectionAddress!!,
+                nftIdentifier!!,
                 selectedNFTIdList,
                 isMoveToEVM = false,
                 callback
@@ -147,8 +142,7 @@ class SelectNFTViewModel : ViewModel() {
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                 // batch move from parent to evm
                 EVMWalletManager.moveNFTList(
-                    collectionContract!!,
-                    collectionAddress!!,
+                    nftIdentifier!!,
                     selectedNFTIdList,
                     isMoveToEVM = true,
                     callback
@@ -165,7 +159,7 @@ class SelectNFTViewModel : ViewModel() {
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val collection = NftCollectionConfig.get(collectionAddress, collectionContract.orEmpty())
+            val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())
             if (collection == null) {
                 callback.invoke(false)
                 return
@@ -201,7 +195,7 @@ class SelectNFTViewModel : ViewModel() {
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val collection = NftCollectionConfig.get(collectionAddress, collectionContract.orEmpty())
+            val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())
             if (collection == null) {
                 callback.invoke(false)
                 return
@@ -237,7 +231,7 @@ class SelectNFTViewModel : ViewModel() {
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val collection = NftCollectionConfig.get(collectionAddress, collectionContract.orEmpty())
+            val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())
             if (collection == null) {
                 callback.invoke(false)
                 return

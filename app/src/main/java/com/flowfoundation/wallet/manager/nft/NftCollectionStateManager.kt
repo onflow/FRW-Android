@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckNFTListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceNftCheckEnabled
-import com.flowfoundation.wallet.manager.flowjvm.cadenceNftListCheckEnabled
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -37,20 +36,16 @@ object NftCollectionStateManager {
 
     private fun fetchStateSync(onFinish: (() -> Unit)? = null) {
         val collectionList = NftCollectionConfig.list()
-        val collectionCount = collectionList.size
-        val isEnableList = if (collectionCount > 60) {
-            cadenceNftListCheckEnabled(collectionList.take(60)).orEmpty() + cadenceNftListCheckEnabled(collectionList.takeLast(collectionCount - 60)).orEmpty()
-        } else cadenceNftListCheckEnabled(collectionList).orEmpty()
 
         val collectionMap = cadenceCheckNFTListEnabled()
         logd(TAG, "enable nft list:: ${collectionMap.toString()}")
 
-        if (collectionList.size != isEnableList.size) {
+        if (collectionMap.isNullOrEmpty()) {
             logw(TAG, "fetch error")
             return
         }
-        collectionList.forEachIndexed { index, collection ->
-            val isEnable = isEnableList[index]
+        collectionList.forEach { collection ->
+            val isEnable = collectionMap.getOrDefault(collection.contractId(), false)
             val oldState = tokenStateList.firstOrNull { it.address == collection.address }
             tokenStateList.remove(oldState)
             tokenStateList.add(NftCollectionState(collection.name, collection.address, isEnable))

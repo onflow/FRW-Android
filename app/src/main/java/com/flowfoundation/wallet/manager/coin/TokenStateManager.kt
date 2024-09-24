@@ -123,7 +123,7 @@ object TokenStateManager {
         }
     }
 
-    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address == tokenAddress }?.isAdded ?: false
+    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address.lowercase() == tokenAddress.lowercase() }?.isAdded ?: false
 
     fun addListener(callback: TokenStateChangeListener) {
         uiScope { this.listeners.add(WeakReference(callback)) }

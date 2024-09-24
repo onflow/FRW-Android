@@ -8,8 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.databinding.FragmentWalletCreateWarningBinding
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseOption
+import com.flowfoundation.wallet.databinding.FragmentBackupSeedPhraseWarningBinding
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupSeedPhraseOption
 import com.flowfoundation.wallet.page.backup.viewmodel.BackupSeedPhraseViewModel
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -18,12 +17,12 @@ import com.flowfoundation.wallet.utils.toast
 
 class BackupSeedPhraseWarningFragment : Fragment() {
 
-    private lateinit var binding: FragmentWalletCreateWarningBinding
+    private lateinit var binding: FragmentBackupSeedPhraseWarningBinding
 
     private lateinit var pageViewModel: BackupSeedPhraseViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        binding = FragmentWalletCreateWarningBinding.inflate(inflater)
+        binding = FragmentBackupSeedPhraseWarningBinding.inflate(inflater)
         return binding.root
     }
 

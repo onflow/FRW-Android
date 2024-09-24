@@ -70,7 +70,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
     private fun sendStake() {
         ioScope {
-            if (!StakingManager.hasBeenSetup()) {
+            if (!checkStakingEnabled()) {
                 toast(msg = getString(R.string.staking_not_enabled, chainNetWorkString()))
                 uiScope { safeRun { dismiss() } }
                 return@ioScope
@@ -84,6 +84,15 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
                     uiScope { binding.sendButton.changeState(ButtonState.DEFAULT) }
                 }
             }
+        }
+    }
+
+    private fun checkStakingEnabled(): Boolean {
+        return try {
+            val response = CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
+            response?.parseBool(false) ?: false
+        } catch (e: Exception) {
+            false
         }
     }
 

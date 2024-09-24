@@ -144,9 +144,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         if (needReload) {
             needReload = false
             if (isRefresh || dataList.isEmpty()) {
-                loadCoinList()
+                TokenStateManager.fetchState()
             }
-            TokenStateManager.fetchState()
             if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
                 StakingManager.refresh()
             }

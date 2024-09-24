@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import kotlinx.parcelize.Parcelize
 import java.net.URL
 import java.util.concurrent.CopyOnWriteArrayList
@@ -134,6 +135,10 @@ data class FlowCoin(
     fun isCOABridgeCoin() = flowIdentifier.isNullOrBlank().not()
 
     fun canBridgeToCOA() = evmAddress.isNullOrBlank().not()
+
+    fun getFTIdentifier(): String {
+        return flowIdentifier ?: "A.${address.removeAddressPrefix()}.${contractName}.Vault"
+    }
 
     companion object {
         const val SYMBOL_FLOW = "flow"

@@ -102,6 +102,7 @@
     <color name="text_white">#000000</color>
     <color name="text_1">#FFFFFF</color>
     <color name="text_2">#CCFFFFFF</color>
+    <color name="info_text_3">#99FFFFFF</color>
     <color name="text_3">#66FFFFFF</color>
     <color name="text_4">#14FFFFFF</color>
     <color name="text_5">#E6000000</color>

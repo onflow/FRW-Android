@@ -36,11 +36,18 @@ object NftCollectionConfig {
         return list.firstOrNull { it.address == address && it.contractName == contractName }
     }
 
+    fun getByNFTIdentifier(nftIdentifier: String): NftCollection? {
+        if (config.isEmpty()) {
+            reloadConfig()
+        }
+        return config.toList().firstOrNull { it.getNFTIdentifier() == nftIdentifier }
+    }
+
     fun getByContractId(contractId: String): NftCollection? {
         if (config.isEmpty()) {
             reloadConfig()
         }
-        return config.toList().firstOrNull { it.contractId() == contractId }
+        return config.toList().firstOrNull { it.contractIdWithCollection() == contractId }
     }
 
     fun getByStoragePath(storagePath: String): NftCollection? {
@@ -100,9 +107,9 @@ data class NftCollection(
     @SerializedName("contract_name")
     val contractName: String,
     @SerializedName("description")
-    val description: String,
+    val description: String?,
     @SerializedName("logo")
-    val logo: String,
+    val logo: String?,
     @SerializedName("secure_cadence_compatible")
     val secureCadenceCompatible: CadenceCompatible?,
     @SerializedName("marketplace")
@@ -119,9 +126,18 @@ data class NftCollection(
     val flowIdentifier: String?,
 ) : Parcelable {
 
-    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+    fun getNFTIdentifier(): String {
+        return flowIdentifier ?: "A.${address.removeAddressPrefix()}.${contractName}.NFT"
+    }
+
+    fun contractIdWithCollection() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+
+    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}"
 
     fun logo(): String {
+        if (logo == null) {
+            return ""
+        }
         return if (logo.endsWith(".svg")) {
             logo.svgToPng()
         } else {

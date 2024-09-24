@@ -28,5 +28,7 @@ data class CollectionDetailInfo(
     @SerializedName("isFlowCollection")
     val isFlowCollection: Boolean,
     @SerializedName("identifier")
-    val identifier: String
+    val identifier: String,
+    @SerializedName("nftIdentifier")
+    val nftIdentifier: String
 )

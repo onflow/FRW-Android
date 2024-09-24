@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.flowjvm.*
+import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
 import com.flowfoundation.wallet.manager.staking.createStakingDelegatorId
@@ -105,7 +106,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
                 state = FlowTransactionStatus.PENDING.num,
-                type = TransactionState.TYPE_TRANSACTION_DEFAULT,
+                type = TransactionState.TYPE_STAKE_FLOW,
                 data = ""
             )
             TransactionStateManager.newTransaction(transactionState)

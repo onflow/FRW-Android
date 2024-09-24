@@ -108,7 +108,7 @@ object CoinRateManager {
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
                                 if (WalletManager.isEVMAccountSelected()) {
-                                    coin.address == it.evmAddress
+                                    coin.address.lowercase() == it.evmAddress?.lowercase()
                                 } else {
                                     coin.contractName() == it.contractName
                                 }

@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
 class ChildAccountDetailViewModel : ViewModel() {
@@ -49,7 +48,7 @@ class ChildAccountDetailViewModel : ViewModel() {
             val collectionList = mutableListOf<CollectionData>()
             val nftCollection = service.getNFTCollections(account.address)
             collectionIds.forEach { contractId ->
-                val collectionWrapper = nftCollection.data?.firstOrNull { it.collection?.contractId() == contractId }
+                val collectionWrapper = nftCollection.data?.firstOrNull { it.collection?.contractIdWithCollection() == contractId }
                 val collection = collectionWrapper?.collection ?: NftCollectionConfig.getByContractId(contractId)
                 val contractName = contractId.split(".", ignoreCase = true, limit = 0)[2]
                 collectionList.add(

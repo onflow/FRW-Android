@@ -2,24 +2,16 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_backup_recovery_phrase_warning"
+    android:id="@+id/fragment_wallet_create_warning"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupProgressView
-        android:id="@+id/backup_progress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        app:layout_constraintTop_toTopOf="parent"/>
+    android:layout_height="match_parent"
+    android:paddingHorizontal="@dimen/activity_padding">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        android:layout_marginTop="54dp"
-        android:layout_marginHorizontal="25dp"
-        app:layout_constraintBottom_toTopOf="@id/create_button"
+        app:layout_constraintBottom_toTopOf="@id/next_button"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -27,44 +19,39 @@
             android:layout_height="match_parent">
 
             <TextView
-                android:id="@+id/tv_option_title"
-                android:layout_width="match_parent"
+                android:id="@+id/title_1"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="40dp"
-                android:layout_marginTop="24dp"
-                android:fontFamily="@font/inter"
-                android:gravity="center_horizontal"
+                android:fontFamily="@font/montsettat"
+                android:text="@string/things_you"
                 android:textColor="@color/text_1"
-                android:textSize="20sp"
+                android:textSize="36sp"
                 android:textStyle="bold"
-                android:text="@string/recovery_phrase"
-                app:layout_constraintTop_toTopOf="parent"/>
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"/>
 
             <TextView
-                android:id="@+id/tv_option_note"
+                android:id="@+id/intro_text_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="25dp"
-                android:layout_marginTop="8dp"
                 android:fontFamily="@font/inter"
-                android:gravity="center_horizontal"
-                android:lineSpacingMultiplier="1.1"
-                android:text="@string/recovery_phrase_note"
-                android:textColor="@color/accent_gray"
+                android:layout_marginTop="24dp"
+                android:text="@string/backup_seed_phrase_warning"
+                android:textColor="@color/info_text_3"
                 android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/tv_option_title"/>
-
+                app:layout_constraintTop_toBottomOf="@id/title_1"/>
 
             <FrameLayout
                 android:id="@+id/warning_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="34dp"
                 android:background="@drawable/bg_edittext"
                 android:backgroundTint="@color/accent_green"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
-                app:layout_constraintTop_toBottomOf="@id/tv_option_note">
+                app:layout_constraintTop_toBottomOf="@id/intro_text_2">
 
                 <CheckBox
                     android:id="@+id/warning_check_1"
@@ -72,7 +59,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="27dp"
-                    android:text="@string/backup_recovery_phrase_warning_1"/>
+                    android:fontFamily="@font/inter"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_1"
+                    android:text="@string/create_wallet_warning1"/>
             </FrameLayout>
 
             <FrameLayout
@@ -92,7 +82,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="27dp"
-                    android:text="@string/backup_recovery_phrase_warning_2"/>
+                    android:fontFamily="@font/inter"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_1"
+                    android:text="@string/create_wallet_warning2"/>
             </FrameLayout>
 
             <FrameLayout
@@ -112,37 +105,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingStart="27dp"
-                    android:text="@string/backup_recovery_phrase_warning_3"/>
+                    android:fontFamily="@font/inter"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_1"
+                    android:text="@string/create_wallet_warning3"/>
             </FrameLayout>
-
-            <TextView
-                android:id="@+id/tv_learn_more"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="25dp"
-                android:paddingVertical="24dp"
-                android:fontFamily="@font/inter"
-                android:gravity="center_horizontal"
-                android:lineSpacingMultiplier="1.1"
-                android:textStyle="bold"
-                android:text="@string/learn_more"
-                android:textColor="@color/navy_wallet"
-                android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/warning_3"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
 
     <com.flowfoundation.wallet.widgets.LoadingMaterialButton
-        android:id="@+id/create_button"
+        android:id="@+id/next_button"
         style="@style/Button"
         android:layout_width="match_parent"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="@dimen/wallet_create_button_margin"
-        android:layout_marginHorizontal="25dp"
         android:enabled="false"
         android:gravity="center"
-        android:text="@string/create_backup"
+        android:text="@string/confirm"
         app:iconGravity="textStart"
         app:iconPadding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -112,7 +112,7 @@ class CollectionContentPresenter(
     }
 
     private fun bindAccessible(collection: NftCollection) {
-        if (ChildAccountCollectionManager.isNFTCollectionAccessible(collection.contractId())) {
+        if (ChildAccountCollectionManager.isNFTCollectionAccessible(collection.contractIdWithCollection())) {
             binding.inaccessibleTip.gone()
             return
         }

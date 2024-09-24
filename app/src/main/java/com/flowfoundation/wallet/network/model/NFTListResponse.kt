@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.network.model
 
 import android.os.Parcelable
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -73,6 +74,10 @@ data class Nft(
 
     fun canBridgeToFlow(): Boolean {
         return flowIdentifier.isNullOrBlank().not()
+    }
+
+    fun getNFTIdentifier(): String {
+        return flowIdentifier ?: "A.${collectionAddress.removeAddressPrefix()}.${collectionContractName}.NFT"
     }
 
     fun canBridgeToEVM(): Boolean {
