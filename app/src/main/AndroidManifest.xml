@@ -147,6 +147,9 @@
         <activity android:name=".page.restore.multirestore.MultiRestoreActivity"
             android:screenOrientation="portrait"/>
 
+        <activity android:name=".page.restore.RawKeyRestoreActivity"
+            android:screenOrientation="portrait"/>
+
         <activity android:name=".page.restore.keystore.KeyStoreRestoreActivity"
             android:screenOrientation="portrait"/>
 

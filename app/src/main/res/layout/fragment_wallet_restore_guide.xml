@@ -4,7 +4,8 @@
     android:id="@+id/fragment_wallet_restore_guide"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingHorizontal="@dimen/activity_padding">
+    android:paddingHorizontal="@dimen/activity_padding"
+    android:paddingVertical="24dp">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -22,7 +23,6 @@
                 android:id="@+id/title_1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:fontFamily="@font/montsettat"
                 android:text="@string/restore_wallet"
                 android:textColor="@color/text"
@@ -58,8 +58,8 @@
         style="@style/Button.Outline"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginBottom="@dimen/wallet_create_button_margin"
         android:text="@string/restore_with_recovery_phrase"
         app:layout_constraintBottom_toBottomOf="parent"/>
 

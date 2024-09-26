@@ -11,18 +11,12 @@ import androidx.transition.Transition
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityRestoreKeyStoreBinding
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupCompletedFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveWithPinFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupPinCodeFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupRecoveryPhraseFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartFragment
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveOption
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOptionModel
+import com.flowfoundation.wallet.page.restore.keystore.fragment.KeyStoreNoAccountDialog
 import com.flowfoundation.wallet.page.restore.keystore.fragment.KeyStoreSelectAccountDialog
+import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyStoreInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyStoreUsernameFragment
+import com.flowfoundation.wallet.page.restore.keystore.fragment.SeedPhraseInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.model.KeyStoreOption
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.isNightMode
@@ -37,6 +31,14 @@ class KeyStoreRestoreActivity : BaseActivity() {
     private lateinit var restoreViewModel: KeyStoreRestoreViewModel
     private lateinit var binding: ActivityRestoreKeyStoreBinding
     private var currentOption: KeyStoreOption? = null
+
+    private val isPrivateKey by lazy {
+        intent.getBooleanExtra(EXTRA_RESTORE_PRIVATE_KEY, false)
+    }
+
+    private val isSeedPhrase by lazy {
+        intent.getBooleanExtra(EXTRA_RESTORE_SEED_PHRASE, false)
+    }
 
     private val loadingDialog by lazy { FlowLoadingDialog(this) }
 
@@ -59,7 +61,9 @@ class KeyStoreRestoreActivity : BaseActivity() {
                         }
                     }
                 } else {
-                    // todo
+                    uiScope {
+                        KeyStoreNoAccountDialog().show(supportFragmentManager, "")
+                    }
                 }
             }
             optionChangeLiveData.observe(this@KeyStoreRestoreActivity) {
@@ -74,7 +78,15 @@ class KeyStoreRestoreActivity : BaseActivity() {
                     }
                 }
             }
-            changeOption(KeyStoreOption.INPUT_INFO)
+            changeOption(
+                if (isPrivateKey) {
+                    KeyStoreOption.INPUT_PRIVATE_KEY_INFO
+                } else if (isSeedPhrase) {
+                    KeyStoreOption.INPUT_SEED_PHRASE_INFO
+                } else {
+                    KeyStoreOption.INPUT_KEYSTORE_INFO
+                }
+            )
         }
     }
 
@@ -82,7 +94,9 @@ class KeyStoreRestoreActivity : BaseActivity() {
     private fun onOptionChange(option: KeyStoreOption) {
         val transition = createTransition(currentOption, option)
         val fragment = when (option) {
-            KeyStoreOption.INPUT_INFO -> PrivateKeyStoreInfoFragment()
+            KeyStoreOption.INPUT_KEYSTORE_INFO -> PrivateKeyStoreInfoFragment()
+            KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> PrivateKeyInfoFragment()
+            KeyStoreOption.INPUT_SEED_PHRASE_INFO -> SeedPhraseInfoFragment()
             KeyStoreOption.CREATE_USERNAME -> PrivateKeyStoreUsernameFragment()
         }
         fragment.enterTransition = transition
@@ -123,8 +137,23 @@ class KeyStoreRestoreActivity : BaseActivity() {
     }
 
     companion object {
-        fun launch(context: Context) {
+        private const val EXTRA_RESTORE_PRIVATE_KEY = "extra_restore_private_key"
+        private const val EXTRA_RESTORE_SEED_PHRASE = "extra_restore_seed_phrase"
+
+        fun launchKeyStore(context: Context) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java))
+        }
+
+        fun launchPrivateKey(context: Context) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                putExtra(EXTRA_RESTORE_PRIVATE_KEY, true)
+            })
+        }
+
+        fun launchSeedPhrase(context: Context) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                putExtra(EXTRA_RESTORE_SEED_PHRASE, true)
+            })
         }
     }
 }

@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletRestoreBinding
 import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
 import com.flowfoundation.wallet.utils.isNightMode
@@ -45,18 +44,11 @@ class WalletRestoreActivity : BaseActivity() {
                 }
             }
 
-            llImportFromRecoveryPhrase.setOnClickListener {
+            llImportFromRawKey.setOnClickListener {
                 if (isTestnet() || isPreviewnet()) {
                     SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
                 } else {
-                    com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
-                }
-            }
-            llImportFromKeyStore.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
-                    SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
-                } else {
-                    KeyStoreRestoreActivity.launch(this@WalletRestoreActivity)
+                    RawKeyRestoreActivity.launch(this@WalletRestoreActivity)
                 }
             }
         }

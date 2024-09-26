@@ -15,6 +15,9 @@ class WalletRestoreActivity : BaseActivity() {
     private lateinit var binding: ActivityRestoreWalletBinding
     private lateinit var contentPresenter: WalletRestoreContentPresenter
     private lateinit var viewModel: WalletRestoreViewModel
+    private val isGoogleDrive by lazy {
+        intent.getBooleanExtra(EXTRA_RESTORE_GOOGLE_DRIVE, false)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,8 +53,17 @@ class WalletRestoreActivity : BaseActivity() {
     }
 
     companion object {
+        private const val EXTRA_RESTORE_GOOGLE_DRIVE = "extra_restore_google_drive"
+
+
         fun launch(context: Context) {
             context.startActivity(Intent(context, WalletRestoreActivity::class.java))
+        }
+
+        fun launchGoogleDrive(context: Context) {
+            context.startActivity(Intent(context, WalletRestoreActivity::class.java).apply {
+                putExtra(EXTRA_RESTORE_GOOGLE_DRIVE, true)
+            })
         }
     }
 }

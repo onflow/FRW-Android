@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.account.username
+import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
@@ -32,12 +32,14 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
+import com.nftco.flow.sdk.FlowAccount
+import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import retrofit2.HttpException
+import wallet.core.jni.Curve
+import wallet.core.jni.HDWallet
 import wallet.core.jni.PrivateKey
 import wallet.core.jni.StoredKey
 
@@ -67,7 +69,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         return addressList
     }
 
-    fun importKeyStore(json: String, password: String, address: String?) {
+    fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
         ioScope {
             val keyStore = StoredKey.importJSON(json.toByteArray())
@@ -79,14 +81,136 @@ class KeyStoreRestoreViewModel : ViewModel() {
             val k1PublicKey =
                 privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
 
-            queryAddressWithPublicKey(privateKey.data().bytesToHex(), k1PublicKey, p1PublicKey)
+            if (address.isEmpty()) {
+                queryAddressWithPublicKey(
+                    k1PrivateKey = privateKey.data().bytesToHex(),
+                    k1PublicKey = k1PublicKey,
+                    p1PrivateKey = privateKey.data().bytesToHex(),
+                    p1PublicKey = p1PublicKey
+                )
+            } else {
+                queryAddressPublicKey(
+                    address,
+                    privateKey.data().bytesToHex(),
+                    k1PublicKey,
+                    privateKey.data().bytesToHex(),
+                    p1PublicKey
+                )
+            }
         }
 
     }
 
+    fun importPrivateKey(privateKeyInput: String, address: String) {
+        loadingLiveData.postValue(true)
+        ioScope {
+            val privateKey = PrivateKey(privateKeyInput.toByteArray())
+
+            val p1PublicKey =
+                privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
+
+            val k1PublicKey =
+                privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+
+            if (address.isEmpty()) {
+                queryAddressWithPublicKey(
+                    k1PrivateKey = privateKey.data().bytesToHex(),
+                    k1PublicKey = k1PublicKey,
+                    p1PrivateKey = privateKey.data().bytesToHex(),
+                    p1PublicKey = p1PublicKey
+                )
+            } else {
+                queryAddressPublicKey(
+                    address,
+                    privateKey.data().bytesToHex(),
+                    k1PublicKey,
+                    privateKey.data().bytesToHex(),
+                    p1PublicKey
+                )
+            }
+        }
+    }
+
+    fun importSeedPhrase(
+        mnemonic: String,
+        address: String,
+        passphrase: String?,
+        derivationPath: String? = "m/44'/539'/0'/0/0"
+    ) {
+        loadingLiveData.postValue(true)
+        ioScope {
+            val hdWallet = HDWallet(mnemonic, passphrase.orEmpty())
+            val k1PrivateKey = hdWallet.getCurveKey(Curve.SECP256K1, derivationPath)
+            val k1PublicKey =
+                k1PrivateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+            val p1PrivateKey = hdWallet.getCurveKey(Curve.NIST256P1, derivationPath)
+            val p1PublicKey =
+                p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
+                    .removePrefix("04")
+            if (address.isEmpty()) {
+                queryAddressWithPublicKey(
+                    k1PrivateKey = k1PrivateKey.data().bytesToHex(),
+                    k1PublicKey = k1PublicKey,
+                    p1PrivateKey = p1PrivateKey.data().bytesToHex(),
+                    p1PublicKey = p1PublicKey
+                )
+            } else {
+                queryAddressPublicKey(
+                    address,
+                    k1PrivateKey.data().bytesToHex(),
+                    k1PublicKey,
+                    p1PrivateKey.data().bytesToHex(),
+                    p1PublicKey
+                )
+            }
+        }
+    }
+
+    private suspend fun queryAddressPublicKey(
+        address: String, k1PrivateKey: String, k1PublicKey: String,
+        p1PrivateKey: String, p1PublicKey: String
+    ) {
+        val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address))
+        if (account == null) {
+            queryAddressWithPublicKey(
+                k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey
+            )
+            return
+        }
+        if (checkIsMatched(account, k1PrivateKey, k1PublicKey)) {
+            return
+        } else if (checkIsMatched(account, p1PrivateKey, p1PublicKey)) {
+            return
+        } else {
+            queryAddressWithPublicKey(k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey)
+        }
+    }
+
+    private fun checkIsMatched(
+        account: FlowAccount,
+        privateKey: String,
+        publicKey: String
+    ): Boolean {
+        val accountKey = account.keys.lastOrNull { it.publicKey.base16Value == publicKey }
+        return accountKey?.run {
+            importKeyStoreAddress(
+                KeystoreAddress(
+                    address = account.address.base16Value,
+                    publicKey = publicKey,
+                    privateKey = privateKey,
+                    keyId = id,
+                    weight = weight,
+                    hashAlgo = hashAlgo.index,
+                    signAlgo = signAlgo.index
+                )
+            )
+            true
+        } ?: false
+    }
+
     private suspend fun queryAddressWithPublicKey(
-        privateKey: String, k1PublicKey: String,
-        p1PublicKey: String
+        k1PrivateKey: String, k1PublicKey: String,
+        p1PrivateKey: String, p1PublicKey: String
     ) {
         addressList.clear()
         val k1Response = queryService.queryAddress(k1PublicKey)
@@ -95,11 +219,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 KeystoreAddress(
                     address = it.address,
                     publicKey = k1PublicKey,
-                    privateKey = privateKey,
+                    privateKey = k1PrivateKey,
                     keyId = it.keyId,
                     weight = it.weight,
-                    hashAlgo = HashAlgorithm.SHA2_256.index,
-                    signAlgo = SignatureAlgorithm.ECDSA_SECP256k1.index
+                    hashAlgo = it.hashAlgo,
+                    signAlgo = it.signAlgo
                 )
             }.toList())
         }
@@ -109,11 +233,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 KeystoreAddress(
                     address = it.address,
                     publicKey = p1PublicKey,
-                    privateKey = privateKey,
+                    privateKey = p1PrivateKey,
                     keyId = it.keyId,
                     weight = it.weight,
-                    hashAlgo = HashAlgorithm.SHA2_256.index,
-                    signAlgo = SignatureAlgorithm.ECDSA_P256.index
+                    hashAlgo = it.hashAlgo,
+                    signAlgo = it.signAlgo
                 )
             }.toList())
         }
@@ -155,13 +279,15 @@ class KeyStoreRestoreViewModel : ViewModel() {
             activity.finish()
             return
         }
-        val account = AccountManager.list().firstOrNull { it.wallet?.walletAddress() == currentKeyStoreAddress?.address }
+        val account = AccountManager.list()
+            .firstOrNull { it.wallet?.walletAddress() == currentKeyStoreAddress?.address }
         if (account != null) {
-            AccountManager.switch(account){}
+            AccountManager.switch(account) {}
             return
         }
         ioScope {
-            val cryptoProvider = PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
+            val cryptoProvider =
+                PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
             import(cryptoProvider, username) { isSuccess ->
                 uiScope {
@@ -178,8 +304,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun import(cryptoProvider: PrivateKeyStoreCryptoProvider, username: String, callback:
-        (isSuccess: Boolean) -> Unit) {
+    private fun import(
+        cryptoProvider: PrivateKeyStoreCryptoProvider, username: String, callback:
+            (isSuccess: Boolean) -> Unit
+    ) {
 
         ioScope {
             getFirebaseUid { uid ->
@@ -243,9 +371,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
             activity.finish()
             return
         }
-        val account = AccountManager.list().firstOrNull { it.wallet?.walletAddress() == keystoreAddress.address }
+        val account = AccountManager.list()
+            .firstOrNull { it.wallet?.walletAddress() == keystoreAddress.address }
         if (account != null) {
-            AccountManager.switch(account){}
+            AccountManager.switch(account) {}
             return
         }
         ioScope {
@@ -266,7 +395,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun login(cryptoProvider: PrivateKeyStoreCryptoProvider, callback: (isSuccess: Boolean) -> Unit) {
+    private fun login(
+        cryptoProvider: PrivateKeyStoreCryptoProvider,
+        callback: (isSuccess: Boolean) -> Unit
+    ) {
         ioScope {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {

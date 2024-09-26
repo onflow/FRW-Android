@@ -482,6 +482,14 @@
     <string name="from_key_store">From Keystore</string>
     <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
     <string name="key_store">Keystore</string>
+    <string name="seed_phrase">Seed Phrase</string>
+    <string name="restore_seed_phrase_advanced">Advanced</string>
+    <string name="restore_seed_derivation_path">Derivation Path</string>
+    <string name="restore_seed_passphrase">Passphrase</string>
+    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
+    <string name="restore_private_key_hint">Enter your private key</string>
     <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
     <string name="key_store_password_hint">Enter password for json file</string>
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
@@ -489,6 +497,9 @@
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
     <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
+    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
+    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">From Multi-Backup</string>
     <string name="multi_restore_note">Please Select 2 or More Backup Options</string>
@@ -647,5 +658,12 @@ uses to turn your device into a hardware wallet.</string>
     <string name="required_asterisk" translatable="false">" *"</string>
     <string name="keystore_select_account_tips">Choose an account you want to import</string>
     <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_no_account_title">No Account Found</string>
+    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
+        key. \n \nPlease check your input and try again.</string>
+    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
+    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
+    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
 
 </resources>

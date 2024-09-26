@@ -6,13 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.flowfoundation.wallet.databinding.FragmentPrivateKeyInfoBinding
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 
 
-class PrivateKeyStoreInfoFragment: Fragment() {
-    private lateinit var binding: FragmentPrivateKeyStoreInfoBinding
+class PrivateKeyInfoFragment: Fragment() {
+    private lateinit var binding: FragmentPrivateKeyInfoBinding
     private val restoreViewModel by lazy {
         ViewModelProvider(requireActivity())[KeyStoreRestoreViewModel::class.java]
     }
@@ -22,32 +23,25 @@ class PrivateKeyStoreInfoFragment: Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentPrivateKeyStoreInfoBinding.inflate(inflater)
+        binding = FragmentPrivateKeyInfoBinding.inflate(inflater)
         return binding.root
     }
 
     private fun canRestore(): Boolean {
-        val json = binding.etJson.text.toString().trim()
-        val password = binding.etPassword.text.toString().trim()
-        return json.isNotEmpty() && password.isNotEmpty()
+        val private = binding.etPrivateKey.text.toString().trim()
+        return private.isNotEmpty()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         with(binding) {
-            etJson.addTextChangedListener(object : SimpleTextWatcher() {
-                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                    btnImport.isEnabled = canRestore()
-                }
-            })
-            etPassword.addTextChangedListener(object : SimpleTextWatcher() {
+            etPrivateKey.addTextChangedListener(object : SimpleTextWatcher() {
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                     btnImport.isEnabled = canRestore()
                 }
             })
             btnImport.setOnClickListener {
-                restoreViewModel.importKeyStore(
-                    etJson.text.toString().trim(),
-                    etPassword.text.toString().trim(),
+                restoreViewModel.importPrivateKey(
+                    etPrivateKey.text.toString().trim(),
                     etAddress.text.toString().trim()
                 )
             }
