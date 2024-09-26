@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
+import com.flowfoundation.wallet.utils.format
+import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 
 class StakingAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
@@ -34,7 +36,7 @@ class StakingAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
             val coin = FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW) ?: return@ioScope
             if (isUnstake) {
                 val node = StakingManager.stakingNode(provider) ?: return@ioScope
-                balanceLiveData.postValue(node.tokensStaked + node.tokensCommitted)
+                balanceLiveData.postValue((node.tokensStaked + node.tokensCommitted).formatNum().toFloat())
             } else {
                 BalanceManager.getBalanceByCoin(coin)
             }

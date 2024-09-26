@@ -42,3 +42,31 @@ fun Float.formatNum(
 ): String {
     return format(digits, roundingMode)
 }
+
+fun Double.formatPrice(
+    digits: Int = 3,
+    convertCurrency: Boolean = true,
+    includeSymbol: Boolean = false,
+    includeSymbolSpace: Boolean = false,
+): String {
+    var value = this
+    if (convertCurrency) {
+        if (CurrencyManager.currencyPrice() < 0) {
+            return "-"
+        }
+        value *= CurrencyManager.currencyPrice()
+    }
+    val format = value.format(digits)
+    return if (includeSymbol) "${selectedCurrency().symbol}${if (includeSymbolSpace) " " else ""}$format" else format
+}
+
+fun Double.format(digits: Int = 3, roundingMode: RoundingMode = RoundingMode.DOWN): String {
+    return DecimalFormat("0.${"#".repeat(digits)}").apply { setRoundingMode(roundingMode) }.format(this)
+}
+
+fun Double.formatNum(
+    digits: Int = 3,
+    roundingMode: RoundingMode = RoundingMode.DOWN,
+): String {
+    return format(digits, roundingMode)
+}

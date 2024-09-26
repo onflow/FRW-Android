@@ -66,10 +66,10 @@ object StakingManager {
         return stakingCount() > 0.0f
     }
 
-    fun stakingCount() = stakingInfo.nodes.sumOf { it.tokensCommitted.toDouble() + it.tokensStaked }.toFloat()
+    fun stakingCount() = stakingInfo.nodes.sumOf { it.tokensCommitted + it.tokensStaked }.toFloat()
 
     fun isStaking(): Boolean {
-        val count = stakingInfo.nodes.sumOf { it.tokensCommitted.toDouble() + it.tokensStaked + it
+        val count = stakingInfo.nodes.sumOf { it.tokensCommitted + it.tokensStaked + it
             .tokensRewarded + it.tokensRequestedToUnstake + it.tokensUnstaking + it.tokensUnstaked}
             .toFloat()
         return count > 0.0f
@@ -237,17 +237,17 @@ data class StakingNode(
     @SerializedName("nodeID")
     val nodeID: String = "",
     @SerializedName("tokensCommitted")
-    val tokensCommitted: Float = 0.0f,
+    val tokensCommitted: Double = 0.0,
     @SerializedName("tokensStaked")
-    val tokensStaked: Float = 0.0f,
+    val tokensStaked: Double = 0.0,
     @SerializedName("tokensUnstaking")
-    val tokensUnstaking: Float = 0.0f,
+    val tokensUnstaking: Double = 0.0,
     @SerializedName("tokensRewarded")
-    val tokensRewarded: Float = 0.0f,
+    val tokensRewarded: Double = 0.0,
     @SerializedName("tokensUnstaked")
-    val tokensUnstaked: Float = 0.0f,
+    val tokensUnstaked: Double = 0.0,
     @SerializedName("tokensRequestedToUnstake")
-    val tokensRequestedToUnstake: Float = 0.0f,
+    val tokensRequestedToUnstake: Double = 0.0,
 )
 
 data class StakingCache(

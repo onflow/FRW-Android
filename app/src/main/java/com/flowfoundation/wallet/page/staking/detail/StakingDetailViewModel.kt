@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.flowjvm.*
-import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
 import com.flowfoundation.wallet.manager.staking.createStakingDelegatorId
@@ -21,7 +20,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.staking.detail.model.StakingDetailModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -79,15 +77,15 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
                 StakingManager.stakingNode(provider)?.tokensUnstaked
             } else {
                 StakingManager.stakingNode(provider)?.tokensRewarded
-            } ?: 0.0f
+            } ?: 0.0
 
-            if (amount <= 0.0f) {
+            if (amount <= 0) {
                 return@ioScope
             }
 
             var delegatorId = provider.delegatorId()
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount.toSafeDouble())
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()

@@ -32,6 +32,10 @@ fun String?.toSafeFloat(default: Float = 0f): Float {
     return this.toFloatOrNull() ?: default
 }
 
+fun String?.toSafeDouble(default: Double = 0.0): Double {
+    return this?.toDoubleOrNull() ?: default
+}
+
 fun Float.toSafeDouble(): Double {
     return BigDecimal(this.toString()).toDouble()
 }
