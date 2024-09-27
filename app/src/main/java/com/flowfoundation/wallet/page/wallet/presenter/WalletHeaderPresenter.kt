@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
@@ -41,7 +40,6 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.wallet.toAddress
 import java.util.Date
 
@@ -103,7 +101,7 @@ class WalletHeaderPresenter(
                     activity?.let {
                         openBrowser(
                             it,
-                            "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                            "https://${if (isTestnet()) "demo" else "app"}" +
                                     ".increment.fi/swap"
                         )
                     }

@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.manager.coin
 
 import android.os.Parcelable
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -41,8 +40,6 @@ object FlowCoinListManager {
             val text = readTextFromAssets(
                 if (isTestnet()) {
                     "config/flow_token_testnet.json"
-                } else if (isPreviewnet()) {
-                    "config/flow_token_previewnet.json"
                 } else {
                     "config/flow_token_mainnet.json"
                 }
@@ -66,7 +63,7 @@ object FlowCoinListManager {
     }
 
     private fun getFileName(): String {
-        return if (isPreviewnet() || WalletManager.isEVMAccountSelected()) {
+        return if (WalletManager.isEVMAccountSelected()) {
             "default.json"
         } else {
             if (isDev()) {
@@ -173,9 +170,7 @@ class FlowCoinAddress(
     @SerializedName("mainnet")
     val mainnet: String?,
     @SerializedName("testnet")
-    val testnet: String?,
-    @SerializedName("previewnet")
-    val previewnet: String?,
+    val testnet: String?
 ) : Parcelable
 
 @Parcelize

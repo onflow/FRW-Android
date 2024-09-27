@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.transaction.record.presenter
 import android.view.View
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionViewMoreModel
@@ -19,9 +18,7 @@ class TransactionViewMoreItemPresenter(
 
     private fun TransactionViewMoreModel.url(): String {
         return if (isTestnet()) {
-            "https://testnet.flowdiver.io/account/$address"
-        } else if (isPreviewnet()) {
-            "https://previewnet.flowdiver.io/account/$address"
-        } else "https://flowdiver.io/account/$address"
+            "https://testnet.flowscan.io/account/$address"
+        } else "https://flowscan.io/account/$address"
     }
 }

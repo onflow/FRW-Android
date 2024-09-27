@@ -5,7 +5,6 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowChainId
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
-import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.logw
 
@@ -18,7 +17,6 @@ internal class FlowAddressRegistry {
                 t, FlowAddress(u), when (network) {
                     NETWORK_MAINNET -> FlowChainId.MAINNET
                     NETWORK_TESTNET -> FlowChainId.TESTNET
-                    NETWORK_PREVIEWNET -> FlowChainId.PREVIEWNET
                     else -> FlowChainId.MAINNET
                 }
             )
@@ -28,6 +26,5 @@ internal class FlowAddressRegistry {
     fun addressRegistry() = AddressRegistry().apply {
         register(NETWORK_MAINNET)
         register(NETWORK_TESTNET)
-        register(NETWORK_PREVIEWNET)
     }
 }

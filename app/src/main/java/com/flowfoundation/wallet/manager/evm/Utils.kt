@@ -3,9 +3,7 @@ package com.flowfoundation.wallet.manager.evm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
@@ -15,7 +13,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
@@ -35,8 +32,6 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import wallet.core.jni.Hash
 
-const val PREVIEWNET_CHAIN_ID = 646
-const val PREVIEWNET_RPC_URL = "https://previewnet.evm.nodes.onflow.org"
 const val TESTNET_CHAIN_ID = 545
 const val TESTNET_RPC_URL = "https://testnet.evm.nodes.onflow.org"
 const val MAINNET_CHAIN_ID = 747
@@ -44,7 +39,6 @@ const val MAINNET_RPC_URL = "https://mainnet.evm.nodes.onflow.org"
 
 fun getChainID(): Int {
     return when {
-        isPreviewnet() -> PREVIEWNET_CHAIN_ID
         isTestnet() -> TESTNET_CHAIN_ID
         else -> MAINNET_CHAIN_ID
     }
@@ -52,7 +46,6 @@ fun getChainID(): Int {
 
 fun getRPCUrl(): String {
     return when {
-        isPreviewnet() -> PREVIEWNET_RPC_URL
         isTestnet() -> TESTNET_RPC_URL
         else -> MAINNET_RPC_URL
     }
@@ -60,7 +53,6 @@ fun getRPCUrl(): String {
 
 fun getNetworkStringByChainId(chainId: Int): String {
     return when (chainId) {
-        PREVIEWNET_CHAIN_ID -> NETWORK_NAME_PREVIEWNET
         TESTNET_CHAIN_ID -> NETWORK_NAME_TESTNET
         else -> NETWORK_NAME_MAINNET
     }

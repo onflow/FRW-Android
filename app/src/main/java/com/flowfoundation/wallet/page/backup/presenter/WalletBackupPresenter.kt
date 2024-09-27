@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.backup.presenter
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.databinding.ActivityWalletBackupBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.backup.BackupListAdapter
 import com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity
@@ -48,14 +47,14 @@ class WalletBackupPresenter(
                 CreateDeviceBackupActivity.launch(activity)
             }
             cvCreateMultiBackup.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(activity, DialogType.BACKUP).show()
                 } else {
                     MultiBackupActivity.launch(activity)
                 }
             }
             cvCreateSeedPhraseBackup.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(activity, DialogType.BACKUP).show()
                 } else {
                     BackupRecoveryPhraseActivity.launch(activity)

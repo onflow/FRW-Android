@@ -24,7 +24,11 @@ object CryptoProviderManager {
         if (account == null) {
             return null
         }
-        if (account.prefix.isNullOrBlank()) {
+        if (account.keyStoreInfo.isNullOrBlank().not()) {
+            return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
+        } else if (account.prefix.isNullOrBlank().not()) {
+            return KeyStoreCryptoProvider(account.prefix!!)
+        } else {
             val wallet = if (account.isActive && isSwitch.not()) {
                 Wallet.store().wallet()
             } else {
@@ -34,10 +38,6 @@ object CryptoProviderManager {
                 return null
             }
             return HDWalletCryptoProvider(wallet)
-        } else if (account.keyStoreInfo != null) {
-            return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
-        } else {
-            return KeyStoreCryptoProvider(account.prefix!!)
         }
     }
 

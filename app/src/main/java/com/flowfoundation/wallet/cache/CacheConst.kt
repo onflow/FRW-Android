@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.cache
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.TokenStateCache
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateCache
@@ -12,7 +11,6 @@ import com.flowfoundation.wallet.manager.staking.StakingCache
 import com.flowfoundation.wallet.manager.staking.StakingProviderCache
 import com.flowfoundation.wallet.network.model.*
 import com.flowfoundation.wallet.page.profile.subpage.wallet.StorageInfo
-import com.flowfoundation.wallet.page.transaction.record.model.TransactionRecordList
 
 
 const val CACHE_NFT_LIST = "nft_list"
@@ -84,7 +82,7 @@ fun storageInfoCache(): CacheManager<StorageInfo> {
 }
 
 
-fun String.cacheFile() = "${this.hashCode()}.${if (isTestnet()) "t" else if (isPreviewnet()) "p" else "m"}"
+fun String.cacheFile() = "${this.hashCode()}.${if (isTestnet()) "t" else "m"}"
 
 data class NftSelections(
     @SerializedName("data")

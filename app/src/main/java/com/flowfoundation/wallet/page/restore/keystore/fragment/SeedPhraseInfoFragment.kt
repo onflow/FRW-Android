@@ -60,6 +60,7 @@ class SeedPhraseInfoFragment: Fragment() {
                     etDerivationPath.text.toString().trim()
                 )
             }
+            btnImport.isEnabled = false
         }
     }
 

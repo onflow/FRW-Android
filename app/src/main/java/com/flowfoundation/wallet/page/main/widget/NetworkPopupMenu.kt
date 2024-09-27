@@ -1,9 +1,7 @@
 package com.flowfoundation.wallet.page.main.widget
 
 import android.view.View
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
@@ -11,9 +9,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
-import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.networkPopupMenu
 import com.flowfoundation.wallet.utils.uiScope
@@ -32,18 +28,10 @@ class NetworkPopupMenu (
         uiScope {
             networkPopupMenu(
                 view,
-                items = if (WalletManager.isPreviewnetWalletCreated()) {
-                    listOf(
-                        NetworkPopupListView.ItemData(NETWORK_NAME_MAINNET),
-                        NetworkPopupListView.ItemData(NETWORK_NAME_TESTNET),
-                        NetworkPopupListView.ItemData(NETWORK_NAME_PREVIEWNET),
-                    )
-                } else {
-                    listOf(
-                        NetworkPopupListView.ItemData(NETWORK_NAME_MAINNET),
-                        NetworkPopupListView.ItemData(NETWORK_NAME_TESTNET),
-                    )
-                },
+                items = listOf(
+                    NetworkPopupListView.ItemData(NETWORK_NAME_MAINNET),
+                    NetworkPopupListView.ItemData(NETWORK_NAME_TESTNET),
+                ),
                 selectListener = { _, text -> onMenuItemClick(text) },
             ).show()
         }
@@ -57,7 +45,6 @@ class NetworkPopupMenu (
         when (text) {
             NETWORK_NAME_MAINNET -> changeNetwork(NETWORK_MAINNET)
             NETWORK_NAME_TESTNET -> changeNetwork(NETWORK_TESTNET)
-            NETWORK_NAME_PREVIEWNET -> changeNetwork(NETWORK_PREVIEWNET)
         }
         return true
     }

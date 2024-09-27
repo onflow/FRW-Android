@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.evm.MAINNET_CHAIN_ID
-import com.flowfoundation.wallet.manager.evm.PREVIEWNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.evm.TESTNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.evm.getNetworkStringByChainId
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
@@ -67,7 +66,7 @@ class EvmInterface(
             DAppMethod.SWITCH_ETHEREUM_CHAIN -> {
                 uiScope {
                     when (val rpcChainId = extractRPCChainId(obj)) {
-                        MAINNET_CHAIN_ID, TESTNET_CHAIN_ID, PREVIEWNET_CHAIN_ID -> {
+                        MAINNET_CHAIN_ID, TESTNET_CHAIN_ID -> {
                             if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager,
                                 FclDialogModel(
                                     title = webView.title,

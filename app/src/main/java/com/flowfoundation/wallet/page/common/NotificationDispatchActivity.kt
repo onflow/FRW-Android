@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.common
 import android.graphics.Color
 import android.os.Bundle
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -46,9 +45,7 @@ class NotificationDispatchActivity : BaseActivity() {
 
     private fun String.toFlowScanTransactionUrl(): String {
         return if (isTestnet()) {
-            "https://testnet.flowdiver.io/tx/$this"
-        } else if (isPreviewnet()) {
-            "https://previewnet.flowdiver.io/tx/$this"
-        } else "https://flowdiver.io/tx/$this"
+            "https://testnet.flowscan.io/tx/$this"
+        } else "https://flowscan.io/tx/$this"
     }
 }

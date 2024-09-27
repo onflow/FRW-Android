@@ -7,7 +7,6 @@ import android.view.MenuItem
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityRawKeyRestoreBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
 import com.flowfoundation.wallet.utils.isNightMode
@@ -28,14 +27,14 @@ class RawKeyRestoreActivity: BaseActivity() {
         with(binding) {
 
             clImportFromGoogleDrive.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@RawKeyRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@RawKeyRestoreActivity)
                 }
             }
             clImportFromKeyStore.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@RawKeyRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     KeyStoreRestoreActivity.launchKeyStore(this@RawKeyRestoreActivity)
@@ -43,7 +42,7 @@ class RawKeyRestoreActivity: BaseActivity() {
             }
 
             clImportFromSeedPhrase.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@RawKeyRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     KeyStoreRestoreActivity.launchSeedPhrase(this@RawKeyRestoreActivity)
@@ -51,7 +50,7 @@ class RawKeyRestoreActivity: BaseActivity() {
             }
 
             clImportFromPrivateKey.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@RawKeyRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     KeyStoreRestoreActivity.launchPrivateKey(this@RawKeyRestoreActivity)

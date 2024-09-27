@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
@@ -66,7 +65,7 @@ class TokenDetailPresenter(
                     return@setOnClickListener
                 }
                 openBrowser(
-                    activity, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
+                    activity, "https://${if (isTestnet()) "demo" else "app"}" +
                         ".increment.fi/swap")
             }
             btnTrade.setOnClickListener {
@@ -136,7 +135,7 @@ class TokenDetailPresenter(
             binding.getMoreWrapper.setOnClickListener {
                 openBrowser(
                     activity,
-                    if (isTestnet()) "https://testnet-faucet.onflow.org/fund-account" else "https://previewnet-faucet.onflow.org/fund-account"
+                    "https://testnet-faucet.onflow.org/fund-account"
                 )
             }
         }

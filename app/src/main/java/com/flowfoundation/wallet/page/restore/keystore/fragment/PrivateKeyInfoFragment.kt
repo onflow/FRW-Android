@@ -29,7 +29,12 @@ class PrivateKeyInfoFragment: Fragment() {
 
     private fun canRestore(): Boolean {
         val private = binding.etPrivateKey.text.toString().trim()
-        return private.isNotEmpty()
+        return validatePrivateKey(private)
+    }
+
+    private fun validatePrivateKey(input: String): Boolean {
+        val privateKeyRegex = Regex("^0x[0-9a-fA-F]{64}$")
+        return privateKeyRegex.matches(input)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -45,6 +50,7 @@ class PrivateKeyInfoFragment: Fragment() {
                     etAddress.text.toString().trim()
                 )
             }
+            btnImport.isEnabled = false
         }
     }
 

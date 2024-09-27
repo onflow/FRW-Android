@@ -31,10 +31,12 @@ import com.flowfoundation.wallet.utils.setMultiBackupCreated
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.google.gson.Gson
 import com.nftco.flow.sdk.FlowAccount
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
+import com.nftco.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import retrofit2.HttpException
@@ -71,63 +73,75 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
-        ioScope {
-            val keyStore = StoredKey.importJSON(json.toByteArray())
-            val privateKey = PrivateKey(keyStore.decryptPrivateKey(password.toByteArray()))
+        try {
+            ioScope {
+                val keyStore = StoredKey.importJSON(json.toByteArray())
+                val privateKey = PrivateKey(keyStore.decryptPrivateKey(password.toByteArray()))
 
-            val p1PublicKey =
-                privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
+                val p1PublicKey =
+                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
 
-            val k1PublicKey =
-                privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+                val k1PublicKey =
+                    privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
 
-            if (address.isEmpty()) {
-                queryAddressWithPublicKey(
-                    k1PrivateKey = privateKey.data().bytesToHex(),
-                    k1PublicKey = k1PublicKey,
-                    p1PrivateKey = privateKey.data().bytesToHex(),
-                    p1PublicKey = p1PublicKey
-                )
-            } else {
-                queryAddressPublicKey(
-                    address,
-                    privateKey.data().bytesToHex(),
-                    k1PublicKey,
-                    privateKey.data().bytesToHex(),
-                    p1PublicKey
-                )
+                if (address.isEmpty()) {
+                    queryAddressWithPublicKey(
+                        k1PrivateKey = privateKey.data().bytesToHex(),
+                        k1PublicKey = k1PublicKey,
+                        p1PrivateKey = privateKey.data().bytesToHex(),
+                        p1PublicKey = p1PublicKey
+                    )
+                } else {
+                    queryAddressPublicKey(
+                        address,
+                        privateKey.data().bytesToHex(),
+                        k1PublicKey,
+                        privateKey.data().bytesToHex(),
+                        p1PublicKey
+                    )
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            loadingLiveData.postValue(false)
+            toast(msgRes = R.string.restore_failed)
         }
 
     }
 
     fun importPrivateKey(privateKeyInput: String, address: String) {
         loadingLiveData.postValue(true)
-        ioScope {
-            val privateKey = PrivateKey(privateKeyInput.toByteArray())
+        try {
+            ioScope {
+                val privateKey = PrivateKey(privateKeyInput.hexToBytes())
 
-            val p1PublicKey =
-                privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
+                val p1PublicKey =
+                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
 
-            val k1PublicKey =
-                privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+                val k1PublicKey =
+                    privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
 
-            if (address.isEmpty()) {
-                queryAddressWithPublicKey(
-                    k1PrivateKey = privateKey.data().bytesToHex(),
-                    k1PublicKey = k1PublicKey,
-                    p1PrivateKey = privateKey.data().bytesToHex(),
-                    p1PublicKey = p1PublicKey
-                )
-            } else {
-                queryAddressPublicKey(
-                    address,
-                    privateKey.data().bytesToHex(),
-                    k1PublicKey,
-                    privateKey.data().bytesToHex(),
-                    p1PublicKey
-                )
+                if (address.isEmpty()) {
+                    queryAddressWithPublicKey(
+                        k1PrivateKey = privateKey.data().bytesToHex(),
+                        k1PublicKey = k1PublicKey,
+                        p1PrivateKey = privateKey.data().bytesToHex(),
+                        p1PublicKey = p1PublicKey
+                    )
+                } else {
+                    queryAddressPublicKey(
+                        address,
+                        privateKey.data().bytesToHex(),
+                        k1PublicKey,
+                        privateKey.data().bytesToHex(),
+                        p1PublicKey
+                    )
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            loadingLiveData.postValue(false)
+            toast(msgRes = R.string.restore_failed)
         }
     }
 
@@ -138,31 +152,37 @@ class KeyStoreRestoreViewModel : ViewModel() {
         derivationPath: String? = "m/44'/539'/0'/0/0"
     ) {
         loadingLiveData.postValue(true)
-        ioScope {
-            val hdWallet = HDWallet(mnemonic, passphrase.orEmpty())
-            val k1PrivateKey = hdWallet.getCurveKey(Curve.SECP256K1, derivationPath)
-            val k1PublicKey =
-                k1PrivateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
-            val p1PrivateKey = hdWallet.getCurveKey(Curve.NIST256P1, derivationPath)
-            val p1PublicKey =
-                p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
-                    .removePrefix("04")
-            if (address.isEmpty()) {
-                queryAddressWithPublicKey(
-                    k1PrivateKey = k1PrivateKey.data().bytesToHex(),
-                    k1PublicKey = k1PublicKey,
-                    p1PrivateKey = p1PrivateKey.data().bytesToHex(),
-                    p1PublicKey = p1PublicKey
-                )
-            } else {
-                queryAddressPublicKey(
-                    address,
-                    k1PrivateKey.data().bytesToHex(),
-                    k1PublicKey,
-                    p1PrivateKey.data().bytesToHex(),
-                    p1PublicKey
-                )
+        try {
+            ioScope {
+                val hdWallet = HDWallet(mnemonic, passphrase.orEmpty())
+                val k1PrivateKey = hdWallet.getCurveKey(Curve.SECP256K1, derivationPath)
+                val k1PublicKey =
+                    k1PrivateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+                val p1PrivateKey = hdWallet.getCurveKey(Curve.NIST256P1, derivationPath)
+                val p1PublicKey =
+                    p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
+                        .removePrefix("04")
+                if (address.isEmpty()) {
+                    queryAddressWithPublicKey(
+                        k1PrivateKey = k1PrivateKey.data().bytesToHex(),
+                        k1PublicKey = k1PublicKey,
+                        p1PrivateKey = p1PrivateKey.data().bytesToHex(),
+                        p1PublicKey = p1PublicKey
+                    )
+                } else {
+                    queryAddressPublicKey(
+                        address,
+                        k1PrivateKey.data().bytesToHex(),
+                        k1PublicKey,
+                        p1PrivateKey.data().bytesToHex(),
+                        p1PublicKey
+                    )
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            loadingLiveData.postValue(false)
+            toast(msgRes = R.string.restore_failed)
         }
     }
 

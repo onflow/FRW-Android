@@ -4,7 +4,6 @@ import android.os.Parcelable
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionsCache
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
@@ -85,8 +84,6 @@ object NftCollectionConfig {
         val text = readTextFromAssets(
             if (isTestnet()) {
                 "config/nft_collections_testnet.json"
-            } else if (isPreviewnet()) {
-                "config/nft_collections_previewnet.json"
             } else {
                 "config/nft_collections_mainnet.json"
             }

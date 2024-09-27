@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.cache.CACHE_WALLET
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
@@ -33,10 +32,6 @@ object WalletManager {
     }
 
     fun wallet() = AccountManager.get()?.wallet
-
-    fun isPreviewnetWalletCreated(): Boolean {
-        return wallet()?.wallets?.lastOrNull { it.network() == NETWORK_NAME_PREVIEWNET } != null
-    }
 
     fun isEVMAccountSelected(): Boolean {
         return EVMWalletManager.getEVMAddress() == selectedWalletAddress

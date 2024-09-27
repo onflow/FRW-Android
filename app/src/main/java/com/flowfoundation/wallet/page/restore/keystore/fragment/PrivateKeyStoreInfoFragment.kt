@@ -51,6 +51,7 @@ class PrivateKeyStoreInfoFragment: Fragment() {
                     etAddress.text.toString().trim()
                 )
             }
+            btnImport.isEnabled = false
         }
     }
 
