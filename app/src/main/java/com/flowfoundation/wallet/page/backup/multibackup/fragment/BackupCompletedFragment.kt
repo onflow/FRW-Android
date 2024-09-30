@@ -29,7 +29,6 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.nftco.flow.sdk.FlowAddress
-import org.web3j.abi.datatypes.Bool
 import wallet.core.jni.HDWallet
 
 
@@ -154,7 +153,7 @@ class BackupCompletedFragment : Fragment() {
         isRecoveryPhraseBackupSuccess = false
         val backupProvider = BackupCryptoProvider(HDWallet(item.mnemonic, ""))
 
-        val blockAccount = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+        val blockAccount = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
         isRecoveryPhraseBackupSuccess = blockAccount?.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey.base16Value } != null
         binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
             setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)

@@ -266,7 +266,7 @@ object AccountManager {
             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
                 if (isSuccess) {
                     setRegistered()
-                    if (account.prefix == null) {
+                    if (account.prefix == null && account.keyStoreInfo == null) {
                         Wallet.store().resume()
                     }
                     callback.invoke(true)

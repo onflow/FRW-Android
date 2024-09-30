@@ -177,7 +177,7 @@ private suspend fun resumeAccount() {
     firebaseLogin(resp.data?.customToken!!) { isSuccess ->
         if (isSuccess) {
             setRegistered()
-            if (AccountManager.get()?.prefix == null) {
+            if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
                 Wallet.store().resume()
             }
         } else {
