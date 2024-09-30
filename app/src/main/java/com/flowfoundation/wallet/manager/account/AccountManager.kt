@@ -28,6 +28,8 @@ import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.setUploadedAddressSet
@@ -234,6 +236,7 @@ object AccountManager {
 
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
         if (!setToAnonymous()) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
             callback.invoke(false)
             return
         }
@@ -241,6 +244,7 @@ object AccountManager {
         val service = retrofit().create(ApiService::class.java)
         val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account, true)
         if (cryptoProvider == null) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
             callback.invoke(false)
             return
         }
@@ -256,6 +260,7 @@ object AccountManager {
             )
         )
         if (resp.data?.customToken.isNullOrBlank()) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
             callback.invoke(false)
         } else {
             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
@@ -266,6 +271,7 @@ object AccountManager {
                     }
                     callback.invoke(true)
                 } else {
+                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
                     callback.invoke(false)
                 }
             }

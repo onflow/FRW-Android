@@ -271,6 +271,7 @@
     <string name="claim_domain_failed">Claim domain failed</string>
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Incorrect mnemonic</string>
+    <string name="address_incorrect">Incorrect address</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="inbox">Token Inbox</string>
     <string name="token">Token</string>

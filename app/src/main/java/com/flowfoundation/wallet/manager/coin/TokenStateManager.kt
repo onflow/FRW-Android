@@ -104,6 +104,7 @@ object TokenStateManager {
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
         }
+        logd("WalletFragmentViewModel", "tokenStateList::${tokenStateList.size}")
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }

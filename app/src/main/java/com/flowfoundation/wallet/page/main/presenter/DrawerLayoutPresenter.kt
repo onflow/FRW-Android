@@ -100,7 +100,7 @@ class DrawerLayoutPresenter(
         }
 
         bindData()
-        binding.refreshWalletList()
+        binding.refreshWalletList(true)
 
         AccountEmojiManager.addListener(this)
         ChildAccountList.addAccountUpdateListener(this)
@@ -258,7 +258,7 @@ class DrawerLayoutPresenter(
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
-        binding.refreshWalletList()
+        binding.refreshWalletList(true)
     }
 
     override fun onEmojiUpdate(userName: String, address: String, emojiId: Int, emojiName: String) {

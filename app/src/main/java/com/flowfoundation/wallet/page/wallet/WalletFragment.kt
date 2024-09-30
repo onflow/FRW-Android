@@ -146,6 +146,17 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
                     isBackupShown = false
                 }
             }
+//            if (BackupTipManager.isShowBackupTip()) {
+//                val sumCoin = coinList.map { it.balance }.sum()
+//                if (sumCoin > 0.001f) {
+//                    isBackupShown = true
+//                    BackupTipsDialog.show(childFragmentManager)
+//                } else {
+//                    isBackupShown = false
+//                }
+//            } else {
+//                isBackupShown = false
+//            }
         }
     }
 

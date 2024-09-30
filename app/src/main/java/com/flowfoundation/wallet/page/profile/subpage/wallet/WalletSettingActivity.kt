@@ -48,7 +48,7 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
         binding.root.addStatusBarTopPadding()
         setupToolbar()
         setup()
-        checkMeowDomainClaimed()
+//        checkMeowDomainClaimed()
         queryStorageInfo()
     }
 

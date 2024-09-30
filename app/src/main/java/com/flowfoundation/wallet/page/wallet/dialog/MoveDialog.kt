@@ -84,6 +84,8 @@ class MoveDialog : BottomSheetDialogFragment() {
                     checkBox.isChecked = checkBox.isChecked.not()
                     ioScope {
                         setDoNotShowMoveDialog(checkBox.isChecked)
+//                        BackupTipManager.markDoNotShow(checkBox.isChecked)
+
                     }
                 }
             }

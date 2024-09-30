@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.databinding.FragmentPrivateKeyInfoBinding
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.flowfoundation.wallet.wallet.toAddress
 
 
 class PrivateKeyInfoFragment: Fragment() {
@@ -33,7 +34,7 @@ class PrivateKeyInfoFragment: Fragment() {
     }
 
     private fun validatePrivateKey(input: String): Boolean {
-        val privateKeyRegex = Regex("^0x[0-9a-fA-F]{64}$")
+        val privateKeyRegex = Regex("^(0x)?[0-9a-fA-F]{64}$")
         return privateKeyRegex.matches(input)
     }
 

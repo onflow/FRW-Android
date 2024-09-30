@@ -110,7 +110,7 @@ fun BottomNavigationView.setLottieDrawable(
     }
 }
 
-fun LayoutMainDrawerLayoutBinding.refreshWalletList() {
+fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = false) {
     ioScope {
         val userInfo = AccountManager.userInfo() ?: return@ioScope
         uiScope {
@@ -129,17 +129,18 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList() {
             list.forEach { walletItem ->
                 val itemView = LayoutInflater.from(root.context)
                     .inflate(R.layout.item_wallet_list_main_account, llMainAccount, false)
-                (itemView as ViewGroup).setupWallet(walletItem, userInfo)
+                (itemView as ViewGroup).setupWallet(walletItem, userInfo, refreshBalance)
                 llMainAccount.addView(itemView)
             }
-            this.setupLinkedAccount(wallet, userInfo)
+            this.setupLinkedAccount(wallet, userInfo, refreshBalance)
         }
     }
 }
 
 private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     wallet: WalletData,
-    userInfo: UserInfoData
+    userInfo: UserInfoData,
+    refreshBalance: Boolean
 ) {
     llLinkedAccount.removeAllViews()
     if (EVMWalletManager.showEVMAccount(wallet.network())) {
@@ -154,7 +155,8 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
                     isSelected = WalletManager.selectedWalletAddress() == it.address
 
                 ),
-                isEVMAccount = true
+                isEVMAccount = true,
+                refreshBalance = refreshBalance
             )
             llLinkedAccount.addView(childView)
             clEvmLayout.gone()
@@ -174,7 +176,8 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
 @SuppressLint("SetTextI18n")
 private fun ViewGroup.setupWallet(
     wallet: WalletData,
-    userInfo: UserInfoData
+    userInfo: UserInfoData,
+    refreshBalance: Boolean
 ) {
     val data = wallet.address()?.walletData(userInfo) ?: return
 
@@ -194,7 +197,9 @@ private fun ViewGroup.setupWallet(
     itemView.setBackgroundResource(if (data.isSelected) R.drawable.bg_account_selected else R.drawable.bg_empty_placeholder)
     selectedView.setVisible(data.isSelected)
 
-    bindFlowBalance(balanceView, data.address)
+    if (refreshBalance) {
+        bindFlowBalance(balanceView, data.address.toAddress())
+    }
     copyView.setOnClickListener {
         textToClipboard(data.address)
         toast(msgRes = R.string.copy_address_toast)
@@ -255,7 +260,8 @@ private class WalletItemData(
 
 @SuppressLint("SetTextI18n")
 private fun View.setupWalletItem(
-    data: WalletItemData?, network: String? = null, isEVMAccount: Boolean = false
+    data: WalletItemData?, network: String? = null, isEVMAccount: Boolean = false,
+    refreshBalance: Boolean = false
 ) {
     data ?: return
     val itemView = findViewById<View>(R.id.wallet_item)
@@ -274,7 +280,9 @@ private fun View.setupWalletItem(
             ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
         nameView.text = emojiInfo.emojiName
         addressView.text = shortenEVMString(data.address.toAddress())
-        bindEVMFlowBalance(balanceView)
+        if (refreshBalance) {
+            bindEVMFlowBalance(balanceView)
+        }
         balanceView.visible()
     } else {
         nameView.text = data.name

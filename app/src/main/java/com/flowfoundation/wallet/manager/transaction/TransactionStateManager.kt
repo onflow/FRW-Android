@@ -138,9 +138,9 @@ object TransactionStateManager {
                 NftCollectionStateManager.fetchStateSingle(state.nftCollectionData(), cache = true)
             }
 
-            if (state.type == TransactionState.TYPE_CLAIM_DOMAIN && state.isSuccess()) {
-                checkMeowDomainClaimed()
-            }
+//            if (state.type == TransactionState.TYPE_CLAIM_DOMAIN && state.isSuccess()) {
+//                checkMeowDomainClaimed()
+//            }
             if (state.type == TransactionState.TYPE_STAKE_FLOW && state.isSuccess()) {
                 StakingManager.refresh()
             }

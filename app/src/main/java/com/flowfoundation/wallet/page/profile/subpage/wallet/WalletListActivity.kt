@@ -127,9 +127,9 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
         iconView.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(wallet.emojiId))
         nameView.text = wallet.emojiName
         evmLabel.setVisible(isEVMAccount)
-        addressView.text = "(${shortenEVMString(wallet.address)})"
+        addressView.text = "(${shortenEVMString(wallet.address.toAddress())})"
 
-        bindWalletBalance(balanceView, wallet.address)
+        bindWalletBalance(balanceView, wallet.address.toAddress())
 
         setOnClickListener {
             WalletSettingActivity.launch(this@WalletListActivity, wallet.address)

@@ -22,8 +22,6 @@ class WalletListResponse(
 data class WalletListData(
     @SerializedName("id")
     val id: String,
-    @SerializedName("primary_wallet")
-    val primaryWalletId: Int,
     @SerializedName("username")
     val username: String,
     @SerializedName("wallets")
@@ -40,16 +38,10 @@ data class WalletListData(
 data class WalletData(
     @SerializedName("blockchain")
     val blockchain: List<BlockchainData>?,
-    @SerializedName("color")
-    val color: String,
-    @SerializedName("icon")
-    val icon: String,
     @SerializedName("name")
-    val name: String,
-    @SerializedName("id")
-    val walletId: Int
+    val name: String
 ) {
-    fun address() = blockchain?.firstOrNull()?.address
+    fun address() = blockchain?.firstOrNull()?.address?.toAddress()
 
     fun network() = blockchain?.firstOrNull()?.chainId
 }
@@ -59,23 +51,6 @@ data class WalletData(
 data class BlockchainData(
     @SerializedName("address")
     val address: String,
-    @SerializedName("blockchain_id")
-    val blockchainId: Int,
     @SerializedName("chain_id")
-    val chainId: String,
-    @SerializedName("coins")
-    val coins: List<String>,
-    @SerializedName("name")
-    val name: String
+    val chainId: String
 ) : Parcelable
-
-data class CoinData(
-    @SerializedName("decimal")
-    val decimal: Int,
-    @SerializedName("is_token")
-    val isToken: Boolean,
-    @SerializedName("name")
-    val name: String,
-    @SerializedName("symbol")
-    val symbol: String
-)

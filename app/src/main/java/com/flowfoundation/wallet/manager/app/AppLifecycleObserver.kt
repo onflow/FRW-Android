@@ -26,7 +26,7 @@ class AppLifecycleObserver : DefaultLifecycleObserver {
     private fun onAppToForeground() {
         logd(TAG, "onAppToForeground")
         isForeground = true
-        checkMeowDomainClaimed()
+//        checkMeowDomainClaimed()
         queryStorageInfo()
         safeRun {
             CoreClient.Relay.connect { error: Core.Model.Error ->

@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.nftco.flow.sdk.DomainTag
@@ -23,7 +24,11 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.cadence.toJsonElement
 import com.nftco.flow.sdk.decodeToAny
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.json.JSONArray
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
@@ -136,7 +141,8 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
                 } else {
                     val element = event.payload.decodeToAny().toJsonElement()
                     try {
-                        val eventHash = element.jsonObject["hash"].toString()
+                        val eventHash = jsonArrayToByteArray(element.jsonObject["hash"] as
+                                JsonArray).bytesToHex().toAddress()
                         logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
                         callback.invoke(eventHash)
                         refreshBalance(value.toFloat())
@@ -147,6 +153,15 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
             }
         }
     }
+}
+
+private fun jsonArrayToByteArray(jsonArray: JsonArray): ByteArray {
+    val byteArray = ByteArray(jsonArray.size)
+    for (i in jsonArray.indices) {
+        val byteValue = (jsonArray[i] as JsonPrimitive).int and 0xFF
+        byteArray[i] = byteValue.toByte()
+    }
+    return byteArray
 }
 
 fun refreshBalance(value: Float) {

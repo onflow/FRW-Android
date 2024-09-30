@@ -608,11 +608,17 @@ fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? 
             block()
         }
     } catch (e: Throwable) {
-        loge(e)
+        loge(ScriptExecutionException(this, e))
 //        reportCadenceErrorToDebugView()
         return null
     }
 }
+
+class ScriptExecutionException(
+    val script: String,
+    cause: Throwable
+) : Throwable("Error while running script :: \n $script", cause)
+
 
 suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null

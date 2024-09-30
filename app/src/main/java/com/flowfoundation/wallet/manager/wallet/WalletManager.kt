@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.utils.getSelectedWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
+import com.flowfoundation.wallet.wallet.toAddress
 
 object WalletManager {
 
@@ -34,7 +35,7 @@ object WalletManager {
     fun wallet() = AccountManager.get()?.wallet
 
     fun isEVMAccountSelected(): Boolean {
-        return EVMWalletManager.getEVMAddress() == selectedWalletAddress
+        return EVMWalletManager.getEVMAddress()?.toAddress() == selectedWalletAddress.toAddress()
     }
 
     fun isChildAccountSelected(): Boolean {
@@ -92,7 +93,7 @@ object WalletManager {
     }
 
     fun selectedWalletAddress(): String {
-        val pref = selectedWalletAddress
+        val pref = selectedWalletAddress.toAddress()
         val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null || EVMWalletManager.isEVMWalletAddress(pref)
         if (isExist) {
             return pref

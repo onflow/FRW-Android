@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.google.gson.Gson
+import org.json.JSONObject
 
 
 class PrivateKeyStoreInfoFragment: Fragment() {
@@ -29,7 +31,16 @@ class PrivateKeyStoreInfoFragment: Fragment() {
     private fun canRestore(): Boolean {
         val json = binding.etJson.text.toString().trim()
         val password = binding.etPassword.text.toString().trim()
-        return json.isNotEmpty() && password.isNotEmpty()
+        return isValidJson(json) && password.isNotEmpty()
+    }
+
+    private fun isValidJson(input: String): Boolean {
+        return try {
+            JSONObject(input)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
