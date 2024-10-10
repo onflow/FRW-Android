@@ -46,7 +46,7 @@ data class Nft(
     @SerializedName("collectionName")
     val collectionName: String,
     @SerializedName("collectionContractName")
-    val collectionContractName: String,
+    val collectionContractName: String?,
     @SerializedName("contractAddress")
     val collectionAddress: String,
     @SerializedName("collectionDescription")
@@ -62,11 +62,11 @@ data class Nft(
     @SerializedName("flowIdentifier")
     val flowIdentifier: String?
 ) : Parcelable {
-    fun uniqueId() = "${collectionName}.${collectionContractName}-${id}"
+    fun uniqueId() = "${collectionName}.${contractName()}-${id}"
 
-    fun serverId() = "${collectionContractName}-${id}"
+    fun serverId() = "${contractName()}-${id}"
 
-    fun contractName() = collectionContractName
+    fun contractName() = collectionContractName ?: flowIdentifier?.split(".", ignoreCase = true, limit = 0)?.getOrNull(2) ?: ""
 
     fun tokenId() = id
 
@@ -77,11 +77,11 @@ data class Nft(
     }
 
     fun getNFTIdentifier(): String {
-        return flowIdentifier ?: "A.${collectionAddress.removeAddressPrefix()}.${collectionContractName}.NFT"
+        return flowIdentifier ?: "A.${collectionAddress.removeAddressPrefix()}.${contractName()}.NFT"
     }
 
     fun canBridgeToEVM(): Boolean {
-        val collection = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return false
+        val collection = NftCollectionConfig.get(collectionAddress, contractName()) ?: return false
         return collection.evmAddress.isNullOrEmpty().not()
     }
 }

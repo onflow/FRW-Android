@@ -119,7 +119,10 @@
     <color name="wallet_notification_background">#CC2C2C2C</color>
     <color name="home_page_action_background">#A1000000</color>
 
+    <color name="fill_1">#4076767E</color>
     <color name="fill_3">#3176767E</color>
+    <color name="border_line">#28FFFFFF</color>
+    <color name="background_2">#28282A</color>
 
 </resources>
 

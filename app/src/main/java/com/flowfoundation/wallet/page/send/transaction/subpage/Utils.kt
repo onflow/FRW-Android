@@ -65,7 +65,7 @@ fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressB
 }
 
 fun DialogSendConfirmBinding.bindNft(nft: Nft) {
-    val config = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+    val config = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
     Glide.with(nftCover).load(nft.getNFTCover()).into(nftCover)
     nftName.text = nft.name()
     Glide.with(nftCollectionIcon).load(config?.logo() ?: nft.collectionSquareImage).into(nftCollectionIcon)

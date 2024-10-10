@@ -44,7 +44,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
 //        transferCountLiveData.postValue(getAccountTransferCount())
 
         val service = retrofit().create(ApiService::class.java)
-        val walletAddress = WalletManager.selectedWalletAddress()
+        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
         if (walletAddress.isEmpty()) {
             return
         }

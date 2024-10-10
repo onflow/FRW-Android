@@ -102,7 +102,7 @@ class NftSendConfirmViewModel : ViewModel() {
                             )
                             val data =
                                 Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
-                            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+                            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
                             if (collection?.evmAddress == null || collection.evmAddress.isEmpty()) {
                                 resultLiveData.postValue(false)
                                 return@viewModelIOScope
@@ -162,7 +162,7 @@ class NftSendConfirmViewModel : ViewModel() {
     }
 
     private suspend fun sendNFTFromChildToChild() {
-        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.collectionContractName)
+        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.contractName())
         val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
         val txId = cadenceSendNFTFromChildToChild(
             sendModel.fromAddress,
@@ -175,7 +175,7 @@ class NftSendConfirmViewModel : ViewModel() {
 
 
     private suspend fun sendNFTFromChildToFlow() {
-        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.collectionContractName)
+        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.contractName())
         val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
         val txId = cadenceSendNFTFromChildToFlow(
             sendModel.fromAddress,
@@ -187,7 +187,7 @@ class NftSendConfirmViewModel : ViewModel() {
     }
 
     private suspend fun sendNFTFromParentToChild() {
-        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.collectionContractName)
+        val collection = NftCollectionConfig.get(sendModel.nft.collectionAddress, sendModel.nft.contractName())
         val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
         val txId = cadenceSendNFTFromParentToChild(
             sendModel.target.address!!,

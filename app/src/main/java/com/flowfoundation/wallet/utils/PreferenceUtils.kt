@@ -65,6 +65,7 @@ private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
 private const val KEY_IS_NOTIFICATION_PERMISSION_CHECKED = "KEY_IS_NOTIFICATION_PERMISSION_CHECKED"
 private const val KEY_TOKEN_UPLOADED_ADDRESS_SET = "KEY_TOKEN_UPLOADED_ADDRESS_SET"
 private const val KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET = "KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET"
+private const val KEY_COA_LINK_CHECKED_ADDRESS_SET = "KEY_COA_LINK_CHECKED_ADDRESS_SET"
 private val scope = CoroutineScope(Dispatchers.IO)
 
 private val sharedPreferencesTraditional by lazy { Env.getApp().getSharedPreferences(PREFERENCE_TRADITIONAL, Context.MODE_PRIVATE) }
@@ -302,6 +303,14 @@ fun setDoNotTipBackupAddressSet(addressSet: Set<String>) {
 
 fun getDoNotTipBackupAddressSet(): Set<String> {
     return sharedPreferencesTraditional.getStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, setOf()) ?: setOf()
+}
+
+fun getCOALinkCheckedAddressSet(): Set<String> {
+    return sharedPreferencesTraditional.getStringSet(KEY_COA_LINK_CHECKED_ADDRESS_SET, setOf()) ?: setOf()
+}
+
+fun setCOALinkCheckedAddresssSet(addressSet: Set<String>) {
+    sharedPreferencesTraditional.edit().putStringSet(KEY_COA_LINK_CHECKED_ADDRESS_SET, addressSet).apply()
 }
 
 private fun edit(unit: suspend () -> Unit) {

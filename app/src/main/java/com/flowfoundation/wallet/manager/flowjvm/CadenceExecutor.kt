@@ -392,6 +392,22 @@ suspend fun cadenceCreateCOAAccount(): String? {
     return transactionId
 }
 
+fun cadenceCheckCOALink(address: String): Boolean? {
+    logd(TAG, "cadenceCheckCOALink address:$address")
+    val result = CADENCE_CHECK_COA_LINK.executeCadence {
+        arg { address(address) }
+    }
+    logd(TAG, "cadenceCheckCOALink response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseBoolObject(default = true)
+}
+
+suspend fun cadenceCOALink(): String? {
+    logd(TAG, "cadenceCOALink()")
+    val transactionId = CADENCE_COA_LINK.transactionByMainWallet {}
+    logd(TAG, "cadenceCOALink() transactionId:$transactionId")
+    return transactionId
+}
+
 fun cadenceQueryEVMAddress(): String? {
     logd(TAG, "cadenceQueryEVMAddress()")
     val walletAddress = WalletManager.selectedWalletAddress()
@@ -608,10 +624,14 @@ fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? 
             block()
         }
     } catch (e: Throwable) {
-        loge(ScriptExecutionException(this, e))
+        loge(ScriptExecutionException(getFirstLine(this), e))
 //        reportCadenceErrorToDebugView()
         return null
     }
+}
+
+private fun getFirstLine(input: String): String {
+    return input.take(100)
 }
 
 class ScriptExecutionException(

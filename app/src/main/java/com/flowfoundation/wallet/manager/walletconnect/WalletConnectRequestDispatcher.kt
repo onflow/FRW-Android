@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
+import com.flowfoundation.wallet.manager.evm.signTypedData
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
@@ -19,6 +20,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.PollingData
 import com.flowfoundation.wallet.manager.walletconnect.model.PollingResponse
 import com.flowfoundation.wallet.manager.walletconnect.model.ResponseStatus
 import com.flowfoundation.wallet.manager.walletconnect.model.Service
+import com.flowfoundation.wallet.manager.walletconnect.model.SignableParams
 import com.flowfoundation.wallet.manager.walletconnect.model.WCAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WCProxyAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
@@ -39,6 +41,8 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.authz.FclAuthzDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
@@ -58,6 +62,7 @@ import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
+import org.web3j.crypto.StructuredDataEncoder
 import java.io.ByteArrayOutputStream
 import java.lang.reflect.Type
 import java.util.zip.GZIPInputStream
@@ -81,12 +86,43 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.PROXY_SIGN.value -> respondProxySign()
         WalletConnectMethod.EVM_SIGN_MESSAGE.value -> evmSignMessage()
         WalletConnectMethod.EVM_SEND_TRANSACTION.value -> evmSendTransaction()
+        WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
+        WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> evmSignTypedData()
+    }
+}
+
+suspend fun WCRequest.evmSignTypedData() {
+    val activity = topActivity() ?: return
+    val jsonArray = Gson().fromJson(params, JsonArray::class.java)
+    val messageObject = if (jsonArray.get(0).isJsonObject) {
+        jsonArray.get(0)
+    } else {
+        jsonArray.get(1)
+    } ?: return
+    val message = Gson().toJson(messageObject)
+    val dataEncoder = StructuredDataEncoder(message)
+    val hashData = dataEncoder.hashStructuredData()
+    logd(TAG, "hashData::$hashData")
+    uiScope {
+        val model = FclDialogModel(
+            title = metaData?.name,
+            logo = metaData?.icons?.firstOrNull(),
+            url = metaData?.url,
+            signMessage = message,
+        )
+        EVMSignTypedDataDialog.show(
+            activity.supportFragmentManager,
+            model
+        )
+        EVMSignTypedDataDialog.observe { isApprove ->
+            if (isApprove) approve(signTypedData(hashData)) else reject()
+        }
     }
 }
 
 private suspend fun WCRequest.evmSendTransaction() {
     val activity = topActivity() ?: return
-    val json = gson().fromJson<List<EvmTransaction>>(params, object : TypeToken<List<EvmTransaction>>() {}.type)
+    val json = Gson().fromJson<List<EvmTransaction>>(params, object : TypeToken<List<EvmTransaction>>() {}.type)
     val transaction = json.firstOrNull() ?: return
     uiScope {
         val model = EVMDialogModel(
@@ -109,14 +145,13 @@ private suspend fun WCRequest.evmSendTransaction() {
                     }
                 }
             } else reject()
-            redirectToSourceApp()
         }
     }
 }
 
 private suspend fun WCRequest.evmSignMessage() {
     val activity = topActivity() ?: return
-    val json = gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
+    val json = Gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
     val hexMessage = json.firstOrNull() ?: return
     val message = String(hexMessage.hexToBytes(), Charsets.UTF_8)
     uiScope {
@@ -126,14 +161,12 @@ private suspend fun WCRequest.evmSignMessage() {
             url = metaData?.url,
             signMessage = hexMessage,
         )
-        FclSignMessageDialog.show(
+        EVMSignMessageDialog.show(
             activity.supportFragmentManager,
             model
         )
-        FclSignMessageDialog.observe { isApprove ->
+        EVMSignMessageDialog.observe { isApprove ->
             if (isApprove) approve(signEthereumMessage(message)) else reject()
-            FclAuthzDialog.dismiss()
-            redirectToSourceApp()
         }
     }
 }
@@ -181,24 +214,23 @@ private fun WCRequest.respondAccountInfo() {
 }
 
 private fun WCRequest.respondAuthn() {
-    val address = WalletManager.selectedWalletAddress()
-    val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
+    val address = WalletManager.wallet()?.walletAddress() ?: return
+    val json = Gson().fromJson<List<SignableParams>>(params, object : TypeToken<List<SignableParams>>() {}.type)
     val signable = json.firstOrNull() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
     val keyId = cryptoProvider?.let {
         FlowAddress(address).currentKeyId(it.getPublicKey())
     } ?: 0
-    val services = walletConnectAuthnServiceResponse(address, keyId, signable.data?.get("nonce"), signable.data?.get("appIdentifier"), isFromFclSdk())
+    val services = walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
     val response = Sign.Params.Response(
         sessionTopic = topic,
-        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services.responseParse(this))
+        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
     )
     logd(TAG, "respondAuthn:\n${services}")
 
     SignClient.respond(response, onSuccess = { success ->
         logd(TAG, "success:${success}")
     }) { error -> loge(error.throwable) }
-    redirectToSourceApp()
 }
 
 private suspend fun WCRequest.respondAuthz() {
@@ -206,6 +238,7 @@ private suspend fun WCRequest.respondAuthz() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
     val message = signable.message ?: return
+    val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
     uiScope {
         val data = FclDialogModel(
@@ -227,7 +260,6 @@ private suspend fun WCRequest.respondAuthz() {
 
         FclAuthzDialog.observe { isApprove ->
             ioScope {
-                val address = WalletManager.selectedWalletAddress()
                 val signature = cryptoProvider.signData(message.hexToBytes())
                 val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
 
@@ -236,12 +268,11 @@ private suspend fun WCRequest.respondAuthz() {
             }
         }
     }
-    redirectToSourceApp()
 }
 
 
 private fun WCRequest.respondPreAuthz() {
-    val walletAddress = WalletManager.selectedWalletAddress()
+    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
     val response = PollingResponse(
         status = ResponseStatus.APPROVED,
@@ -272,7 +303,7 @@ private fun WCRequest.respondPreAuthz() {
 
 private suspend fun WCRequest.respondUserSign() {
     val activity = topActivity() ?: return
-    val address = WalletManager.selectedWalletAddress()
+    val address = WalletManager.wallet()?.walletAddress() ?: return
     val param = gson().fromJson<List<SignableMessage>>(params, object : TypeToken<List<SignableMessage>>() {}.type)?.firstOrNull()
     val message = param?.message ?: return
     uiScope {
@@ -297,7 +328,6 @@ private suspend fun WCRequest.respondUserSign() {
         FclSignMessageDialog.observe { isApprove ->
             if (isApprove) approve(fclSignMessageResponse(message, address)) else reject()
             FclAuthzDialog.dismiss()
-            redirectToSourceApp()
         }
     }
 }
@@ -325,7 +355,6 @@ private suspend fun WCRequest.respondSignPayer() {
         approve(gson().toJson(response))
         FclAuthzDialog.dismiss()
     }
-    redirectToSourceApp()
 }
 
 
@@ -334,7 +363,7 @@ private suspend fun WCRequest.respondSignProposer() {
 
     logd(TAG, "respondSignProposer param:${params}")
     val signable = params.toSignables(gson())
-    val address = WalletManager.selectedWalletAddress()
+    val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
 
     val data = FclDialogModel(

@@ -56,7 +56,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 seedPhraseListLiveData.postValue(emptyList())
                 return@viewModelIOScope
             }
-            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+            val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
             uiScope {
                 val keys = account?.keys ?: emptyList()
                 val keyList = backupKeyList.mapNotNull { info ->
@@ -95,7 +95,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
 
             val infoResponse = service.getKeyDeviceInfo()
             val keyDeviceList = infoResponse.data.result?.filter { it.backupInfo != null && it.backupInfo.type < 0 } ?: emptyList()
-            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+            val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
             val keys = account?.keys ?: emptyList()
             val deviceList = mutableListOf<DeviceKeyModel>()
             deviceInfoList.forEach { device ->

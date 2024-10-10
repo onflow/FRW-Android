@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.evm.model
 
+import com.google.gson.JsonObject
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -15,4 +16,11 @@ data class EvmTransaction(
     val data: String?,
     @SerializedName("from")
     val from: String?
+)
+
+data class EVMTypedMessage(
+    @SerializedName("message")
+    val message: JsonObject,
+    @SerializedName("primaryType")
+    val primaryType: String?
 )

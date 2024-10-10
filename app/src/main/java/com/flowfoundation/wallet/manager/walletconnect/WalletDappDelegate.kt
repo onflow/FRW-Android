@@ -135,18 +135,23 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
     override fun onSessionRequestResponse(response: Sign.Model.SessionRequestResponse) {
         logd(TAG, "onSessionRequestResponse() requestResponseSession:${Gson().toJson(response)}")
         when (response.method) {
-            WalletConnectMethod.ACCOUNT_INFO.value -> accountInfoResponse(response.result as Sign.Model.JsonRpcResponse.JsonRpcResult)
+            WalletConnectMethod.ACCOUNT_INFO.value -> accountInfoResponse(response.result)
             WalletConnectMethod.ADD_DEVICE_KEY.value -> addDeviceKeyResponse()
         }
     }
 
-    private fun accountInfoResponse(jsonRpcResponse: Sign.Model.JsonRpcResponse.JsonRpcResult) {
-        val activity = BaseActivity.getCurrentActivity() ?: return
-        val accountResponse = Gson().fromJson(jsonRpcResponse.result, WCWalletResponse::class.java)
-        val account = accountResponse.data ?: return
-        WalletConfirmActivity.launch(
-            activity, account.userAvatar, account.userName, account.walletAddress
-        )
+    private fun accountInfoResponse(jsonRpcResult: Sign.Model.JsonRpcResponse) {
+        try {
+            val activity = BaseActivity.getCurrentActivity() ?: return
+            val rpcResult = jsonRpcResult as Sign.Model.JsonRpcResponse.JsonRpcResult
+            val accountResponse = Gson().fromJson(rpcResult.result, WCWalletResponse::class.java)
+            val account = accountResponse.data ?: return
+            WalletConfirmActivity.launch(
+                activity, account.userAvatar, account.userName, account.walletAddress
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun addDeviceKeyResponse() {

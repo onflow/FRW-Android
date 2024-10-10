@@ -46,7 +46,7 @@ fun WebView?.postPreAuthzResponse() {
 
 fun WebView?.postAuthzPayloadSignResponse(fcl: FclAuthzResponse) {
     ioScope {
-        val address = WalletManager.selectedWalletAddress()
+        val address = WalletManager.wallet()?.walletAddress() ?: return@ioScope
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
         val signature = cryptoProvider.signData(fcl.body.message.hexToBytes())
         val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
@@ -62,7 +62,7 @@ fun WebView?.postAuthzEnvelopeSignResponse(sign: SignPayerResponse.EnvelopeSigs)
 
 fun WebView?.postSignMessageResponse(fcl: FclSignMessageResponse) {
     ioScope {
-        val address = WalletManager.selectedWalletAddress()
+        val address = WalletManager.wallet()?.walletAddress() ?: return@ioScope
         fclSignMessageResponse(fcl.body?.message, address).also { postMessage(it) }
     }
 }

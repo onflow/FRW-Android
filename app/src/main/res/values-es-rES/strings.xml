@@ -158,6 +158,7 @@
     <string name="transaction">Transacción</string>
     <string name="from">En</string>
     <string name="to">A</string>
+    <string name="sign_message_primary_type">Primary type</string>
     <string name="amount_confirmation">Importe Confirmación</string>
     <string name="insufficient_balance">Equilibrio insuficiente</string>
     <string name="minimum_required">Mínimo 50 caudales</string>
@@ -208,6 +209,7 @@
     <string name="drag_here_to_unpin">Arrastre aquí para desanclar</string>
     <string name="recovery_purchase_tips">Escribe o copia estas palabras en el orden correcto y guárdalas en un lugar seguro.</string>
     <string name="open_in_browser">Abrir en el navegador</string>
+    <string name="clear_cache">Clear Cache</string>
     <string name="pending_transaction">Transacción pendiente</string>
     <string name="welcome_to_wallet">Bienvenido a Flow Wallet</string>
     <string name="profile_sign_tips"><![CDATA[Únete a nosotros y descubre nuevas y brillantes experiencias.]]></string>
@@ -268,6 +270,7 @@
     <string name="claim_domain_failed">Dominio de reclamación fallido</string>
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Mnemotecnia incorrecta</string>
+    <string name="address_incorrect">Incorrect address</string>
     <string name="copied_to_clipboard">Copiado al portapapeles</string>
     <string name="inbox">Buzón de entrada de fichas</string>
     <string name="token">Ficha</string>
@@ -451,13 +454,13 @@
     <string name="or">O</string>
     <string name="sync_page_title">Abre tu Cartera Flow en la aplicación móvil \n y escanea el código QR para sincronizar tu Cartera.</string>
     <string name="sync_scan_qr_code">Escanear código QR con aplicación móvil</string>
-    <string name="sync_note">Nota: Tu frase de recuperación NUNCA pasará por el servidor de Flow Wallet. Está encriptada de extremo a extremo y nunca podremos leerla.</string>
+    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">Buscar 1 Cartera a juego</string>
     <string name="wallet_confirmation">Confirmación de cartera</string>
     <string name="loading">Cargando</string>
     <string name="loading_desc">Puede tardar un poco, por favor no salga...</string>
     <string name="create_device_backup">Crear copia de seguridad del dispositivo</string>
-    <string name="google_backup_note">Nota: Tu clave de copia de seguridad está encriptada de extremo a extremo y nunca se envía a los servidores de Flow Wallet.</string>
+    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">Crear copia de seguridad múltiple</string>
     <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">Copia de seguridad múltiple</string>
@@ -473,10 +476,27 @@
     <string name="import_wallet_note">Restaura tu monedero utilizando una copia de seguridad.</string>
     <string name="from_device_backup">Desde la copia de seguridad del dispositivo</string>
     <string name="from_device_backup_note">Restaurar desde otra cartera móvil o extensión</string>
+    <string name="from_key_store">From Keystore</string>
+    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="key_store">Keystore</string>
+    <string name="seed_phrase">Seed Phrase</string>
+    <string name="restore_seed_phrase_advanced">Advanced</string>
+    <string name="restore_seed_derivation_path">Derivation Path</string>
+    <string name="restore_seed_passphrase">Passphrase</string>
+    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
+    <string name="restore_private_key_hint">Enter your private key</string>
+    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">Desde Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Clave de acceso/ Frase de recuperación</string>
     <string name="from_recovery_phrase">De frase de recuperación (legado)</string>
     <string name="from_recovery_phrase_note">Restaurar utilizando una frase de recuperación heredada (no una copia de seguridad múltiple)</string>
+    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
+    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">Desde Multi-Backup</string>
     <string name="multi_restore_note">Seleccione 2 o más opciones de copia de seguridad</string>
@@ -626,4 +646,16 @@ uses to turn your device into a hardware wallet.</string>
     <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
+    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="keystore_select_account_tips">Choose an account you want to import</string>
+    <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_no_account_title">No Account Found</string>
+    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
+        key. \n \nPlease check your input and try again.</string>
+    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
+    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
+    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
+    <string name="sign_type_message_from">Sign Type Message from</string>
+    <string name="message">Message</string>
 </resources>

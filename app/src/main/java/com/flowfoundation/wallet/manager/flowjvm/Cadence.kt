@@ -192,6 +192,14 @@ var CADENCE_CREATE_COA_ACCOUNT
     get() = CadenceApiManager.getCadenceEVMScript("createCoaEmpty")
     private set(value) {}
 
+var CADENCE_CHECK_COA_LINK
+    get() = CadenceApiManager.getCadenceEVMScript("checkCoaLink")
+    private set(value) {}
+
+var CADENCE_COA_LINK
+    get() = CadenceApiManager.getCadenceEVMScript("coaLink")
+    private set(value) {}
+
 var CADENCE_QUERY_COA_EVM_ADDRESS
     get() = CadenceApiManager.getCadenceEVMScript("getCoaAddr")
     private set(value) {}

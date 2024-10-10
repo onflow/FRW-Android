@@ -90,7 +90,7 @@ fun loadInitJS(): String {
             };
 
             const announceEvent = new CustomEvent('eip6963:announceProvider', {
-              detail: Object.freeze({ info, provider: ethereum }),
+              detail: Object.freeze({ info, provider: window.ethereum }),
             });
 
             window.dispatchEvent(announceEvent);
@@ -168,6 +168,25 @@ fun refreshBalance(value: Float) {
     if (WalletManager.isEVMAccountSelected() && value > 0) {
         BalanceManager.refresh()
     }
+}
+
+fun signTypedData(data: ByteArray): String {
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val flowAddress = FlowAddress(address)
+    val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
+
+    val signableData = DomainTag.USER_DOMAIN_TAG + data
+    val sign = cryptoProvider.getSigner().sign(signableData)
+    val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
+    val encoded = RlpEncoder.encode(rlpList)
+
+    logd(EvmInterface.TAG, "signableData:::${signableData.bytesToHex()}")
+    logd(EvmInterface.TAG, "sign:::${sign.bytesToHex()}")
+    logd(EvmInterface.TAG, "encoded:::${encoded.bytesToHex()}")
+    logd(EvmInterface.TAG, "signResult:::${Numeric.toHexString(encoded)}")
+
+    return Numeric.toHexString(encoded)
 }
 
 fun signEthereumMessage(message: String): String {

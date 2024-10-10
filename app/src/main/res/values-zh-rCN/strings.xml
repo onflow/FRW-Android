@@ -156,6 +156,7 @@
     <string name="transaction">交易</string>
     <string name="from">来自</string>
     <string name="to">至</string>
+    <string name="sign_message_primary_type">Primary type</string>
     <string name="amount_confirmation">金额确认</string>
     <string name="insufficient_balance">余额不足</string>
     <string name="minimum_required">最少 50 个 Flow</string>
@@ -206,6 +207,7 @@
     <string name="drag_here_to_unpin">拖动此处以解压</string>
     <string name="recovery_purchase_tips">按正确顺序写下或复制这些单词，并将其保存在安全的地方。</string>
     <string name="open_in_browser">在浏览器中打开</string>
+    <string name="clear_cache">Clear Cache</string>
     <string name="pending_transaction">正在处理交易</string>
     <string name="welcome_to_wallet">欢迎来到 Flow Wallet！</string>
     <string name="profile_sign_tips"><![CDATA[加入我们，开启精彩纷呈的全新体验！]]></string>
@@ -266,6 +268,7 @@
     <string name="claim_domain_failed">申请域名失败</string>
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">不正确的助记符</string>
+    <string name="address_incorrect">Incorrect address</string>
     <string name="copied_to_clipboard">复制到剪贴板</string>
     <string name="inbox">代币收件箱</string>
     <string name="token">代币</string>
@@ -455,7 +458,7 @@
     <string name="loading">加载中</string>
     <string name="loading_desc">可能需要一段时间，请不要退出...</string>
     <string name="create_device_backup">创建设备备份</string>
-    <string name="google_backup_note">注意：您的备份密钥经过端到端加密，绝不会发送至 Flow Wallet 服务器</string>
+    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">创建多重备份</string>
     <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">多重备份</string>
@@ -471,10 +474,27 @@
     <string name="import_wallet_note">使用备份恢复您的钱包。</string>
     <string name="from_device_backup">从设备备份恢复</string>
     <string name="from_device_backup_note">从另一台手机或扩展钱包恢复</string>
+    <string name="from_key_store">From Keystore</string>
+    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="key_store">Keystore</string>
+    <string name="seed_phrase">Seed Phrase</string>
+    <string name="restore_seed_phrase_advanced">Advanced</string>
+    <string name="restore_seed_derivation_path">Derivation Path</string>
+    <string name="restore_seed_passphrase">Passphrase</string>
+    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
+    <string name="restore_private_key_hint">Enter your private key</string>
+    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">从多重备份恢复</string>
     <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
     <string name="from_recovery_phrase">用助记词恢复(传统）</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
+    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
+    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">多重还原</string>
     <string name="multi_restore_title">从多重备份</string>
     <string name="multi_restore_note">请选择两个或更多备份选项</string>
@@ -624,4 +644,16 @@
     <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
+    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="keystore_select_account_tips">Choose an account you want to import</string>
+    <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_no_account_title">No Account Found</string>
+    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
+        key. \n \nPlease check your input and try again.</string>
+    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
+    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
+    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
+    <string name="sign_type_message_from">Sign Type Message from</string>
+    <string name="message">Message</string>
 </resources>

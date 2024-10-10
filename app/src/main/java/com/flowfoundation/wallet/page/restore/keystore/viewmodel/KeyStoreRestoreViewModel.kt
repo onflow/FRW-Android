@@ -337,7 +337,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     fun importWithUsername(username: String) {
-        if (currentKeyStoreAddress == null || username.isEmpty()) {
+        if (currentKeyStoreAddress == null || username.isEmpty()
+            || currentKeyStoreAddress?.address.isNullOrEmpty()
+            || currentKeyStoreAddress?.address == "0x") {
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.login_failure)
             return

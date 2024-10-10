@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
-import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
 
@@ -16,7 +15,6 @@ fun walletConnectAuthnServiceResponse(
     keyId: Int,
     nonce: String?,
     appIdentifier: String?,
-    isFromSdk: Boolean,
 ): String {
     return """
 {
@@ -24,32 +22,25 @@ fun walletConnectAuthnServiceResponse(
   "status": "APPROVED",
   "f_vsn": "1.0.0",
   "data": {
-    "fVsn": "1.0.0",
+    "f_vsn": "1.0.0",
     "paddr": null,
     "services": [
       ${
-        if (isFromSdk) {
-            """
-                  ${authn(address.removeAddressPrefix(), keyId)},
-                  ${authz(address.removeAddressPrefix(), keyId)},
-                  ${userSign(address.removeAddressPrefix(), keyId)},
-                  ${preAuthz()},
-                  ${signMessage()},
-                  ${accountProof(address, keyId, nonce, appIdentifier)}${if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) "" else ","}
-              """.trimIndent()
-        } else {
-            """
-                  ${authn(address.removeAddressPrefix(), keyId)},
-                  ${authz(address.removeAddressPrefix(), keyId)},
-                  ${userSign(address.removeAddressPrefix(), keyId)}
-              """.trimIndent()
-        }
-    }
+        """
+            ${authn(address.toAddress(), keyId)},
+            ${authz(address.toAddress(), keyId)},
+            ${userSign(address.toAddress(), keyId)},
+            ${preAuthz()},
+            ${signMessage()},
+            ${accountProof(address, keyId, nonce, appIdentifier)}
+        """.trimIndent()
+      }
     ],
     "addr": "${address.toAddress()}",
     "address": "${address.toAddress()}",
-    "fType": "AuthnResponse"
-  }
+    "f_type": "AuthnResponse"
+  },
+  "type": "FCL:VIEW:RESPONSE"
 }
     """.trimIndent()
 }
@@ -113,11 +104,11 @@ private fun preAuthz(): String {
     "f_type": "Service",
     "f_vsn": "1.0.0",
     "type": "pre-authz",
-    "uid": "lilico#pre-authz",
+    "uid": "frw#pre-authz",
     "endpoint": "flow_pre_authz",
     "method": "WC/RPC",
     "data": {
-      "address": "${AppConfig.payer().address.removeAddressPrefix()}",
+      "address": "${AppConfig.payer().address.toAddress()}",
       "keyId": ${FlowAddress(AppConfig.payer().address.toAddress()).lastBlockAccountKeyId()}
     }
 }
@@ -134,7 +125,7 @@ private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentif
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "account-proof",
-        "uid": "lilico#account-proof",
+        "uid": "frw#account-proof",
         "endpoint": "${WalletConnectMethod.ACCOUNT_PROOF.value}",
         "method": "WC/RPC",
         "data": {
@@ -162,7 +153,7 @@ private fun signMessage(): String {
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "user-signature",
-        "uid": "lilico#user-signature",
+        "uid": "frw#user-signature",
         "endpoint": "${WalletConnectMethod.USER_SIGNATURE.value}",
         "method": "WC/RPC"
     }

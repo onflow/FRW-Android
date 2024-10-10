@@ -61,12 +61,8 @@ class NFTListItemPresenter(
     }
 
     private fun bindAccessible(model: NFTItemModel) {
-        val accessible = ChildAccountCollectionManager.isNFTAccessible(model.nft.collectionAddress, model.nft.collectionContractName)
+        val accessible = ChildAccountCollectionManager.isNFTAccessible(model.nft.collectionAddress, model.nft.contractName())
         binding.priceView.setVisible(accessible)
         binding.tvInaccessibleTag.setVisible(accessible.not())
-    }
-
-    private fun showPopupMenu(model: NFTItemModel) {
-
     }
 }

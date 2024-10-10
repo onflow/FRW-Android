@@ -158,6 +158,7 @@
     <string name="transaction">거래</string>
     <string name="from">에서</string>
     <string name="to">To</string>
+    <string name="sign_message_primary_type">Primary type</string>
     <string name="amount_confirmation">금액 확인</string>
     <string name="insufficient_balance">잔액 부족</string>
     <string name="minimum_required">최소 50개의 흐름</string>
@@ -208,6 +209,7 @@
     <string name="drag_here_to_unpin">여기로 드래그하여 고정 해제</string>
     <string name="recovery_purchase_tips">이 단어들을 올바른 순서대로 적거나 복사하여 안전한 곳에 저장하세요.</string>
     <string name="open_in_browser">브라우저에서 열기</string>
+    <string name="clear_cache">Clear Cache</string>
     <string name="pending_transaction">보류 중인 거래</string>
     <string name="welcome_to_wallet">플로우 월렛에 오신 것을 환영합니다!</string>
     <string name="profile_sign_tips"><![CDATA[저희와 함께 화려하고 새로운 경험을 모두 잠금 해제하세요!]]></string>
@@ -268,6 +270,7 @@
     <string name="claim_domain_failed">도메인 클레임 실패</string>
     <string name="nft_count">%1$d NFT</string>
     <string name="mnemonic_incorrect">잘못된 니모닉</string>
+    <string name="address_incorrect">Incorrect address</string>
     <string name="copied_to_clipboard">클립보드에 복사</string>
     <string name="inbox">토큰 받은 편지함</string>
     <string name="token">토큰</string>
@@ -451,13 +454,13 @@
     <string name="or">또는</string>
     <string name="sync_page_title">모바일 앱 \n 에서 플로우 지갑을 열고 QR 코드를 스캔하여 지갑을 동기화합니다.</string>
     <string name="sync_scan_qr_code">모바일 앱으로 QR코드 스캔</string>
-    <string name="sync_note">참고: 복구 문구는 절대 플로우 월렛 서버를 통과하지 않습니다. 종단 간 암호화되어 있어 절대 읽을 수 없습니다.</string>
+    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">일치하는 지갑 1개 찾기</string>
     <string name="wallet_confirmation">지갑 확인</string>
     <string name="loading">로드 중</string>
     <string name="loading_desc">시간이 걸릴 수 있으니 종료하지 마세요...</string>
     <string name="create_device_backup">장치 백업 생성</string>
-    <string name="google_backup_note">참고: 백업 키는 종단 간 암호화되어 있으며, 플로우 지갑 서버로 전송되지 않습니다.</string>
+    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">멀티 백업 생성</string>
     <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">멀티 백업</string>
@@ -473,10 +476,27 @@
     <string name="import_wallet_note">백업을 사용하여 지갑을 복원하세요.</string>
     <string name="from_device_backup">장치 백업에서</string>
     <string name="from_device_backup_note">다른 모바일 또는 확장 지갑에서 복원</string>
+    <string name="from_key_store">From Keystore</string>
+    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="key_store">Keystore</string>
+    <string name="seed_phrase">Seed Phrase</string>
+    <string name="restore_seed_phrase_advanced">Advanced</string>
+    <string name="restore_seed_derivation_path">Derivation Path</string>
+    <string name="restore_seed_passphrase">Passphrase</string>
+    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
+    <string name="restore_private_key_hint">Enter your private key</string>
+    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">멀티 백업에서</string>
     <string name="from_multi_backup_note">Google 드라이브/ 패스키/ 복구 문구</string>
     <string name="from_recovery_phrase">복구 문구에서(레거시)</string>
     <string name="from_recovery_phrase_note">레거시 복구 구문을 사용하여 복원(다중 백업이 아님)</string>
+    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
+    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">다중 복원</string>
     <string name="multi_restore_title">멀티 백업에서</string>
     <string name="multi_restore_note">백업 옵션을 2개 이상 선택해 주세요.</string>
@@ -626,4 +646,16 @@ uses to turn your device into a hardware wallet.</string>
     <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
+    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="keystore_select_account_tips">Choose an account you want to import</string>
+    <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_no_account_title">No Account Found</string>
+    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
+        key. \n \nPlease check your input and try again.</string>
+    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
+    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
+    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
+    <string name="sign_type_message_from">Sign Type Message from</string>
+    <string name="message">Message</string>
 </resources>

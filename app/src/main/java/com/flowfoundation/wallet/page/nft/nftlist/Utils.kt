@@ -77,7 +77,7 @@ fun Nft.name(): String? {
     if (!postMedia.title.isNullOrBlank()) {
         return postMedia.title
     }
-    val config = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return null
+    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return null
     return "${config.name} #${id}"
 }
 
@@ -91,7 +91,8 @@ fun Nft.video(): String? {
 
 fun Nft.title(): String? = postMedia.title
 
-fun Nft.websiteUrl(walletAddress: String) = "https://lilico.app/nft/$walletAddress/${collectionAddress}/${collectionContractName}?tokenId=${id}"
+fun Nft.websiteUrl(walletAddress: String) = "https://lilico" +
+        ".app/nft/$walletAddress/${collectionAddress}/${contractName()}?tokenId=${id}"
 
 fun findSwipeRefreshLayout(view: View): SwipeRefreshLayout? {
     if (view.parent == null) return null
