@@ -669,5 +669,8 @@ uses to turn your device into a hardware wallet.</string>
     <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
     <string name="sign_type_message_from">Sign Type Message from</string>
     <string name="message">Message</string>
+    <string name="current_account">Current Account</string>
+    <string name="other_accounts">Other Accounts</string>
+    <string name="local_account_keys">Local Account Keys</string>
 
 </resources>

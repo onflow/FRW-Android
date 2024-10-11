@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="8dp"
+    android:background="@drawable/bg_round_16dp"
+    android:backgroundTint="@color/bg_2"
+    android:padding="16dp">
+
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/iv_key_username"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_key_list_hash"
+        android:tint="@color/text_3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/inter"
+        android:textColor="@color/text_2"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@id/iv_key_username"
+        app:layout_constraintStart_toEndOf="@id/iv_key_username"
+        app:layout_constraintTop_toTopOf="@id/iv_key_username"
+        tools:text="Tester"/>
+
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/iv_key_uid"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_key_list_index"
+        android:tint="@color/text_3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_key_username"/>
+
+    <TextView
+        android:id="@+id/tv_uid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/inter"
+        android:textColor="@color/text_2"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@id/iv_key_uid"
+        app:layout_constraintStart_toEndOf="@id/iv_key_uid"
+        app:layout_constraintTop_toTopOf="@id/iv_key_uid"
+        tools:text="234l23l-443-3434"/>
+
+    <ImageView
+        android:id="@+id/iv_key_public"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_key_list_key"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_key_uid"
+        app:tint="@color/text_1"/>
+
+    <TextView
+        android:id="@+id/tv_public_key_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/inter"
+        android:text="@string/public_key"
+        android:textColor="@color/text_2"
+        android:textSize="10sp"
+        app:layout_constraintBottom_toBottomOf="@id/iv_key_public"
+        app:layout_constraintStart_toEndOf="@id/iv_key_public"
+        app:layout_constraintTop_toTopOf="@id/iv_key_public"/>
+
+    <ImageView
+        android:id="@+id/iv_key_copy"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="0dp"
+        android:src="@drawable/ic_key_list_copy"
+        app:layout_constraintBottom_toBottomOf="@id/iv_key_public"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/iv_key_public"/>
+
+    <TextView
+        android:id="@+id/tv_public_key_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/inter"
+        android:lineSpacingMultiplier="1.3"
+        android:textColor="@color/text_3"
+        android:textSize="10sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/tv_public_key_title"
+        app:layout_constraintTop_toBottomOf="@id/iv_key_public"
+        tools:text="d6f092d6ee63101303c8e910f88ce928cde8eb65f31e61381feb88ae7d8170df5e1e2d433d0b0ae9bc888eb4b3a885169456b4682cc9fd6d908d7f076b808491"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

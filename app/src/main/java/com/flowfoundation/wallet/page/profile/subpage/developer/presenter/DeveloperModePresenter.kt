@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeViewModel
+import com.flowfoundation.wallet.page.profile.subpage.developer.LocalAccountKeyActivity
 import com.flowfoundation.wallet.page.profile.subpage.developer.model.DeveloperPageModel
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
@@ -20,6 +21,7 @@ import com.flowfoundation.wallet.utils.debug.DebugManager
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.setDeveloperModeEnable
 import com.flowfoundation.wallet.utils.toast
@@ -36,6 +38,12 @@ class DeveloperModePresenter(
     private val progressDialog by lazy { ProgressDialog(activity) }
 
     private val viewModel by lazy { ViewModelProvider(activity)[DeveloperModeViewModel::class.java] }
+
+    private var clickCount = 0
+    private var maxClick = 6
+    private var clickThresholdTime = 2000L
+    private var lastClickTime = 0L
+    private var showLocalaccountKeys = false
 
     init {
         uiScope {
@@ -77,6 +85,25 @@ class DeveloperModePresenter(
                     DebugViewerDataSource.exportDebugMessagesAndShare(activity)
                 }
                 tvCadenceScriptVersion.text = activity.getString(R.string.cadence_script_version, CadenceApiManager.getCadenceScriptVersion())
+                cvAccountKey.setOnClickListener {
+                    LocalAccountKeyActivity.launch(activity)
+                }
+                tvCadenceScriptVersion.setOnClickListener {
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - lastClickTime <= clickThresholdTime) {
+                        ++clickCount
+                    } else {
+                        clickCount = 1
+                    }
+
+                    lastClickTime = currentTime
+
+                    if (clickCount == maxClick) {
+                        clickCount = 0
+                        showLocalaccountKeys = true
+                        cvAccountKey.visible()
+                    }
+                }
             }
         }
     }
@@ -84,6 +111,7 @@ class DeveloperModePresenter(
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
         binding.cvDebug.setVisible(visible)
+        binding.cvAccountKey.setVisible(visible && showLocalaccountKeys)
     }
 
     override fun bind(model: DeveloperPageModel) {

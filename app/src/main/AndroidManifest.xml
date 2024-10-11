@@ -84,7 +84,8 @@
             android:name=".page.wallet.sync.WalletSyncActivity"
             android:launchMode="singleTop"/>
 
-        <activity android:name=".page.wallet.confirm.WalletConfirmActivity"
+        <activity
+            android:name=".page.wallet.confirm.WalletConfirmActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -141,16 +142,20 @@
             android:name="com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.restore.WalletRestoreActivity"
+        <activity
+            android:name=".page.restore.WalletRestoreActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.restore.multirestore.MultiRestoreActivity"
+        <activity
+            android:name=".page.restore.multirestore.MultiRestoreActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.restore.RawKeyRestoreActivity"
+        <activity
+            android:name=".page.restore.RawKeyRestoreActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.restore.keystore.KeyStoreRestoreActivity"
+        <activity
+            android:name=".page.restore.keystore.KeyStoreRestoreActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -197,6 +202,10 @@
 
         <activity
             android:name=".page.profile.subpage.developer.DeveloperModeActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.profile.subpage.developer.LocalAccountKeyActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -377,13 +386,16 @@
             android:name=".page.others.NotificationPermissionActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.profile.subpage.wallet.key.AccountKeyActivity"
+        <activity
+            android:name=".page.profile.subpage.wallet.key.AccountKeyActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.profile.subpage.wallet.device.DevicesActivity"
+        <activity
+            android:name=".page.profile.subpage.wallet.device.DevicesActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.profile.subpage.wallet.device.detail.DeviceInfoActivity"
+        <activity
+            android:name=".page.profile.subpage.wallet.device.detail.DeviceInfoActivity"
             android:screenOrientation="portrait"/>
 
         <provider
@@ -424,7 +436,7 @@
         <!--suppress AndroidDomInspection -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_api_key" />
+            android:value="@string/google_api_key"/>
     </application>
 
 </manifest>
