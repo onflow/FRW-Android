@@ -60,7 +60,7 @@ object ChildAccountCollectionManager {
         }
         val collection = NftCollectionConfig.get(collectionAddress, collectionContractName)
 
-        return collectionIdList.firstOrNull { it == collection?.contractId() } != null
+        return collectionIdList.firstOrNull { it == collection?.contractIdWithCollection() } != null
     }
 }
 

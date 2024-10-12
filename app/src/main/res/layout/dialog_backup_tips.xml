@@ -61,17 +61,48 @@
         app:layout_constraintTop_toBottomOf="@id/desc_view"
         app:layout_constraintWidth_percent="0.4"/>
 
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/desc_icon_view"
+        app:layout_constraintBottom_toTopOf="@id/start_button">
+
+        <com.flowfoundation.wallet.widgets.FrozenCheckbox
+            android:id="@+id/check_box"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/accent_green"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:fontFamily="@font/inter"
+            android:text="@string/move_do_not_ask_me"
+            android:textColor="@color/text_2"
+            android:textSize="16sp"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/start_button"
         style="@style/Button"
         android:layout_width="match_parent"
         android:layout_marginHorizontal="27dp"
-        android:layout_marginTop="46dp"
+        android:layout_marginTop="18dp"
         android:layout_marginBottom="24dp"
         android:text="@string/start"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/desc_icon_view"/>
+        app:layout_constraintTop_toBottomOf="@id/ll_check"/>
 
     <TextView
         android:id="@+id/skip_button"

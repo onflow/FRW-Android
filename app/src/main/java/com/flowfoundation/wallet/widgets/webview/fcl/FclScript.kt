@@ -45,7 +45,12 @@ private val FCL_AUTHN_RESPONSE = """
               "f_type": "ServiceProvider",
               "f_vsn": "1.0.0",
               "address": "$ADDRESS_REPLACEMENT",
-              "name": "Flow Wallet"
+              "name": "Flow Wallet",
+              "description": "Flow Wallet is built from the ground up for Flow Blockchain!",
+              "color": "#41CC5D",
+              "supportEmail": "wallet@flow.com",
+              "website": "https://frw-link.lilico.app/wc",
+              "icon": "https://lilico.app/frw-logo.png"
             }
           },
           $PRE_AUTHZ_REPLACEMENT

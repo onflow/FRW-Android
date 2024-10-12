@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.widgets.webview.fcl
 import android.webkit.WebView
 import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.hexToBytes
-import com.flowfoundation.wallet.wallet.removeAddressPrefix
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
@@ -28,7 +28,7 @@ fun encodeAccountProof(
     assert(address.isNotBlank()) { "Encode Message For Provable Authn Error: address must be defined" }
     assert(nonce.length >= 64) { "Encode Message For Provable Authn Error: nonce must be minimum of 32 bytes" }
 
-    val rpl = RLPCodec.encode(AccountProof(appIdentifier, address.removeAddressPrefix().hexToBytes(), nonce.hexToBytes()))
+    val rpl = RLPCodec.encode(AccountProof(appIdentifier, address.toAddress().hexToBytes(), nonce.hexToBytes()))
 
     return if (includeDomainTag) {
         accountProofTag + rpl

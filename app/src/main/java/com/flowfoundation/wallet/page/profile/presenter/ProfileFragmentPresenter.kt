@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentProfileBinding
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -163,11 +162,7 @@ class ProfileFragmentPresenter(
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
                     group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark else R.string.light)
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
-                    group0.developerModePreference.setDesc(
-                        (if (isTestnet()) R.string.testnet
-                        else if(isPreviewnet()) R.string.previewnet
-                        else R.string.mainnet)
-                    )
+                    group0.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
                 }
                 updateWalletConnectSessionCount()
             }

@@ -33,7 +33,7 @@ class CollectionLineItemPresenter(
     }
 
     private fun bindAccessible(model: CollectionItemModel) {
-        val accessible = ChildAccountCollectionManager.isNFTCollectionAccessible(model.collection.contractId())
+        val accessible = ChildAccountCollectionManager.isNFTCollectionAccessible(model.collection.contractIdWithCollection())
         binding.countView.setVisible(accessible)
         binding.tvInaccessibleTag.setVisible(accessible.not())
     }

@@ -124,13 +124,9 @@ var CADENCE_SETUP_STAKING
     get() = CadenceApiManager.getCadenceStakingScript("setup")
     private set(value) {}
 
-const val CADENCE_CHECK_STAKING_ENABLED = """
-    import FlowIDTableStaking from 0xFlowIDTableStaking
-
-    pub fun main():Bool {
-      return FlowIDTableStaking.stakingEnabled()
-    }
-"""
+var CADENCE_CHECK_STAKING_ENABLED
+    get() = CadenceApiManager.getCadenceStakingScript("checkStakingEnabled")
+    private set(value) {}
 
 var CADENCE_GET_DELEGATOR_INFO
     get() = CadenceApiManager.getCadenceStakingScript("getDelegatesIndo")
@@ -196,6 +192,14 @@ var CADENCE_CREATE_COA_ACCOUNT
     get() = CadenceApiManager.getCadenceEVMScript("createCoaEmpty")
     private set(value) {}
 
+var CADENCE_CHECK_COA_LINK
+    get() = CadenceApiManager.getCadenceEVMScript("checkCoaLink")
+    private set(value) {}
+
+var CADENCE_COA_LINK
+    get() = CadenceApiManager.getCadenceEVMScript("coaLink")
+    private set(value) {}
+
 var CADENCE_QUERY_COA_EVM_ADDRESS
     get() = CadenceApiManager.getCadenceEVMScript("getCoaAddr")
     private set(value) {}
@@ -221,43 +225,43 @@ var CADENCE_CALL_EVM_CONTRACT
     private set(value) {}
 
 var CADENCE_BRIDGE_FT_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvm")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_FT_FROM_FLOW_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmAddress")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmAddressV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_FT_FROM_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvm")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvmV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvmToFlow")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvmToFlowV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_NFT_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvm")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvmV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_NFT_FROM_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvm")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_NFT_LIST_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTToEvm")
+    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTToEvmV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_NFT_LIST_FROM_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTFromEvm")
+    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTFromEvmV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvmAddress")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvmAddressV2")
     private set(value) {}
 
 var CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmToFlow")
+    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmToFlowV2")
     private set(value) {}
 
 var CADENCE_QUERY_FLOW_BALANCE

@@ -55,15 +55,17 @@ private val KEY_CURRENCY_FLAG = stringPreferencesKey("KEY_CURRENCY_FLAG")
 private val KEY_IS_ROOT_DETECTED_DIALOG_SHOWN = booleanPreferencesKey("KEY_IS_ROOT_DETECTED_DIALOG_SHOWN")
 private val KEY_IS_PROFILE_SWITCH_TIPS_SHOWN = booleanPreferencesKey("KEY_IS_PROFILE_SWITCH_TIPS_SHOWN")
 private val KEY_DO_NOT_SHOW_MOVE_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SHOW_MOVE_DIALOG")
+private val KEY_DO_NOT_SHOW_BACKUP_DIALOG = booleanPreferencesKey("KEY_DO_NOT_SHOW_BACKUP_DIALOG")
 private val KEY_NOTIFICATION_READ_LIST = stringPreferencesKey("KEY_NOTIFICATION_READ_LIST")
 
 private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
 
-private val KEY_PREVIEWNET_ENABLED = booleanPreferencesKey("KEY_PREVIEWNET_ENABLED")
 
 private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
 private const val KEY_IS_NOTIFICATION_PERMISSION_CHECKED = "KEY_IS_NOTIFICATION_PERMISSION_CHECKED"
 private const val KEY_TOKEN_UPLOADED_ADDRESS_SET = "KEY_TOKEN_UPLOADED_ADDRESS_SET"
+private const val KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET = "KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET"
+private const val KEY_COA_LINK_CHECKED_ADDRESS_SET = "KEY_COA_LINK_CHECKED_ADDRESS_SET"
 private val scope = CoroutineScope(Dispatchers.IO)
 
 private val sharedPreferencesTraditional by lazy { Env.getApp().getSharedPreferences(PREFERENCE_TRADITIONAL, Context.MODE_PRIVATE) }
@@ -271,6 +273,14 @@ suspend fun setDoNotShowMoveDialog(notShow: Boolean) {
     dataStore.edit { it[KEY_DO_NOT_SHOW_MOVE_DIALOG] = notShow }
 }
 
+suspend fun isShowBackupDialog(): Boolean {
+    return dataStore.data.map { it[KEY_DO_NOT_SHOW_BACKUP_DIALOG] ?: false }.first().not()
+}
+
+suspend fun setDoNotShowBackupDialog(notShow: Boolean) {
+    dataStore.edit { it[KEY_DO_NOT_SHOW_BACKUP_DIALOG] = notShow }
+}
+
 fun getSelectedWalletAddress(): String? {
     return sharedPreferencesTraditional.getString(KEY_SELECTED_WALLET_ADDRESS, null)
 }
@@ -285,6 +295,22 @@ fun setUploadedAddressSet(addressSet: Set<String>) {
 
 fun getUploadedAddressSet(): Set<String> {
     return sharedPreferencesTraditional.getStringSet(KEY_TOKEN_UPLOADED_ADDRESS_SET, setOf()) ?: setOf()
+}
+
+fun setDoNotTipBackupAddressSet(addressSet: Set<String>) {
+    sharedPreferencesTraditional.edit().putStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, addressSet).apply()
+}
+
+fun getDoNotTipBackupAddressSet(): Set<String> {
+    return sharedPreferencesTraditional.getStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, setOf()) ?: setOf()
+}
+
+fun getCOALinkCheckedAddressSet(): Set<String> {
+    return sharedPreferencesTraditional.getStringSet(KEY_COA_LINK_CHECKED_ADDRESS_SET, setOf()) ?: setOf()
+}
+
+fun setCOALinkCheckedAddresssSet(addressSet: Set<String>) {
+    sharedPreferencesTraditional.edit().putStringSet(KEY_COA_LINK_CHECKED_ADDRESS_SET, addressSet).apply()
 }
 
 private fun edit(unit: suspend () -> Unit) {

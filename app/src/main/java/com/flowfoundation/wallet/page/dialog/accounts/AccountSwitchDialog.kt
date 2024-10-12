@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnScrollListener
 import com.flowfoundation.wallet.databinding.DialogAccountSwitchBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.dialog.accounts.adapter.AccountListAdapter
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
@@ -53,7 +52,7 @@ class AccountSwitchDialog : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.tvNewAccount.setOnClickListener {
-            if (isTestnet() || isPreviewnet()) {
+            if (isTestnet()) {
                 SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
             } else {
                 WalletCreateActivity.launch(requireContext(), step = WALLET_CREATE_STEP_USERNAME)

@@ -1,40 +1,69 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
-import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.bytesToHex
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
-import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.google.gson.annotations.SerializedName
+import com.walletconnect.sign.client.Sign
+import com.walletconnect.sign.client.SignClient
 
 private const val TAG = "WalletConnectUtils"
+private const val ETHEREUM_NETWORK = "eip155"
+
+private val supportedChain = setOf("eip155:747", "eip155:545")
 
 fun Sign.Model.SessionProposal.approveSession() {
     val namespaces = mutableMapOf<String, Sign.Model.Namespace.Session>()
+    val targetChain = if (isMainnet()) "eip155:747" else "eip155:545"
     namespaces.putAll(requiredNamespaces.map { item ->
         val caip2Namespace = item.key
         val proposalNamespace = item.value
-        val accounts = proposalNamespace.chains?.map { "$it:${getWalletAddress(caip2Namespace)}" }.orEmpty()
+        val chains = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
+            proposalNamespace.chains?.filter { it in supportedChain }.orEmpty()
+        } else {
+            proposalNamespace.chains.orEmpty()
+        }
+        val accounts = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
+            if (chains.contains(targetChain)) {
+                listOf("$targetChain:${getWalletAddress(caip2Namespace)}")
+            } else {
+                emptyList()
+            }
+        } else {
+            chains.map { "$it:${getWalletAddress(caip2Namespace)}" }
+        }
         caip2Namespace to Sign.Model.Namespace.Session(
-            chains = proposalNamespace.chains,
+            chains = chains,
             accounts = accounts,
-            methods = proposalNamespace.methods,
+            methods = proposalNamespace.methods.filter { it in WalletConnectMethod.getSupportedMethod() },
             events = proposalNamespace.events
         )
     }.toMap())
     namespaces.putAll(optionalNamespaces.map { item ->
         val caip2Namespace = item.key
         val proposalNamespace = item.value
-        val accounts = proposalNamespace.chains?.map { "$it:${getWalletAddress(caip2Namespace)}" }.orEmpty()
+        val chains = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
+            proposalNamespace.chains?.filter { it in supportedChain }.orEmpty()
+        } else {
+            proposalNamespace.chains.orEmpty()
+        }
+        val accounts = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
+            if (chains.contains(targetChain)) {
+                listOf("$targetChain:${getWalletAddress(caip2Namespace)}")
+            } else {
+                emptyList()
+            }
+        } else {
+            chains.map { "$it:${getWalletAddress(caip2Namespace)}" }
+        }
         caip2Namespace to Sign.Model.Namespace.Session(
-            chains = proposalNamespace.chains,
+            chains = chains,
             accounts = accounts,
-            methods = proposalNamespace.methods,
+            methods = proposalNamespace.methods.filter { it in WalletConnectMethod.getSupportedMethod() },
             events = proposalNamespace.events
         )
     }.toMap())
@@ -62,7 +91,7 @@ private fun nameTag(): String {
 }
 
 fun getWalletAddress(namespace: String): String {
-    return if (namespace == "eip155") {
+    return if (namespace.lowercase() == ETHEREUM_NETWORK) {
         EVMWalletManager.getEVMAddress() ?: ""
     } else {
         WalletManager.selectedWalletAddress()
@@ -83,7 +112,7 @@ internal fun WCRequest.approve(result: String) {
     logd(TAG, "SessionRequest.approve:$result")
     val response = Sign.Params.Response(
         sessionTopic = topic,
-        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, result.responseParse(this))
+        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, result)
     )
     SignClient.respond(response) { error -> loge(error.throwable) }
 }
@@ -95,26 +124,6 @@ internal fun WCRequest.reject() {
             jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcError(requestId, 0, "User rejected")
         )
     ) { error -> loge(error.throwable) }
-}
-
-internal fun String.responseParse(model: WCRequest): String {
-    if (model.isFromFclSdk()) {
-        return this.toByteArray().bytesToHex()
-    }
-    return this
-}
-
-internal fun WCRequest.isFromFclSdk(): Boolean {
-    return metaData?.redirect?.contains("\$fromSdk") == true
-}
-
-internal fun WCRequest.redirectToSourceApp() {
-    if (!isFromFclSdk()) {
-        return
-    }
-    val context = BaseActivity.getCurrentActivity() ?: Env.getApp()
-    val intent = context.packageManager.getLaunchIntentForPackage(metaData?.redirect!!.split("\$").first())
-    context.startActivity(intent)
 }
 
 internal class SignableMessage(

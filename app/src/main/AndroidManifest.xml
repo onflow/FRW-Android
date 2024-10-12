@@ -84,7 +84,8 @@
             android:name=".page.wallet.sync.WalletSyncActivity"
             android:launchMode="singleTop"/>
 
-        <activity android:name=".page.wallet.confirm.WalletConfirmActivity"
+        <activity
+            android:name=".page.wallet.confirm.WalletConfirmActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -115,6 +116,10 @@
             android:screenOrientation="portrait"/>
 
         <activity
+            android:name="com.flowfoundation.wallet.page.security.recovery.SecurityPublicKeyActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name="com.flowfoundation.wallet.page.profile.subpage.backup.BackupSettingActivity"
             android:screenOrientation="portrait"/>
 
@@ -137,14 +142,24 @@
             android:name="com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.restore.WalletRestoreActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity android:name=".page.restore.multirestore.MultiRestoreActivity"
+        <activity
+            android:name=".page.restore.WalletRestoreActivity"
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.profile.subpage.backup.BackupManuallyActivity"
+            android:name=".page.restore.multirestore.MultiRestoreActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.restore.RawKeyRestoreActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.restore.keystore.KeyStoreRestoreActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.backup.BackupRecoveryPhraseActivity"
             android:screenOrientation="portrait"/>
         <activity
             android:name=".page.profile.subpage.backup.BackupGoogleDriveActivity"
@@ -187,6 +202,10 @@
 
         <activity
             android:name=".page.profile.subpage.developer.DeveloperModeActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".page.profile.subpage.developer.LocalAccountKeyActivity"
             android:screenOrientation="portrait"/>
 
         <activity
@@ -316,6 +335,7 @@
                 <data android:host="wc"/>
                 <data android:host="link.lilico.app"/>
                 <data android:host="frw-link.lilico.app"/>
+                <data android:host="fcw-link.lilico.app"/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -367,13 +387,16 @@
             android:name=".page.others.NotificationPermissionActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.profile.subpage.wallet.key.AccountKeyActivity"
+        <activity
+            android:name=".page.profile.subpage.wallet.key.AccountKeyActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.profile.subpage.wallet.device.DevicesActivity"
+        <activity
+            android:name=".page.profile.subpage.wallet.device.DevicesActivity"
             android:screenOrientation="portrait"/>
 
-        <activity android:name=".page.profile.subpage.wallet.device.detail.DeviceInfoActivity"
+        <activity
+            android:name=".page.profile.subpage.wallet.device.detail.DeviceInfoActivity"
             android:screenOrientation="portrait"/>
 
         <provider
@@ -414,7 +437,7 @@
         <!--suppress AndroidDomInspection -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_api_key" />
+            android:value="@string/google_api_key"/>
     </application>
 
 </manifest>

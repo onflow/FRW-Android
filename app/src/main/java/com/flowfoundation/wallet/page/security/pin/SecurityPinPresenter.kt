@@ -80,12 +80,12 @@ class SecurityPinPresenter(
                 if (getPinCode() == pinCode) {
                     verifyPassed = true
                     clear(keysCLear = true)
-                    binding.hintTextView.setText(R.string.check_pin)
+                    binding.hintTextView.setText(R.string.reset_pin)
                 } else {
                     shakeAndClear(keysCLear = true)
                 }
             } else if (!isChecking()) {
-                binding.hintTextView.setText(R.string.check_pin)
+                binding.hintTextView.setText(R.string.reset_check_pin)
                 checking()
             }
         }

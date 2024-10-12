@@ -14,7 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/transparent"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="@string/backup_manually"
+        app:title="@string/backup"
         app:titleTextColor="@color/text"/>
 
     <FrameLayout

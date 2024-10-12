@@ -87,6 +87,15 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
         }
     }
 
+    private fun checkStakingEnabled(): Boolean {
+        return try {
+            val response = CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
+            response?.parseBool(false) ?: false
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private suspend fun stake(provider: StakingProvider): Boolean {
         try {
             var delegatorId = provider.delegatorId()
@@ -152,16 +161,6 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             return false
         }
     }
-
-    private fun checkStakingEnabled(): Boolean {
-        return try {
-            val response = CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
-            response?.parseBool(false) ?: false
-        } catch (e: Exception) {
-            false
-        }
-    }
-
 
     companion object {
         private const val DATA = "data"

@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.wallet.Wallet
@@ -49,7 +48,7 @@ private class AccountNotFoundDialogView(
             onCancel()
             (context as? Activity)?.finish()
             Wallet.store().updateMnemonic(mnemonic).store()
-            if (isTestnet() || isPreviewnet()) {
+            if (isTestnet()) {
                 SwitchNetworkDialog(context, DialogType.CREATE).show()
             } else {
                 WalletCreateActivity.launch(context)

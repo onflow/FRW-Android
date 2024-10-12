@@ -13,5 +13,16 @@ enum class WalletConnectMethod(val value: String) {
     PROXY_ACCOUNT("frw_proxy_account"),
     PROXY_SIGN("frw_proxy_sign"),
     EVM_SIGN_MESSAGE("personal_sign"),
-    EVM_SEND_TRANSACTION("eth_sendTransaction")
+    EVM_SEND_TRANSACTION("eth_sendTransaction"),
+    EVM_SIGN_TYPED_DATA("eth_signTypedData"),
+    EVM_SIGN_TYPED_DATA_V3("eth_signTypedData_v3"),
+    EVM_SIGN_TYPED_DATA_V4("eth_signTypedData_v4");
+
+    companion object {
+
+        @JvmStatic
+        fun getSupportedMethod(): Set<String> {
+            return entries.map { it.value }.toSet()
+        }
+    }
 }

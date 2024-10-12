@@ -70,7 +70,7 @@ class StakingDetailPresenter(
         fun LayoutStakingDetailStateBinding.setup(
             titleString: Int,
             isInProgress: Boolean,
-            amount: Float,
+            amount: Double,
         ) {
             title.setText(titleString)
             amountView.text = amount.formatNum(3)

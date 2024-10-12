@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
 import com.flowfoundation.wallet.manager.account.OnUserInfoReload
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -73,6 +74,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         }
     }
 
+    fun clearDataList() {
+        dataList.clear()
+    }
+
     override fun onWalletDataUpdate(wallet: WalletListData) {
         updateWalletHeader(wallet = wallet)
         loadCoinInfo(false)
@@ -84,6 +89,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     }
 
     override fun onTokenStateChange() {
+        logd(TAG, "onTokenStateChange()")
         loadCoinList()
         viewModelIOScope(this) { loadTransactionCount() }
     }
@@ -126,7 +132,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             dataList.clear()
             dataListLiveData.postValue(emptyList())
             needReload = true
+            logd(TAG, "loadWallet :: null")
         } else {
+            logd(TAG, "loadWallet :: wallet")
             updateWalletHeader(WalletManager.wallet())
             needReload = true
             loadCoinInfo(isRefresh)
@@ -137,11 +145,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private fun loadCoinInfo(isRefresh: Boolean) {
         if (needReload) {
             needReload = false
+            logd(TAG, "loadCoinInfo :: isRefresh :: $isRefresh")
+            logd(TAG, "loadCoinInfo :: dataList :: ${dataList.size}")
             if (isRefresh || dataList.isEmpty()) {
-                loadCoinList()
+                logd(TAG, "loadCoinInfo :: fetchState")
+                TokenStateManager.fetchState()
             }
-            TokenStateManager.fetchState()
-            StakingManager.refresh()
             ChildAccountCollectionManager.loadChildAccountTokenList()
             ioScope {
                 loadTransactionCount()
@@ -153,6 +162,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         viewModelIOScope(this) {
             val coinList =
                 FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+            logd(TAG, "coinList :: ${coinList.size}")
             if (coinList.isEmpty()) {
                 return@viewModelIOScope
             }
@@ -186,6 +196,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
             BalanceManager.refresh()
             CoinRateManager.refresh()
+            if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
+                StakingManager.refresh()
+            }
         }
     }
 

@@ -6,9 +6,11 @@ import androidx.transition.Transition
 import com.google.android.material.transition.MaterialSharedAxis
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
+import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveWithPinFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupPinCodeFragment
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupCompletedItem
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
 
@@ -26,8 +28,8 @@ class BackupGoogleDriveWithPinPresenter(private val parentFragment: BackupGoogle
         onOptionChange(model)
     }
 
-    fun toNext() {
-        backupViewModel.toNext()
+    fun toNext(mnemonic: String) {
+        backupViewModel.toNext(BackupCompletedItem(type = BackupType.GOOGLE_DRIVE, mnemonic = mnemonic))
     }
 
     private fun onOptionChange(option: BackupGoogleDriveOption) {

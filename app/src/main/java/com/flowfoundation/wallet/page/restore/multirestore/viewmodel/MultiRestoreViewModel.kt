@@ -281,7 +281,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                             Account(
                                                 userInfo = service.userInfo().data,
                                                 prefix = KeyManager.getCurrentPrefix()
-                                            )
+                                            ),
+                                            uid
                                         )
                                         clearUserCache()
                                         callback.invoke(true)

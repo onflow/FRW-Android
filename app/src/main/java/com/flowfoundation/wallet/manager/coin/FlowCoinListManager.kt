@@ -2,18 +2,16 @@ package com.flowfoundation.wallet.manager.coin
 
 import android.os.Parcelable
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
-import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
+import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import kotlinx.parcelize.Parcelize
 import java.net.URL
 import java.util.concurrent.CopyOnWriteArrayList
@@ -42,8 +40,6 @@ object FlowCoinListManager {
             val text = readTextFromAssets(
                 if (isTestnet()) {
                     "config/flow_token_testnet.json"
-                } else if (isPreviewnet()) {
-                    "config/flow_token_previewnet.json"
                 } else {
                     "config/flow_token_mainnet.json"
                 }
@@ -67,7 +63,7 @@ object FlowCoinListManager {
     }
 
     private fun getFileName(): String {
-        return if (isPreviewnet() || WalletManager.isEVMAccountSelected()) {
+        return if (WalletManager.isEVMAccountSelected()) {
             "default.json"
         } else {
             if (isDev()) {
@@ -137,6 +133,10 @@ data class FlowCoin(
 
     fun canBridgeToCOA() = evmAddress.isNullOrBlank().not()
 
+    fun getFTIdentifier(): String {
+        return flowIdentifier ?: "A.${address.removeAddressPrefix()}.${contractName}.Vault"
+    }
+
     companion object {
         const val SYMBOL_FLOW = "flow"
         const val SYMBOL_FUSD = "fusd"
@@ -170,9 +170,7 @@ class FlowCoinAddress(
     @SerializedName("mainnet")
     val mainnet: String?,
     @SerializedName("testnet")
-    val testnet: String?,
-    @SerializedName("previewnet")
-    val previewnet: String?,
+    val testnet: String?
 ) : Parcelable
 
 @Parcelize

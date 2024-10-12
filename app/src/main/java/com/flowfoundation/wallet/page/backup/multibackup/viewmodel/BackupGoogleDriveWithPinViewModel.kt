@@ -8,7 +8,7 @@ import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDrive
 class BackupGoogleDriveWithPinViewModel : ViewModel() {
 
     val optionChangeLiveData = MutableLiveData<BackupGoogleDriveOption>()
-    val backupFinishLiveData = MutableLiveData<Boolean>()
+    val backupFinishLiveData = MutableLiveData<String>()
     private var currentIndex = -1
 
     fun setCurrentIndex(index: Int) {
@@ -31,7 +31,7 @@ class BackupGoogleDriveWithPinViewModel : ViewModel() {
         changeOption(BackupGoogleDriveOption.BACKUP_PIN)
     }
 
-    fun backupFinish() {
-        backupFinishLiveData.postValue(true)
+    fun backupFinish(mnemonic: String) {
+        backupFinishLiveData.postValue(mnemonic)
     }
 }

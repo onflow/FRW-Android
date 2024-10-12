@@ -1,14 +1,12 @@
 package com.flowfoundation.wallet.manager.config
 
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
-import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
@@ -25,7 +23,7 @@ object AppConfig {
 
     fun isFreeGas() = config().getFeatures().freeGas
 
-    fun payer() = if (isTestnet()) config().getPayer().testnet else if (isPreviewnet()) config().getPayer().previewnet else config().getPayer().mainnet
+    fun payer() = if (isTestnet()) config().getPayer().testnet else config().getPayer().mainnet
 
     fun walletConnectEnable() = config().getFeatures().walletConnect
 
@@ -42,7 +40,6 @@ object AppConfig {
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
-            NETWORK_PREVIEWNET -> flowAddressRegistry().previewnet
             else -> flowAddressRegistry().mainnet
         }
     }
@@ -162,9 +159,7 @@ private data class Payer(
     @SerializedName("mainnet")
     val mainnet: PayerNet,
     @SerializedName("testnet")
-    val testnet: PayerNet,
-    @SerializedName("previewnet")
-    val previewnet: PayerNet
+    val testnet: PayerNet
 )
 
 data class PayerNet(
@@ -178,7 +173,5 @@ private data class FlowAddressRegistry(
     @SerializedName("mainnet")
     val mainnet: Map<String, String>,
     @SerializedName("testnet")
-    val testnet: Map<String, String>,
-    @SerializedName("previewnet")
-    val previewnet: Map<String, String>,
+    val testnet: Map<String, String>
 )

@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.staking
 
 import android.text.format.DateUtils
+import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
@@ -17,12 +18,12 @@ fun parseStakingInfoResult(json: String?): StakingInfo? {
             StakingNode(
                 delegatorId = value.getByName("id").toSafeInt(),
                 nodeID = value.getByName("nodeID").orEmpty(),
-                tokensCommitted = value.getByName("tokensCommitted").toSafeFloat(),
-                tokensStaked = value.getByName("tokensStaked").toSafeFloat(),
-                tokensUnstaking = value.getByName("tokensUnstaking").toSafeFloat(),
-                tokensRewarded = value.getByName("tokensRewarded").toSafeFloat(),
-                tokensUnstaked = value.getByName("tokensUnstaked").toSafeFloat(),
-                tokensRequestedToUnstake = value.getByName("tokensRequestedToUnstake").toSafeFloat(),
+                tokensCommitted = value.getByName("tokensCommitted").toSafeDouble(),
+                tokensStaked = value.getByName("tokensStaked").toSafeDouble(),
+                tokensUnstaking = value.getByName("tokensUnstaking").toSafeDouble(),
+                tokensRewarded = value.getByName("tokensRewarded").toSafeDouble(),
+                tokensUnstaked = value.getByName("tokensUnstaked").toSafeDouble(),
+                tokensRequestedToUnstake = value.getByName("tokensRequestedToUnstake").toSafeDouble(),
             )
         }.orEmpty()
     )

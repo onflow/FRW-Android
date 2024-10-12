@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.base.recyclerview.BaseAdapter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.base.recyclerview.getItemView
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
@@ -72,14 +71,12 @@ class NetworkPopupListView(
                 val checkIcon = when(network) {
                     NETWORK_NAME_MAINNET -> R.drawable.ic_check_mainnet
                     NETWORK_NAME_TESTNET -> R.drawable.ic_check_testnet
-                    NETWORK_NAME_PREVIEWNET -> R.drawable.ic_check_previewnet
                     else -> R.drawable.ic_check_network
                 }
 
                 val networkColor = when(network) {
                     NETWORK_NAME_MAINNET -> R.color.mainnet
                     NETWORK_NAME_TESTNET -> R.color.testnet
-                    NETWORK_NAME_PREVIEWNET -> R.color.previewnet
                     else -> R.color.text_2
                 }
 

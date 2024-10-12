@@ -89,82 +89,6 @@
                     app:iconEnable="false"
                     app:titleId="@string/testnet"/>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginHorizontal="8dp"
-                    android:background="@color/background"/>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/previewnet_wrapper"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="20dp">
-
-                    <TextView
-                        android:id="@+id/previewnet_title"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginVertical="20dp"
-                        android:fontFamily="@font/inter_medium"
-                        android:paddingStart="6dp"
-                        android:text="@string/previewnet"
-                        android:textColor="@color/neutrals9"
-                        android:textSize="16sp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"/>
-
-                    <com.flowfoundation.wallet.widgets.FrozenCheckbox
-                        android:id="@+id/previewnet_checkbox"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="-3dp"
-                        android:buttonTint="@color/previewnet"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:padding="0dp"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:checked="true"
-                        tools:visibility="visible"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/previewnet_enable_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="32dp"
-                        android:backgroundTint="@color/colorSecondary"
-                        android:insetLeft="0dp"
-                        android:insetTop="0dp"
-                        android:insetRight="0dp"
-                        android:insetBottom="0dp"
-                        android:paddingHorizontal="5dp"
-                        android:paddingVertical="3dp"
-                        android:stateListAnimator="@null"
-                        android:text="@string/enable"
-                        android:textAllCaps="false"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        app:cornerRadius="1000dp"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:rippleColor="@color/black_20"/>
-
-                    <ProgressBar
-                        android:id="@+id/previewnet_progressbar"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:visibility="visible"/>
-                </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.appcompat.widget.LinearLayoutCompat>
         </com.google.android.material.card.MaterialCardView>
 
@@ -212,6 +136,42 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cv_account_key"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/deep_bg"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:layout_constraintTop_toBottomOf="@id/cv_debug">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="20dp"
+            android:fontFamily="@font/inter_medium"
+            android:paddingHorizontal="26dp"
+            android:text="@string/local_account_keys"
+            android:textColor="@color/text"
+            android:textSize="16sp"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <TextView
+        android:id="@+id/tv_cadence_script_version"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_medium"
+        android:paddingHorizontal="18dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/text"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/cv_account_key"/>
 
     <FrameLayout
         android:id="@+id/debug_container"

@@ -117,7 +117,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
                     }
                 }
             })
-            autoScroll = AutoScrollViewPager(this, 2000, lifecycle)
+            autoScroll = AutoScrollViewPager(this, 10000, lifecycle)
         }
     }
 

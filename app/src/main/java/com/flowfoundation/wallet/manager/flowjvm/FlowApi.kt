@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.FlowAccessApi
 import com.nftco.flow.sdk.FlowChainId
@@ -12,7 +11,6 @@ import com.flowfoundation.wallet.utils.logd
 internal object FlowApi {
     private const val HOST_MAINNET = "access.mainnet.nodes.onflow.org"
     private const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
-    private const val HOST_PREVIEWNET = "access.previewnet.nodes.onflow.org"
 
     private var api: FlowAccessApi? = null
 
@@ -43,19 +41,13 @@ internal object FlowApi {
         return api ?: Flow.newAccessApi(host(), 9000)
     }
 
-    fun getPreviewnetAccessApi(): FlowAccessApi {
-        return Flow.newAccessApi(HOST_PREVIEWNET, 9000)
-    }
-
     private fun chainId() = when {
         isTestnet() -> FlowChainId.TESTNET
-        isPreviewnet() -> FlowChainId.PREVIEWNET
         else -> FlowChainId.MAINNET
     }
 
     private fun host() = when {
         isTestnet() -> HOST_TESTNET
-        isPreviewnet() -> HOST_PREVIEWNET
         else -> HOST_MAINNET
     }
 }

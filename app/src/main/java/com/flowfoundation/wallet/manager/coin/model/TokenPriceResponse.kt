@@ -21,4 +21,6 @@ data class TokenPrice(
     val rateToFLOW: Double,
     @SerializedName("rateToUSD")
     val rateToUSD: Double,
+    @SerializedName("evmAddress")
+    val evmAddress: String?
 )

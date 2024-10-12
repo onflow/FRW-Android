@@ -3,9 +3,7 @@ package com.flowfoundation.wallet.manager.evm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_PREVIEWNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
@@ -15,10 +13,10 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.nftco.flow.sdk.DomainTag
@@ -26,7 +24,11 @@ import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.cadence.toJsonElement
 import com.nftco.flow.sdk.decodeToAny
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.json.JSONArray
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
@@ -35,8 +37,6 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import wallet.core.jni.Hash
 
-const val PREVIEWNET_CHAIN_ID = 646
-const val PREVIEWNET_RPC_URL = "https://previewnet.evm.nodes.onflow.org"
 const val TESTNET_CHAIN_ID = 545
 const val TESTNET_RPC_URL = "https://testnet.evm.nodes.onflow.org"
 const val MAINNET_CHAIN_ID = 747
@@ -44,7 +44,6 @@ const val MAINNET_RPC_URL = "https://mainnet.evm.nodes.onflow.org"
 
 fun getChainID(): Int {
     return when {
-        isPreviewnet() -> PREVIEWNET_CHAIN_ID
         isTestnet() -> TESTNET_CHAIN_ID
         else -> MAINNET_CHAIN_ID
     }
@@ -52,7 +51,6 @@ fun getChainID(): Int {
 
 fun getRPCUrl(): String {
     return when {
-        isPreviewnet() -> PREVIEWNET_RPC_URL
         isTestnet() -> TESTNET_RPC_URL
         else -> MAINNET_RPC_URL
     }
@@ -60,7 +58,6 @@ fun getRPCUrl(): String {
 
 fun getNetworkStringByChainId(chainId: Int): String {
     return when (chainId) {
-        PREVIEWNET_CHAIN_ID -> NETWORK_NAME_PREVIEWNET
         TESTNET_CHAIN_ID -> NETWORK_NAME_TESTNET
         else -> NETWORK_NAME_MAINNET
     }
@@ -93,7 +90,7 @@ fun loadInitJS(): String {
             };
 
             const announceEvent = new CustomEvent('eip6963:announceProvider', {
-              detail: Object.freeze({ info, provider: ethereum }),
+              detail: Object.freeze({ info, provider: window.ethereum }),
             });
 
             window.dispatchEvent(announceEvent);
@@ -144,7 +141,8 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
                 } else {
                     val element = event.payload.decodeToAny().toJsonElement()
                     try {
-                        val eventHash = element.jsonObject["hash"].toString()
+                        val eventHash = jsonArrayToByteArray(element.jsonObject["hash"] as
+                                JsonArray).bytesToHex().toAddress()
                         logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
                         callback.invoke(eventHash)
                         refreshBalance(value.toFloat())
@@ -157,10 +155,38 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
     }
 }
 
+private fun jsonArrayToByteArray(jsonArray: JsonArray): ByteArray {
+    val byteArray = ByteArray(jsonArray.size)
+    for (i in jsonArray.indices) {
+        val byteValue = (jsonArray[i] as JsonPrimitive).int and 0xFF
+        byteArray[i] = byteValue.toByte()
+    }
+    return byteArray
+}
+
 fun refreshBalance(value: Float) {
     if (WalletManager.isEVMAccountSelected() && value > 0) {
         BalanceManager.refresh()
     }
+}
+
+fun signTypedData(data: ByteArray): String {
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val flowAddress = FlowAddress(address)
+    val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
+
+    val signableData = DomainTag.USER_DOMAIN_TAG + data
+    val sign = cryptoProvider.getSigner().sign(signableData)
+    val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
+    val encoded = RlpEncoder.encode(rlpList)
+
+    logd(EvmInterface.TAG, "signableData:::${signableData.bytesToHex()}")
+    logd(EvmInterface.TAG, "sign:::${sign.bytesToHex()}")
+    logd(EvmInterface.TAG, "encoded:::${encoded.bytesToHex()}")
+    logd(EvmInterface.TAG, "signResult:::${Numeric.toHexString(encoded)}")
+
+    return Numeric.toHexString(encoded)
 }
 
 fun signEthereumMessage(message: String): String {

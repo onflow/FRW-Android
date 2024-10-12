@@ -31,7 +31,7 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
 
     fun load() {
         viewModelIOScope(this) {
-            val account = FlowAddress(WalletManager.selectedWalletAddress()).lastBlockAccount()
+            val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
             if (account == null || account.keys.isEmpty()) {
                 keyListLiveData.postValue(emptyList())
                 return@viewModelIOScope

@@ -13,8 +13,7 @@ data class CadenceScriptData(
 
 data class CadenceScripts(
     val mainnet: CadenceScript,
-    val testnet: CadenceScript,
-    val previewnet: CadenceScript
+    val testnet: CadenceScript
 )
 
 data class CadenceScript(

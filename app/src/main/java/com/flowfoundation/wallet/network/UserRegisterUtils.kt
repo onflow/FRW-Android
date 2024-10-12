@@ -9,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.nftco.flow.sdk.HashAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
@@ -28,6 +29,7 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.utils.cleanBackupMnemonicPreference
 import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -63,7 +65,8 @@ suspend fun registerOutblock(
                         Account(
                             userInfo = service.userInfo().data,
                             prefix = prefix
-                        )
+                        ),
+                        firebaseUid()
                     )
                     clearUserCache()
                     continuation.resume(true)
@@ -176,7 +179,7 @@ private suspend fun resumeAccount() {
     firebaseLogin(resp.data?.customToken!!) { isSuccess ->
         if (isSuccess) {
             setRegistered()
-            if (AccountManager.get()?.prefix == null) {
+            if (AccountManager.get()?.prefix == null && AccountManager.get()?.keyStoreInfo == null) {
                 Wallet.store().resume()
             }
         } else {
@@ -199,6 +202,7 @@ suspend fun clearUserCache() {
     StakingManager.clear()
     CryptoProviderManager.clear()
     updateAccountTransferCount(0)
+    cleanBackupMnemonicPreference()
     delay(1000)
 }
 

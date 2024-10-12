@@ -11,9 +11,6 @@ import com.nftco.flow.sdk.FlowSignature
 import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.flowTransaction
-import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.app.isPreviewnet
-import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi

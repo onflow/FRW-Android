@@ -1,20 +1,17 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
-import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
@@ -28,7 +25,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollect
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
-import com.flowfoundation.wallet.page.swap.SwapActivity
 import com.flowfoundation.wallet.page.token.detail.TokenDetailViewModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
@@ -41,6 +37,8 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.uiScope
+import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
+import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,
@@ -66,13 +64,9 @@ class TokenDetailPresenter(
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener
                 }
-                if (AppConfig.isInAppSwap()) {
-                    SwapActivity.launch(activity, coin.symbol)
-                } else {
-                    openBrowser(
-                        activity, "https://${if (isTestnet() || isPreviewnet()) "demo" else "app"}" +
-                            ".increment.fi/swap")
-                }
+                openBrowser(
+                    activity, "https://${if (isTestnet()) "demo" else "app"}" +
+                        ".increment.fi/swap")
             }
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
@@ -81,12 +75,35 @@ class TokenDetailPresenter(
                 SwapDialog.show(activity.supportFragmentManager)
             }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
-            val moveVisible = if (coin.isFlowCoin()) {
-                true
-            } else if (coin.evmAddress.isNullOrBlank().not()) {
-                true
-            } else coin.flowIdentifier.isNullOrBlank().not()
-            llEvmMoveToken.setVisible(EVMWalletManager.evmFeatureAvailable() && moveVisible)
+            val bgColor = if (WalletManager.isChildAccountSelected()) {
+                R.color.accent_gray_8.res2color()
+            } else {
+                R.color.accent_green_8.res2color()
+            }
+            val icColor = if (WalletManager.isChildAccountSelected()) {
+                R.color.accent_gray.res2color()
+            } else {
+                R.color.accent_green.res2color()
+            }
+            val bgTintColor = ColorStateList.valueOf(bgColor)
+            val icTintColor = ColorStateList.valueOf(icColor)
+            ivSend.imageTintList = icTintColor
+            ivSwap.imageTintList = icTintColor
+            ivTrade.imageTintList = icTintColor
+            btnSwap.setBackgroundColor(bgColor)
+            btnSend.backgroundTintList = bgTintColor
+            btnTrade.backgroundTintList = bgTintColor
+
+            val moveVisible = if (WalletManager.isChildAccountSelected()) {
+                false
+            } else {
+                if (coin.isFlowCoin()) {
+                    true
+                } else if (coin.evmAddress.isNullOrBlank().not()) {
+                    true
+                } else coin.flowIdentifier.isNullOrBlank().not()
+            }
+            llEvmMoveToken.setVisible(moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
@@ -118,7 +135,7 @@ class TokenDetailPresenter(
             binding.getMoreWrapper.setOnClickListener {
                 openBrowser(
                     activity,
-                    if (isTestnet()) "https://testnet-faucet.onflow.org/fund-account" else "https://previewnet-faucet.onflow.org/fund-account"
+                    "https://testnet-faucet.onflow.org/fund-account"
                 )
             }
         }

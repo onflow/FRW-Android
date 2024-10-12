@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomai
 import com.flowfoundation.wallet.page.profile.subpage.wallet.dialog.WalletResetConfirmDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyActivity
 import com.flowfoundation.wallet.page.security.recovery.SecurityPrivateKeyActivity
+import com.flowfoundation.wallet.page.security.recovery.SecurityPublicKeyActivity
 import com.flowfoundation.wallet.page.security.recovery.SecurityRecoveryActivity
 import com.flowfoundation.wallet.page.security.securityOpen
 import com.flowfoundation.wallet.utils.*
@@ -47,7 +48,7 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
         binding.root.addStatusBarTopPadding()
         setupToolbar()
         setup()
-        checkMeowDomainClaimed()
+//        checkMeowDomainClaimed()
         queryStorageInfo()
     }
 
@@ -63,16 +64,20 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
     private fun setup() {
         with(binding) {
             val isEVMAccount = EVMWalletManager.isEVMWalletAddress(walletAddress)
-            if (CryptoProviderManager.getCurrentCryptoProvider() is HDWalletCryptoProvider && isEVMAccount.not()) {
-                group1.visible()
-                privatePreference.setOnClickListener {
-                    securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
-                }
+
+            if (CryptoProviderManager.getCurrentCryptoProvider() is HDWalletCryptoProvider) {
+                llRecoveryLayout.visible()
                 recoveryPreference.setOnClickListener {
                     securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
                 }
+                privatePreference.setOnClickListener {
+                    securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
+                }
             } else {
-                group1.gone()
+                llRecoveryLayout.gone()
+                privatePreference.setOnClickListener {
+                    securityOpen(SecurityPublicKeyActivity.launchIntent(this@WalletSettingActivity))
+                }
             }
 
             accountKey.setOnClickListener {

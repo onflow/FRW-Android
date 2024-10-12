@@ -28,6 +28,7 @@ class BrowserPopupMenu(
                     PopupListView.ItemData(R.string.bookmark.res2String(), iconRes = R.drawable.ic_bookmark, iconTint = iconColor),
                     PopupListView.ItemData(R.string.share.res2String(), iconRes = R.drawable.ic_share, iconTint = iconColor),
                     PopupListView.ItemData(R.string.open_in_browser.res2String(), iconRes = R.drawable.ic_web, iconTint = iconColor),
+                    PopupListView.ItemData(R.string.clear_cache.res2String(), iconRes = R.drawable.ic_trash, iconTint = iconColor),
                 ),
                 selectListener = { _, text -> onMenuItemClick(text) },
                 offsetX = -50.dp2px().toInt(),
@@ -41,6 +42,7 @@ class BrowserPopupMenu(
             R.string.bookmark.res2String() -> addToBookmark()
             R.string.share.res2String() -> browserTab.url()?.let { view.context.shareText(it) }
             R.string.open_in_browser.res2String() -> browserTab.url()?.openInSystemBrowser(view.context)
+            R.string.clear_cache.res2String() -> browserTab.webView.clearCache(true)
         }
         return true
     }

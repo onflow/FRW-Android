@@ -35,7 +35,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_backup_content_layout"
             android:layout_width="match_parent"
-            android:layout_height="98dp"
+            android:layout_height="wrap_content"
+            android:minHeight="98dp"
             android:background="@drawable/bg_round_16dp"
             android:backgroundTint="@color/bg_2"
             android:padding="16dp">
@@ -46,7 +47,8 @@
                 android:layout_height="24dp"
                 android:src="@drawable/ic_backup_google_drive"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="@id/tv_backup_name"
+                app:layout_constraintBottom_toBottomOf="@id/tv_backup_name"/>
 
             <TextView
                 android:id="@+id/tv_backup_name"
@@ -60,7 +62,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/iv_backup_type"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/iv_backup_type"
-                app:layout_constraintTop_toTopOf="@id/iv_backup_type"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:text="Backup - Google Drive"/>
 
             <TextView
@@ -84,10 +86,14 @@
                 android:layout_marginEnd="40dp"
                 android:fontFamily="@font/inter"
                 android:textColor="@color/text_3"
+                android:lines="1"
+                android:maxLines="1"
                 android:textSize="12sp"
+                app:autoSizeMinTextSize="8sp"
                 app:layout_constraintEnd_toEndOf="@id/tv_backup_name"
                 app:layout_constraintStart_toStartOf="@id/tv_backup_name"
                 app:layout_constraintTop_toBottomOf="@id/tv_backup_os"
+                app:layout_constraintBottom_toBottomOf="parent"
                 tools:text="New York, US · April 12, 2023"/>
 
             <ImageView

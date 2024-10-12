@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowAddressListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolListResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolObjResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
@@ -44,6 +45,16 @@ internal fun FlowScriptResponse.parseBool(default: Boolean = false): Boolean? {
     return try {
         val result = Gson().fromJson(String(bytes), FlowBoolResult::class.java)
         result.value
+    } catch (e: Exception) {
+        return default
+    }
+}
+
+internal fun FlowScriptResponse.parseBoolObject(default: Boolean = false): Boolean? {
+    // {"value":{"value":false,"type":"Bool"},"type":"Optional"}
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowBoolObjResult::class.java)
+        result.value.value
     } catch (e: Exception) {
         return default
     }
@@ -133,23 +144,23 @@ fun addressVerify(address: String): Boolean {
 }
 
 fun Nft.formatCadence(script: String): String {
-    val config = NftCollectionConfig.get(collectionAddress, collectionContractName) ?: return script
+    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return script
     return config.formatCadence(script)
 }
 
 fun NftCollection.formatCadence(script: String): String {
     return script.replace("<NFT>", contractName)
         .replace("<NFTAddress>", address)
-        .replace("<CollectionStoragePath>", path.storagePath)
-        .replace("<CollectionPublic>", path.publicCollectionName ?: "")
-        .replace("<CollectionPublicPath>", path.publicPath)
+        .replace("<CollectionStoragePath>", path?.storagePath ?: "")
+        .replace("<CollectionPublic>", path?.publicCollectionName ?: "")
+        .replace("<CollectionPublicPath>", path?.publicPath ?: "")
         .replace("<Token>", contractName)
         .replace("<TokenAddress>", address)
-        .replace("<TokenCollectionStoragePath>", path.storagePath)
-        .replace("<TokenCollectionPublic>", path.publicCollectionName ?: "")
-        .replace("<TokenCollectionPublicPath>", path.publicPath)
-        .replace("<CollectionPublicType>", path.publicType ?: "")
-        .replace("<CollectionPrivateType>", path.privateType ?: "")
+        .replace("<TokenCollectionStoragePath>", path?.storagePath ?: "")
+        .replace("<TokenCollectionPublic>", path?.publicCollectionName ?: "")
+        .replace("<TokenCollectionPublicPath>", path?.publicPath ?: "")
+        .replace("<CollectionPublicType>", path?.publicType ?: "")
+        .replace("<CollectionPrivateType>", path?.privateType ?: "")
 }
 
 class CadenceArgumentsBuilder {

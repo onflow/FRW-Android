@@ -2,18 +2,16 @@ package com.flowfoundation.wallet.page.backup.presenter
 
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.databinding.ActivityWalletBackupBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.backup.BackupListAdapter
+import com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
 import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
 import com.flowfoundation.wallet.utils.extensions.gone
-import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.isMultiBackupCreated
+import com.flowfoundation.wallet.utils.getBackupMnemonicFromPreference
 import com.flowfoundation.wallet.utils.setMultiBackupCreated
 import com.flowfoundation.wallet.utils.setMultiBackupDeleted
 import com.flowfoundation.wallet.widgets.DialogType
@@ -25,6 +23,7 @@ class WalletBackupPresenter(
 ) {
 
     private val backupAdapter by lazy { BackupListAdapter() }
+    private val seedPhraseAdapter by lazy { BackupListAdapter() }
     private val deviceAdapter by lazy { BackupListAdapter() }
 
     private var isBackupListLoading = true
@@ -35,8 +34,12 @@ class WalletBackupPresenter(
             adapter = backupAdapter
             layoutManager = LinearLayoutManager(context)
         }
-        with((binding.rvDeviceBackupList)) {
+        with(binding.rvDeviceBackupList) {
             adapter = deviceAdapter
+            layoutManager = LinearLayoutManager(context)
+        }
+        with(binding.rvSeadPhraseBackupList) {
+            adapter = seedPhraseAdapter
             layoutManager = LinearLayoutManager(context)
         }
         with(binding) {
@@ -44,10 +47,17 @@ class WalletBackupPresenter(
                 CreateDeviceBackupActivity.launch(activity)
             }
             cvCreateMultiBackup.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(activity, DialogType.BACKUP).show()
                 } else {
                     MultiBackupActivity.launch(activity)
+                }
+            }
+            cvCreateSeedPhraseBackup.setOnClickListener {
+                if (isTestnet()) {
+                    SwitchNetworkDialog(activity, DialogType.BACKUP).show()
+                } else {
+                    BackupRecoveryPhraseActivity.launch(activity)
                 }
             }
         }
@@ -57,11 +67,26 @@ class WalletBackupPresenter(
         isBackupListLoading = true
         isDeviceListLoading = true
         with(binding) {
+            cvCreateSeedPhraseBackup.gone()
             cvCreateDeviceBackup.gone()
             cvCreateMultiBackup.gone()
             llMultiBackupList.gone()
             llDeviceBackupList.gone()
+            llSeedPhraseList.gone()
             lavLoading.visible()
+        }
+    }
+
+    private fun checkCreateSeedPhraseStatus() {
+        val backupMnemonic = getBackupMnemonicFromPreference()
+        binding.cvCreateSeedPhraseBackup.setVisible(backupMnemonic.isEmpty())
+    }
+
+    fun bindSeedPhraseList(list: List<Any>) {
+        with(binding) {
+            cvCreateSeedPhraseBackup.setVisible(list.isEmpty())
+            llSeedPhraseList.setVisible(list.isNotEmpty())
+            seedPhraseAdapter.setNewDiffData(list)
         }
     }
 

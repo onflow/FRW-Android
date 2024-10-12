@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.key
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.wallet.Wallet
 import io.outblock.wallet.CryptoProvider
 import io.outblock.wallet.KeyStoreCryptoProvider
@@ -23,7 +24,11 @@ object CryptoProviderManager {
         if (account == null) {
             return null
         }
-        if (account.prefix.isNullOrBlank()) {
+        if (account.keyStoreInfo.isNullOrBlank().not()) {
+            return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
+        } else if (account.prefix.isNullOrBlank().not()) {
+            return KeyStoreCryptoProvider(account.prefix!!)
+        } else {
             val wallet = if (account.isActive && isSwitch.not()) {
                 Wallet.store().wallet()
             } else {
@@ -33,8 +38,6 @@ object CryptoProviderManager {
                 return null
             }
             return HDWalletCryptoProvider(wallet)
-        } else {
-            return KeyStoreCryptoProvider(account.prefix!!)
         }
     }
 

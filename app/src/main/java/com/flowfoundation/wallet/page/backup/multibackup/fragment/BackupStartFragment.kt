@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentBackupStartBinding
 import com.flowfoundation.wallet.page.backup.BackupListManager
 import com.flowfoundation.wallet.page.backup.model.BackupType
+import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupAboutDialog
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupAbout
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -17,7 +19,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 class BackupStartFragment : Fragment() {
     private lateinit var binding: FragmentBackupStartBinding
     private val backupViewModel by lazy {
-        ViewModelProvider(requireActivity())[MultiBackupViewModel::class.java]
+        ViewModelProvider(requireParentFragment().requireActivity())[MultiBackupViewModel::class.java]
     }
 
     override fun onCreateView(
@@ -35,6 +37,9 @@ class BackupStartFragment : Fragment() {
             btnNext.setVisible(false)
             btnNext.setOnClickListener {
                 backupViewModel.startBackup()
+            }
+            tvLearnMore.setOnClickListener {
+                BackupAboutDialog().show(childFragmentManager, BackupAbout.ABOUT_MULTI_BACKUP)
             }
             if (BackupListManager.hadBackupOption(BackupType.GOOGLE_DRIVE)) {
                 oiGoogleDrive.changeItemStatus(true)

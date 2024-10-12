@@ -8,7 +8,6 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletRestoreBinding
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
@@ -29,7 +28,7 @@ class WalletRestoreActivity : BaseActivity() {
 
         with(binding) {
             llImportFromDevice.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     WalletSyncActivity.launch(this@WalletRestoreActivity)
@@ -37,18 +36,18 @@ class WalletRestoreActivity : BaseActivity() {
             }
 
             llImportFromBackup.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
                 } else {
                     MultiRestoreActivity.launch(this@WalletRestoreActivity)
                 }
             }
 
-            llImportFromRecoveryPhrase.setOnClickListener {
-                if (isTestnet() || isPreviewnet()) {
+            llImportFromRawKey.setOnClickListener {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this@WalletRestoreActivity, DialogType.RESTORE).show()
                 } else {
-                    com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(this@WalletRestoreActivity)
+                    RawKeyRestoreActivity.launch(this@WalletRestoreActivity)
                 }
             }
         }

@@ -4,7 +4,6 @@ import com.flowfoundation.wallet.manager.app.chainNetwork
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.cadenceScriptApi
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.NETWORK_PREVIEWNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.ioScope
@@ -75,17 +74,12 @@ object CadenceApiManager {
     private fun getCadenceScript(): CadenceScript? {
         return when (chainNetwork()) {
             NETWORK_TESTNET -> cadenceApi?.scripts?.testnet
-            NETWORK_PREVIEWNET -> cadenceApi?.scripts?.previewnet
             else -> cadenceApi?.scripts?.mainnet
         }
     }
 
-    fun getCadenceScriptVersion(): Float {
-        return when (chainNetwork()) {
-            NETWORK_TESTNET -> cadenceApi?.scripts?.testnet?.version.toSafeFloat()
-            NETWORK_PREVIEWNET -> cadenceApi?.scripts?.previewnet?.version.toSafeFloat()
-            else -> cadenceApi?.scripts?.mainnet?.version.toSafeFloat()
-        }
+    fun getCadenceScriptVersion(): String {
+        return cadenceApi?.version.orEmpty()
     }
 
     fun getCadenceBasicScript(method: String): String {

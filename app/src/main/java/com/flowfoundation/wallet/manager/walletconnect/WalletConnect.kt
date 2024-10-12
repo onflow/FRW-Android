@@ -73,7 +73,7 @@ class WalletConnect {
     private fun paring(uri: String) {
         val pairingParams = Core.Params.Pair(uri)
         CoreClient.Pairing.pair(pairingParams) { error ->
-            toast(msgRes = R.string.wallet_connect_error)
+//            toast(msgRes = R.string.wallet_connect_error)
             loge(error.throwable)
         }
     }

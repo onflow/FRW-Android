@@ -4,20 +4,16 @@ import android.os.Parcelable
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionsCache
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.NftCollectionListResponse
-import com.flowfoundation.wallet.network.model.PreviewnetNftCollectionListResponse
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import kotlinx.parcelize.Parcelize
-import java.net.URL
 
 object NftCollectionConfig {
 
@@ -39,11 +35,18 @@ object NftCollectionConfig {
         return list.firstOrNull { it.address == address && it.contractName == contractName }
     }
 
+    fun getByNFTIdentifier(nftIdentifier: String): NftCollection? {
+        if (config.isEmpty()) {
+            reloadConfig()
+        }
+        return config.toList().firstOrNull { it.getNFTIdentifier() == nftIdentifier }
+    }
+
     fun getByContractId(contractId: String): NftCollection? {
         if (config.isEmpty()) {
             reloadConfig()
         }
-        return config.toList().firstOrNull { it.contractId() == contractId }
+        return config.toList().firstOrNull { it.contractIdWithCollection() == contractId }
     }
 
     fun getByStoragePath(storagePath: String): NftCollection? {
@@ -51,7 +54,7 @@ object NftCollectionConfig {
             reloadConfig()
         }
         val list = config.toList()
-        return list.firstOrNull { it.path.storagePath == storagePath }
+        return list.firstOrNull { it.path?.storagePath == storagePath }
     }
 
     fun list() = config.toList()
@@ -61,11 +64,7 @@ object NftCollectionConfig {
             config.clear()
             config.addAll(loadFromCache())
 
-            val response = if (EVMWalletManager.evmFeatureAvailable()) {
-                retrofitApi().create(ApiService::class.java).getNFTCollections()
-            } else {
-                retrofitApi().create(ApiService::class.java).nftCollections()
-            }
+            val response = retrofitApi().create(ApiService::class.java).getNFTCollections()
             if (response.data.isNotEmpty()) {
                 config.clear()
                 config.addAll(response.data)
@@ -85,8 +84,6 @@ object NftCollectionConfig {
         val text = readTextFromAssets(
             if (isTestnet()) {
                 "config/nft_collections_testnet.json"
-            } else if (isPreviewnet()) {
-                "config/nft_collections_previewnet.json"
             } else {
                 "config/nft_collections_mainnet.json"
             }
@@ -107,9 +104,9 @@ data class NftCollection(
     @SerializedName("contract_name")
     val contractName: String,
     @SerializedName("description")
-    val description: String,
+    val description: String?,
     @SerializedName("logo")
-    val logo: String,
+    val logo: String?,
     @SerializedName("secure_cadence_compatible")
     val secureCadenceCompatible: CadenceCompatible?,
     @SerializedName("marketplace")
@@ -119,14 +116,25 @@ data class NftCollection(
     @SerializedName("official_website")
     val officialWebsite: String?,
     @SerializedName("path")
-    val path: Path,
+    val path: Path?,
     @SerializedName("evmAddress")
     val evmAddress: String?,
+    @SerializedName("flowIdentifier")
+    val flowIdentifier: String?,
 ) : Parcelable {
 
-    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+    fun getNFTIdentifier(): String {
+        return flowIdentifier ?: "A.${address.removeAddressPrefix()}.${contractName}.NFT"
+    }
+
+    fun contractIdWithCollection() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+
+    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}"
 
     fun logo(): String {
+        if (logo == null) {
+            return ""
+        }
         return if (logo.endsWith(".svg")) {
             logo.svgToPng()
         } else {

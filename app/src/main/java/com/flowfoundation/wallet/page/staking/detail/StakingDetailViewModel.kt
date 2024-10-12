@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.staking.detail.model.StakingDetailModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -78,15 +77,15 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
                 StakingManager.stakingNode(provider)?.tokensUnstaked
             } else {
                 StakingManager.stakingNode(provider)?.tokensRewarded
-            } ?: 0.0f
+            } ?: 0.0
 
-            if (amount <= 0.0f) {
+            if (amount <= 0) {
                 return@ioScope
             }
 
             var delegatorId = provider.delegatorId()
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount.toSafeDouble())
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -105,7 +104,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
                 state = FlowTransactionStatus.PENDING.num,
-                type = TransactionState.TYPE_TRANSACTION_DEFAULT,
+                type = TransactionState.TYPE_STAKE_FLOW,
                 data = ""
             )
             TransactionStateManager.newTransaction(transactionState)

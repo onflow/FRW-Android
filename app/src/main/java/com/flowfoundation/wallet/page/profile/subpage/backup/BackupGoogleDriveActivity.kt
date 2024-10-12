@@ -6,16 +6,16 @@ import android.os.Bundle
 import android.view.MenuItem
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.flowfoundation.wallet.databinding.ActivityBackupManuallyBinding
+import com.flowfoundation.wallet.databinding.ActivityBackupRecoveryPhraseBinding
 import com.flowfoundation.wallet.page.walletcreate.fragments.cloudpwd.WalletCreateCloudPwdFragment
 
 class BackupGoogleDriveActivity : BaseActivity() {
 
-    private lateinit var binding: ActivityBackupManuallyBinding
+    private lateinit var binding: ActivityBackupRecoveryPhraseBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityBackupManuallyBinding.inflate(layoutInflater)
+        binding = ActivityBackupRecoveryPhraseBinding.inflate(layoutInflater)
         setContentView(binding.root)
         setupToolbar()
 

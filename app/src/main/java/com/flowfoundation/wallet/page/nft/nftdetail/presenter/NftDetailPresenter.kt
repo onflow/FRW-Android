@@ -132,7 +132,7 @@ class NftDetailPresenter(
 
     private fun showShareNft() {
         nft?.let {
-            if (NftCollectionConfig.get(it.collectionAddress, it.collectionContractName) != null) {
+            if (NftCollectionConfig.get(it.collectionAddress, it.contractName()) != null) {
                 val dialog = ProgressDialog(activity)
                 dialog.show()
                 shareNft(binding.shareScreenshotWrapper, it) { file ->
@@ -162,7 +162,7 @@ class NftDetailPresenter(
     private fun bindData(nft: Nft) {
         this.nft = nft
         with(binding) {
-            val config = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+            val config = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val name = config?.name ?: nft.contractName()
             val title = "$name #${nft.id}"
             toolbar.title = title
@@ -191,7 +191,7 @@ class NftDetailPresenter(
             bindAccessible(title, nft)
 
             collectionWrapper.setOnClickListener {
-                CollectionActivity.launch(activity, nft.collectionContractName)
+                CollectionActivity.launch(activity, nft.contractName())
             }
 
             ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }

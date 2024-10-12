@@ -31,6 +31,8 @@
     <string name="create_pin">Создайте PIN-код</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Пожалуйста, введите\nваш PIN-код еще раз.</string>
+    <string name="reset_pin">Please type\nyour new PIN</string>
+    <string name="reset_check_pin">Please type\nyour new PIN again</string>
     <string name="check_pin_tip">Убедитесь, что вы помните свой PIN-код.</string>
     <string name="create_pin_tip">Таким образом, никто, кроме вас, не сможет разблокировать ваш кошелек.</string>
     <string name="backup_pin_tip">Ваш PIN-код будет использоваться для безопасного шифрования резервной копии вашей учетной записи.</string>
@@ -46,6 +48,7 @@
     <string name="backup_manually">Резервное копирование вручную</string>
     <string name="backup_to_google_drive">Резервное копирование на google drive</string>
     <string name="recovery_phrase">Фраза о восстановлении</string>
+    <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Восстановление</string>
     <string name="phrase">Фраза</string>
     <string name="nft">NFT</string>
@@ -137,7 +140,7 @@
     <string name="add_address">Добавить адрес</string>
     <string name="checking">Проверка</string>
     <string name="address_check_format_error">Неверный адрес</string>
-    <string name="address_check_chain_error">\"Не могу найти адрес в сети.</string>
+    <string name="address_check_chain_error">Не могу найти адрес в цепочке</string>
     <string name="address_check_success">Подтвержденный адрес</string>
     <string name="address_search_empty_tip">Извините, мы не нашли ни одного связанного аккаунта, пожалуйста, проверьте свой ввод и выполните поиск снова.</string>
     <string name="search_the_id">Поиск по идентификатору: %1$s</string>
@@ -155,6 +158,7 @@
     <string name="transaction">Транзакция</string>
     <string name="from">С сайта</string>
     <string name="to">На</string>
+    <string name="sign_message_primary_type">Primary type</string>
     <string name="amount_confirmation">Подтверждение суммы</string>
     <string name="insufficient_balance">Недостаточный баланс</string>
     <string name="minimum_required">Минимум 50 потоков</string>
@@ -205,6 +209,7 @@
     <string name="drag_here_to_unpin">Перетащите сюда, чтобы открепить</string>
     <string name="recovery_purchase_tips">Запишите или скопируйте эти слова в правильном порядке и сохраните их в надежном месте.</string>
     <string name="open_in_browser">Открыть в браузере</string>
+    <string name="clear_cache">Clear Cache</string>
     <string name="pending_transaction">Отложенная сделка</string>
     <string name="welcome_to_wallet">Добро пожаловать в Flow Wallet!</string>
     <string name="profile_sign_tips"><![CDATA[Присоединяйтесь к нам и откройте для себя все блестящие и новые возможности!]]></string>
@@ -265,6 +270,7 @@
     <string name="claim_domain_failed">Утвердить домен не удалось</string>
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Неправильная мнемоника</string>
+    <string name="address_incorrect">Incorrect address</string>
     <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
     <string name="inbox">Токен Входящие</string>
     <string name="token">Токен</string>
@@ -448,15 +454,17 @@
     <string name="or">Или</string>
     <string name="sync_page_title">Откройте кошелек Flow в мобильном приложении \n и отсканируйте QR-код для синхронизации кошелька.</string>
     <string name="sync_scan_qr_code">Сканирование QR-кода с помощью мобильного приложения</string>
-    <string name="sync_note">Примечание: Ваша фраза восстановления НИКОГДА не будет проходить через сервер Flow Wallet. Она зашифрована из конца в конец, и мы никогда не сможем ее прочитать.</string>
+    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">Найдите 1 подходящий кошелек</string>
     <string name="wallet_confirmation">Подтверждение кошелька</string>
     <string name="loading">Загрузка</string>
     <string name="loading_desc">Это может занять некоторое время, пожалуйста, не выходите...</string>
     <string name="create_device_backup">Создание резервной копии устройства</string>
-    <string name="google_backup_note">Примечание: Ваш резервный ключ шифруется из конца в конец и никогда не отправляется на серверы Flow Wallet.</string>
+    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">Создание мультирезервного копирования</string>
+    <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">Мультирезервное копирование</string>
+    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
     <string name="device_backup">Резервное копирование устройства</string>
     <string name="other_devices">Другие устройства</string>
     <string name="multi_backup_tip">Пожалуйста, выберите 2 или более вариантов резервного копирования</string>
@@ -468,10 +476,27 @@
     <string name="import_wallet_note">Восстановите кошелек с помощью резервной копии.</string>
     <string name="from_device_backup">Из резервной копии устройства</string>
     <string name="from_device_backup_note">Восстановление из другого мобильного кошелька или кошелька расширения</string>
+    <string name="from_key_store">From Keystore</string>
+    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="key_store">Keystore</string>
+    <string name="seed_phrase">Seed Phrase</string>
+    <string name="restore_seed_phrase_advanced">Advanced</string>
+    <string name="restore_seed_derivation_path">Derivation Path</string>
+    <string name="restore_seed_passphrase">Passphrase</string>
+    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
+    <string name="restore_private_key_hint">Enter your private key</string>
+    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">Из Multi Backup</string>
     <string name="from_multi_backup_note">Google Диск / Ключ доступа / Фраза для восстановления</string>
     <string name="from_recovery_phrase">Из фразы восстановления (наследие)</string>
     <string name="from_recovery_phrase_note">Восстановление с помощью устаревшей фразы восстановления (не мультирезервное копирование)</string>
+    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
+    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Мультивосстановление</string>
     <string name="multi_restore_title">Из мультирезервного копирования</string>
     <string name="multi_restore_note">Пожалуйста, выберите 2 или более вариантов резервного копирования</string>
@@ -483,6 +508,7 @@
     <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
     <string name="create_device_backup_note">Используйте свое устройство в качестве резервного кошелька для защиты и восстановления цифровых активов с легкостью</string>
     <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
+    <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
     <string name="scan_desktop_device">Сканирование настольного устройства</string>
     <string name="backup_detail">Деталь резервного копирования</string>
     <string name="backup_info">Информация о резервном копировании</string>
@@ -599,4 +625,37 @@ uses to turn your device into a hardware wallet.</string>
     <string name="landing_tips">😃It might take 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
+    <string name="backup_failed">Backup Failed</string>
+    <string name="backup_failed_desc">Your backup creation failed. Please try again later.</string>
+    <string name="backup_recovery_phrase_warning_note">You will be able to review your recovery phrase after you create the backup.</string>
+    <string name="backup_recovery_phrase_warning_1">I understand if I lose my recovery phrase, I may not be able to recover my account.</string>
+    <string name="backup_recovery_phrase_warning_2">I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.</string>
+    <string name="backup_recovery_phrase_warning_3">I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.</string>
+    <string name="backup_recovery_phrase_about_title">About Your</string>
+    <string name="backup_recovery_phrase_about_note">You have selected to use a 15-word
+        partial-weight recovery phrase. \n \nYour partial-weight recovery will correspond to a
+        partial-weight recovery key on your Flow account. \n \nYour partial-weight recovery
+        phrase on its own does not secure full access to your account. It must be used together with your other multi-backups to recover access to your account.</string>
+    <string name="recommended">Recommended</string>
+    <string name="backup_start_about_title">What is a</string>
+    <string name="backup_start_about_content">Мультирезервное копирование</string>
+    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
+    <string name="what_is_multi_backup">What is Multi-Backup?</string>
+    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
+    <string name="secured_by_key_store">Secured by KeyStore</string>
+    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
+        and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
+        using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
+    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="keystore_select_account_tips">Choose an account you want to import</string>
+    <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_no_account_title">No Account Found</string>
+    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
+        key. \n \nPlease check your input and try again.</string>
+    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
+    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
+    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
+    <string name="sign_type_message_from">Sign Type Message from</string>
+    <string name="message">Message</string>
 </resources>

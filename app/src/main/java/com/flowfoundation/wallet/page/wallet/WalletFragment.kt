@@ -27,9 +27,11 @@ import com.flowfoundation.wallet.page.wallet.presenter.WalletFragmentPresenter
 import com.flowfoundation.wallet.page.wallet.presenter.WalletHeaderPresenter
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.isBackupGoogleDrive
 import com.flowfoundation.wallet.utils.isBackupManually
 import com.flowfoundation.wallet.utils.isMultiBackupCreated
+import com.flowfoundation.wallet.utils.isShowBackupDialog
 import com.flowfoundation.wallet.utils.launch
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.registerBarcodeLauncher
@@ -64,7 +66,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         presenter = WalletFragmentPresenter(this, binding)
-        headerPresenter = WalletHeaderPresenter(binding.walletHeader.root)
+        headerPresenter = WalletHeaderPresenter(this, binding.walletHeader.root)
 //        headerPlaceholderPresenter = WalletHeaderPlaceholderPresenter(binding.shimmerPlaceHolder.root)
 
         binding.ivScan.setOnClickListener { barcodeLauncher.launch() }
@@ -74,18 +76,18 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
                     MoveDialog().showMove(childFragmentManager)
                 }
             } else {
-                if (EVMWalletManager.evmFeatureAvailable()) {
-                    EnableEVMActivity.launch(this.requireContext())
-                    return@setOnClickListener
-                }
+                EnableEVMActivity.launch(this.requireContext())
             }
         }
+        binding.ivMove.setVisible(WalletManager.haveChildAccount()
+                || WalletManager.isChildAccountSelected()
+                || EVMWalletManager.haveEVMAddress())
         TransitionManager.beginDelayedTransition(binding.root)
         binding.ivTransition.setOnClickListener {
             TransactionRecordActivity.launch(this.requireContext())
         }
 
-        viewModel = ViewModelProvider(requireActivity())[WalletFragmentViewModel::class.java].apply {
+        viewModel = ViewModelProvider(this)[WalletFragmentViewModel::class.java].apply {
             dataListLiveData.observe(viewLifecycleOwner) {
                 presenter.bind(WalletFragmentModel(data = it))
                 checkBackUp(it)
@@ -94,6 +96,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
                 headerPresenter.bind(headerModel)
 //                headerPlaceholderPresenter.bind(headerModel == null)
             }
+//            clearDataList()
         }
 
         binding.appBarLayout.addOnOffsetChangedListener { _, verticalOffset ->
@@ -136,11 +139,24 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
                 val sumCoin = coinList.map { it.balance }.sum()
                 if (sumCoin > 0.001f) {
                     isBackupShown = true
-                    BackupTipsDialog.show(childFragmentManager)
+                    if (isShowBackupDialog()) {
+                        BackupTipsDialog.show(childFragmentManager)
+                    }
                 } else {
                     isBackupShown = false
                 }
             }
+//            if (BackupTipManager.isShowBackupTip()) {
+//                val sumCoin = coinList.map { it.balance }.sum()
+//                if (sumCoin > 0.001f) {
+//                    isBackupShown = true
+//                    BackupTipsDialog.show(childFragmentManager)
+//                } else {
+//                    isBackupShown = false
+//                }
+//            } else {
+//                isBackupShown = false
+//            }
         }
     }
 

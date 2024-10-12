@@ -62,7 +62,7 @@ internal class NftListFragment : Fragment() {
 
         viewModel = ViewModelProvider(requireActivity())[NftViewModel::class.java].apply {
             if (WalletManager.isEVMAccountSelected()) {
-                requestEVMList()
+                requestList()
             } else {
                 requestList()
                 requestChildAccountCollectionList()

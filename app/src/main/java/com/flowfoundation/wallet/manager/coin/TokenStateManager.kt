@@ -104,6 +104,7 @@ object TokenStateManager {
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
         }
+        logd("WalletFragmentViewModel", "tokenStateList::${tokenStateList.size}")
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
@@ -123,7 +124,7 @@ object TokenStateManager {
         }
     }
 
-    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address == tokenAddress }?.isAdded ?: false
+    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address.lowercase() == tokenAddress.lowercase() }?.isAdded ?: false
 
     fun addListener(callback: TokenStateChangeListener) {
         uiScope { this.listeners.add(WeakReference(callback)) }

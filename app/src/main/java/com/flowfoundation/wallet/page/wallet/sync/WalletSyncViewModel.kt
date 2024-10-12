@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.wallet.sync
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.nftco.flow.sdk.FlowChainId
 import com.walletconnect.android.Core
 import com.walletconnect.android.CoreClient
@@ -42,9 +41,8 @@ class WalletSyncViewModel : ViewModel() {
             "flow" to Sign.Model.Namespace.Proposal(
                 chains = listOf("flow:${
                     if (isTestnet()) FlowChainId.TESTNET 
-                    else if (isPreviewnet()) FlowChainId.PREVIEWNET 
                     else FlowChainId.MAINNET}"),
-                methods = WalletConnectMethod.values().map { it.value },
+                methods = WalletConnectMethod.entries.map { it.value },
                 events = listOf("chainChanged", "accountsChanged"),
             )
         )

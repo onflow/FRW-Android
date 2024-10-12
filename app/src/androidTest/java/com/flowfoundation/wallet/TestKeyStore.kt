@@ -1,10 +1,12 @@
 package com.flowfoundation.wallet
 
+import android.util.Log
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.hexToBytes
 import org.junit.Assert.*
 import org.junit.Test
 import wallet.core.jni.CoinType
+import wallet.core.jni.PrivateKey
 import wallet.core.jni.StoredKey
 
 private const val TAG = "TestKeyStore.kt"
@@ -40,6 +42,27 @@ class TestKeyStore {
 
         assertEquals(keyStore.accountCount(), 1)
         assertEquals(keyStore.account(0).coin(), CoinType.ETHEREUM)
+    }
+
+    @Test
+    fun testImportKeystore() {
+        val json = """
+            {"version":3,"id":"c0cae541-21f2-43f5-ab45-66c49a21a43f","address":"8cd687688f1ca87c34259a251b0f31f7dfc1bdbd","crypto":{"ciphertext":"d361ad39e8e859d309838d5017f7dc6b88e4ccf08ec5bc12f6b78fca702a8f74","cipherparams":{"iv":"c895d524bc3bcaf7d35baf43140237df"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"72ace8aae80f25c56b05eede9f6654f407914dfaf5f40c2d74fb19be7e1d541a","n":131072,"r":8,"p":1},"mac":"30962d3311dc476ea9b8941a823c083dd9f149083c15e75fddbd193af0e3d261"}}
+        """.trimIndent()
+        val password = "11111111"
+        val pass = password.toByteArray()
+        val keyStore = StoredKey.importJSON(json.toByteArray())
+        val privateKey = PrivateKey(keyStore.decryptPrivateKey(pass))
+        val p1PublicKey = privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
+
+        val k1PublicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+        println("TAG p1pk: $p1PublicKey")
+        println("TAG k1pk: $k1PublicKey")
+        assertEquals(p1PublicKey,
+            "6d117d43b89a5c38751c73a799aecbb6df9ac7cb629df80c29678a0795ea890099f3cec59b195a2109f2aebc2dd4619b9b0cd8502b36c3fb0b1f953775214d89")
+
+        assertEquals(k1PublicKey, "309b594113b7b61aec38586b2bd1c96258e1306cd8e10bfe8e74ef2dfb154911b7cdcbe219053b19ce5b86c1fede5caf1df70ddca7bb7fde04cc36a7fb7fd948")
+
     }
 
     @Test

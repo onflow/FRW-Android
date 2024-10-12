@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_VIEW_FINISH
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -19,6 +20,7 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.manager.backup.checkGoogleDriveBackup
 import com.flowfoundation.wallet.manager.backup.restoreFromGoogleDrive
 import com.flowfoundation.wallet.manager.backup.uploadGoogleDriveBackup
 import com.flowfoundation.wallet.manager.backup.viewFromGoogleDrive
@@ -37,6 +39,8 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
     private val isDeleteBackup by lazy { intent.getBooleanExtra(EXTRA_DELETE_BACKUP, false) }
     private val isViewBackup by lazy { intent.getBooleanExtra(EXTRA_VIEW_BACKUP, false) }
     private val isMultiBackup by lazy { intent.getBooleanExtra(EXTRA_MULTI_BACKUP, false) }
+    private val isLogin by lazy { intent.getBooleanExtra(EXTRA_LOGIN, false) }
+    private val isCheckBackup by lazy { intent.getBooleanExtra(EXTRA_CHECK_BACKUP, false) }
     private val isMultiRestoreWithSignOut by lazy {
         intent.getBooleanExtra(EXTRA_MULTI_RESTORE_WITH_SIGN_OUT, false)
     }
@@ -57,7 +61,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             .build()
         mClient = GoogleSignIn.getClient(this, signInOptions)
 
-        if (isRestoreWithSignOut || isMultiRestoreWithSignOut || isMultiBackup || isViewBackup) {
+        if (isRestoreWithSignOut || isMultiRestoreWithSignOut || isViewBackup || isLogin) {
             signOutAndSignInAgain()
         } else {
             mClient?.let {
@@ -121,8 +125,8 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                     // The result of the sign-in Intent is handled in onActivityResult.
                     startActivityForResult(it.signInIntent, REQUEST_CODE_SIGN_IN)
                 } else {
-                    LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
-                        putParcelableArrayListExtra(EXTRA_CONTENT, arrayListOf())
+                    LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_LOGIN_FINISH).apply {
+                        putExtra(EXTRA_SUCCESS, false)
                     })
                 }
             }
@@ -138,6 +142,8 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                     isRestore || isRestoreWithSignOut -> restoreMnemonicFromGoogleDrive(googleDriveService)
                     isMultiBackup -> uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(HDWallet(mnemonic, "")))
                     isMultiRestoreWithSignOut -> restoreFromGoogleDrive(googleDriveService)
+                    isLogin -> loginFinish()
+                    isCheckBackup -> checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(HDWallet(mnemonic, "")))
                     else -> uploadMnemonicToGoogleDrive(googleDriveService, password)
                 }
                 finish()
@@ -147,6 +153,12 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+    }
+
+    private fun loginFinish() {
+        LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_LOGIN_FINISH).apply {
+            putExtra(EXTRA_SUCCESS, true)
+        })
     }
 
     private fun setHttpTimeout(requestInitializer: HttpRequestInitializer): HttpRequestInitializer {
@@ -172,6 +184,21 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
 
         private const val EXTRA_DELETE_BACKUP = "extra_delete_backup"
         private const val EXTRA_VIEW_BACKUP = "extra_view_backup"
+        private const val EXTRA_LOGIN = "extra_login"
+        private const val EXTRA_CHECK_BACKUP = "extra_check_backup"
+
+        fun loginGoogleDriveAccount(context: Context) {
+            context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
+                putExtra(EXTRA_LOGIN, true)
+            })
+        }
+
+        fun checkMultiBackup(context: Context, mnemonic: String) {
+            context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {
+                putExtra(EXTRA_CHECK_BACKUP, true)
+                putExtra(EXTRA_MNEMONIC, mnemonic)
+            })
+        }
 
         fun uploadMnemonic(context: Context, password: String) {
             context.startActivity(Intent(context, GoogleDriveAuthActivity::class.java).apply {

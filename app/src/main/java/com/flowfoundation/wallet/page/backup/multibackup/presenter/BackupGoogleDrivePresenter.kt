@@ -9,7 +9,10 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentBackupGoogleDriveBinding
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.page.backup.BackupListManager
+import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveState
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -33,6 +36,14 @@ class BackupGoogleDrivePresenter(
 
     init {
         with(binding) {
+            if (BackupListManager.hadBackupOption(BackupType.MANUAL)) {
+                backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE,
+                    isCompleted = false,
+                    isOnlyGoogleDrive = true
+                )
+            } else {
+                backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE, false)
+            }
             clStatusLayout.visibility = View.GONE
             btnNext.setOnClickListener {
                 if (btnNext.isProgressVisible()) {
@@ -40,7 +51,7 @@ class BackupGoogleDrivePresenter(
                 }
                 btnNext.setProgressVisible(true)
                 when (currentState) {
-                    BackupGoogleDriveState.CREATE_BACKUP -> viewModel.createBackup()
+                    BackupGoogleDriveState.CREATE_BACKUP -> loginGoogleDrive()
                     BackupGoogleDriveState.UPLOAD_BACKUP -> {
                         viewModel.uploadToChain()
                     }
@@ -49,7 +60,7 @@ class BackupGoogleDrivePresenter(
                     }
                     BackupGoogleDriveState.REGISTRATION_KEY_LIST -> {}
                     BackupGoogleDriveState.NETWORK_ERROR -> viewModel.registrationKeyList()
-                    BackupGoogleDriveState.BACKUP_SUCCESS -> withPinViewModel.backupFinish()
+                    BackupGoogleDriveState.BACKUP_SUCCESS -> withPinViewModel.backupFinish(viewModel.getMnemonic())
                 }
             }
         }
@@ -105,6 +116,12 @@ class BackupGoogleDrivePresenter(
                     btnNext.text = R.string.try_to_connect.res2String()
                 }
                 BackupGoogleDriveState.BACKUP_SUCCESS -> {
+                    if (BackupListManager.hadBackupOption(BackupType.MANUAL)) {
+                        backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE,
+                            isCompleted = true,
+                            isOnlyGoogleDrive = true
+                        )
+                    }
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.backup_uploaded.res2String()
                     clStatusLayout.visibility = View.VISIBLE
@@ -114,11 +131,15 @@ class BackupGoogleDrivePresenter(
         }
     }
 
-    fun uploadMnemonic(mnemonic: String) {
+    private fun loginGoogleDrive() {
         if (getPinCode().isBlank()) {
             withPinViewModel.backToPinCode()
             return
         }
+        GoogleDriveAuthActivity.loginGoogleDriveAccount(fragment.requireContext())
+    }
+
+    fun uploadMnemonic(mnemonic: String) {
         GoogleDriveAuthActivity.multiBackupMnemonic(fragment.requireContext(), mnemonic)
     }
 }

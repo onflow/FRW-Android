@@ -39,7 +39,7 @@ class BackupGoogleDriveWithPinFragment: Fragment() {
                 withPinPresenter.bind(it)
             }
             backupFinishLiveData.observe(viewLifecycleOwner) {
-                withPinPresenter.toNext()
+                withPinPresenter.toNext(it)
             }
             changeOption(BackupGoogleDriveOption.BACKUP_PIN)
             setCurrentIndex(backupViewModel.getCurrentIndex())

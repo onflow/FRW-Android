@@ -29,7 +29,6 @@ import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isDeveloperMode
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
@@ -101,7 +100,7 @@ class DrawerLayoutPresenter(
         }
 
         bindData()
-        binding.refreshWalletList()
+        binding.refreshWalletList(true)
 
         AccountEmojiManager.addListener(this)
         ChildAccountList.addAccountUpdateListener(this)
@@ -146,7 +145,7 @@ class DrawerLayoutPresenter(
                 )
                 setPadding(8.dp2px().toInt(), 0, 8.dp2px().toInt(), 0)
                 setOnClickListener {
-                    if (isTestnet() || isPreviewnet()) {
+                    if (isTestnet()) {
                         SwitchNetworkDialog(activity, DialogType.SWITCH).show()
                     } else {
                         progressDialog.show()
@@ -175,7 +174,6 @@ class DrawerLayoutPresenter(
                 val color = when (network) {
                     "mainnet" -> R.color.mainnet
                     "testnet" -> R.color.testnet
-                    "previewnet" -> R.color.previewnet
                     else -> R.color.text
                 }
                 setTextColor(color.res2color())
@@ -260,7 +258,7 @@ class DrawerLayoutPresenter(
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
-        binding.refreshWalletList()
+        binding.refreshWalletList(true)
     }
 
     override fun onEmojiUpdate(userName: String, address: String, emojiId: Int, emojiName: String) {

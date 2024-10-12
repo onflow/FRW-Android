@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.evm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CREATE_COA_ACCOUNT
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_COA_EVM_ADDRESS
@@ -50,10 +49,6 @@ object EVMWalletManager {
         return canEnableEVM() && haveEVMAddress().not()
     }
 
-    fun evmFeatureAvailable(): Boolean {
-        return CadenceApiManager.getCadenceScriptVersion() >= 1.0f
-    }
-
     private fun canEnableEVM(): Boolean {
         return CADENCE_CREATE_COA_ACCOUNT.isNotEmpty()
     }
@@ -63,7 +58,7 @@ object EVMWalletManager {
     }
 
     fun updateEVMAddress() {
-        if (evmAddressMap.isEmpty() || evmAddressMap[chainNetWorkString()].isNullOrBlank()) {
+        if (evmAddressMap.isEmpty() || getEVMAddress().isNullOrBlank()) {
             fetchEVMAddress()
         }
     }
@@ -77,14 +72,13 @@ object EVMWalletManager {
         logd(TAG, "fetchEVMAddress()")
         ioScope {
             val address = cadenceQueryEVMAddress()
-            val prefixAddress = address?.toAddress()
-            logd(TAG, "fetchEVMAddress address::$prefixAddress")
-            if (prefixAddress != null) {
-                evmAddressMap[chainNetWorkString()] = prefixAddress
+            logd(TAG, "fetchEVMAddress address::$address")
+            if (address.isNullOrEmpty()) {
+                callback?.invoke(false)
+            } else {
+                evmAddressMap[chainNetWorkString()] = address.toAddress()
                 AccountManager.updateEVMAddressInfo(evmAddressMap)
                 callback?.invoke(true)
-            } else {
-                callback?.invoke(false)
             }
         }
     }
@@ -109,7 +103,12 @@ object EVMWalletManager {
     }
 
     fun getEVMAddress(): String? {
-        return evmAddressMap[chainNetWorkString()]
+        val address = evmAddressMap[chainNetWorkString()]
+        return if (address.equals("0x")) {
+            return null
+        } else {
+            evmAddressMap[chainNetWorkString()]
+        }
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
@@ -148,27 +147,25 @@ object EVMWalletManager {
     }
 
     suspend fun moveNFTList(
-        contractName: String,
-        contractAddress: String,
+        nftIdentifier: String,
         idList: List<String>,
         isMoveToEVM: Boolean,
         callback: (isSuccess: Boolean) -> Unit
     ) {
         if (isMoveToEVM) {
-            bridgeNFTListToEVM(contractName, contractAddress, idList, callback)
+            bridgeNFTListToEVM(nftIdentifier, idList, callback)
         } else {
-            bridgeNFTListFromEVM(contractName, contractAddress, idList, callback)
+            bridgeNFTListFromEVM(nftIdentifier, idList, callback)
         }
     }
 
     private suspend fun bridgeNFTListToEVM(
-        contractName: String,
-        contractAddress: String,
+        nftIdentifier: String,
         idList: List<String>,
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val txId = cadenceBridgeNFTListToEvm(contractAddress, contractName, idList)
+            val txId = cadenceBridgeNFTListToEvm(nftIdentifier, idList)
             if (txId.isNullOrBlank()) {
                 logd(TAG, "bridge to evm failed")
                 callback.invoke(false)
@@ -191,13 +188,12 @@ object EVMWalletManager {
     }
 
     private suspend fun bridgeNFTListFromEVM(
-        contractName: String,
-        contractAddress: String,
+        nftIdentifier: String,
         idList: List<String>,
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val txId = cadenceBridgeNFTListFromEvm(contractAddress, contractName, idList)
+            val txId = cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
             if (txId.isNullOrBlank()) {
                 logd(TAG, "bridge to evm failed")
                 callback.invoke(false)
@@ -221,10 +217,8 @@ object EVMWalletManager {
 
     private suspend fun bridgeNFTToEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val contractAddress = nft.collectionAddress
-            val contractName = nft.collectionContractName
             val id = nft.id
-            val txId = cadenceBridgeNFTToEvm(contractAddress, contractName, id)
+            val txId = cadenceBridgeNFTToEvm(nft.getNFTIdentifier(), id)
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -235,33 +229,8 @@ object EVMWalletManager {
 
     private suspend fun bridgeNFTFromEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val contractAddress = if (nft.flowIdentifier != null) {
-                val identifier = nft.flowIdentifier.split(".")
-                if (identifier.size > 1) {
-                    identifier[1].toAddress()
-                } else {
-                    ""
-                }
-            } else {
-                ""
-            }
-            val contractName = if (nft.flowIdentifier != null) {
-                val identifier = nft.flowIdentifier.split(".")
-                if (identifier.size > 2) {
-                    identifier[2]
-                } else {
-                    ""
-                }
-            } else {
-                ""
-            }
-            if (contractAddress.isEmpty() || contractName.isEmpty()) {
-                callback.invoke(false)
-                logd(TAG, "bridge from evm failed")
-                return
-            }
             val id = nft.id
-            val txId = cadenceBridgeNFTFromEvm(contractAddress, contractName, id)
+            val txId = cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), id)
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -274,36 +243,8 @@ object EVMWalletManager {
         coin: FlowCoin, amount: Float, callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val address = if (!coin.flowIdentifier.isNullOrEmpty()) {
-                val identifier = coin.flowIdentifier.split(".")
-                if (identifier.size > 1) {
-                    identifier[1].toAddress()
-                } else {
-                    ""
-                }
-            } else if (coin.evmAddress != null) {
-                coin.address
-            } else {
-                ""
-            }
-
-            val contractName = if (!coin.flowIdentifier.isNullOrEmpty()) {
-                val identifier = coin.flowIdentifier.split(".")
-                if (identifier.size > 2) {
-                    identifier[2]
-                } else {
-                    ""
-                }
-            } else coin.contractName ?: ""
-
-            if (address.isEmpty() || contractName.isEmpty()) {
-                logd(TAG, "bridge from evm failed")
-                callback.invoke(false)
-                return
-            }
-            val decimalAmount = amount.toBigDecimal().movePointRight(18)
-
-            val txId = cadenceBridgeFTFromEvm(address, contractName, decimalAmount)
+            val decimalAmount = amount.toBigDecimal().movePointRight(coin.decimal)
+            val txId = cadenceBridgeFTFromEvm(coin.getFTIdentifier(), decimalAmount)
             if (txId.isNullOrBlank()) {
                 logd(TAG, "bridge from evm failed")
                 callback.invoke(false)
@@ -330,38 +271,7 @@ object EVMWalletManager {
         -> Unit
     ) {
         try {
-            val address = if (coin.evmAddress != null) {
-                coin.address
-            } else if (coin.flowIdentifier != null) {
-                val identifier = coin.flowIdentifier.split(".")
-                if (identifier.size > 1) {
-                    identifier[1].toAddress()
-                } else {
-                    ""
-                }
-            } else {
-                ""
-            }
-
-            val contractName = coin.contractName
-                ?: if (coin.flowIdentifier != null) {
-                    val identifier = coin.flowIdentifier.split(".")
-                    if (identifier.size > 2) {
-                        identifier[2]
-                    } else {
-                        ""
-                    }
-                } else {
-                    ""
-                }
-
-            if (address.isEmpty() || contractName.isEmpty()) {
-                logd(TAG, "bridge to evm failed")
-                callback.invoke(false)
-                return
-            }
-
-            val txId = cadenceBridgeFTToEvm(address, contractName, amount)
+            val txId = cadenceBridgeFTToEvm(coin.getFTIdentifier(), amount)
             if (txId.isNullOrBlank()) {
                 logd(TAG, "bridge to evm failed")
                 callback.invoke(false)

@@ -12,6 +12,7 @@ import androidx.security.crypto.MasterKey
 
 // mnemonic
 private const val KEY_MNEMONIC = "key_mnemonic"
+private const val KEY_BACKUP_MNEMONIC = "key_backup_mnemonic"
 private const val KEY_PUSH_TOKEN = "push_token"
 private const val KEY_WALLET_PASSWORD = "key_wallet_password"
 private const val KEY_PIN_CODE = "key_pin_code"
@@ -65,6 +66,16 @@ fun getMnemonicFromPreferenceV0(): String = preference.getString(KEY_MNEMONIC, "
 
 fun cleanMnemonicPreferenceV0() {
     preference.edit().putString(KEY_MNEMONIC, "").apply()
+}
+
+fun getBackupMnemonicFromPreference(): String = preference.getString(KEY_BACKUP_MNEMONIC, "").orEmpty()
+
+fun saveBackupMnemonicToPreference(mnemonic: String) {
+    preference.edit().putString(KEY_BACKUP_MNEMONIC, mnemonic).apply()
+}
+
+fun cleanBackupMnemonicPreference() {
+    preference.edit().putString(KEY_BACKUP_MNEMONIC, "").apply()
 }
 
 fun updateAesLocalCodeV0(key: String) {

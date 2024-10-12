@@ -102,6 +102,7 @@
     <color name="text_white">#000000</color>
     <color name="text_1">#FFFFFF</color>
     <color name="text_2">#CCFFFFFF</color>
+    <color name="info_text_3">#99FFFFFF</color>
     <color name="text_3">#66FFFFFF</color>
     <color name="text_4">#14FFFFFF</color>
     <color name="text_5">#E6000000</color>
@@ -118,7 +119,10 @@
     <color name="wallet_notification_background">#CC2C2C2C</color>
     <color name="home_page_action_background">#A1000000</color>
 
+    <color name="fill_1">#4076767E</color>
     <color name="fill_3">#3176767E</color>
+    <color name="border_line">#28FFFFFF</color>
+    <color name="background_2">#28282A</color>
 
 </resources>
 

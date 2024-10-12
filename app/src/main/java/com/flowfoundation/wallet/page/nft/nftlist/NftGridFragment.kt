@@ -34,11 +34,7 @@ internal class NftGridFragment : Fragment() {
         binding.root.setBackgroundResource(R.color.background)
         viewModel = ViewModelProvider(requireActivity())[NftViewModel::class.java].apply {
             gridNftLiveData.observe(viewLifecycleOwner) { adapter.setNewDiffData(it) }
-            if (WalletManager.isEVMAccountSelected()) {
-                requestEVMList()
-            } else {
-                requestGrid()
-            }
+            requestGrid()
         }
     }
 

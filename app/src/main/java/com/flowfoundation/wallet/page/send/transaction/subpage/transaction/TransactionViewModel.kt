@@ -96,34 +96,11 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
                         // COA -> Flow
-                        val contractAddress = if (coin.flowIdentifier != null) {
-                            val identifier = coin.flowIdentifier.split(".")
-                            if (identifier.size > 1) {
-                                identifier[1].toAddress()
-                            } else {
-                                ""
-                            }
-                        } else {
-                            ""
-                        }
-                        val contractName = if (coin.flowIdentifier != null) {
-                            val identifier = coin.flowIdentifier.split(".")
-                            if (identifier.size > 2) {
-                                identifier[2]
-                            } else {
-                                ""
-                            }
-                        } else {
-                            ""
-                        }
-                        if (contractAddress.isEmpty() || contractName.isEmpty()) {
-                            return@viewModelIOScope
-                        }
-                        val amount = transaction.amount.toBigDecimal().movePointRight(18)
-                        bridgeTokenToFlow(contractAddress, contractName, amount, toAddress)
+                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
+                        bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
                     } else {
                         // COA -> EOA/COA
-                        val amount = transaction.amount.toBigDecimal().movePointRight(18).toBigInteger()
+                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
                         val function = Function(
                             "transfer",
                             listOf(Address(toAddress), Uint256(amount)), emptyList()
@@ -138,14 +115,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         transferToken(coin)
                     } else {
                         // Flow -> EOA/COA
-                        val amount = transaction.amount.toBigDecimal().movePointRight(18).toBigInteger()
-                        val function = Function(
-                            "transfer",
-                            listOf(Address(toAddress), Uint256(amount)), emptyList()
-                        )
-                        val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
-                        val contractName = coin.contractName()
-                        val txId = cadenceBridgeFTFromFlowToEVM(coin.address.removeAddressPrefix(), contractName, transaction.amount, coin.evmAddress?.removeAddressPrefix() ?: "", data)
+                        val txId = cadenceBridgeFTFromFlowToEVM(coin.getFTIdentifier(), transaction.amount, toAddress)
                         postTransaction(txId)
                     }
                 }
@@ -185,10 +155,9 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
     }
 
     private suspend fun bridgeTokenToFlow(
-        tokenContractAddress: String, tokenContractName:
-        String, amount: BigDecimal, toFlowAddress: String
+        flowIdentifier: String, amount: BigDecimal, toFlowAddress: String
     ) {
-        val txId = cadenceBridgeFTFromEVMToFlow(tokenContractAddress, tokenContractName, amount, toFlowAddress)
+        val txId = cadenceBridgeFTFromEVMToFlow(flowIdentifier, amount, toFlowAddress)
         postTransaction(txId)
     }
 

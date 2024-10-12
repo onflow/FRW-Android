@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletListBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.app.isPreviewnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -128,9 +127,9 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
         iconView.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(wallet.emojiId))
         nameView.text = wallet.emojiName
         evmLabel.setVisible(isEVMAccount)
-        addressView.text = "(${shortenEVMString(wallet.address)})"
+        addressView.text = "(${shortenEVMString(wallet.address.toAddress())})"
 
-        bindWalletBalance(balanceView, wallet.address)
+        bindWalletBalance(balanceView, wallet.address.toAddress())
 
         setOnClickListener {
             WalletSettingActivity.launch(this@WalletListActivity, wallet.address)
@@ -160,7 +159,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.action_add -> {
-                if (isTestnet() || isPreviewnet()) {
+                if (isTestnet()) {
                     SwitchNetworkDialog(this, DialogType.CREATE).show()
                 } else {
                     WalletCreateActivity.launch(this, step = WALLET_CREATE_STEP_USERNAME)

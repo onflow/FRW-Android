@@ -27,8 +27,8 @@ data class CollectionDetailInfo(
     val count: Int,
     @SerializedName("isFlowCollection")
     val isFlowCollection: Boolean,
-    @SerializedName("nftList")
-    val nftList: List<NFTInfo>? = null,
     @SerializedName("identifier")
-    val identifier: String
+    val identifier: String,
+    @SerializedName("nftIdentifier")
+    val nftIdentifier: String
 )

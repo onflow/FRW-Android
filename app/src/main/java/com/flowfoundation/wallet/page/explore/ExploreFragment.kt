@@ -36,7 +36,7 @@ class ExploreFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        checkMeowDomainClaimed()
+//        checkMeowDomainClaimed()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

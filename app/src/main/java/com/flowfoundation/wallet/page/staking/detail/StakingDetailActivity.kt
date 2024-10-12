@@ -8,11 +8,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityStakingDetailBinding
+import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
+import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
 import com.flowfoundation.wallet.page.staking.detail.presenter.StakingDetailPresenter
 import com.flowfoundation.wallet.utils.isNightMode
 
-class StakingDetailActivity : BaseActivity() {
+class StakingDetailActivity : BaseActivity(), StakingInfoUpdateListener {
 
     private lateinit var binding: ActivityStakingDetailBinding
     private lateinit var presenter: StakingDetailPresenter
@@ -26,6 +28,7 @@ class StakingDetailActivity : BaseActivity() {
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
         UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
 
+        StakingManager.addStakingInfoUpdateListener(this)
         presenter = StakingDetailPresenter(binding, provider, this)
         viewModel = ViewModelProvider(this)[StakingDetailViewModel::class.java].apply {
             load(provider)
@@ -48,5 +51,9 @@ class StakingDetailActivity : BaseActivity() {
                 putExtra(EXTRA_PROVIDER, provider)
             })
         }
+    }
+
+    override fun onStakingInfoUpdate() {
+        viewModel.load(provider)
     }
 }

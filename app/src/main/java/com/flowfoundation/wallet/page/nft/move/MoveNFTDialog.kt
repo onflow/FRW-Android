@@ -287,7 +287,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     private suspend fun sendNFTFromChildToChild(childAddress: String, toAddress: String, nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
             val txId = cadenceSendNFTFromChildToChild(
                 childAddress,
@@ -304,7 +304,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     private suspend fun moveNFTFromChildToParent(childAddress: String, nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
         try {
-            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
             val txId = cadenceMoveNFTFromChildToParent(
                 childAddress,
@@ -324,7 +324,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionContractName)
+            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
             val txId = cadenceSendNFTFromParentToChild(
                 toAddress,

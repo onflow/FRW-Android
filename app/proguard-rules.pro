@@ -173,6 +173,11 @@
 -keep class com.zackratos.ultimatebarx.ultimatebarx.** { *; }
 -keep public class * extends androidx.fragment.app.Fragment { *; }
 
+-keep class org.tdf.rlp.** { *; }
+-keep class com.flowfoundation.wallet.widgets.webview.fcl.AccountProof {
+    @org.tdf.rlp.RLP *;
+}
+
 -dontwarn com.google.ar.sceneform.animation.AnimationEngine
 -dontwarn com.google.ar.sceneform.animation.AnimationLibraryLoader
 -dontwarn com.google.ar.sceneform.assets.Loader

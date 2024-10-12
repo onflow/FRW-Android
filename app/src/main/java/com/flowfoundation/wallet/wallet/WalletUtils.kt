@@ -58,4 +58,4 @@ fun createWalletFromServer() {
 
 fun String.toAddress(): String = "0x" + removeAddressPrefix()
 
-fun String.removeAddressPrefix(): String = this.removePrefix("0x").removePrefix("Fx")
+fun String.removeAddressPrefix(): String = this.removePrefix("0x0x").removePrefix("0x").removePrefix("Fx")

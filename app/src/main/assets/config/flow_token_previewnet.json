@@ -10,7 +10,7 @@
   "symbol": "FLOW",
   "name": "Flow",
   "description": "",
-  "decimals": 8,
+  "decimals": 18,
   "logoURI": "https://raw.githubusercontent.com/Outblock/Assets/main/ft/flow/logo.png",
   "tags": [
     "utility-token"

@@ -36,7 +36,7 @@ class ProfilePreferenceSwitch : ProfilePreference {
         this.onCheckedChangeListener = listener
     }
 
-    private fun toggleSwitch() {
+    fun toggleSwitch() {
         switchView.isChecked = !switchView.isChecked
         onCheckedChangeListener?.invoke(switchView.isChecked)
     }

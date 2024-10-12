@@ -7,11 +7,11 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.evm.MAINNET_CHAIN_ID
-import com.flowfoundation.wallet.manager.evm.PREVIEWNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.evm.TESTNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.evm.getNetworkStringByChainId
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
+import com.flowfoundation.wallet.manager.evm.signTypedData
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
@@ -24,7 +24,8 @@ import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDi
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
-import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
+import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.google.gson.Gson
@@ -67,7 +68,7 @@ class EvmInterface(
             DAppMethod.SWITCH_ETHEREUM_CHAIN -> {
                 uiScope {
                     when (val rpcChainId = extractRPCChainId(obj)) {
-                        MAINNET_CHAIN_ID, TESTNET_CHAIN_ID, PREVIEWNET_CHAIN_ID -> {
+                        MAINNET_CHAIN_ID, TESTNET_CHAIN_ID -> {
                             if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager,
                                 FclDialogModel(
                                     title = webView.title,
@@ -116,7 +117,13 @@ class EvmInterface(
             DAppMethod.SIGN_TYPED_MESSAGE -> {
                 val data = extractMessage(obj)
                 val raw = extractRaw(obj)
-//                handleSignTypedMessage(id, data, raw)
+                logd(TAG, "signTypedMessage obj::$obj")
+                logd(TAG, "signTypedMessage data::$data")
+                logd(TAG, "signTypedMessage raw::$raw")
+
+                uiScope {
+                    handleSignTypedMessage(id, data, raw, network)
+                }
             }
             else -> {
                 logd("evm", "methodNotImplement:::$method")
@@ -171,13 +178,32 @@ class EvmInterface(
             logo = webView.url?.toFavIcon(),
             network = network
         )
-        FclSignMessageDialog.show(
+        EVMSignMessageDialog.show(
             activity().supportFragmentManager,
             model
         )
-        FclSignMessageDialog.observe { approve ->
+        EVMSignMessageDialog.observe { approve ->
             if (approve) {
                 webView.sendResult(network, signEthereumMessage(signMessage), id)
+            }
+        }
+    }
+
+    private fun handleSignTypedMessage(id: Long, data: ByteArray, raw: String, network: String) {
+        val model = FclDialogModel(
+            signMessage = raw,
+            url = webView.url,
+            title = webView.title,
+            logo = webView.url?.toFavIcon(),
+            network = network
+        )
+        EVMSignTypedDataDialog.show(
+            activity().supportFragmentManager,
+            model
+        )
+        EVMSignTypedDataDialog.observe { approve ->
+            if (approve) {
+                webView.sendResult(network, signTypedData(data), id)
             }
         }
     }
