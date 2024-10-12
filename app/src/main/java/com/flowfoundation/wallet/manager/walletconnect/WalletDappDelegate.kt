@@ -207,7 +207,8 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                             Account(
                                                 userInfo = service.userInfo().data,
                                                 prefix = prefix,
-                                            )
+                                            ),
+                                            uid
                                         )
                                         clearUserCache()
                                         callback.invoke(true)

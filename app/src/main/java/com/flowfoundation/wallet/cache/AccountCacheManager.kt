@@ -20,7 +20,10 @@ object AccountCacheManager{
         }
 
         try {
-            return Json.decodeFromString(ListSerializer(Account.serializer()), str)
+            val json = Json {
+                ignoreUnknownKeys = true
+            }
+            return json.decodeFromString(ListSerializer(Account.serializer()), str)
         } catch (e: Exception) {
             loge(TAG, e)
         }
@@ -34,10 +37,6 @@ object AccountCacheManager{
     fun cacheSync(data: List<Account>) {
         val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
         str.saveToFile(file)
-    }
-
-    fun clear() {
-        ioScope { file.delete() }
     }
 
     fun isCacheExist(): Boolean = file.exists() && file.length() > 0

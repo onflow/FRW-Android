@@ -9,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.nftco.flow.sdk.HashAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
@@ -64,7 +65,8 @@ suspend fun registerOutblock(
                         Account(
                             userInfo = service.userInfo().data,
                             prefix = prefix
-                        )
+                        ),
+                        firebaseUid()
                     )
                     clearUserCache()
                     continuation.resume(true)

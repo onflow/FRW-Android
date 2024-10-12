@@ -335,6 +335,7 @@
                 <data android:host="wc"/>
                 <data android:host="link.lilico.app"/>
                 <data android:host="frw-link.lilico.app"/>
+                <data android:host="fcw-link.lilico.app"/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
