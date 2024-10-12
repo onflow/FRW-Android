@@ -49,7 +49,7 @@ private fun authn(address: String, keyId: Int): String {
     return """
 {
     "f_type": "Service",
-    "uid": "flow-wallet#authn",
+    "uid": "https://frw-link.lilico.app/wc",
     "provider": {
         "f_type": "ServiceProvider",
         "f_vsn": "1.0.0",
@@ -75,7 +75,7 @@ private fun authz(address: String, keyId: Int): String {
 {
     "f_type": "Service",
     "method": "WC/RPC",
-    "uid": "flow-wallet#authz",
+    "uid": "https://frw-link.lilico.app/wc",
     "f_vsn": "1.0.0",
     "endpoint": "flow_authz",
     "type": "authz",
@@ -89,7 +89,7 @@ private fun userSign(address: String, keyId: Int): String {
 {
     "f_type": "Service",
     "method": "WC/RPC",
-    "uid": "flow-wallet#user-signature",
+    "uid": "https://frw-link.lilico.app/wc",
     "f_vsn": "1.0.0",
     "endpoint": "flow_user_sign",
     "type": "user-signature",
@@ -104,7 +104,7 @@ private fun preAuthz(): String {
     "f_type": "Service",
     "f_vsn": "1.0.0",
     "type": "pre-authz",
-    "uid": "frw#pre-authz",
+    "uid": "https://frw-link.lilico.app/wc",
     "endpoint": "flow_pre_authz",
     "method": "WC/RPC",
     "data": {
@@ -125,7 +125,7 @@ private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentif
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "account-proof",
-        "uid": "frw#account-proof",
+        "uid": "https://frw-link.lilico.app/wc",
         "endpoint": "${WalletConnectMethod.ACCOUNT_PROOF.value}",
         "method": "WC/RPC",
         "data": {
@@ -153,7 +153,7 @@ private fun signMessage(): String {
         "f_type": "Service",
         "f_vsn": "1.0.0",
         "type": "user-signature",
-        "uid": "frw#user-signature",
+        "uid": "https://frw-link.lilico.app/wc",
         "endpoint": "${WalletConnectMethod.USER_SIGNATURE.value}",
         "method": "WC/RPC"
     }
