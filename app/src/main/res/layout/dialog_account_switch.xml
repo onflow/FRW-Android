@@ -39,8 +39,11 @@
         android:scrollbars="vertical"
         android:paddingBottom="20dp"
         android:clipToPadding="false"
+        app:layout_constrainedWidth="true"
         app:layout_constraintTop_toBottomOf="@id/title_view"
-        app:layout_constraintBottom_toTopOf="@id/tv_new_account"/>
+        app:layout_constraintBottom_toTopOf="@id/tv_new_account"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
     
     <TextView
         android:id="@+id/tv_view_more"

@@ -16,12 +16,15 @@ import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 
 class WalletUnregisteredFragment : Fragment() {
 
     private lateinit var binding: FragmentWalletUnregisteredBinding
+    private val adapter by lazy { WalletAccountAdapter() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,24 +36,12 @@ class WalletUnregisteredFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val layoutParams = binding.ifvLogo.layoutParams as ConstraintLayout.LayoutParams
         with(binding) {
-            val layoutParams = ifvLogo.layoutParams as ConstraintLayout.LayoutParams
-            if (AccountManager.list().isNotEmpty()) {
-                clAccountLayout.visible()
-                ifvLogo.layoutParams = layoutParams.apply {
-                    width = 92.dp2px().toInt()
-                    height = 92.dp2px().toInt()
-                }
-                rvAccountList.layoutManager = LinearLayoutManager(context)
-                rvAccountList.adapter = WalletAccountAdapter().apply {
-                    setNewDiffData(AccountManager.list())
-                }
-            } else {
-                clAccountLayout.gone()
-                ifvLogo.layoutParams = layoutParams.apply {
-                    width = 130.dp2px().toInt()
-                    height = 130.dp2px().toInt()
-                }
+            clAccountLayout.gone()
+            ifvLogo.layoutParams = layoutParams.apply {
+                width = 130.dp2px().toInt()
+                height = 130.dp2px().toInt()
             }
             createButton.setOnClickListener {
                 if (isTestnet()) {
@@ -60,6 +51,24 @@ class WalletUnregisteredFragment : Fragment() {
                 }
             }
             importButton.setOnClickListener { WalletRestoreActivity.launch(requireContext()) }
+        }
+
+        ioScope {
+            val list = AccountManager.getSwitchAccountList()
+            if (list.isNotEmpty()) {
+                uiScope {
+                    with(binding) {
+                        clAccountLayout.visible()
+                        ifvLogo.layoutParams = layoutParams.apply {
+                            width = 92.dp2px().toInt()
+                            height = 92.dp2px().toInt()
+                        }
+                        rvAccountList.layoutManager = LinearLayoutManager(context)
+                        rvAccountList.adapter = adapter
+                    }
+                    adapter.setNewDiffData(list)
+                }
+            }
         }
     }
 }

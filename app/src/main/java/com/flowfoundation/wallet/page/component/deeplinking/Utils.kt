@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.utils.logd
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 private const val TAG = "DeepLinkingDispatch"
 
@@ -40,10 +41,17 @@ fun getWalletConnectUri(uri: Uri): String? {
         val uriString = uri.toString()
 
         val uriParamStart = uriString.indexOf("uri=")
-        if (uriParamStart != -1) {
+        val wcUriEncoded = if (uriParamStart != -1) {
             uriString.substring(uriParamStart + 4)
         } else {
             uri.getQueryParameter("uri")
+        }
+        wcUriEncoded?.let {
+            if (it.contains("%")) {
+                URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+            } else {
+                it
+            }
         }
     }.getOrNull()
 }

@@ -10,7 +10,7 @@ import java.io.File
 object UserPrefixCacheManager{
 
     private val TAG = UserPrefixCacheManager::class.java.simpleName
-    private val file by lazy { File(ACCOUNT_PATH, "${"user_prefix".hashCode()}") }
+    private val file by lazy { File(USER_PREFIX_PATH, "${"user_prefix".hashCode()}") }
 
     @WorkerThread
     fun read(): List<UserPrefix>? {

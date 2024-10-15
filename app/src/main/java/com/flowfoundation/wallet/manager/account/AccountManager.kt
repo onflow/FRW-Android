@@ -6,10 +6,12 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.UserPrefixCacheManager
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
+import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
@@ -66,10 +68,12 @@ object AccountManager {
         retrofitWithHost("https://production.key-indexer.flow.com").create(OtherHostService::class.java)
     }
     private val userPrefixes = mutableListOf<UserPrefix>()
+    private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
     fun init() {
         accounts.clear()
         userPrefixes.clear()
+        switchAccounts.clear()
         ioScope {
             migratePrefixInfo(migrateAccount())?.let {
                 accounts.addAll(it)
@@ -110,19 +114,15 @@ object AccountManager {
 
     private suspend fun migratePrefixInfo(accountList: List<Account>?): List<Account>? {
         userPrefixes.addAll(UserPrefixCacheManager.read() ?: emptyList())
-        if(accountList == null) return null
-        var addressPrefixMap: Map<String, String>? = null
-        accountList.forEach { account ->
+        val addressPrefixMap = getAddressPrefixMap()
+        accountList?.forEach { account ->
             val userId = account.wallet?.id
             val userPrefixInfo = userPrefixes.find { it.userId == userId }
             if (userPrefixInfo != null) {
                 account.prefix = userPrefixInfo.prefix
             } else {
-                if (addressPrefixMap == null) {
-                    addressPrefixMap = getAddressPrefixMap()
-                }
                 val address = account.wallet?.mainnetWallet()?.address()
-                val prefix = addressPrefixMap?.get(address)
+                val prefix = addressPrefixMap[address]
                 if (!prefix.isNullOrEmpty()) {
                     account.prefix = prefix
                     if (!userId.isNullOrEmpty()) {
@@ -132,7 +132,55 @@ object AccountManager {
                 }
             }
         }
+        getLocalPrefix(accountList, addressPrefixMap)
+        getLocalStoredKey(accountList)
         return accountList
+    }
+
+    fun getSwitchAccountList(): List<Any> {
+        val list = mutableListOf<Any>()
+        list.addAll(accounts)
+        list.addAll(switchAccounts)
+        return list
+    }
+
+    private suspend fun getLocalStoredKey(accountList: List<Account>?): List<LocalSwitchAccount> = withContext(Dispatchers.IO) {
+        val list = mutableListOf<LocalSwitchAccount>()
+        val uidPublicKeyMap = AccountWalletManager.getUIDPublicKeyMap()
+        val jobs = uidPublicKeyMap.map { (uid, publicKey) ->
+            async {
+                val response = queryService.queryAddress(publicKey)
+                response.accounts.firstOrNull()?.let { account ->
+                    if (switchAccounts.any { it.address == account.address }) {
+                        return@let
+                    }
+                    if (accountList != null && accountList.any { it.wallet?.mainnetWallet()?.address() == account.address }) {
+                        return@let
+                    }
+                    var count = switchAccounts.size
+                    switchAccounts.add(LocalSwitchAccount(
+                        username = "Profile ${++count}",
+                        address = account.address,
+                        userId = uid
+                    ))
+                }
+            }
+        }
+        jobs.awaitAll()
+        return@withContext list
+    }
+
+    private fun getLocalPrefix(accountList: List<Account>?, addressPrefixMap: Map<String, String>){
+        val prefixesToRemove = accountList?.mapNotNull { it.prefix }.orEmpty()
+        val localPrefixMap = addressPrefixMap.filter { (_, prefix) ->  prefix !in prefixesToRemove}
+        var count = switchAccounts.size
+        switchAccounts.addAll(localPrefixMap.map { (address, prefix) ->
+            LocalSwitchAccount(
+                username = "Profile ${++count}",
+                address = address,
+                prefix = prefix
+            )
+        })
     }
 
     private suspend fun getAddressPrefixMap(): Map<String, String> = withContext(Dispatchers.IO) {
@@ -312,6 +360,80 @@ object AccountManager {
         }
     }
 
+    fun switch(switchAccount: LocalSwitchAccount, onFinish: () -> Unit) {
+        ioScope {
+            if (isSwitching) {
+                return@ioScope
+            }
+            isSwitching = true
+            switchAccount(switchAccount) { isSuccess ->
+                if (isSuccess) {
+                    isSwitching = false
+                    switchAccounts.remove(switchAccount)
+                    uiScope {
+                        clearUserCache()
+                        MainActivity.relaunch(Env.getApp(), true)
+                    }
+                } else {
+                    isSwitching = false
+                    toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
+                }
+                onFinish()
+            }
+
+        }
+    }
+
+    private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
+        if (!setToAnonymous()) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+            callback.invoke(false)
+            return
+        }
+        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+        val service = retrofit().create(ApiService::class.java)
+        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
+        if (cryptoProvider == null) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+            callback.invoke(false)
+            return
+        }
+        val resp = service.login(
+            LoginRequest(
+                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+                accountKey = AccountKey(
+                    publicKey = cryptoProvider.getPublicKey(),
+                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                ),
+                deviceInfo = deviceInfoRequest
+            )
+        )
+        if (resp.data?.customToken.isNullOrBlank()) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+            callback.invoke(false)
+        } else {
+            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                if (isSuccess) {
+                    setRegistered()
+                    if (switchAccount.prefix == null) {
+                        Wallet.store().resume()
+                    } else {
+                        firebaseUid()?.let { userId ->
+                            userPrefixes.removeAll { it.userId == userId}
+                            userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
+                            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                        }
+                    }
+                    callback.invoke(true)
+                } else {
+                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                    callback.invoke(false)
+                }
+            }
+        }
+    }
+
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
         if (!setToAnonymous()) {
             loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
@@ -320,7 +442,7 @@ object AccountManager {
         }
         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
         val service = retrofit().create(ApiService::class.java)
-        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account, true)
+        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(account)
         if (cryptoProvider == null) {
             loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
             callback.invoke(false)

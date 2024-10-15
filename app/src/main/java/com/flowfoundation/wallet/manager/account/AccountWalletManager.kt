@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.account
 
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.hexToBytes
@@ -8,6 +9,7 @@ import com.flowfoundation.wallet.utils.getWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.saveWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
+import com.flowfoundation.wallet.wallet.getPublicKey
 import wallet.core.jni.HDWallet
 import wallet.core.jni.StoredKey
 import java.io.File
@@ -33,6 +35,17 @@ object AccountWalletManager {
             return null
         }
         return WalletStoreWithUid(uid, password).wallet()
+    }
+
+    fun getUIDPublicKeyMap(): Map<String, String> {
+        return passwordMap().mapNotNull { (uid, _) ->
+            val wallet = getHDWalletByUID(uid)
+            if (wallet != null) {
+                uid to HDWalletCryptoProvider(wallet).getPublicKey()
+            } else {
+                null
+            }
+        }.toMap()
     }
 }
 
