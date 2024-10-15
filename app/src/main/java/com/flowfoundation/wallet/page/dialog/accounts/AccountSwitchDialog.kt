@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.dialog.accounts
 
+import android.app.Dialog
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
@@ -19,6 +20,8 @@ import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import com.google.android.material.R
@@ -87,9 +90,14 @@ class AccountSwitchDialog : BottomSheetDialogFragment() {
             })
         }
 
-        adapter.setNewDiffData(AccountManager.list())
-        showViewMore(true)
-        initDialogHeight()
+        ioScope {
+            val list = AccountManager.getSwitchAccountList()
+            uiScope {
+                adapter.setNewDiffData(list)
+                initDialogHeight()
+                showViewMore(true)
+            }
+        }
     }
 
     private fun initDialogHeight() {
