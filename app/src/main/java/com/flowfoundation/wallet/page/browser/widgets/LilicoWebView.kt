@@ -20,8 +20,13 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.widgets.webview.*
+import com.flowfoundation.wallet.widgets.webview.JS_FCL_EXTENSIONS
+import com.flowfoundation.wallet.widgets.webview.JS_LISTEN_FLOW_WALLET_TRANSACTION
+import com.flowfoundation.wallet.widgets.webview.JS_LISTEN_WINDOW_FCL_MESSAGE
+import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
+import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
+import com.flowfoundation.wallet.widgets.webview.executeJs
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -39,6 +44,7 @@ class LilicoWebView : WebView {
             webViewClient = WebViewClient()
             webChromeClient = WebChromeClient()
             domStorageEnabled = true
+            javaScriptCanOpenWindowsAutomatically = true
         }
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
@@ -127,6 +133,8 @@ class LilicoWebView : WebView {
                     safeRun {
                         WalletConnect.get().pair(getWalletConnectUri(it).toString())
                     }
+                    return true
+                } else if (it.toString() == "about:blank#blocked") {
                     return true
                 }
             }

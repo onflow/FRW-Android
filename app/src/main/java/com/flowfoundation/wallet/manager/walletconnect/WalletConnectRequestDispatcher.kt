@@ -274,24 +274,41 @@ private suspend fun WCRequest.respondAuthz() {
 private fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
+    val keyId = FlowAddress(walletAddress).currentKeyId(cryptoProvider.getPublicKey())
+
     val response = PollingResponse(
         status = ResponseStatus.APPROVED,
         data = PollingData(
+            fType = "PreAuthzResponse",
+            fVsn = "1.0.0",
             proposer = Service(
-                identity = Identity(address = walletAddress, keyId = 0),
+                fType = "Service",
+                fVsn = "1.0.0",
+                type = "authz",
+                uid =  "https://frw-link.lilico.app/wc",
+                identity = Identity(address = walletAddress, keyId = keyId),
                 method = "WC/RPC",
                 endpoint = WalletConnectMethod.AUTHZ.value,
             ),
             payer = listOf(
                 Service(
-                    identity = Identity(address = payerAddress, keyId = 0),
+                    fType = "Service",
+                    fVsn = "1.0.0",
+                    type = "authz",
+                    uid =  "https://frw-link.lilico.app/wc",
+                    identity = Identity(address = payerAddress, keyId = AppConfig.payer().keyId),
                     method = "WC/RPC",
                     endpoint = WalletConnectMethod.SIGN_PAYER.value,
                 )
             ),
             authorization = listOf(
                 Service(
-                    identity = Identity(address = walletAddress, keyId = 0),
+                    fType = "Service",
+                    fVsn = "1.0.0",
+                    type = "authz",
+                    uid =  "https://frw-link.lilico.app/wc",
+                    identity = Identity(address = walletAddress, keyId = keyId),
                     method = "WC/RPC",
                     endpoint = WalletConnectMethod.SIGN_PROPOSER.value,
                 )
@@ -347,6 +364,8 @@ private suspend fun WCRequest.respondSignPayer() {
         val response = PollingResponse(
             status = ResponseStatus.APPROVED,
             data = PollingData(
+                fType = "CompositeSignature",
+                fVsn = "1.0.0",
                 address = sigs.address,
                 keyId = sigs.keyId,
                 signature = sigs.sig,
@@ -365,6 +384,7 @@ private suspend fun WCRequest.respondSignProposer() {
     val signable = params.toSignables(gson())
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
+    val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
 
     val data = FclDialogModel(
         title = metaData?.name,
@@ -388,8 +408,10 @@ private suspend fun WCRequest.respondSignProposer() {
             val response = PollingResponse(
                 status = ResponseStatus.APPROVED,
                 data = PollingData(
+                    fType = "CompositeSignature",
+                    fVsn = "1.0.0",
                     address = address,
-                    keyId = 0,
+                    keyId = keyId,
                     signature = cryptoProvider.signData(signable?.message!!.hexToBytes())
                 )
             )
