@@ -21,8 +21,22 @@ enum class WalletConnectMethod(val value: String) {
     companion object {
 
         @JvmStatic
-        fun getSupportedMethod(): Set<String> {
+        fun getAllMethod(): Set<String> {
             return entries.map { it.value }.toSet()
         }
+
+        @JvmStatic
+        fun getSupportedFlowMethod(): List<String> {
+            return listOf(AUTHN.value, AUTHZ.value, PRE_AUTHZ.value, SIGN_PAYER.value,
+                SIGN_PROPOSER.value, USER_SIGNATURE.value, ACCOUNT_PROOF.value)
+        }
+
+        @JvmStatic
+        fun getSupportedEVMMethod(): List<String> {
+            return listOf(EVM_SIGN_MESSAGE.value, EVM_SEND_TRANSACTION.value, EVM_SIGN_TYPED_DATA.value,
+                EVM_SIGN_TYPED_DATA_V3.value,
+                EVM_SIGN_TYPED_DATA_V4.value)
+        }
+
     }
 }
