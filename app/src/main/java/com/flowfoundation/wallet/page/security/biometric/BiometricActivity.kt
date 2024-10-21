@@ -20,8 +20,10 @@ class BiometricActivity : BaseActivity() {
         setContentView(View(this))
         UltimateBarX.with(this).color(Color.TRANSPARENT).fitWindow(false).light(false).applyStatusBar()
 
-        biometricPrompt = BlockBiometricManager.showBiometricPrompt(this) {
-            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION).apply { putExtra(EXTRA_RESULT, it) })
+        biometricPrompt = BlockBiometricManager.showBiometricPrompt(this) { isSuccess, _ ->
+            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION).apply {
+                putExtra(EXTRA_RESULT, isSuccess)
+            })
             finish()
         }
     }

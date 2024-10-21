@@ -64,13 +64,13 @@ class SecuritySettingActivity : BaseActivity() {
             biometricsPreference.setChecked(false)
             setBiometricEnable(false)
         } else {
-            BlockBiometricManager.showBiometricPrompt(this@SecuritySettingActivity) { isSuccess ->
+            BlockBiometricManager.showBiometricPrompt(this@SecuritySettingActivity) { isSuccess, errorMsg ->
                 uiScope { biometricsPreference.setChecked(isSuccess) }
                 if (isSuccess) {
                     setBiometricEnable(true)
                 } else {
                     setBiometricEnable(false)
-                    Toast.makeText(this@SecuritySettingActivity, "Auth error", Toast.LENGTH_SHORT).show()
+                    toast(msg = errorMsg)
                 }
             }
         }
