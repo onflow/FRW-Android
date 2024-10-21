@@ -35,179 +35,50 @@
         app:layout_constraintTop_toTopOf="@id/title_view"
         app:layout_constraintBottom_toBottomOf="@id/title_view"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_from_layout"
-        android:layout_width="match_parent"
-        android:layout_height="74dp"
+    <com.flowfoundation.wallet.page.nft.move.widget.AccountInfoItem
+        android:id="@+id/layout_from_account"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:padding="17dp"
-        android:layout_marginHorizontal="18dp"
-        android:background="@drawable/bg_round_16dp"
-        android:backgroundTint="@color/bg"
-        app:layout_constraintTop_toBottomOf="@id/title_view">
+        android:layout_marginStart="18dp"
+        app:layout_background_color="@color/bg"
+        app:layout_constraintEnd_toStartOf="@id/space"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_view"/>
 
-        <TextView
-            android:id="@+id/tv_from_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_round_24dp"
-            android:backgroundTint="@color/emoji_peach"
-            android:gravity="center"
-            android:text="🍑"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+    <androidx.legacy.widget.Space
+        android:id="@+id/space"
+        android:layout_width="19dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/layout_from_account"
+        app:layout_constraintEnd_toStartOf="@id/layout_to_account"
+        app:layout_constraintStart_toEndOf="@id/layout_from_account"
+        app:layout_constraintTop_toTopOf="@id/layout_from_account"/>
 
-        <TextView
-            android:id="@+id/tv_from_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="11dp"
-            android:fontFamily="@font/inter_semi_bold"
-            android:textSize="14sp"
-            android:textColor="@color/text"
-            android:lines="1"
-            android:ellipsize="end"
-            app:layout_constrainedWidth="true"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintTop_toTopOf="@id/tv_from_avatar"
-            app:layout_constraintEnd_toStartOf="@id/tv_from_evm_label"
-            app:layout_constraintStart_toEndOf="@id/tv_from_avatar"
-            app:layout_constraintBottom_toTopOf="@id/tv_from_address"
-            tools:text="Cadence"/>
+    <com.flowfoundation.wallet.page.nft.move.widget.AccountInfoItem
+        android:id="@+id/layout_to_account"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="18dp"
+        app:layout_background_color="@color/bg"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintStart_toEndOf="@id/space"
+        app:layout_constraintTop_toTopOf="@id/layout_from_account"/>
 
-        <TextView
-            android:id="@+id/tv_from_evm_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="@string/label_evm"
-            android:fontFamily="@font/inter"
-            android:textSize="9sp"
-            android:paddingHorizontal="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="2dp"
-            android:visibility="gone"
-            android:background="@drawable/bg_round_corner"
-            android:backgroundTint="@color/accent_purple"
-            app:layout_constraintTop_toTopOf="@id/tv_from_name"
-            app:layout_constraintBottom_toBottomOf="@id/tv_from_name"
-            app:layout_constraintStart_toEndOf="@id/tv_from_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-        <TextView
-            android:id="@+id/tv_from_address"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="11dp"
-            android:layout_marginTop="4dp"
-            android:fontFamily="@font/inter"
-            android:lines="1"
-            android:ellipsize="middle"
-            android:textSize="12sp"
-            android:textColor="@color/text_3"
-            app:layout_constraintTop_toBottomOf="@id/tv_from_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tv_from_avatar"
-            app:layout_constraintBottom_toBottomOf="@id/tv_from_avatar"
-            tools:text="0xa192fa1205a54f76"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_to_layout"
-        android:layout_width="match_parent"
-        android:layout_height="74dp"
-        android:layout_marginTop="8dp"
-        android:padding="17dp"
-        android:background="@drawable/bg_round_16dp"
-        android:backgroundTint="@color/bg"
-        android:layout_marginHorizontal="18dp"
-        app:layout_constraintTop_toBottomOf="@id/cl_from_layout">
-
-        <TextView
-            android:id="@+id/tv_to_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_round_24dp"
-            android:backgroundTint="@color/emoji_peach"
-            android:gravity="center"
-            android:text="🍑"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <TextView
-            android:id="@+id/tv_to_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="11dp"
-            android:fontFamily="@font/inter_semi_bold"
-            android:textSize="14sp"
-            android:textColor="@color/text"
-            android:lines="1"
-            android:ellipsize="end"
-            app:layout_constrainedWidth="true"
-            app:layout_constraintHorizontal_bias="0"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintTop_toTopOf="@id/tv_to_avatar"
-            app:layout_constraintEnd_toStartOf="@id/tv_to_evm_label"
-            app:layout_constraintStart_toEndOf="@id/tv_to_avatar"
-            app:layout_constraintBottom_toTopOf="@id/tv_to_address"
-            tools:text="Flow EVM"/>
-
-        <TextView
-            android:id="@+id/tv_to_evm_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="@string/label_evm"
-            android:fontFamily="@font/inter"
-            android:textSize="9sp"
-            android:paddingHorizontal="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="2dp"
-            android:visibility="gone"
-            android:background="@drawable/bg_round_corner"
-            android:backgroundTint="@color/accent_purple"
-            app:layout_constraintTop_toTopOf="@id/tv_to_name"
-            app:layout_constraintBottom_toBottomOf="@id/tv_to_name"
-            app:layout_constraintStart_toEndOf="@id/tv_to_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            />
-
-        <TextView
-            android:id="@+id/tv_to_address"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="11dp"
-            android:layout_marginTop="4dp"
-            android:fontFamily="@font/inter"
-            android:lines="1"
-            android:ellipsize="middle"
-            android:textSize="12sp"
-            android:textColor="@color/text_3"
-            app:layout_constraintTop_toBottomOf="@id/tv_to_name"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tv_to_avatar"
-            app:layout_constraintBottom_toBottomOf="@id/tv_to_avatar"
-            tools:text="0xa192fa1205a54f76"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <ImageView
-        android:id="@+id/iv_switch"
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/iv_arrow"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:src="@drawable/ic_swap_switch"
-        app:layout_constraintTop_toBottomOf="@id/cl_from_layout"
-        app:layout_constraintBottom_toTopOf="@id/cl_to_layout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:background="@drawable/bg_round_24dp"
+        android:backgroundTint="@color/bg_2"
+        android:padding="6dp"
+        android:src="@drawable/ic_circle_arrow_right_2"
+        app:layout_constraintBottom_toBottomOf="@id/layout_from_account"
+        app:layout_constraintEnd_toStartOf="@id/layout_to_account"
+        app:layout_constraintStart_toEndOf="@id/layout_from_account"
+        app:layout_constraintTop_toTopOf="@id/layout_from_account"/>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_error_layout"
@@ -249,7 +120,7 @@
         android:backgroundTint="@color/bg"
         android:layout_marginHorizontal="18dp"
         android:paddingHorizontal="20dp"
-        app:layout_constraintTop_toBottomOf="@id/cl_to_layout">
+        app:layout_constraintTop_toBottomOf="@id/layout_from_account">
 
         <EditText
             android:id="@+id/et_amount"
@@ -333,12 +204,66 @@
             android:textSize="16sp"
             android:textColor="@color/neutrals4"
             android:layout_marginTop="15dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="12dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tv_max"
             app:layout_constraintTop_toBottomOf="@id/et_amount"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/cl_move_fee"
             tools:text="Balance $ 1212"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_move_fee"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_balance"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/inter"
+                android:textSize="12sp"
+                android:textColor="@color/text_2"
+                android:text="@string/move_fee"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_move_fee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:fontFamily="@font/inter"
+                android:textSize="12sp"
+                android:textColor="@color/text_2"
+                android:layout_marginTop="12dp"
+                tools:text="0.001FLOW"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_move_fee_tips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/inter"
+                android:layout_marginBottom="16dp"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:textColor="@color/text_3"
+                tools:text="@string/move_fee_tips"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_move_fee"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/border_line"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

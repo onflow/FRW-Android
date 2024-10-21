@@ -238,6 +238,7 @@
     <string name="file_picker_title">Select File</string>
     <string name="transaction_fee">Transaction fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
+    <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
     <string name="transaction_history">Transaction history</string>
@@ -672,5 +673,9 @@ uses to turn your device into a hardware wallet.</string>
     <string name="current_account">Current Account</string>
     <string name="other_accounts">Other Accounts</string>
     <string name="local_account_keys">Local Account Keys</string>
+    <string name="reload_config">Reload Config</string>
+    <string name="move_fee">Move Fee</string>
+    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
 
 </resources>

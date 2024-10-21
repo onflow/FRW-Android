@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.nft.move
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +12,6 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveNftBinding
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTFromChildToParent
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
@@ -20,16 +20,13 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
-import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.extensions.dp2px
-import com.flowfoundation.wallet.utils.extensions.gone
-import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -48,6 +45,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     private val isChildAccountSelected by lazy {
         WalletManager.isChildAccount(fromAddress)
     }
+    private var needMoveFee = false
     private lateinit var binding: DialogMoveNftBinding
     private var nft: Nft? = null
 
@@ -72,19 +70,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 dismissAllowingStateLoss()
             }
 
+            layoutFromAccount.setAccountInfo(fromAddress)
             if (isChildAccountSelected) {
-                val childAccount = WalletManager.childAccount(fromAddress) ?: return@with
-                viewFromAvatar.setAvatarInfo(iconUrl = childAccount.icon)
-                tvFromName.text = childAccount.name
-                tvFromAddress.text = childAccount.address
-                tvFromEvmLabel.gone()
-
                 val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
-                val parentWalletEmoji = AccountEmojiManager.getEmojiByAddress(parentAddress)
-                viewToAvatar.setAvatarInfo(emojiInfo = parentWalletEmoji)
-                tvToName.text = parentWalletEmoji.emojiName
-                tvToAddress.text = parentAddress
-                tvToEvmLabel.gone()
+                layoutToAccount.setAccountInfo(parentAddress)
 
                 nft?.let {
                     val addressList =
@@ -99,51 +88,34 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                     }
                     configureToLayoutAction(addressList)
                 }
+                needMoveFee = false
             } else if (isEVMAccountSelected) {
-                val evmAddress = fromAddress
-                val evmEmoji = AccountEmojiManager.getEmojiByAddress(evmAddress)
-                viewFromAvatar.setAvatarInfo(emojiInfo = evmEmoji)
-                tvFromName.text = evmEmoji.emojiName
-                tvFromAddress.text = evmAddress
-                tvFromEvmLabel.visible()
-
-                val walletAddress = WalletManager.wallet()?.walletAddress()
-                val walletEmoji = AccountEmojiManager.getEmojiByAddress(walletAddress)
-                viewToAvatar.setAvatarInfo(emojiInfo = walletEmoji)
-                tvToName.text = walletEmoji.emojiName
-                tvToAddress.text = walletAddress ?: ""
-                tvToEvmLabel.gone()
+                val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+                layoutToAccount.setAccountInfo(walletAddress)
                 configureToLayoutAction(emptyList())
+                needMoveFee = true
             } else {
                 val walletAddress = WalletManager.wallet()?.walletAddress()
-                val walletEmoji = AccountEmojiManager.getEmojiByAddress(walletAddress)
-                viewFromAvatar.setAvatarInfo(emojiInfo = walletEmoji)
-                tvFromName.text = walletEmoji.emojiName
-                tvFromAddress.text = walletAddress ?: ""
-                tvFromEvmLabel.gone()
                 nft?.let {
                     val addressList = WalletManager.childAccountList(walletAddress)?.get()?.map { child ->
                         child.address
                     }?.toMutableList() ?: mutableListOf()
 
                     if (it.canBridgeToEVM()) {
-                        val evmAddress = EVMWalletManager.getEVMAddress()
-                        val evmEmoji = AccountEmojiManager.getEmojiByAddress(evmAddress)
-                        viewToAvatar.setAvatarInfo(emojiInfo = evmEmoji)
-                        tvToName.text = evmEmoji.emojiName
-                        tvToAddress.text = evmAddress
-                        tvToEvmLabel.visible()
-                        addressList.add(0, evmAddress ?: "")
+                        val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                        addressList.add(0, evmAddress)
+                        needMoveFee = true
+                        layoutToAccount.setAccountInfo(evmAddress)
+
                     } else {
                         val childAccount = WalletManager.childAccount(addressList[0]) ?: return@with
-                        viewToAvatar.setAvatarInfo(iconUrl = childAccount.icon)
-                        tvToName.text = childAccount.name
-                        tvToAddress.text = childAccount.address
-                        tvToEvmLabel.gone()
+                        needMoveFee = false
+                        layoutToAccount.setAccountInfo(childAccount.address)
                     }
                     configureToLayoutAction(addressList)
                 }
             }
+            configureMoveFeeLayout()
             Glide.with(ivNftImage).load(nft?.getNFTCover())
                 .transform(RoundedCorners(16.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(ivNftImage)
@@ -166,11 +138,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     private fun configureToLayoutAction(addressList: List<String>) {
         with(binding) {
             if (addressList.size > 1) {
-                ivArrowDown.visible()
-                clToLayout.setOnClickListener {
+                layoutToAccount.setSelectMoreAccount(true)
+                layoutToAccount.setOnClickListener {
                     uiScope {
                         SelectAccountDialog().show(
-                            tvToAddress.text.toString(),
+                            layoutToAccount.getAccountAddress(),
                             addressList,
                             childFragmentManager
                         )?.let { address ->
@@ -179,26 +151,28 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                     }
                 }
             } else {
-                ivArrowDown.gone()
+                layoutToAccount.setSelectMoreAccount(false)
             }
         }
     }
 
     private fun configureToLayout(address: String) {
         with(binding) {
-            tvToAddress.text = address
+            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) || EVMWalletManager.isEVMWalletAddress(address)
+            layoutToAccount.setAccountInfo(address)
+            configureMoveFeeLayout()
+        }
+    }
 
-            if (WalletManager.childAccount(address) != null) {
-                val childAccount = WalletManager.childAccount(address)!!
-                viewToAvatar.setAvatarInfo(iconUrl = childAccount.icon)
-                tvToName.text = childAccount.name
-                tvToEvmLabel.gone()
+    @SuppressLint("SetTextI18n")
+    private fun configureMoveFeeLayout() {
+        with(binding) {
+            tvMoveFee.text = if (needMoveFee) {
+                "0.001"
             } else {
-                val emoji = AccountEmojiManager.getEmojiByAddress(address)
-                viewToAvatar.setAvatarInfo(emojiInfo = emoji)
-                tvToName.text = emoji.emojiName
-                tvToEvmLabel.setVisible(EVMWalletManager.isEVMWalletAddress(address))
-            }
+                "0.00"
+            } + "FLOW"
+            tvMoveFeeTips.text = (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
         }
     }
 
@@ -209,7 +183,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             }
             binding.btnMove.setProgressVisible(true)
             ioScope {
-                val toAddress = binding.tvToAddress.text.toString()
+                val toAddress = binding.layoutToAccount.getAccountAddress()
                 if (isChildAccountSelected) {
                     if (toAddress == WalletManager.wallet()?.walletAddress()) {
                         moveNFTFromChildToParent(fromAddress, it) { isSuccess ->

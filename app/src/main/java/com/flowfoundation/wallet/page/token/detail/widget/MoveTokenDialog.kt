@@ -29,6 +29,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.extensions.visible
@@ -99,7 +100,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
 
         with(binding) {
-            ivSwitch.setOnClickListener {
+            ivArrow.setOnClickListener {
                 isFundToEVM = isFundToEVM.not()
                 initView()
             }
@@ -176,34 +177,14 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     private fun initView() {
         with(binding) {
-            val walletAddress = WalletManager.wallet()?.walletAddress()
-            val evmAddress = EVMWalletManager.getEVMAddress()
-            val walletEmoji = AccountEmojiManager.getEmojiByAddress(walletAddress)
-            val evmEmoji = AccountEmojiManager.getEmojiByAddress(evmAddress)
+            val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+            val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
             if (isFundToEVM) {
-                tvFromAvatar.text = Emoji.getEmojiById(walletEmoji.emojiId)
-                tvFromAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(walletEmoji.emojiId))
-                tvFromName.text = walletEmoji.emojiName
-                tvFromAddress.text = walletAddress ?: ""
-                tvFromEvmLabel.gone()
-
-                tvToAvatar.text = Emoji.getEmojiById(evmEmoji.emojiId)
-                tvToAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(evmEmoji.emojiId))
-                tvToName.text = evmEmoji.emojiName
-                tvToAddress.text = evmAddress
-                tvToEvmLabel.visible()
+                layoutFromAccount.setAccountInfo(walletAddress)
+                layoutToAccount.setAccountInfo(evmAddress)
             } else {
-                tvFromAvatar.text = Emoji.getEmojiById(evmEmoji.emojiId)
-                tvFromAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(evmEmoji.emojiId))
-                tvFromEvmLabel.visible()
-                tvFromName.text = evmEmoji.emojiName
-                tvFromAddress.text = evmAddress
-
-                tvToAvatar.text = Emoji.getEmojiById(walletEmoji.emojiId)
-                tvToAvatar.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(walletEmoji.emojiId))
-                tvToName.text = walletEmoji.emojiName
-                tvToAddress.text = walletAddress ?: ""
-                tvToEvmLabel.gone()
+                layoutFromAccount.setAccountInfo(evmAddress)
+                layoutToAccount.setAccountInfo(walletAddress)
             }
             FlowCoinListManager.getCoin(symbol)?.let {
                 Glide.with(ivTokenIcon).load(it.icon()).into(ivTokenIcon)
@@ -211,6 +192,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             tvBalance.text = ""
             etAmount.setText("")
             btnMove.isEnabled = false
+            tvMoveFee.text = "0.001FLOW"
+            tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
         }
         fetchTokenBalance()
     }
