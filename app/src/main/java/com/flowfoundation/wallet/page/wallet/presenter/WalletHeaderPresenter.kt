@@ -30,7 +30,6 @@ import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.mode
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
-import com.flowfoundation.wallet.page.swap.SwapActivity
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
 import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
@@ -174,7 +173,8 @@ class WalletHeaderPresenter(
                         priority = Priority.URGENT,
                         type = Type.PENDING_REQUEST,
                         expiryTime = Date(),
-                        displayType = DisplayType.CLICK
+                        displayType = DisplayType.CLICK,
+                        conditions = emptyList()
                     )
                 )
             }

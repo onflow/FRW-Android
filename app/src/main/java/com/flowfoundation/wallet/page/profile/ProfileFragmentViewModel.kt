@@ -23,7 +23,7 @@ class ProfileFragmentViewModel : ViewModel() {
     fun load() {
         viewModelIOScope(this) {
             requestUserInfo()
-            requestInboxCount()
+//            requestInboxCount()
         }
     }
 

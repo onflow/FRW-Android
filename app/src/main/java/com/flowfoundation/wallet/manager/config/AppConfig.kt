@@ -52,6 +52,25 @@ object AppConfig {
         }
     }
 
+    fun isVersionUpdateRequired(): Boolean {
+        val latestVersionParts = config().versionProd.split(".")
+        val localVersion = BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "")
+        val localParts = localVersion.split(".")
+        val maxLength = maxOf(latestVersionParts.size, localParts.size)
+
+        for (i in 0 until maxLength) {
+            val localPart = localParts.getOrNull(i)?.toIntOrNull() ?: 0
+            val latestPart = latestVersionParts.getOrNull(i)?.toIntOrNull() ?: 0
+
+            if (localPart < latestPart) {
+                return true
+            } else if (localPart > latestPart) {
+                return false
+            }
+        }
+        return false
+    }
+
     private fun reloadNotification() {
         val text = Firebase.remoteConfig.getString("news")
         WalletNotificationManager.setNotificationList(text)
@@ -84,7 +103,9 @@ private data class Config(
     @SerializedName("staging")
     val staging: Staging,
     @SerializedName("version")
-    val version: String
+    val version: String,
+    @SerializedName("version_prod")
+    val versionProd: String
 ) {
     fun isStagingVersion(): Boolean {
         val latestVersionClean = BuildConfig.VERSION_NAME.replace(Regex("[^0-9.]"), "")
