@@ -64,7 +64,7 @@ class FclMessageHandler(
             return
         }
 
-        if (wallet().isNullOrBlank()) {
+        if (wallet().isBlank()) {
             toast(msgRes = R.string.not_logged_in_toast)
             return
         }

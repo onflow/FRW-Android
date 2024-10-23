@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.AttributeSet
@@ -27,6 +28,7 @@ import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
 import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
+import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -129,6 +131,17 @@ class LilicoWebView : WebView {
                 if (it.scheme == "wc") {
                     WalletConnect.get().pair(it.toString())
                     return true
+                } else if (it.scheme == "intent") {
+                    return try {
+                        val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        }
+                        true
+                    } catch (e: URISyntaxException) {
+                        e.printStackTrace()
+                        false
+                    }
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it.host == "fcw-link.lilico.app") {
                     safeRun {
                         WalletConnect.get().pair(getWalletConnectUri(it).toString())

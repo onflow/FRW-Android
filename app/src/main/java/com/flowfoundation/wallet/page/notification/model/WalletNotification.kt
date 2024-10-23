@@ -51,7 +51,8 @@ data class WalletNotification(
         return conditions?.all { condition ->
             when (condition.type) {
                 ConditionType.CAN_UPGRADE -> isVersionUpdateRequired()
-                ConditionType.UNKNOWN -> true
+                ConditionType.IS_ANDROID -> true
+                ConditionType.UNKNOWN -> false
             }
         } ?: true
     }
@@ -102,6 +103,8 @@ enum class DisplayType {
 enum class ConditionType {
     @SerializedName("canUpgrade")
     CAN_UPGRADE,
+    @SerializedName("isAndroid")
+    IS_ANDROID,
     @SerializedName("unknown")
     UNKNOWN
 }

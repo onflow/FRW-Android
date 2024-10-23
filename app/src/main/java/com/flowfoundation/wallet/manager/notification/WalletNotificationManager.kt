@@ -50,6 +50,7 @@ object WalletNotificationManager {
             .registerTypeAdapter(ConditionType::class.java, JsonDeserializer { json, _, _ ->
                 when (json.asString) {
                     "canUpgrade" -> ConditionType.CAN_UPGRADE
+                    "isAndroid" -> ConditionType.IS_ANDROID
                     else -> ConditionType.UNKNOWN
                 }
             })
