@@ -31,7 +31,11 @@ data class WalletNotification(
     val conditions: List<Condition>?
 ) {
     fun icon(): String? {
-        return icon?.svgToPng()
+        return if (icon?.endsWith(".svg") == true) {
+            icon.svgToPng()
+        } else {
+            icon
+        }
     }
 
     fun isExpired(): Boolean {
