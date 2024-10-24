@@ -45,6 +45,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     private val fromAddress by lazy {
         WalletManager.selectedWalletAddress()
     }
+    var needMoveFee = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -165,6 +166,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
                 layoutToAccount.setAccountInfo(parentAddress)
                 configureToLayoutAction(emptyList())
+                needMoveFee = true
             } else {
                 val addressList = WalletManager.childAccountList(WalletManager.wallet()?.walletAddress())?.get()?.map { child ->
                     child.address
@@ -173,6 +175,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 if (evmAddress.isNotEmpty()) {
                     layoutToAccount.setAccountInfo(evmAddress)
                     addressList.add(evmAddress)
+                    needMoveFee = true
                 } else {
                     val childAddress = addressList.firstOrNull() ?: return@with
                     val childAccount = WalletManager.childAccount(childAddress) ?: return@with
@@ -180,6 +183,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 }
                 configureToLayoutAction(addressList)
             }
+            configureMoveFeeLayout()
         }
     }
 
@@ -194,13 +198,27 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                             addressList,
                             childFragmentManager
                         )?.let { address ->
+                            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) || EVMWalletManager.isEVMWalletAddress(address)
                             layoutToAccount.setAccountInfo(address)
+                            configureMoveFeeLayout()
                         }
                     }
                 }
             } else {
                 layoutToAccount.setSelectMoreAccount(false)
             }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun configureMoveFeeLayout() {
+        with(binding) {
+            tvMoveFee.text = if (needMoveFee) {
+                "0.001"
+            } else {
+                "0.00"
+            } + "FLOW"
+            tvMoveFeeTips.text = (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
         }
     }
 

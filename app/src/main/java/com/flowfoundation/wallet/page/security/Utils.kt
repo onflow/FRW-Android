@@ -22,7 +22,7 @@ fun FragmentActivity.securityOpen(action: Intent) {
     ioScope {
         if (isBiometricEnable()) {
             uiScope {
-                BlockBiometricManager.showBiometricPrompt(this) { isSuccess ->
+                BlockBiometricManager.showBiometricPrompt(this) { isSuccess, _ ->
                     if (isSuccess) {
                         startActivity(action)
                     }

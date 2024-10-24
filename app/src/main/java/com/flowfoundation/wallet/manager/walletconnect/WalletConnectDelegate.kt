@@ -23,6 +23,7 @@ private val TAG = WalletConnectDelegate::class.java.simpleName
 internal class WalletConnectDelegate : SignClient.WalletDelegate {
 
     private var isConnected = false
+    private val processedRequestIds = mutableSetOf<Long>()
 
     /**
      * Triggered whenever the connection state is changed
@@ -67,6 +68,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
         logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
         val activity = BaseActivity.getCurrentActivity() ?: return
+        processedRequestIds.clear()
         uiScope {
             with(sessionProposal) {
                 val approve = if (WalletManager.isEVMAccountSelected()) {
@@ -110,6 +112,11 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         sessionRequest: Sign.Model.SessionRequest,
         verifyContext: Sign.Model.VerifyContext
     ) {
+        if (processedRequestIds.contains(sessionRequest.request.id)) {
+            logd(TAG, "onSessionRequest() Duplicate request ignored. Request ID: ${sessionRequest.request.id}")
+            return
+        }
+        processedRequestIds.add(sessionRequest.request.id)
         logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
         logd(TAG, "onSessionRequest() sessionRequest:$sessionRequest")
         ioScope { sessionRequest.toWcRequest().dispatch() }

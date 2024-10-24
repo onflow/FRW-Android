@@ -189,6 +189,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                     logd(TAG, "loadCoinList addCoin:${coinToAdd.map { it.symbol }}")
                     logd(TAG, "loadCoinList removeCoin:${coinToRemove.map { it.coin.symbol }}")
                     logd(TAG, "loadCoinList dataList:${dataList.map { it.coin.symbol }}")
+                    val filteredList = dataList.distinctBy { it.coin.symbol }
+                    dataList.clear()
+                    dataList.addAll(filteredList)
                     dataListLiveData.postValue(dataList)
                     updateWalletHeader(count = coinList.size)
                 }

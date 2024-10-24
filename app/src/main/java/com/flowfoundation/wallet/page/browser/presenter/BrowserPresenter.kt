@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
+import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
@@ -48,7 +49,9 @@ class BrowserPresenter(
                             MoveDialog().showMove(activity.supportFragmentManager)
                         }
                     } else {
-                        EnableEVMActivity.launch(activity)
+                        uiScope {
+                            EnableEVMDialog.show(activity.supportFragmentManager)
+                        }
                     }
                 }
                 floatButton.setOnClickListener { shrinkBrowser() }

@@ -28,6 +28,17 @@ fun firebaseConfigFetch() {
     }
 }
 
+fun fetchLatestFirebaseConfig() {
+    val configSettings = remoteConfigSettings {
+        minimumFetchIntervalInSeconds = 0
+    }
+    Firebase.remoteConfig.apply {
+        setConfigSettingsAsync(configSettings)
+    }.fetchAndActivate().addOnCompleteListener {
+        onConfigLoadFinish()
+    }
+}
+
 private fun onConfigLoadFinish() {
     FlowCoinListManager.reload()
     AppConfig.sync()

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityDeveloperModeSettingBinding
+import com.flowfoundation.wallet.firebase.config.fetchLatestFirebaseConfig
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.isDeveloperMode
 import com.flowfoundation.wallet.manager.app.isMainnet
@@ -43,7 +44,7 @@ class DeveloperModePresenter(
     private var maxClick = 6
     private var clickThresholdTime = 2000L
     private var lastClickTime = 0L
-    private var showLocalaccountKeys = false
+    private var showLocalAccountKeys = false
 
     init {
         uiScope {
@@ -88,6 +89,9 @@ class DeveloperModePresenter(
                 cvAccountKey.setOnClickListener {
                     LocalAccountKeyActivity.launch(activity)
                 }
+                cvReloadConfig.setOnClickListener {
+                    fetchLatestFirebaseConfig()
+                }
                 tvCadenceScriptVersion.setOnClickListener {
                     val currentTime = System.currentTimeMillis()
                     if (currentTime - lastClickTime <= clickThresholdTime) {
@@ -100,7 +104,7 @@ class DeveloperModePresenter(
 
                     if (clickCount == maxClick) {
                         clickCount = 0
-                        showLocalaccountKeys = true
+                        showLocalAccountKeys = true
                         cvAccountKey.visible()
                     }
                 }
@@ -111,7 +115,8 @@ class DeveloperModePresenter(
     private fun setDevelopContentVisible(visible: Boolean) {
         binding.group2.setVisible(visible)
         binding.cvDebug.setVisible(visible)
-        binding.cvAccountKey.setVisible(visible && showLocalaccountKeys)
+        binding.cvAccountKey.setVisible(visible && showLocalAccountKeys)
+        binding.cvReloadConfig.setVisible(visible)
     }
 
     override fun bind(model: DeveloperPageModel) {

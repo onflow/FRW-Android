@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.AttributeSet
@@ -27,10 +28,12 @@ import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
 import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
+import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
     private var callback: WebviewCallback? = null
+    var isLoading = false
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -102,6 +105,8 @@ class LilicoWebView : WebView {
     private inner class WebViewClient : android.webkit.WebViewClient() {
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            isLoading = true
+            logd(TAG, "onPageStarted")
             view.executeJs(JS_FCL_EXTENSIONS)
             view.executeJs(JS_LISTEN_WINDOW_FCL_MESSAGE)
             view.executeJs(JS_LISTEN_FLOW_WALLET_TRANSACTION)
@@ -110,6 +115,8 @@ class LilicoWebView : WebView {
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
+            isLoading = false
+            logd(TAG, "onPageFinished")
             view ?: return
             val padding = 20f.dp2px()
             val jsCode = "document.body.style.paddingBottom = '${padding}px';"
@@ -125,10 +132,22 @@ class LilicoWebView : WebView {
             view: WebView?,
             request: WebResourceRequest?
         ): Boolean {
+            isLoading = true
             request?.url?.let {
                 if (it.scheme == "wc") {
                     WalletConnect.get().pair(it.toString())
                     return true
+                } else if (it.scheme == "intent") {
+                    return try {
+                        val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        }
+                        true
+                    } catch (e: URISyntaxException) {
+                        e.printStackTrace()
+                        false
+                    }
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it.host == "fcw-link.lilico.app") {
                     safeRun {
                         WalletConnect.get().pair(getWalletConnectUri(it).toString())

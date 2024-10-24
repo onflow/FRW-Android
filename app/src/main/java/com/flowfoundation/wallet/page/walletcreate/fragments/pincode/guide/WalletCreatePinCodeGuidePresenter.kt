@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.walletcreate.fragments.pincode.guide
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletCreatePinGuideBinding
 import com.flowfoundation.wallet.manager.biometric.BlockBiometricManager
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -23,14 +22,14 @@ class WalletCreatePinCodeGuidePresenter(
         setRegistered()
         with(binding) {
             faceIdLayout.setOnClickListener {
-                BlockBiometricManager.showBiometricPrompt(fragment.requireActivity()) { isSuccess ->
+                BlockBiometricManager.showBiometricPrompt(fragment.requireActivity()) { isSuccess, errorMsg ->
                     if (isSuccess) {
                         setBiometricEnable(true)
                         if (fragment.isAdded) {
                             MainActivity.launch(fragment.requireContext())
                         }
                     } else {
-                        toast(msgRes = R.string.auth_error)
+                        toast(msg = errorMsg)
                     }
                 }
             }

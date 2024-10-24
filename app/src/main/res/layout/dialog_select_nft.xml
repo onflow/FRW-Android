@@ -60,17 +60,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toStartOf="@id/iv_arrow"
+            app:layout_constraintEnd_toStartOf="@id/space"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tv_account_title"/>
 
-        <ImageView
-            android:id="@+id/iv_arrow"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_marginHorizontal="10dp"
-            android:src="@drawable/ic_arrow_right_with_round_border"
+        <androidx.legacy.widget.Space
+            android:id="@+id/space"
+            android:layout_width="19dp"
+            android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="@id/layout_from_account"
             app:layout_constraintEnd_toStartOf="@id/layout_to_account"
             app:layout_constraintStart_toEndOf="@id/layout_from_account"
@@ -82,19 +80,85 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toEndOf="@id/iv_arrow"
+            app:layout_constraintStart_toEndOf="@id/space"
             app:layout_constraintTop_toTopOf="@id/layout_from_account"/>
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/iv_arrow"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/bg_round_24dp"
+            android:backgroundTint="@color/bg_2"
+            android:padding="6dp"
+            android:src="@drawable/ic_circle_arrow_right_2"
+            app:layout_constraintBottom_toBottomOf="@id/layout_from_account"
+            app:layout_constraintEnd_toStartOf="@id/layout_to_account"
+            app:layout_constraintStart_toEndOf="@id/layout_from_account"
+            app:layout_constraintTop_toTopOf="@id/layout_from_account"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_move_fee"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="18dp"
+        android:paddingTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/cl_account_layout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:fontFamily="@font/inter"
+            android:textSize="12sp"
+            android:textColor="@color/text_2"
+            android:text="@string/move_fee"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_move_fee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:fontFamily="@font/inter"
+            android:textSize="12sp"
+            android:textColor="@color/text_2"
+            tools:text="0.001FLOW"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_move_fee_tips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:layout_marginBottom="16dp"
+            android:textSize="12sp"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/text_3"
+            tools:text="@string/move_fee_tips"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_move_fee"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/border_line"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_collection_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="22dp"
         android:paddingHorizontal="18dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_account_layout">
+        app:layout_constraintTop_toBottomOf="@id/cl_move_fee">
 
         <TextView
             android:id="@+id/tv_collection_title"
@@ -133,17 +197,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
+            android:ellipsize="end"
             android:fontFamily="@font/inter_semi_bold"
-            android:textColor="@color/text_1"
-            android:textSize="14sp"
             android:lines="1"
             android:maxLines="1"
-            android:ellipsize="end"
+            android:textColor="@color/text_1"
+            android:textSize="14sp"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_collection_vm"
-            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toEndOf="@id/iv_collection_logo"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="collectionName"/>
 
         <ImageView
@@ -151,12 +215,12 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginHorizontal="8dp"
-            app:layout_constraintHorizontal_bias="1"
-            app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/tv_collection_name"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tv_collection_title"/>
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toEndOf="@id/tv_collection_title"
+            app:layout_constraintTop_toTopOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -164,8 +228,8 @@
         android:id="@+id/rv_nft_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clipToPadding="false"
         android:layout_marginTop="26dp"
+        android:clipToPadding="false"
         android:paddingHorizontal="18dp"
         android:paddingBottom="20dp"
         app:layout_constraintBottom_toTopOf="@id/btn_move"
@@ -179,10 +243,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="26dp"
         android:fontFamily="@font/inter"
-        android:textSize="16sp"
         android:gravity="center"
-        android:textColor="@color/text_3"
         android:text="@string/select_nft_empty"
+        android:textColor="@color/text_3"
+        android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/cl_collection_layout"/>
 
@@ -192,11 +256,11 @@
         android:layout_width="match_parent"
         android:layout_marginHorizontal="18dp"
         android:layout_marginBottom="40dp"
-        android:text="@string/move"
         android:backgroundTint="@color/button_color_green"
-        app:cornerRadius="16dp"
+        android:text="@string/move"
         app:backgroundTint="@color/button_color_green"
-        app:layout_constraintStart_toStartOf="parent"
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

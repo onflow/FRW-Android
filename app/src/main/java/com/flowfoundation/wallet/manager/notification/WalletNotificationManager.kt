@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.notification
 
+import com.flowfoundation.wallet.page.notification.model.ConditionType
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.utils.getNotificationReadList
 import com.flowfoundation.wallet.utils.ioScope
@@ -35,7 +36,7 @@ object WalletNotificationManager {
     }
 
     fun getNotificationList(): List<WalletNotification> {
-        return notificationList.filterNot { readList.contains(it.id) || it.isExpired() }.toList()
+        return notificationList.filterNot { readList.contains(it.id) || it.isExpired() || it.isConditionMet().not()}.toList()
     }
 
     fun setNotificationList(listStr: String) {
@@ -45,6 +46,13 @@ object WalletNotificationManager {
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault())
                 dateFormat.timeZone = TimeZone.getTimeZone("UTC")
                 dateFormat.parse(json.asString)
+            })
+            .registerTypeAdapter(ConditionType::class.java, JsonDeserializer { json, _, _ ->
+                when (json.asString) {
+                    "canUpgrade" -> ConditionType.CAN_UPGRADE
+                    "isAndroid" -> ConditionType.IS_ANDROID
+                    else -> ConditionType.UNKNOWN
+                }
             })
             .create()
         val list = gson.fromJson<List<WalletNotification>>(listStr, object : TypeToken<List<WalletNotification>>() {}.type) ?: emptyList()

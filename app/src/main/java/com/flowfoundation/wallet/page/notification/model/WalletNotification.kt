@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.notification.model
 
+import com.flowfoundation.wallet.manager.config.AppConfig.isVersionUpdateRequired
 import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
 import java.util.Date
@@ -25,10 +26,16 @@ data class WalletNotification(
     @SerializedName("expiry_time")
     val expiryTime: Date,
     @SerializedName("display_type")
-    val displayType: DisplayType
+    val displayType: DisplayType,
+    @SerializedName("conditions")
+    val conditions: List<Condition>?
 ) {
     fun icon(): String? {
-        return icon?.svgToPng()
+        return if (icon?.endsWith(".svg") == true) {
+            icon.svgToPng()
+        } else {
+            icon
+        }
     }
 
     fun isExpired(): Boolean {
@@ -39,7 +46,22 @@ data class WalletNotification(
             return false
         }
     }
+
+    fun isConditionMet(): Boolean {
+        return conditions?.all { condition ->
+            when (condition.type) {
+                ConditionType.CAN_UPGRADE -> isVersionUpdateRequired()
+                ConditionType.IS_ANDROID -> true
+                ConditionType.UNKNOWN -> false
+            }
+        } ?: true
+    }
 }
+
+data class Condition(
+    @SerializedName("type")
+    val type: ConditionType,
+)
 
 
 enum class Type {
@@ -76,4 +98,13 @@ enum class DisplayType {
 
     @SerializedName("expiry")
     EXPIRY   // 一直显示直到过期，用户关闭后，下次启动再显示
+}
+
+enum class ConditionType {
+    @SerializedName("canUpgrade")
+    CAN_UPGRADE,
+    @SerializedName("isAndroid")
+    IS_ANDROID,
+    @SerializedName("unknown")
+    UNKNOWN
 }

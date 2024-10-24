@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
+import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.dialog.linkaccount.LINK_ACCOUNT_TAG
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
@@ -41,7 +42,7 @@ private var authzTransaction: AuthzTransaction? = null
 fun authzTransaction() = authzTransaction
 
 class FclMessageHandler(
-    private val webView: WebView,
+    private val webView: LilicoWebView,
 ) {
     private fun activity() = findActivity(webView) as FragmentActivity
 
@@ -64,7 +65,7 @@ class FclMessageHandler(
             return
         }
 
-        if (wallet().isNullOrBlank()) {
+        if (wallet().isBlank()) {
             toast(msgRes = R.string.not_logged_in_toast)
             return
         }
@@ -107,6 +108,10 @@ class FclMessageHandler(
     }
 
     private suspend fun dispatchAuthn(fcl: FclAuthnResponse) {
+        if (webView.isLoading) {
+            toast(msgRes = R.string.wait_website_fully_loaded)
+            return
+        }
         if (fcl.isDispatching()) {
             return
         }

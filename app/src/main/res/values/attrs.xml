@@ -78,4 +78,8 @@
     <declare-styleable name="BackupOptionItem">
         <attr name="option_item_icon" format="reference"/>
     </declare-styleable>
+
+    <declare-styleable name="AccountInfoItem">
+        <attr name="layout_background_color" format="reference"/>
+    </declare-styleable>
 </resources>

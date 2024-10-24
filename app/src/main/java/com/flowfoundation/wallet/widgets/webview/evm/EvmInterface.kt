@@ -14,6 +14,8 @@ import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.page.browser.toFavIcon
+import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
+import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.isShowMoveDialog
@@ -35,7 +37,7 @@ import org.web3j.utils.Numeric
 
 
 class EvmInterface(
-    private val webView: WebView
+    private val webView: LilicoWebView
 ) {
     companion object {
         const val ETH_NETWORK = "ethereum"
@@ -51,17 +53,29 @@ class EvmInterface(
         val network = obj.getString("network")
         when (method) {
             DAppMethod.REQUEST_ACCOUNTS -> {
+                if (webView.isLoading) {
+                    toast(msgRes = R.string.wait_website_fully_loaded)
+                    return
+                }
                 uiScope {
-                    if (isShowMoveDialog()) {
-                        MoveDialog().showMove(activity().supportFragmentManager, webView.title)
-                    }
-                    val connect = EvmRequestAccountDialog().show(
-                        activity().supportFragmentManager,
-                        EVMDialogModel(title = webView.title, url = webView.url, network = network)
-                    )
-                    if (connect) {
-                        val address = EVMWalletManager.getEVMAddress()
-                        webView.setAddress(network, address.orEmpty(), id)
+                    if (EVMWalletManager.haveEVMAddress()) {
+                        if (isShowMoveDialog()) {
+                            MoveDialog().showMove(activity().supportFragmentManager, webView.title)
+                        }
+                        val connect = EvmRequestAccountDialog().show(
+                            activity().supportFragmentManager,
+                            EVMDialogModel(
+                                title = webView.title,
+                                url = webView.url,
+                                network = network
+                            )
+                        )
+                        if (connect) {
+                            val address = EVMWalletManager.getEVMAddress()
+                            webView.setAddress(network, address.orEmpty(), id)
+                        }
+                    } else {
+                        EnableEVMDialog.show(activity().supportFragmentManager)
                     }
                 }
             }
