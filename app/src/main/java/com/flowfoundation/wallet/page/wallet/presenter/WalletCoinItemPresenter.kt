@@ -14,9 +14,9 @@ import com.flowfoundation.wallet.page.token.detail.TokenDetailActivity
 import com.flowfoundation.wallet.page.wallet.model.WalletCoinItemModel
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
-import java.math.RoundingMode
 import kotlin.math.absoluteValue
 
 class WalletCoinItemPresenter(
@@ -35,9 +35,9 @@ class WalletCoinItemPresenter(
                 coinBalancePrice.text = "****"
             } else {
                 coinBalance.text =
-                    "${model.balance.formatNum(roundingMode = RoundingMode.HALF_UP)} ${model.coin.symbol.uppercase()}"
+                    "${model.balance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.coin.symbol.uppercase()}"
                 coinBalancePrice.text =
-                    (model.balance * model.coinRate).formatPrice(includeSymbol = true)
+                    (model.balance * model.coinRate).formatPrice(includeSymbol = true, isAbbreviation = true)
             }
             coinPrice.text =
                 if (model.coinRate == 0f) "-" else model.coinRate.formatPrice(includeSymbol = true)
@@ -76,9 +76,9 @@ class WalletCoinItemPresenter(
         }
         setStakingVisible(true)
         binding.stakingAmount.text =
-            view.context.getString(R.string.flow_num, model.stakeAmount.formatNum(3))
+            view.context.getString(R.string.flow_num, model.stakeAmount.formatLargeBalanceNumber(isAbbreviation = true))
         binding.stakingAmountPrice.text =
-            (model.stakeAmount * model.coinRate).formatPrice(includeSymbol = true)
+            (model.stakeAmount * model.coinRate).formatPrice(includeSymbol = true, isAbbreviation = true)
     }
 
     private fun bindAccessible(coin: FlowCoin) {

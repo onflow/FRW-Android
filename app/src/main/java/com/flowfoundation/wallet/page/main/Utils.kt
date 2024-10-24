@@ -47,6 +47,7 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
@@ -352,7 +353,7 @@ fun bindFlowBalance(balanceView: TextView, address: String) {
             address
         ) ?: 0f
         uiScope {
-            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
+            balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
         }
     }
 }
@@ -362,7 +363,7 @@ fun bindEVMFlowBalance(balanceView: TextView) {
     ioScope {
         val balance = cadenceQueryCOATokenBalance() ?: 0f
         uiScope {
-            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
+            balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
         }
     }
 }

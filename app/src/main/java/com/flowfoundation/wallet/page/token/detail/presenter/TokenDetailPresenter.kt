@@ -34,6 +34,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.uiScope
@@ -154,7 +155,7 @@ class TokenDetailPresenter(
 
     @SuppressLint("SetTextI18n")
     override fun bind(model: TokenDetailModel) {
-        model.balanceAmount?.let { binding.balanceAmountView.text = it.formatNum() }
+        model.balanceAmount?.let { binding.balanceAmountView.text = it.formatLargeBalanceNumber() }
         model.balancePrice?.let { binding.balancePriceView.text = "${it.formatPrice(includeSymbol = true)} ${selectedCurrency().name}" }
     }
 

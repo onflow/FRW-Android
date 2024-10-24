@@ -2,24 +2,17 @@ package com.flowfoundation.wallet.utils
 
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
-import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
-
-
-fun Long.formatBalance(): Float {
-    val currencyPrice = BigDecimal(9.08)
-    val flowDecimal = BigDecimal(10).pow(8)
-    val balance = BigDecimal(this).divide(flowDecimal)
-    val currencyBalance = balance.multiply(currencyPrice)
-    return balance.setScale(3, BigDecimal.ROUND_HALF_DOWN).toFloat()
-}
+import java.text.NumberFormat
+import java.util.Locale
 
 fun Float.formatPrice(
     digits: Int = 3,
     convertCurrency: Boolean = true,
     includeSymbol: Boolean = false,
     includeSymbolSpace: Boolean = false,
+    isAbbreviation: Boolean = false
 ): String {
     var value = this
     if (convertCurrency) {
@@ -28,7 +21,13 @@ fun Float.formatPrice(
         }
         value *= CurrencyManager.currencyPrice()
     }
-    val format = value.format(digits)
+    val format = if (value < 1_000_000) {
+        value.format(digits)
+    } else if (isAbbreviation) {
+        value.toDouble().formatLargeNumber()
+    } else {
+        value.toDouble().formatNumberWithCommas()
+    }
     return if (includeSymbol) "${selectedCurrency().symbol}${if (includeSymbolSpace) " " else ""}$format" else format
 }
 
@@ -41,6 +40,32 @@ fun Float.formatNum(
     roundingMode: RoundingMode = RoundingMode.DOWN,
 ): String {
     return format(digits, roundingMode)
+}
+
+fun Float.formatLargeBalanceNumber(isAbbreviation: Boolean = false): String {
+    return if (this < 1_000_000) {
+        this.format()
+    } else if (isAbbreviation) {
+        this.toDouble().formatLargeNumber()
+    } else {
+        this.toDouble().formatNumberWithCommas()
+    }
+}
+
+fun Double.formatLargeNumber(): String {
+    val decimalFormat = DecimalFormat("0.###")
+    decimalFormat.roundingMode = RoundingMode.DOWN
+    return when {
+        this >= 1_000_000_000_000 -> decimalFormat.format(this / 1_000_000_000_000) + "t"
+        this >= 1_000_000_000 -> decimalFormat.format(this / 1_000_000_000) + "b"
+        this >= 1_000_000 -> decimalFormat.format(this / 1_000_000) + "m"
+        else -> this.toString()
+    }
+}
+
+fun Double.formatNumberWithCommas(): String {
+    val formatter = NumberFormat.getNumberInstance(Locale.US)
+    return formatter.format(this)
 }
 
 fun Double.formatPrice(
