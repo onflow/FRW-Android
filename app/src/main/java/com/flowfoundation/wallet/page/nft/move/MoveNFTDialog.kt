@@ -92,7 +92,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             } else if (isEVMAccountSelected) {
                 val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
                 layoutToAccount.setAccountInfo(walletAddress)
-                configureToLayoutAction(emptyList())
+                val addressList = WalletManager.childAccountList(walletAddress)?.get()?.map { child ->
+                    child.address
+                }?.toMutableList() ?: mutableListOf()
+                addressList.add(0, walletAddress)
+                configureToLayoutAction(addressList)
                 needMoveFee = true
             } else {
                 val walletAddress = WalletManager.wallet()?.walletAddress()
@@ -197,7 +201,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             }
                         }
                     } else if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
-                        EVMWalletManager.moveNFT(it, true) { isSuccess ->
+                        EVMWalletManager.moveChildNFT(it, fromAddress, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
@@ -220,13 +224,26 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         }
                     }
                 } else if (isEVMAccountSelected) {
-                    EVMWalletManager.moveNFT(it, false) { isSuccess ->
-                        uiScope {
-                            binding.btnMove.setProgressVisible(false)
-                            if (isSuccess) {
-                                dismissAllowingStateLoss()
-                            } else {
-                                toast(R.string.move_nft_to_evm_failed)
+                    if (toAddress == WalletManager.wallet()?.walletAddress()) {
+                        EVMWalletManager.moveNFT(it, false) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    dismissAllowingStateLoss()
+                                } else {
+                                    toast(R.string.move_nft_to_evm_failed)
+                                }
+                            }
+                        }
+                    } else {
+                        EVMWalletManager.moveChildNFT(it, toAddress, false) { isSuccess ->
+                            uiScope {
+                                binding.btnMove.setProgressVisible(false)
+                                if (isSuccess) {
+                                    dismissAllowingStateLoss()
+                                } else {
+                                    toast(R.string.move_nft_to_evm_failed)
+                                }
                             }
                         }
                     }

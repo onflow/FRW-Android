@@ -525,6 +525,66 @@ suspend fun cadenceBridgeNFTFromEvm(
     return transactionId
 }
 
+suspend fun cadenceBridgeChildNFTToEvm(
+    nftIdentifier: String,
+    nftId: String,
+    childAddress: String
+): String? {
+    logd(TAG, "cadenceBridgeChildNFTToEvm")
+    val transactionId = CADENCE_BRIDGE_CHILD_NFT_TO_EVM.transactionByMainWallet {
+        arg { string(nftIdentifier) }
+        arg { uint64(nftId) }
+        arg { address(childAddress) }
+    }
+    logd(TAG, "cadenceBridgeChildNFTToEvm transactionId:$transactionId")
+    return transactionId
+}
+
+suspend fun cadenceBridgeChildNFTFromEvm(
+    nftIdentifier: String,
+    nftId: String,
+    childAddress: String
+): String? {
+    logd(TAG, "cadenceBridgeChildNFTFromEvm")
+    val transactionId = CADENCE_BRIDGE_CHILD_NFT_FROM_EVM.transactionByMainWallet {
+        arg { string(nftIdentifier) }
+        arg { address(childAddress) }
+        arg { uint64(nftId) }
+    }
+    logd(TAG, "cadenceBridgeChildNFTFromEvm transactionId:$transactionId")
+    return transactionId
+}
+
+suspend fun cadenceBridgeChildNFTListToEvm(
+    nftIdentifier: String,
+    nftIdList: List<String>,
+    childAddress: String
+): String? {
+    logd(TAG, "cadenceBridgeChildNFTListToEvm")
+    val transactionId = CADENCE_BRIDGE_CHILD_NFT_LIST_TO_EVM.transactionByMainWallet {
+        arg { string(nftIdentifier) }
+        arg { address(childAddress) }
+        arg { array(nftIdList.map { uint64(it) }) }
+    }
+    logd(TAG, "cadenceBridgeChildNFTListToEvm transactionId:$transactionId")
+    return transactionId
+}
+
+suspend fun cadenceBridgeChildNFTListFromEvm(
+    nftIdentifier: String,
+    nftIdList: List<String>,
+    childAddress: String
+): String? {
+    logd(TAG, "cadenceBridgeChildNFTListFromEvm")
+    val transactionId = CADENCE_BRIDGE_CHILD_NFT_LIST_FROM_EVM.transactionByMainWallet {
+        arg { string(nftIdentifier) }
+        arg { address(childAddress) }
+        arg { array(nftIdList.map { uint256(it) }) }
+    }
+    logd(TAG, "cadenceBridgeChildNFTListFromEvm transactionId:$transactionId")
+    return transactionId
+}
+
 suspend fun cadenceBridgeNFTFromFlowToEVM(
     nftIdentifier: String,
     nftId: String, toEVMAddress: String, data: ByteArray

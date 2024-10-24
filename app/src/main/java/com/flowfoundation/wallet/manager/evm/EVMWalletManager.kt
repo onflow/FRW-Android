@@ -6,6 +6,10 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CREATE_COA_ACCOUNT
 import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_COA_EVM_ADDRESS
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTFromEvm
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListFromEvm
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListToEvm
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromEvm
@@ -131,18 +135,63 @@ object EVMWalletManager {
         coin: FlowCoin, amount: Float, isFundToEVM: Boolean, callback:
             (isSuccess: Boolean) -> Unit
     ) {
-        if (isFundToEVM) {
-            bridgeTokenToEVM(coin, amount, callback)
-        } else {
-            bridgeTokenFromEVM(coin, amount, callback)
+        try {
+            val txId = if (isFundToEVM) {
+                cadenceBridgeFTToEvm(coin.getFTIdentifier(), amount)
+            } else {
+                val decimalAmount = amount.toBigDecimal().movePointRight(coin.decimal)
+                cadenceBridgeFTFromEvm(coin.getFTIdentifier(), decimalAmount)
+            }
+            if (txId.isNullOrBlank()) {
+                logd(TAG, "bridge ft failed")
+                callback.invoke(false)
+                return
+            }
+            TransactionStateWatcher(txId).watch { result ->
+                if (result.isExecuteFinished()) {
+                    logd(TAG, "bridge ft success")
+                    callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "bridge ft failed")
+                    callback.invoke(false)
+                }
+            }
+        } catch (e: Exception) {
+            callback.invoke(false)
+            logd(TAG, "bridge ft failed")
+            e.printStackTrace()
         }
     }
 
     suspend fun moveNFT(nft: Nft, isMoveToEVM: Boolean, callback: (isSuccess: Boolean) -> Unit) {
-        if (isMoveToEVM) {
-            bridgeNFTToEVM(nft, callback)
-        } else {
-            bridgeNFTFromEVM(nft, callback)
+        try {
+            val id = nft.id
+            val txId = if (isMoveToEVM) {
+                cadenceBridgeNFTToEvm(nft.getNFTIdentifier(), id)
+            } else {
+                cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), id)
+            }
+            postTransaction(nft, txId, callback)
+        } catch (e: Exception) {
+            callback.invoke(false)
+            logd(TAG, "bridge nft ${if (isMoveToEVM) "to" else "from"} evm failed")
+            e.printStackTrace()
+        }
+    }
+
+    suspend fun moveChildNFT(nft: Nft, childAddress: String, isMoveToEVM: Boolean, callback: (isSuccess: Boolean) -> Unit) {
+        try {
+            val id = nft.id
+            val txId = if (isMoveToEVM) {
+                cadenceBridgeChildNFTToEvm(nft.getNFTIdentifier(), id, childAddress)
+            } else {
+                cadenceBridgeChildNFTFromEvm(nft.getNFTIdentifier(), id, childAddress)
+            }
+            postTransaction(nft, txId, callback)
+        } catch (e: Exception) {
+            callback.invoke(false)
+            logd(TAG, "bridge child nft ${if (isMoveToEVM) "to" else "from"} evm failed")
+            e.printStackTrace()
         }
     }
 
@@ -152,143 +201,63 @@ object EVMWalletManager {
         isMoveToEVM: Boolean,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        if (isMoveToEVM) {
-            bridgeNFTListToEVM(nftIdentifier, idList, callback)
-        } else {
-            bridgeNFTListFromEVM(nftIdentifier, idList, callback)
+        try {
+            val txId = if (isMoveToEVM) {
+                cadenceBridgeNFTListToEvm(nftIdentifier, idList)
+            } else {
+                cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
+            }
+            if (txId.isNullOrBlank()) {
+                logd(TAG, "bridge nft list failed")
+                callback.invoke(false)
+                return
+            }
+            TransactionStateWatcher(txId).watch { result ->
+                if (result.isExecuteFinished()) {
+                    logd(TAG, "bridge nft list success")
+                    callback.invoke(true)
+                } else if (result.isFailed()) {
+                    logd(TAG, "bridge nft list failed")
+                    callback.invoke(false)
+                }
+            }
+        } catch (e: Exception) {
+            callback.invoke(false)
+            logd(TAG, "bridge nft list failed")
+            e.printStackTrace()
         }
     }
 
-    private suspend fun bridgeNFTListToEVM(
+    suspend fun moveChildNFTList(
         nftIdentifier: String,
         idList: List<String>,
+        childAddress: String,
+        isMoveToEVM: Boolean,
         callback: (isSuccess: Boolean) -> Unit
     ) {
         try {
-            val txId = cadenceBridgeNFTListToEvm(nftIdentifier, idList)
+            val txId = if (isMoveToEVM) {
+                cadenceBridgeChildNFTListToEvm(nftIdentifier, idList, childAddress)
+            } else {
+                cadenceBridgeChildNFTListFromEvm(nftIdentifier, idList, childAddress)
+            }
             if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge to evm failed")
+                logd(TAG, "bridge child nft list failed")
                 callback.invoke(false)
                 return
             }
             TransactionStateWatcher(txId).watch { result ->
                 if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge to evm success")
+                    logd(TAG, "bridge child nft list success")
                     callback.invoke(true)
                 } else if (result.isFailed()) {
-                    logd(TAG, "bridge to evm failed")
+                    logd(TAG, "bridge child nft list failed")
                     callback.invoke(false)
                 }
             }
         } catch (e: Exception) {
             callback.invoke(false)
-            logd(TAG, "bridge to evm failed")
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun bridgeNFTListFromEVM(
-        nftIdentifier: String,
-        idList: List<String>,
-        callback: (isSuccess: Boolean) -> Unit
-    ) {
-        try {
-            val txId = cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge to evm failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge to evm success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "bridge to evm failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge to evm failed")
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun bridgeNFTToEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
-        try {
-            val id = nft.id
-            val txId = cadenceBridgeNFTToEvm(nft.getNFTIdentifier(), id)
-            postTransaction(nft, txId, callback)
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge to evm failed")
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun bridgeNFTFromEVM(nft: Nft, callback: (isSuccess: Boolean) -> Unit) {
-        try {
-            val id = nft.id
-            val txId = cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), id)
-            postTransaction(nft, txId, callback)
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge from evm failed")
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun bridgeTokenFromEVM(
-        coin: FlowCoin, amount: Float, callback: (isSuccess: Boolean) -> Unit
-    ) {
-        try {
-            val decimalAmount = amount.toBigDecimal().movePointRight(coin.decimal)
-            val txId = cadenceBridgeFTFromEvm(coin.getFTIdentifier(), decimalAmount)
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge from evm failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge from evm success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "bridge from evm failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge from evm failed")
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun bridgeTokenToEVM(
-        coin: FlowCoin, amount: Float, callback: (isSuccess: Boolean)
-        -> Unit
-    ) {
-        try {
-            val txId = cadenceBridgeFTToEvm(coin.getFTIdentifier(), amount)
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge to evm failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge to evm success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "bridge to evm failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge to evm failed")
+            logd(TAG, "bridge child nft list failed")
             e.printStackTrace()
         }
     }

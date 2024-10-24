@@ -117,9 +117,10 @@ class SelectNFTViewModel : ViewModel() {
         }
         if (WalletManager.isChildAccountSelected()) {
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
-                EVMWalletManager.moveNFTList(
+                EVMWalletManager.moveChildNFTList(
                     nftIdentifier!!,
                     selectedNFTIdList,
+                    WalletManager.selectedWalletAddress(),
                     isMoveToEVM = true,
                     callback
                 )
@@ -131,13 +132,23 @@ class SelectNFTViewModel : ViewModel() {
                 moveNFTListFromChildToParent(selectedNFTIdList, callback)
             }
         } else if (WalletManager.isEVMAccountSelected()) {
-            // batch move from evm to parent
-            EVMWalletManager.moveNFTList(
-                nftIdentifier!!,
-                selectedNFTIdList,
-                isMoveToEVM = false,
-                callback
-            )
+            if (WalletManager.isChildAccount(toAddress)) {
+                EVMWalletManager.moveChildNFTList(
+                    nftIdentifier!!,
+                    selectedNFTIdList,
+                    toAddress,
+                    isMoveToEVM = false,
+                    callback
+                )
+            } else {
+                // batch move from evm to parent
+                EVMWalletManager.moveNFTList(
+                    nftIdentifier!!,
+                    selectedNFTIdList,
+                    isMoveToEVM = false,
+                    callback
+                )
+            }
         } else {
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                 // batch move from parent to evm
