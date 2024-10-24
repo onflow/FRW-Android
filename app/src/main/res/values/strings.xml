@@ -677,5 +677,6 @@ uses to turn your device into a hardware wallet.</string>
     <string name="move_fee">Move Fee</string>
     <string name="move_fee_tips">It appears when moving between VM accounts</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
+    <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
 
 </resources>

@@ -33,6 +33,7 @@ import java.net.URISyntaxException
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
     private var callback: WebviewCallback? = null
+    var isLoading = false
 
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
@@ -104,6 +105,8 @@ class LilicoWebView : WebView {
     private inner class WebViewClient : android.webkit.WebViewClient() {
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+            isLoading = true
+            logd(TAG, "onPageStarted")
             view.executeJs(JS_FCL_EXTENSIONS)
             view.executeJs(JS_LISTEN_WINDOW_FCL_MESSAGE)
             view.executeJs(JS_LISTEN_FLOW_WALLET_TRANSACTION)
@@ -112,6 +115,8 @@ class LilicoWebView : WebView {
         }
 
         override fun onPageFinished(view: WebView?, url: String?) {
+            isLoading = false
+            logd(TAG, "onPageFinished")
             view ?: return
             val padding = 20f.dp2px()
             val jsCode = "document.body.style.paddingBottom = '${padding}px';"
@@ -127,6 +132,7 @@ class LilicoWebView : WebView {
             view: WebView?,
             request: WebResourceRequest?
         ): Boolean {
+            isLoading = true
             request?.url?.let {
                 if (it.scheme == "wc") {
                     WalletConnect.get().pair(it.toString())
