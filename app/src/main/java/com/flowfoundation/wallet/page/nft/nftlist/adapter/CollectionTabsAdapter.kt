@@ -55,7 +55,7 @@ private class TabsViewHolder(
 
     init {
         view.setOnClickListener {
-            model?.collection?.contractName?.let { viewModel.selectCollection(it) }
+            model?.collection?.contractName()?.let { viewModel.selectCollection(it) }
         }
     }
 
@@ -82,7 +82,7 @@ private class TabsViewHolder(
 
 val diffCallback = object : DiffUtil.ItemCallback<CollectionItemModel>() {
     override fun areItemsTheSame(oldItem: CollectionItemModel, newItem: CollectionItemModel): Boolean {
-        return oldItem.collection.contractName == newItem.collection.contractName
+        return oldItem.collection.contractName() == newItem.collection.contractName()
     }
 
     @SuppressLint("DiffUtilEquals")

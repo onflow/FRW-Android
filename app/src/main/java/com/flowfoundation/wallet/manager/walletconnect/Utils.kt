@@ -1,6 +1,9 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
-import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.EVM_MAINNET
+import com.flowfoundation.wallet.manager.app.EVM_TESTNET
+import com.flowfoundation.wallet.manager.app.evmChainNetworkString
+import com.flowfoundation.wallet.manager.app.flowChainNetworkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
@@ -14,24 +17,22 @@ import com.walletconnect.sign.client.SignClient
 private const val TAG = "WalletConnectUtils"
 private const val ETHEREUM_NETWORK = "eip155"
 
-private val supportedChain = setOf("eip155:747", "eip155:545")
+private val supportedChain = setOf(EVM_MAINNET, EVM_TESTNET)
 
 fun Sign.Model.SessionProposal.approveSession() {
     val namespaces = mutableMapOf<String, Sign.Model.Namespace.Session>()
-    val targetChain = if (isMainnet()) "eip155:747" else "eip155:545"
     namespaces.putAll(requiredNamespaces.map { item ->
-        pair(item, targetChain)
+        pair(item)
     }.toMap())
     namespaces.putAll(optionalNamespaces.map { item ->
-        pair(item, targetChain)
+        pair(item)
     }.toMap())
     logd(TAG, "approveSession: $namespaces")
     SignClient.approveSession(Sign.Params.Approve(proposerPublicKey, namespaces)) { error -> loge(error.throwable) }
 }
 
 private fun pair(
-    item: Map.Entry<String, Sign.Model.Namespace.Proposal>,
-    targetChain: String
+    item: Map.Entry<String, Sign.Model.Namespace.Proposal>
 ): Pair<String, Sign.Model.Namespace.Session> {
     val caip2Namespace = item.key
     val proposalNamespace = item.value
@@ -41,13 +42,16 @@ private fun pair(
         proposalNamespace.chains.orEmpty()
     }
     val accounts = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
-        if (chains.contains(targetChain)) {
-            listOf("$targetChain:${getWalletAddress(caip2Namespace)}")
-        } else {
-            emptyList()
-        }
+        chains.mapNotNull {
+            val evmAddress = EVMWalletManager.getEVMAddress(flowChainNetworkString(it)).orEmpty()
+            if (evmAddress.isNotEmpty()) {
+                "$it:${evmAddress}"
+            } else {
+                null
+            }
+        }.toList()
     } else {
-        chains.map { "$it:${getWalletAddress(caip2Namespace)}" }
+        chains.map { "$it:${WalletManager.wallet()?.walletAddress().orEmpty()}" }.toList()
     }
     val methods = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
         WalletConnectMethod.getSupportedEVMMethod()
@@ -79,14 +83,6 @@ fun String.toNetwork(): String? {
 
 private fun nameTag(): String {
     return "flow"
-}
-
-fun getWalletAddress(namespace: String): String {
-    return if (namespace.lowercase() == ETHEREUM_NETWORK) {
-        EVMWalletManager.getEVMAddress() ?: ""
-    } else {
-        WalletManager.selectedWalletAddress()
-    }
 }
 
 fun Sign.Model.SessionProposal.reject() {

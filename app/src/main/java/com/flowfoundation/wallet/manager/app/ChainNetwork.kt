@@ -59,5 +59,22 @@ fun doNetworkChangeTask() {
     NftCollectionConfig.sync()
 }
 
+fun evmChainNetworkString(): String {
+    return when {
+        isTestnet() -> EVM_TESTNET
+        else -> EVM_MAINNET
+    }
+}
+
+fun flowChainNetworkString(evmNetwork: String): String {
+    return when (evmNetwork) {
+        EVM_TESTNET -> NETWORK_NAME_TESTNET
+        else -> NETWORK_NAME_MAINNET
+    }
+}
+
 const val NETWORK_NAME_MAINNET = "mainnet"
 const val NETWORK_NAME_TESTNET = "testnet"
+
+const val EVM_MAINNET = "eip155:747"
+const val EVM_TESTNET = "eip155:545"

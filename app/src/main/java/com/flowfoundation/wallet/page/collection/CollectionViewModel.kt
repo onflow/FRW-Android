@@ -29,7 +29,7 @@ class CollectionViewModel : ViewModel() {
                     NftCache(nftWalletAddress())
                         .collection()
                         .read()?.collections
-                        ?.firstOrNull { it.collection?.contractName == contractName }
+                        ?.firstOrNull { it.collection?.contractName() == contractName }
                         ?: return@viewModelIOScope
 
                 this.collection = collectionWrapper.collection

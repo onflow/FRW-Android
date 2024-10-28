@@ -30,7 +30,7 @@ class NftCache(
     }
 
     private fun findNftFromCollection(uniqueId: String): Nft? {
-        val collections = collection().read()?.collections?.mapNotNull { it.collection?.contractName } ?: return null
+        val collections = collection().read()?.collections?.mapNotNull { it.collection?.contractName() } ?: return null
         for (collection in collections) {
             val nfts = list(collection).read()?.list ?: continue
             return nfts.firstOrNull { it.uniqueId() == uniqueId } ?: continue

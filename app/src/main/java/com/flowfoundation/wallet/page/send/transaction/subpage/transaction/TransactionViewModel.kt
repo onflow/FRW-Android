@@ -8,6 +8,8 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromEvm
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromEVMToFlow
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromFlowToEVM
 import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
@@ -84,7 +86,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                     if (isFlowAddress(toAddress)) {
                         // Flow -> Flow
                         transferToken(coin)
-                    } else if(EVMWalletManager.isEVMWalletAddress(toAddress)){
+                    } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         // Flow -> Self COA
                         fundToCOAAccount(transaction.amount)
                     } else {
@@ -95,9 +97,25 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
             } else if (coin.isCOABridgeCoin() || coin.canBridgeToCOA()) {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
-                        // COA -> Flow
-                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
-                        bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
+                        if (WalletManager.isChildAccount(toAddress)) {
+                            val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
+                            // COA -> Child
+                            bridgeTokenFromEVMToChild(coin.getFTIdentifier(), amount, toAddress)
+                        } else {
+                            // COA -> Flow
+                            val contractAddress = if (coin.flowIdentifier != null) {
+                                val identifier = coin.flowIdentifier.split(".")
+                                if (identifier.size > 1) {
+                                    identifier[1].toAddress()
+                                } else {
+                                    ""
+                                }
+                            } else {
+                                ""
+                            }
+                            val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
+                            bridgeTokenToFlow(coin.getFTIdentifier(), amount, contractAddress)
+                        }
                     } else {
                         // COA -> EOA/COA
                         val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
@@ -113,9 +131,26 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                     if (isFlowAddress(toAddress)) {
                         // Flow -> Flow
                         transferToken(coin)
+                    } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                        if (WalletManager.isChildAccount(fromAddress)) {
+                            // Child -> Self COA
+                            bridgeTokenFromChildToEVM(coin.getFTIdentifier(), transaction.amount, fromAddress)
+                        } else {
+                            // Flow -> EOA/COA
+                            val txId = cadenceBridgeFTFromFlowToEVM(
+                                coin.getFTIdentifier(),
+                                transaction.amount,
+                                coin.evmAddress?.removeAddressPrefix() ?: ""
+                            )
+                            postTransaction(txId)
+                        }
                     } else {
                         // Flow -> EOA/COA
-                        val txId = cadenceBridgeFTFromFlowToEVM(coin.getFTIdentifier(), transaction.amount, toAddress)
+                        val txId = cadenceBridgeFTFromFlowToEVM(
+                            coin.getFTIdentifier(),
+                            transaction.amount,
+                            coin.evmAddress?.removeAddressPrefix() ?: ""
+                        )
                         postTransaction(txId)
                     }
                 }
@@ -155,9 +190,27 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
     }
 
     private suspend fun bridgeTokenToFlow(
-        flowIdentifier: String, amount: BigDecimal, toFlowAddress: String
+        flowIdentifier: String, amount: BigDecimal, recipient: String
     ) {
-        val txId = cadenceBridgeFTFromEVMToFlow(flowIdentifier, amount, toFlowAddress)
+        val txId = cadenceBridgeFTFromEVMToFlow(flowIdentifier, amount, recipient)
+        postTransaction(txId)
+    }
+
+    private suspend fun bridgeTokenFromChildToEVM(
+        flowIdentifier: String,
+        amount: Float,
+        childAddress: String
+    ) {
+        val txId = cadenceBridgeChildFTToEvm(flowIdentifier, childAddress, amount)
+        postTransaction(txId)
+    }
+
+    private suspend fun bridgeTokenFromEVMToChild(
+        flowIdentifier: String,
+        amount: BigDecimal,
+        childAddress: String
+    ) {
+        val txId = cadenceBridgeChildFTFromEvm(flowIdentifier, childAddress, amount)
         postTransaction(txId)
     }
 

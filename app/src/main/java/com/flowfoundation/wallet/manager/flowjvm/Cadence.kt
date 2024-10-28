@@ -276,6 +276,14 @@ var CADENCE_BRIDGE_CHILD_NFT_FROM_EVM
     get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildNFTFromEvm")
     private set(value) {}
 
+var CADENCE_BRIDGE_CHILD_FT_TO_EVM
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildFTToEvm")
+    private set(value) {}
+
+var CADENCE_BRIDGE_CHILD_FT_FROM_EVM
+    get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildFTFromEvm")
+    private set(value) {}
+
 var CADENCE_BRIDGE_CHILD_NFT_LIST_TO_EVM
     get() = CadenceApiManager.getCadenceHybridCustodyScript("batchBridgeChildNFTToEvm")
     private set(value) {}

@@ -11,15 +11,12 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.model.AddressBookDomain
 import com.flowfoundation.wallet.network.model.Nft
-import com.flowfoundation.wallet.network.model.UserInfoData
-import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.shortenEVMString
-import com.flowfoundation.wallet.wallet.toAddress
 
 
 @SuppressLint("SetTextI18n")
@@ -69,6 +66,6 @@ fun DialogSendConfirmBinding.bindNft(nft: Nft) {
     Glide.with(nftCover).load(nft.getNFTCover()).into(nftCover)
     nftName.text = nft.name()
     Glide.with(nftCollectionIcon).load(config?.logo() ?: nft.collectionSquareImage).into(nftCollectionIcon)
-    nftCollectionName.text = config?.name ?: nft.collectionName
+    nftCollectionName.text = config?.name ?: nft.collectionName.orEmpty()
     nftCoinTypeIcon.setImageResource(R.drawable.ic_coin_flow)
 }

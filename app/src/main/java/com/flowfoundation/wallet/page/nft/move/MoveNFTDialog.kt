@@ -131,7 +131,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 }
             )
             tvNftName.text = nft?.name()
-            tvCollectionName.text = nft?.collectionName
+            tvCollectionName.text = nft?.collectionName.orEmpty()
             Glide.with(ivCollectionLogo).load(nft?.collectionSquareImage).transform(
                 CenterCrop(),
                 RoundedCorners(8.dp2px().toInt())

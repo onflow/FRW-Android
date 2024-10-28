@@ -106,12 +106,12 @@ object EVMWalletManager {
         return getEVMAddress().isNullOrBlank().not()
     }
 
-    fun getEVMAddress(): String? {
-        val address = evmAddressMap[chainNetWorkString()]
+    fun getEVMAddress(network: String? = chainNetWorkString()): String? {
+        val address = evmAddressMap[network]
         return if (address.equals("0x")) {
             return null
         } else {
-            evmAddressMap[chainNetWorkString()]
+            evmAddressMap[network]
         }
     }
 

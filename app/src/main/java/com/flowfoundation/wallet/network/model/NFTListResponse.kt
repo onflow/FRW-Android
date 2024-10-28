@@ -41,48 +41,55 @@ data class Nft(
     @SerializedName("title")
     val title: String?,
     @SerializedName("postMedia")
-    val postMedia: PostMedia,
+    val postMedia: PostMedia?,
 
     @SerializedName("collectionName")
-    val collectionName: String,
+    val collectionName: String?,
     @SerializedName("collectionContractName")
     val collectionContractName: String?,
     @SerializedName("contractAddress")
-    val collectionAddress: String,
+    val collectionAddress: String?,
     @SerializedName("collectionDescription")
-    val collectionDescription: String,
+    val collectionDescription: String?,
     @SerializedName("collectionSquareImage")
-    val collectionSquareImage: String,
+    val collectionSquareImage: String?,
     @SerializedName("collectionBannerImage")
-    val collectionBannerImage: String,
+    val collectionBannerImage: String?,
     @SerializedName("collectionExternalURL")
-    val collectionExternalURL: String,
+    val collectionExternalURL: String?,
     @SerializedName("traits")
     val traits: List<NftTraits>?,
     @SerializedName("flowIdentifier")
-    val flowIdentifier: String?
+    val flowIdentifier: String?,
+    @SerializedName("evmAddress")
+    val evmAddress: String?
 ) : Parcelable {
     fun uniqueId() = "${collectionName}.${contractName()}-${id}"
 
     fun serverId() = "${contractName()}-${id}"
 
-    fun contractName() = collectionContractName ?: flowIdentifier?.split(".", ignoreCase = true, limit = 0)?.getOrNull(2) ?: ""
+    fun contractName(): String {
+        return collectionContractName ?: flowIdentifier?.split(".", ignoreCase = true, limit = 0)?.getOrNull(2) ?: collectionName ?: ""
+    }
 
     fun tokenId() = id
 
-    fun isNBA() = collectionName.trim().lowercase() == "TopShot".lowercase()
+    fun isNBA() = collectionName?.trim()?.lowercase() == "TopShot".lowercase()
 
     fun canBridgeToFlow(): Boolean {
         return flowIdentifier.isNullOrBlank().not()
     }
 
     fun getNFTIdentifier(): String {
-        return flowIdentifier ?: "A.${collectionAddress.removeAddressPrefix()}.${contractName()}.NFT"
+        return flowIdentifier ?: "A.${collectionAddress?.removeAddressPrefix()}.${contractName()}.NFT"
     }
 
     fun canBridgeToEVM(): Boolean {
-        val collection = NftCollectionConfig.get(collectionAddress, contractName()) ?: return false
-        return collection.evmAddress.isNullOrEmpty().not()
+        return getEVMAddress()?.isNotEmpty() ?: return false
+    }
+
+    fun getEVMAddress(): String? {
+        return evmAddress ?: NftCollectionConfig.get(collectionAddress, contractName())?.evmAddress
     }
 }
 

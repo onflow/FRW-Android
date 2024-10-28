@@ -7,6 +7,8 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTFromEvm
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromEVMToFlow
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromFlowToEVM
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
@@ -59,8 +61,24 @@ class NftSendConfirmViewModel : ViewModel() {
                 if (nft.canBridgeToEVM() || nft.canBridgeToFlow()) {
                     if (EVMWalletManager.isEVMWalletAddress(sendModel.fromAddress)) {
                         if (isFlowAddress(toAddress)) {
-                            // COA -> Flow
-                            bridgeNFTFromEVMToFlow(nft.getNFTIdentifier(), nft.id, toAddress)
+                            if (WalletManager.isChildAccount(toAddress)) {
+                                // COA -> Child
+                                val txId = cadenceBridgeChildNFTFromEvm(nft.getNFTIdentifier(), nft.id, toAddress)
+                                postTransaction(txId)
+                            } else {
+                                // COA -> Flow
+                                val contractAddress = if (nft.flowIdentifier != null) {
+                                    val identifier = nft.flowIdentifier.split(".")
+                                    if (identifier.size > 1) {
+                                        identifier[1].toAddress()
+                                    } else {
+                                        ""
+                                    }
+                                } else {
+                                    ""
+                                }
+                                bridgeNFTFromEVMToFlow(nft.getNFTIdentifier(), nft.id, contractAddress)
+                            }
                         } else {
                             // COA -> EOA/COA
                             val function = Function(
@@ -70,7 +88,7 @@ class NftSendConfirmViewModel : ViewModel() {
                                     Uint256(nft.id.toBigInteger())), emptyList()
                             )
                             val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
-                            val txId = cadenceSendEVMTransaction(nft.collectionAddress.removeAddressPrefix(), 0f.toBigDecimal(), data)
+                            val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
                             postTransaction(txId)
                         }
                     } else if (WalletManager.isChildAccount(sendModel.fromAddress)) {
@@ -80,6 +98,10 @@ class NftSendConfirmViewModel : ViewModel() {
                             } else {
                                 sendNFTFromChildToFlow()
                             }
+                        } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                            // Child -> COA
+                            val txId = cadenceBridgeChildNFTToEvm(nft.getNFTIdentifier(), nft.id, sendModel.fromAddress)
+                            postTransaction(txId)
                         }
                     } else {
                         if (isFlowAddress(toAddress)) {
@@ -92,26 +114,15 @@ class NftSendConfirmViewModel : ViewModel() {
                             }
                         } else {
                             // Flow -> EOA/COA
-                            val evmAddress = EVMWalletManager.getEVMAddress()
-                            val function = Function(
-                                "safeTransferFrom",
-                                listOf(
-                                    Address(evmAddress), Address(toAddress),
-                                    Uint256(nft.id.toBigInteger())
-                                ), emptyList()
-                            )
-                            val data =
-                                Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
-                            val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
-                            if (collection?.evmAddress == null || collection.evmAddress.isEmpty()) {
+                            val nftEvmAddress = nft.getEVMAddress()
+                            if (nftEvmAddress.isNullOrBlank()) {
                                 resultLiveData.postValue(false)
                                 return@viewModelIOScope
                             }
                             val txId = cadenceBridgeNFTFromFlowToEVM(
-                                collection.getNFTIdentifier(),
+                                nft.getNFTIdentifier(),
                                 nft.id,
-                                collection.evmAddress.removeAddressPrefix(),
-                                data
+                                nftEvmAddress.removeAddressPrefix()
                             )
                             postTransaction(txId)
                         }
@@ -132,8 +143,7 @@ class NftSendConfirmViewModel : ViewModel() {
                         )
                         val data =
                             Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
-                        val txId = cadenceSendEVMTransaction(
-                            nft.collectionAddress.removeAddressPrefix(), 0f.toBigDecimal(), data)
+                        val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
                         postTransaction(txId)
                     } else if (WalletManager.isChildAccount(sendModel.fromAddress)) {
                         if (isFlowAddress(toAddress)) {
@@ -197,9 +207,8 @@ class NftSendConfirmViewModel : ViewModel() {
         postTransaction(txId)
     }
 
-    private suspend fun bridgeNFTFromEVMToFlow(nftIdentifier: String, nftId: String, toFlowAddress: String) {
-        val txId =
-            cadenceBridgeNFTFromEVMToFlow(nftIdentifier, nftId, toFlowAddress)
+    private suspend fun bridgeNFTFromEVMToFlow(nftIdentifier: String, nftId: String, recipient: String) {
+        val txId = cadenceBridgeNFTFromEVMToFlow(nftIdentifier, nftId, recipient)
         postTransaction(txId)
     }
 

@@ -30,9 +30,10 @@ object NftCollectionConfig {
         val list = config.toList()
 
         if (address == null) {
-            return list.firstOrNull { it.contractName == contractName }
+            return list.firstOrNull { it.contractName() == contractName }
         }
-        return list.firstOrNull { it.address == address && it.contractName == contractName }
+        return list.firstOrNull { it.address == address
+                && it.contractName() == contractName }
     }
 
     fun getByNFTIdentifier(nftIdentifier: String): NftCollection? {
@@ -98,11 +99,11 @@ data class NftCollection(
     @SerializedName("id")
     val id: String,
     @SerializedName("address")
-    val address: String,
+    val address: String?,
     @SerializedName("banner")
     val banner: String?,
     @SerializedName("contract_name")
-    val contractName: String,
+    val contractName: String?,
     @SerializedName("description")
     val description: String?,
     @SerializedName("logo")
@@ -124,12 +125,16 @@ data class NftCollection(
 ) : Parcelable {
 
     fun getNFTIdentifier(): String {
-        return flowIdentifier ?: "A.${address.removeAddressPrefix()}.${contractName}.NFT"
+        return flowIdentifier ?: "A.${address?.removeAddressPrefix().orEmpty()}.${contractName}.NFT"
     }
 
-    fun contractIdWithCollection() = "A.${address.removeAddressPrefix()}.${contractName}.Collection"
+    fun contractName(): String {
+        return contractName ?: name
+    }
 
-    fun contractId() = "A.${address.removeAddressPrefix()}.${contractName}"
+    fun contractIdWithCollection() = "A.${address?.removeAddressPrefix().orEmpty()}.${contractName}.Collection"
+
+    fun contractId() = "A.${address?.removeAddressPrefix().orEmpty()}.${contractName}"
 
     fun logo(): String {
         if (logo == null) {

@@ -50,7 +50,7 @@ private val FCL_AUTHN_RESPONSE = """
               "color": "#41CC5D",
               "supportEmail": "wallet@flow.com",
               "website": "https://frw-link.lilico.app/wc",
-              "icon": "https://lilico.app/frw-logo.png"
+              "icon": "https://lilico.app/logo_mobile.png"
             }
           },
           $PRE_AUTHZ_REPLACEMENT
