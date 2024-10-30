@@ -114,15 +114,10 @@ class NftSendConfirmViewModel : ViewModel() {
                             }
                         } else {
                             // Flow -> EOA/COA
-                            val nftEvmAddress = nft.getEVMAddress()
-                            if (nftEvmAddress.isNullOrBlank()) {
-                                resultLiveData.postValue(false)
-                                return@viewModelIOScope
-                            }
                             val txId = cadenceBridgeNFTFromFlowToEVM(
                                 nft.getNFTIdentifier(),
                                 nft.id,
-                                nftEvmAddress.removeAddressPrefix()
+                                toAddress.removeAddressPrefix()
                             )
                             postTransaction(txId)
                         }
