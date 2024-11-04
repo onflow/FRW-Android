@@ -81,7 +81,7 @@ object EVMWalletManager {
                 callback?.invoke(false)
             } else {
                 evmAddressMap[chainNetWorkString()] = address.toAddress()
-                AccountManager.updateEVMAddressInfo(evmAddressMap)
+                AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
                 callback?.invoke(true)
             }
         }

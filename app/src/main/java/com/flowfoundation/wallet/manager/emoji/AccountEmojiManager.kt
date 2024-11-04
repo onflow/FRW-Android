@@ -67,7 +67,7 @@ object AccountEmojiManager {
                 randomEmoji.defaultName
             )
             accountEmojiList.add(emojiInfo)
-            AccountManager.updateWalletEmojiInfo(currentUserName, accountEmojiList)
+            AccountManager.updateWalletEmojiInfo(currentUserName, accountEmojiList.toMutableList())
             return emojiInfo
         } else {
             return WalletEmojiInfo(
@@ -101,7 +101,7 @@ object AccountEmojiManager {
             )
         )
         dispatchListeners(userName, address, emojiId, emojiName)
-        AccountManager.updateWalletEmojiInfo(userName, accountEmojiList)
+        AccountManager.updateWalletEmojiInfo(userName, accountEmojiList.toMutableList())
     }
 
     fun addListener(callback: OnEmojiUpdate) {
