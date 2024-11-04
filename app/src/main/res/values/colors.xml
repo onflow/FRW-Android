@@ -290,4 +290,5 @@
     <color name="info_error_red">#E93C3C</color>
     <color name="border_line">#1A000000</color>
     <color name="background_2">#FFFFFF</color>
+    <color name="disable_button_text">#40000000</color>
 </resources>

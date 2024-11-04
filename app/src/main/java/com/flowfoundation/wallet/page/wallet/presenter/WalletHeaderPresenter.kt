@@ -31,6 +31,7 @@ import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
+import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
 import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.page.wallet.model.WalletHeaderModel
@@ -39,6 +40,7 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.wallet.toAddress
 import java.util.Date
 
@@ -95,7 +97,13 @@ class WalletHeaderPresenter(
             } else {
                 llSend.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
                 llReceive.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
-                ivAddToken.setOnClickListener { AddTokenActivity.launch(view.context) }
+                ivAddToken.setOnClickListener {
+                    if (WalletManager.isEVMAccountSelected()) {
+                        AddCustomTokenActivity.launch(view.context)
+                    } else {
+                        AddTokenActivity.launch(view.context)
+                    }
+                }
                 cvSwap.setOnClickListener {
                     activity?.let {
                         openBrowser(
@@ -110,7 +118,7 @@ class WalletHeaderPresenter(
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
                 cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
                 cvStake.setVisible(isMainnet() && WalletManager.isEVMAccountSelected().not())
-                ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
+                ivAddToken.visible()
             }
 
             with(cvSend) {

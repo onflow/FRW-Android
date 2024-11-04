@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_custom_token_address_input"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tv_address_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter"
+        android:text="@string/token_contract_address"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <EditText
+        android:id="@+id/et_address"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_round_16dp"
+        android:backgroundTint="@color/fill_1"
+        android:fontFamily="@font/inter"
+        android:hint="@string/token_contract_address_hint"
+        android:imeOptions="actionNext"
+        android:autofillHints="name"
+        android:importantForAutofill="yes"
+        android:inputType="text"
+        android:padding="20dp"
+        android:gravity="start"
+        android:textColor="@color/text_2"
+        android:textColorHint="@color/text_3"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_address_title"
+        tools:text=""/>
+
+
+
+    <ImageView
+        android:id="@+id/state_icon"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="5dp"
+        android:src="@drawable/ic_username_error"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/et_address"
+        app:layout_constraintTop_toBottomOf="@id/et_address"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/state_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:text="@string/evm_token_contract_address_error"
+        android:textColor="@color/error"
+        android:textSize="14sp"
+        android:visibility="visible"
+        tools:visibility="visible"
+        app:layout_constraintStart_toEndOf="@id/state_icon"
+        app:layout_constraintTop_toTopOf="@id/state_icon"
+        app:layout_constraintBottom_toBottomOf="@id/state_icon"/>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/state_error_address"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:constraint_referenced_ids="state_icon, state_text"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

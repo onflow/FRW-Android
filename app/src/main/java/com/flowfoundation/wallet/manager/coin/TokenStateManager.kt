@@ -15,8 +15,6 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -65,6 +63,12 @@ object TokenStateManager {
             val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.address, isEnable))
+        }
+        val customTokenList = CustomTokenManager.getCurrentEVMCustomTokenList()
+        customTokenList.forEach { token ->
+            val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
+            tokenStateList.remove(oldState)
+            tokenStateList.add(TokenState(token.symbol, token.contractAddress, true))
         }
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))

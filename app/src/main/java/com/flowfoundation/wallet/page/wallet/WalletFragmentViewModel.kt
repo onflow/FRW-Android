@@ -193,7 +193,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                     dataList.clear()
                     dataList.addAll(filteredList)
                     dataListLiveData.postValue(dataList)
-                    updateWalletHeader(count = coinList.size)
+                    updateWalletHeader(count = dataList.size)
                 }
             }
 

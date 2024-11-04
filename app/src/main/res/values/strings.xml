@@ -678,5 +678,14 @@ uses to turn your device into a hardware wallet.</string>
     <string name="move_fee_tips">It appears when moving between VM accounts</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
     <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
+    <string name="add_custom_token">Add Custom Token</string>
+    <string name="token_contract_address">Token Contract Address</string>
+    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
+    <string name="contracts">Contracts</string>
+    <string name="token_name">Token Name</string>
+    <string name="token_icon">Token Icon</string>
+    <string name="token_symbol">Token Symbol</string>
+    <string name="token_decimal">Token Decimal</string>
 
 </resources>

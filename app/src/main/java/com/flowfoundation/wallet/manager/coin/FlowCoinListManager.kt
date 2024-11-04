@@ -30,9 +30,18 @@ object FlowCoinListManager {
                 coinList.addAll(list.tokens.filter { it.address.isNotBlank() })
                 if (WalletManager.isEVMAccountSelected()) {
                     addFlowTokenManually()
+                    addCustomToken()
                 }
             }
         }
+    }
+
+    private fun addCustomToken() {
+        val list = CustomTokenManager.getCurrentEVMCustomTokenList()
+        val existingAddresses = coinList.map { it.address }.toSet()
+        coinList.addAll(list.map {
+            it.toFlowCoin()
+        }.filter { it.address !in existingAddresses }.toList())
     }
 
     private fun addFlowTokenManually() {
@@ -92,7 +101,7 @@ data class TokenList(
 @Parcelize
 data class FlowCoin(
     @SerializedName("chainId")
-    val chainId: Int,
+    val chainId: Int?,
     @SerializedName("name")
     val name: String,
     @SerializedName("address")
