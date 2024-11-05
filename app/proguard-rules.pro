@@ -46,6 +46,20 @@
 # For using GSON @Expose annotation
 -keepattributes *Annotation*
 
+# Keep Web3j
+-keep class org.web3j.abi.** { *; }
+-keep class org.web3j.protocol.** { *; }
+-keep class org.web3j.abi.datatypes.** { *; }
+-keep class org.web3j.abi.datatypes.generated.** { *; }
+-keep class org.web3j.abi.datatypes.Type { *; }
+-keep class org.web3j.protocol.core.methods.request.Transaction { *; }
+
+-keepclassmembers class * {
+    @org.web3j.abi.TypeReference <fields>;
+}
+
+-keep public class * extends org.web3j.abi.TypeReference
+
 # Gson specific classes
 -dontwarn sun.misc.**
 -keep class com.google.gson.stream.** { *; }

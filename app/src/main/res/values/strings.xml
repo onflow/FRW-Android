@@ -687,5 +687,6 @@ uses to turn your device into a hardware wallet.</string>
     <string name="token_icon">Token Icon</string>
     <string name="token_symbol">Token Symbol</string>
     <string name="token_decimal">Token Decimal</string>
+    <string name="token_identifier">Token Identifier</string>
 
 </resources>

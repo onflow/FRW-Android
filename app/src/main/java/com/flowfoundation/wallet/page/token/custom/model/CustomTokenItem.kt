@@ -16,7 +16,13 @@ data class CustomTokenItem(
     @SerializedName("decimal")
     val decimal: Int,
     @SerializedName("icon")
-    val icon: String?
+    val icon: String?,
+    @SerializedName("contractName")
+    val contractName: String?,
+    @SerializedName("flowIdentifier")
+    val flowIdentifier: String?,
+    @SerializedName("evmAddress")
+    val evmAddress: String?
 ) {
     fun isEnable(): Boolean {
         return name.isNotEmpty() && symbol.isNotEmpty() && decimal > 0
@@ -27,14 +33,14 @@ data class CustomTokenItem(
             chainId = null,
             name = name,
             address = contractAddress,
-            contractName = null,
+            contractName = contractName,
             storagePath = null,
             decimal = decimal,
             icon = icon ?: "https://lilico.app/placeholder-2.0.png",
             symbol = symbol,
             extensions = null,
-            flowIdentifier = null,
-            evmAddress = null
+            flowIdentifier = flowIdentifier,
+            evmAddress = evmAddress
         )
     }
 }

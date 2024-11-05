@@ -473,6 +473,15 @@ suspend fun cadenceSendEVMTransaction(
     return transactionId
 }
 
+fun cadenceGetAssociatedFlowIdentifier(evmContractAddress: String): String? {
+    logd(TAG, "cadenceGetAssociatedFlowIdentifier()")
+    val result = CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER.executeCadence {
+        arg { string(evmContractAddress) }
+    }
+    logd(TAG, "cadenceGetAssociatedFlowIdentifier response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseString()
+}
+
 suspend fun cadenceBridgeNFTToEvm(
     nftIdentifier: String,
     nftId: String

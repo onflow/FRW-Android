@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.page.token.custom.fragment.CustomTokenAddressIn
 import com.flowfoundation.wallet.page.token.custom.fragment.CustomTokenContractSelectFragment
 import com.flowfoundation.wallet.page.token.custom.fragment.CustomTokenInfoImportFragment
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenOption
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
@@ -28,7 +30,6 @@ class AddCustomTokenActivity : BaseActivity() {
     private lateinit var viewModel: CustomTokenViewModel
     private val addEVMCustomToken = true
     private var currentOption: CustomTokenOption? = null
-    private val loadingDialog by lazy { FlowLoadingDialog(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,9 +46,9 @@ class AddCustomTokenActivity : BaseActivity() {
             loadingLiveData.observe(this@AddCustomTokenActivity) { show ->
                 uiScope {
                     if (show) {
-                        loadingDialog.show()
+                        binding.lavLoading.visible()
                     } else {
-                        loadingDialog.dismiss()
+                        binding.lavLoading.gone()
                     }
                 }
             }

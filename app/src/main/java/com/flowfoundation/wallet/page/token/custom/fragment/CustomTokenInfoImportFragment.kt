@@ -8,7 +8,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentCustomTokenInfoImportBinding
 import com.flowfoundation.wallet.page.token.custom.CustomTokenViewModel
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.orZero
+import com.flowfoundation.wallet.utils.extensions.visible
 
 
 class CustomTokenInfoImportFragment : Fragment() {
@@ -35,6 +37,14 @@ class CustomTokenInfoImportFragment : Fragment() {
             tvName.text = currentToken?.name.orEmpty()
             tvSymbol.text = currentToken?.symbol.orEmpty()
             tvDecimal.text = currentToken?.decimal?.orZero().toString()
+            if (currentToken?.flowIdentifier.isNullOrBlank()) {
+                tvIdentifier.gone()
+                tvIdentifierTitle.gone()
+            } else {
+                tvIdentifier.visible()
+                tvIdentifierTitle.visible()
+                tvIdentifier.text = currentToken?.flowIdentifier.orEmpty()
+            }
             btnImport.setOnClickListener {
                 customTokenViewModel.importToken()
             }

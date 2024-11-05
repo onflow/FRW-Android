@@ -35,9 +35,12 @@ class CustomTokenAddressInputFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         with(binding.etAddress) {
             doOnTextChanged { text, _, _, _ ->
-                checkAddressVerifyAndSearch(
-                    text.toString().lowercase().trim()
-                )
+                val input = text.toString().lowercase().trim()
+                if (input.isEmpty()) {
+                    hideErrorState()
+                } else {
+                    checkAddressVerifyAndSearch(input)
+                }
             }
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -51,13 +54,17 @@ class CustomTokenAddressInputFragment : Fragment() {
 
     private fun checkAddressVerifyAndSearch(address: String) {
         val formatAddress = if (address.startsWith("0x")) address else "0x$address"
-        if (binding.stateErrorAddress.isVisible()) {
-            binding.stateErrorAddress.gone()
-        }
+        hideErrorState()
         if (evmAddressPattern.matches(formatAddress)) {
             customTokenViewModel.fetchTokenInfoWithAddress(formatAddress)
         } else {
             binding.stateErrorAddress.visible()
+        }
+    }
+
+    private fun hideErrorState() {
+        if (binding.stateErrorAddress.isVisible()) {
+            binding.stateErrorAddress.gone()
         }
     }
 }

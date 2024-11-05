@@ -27,7 +27,7 @@
         android:backgroundTint="@color/fill_1"
         android:fontFamily="@font/inter"
         android:hint="@string/token_contract_address_hint"
-        android:imeOptions="actionNext"
+        android:imeOptions="actionSearch"
         android:autofillHints="name"
         android:importantForAutofill="yes"
         android:inputType="text"
@@ -40,8 +40,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_address_title"
         tools:text=""/>
-
-
 
     <ImageView
         android:id="@+id/state_icon"

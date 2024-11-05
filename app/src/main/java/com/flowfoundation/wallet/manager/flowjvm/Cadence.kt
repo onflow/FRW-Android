@@ -224,6 +224,10 @@ var CADENCE_CALL_EVM_CONTRACT
     get() = CadenceApiManager.getCadenceEVMScript("callContract")
     private set(value) {}
 
+var CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER
+    get() = CadenceApiManager.getCadenceBridgeScript("getAssociatedFlowIdentifier")
+    private set(value) {}
+
 var CADENCE_BRIDGE_FT_TO_EVM
     get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmV2")
     private set(value) {}

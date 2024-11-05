@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAssociatedFlowIdentifier
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenOption
 import com.flowfoundation.wallet.utils.evmAddressPattern
@@ -38,6 +39,7 @@ class CustomTokenViewModel : ViewModel() {
     }
 
     fun fetchTokenInfoWithAddress(address: String) {
+        loadingLiveData.postValue(true)
         if (evmAddressPattern.matches(address)) {
             ioScope {
                 fetchEVMTokenInfo(address)
@@ -91,14 +93,22 @@ class CustomTokenViewModel : ViewModel() {
             )
         }.await()?.value as? String
 
+        val flowIdentifier = async {
+            cadenceGetAssociatedFlowIdentifier(contractAddress)
+        }.await()
+
         currentToken = CustomTokenItem(
             contractAddress = contractAddress,
             symbol = symbolValue.orEmpty(),
             decimal = decimalsValue?.toInt() ?: 0,
             name = nameValue.orEmpty(),
-            icon = null
+            icon = null,
+            contractName = null,
+            flowIdentifier = flowIdentifier,
+            evmAddress = null
         )
         web3.shutdown()
+        loadingLiveData.postValue(false)
         changeOption(CustomTokenOption.INFO_IMPORT)
     }
 
