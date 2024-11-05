@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
 import com.flowfoundation.wallet.manager.evm.EVMAddressData
@@ -27,16 +26,13 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAccount
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.setRegistered
@@ -52,7 +48,6 @@ import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.io.File

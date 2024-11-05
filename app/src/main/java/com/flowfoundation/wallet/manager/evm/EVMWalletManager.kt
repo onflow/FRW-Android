@@ -80,15 +80,24 @@ object EVMWalletManager {
             if (address.isNullOrEmpty()) {
                 callback?.invoke(false)
             } else {
-                evmAddressMap[chainNetWorkString()] = address.toAddress()
-                AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
-                callback?.invoke(true)
+                val networkAddress = getNetworkAddress()
+                if (networkAddress != null) {
+                    evmAddressMap[networkAddress] = address.toAddress()
+                    AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
+                    callback?.invoke(true)
+                } else {
+                    callback?.invoke(false)
+                }
             }
         }
     }
 
+    private fun getNetworkAddress(network: String? = chainNetWorkString()): String? {
+       return WalletManager.wallet()?.chainNetworkWallet(network)?.address()
+    }
+
     fun showEVMAccount(network: String?): Boolean {
-        return network != null && evmAddressMap[network].isNullOrBlank().not()
+        return evmAddressMap[getNetworkAddress(network)].isNullOrBlank().not()
     }
 
     fun getEVMAccount(): EVMAccount? {
@@ -107,11 +116,11 @@ object EVMWalletManager {
     }
 
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
-        val address = evmAddressMap[network]
+        val address = evmAddressMap[getNetworkAddress(network)]
         return if (address.equals("0x")) {
             return null
         } else {
-            evmAddressMap[network]
+            address
         }
     }
 

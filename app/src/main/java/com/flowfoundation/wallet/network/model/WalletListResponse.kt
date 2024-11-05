@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.network.model
 
 import android.os.Parcelable
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.wallet.toAddress
@@ -36,6 +37,10 @@ data class WalletListData(
 
     fun mainnetWallet(): WalletData? {
         return wallets?.firstOrNull { it.network() == NETWORK_NAME_MAINNET }
+    }
+
+    fun chainNetworkWallet(chainNetWork: String?): WalletData? {
+        return wallets?.firstOrNull { it.network() == chainNetWork }
     }
 }
 
