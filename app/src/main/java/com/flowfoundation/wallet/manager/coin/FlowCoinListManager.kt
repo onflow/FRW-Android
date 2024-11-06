@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
@@ -57,7 +58,7 @@ object FlowCoinListManager {
                 coinList.add(0, it)
             }
         } catch (e: Exception) {
-            logd(TAG, "add flow failure")
+            loge(TAG, "manually add flow token failure :: $e")
         }
     }
 
