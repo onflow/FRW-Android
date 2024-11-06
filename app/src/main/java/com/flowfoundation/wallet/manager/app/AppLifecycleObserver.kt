@@ -8,6 +8,7 @@ import com.walletconnect.android.CoreClient
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import com.flowfoundation.wallet.page.profile.subpage.wallet.queryStorageInfo
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.safeRun
 
@@ -30,7 +31,7 @@ class AppLifecycleObserver : DefaultLifecycleObserver {
         queryStorageInfo()
         safeRun {
             CoreClient.Relay.connect { error: Core.Model.Error ->
-                logw(TAG, "RelayClient connect error: $error")
+                loge(TAG, "RelayClient connect error: $error")
             }
         }
     }

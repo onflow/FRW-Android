@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.utils.uiScope
 import kotlinx.coroutines.runBlocking
@@ -138,7 +139,7 @@ object StakingManager {
             parseStakingInfoResult(text)
         }.onFailure {
             println(it)
-            logv(TAG, "queryStakingInfo failure:$it")
+            loge(TAG, "queryStakingInfo failure:$it")
         }.getOrNull()
     }
 

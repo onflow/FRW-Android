@@ -41,9 +41,6 @@ fun reportException(event: String, ex: Throwable?, params: Map<String, String>? 
         "message" to ex?.message.orEmpty(),
     ).apply {
         params?.forEach { put(it.key, it.value) }
-        (ex as? HttpException)?.let {
-
-        }
         when (ex) {
             is HttpException -> put("response", ex.response().toString())
             is FlowException -> put("cause", ex.cause.toString())

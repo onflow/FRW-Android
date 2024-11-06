@@ -296,7 +296,6 @@ object DebugViewerDataSource {
             messages.forEach { message ->
                 stringBuilder.append("Title: ${message.title}\n")
                 stringBuilder.append("Body: ${message.body}\n")
-                stringBuilder.append("Collapsed: ${message.collapsed}\n\n")
             }
         }
 
