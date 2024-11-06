@@ -56,7 +56,7 @@ class WalletConnect {
                     } else {
                         safeRun {
                             CoreClient.Relay.connect { error: Core.Model.Error ->
-                                logw(TAG, "CoreClient.Relay connect error: $error")
+                                loge(TAG, "CoreClient.Relay connect error: $error")
                             }
                         }
                         delay(1000)
@@ -94,7 +94,7 @@ class WalletConnect {
                 logd(TAG, "CoreClient.Relay connect change:$isConnected")
                 if (!isConnected) {
                     safeRun {
-                        CoreClient.Relay.connect { error: Core.Model.Error -> logw(TAG, "CoreClient.Relay connect error: $error") }
+                        CoreClient.Relay.connect { error: Core.Model.Error -> loge(TAG, "CoreClient.Relay connect error: $error") }
                     }
                 }
             }
@@ -133,18 +133,18 @@ private fun setup(application: Application) {
         metaData = appMetaData,
         connectionType = ConnectionType.MANUAL
     ) {
-        logw(TAG, "WalletConnect init error: $it")
+        loge(TAG, "WalletConnect init error: $it")
     }
 
     SignClient.initialize(
         Sign.Params.Init(core = CoreClient),
         onSuccess = {
             CoreClient.Relay.connect { error: Core.Model.Error ->
-                logw(TAG, "CoreClient.Relay connect error: $error")
+                loge(TAG, "CoreClient.Relay connect error: $error")
             }
         }
     ) {
-        logw(TAG, "SignClient init error: $it")
+        loge(TAG, "SignClient init error: $it")
     }
 
     SignClient.setWalletDelegate(WalletConnectDelegate())
