@@ -1,14 +1,13 @@
 package com.flowfoundation.wallet.widgets.webview.evm
 
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.app.MAINNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.app.TESTNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.app.networkStringByChainId
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.evm.MAINNET_CHAIN_ID
-import com.flowfoundation.wallet.manager.evm.TESTNET_CHAIN_ID
-import com.flowfoundation.wallet.manager.evm.getNetworkStringByChainId
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
@@ -87,10 +86,10 @@ class EvmInterface(
                                 FclDialogModel(
                                     title = webView.title,
                                     url = webView.url,
-                                    network = getNetworkStringByChainId(rpcChainId)
+                                    network = networkStringByChainId(rpcChainId)
                                 )
                             )) {
-                                logd(TAG, "switch network to::${getNetworkStringByChainId(rpcChainId)}")
+                                logd(TAG, "switch network to::${networkStringByChainId(rpcChainId)}")
                                 return@uiScope
                             }
                             logd(TAG, "no need to switch")

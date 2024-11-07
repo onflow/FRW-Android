@@ -379,4 +379,11 @@
         app:titleCentered="true"
         app:titleTextAppearance="@style/ToolbarTextAppearance"
         app:titleTextColor="@color/transparent"/>
+
+    <androidx.legacy.widget.Space
+        android:id="@+id/space"
+        android:layout_width="40dp"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

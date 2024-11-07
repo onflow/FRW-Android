@@ -2,9 +2,8 @@ package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
-import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.app.networkChainId
+import com.flowfoundation.wallet.manager.app.networkRPCUrl
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
@@ -28,7 +27,6 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
-import org.json.JSONArray
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
@@ -37,39 +35,14 @@ import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import wallet.core.jni.Hash
 
-const val TESTNET_CHAIN_ID = 545
-const val TESTNET_RPC_URL = "https://testnet.evm.nodes.onflow.org"
-const val MAINNET_CHAIN_ID = 747
-const val MAINNET_RPC_URL = "https://mainnet.evm.nodes.onflow.org"
-
-fun getChainID(): Int {
-    return when {
-        isTestnet() -> TESTNET_CHAIN_ID
-        else -> MAINNET_CHAIN_ID
-    }
-}
-
-fun getRPCUrl(): String {
-    return when {
-        isTestnet() -> TESTNET_RPC_URL
-        else -> MAINNET_RPC_URL
-    }
-}
-
-fun getNetworkStringByChainId(chainId: Int): String {
-    return when (chainId) {
-        TESTNET_CHAIN_ID -> NETWORK_NAME_TESTNET
-        else -> NETWORK_NAME_MAINNET
-    }
-}
 
 fun loadInitJS(): String {
     return """
         (function() {
             var config = {                
                 ethereum: {
-                    chainId: ${getChainID()},
-                    rpcUrl: "${getRPCUrl()}"
+                    chainId: ${networkChainId()},
+                    rpcUrl: "${networkRPCUrl()}"
                 },
                 isDebug: true
             };

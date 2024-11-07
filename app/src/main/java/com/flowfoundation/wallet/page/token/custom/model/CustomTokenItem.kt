@@ -22,15 +22,27 @@ data class CustomTokenItem(
     @SerializedName("flowIdentifier")
     val flowIdentifier: String?,
     @SerializedName("evmAddress")
-    val evmAddress: String?
+    val evmAddress: String?,
+    @SerializedName("userId")
+    val userId: String?,
+    @SerializedName("userAddress")
+    val userAddress: String?,
+    @SerializedName("chainId")
+    val chainId: Int?,
+    @SerializedName("tokenType")
+    val tokenType: TokenType
 ) {
+    fun isSameToken(chainId: Int? = 0, address: String): Boolean {
+        return chainId == this.chainId && this.contractAddress.lowercase() == address.lowercase()
+    }
+
     fun isEnable(): Boolean {
         return name.isNotEmpty() && symbol.isNotEmpty() && decimal > 0
     }
 
     fun toFlowCoin(): FlowCoin {
         return FlowCoin(
-            chainId = null,
+            chainId = chainId,
             name = name,
             address = contractAddress,
             contractName = contractName,
@@ -43,4 +55,13 @@ data class CustomTokenItem(
             evmAddress = evmAddress
         )
     }
+}
+
+@Serializable
+enum class TokenType {
+    @SerializedName("evm")
+    EVM,
+
+    @SerializedName("flow")
+    FLOW
 }

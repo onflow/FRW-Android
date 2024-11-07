@@ -2,11 +2,18 @@ package com.flowfoundation.wallet.page.token.custom
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.networkChainId
+import com.flowfoundation.wallet.manager.app.networkRPCUrl
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAssociatedFlowIdentifier
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenOption
+import com.flowfoundation.wallet.page.token.custom.model.TokenType
 import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.ioScope
 import kotlinx.coroutines.Dispatchers
@@ -57,14 +64,13 @@ class CustomTokenViewModel : ViewModel() {
         currentToken?.let {
             if (it.isEnable()) {
                 CustomTokenManager.addEVMCustomToken(it)
-                FlowCoinListManager.reload()
                 importSuccessLiveData.postValue(true)
             }
         }
     }
 
     private suspend fun fetchEVMTokenInfo(contractAddress: String) = coroutineScope {
-        val web3 = Web3j.build(HttpService("https://mainnet.evm.nodes.onflow.org"))
+        val web3 = Web3j.build(HttpService(networkRPCUrl()))
 
         val decimalsFunction =
             Function("decimals", listOf(), listOf(object : TypeReference<Uint8>() {}))
@@ -98,14 +104,18 @@ class CustomTokenViewModel : ViewModel() {
         }.await()
 
         currentToken = CustomTokenItem(
-            contractAddress = contractAddress,
+            contractAddress = contractAddress.lowercase(),
             symbol = symbolValue.orEmpty(),
             decimal = decimalsValue?.toInt() ?: 0,
             name = nameValue.orEmpty(),
             icon = null,
             contractName = null,
             flowIdentifier = flowIdentifier,
-            evmAddress = null
+            evmAddress = null,
+            userId = firebaseUid(),
+            userAddress = WalletManager.selectedWalletAddress(),
+            chainId = networkChainId(),
+            tokenType = TokenType.EVM
         )
         web3.shutdown()
         loadingLiveData.postValue(false)

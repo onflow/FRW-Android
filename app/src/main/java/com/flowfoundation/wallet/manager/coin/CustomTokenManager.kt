@@ -2,48 +2,51 @@ package com.flowfoundation.wallet.manager.coin
 
 import com.flowfoundation.wallet.cache.CustomTokenCacheManager.cacheSync
 import com.flowfoundation.wallet.cache.CustomTokenCacheManager.read
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
-import com.google.gson.annotations.SerializedName
-import kotlinx.serialization.Serializable
-
+import com.flowfoundation.wallet.page.token.custom.model.TokenType
+import com.flowfoundation.wallet.utils.extensions.orZero
+import com.flowfoundation.wallet.utils.logd
 
 object CustomTokenManager {
     private val TAG = CustomTokenManager::class.java.simpleName
 
-    private val cacheList = mutableListOf<CustomTokenCache>()
+    private val cacheList = mutableListOf<CustomTokenItem>()
 
     fun init() {
         cacheList.clear()
         cacheList.addAll(read() ?: emptyList())
     }
 
+    fun isCustomToken(contractAddress: String): Boolean {
+        return cacheList.any { contractAddress.lowercase() == it.contractAddress }
+    }
+
     fun getCurrentEVMCustomTokenList(): List<CustomTokenItem> {
-        return cacheList.find { it.userId == firebaseUid() }?.evmTokenList.orEmpty()
+        return cacheList.filter { it.chainId == networkChainId() && it.tokenType == TokenType.EVM }.toList()
     }
 
     fun addEVMCustomToken(tokenItem: CustomTokenItem) {
-        val userId = firebaseUid() ?: return
-        cacheList.find { it.userId == userId }?.let {
-            it.evmTokenList += tokenItem
-        } ?: run {
-            cacheList.add(CustomTokenCache(
-                userId = userId,
-                evmTokenList = listOf(tokenItem),
-                flowTokenList = emptyList()
-            ))
+        if (cacheList.any { it.isSameToken(tokenItem.chainId, tokenItem.contractAddress) }) {
+            logd(TAG, "already add this token :: ${tokenItem.symbol} :: ${tokenItem.contractAddress} :: in ${tokenItem.chainId} network")
+            return
         }
+        cacheList.add(tokenItem)
+        FlowCoinListManager.addCustomToken()
+        TokenStateManager.customTokenStateChanged(tokenItem, isAdded = true)
         cacheSync(cacheList)
     }
 
+    fun deleteCustomToken(coin: FlowCoin) {
+        val customToken = cacheList.firstOrNull { it.isSameToken(coin.chainId, coin.address) }
+        if (customToken == null) {
+            logd(TAG, "can not find this custom token :: ${coin.symbol} :: in ${coin.chainId} " +
+                    "network")
+            return
+        }
+        cacheList.remove(customToken)
+        FlowCoinListManager.deleteCustomToken(customToken.contractAddress)
+        TokenStateManager.customTokenStateChanged(customToken, isAdded = false)
+        cacheSync(cacheList)
+    }
 }
-
-@Serializable
-data class CustomTokenCache(
-    @SerializedName("userIdentifier")
-    val userId: String,
-    @SerializedName("evmTokenList")
-    var evmTokenList: List<CustomTokenItem>,
-    @SerializedName("flowTokenList")
-    var flowTokenList: List<CustomTokenItem>
-)

@@ -56,7 +56,7 @@ class CustomTokenAddressInputFragment : Fragment() {
         val formatAddress = if (address.startsWith("0x")) address else "0x$address"
         hideErrorState()
         if (evmAddressPattern.matches(formatAddress)) {
-            customTokenViewModel.fetchTokenInfoWithAddress(formatAddress)
+            customTokenViewModel.fetchTokenInfoWithAddress(formatAddress.lowercase())
         } else {
             binding.stateErrorAddress.visible()
         }
