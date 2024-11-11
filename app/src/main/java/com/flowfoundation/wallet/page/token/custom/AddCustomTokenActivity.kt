@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.page.token.custom.model.CustomTokenOption
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isNightMode
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import com.google.android.material.transition.MaterialSharedAxis
@@ -54,7 +55,10 @@ class AddCustomTokenActivity : BaseActivity() {
             }
             importSuccessLiveData.observe(this@AddCustomTokenActivity) { isSuccess ->
                 if (isSuccess) {
+                    toast(msgRes = R.string.add_token_success)
                     finish()
+                } else {
+                    toast(msgRes = R.string.invalid_evm_address)
                 }
             }
             changeOption(CustomTokenOption.ADDRESS_INPUT)

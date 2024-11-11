@@ -38,7 +38,7 @@ object FlowCoinListManager {
     }
 
     fun addCustomToken() {
-        val list = CustomTokenManager.getCurrentEVMCustomTokenList()
+        val list = CustomTokenManager.getCurrentCustomTokenList()
         val existingAddresses = coinList.map { it.address.lowercase() }.toSet()
         coinList.addAll(list.map {
             it.toFlowCoin()

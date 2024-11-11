@@ -4,8 +4,6 @@ import com.flowfoundation.wallet.cache.CustomTokenCacheManager.cacheSync
 import com.flowfoundation.wallet.cache.CustomTokenCacheManager.read
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
-import com.flowfoundation.wallet.page.token.custom.model.TokenType
-import com.flowfoundation.wallet.utils.extensions.orZero
 import com.flowfoundation.wallet.utils.logd
 
 object CustomTokenManager {
@@ -22,8 +20,8 @@ object CustomTokenManager {
         return cacheList.any { contractAddress.lowercase() == it.contractAddress }
     }
 
-    fun getCurrentEVMCustomTokenList(): List<CustomTokenItem> {
-        return cacheList.filter { it.chainId == networkChainId() && it.tokenType == TokenType.EVM }.toList()
+    fun getCurrentCustomTokenList(): List<CustomTokenItem> {
+        return cacheList.filter { it.chainId == networkChainId() && it.isWalletTokenType() }.toList()
     }
 
     fun addEVMCustomToken(tokenItem: CustomTokenItem) {

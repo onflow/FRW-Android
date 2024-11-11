@@ -15,7 +15,7 @@
         android:layout_height="4dp"
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_round_24dp"
-        android:backgroundTint="@color/border_line"
+        android:backgroundTint="@color/border_line_stroke"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>

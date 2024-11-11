@@ -16,7 +16,8 @@ enum class WalletConnectMethod(val value: String) {
     EVM_SEND_TRANSACTION("eth_sendTransaction"),
     EVM_SIGN_TYPED_DATA("eth_signTypedData"),
     EVM_SIGN_TYPED_DATA_V3("eth_signTypedData_v3"),
-    EVM_SIGN_TYPED_DATA_V4("eth_signTypedData_v4");
+    EVM_SIGN_TYPED_DATA_V4("eth_signTypedData_v4"),
+    WALLET_WATCH_ASSETS("wallet_watchAsset");
 
     companion object {
 
@@ -35,7 +36,7 @@ enum class WalletConnectMethod(val value: String) {
         fun getSupportedEVMMethod(): List<String> {
             return listOf(EVM_SIGN_MESSAGE.value, EVM_SEND_TRANSACTION.value, EVM_SIGN_TYPED_DATA.value,
                 EVM_SIGN_TYPED_DATA_V3.value,
-                EVM_SIGN_TYPED_DATA_V4.value)
+                EVM_SIGN_TYPED_DATA_V4.value, WALLET_WATCH_ASSETS.value)
         }
 
     }

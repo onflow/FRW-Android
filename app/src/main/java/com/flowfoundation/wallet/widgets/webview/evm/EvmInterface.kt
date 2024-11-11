@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
+import com.flowfoundation.wallet.page.token.custom.widget.AddCustomTokenDialog
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.isShowMoveDialog
@@ -138,6 +139,19 @@ class EvmInterface(
                     handleSignTypedMessage(id, data, raw, network)
                 }
             }
+            DAppMethod.WATCH_ASSET -> {
+                logd(TAG, "watchAsset obj::$obj")
+                val contractAddress = extractContractAddress(obj)
+                uiScope {
+                    AddCustomTokenDialog.show(
+                        activity().supportFragmentManager,
+                        contractAddress
+                    )
+                    AddCustomTokenDialog.observe { approve ->
+                        webView.sendResult(network, approve.toString(), id)
+                    }
+                }
+            }
             else -> {
                 logd("evm", "methodNotImplement:::$method")
             }
@@ -175,6 +189,12 @@ class EvmInterface(
         val param = json.getJSONObject("object")
         val data = param.getString("data")
         return Numeric.hexStringToByteArray(data)
+    }
+
+    private fun extractContractAddress(json: JSONObject): String {
+        val param = json.getJSONObject("object")
+        val contract = param.getString("contract")
+        return contract
     }
 
     private fun extractRaw(json: JSONObject): String {

@@ -1,6 +1,8 @@
 package com.flowfoundation.wallet.page.token.custom.model
 
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
@@ -16,7 +18,7 @@ data class CustomTokenItem(
     @SerializedName("decimal")
     val decimal: Int,
     @SerializedName("icon")
-    val icon: String?,
+    val icon: String,
     @SerializedName("contractName")
     val contractName: String?,
     @SerializedName("flowIdentifier")
@@ -32,12 +34,29 @@ data class CustomTokenItem(
     @SerializedName("tokenType")
     val tokenType: TokenType
 ) {
+
+    fun icon(): String {
+        return if (icon.endsWith(".svg")) {
+            icon.svgToPng()
+        } else {
+            icon
+        }
+    }
+
     fun isSameToken(chainId: Int? = 0, address: String): Boolean {
         return chainId == this.chainId && this.contractAddress.lowercase() == address.lowercase()
     }
 
     fun isEnable(): Boolean {
         return name.isNotEmpty() && symbol.isNotEmpty() && decimal > 0
+    }
+
+    fun isWalletTokenType(): Boolean {
+        return tokenType == if (WalletManager.isEVMAccountSelected()) {
+            TokenType.EVM
+        } else {
+            TokenType.FLOW
+        }
     }
 
     fun toFlowCoin(): FlowCoin {
@@ -48,7 +67,7 @@ data class CustomTokenItem(
             contractName = contractName,
             storagePath = null,
             decimal = decimal,
-            icon = icon ?: "https://lilico.app/placeholder-2.0.png",
+            icon = icon,
             symbol = symbol,
             extensions = null,
             flowIdentifier = flowIdentifier,

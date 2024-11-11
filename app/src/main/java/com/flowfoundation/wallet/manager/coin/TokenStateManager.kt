@@ -65,7 +65,7 @@ object TokenStateManager {
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.address, isEnable))
         }
-        val customTokenList = CustomTokenManager.getCurrentEVMCustomTokenList()
+        val customTokenList = CustomTokenManager.getCurrentCustomTokenList()
         customTokenList.forEach { token ->
             val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
             tokenStateList.remove(oldState)
