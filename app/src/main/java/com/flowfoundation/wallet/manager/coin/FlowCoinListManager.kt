@@ -37,12 +37,16 @@ object FlowCoinListManager {
         }
     }
 
-    private fun addCustomToken() {
-        val list = CustomTokenManager.getCurrentEVMCustomTokenList()
-        val existingAddresses = coinList.map { it.address }.toSet()
+    fun addCustomToken() {
+        val list = CustomTokenManager.getCurrentCustomTokenList()
+        val existingAddresses = coinList.map { it.address.lowercase() }.toSet()
         coinList.addAll(list.map {
             it.toFlowCoin()
         }.filter { it.address !in existingAddresses }.toList())
+    }
+
+    fun deleteCustomToken(contractAddress: String) {
+        coinList.removeIf { it.address.lowercase() == contractAddress.lowercase()}
     }
 
     private fun addFlowTokenManually() {
@@ -54,8 +58,10 @@ object FlowCoinListManager {
                     "config/flow_token_mainnet.json"
                 }
             )
-            Gson().fromJson(text, FlowCoin::class.java)?.let {
-                coinList.add(0, it)
+            Gson().fromJson(text, FlowCoin::class.java)?.let { coin ->
+                if(coinList.none { it.address == coin.address }) {
+                    coinList.add(0, coin)
+                }
             }
         } catch (e: Exception) {
             loge(TAG, "manually add flow token failure :: $e")

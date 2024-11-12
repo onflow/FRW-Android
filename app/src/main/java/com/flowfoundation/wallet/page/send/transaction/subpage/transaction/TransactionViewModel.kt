@@ -155,7 +155,18 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                     }
                 }
             } else {
-                transferToken(coin)
+                if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                    val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
+                    val function = Function(
+                        "transfer",
+                        listOf(Address(toAddress), Uint256(amount)), emptyList()
+                    )
+                    val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
+                    val txId = cadenceSendEVMTransaction(coin.address.removeAddressPrefix(), 0f.toBigDecimal(), data)
+                    postTransaction(txId)
+                } else {
+                    transferToken(coin)
+                }
             }
         }
     }

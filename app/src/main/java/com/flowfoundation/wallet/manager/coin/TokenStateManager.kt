@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.network.retrofitApi
+import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.logw
@@ -64,13 +65,23 @@ object TokenStateManager {
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.address, isEnable))
         }
-        val customTokenList = CustomTokenManager.getCurrentEVMCustomTokenList()
+        val customTokenList = CustomTokenManager.getCurrentCustomTokenList()
         customTokenList.forEach { token ->
             val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.contractAddress, true))
         }
         dispatchListeners()
+        tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
+    }
+
+    fun customTokenStateChanged(customToken: CustomTokenItem, isAdded: Boolean = false) {
+        val oldState = tokenStateList.firstOrNull { it.address == customToken.contractAddress }
+        tokenStateList.remove(oldState)
+        tokenStateList.add(TokenState(customToken.symbol, customToken.contractAddress, isAdded))
+        if (oldState?.isAdded != isAdded) {
+            dispatchListeners()
+        }
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
 

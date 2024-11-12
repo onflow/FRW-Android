@@ -14,6 +14,18 @@ import com.flowfoundation.wallet.utils.uiScope
 private var network = if (isDev() || isTesting()) NETWORK_TESTNET else NETWORK_MAINNET
 private var isDeveloperMode = isDev() || isTesting()
 
+
+const val NETWORK_NAME_MAINNET = "mainnet"
+const val NETWORK_NAME_TESTNET = "testnet"
+
+const val EVM_MAINNET = "eip155:747"
+const val EVM_TESTNET = "eip155:545"
+
+const val TESTNET_CHAIN_ID = 545
+const val TESTNET_RPC_URL = "https://testnet.evm.nodes.onflow.org"
+const val MAINNET_CHAIN_ID = 747
+const val MAINNET_RPC_URL = "https://mainnet.evm.nodes.onflow.org"
+
 fun refreshChainNetwork(callback: (() -> Unit)? = null) {
     cpuScope {
         refreshChainNetworkSync()
@@ -38,6 +50,27 @@ fun chainNetWorkString(): String {
     return when {
         isTestnet() -> NETWORK_NAME_TESTNET
         else -> NETWORK_NAME_MAINNET
+    }
+}
+
+fun networkStringByChainId(chainId: Int): String {
+    return when (chainId) {
+        TESTNET_CHAIN_ID -> NETWORK_NAME_TESTNET
+        else -> NETWORK_NAME_MAINNET
+    }
+}
+
+fun networkChainId(): Int {
+    return when {
+        isTestnet() -> TESTNET_CHAIN_ID
+        else -> MAINNET_CHAIN_ID
+    }
+}
+
+fun networkRPCUrl(): String {
+    return when {
+        isTestnet() -> TESTNET_RPC_URL
+        else -> MAINNET_RPC_URL
     }
 }
 
@@ -73,8 +106,3 @@ fun flowChainNetworkString(evmNetwork: String): String {
     }
 }
 
-const val NETWORK_NAME_MAINNET = "mainnet"
-const val NETWORK_NAME_TESTNET = "testnet"
-
-const val EVM_MAINNET = "eip155:747"
-const val EVM_TESTNET = "eip155:545"

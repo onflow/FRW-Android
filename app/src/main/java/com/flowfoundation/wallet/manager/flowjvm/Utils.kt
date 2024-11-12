@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringMapResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringObjResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
@@ -105,6 +106,15 @@ internal fun FlowScriptResponse.parseString(): String? {
     return try {
         val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
         result.value
+    } catch (e: Exception) {
+        return null
+    }
+}
+//{"value":{"value":"A.3399d7c6c609b7e5.DAMO420.Vault","type":"String"},"type":"Optional"}
+internal fun FlowScriptResponse.parseStringObject(): String? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringObjResult::class.java)
+        result.value.value
     } catch (e: Exception) {
         return null
     }

@@ -479,7 +479,7 @@ fun cadenceGetAssociatedFlowIdentifier(evmContractAddress: String): String? {
         arg { string(evmContractAddress) }
     }
     logd(TAG, "cadenceGetAssociatedFlowIdentifier response:${String(result?.bytes ?: byteArrayOf())}")
-    return result?.parseString()
+    return result?.parseStringObject()
 }
 
 suspend fun cadenceBridgeNFTToEvm(

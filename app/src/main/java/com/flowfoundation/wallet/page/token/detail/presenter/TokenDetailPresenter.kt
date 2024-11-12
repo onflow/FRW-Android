@@ -95,15 +95,8 @@ class TokenDetailPresenter(
             btnSend.backgroundTintList = bgTintColor
             btnTrade.backgroundTintList = bgTintColor
 
-            val moveVisible = if (WalletManager.isChildAccountSelected()) {
-                false
-            } else {
-                if (coin.isFlowCoin()) {
-                    true
-                } else if (coin.evmAddress.isNullOrBlank().not()) {
-                    true
-                } else coin.flowIdentifier.isNullOrBlank().not()
-            }
+            val moveVisible = !WalletManager.isChildAccountSelected()
+                    && (coin.isFlowCoin() || coin.isCOABridgeCoin() || coin.canBridgeToCOA())
             llEvmMoveToken.setVisible(moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {

@@ -3,16 +3,11 @@ package com.flowfoundation.wallet.page.token.custom
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
-import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
-import com.flowfoundation.wallet.manager.coin.CustomTokenManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAssociatedFlowIdentifier
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
-import com.flowfoundation.wallet.page.token.custom.model.CustomTokenOption
 import com.flowfoundation.wallet.page.token.custom.model.TokenType
 import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.ioScope
@@ -23,9 +18,11 @@ import kotlinx.coroutines.withContext
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.FunctionReturnDecoder
 import org.web3j.abi.TypeReference
+import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.Type
 import org.web3j.abi.datatypes.Utf8String
+import org.web3j.abi.datatypes.generated.Uint256
 import org.web3j.abi.datatypes.generated.Uint8
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameterName
@@ -33,48 +30,23 @@ import org.web3j.protocol.core.methods.request.Transaction
 import org.web3j.protocol.http.HttpService
 import java.math.BigInteger
 
-class CustomTokenViewModel : ViewModel() {
+class WatchAssetsViewModel : ViewModel() {
 
-    val optionChangeLiveData = MutableLiveData<CustomTokenOption>()
-    val loadingLiveData = MutableLiveData<Boolean>()
-    val importSuccessLiveData = MutableLiveData<Boolean>()
-    private var currentToken: CustomTokenItem? = null
-    val customTokenListLiveData = MutableLiveData<List<CustomTokenItem>>()
-    private var isLoading = false
+    val tokenInfoLiveData = MutableLiveData<CustomTokenItem>()
+    val balanceWithSymbolLiveData = MutableLiveData<String>()
 
-    fun changeOption(option: CustomTokenOption) {
-        optionChangeLiveData.postValue(option)
-    }
-
-    fun fetchTokenInfoWithAddress(address: String) {
-        if (isLoading) {
-            return
-        }
-        isLoading = true
-        loadingLiveData.postValue(true)
+    fun fetchTokenInfoWithAddress(address: String, icon: String? = null) {
         if (evmAddressPattern.matches(address)) {
             ioScope {
-                fetchEVMTokenInfo(address.lowercase())
+                fetchEVMTokenInfo(address.lowercase(), icon)
             }
         } else {
             // todo add flow custom token
         }
     }
 
-    fun getCurrentToken(): CustomTokenItem? {
-        return currentToken
-    }
 
-    fun importToken() {
-        currentToken?.let {
-            if (it.isEnable()) {
-                CustomTokenManager.addEVMCustomToken(it)
-                importSuccessLiveData.postValue(true)
-            }
-        }
-    }
-
-    private suspend fun fetchEVMTokenInfo(contractAddress: String) = coroutineScope {
+    private suspend fun fetchEVMTokenInfo(contractAddress: String, icon: String?) = coroutineScope {
         val web3 = Web3j.build(HttpService(networkRPCUrl()))
 
         val decimalsFunction =
@@ -84,6 +56,12 @@ class CustomTokenViewModel : ViewModel() {
         val nameFunction =
             Function("name", listOf(), listOf(object : TypeReference<Utf8String>() {}))
 
+        val balanceFunction = Function(
+            "balanceOf",
+            listOf(Address(EVMWalletManager.getEVMAddress())),
+            listOf(object : TypeReference<Uint256>() {})
+        )
+
         val decimalsValue = async {
             callSmartContractFunction(
                 web3, decimalsFunction,
@@ -91,14 +69,11 @@ class CustomTokenViewModel : ViewModel() {
             )
         }.await()?.value as? BigInteger
 
-        if (decimalsValue == null) {
-            web3.shutdown()
-            changeOption(CustomTokenOption.ADDRESS_INPUT)
-            loadingLiveData.postValue(false)
-            importSuccessLiveData.postValue(false)
-            isLoading = false
-            return@coroutineScope
-        }
+        val decimal = decimalsValue?.toInt() ?: 0
+
+        val balanceResult = async {
+            callSmartContractFunction(web3, balanceFunction, contractAddress)
+        }.await()?.value as? BigInteger
 
         val symbolValue = async {
             callSmartContractFunction(
@@ -119,30 +94,25 @@ class CustomTokenViewModel : ViewModel() {
             cadenceGetAssociatedFlowIdentifier(contractAddress)
         }.await()
 
-        currentToken = CustomTokenItem(
+        web3.shutdown()
+        tokenInfoLiveData.postValue(CustomTokenItem(
             contractAddress = contractAddress.lowercase(),
             symbol = symbolValue.orEmpty(),
-            decimal = decimalsValue.toInt(),
+            decimal = decimal,
             name = nameValue.orEmpty(),
-            icon = "https://lilico.app/placeholder-2.0.png",
+            icon = icon ?: "https://lilico.app/placeholder-2.0.png",
             contractName = null,
             flowIdentifier = flowIdentifier,
             evmAddress = null,
             userId = firebaseUid(),
-            userAddress = WalletManager.selectedWalletAddress(),
+            userAddress = EVMWalletManager.getEVMAddress(),
             chainId = networkChainId(),
             tokenType = TokenType.EVM
-        )
-        web3.shutdown()
-        isLoading = false
-        loadingLiveData.postValue(false)
-        changeOption(CustomTokenOption.INFO_IMPORT)
+        ))
+        val balance = balanceResult?.toBigDecimal()?.movePointLeft(decimal)?.toFloat() ?: 0f
+        balanceWithSymbolLiveData.postValue("$balance $symbolValue")
     }
 
-    override fun onCleared() {
-        isLoading = false
-        super.onCleared()
-    }
 
     private suspend fun callSmartContractFunction(
         web3: Web3j,

@@ -97,7 +97,13 @@ class WalletHeaderPresenter(
             } else {
                 llSend.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
                 llReceive.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
-                ivAddToken.setOnClickListener { AddTokenActivity.launch(view.context) }
+                ivAddToken.setOnClickListener {
+                    if (WalletManager.isEVMAccountSelected()) {
+                        AddCustomTokenActivity.launch(view.context)
+                    } else {
+                        AddTokenActivity.launch(view.context)
+                    }
+                }
                 cvSwap.setOnClickListener {
                     activity?.let {
                         openBrowser(
@@ -112,7 +118,7 @@ class WalletHeaderPresenter(
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
                 cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
                 cvStake.setVisible(isMainnet() && WalletManager.isEVMAccountSelected().not())
-                ivAddToken.setVisible(WalletManager.isEVMAccountSelected().not())
+                ivAddToken.visible()
             }
 
             with(cvSend) {
