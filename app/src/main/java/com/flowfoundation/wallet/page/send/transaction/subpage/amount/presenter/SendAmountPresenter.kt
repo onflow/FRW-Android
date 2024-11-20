@@ -144,7 +144,7 @@ class SendAmountPresenter(
     private fun updateBalance(balance: SendBalanceModel) {
         with(binding) {
             balanceAmountView.text =
-                "${balance.balance.formatNum()} ${FlowCoinListManager.getCoin(balance.symbol)?.name?.capitalizeV2()} "
+                "${balance.balance.toPlainString()} ${FlowCoinListManager.getCoin(balance.symbol)?.name?.capitalizeV2()} "
             balanceAmountConvertView.text =
                 "≈ " + (if (balance.coinRate > 0) balance.coinRate * balance.balance else 0f).formatPrice(
                     includeSymbol = true,
@@ -202,9 +202,9 @@ class SendAmountPresenter(
 
     private fun setMaxAmount() {
         logd("send", "minBalance ${minBalance()}")
-        val balance = (balance()?.balance ?: 0f) - minBalance()
+        val balance = max((balance()?.balance ?: 0f) - minBalance(), 0f)
         val coinRate = balance()?.coinRate ?: 0f
-        val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).formatNum()
+        val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).toPlainString()
         with(binding) {
             transferAmountInput.setText(amount)
             transferAmountInput.setSelection(transferAmountInput.text.length)
