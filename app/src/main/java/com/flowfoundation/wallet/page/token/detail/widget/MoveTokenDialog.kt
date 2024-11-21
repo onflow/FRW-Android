@@ -31,16 +31,20 @@ import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.toPlainString
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.math.max
 
 
 class MoveTokenDialog : BottomSheetDialogFragment() {
@@ -105,7 +109,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 initView()
             }
             tvMax.setOnClickListener {
-                val amount = (fromBalance - getMinBalance()).formatNum()
+                val amount = max(fromBalance - getMinBalance(), 0f).toPlainString()
                 etAmount.setText(amount)
                 etAmount.setSelection(etAmount.text.length)
             }
@@ -215,7 +219,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             } ?: 0f
 
             uiScope {
-                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance)
+                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.toPlainString())
             }
         }
     }

@@ -103,18 +103,8 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                             bridgeTokenFromEVMToChild(coin.getFTIdentifier(), amount, toAddress)
                         } else {
                             // COA -> Flow
-                            val contractAddress = if (coin.flowIdentifier != null) {
-                                val identifier = coin.flowIdentifier.split(".")
-                                if (identifier.size > 1) {
-                                    identifier[1].toAddress()
-                                } else {
-                                    ""
-                                }
-                            } else {
-                                ""
-                            }
                             val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
-                            bridgeTokenToFlow(coin.getFTIdentifier(), amount, contractAddress)
+                            bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
                         }
                     } else {
                         // COA -> EOA/COA
@@ -136,20 +126,20 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                             // Child -> Self COA
                             bridgeTokenFromChildToEVM(coin.getFTIdentifier(), transaction.amount, fromAddress)
                         } else {
-                            // Flow -> EOA/COA
+                            // Flow -> COA
                             val txId = cadenceBridgeFTFromFlowToEVM(
                                 coin.getFTIdentifier(),
                                 transaction.amount,
-                                coin.evmAddress?.removeAddressPrefix() ?: ""
+                                toAddress
                             )
                             postTransaction(txId)
                         }
                     } else {
-                        // Flow -> EOA/COA
+                        // Flow -> EOA
                         val txId = cadenceBridgeFTFromFlowToEVM(
                             coin.getFTIdentifier(),
                             transaction.amount,
-                            coin.evmAddress?.removeAddressPrefix() ?: ""
+                            toAddress
                         )
                         postTransaction(txId)
                     }

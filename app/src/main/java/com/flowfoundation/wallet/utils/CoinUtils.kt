@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.utils
 
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
+import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.NumberFormat
@@ -40,6 +41,10 @@ fun Float.formatNum(
     roundingMode: RoundingMode = RoundingMode.DOWN,
 ): String {
     return format(digits, roundingMode)
+}
+
+fun Float.toPlainString(): String {
+    return BigDecimal(this.toString()).toPlainString()
 }
 
 fun Float.formatLargeBalanceNumber(isAbbreviation: Boolean = false): String {

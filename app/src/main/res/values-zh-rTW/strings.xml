@@ -233,6 +233,7 @@
     <string name="file_picker_title">選擇文件</string>
     <string name="transaction_fee">交易手續費</string>
     <string name="hold_to_confirm">按住確認</string>
+    <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">啟用</string>
     <string name="sign_message">簽名訊息</string>
     <string name="transaction_history">交易歷史</string>
@@ -603,7 +604,7 @@
     <string name="add_public_key_failure">添加公開密鑰失敗</string>
     <string name="send_response_failure">發送響應失敗</string>
     <string name="collection_list">收藏列表</string>
-    <string name="balance_value">餘額 %1$d</string>
+    <string name="balance_value">Balance %1$s</string>
     <string name="backup_not_found">未找到備份</string>
     <string name="backup_not_found_desc">您的帳戶未關聯任何備份文件。請驗證後再試一次。</string>
     <string name="backup_decryption_failed">備份解密失敗</string>
@@ -655,4 +656,26 @@
     <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
     <string name="sign_type_message_from">Sign Type Message from</string>
     <string name="message">Message</string>
+    <string name="current_account">Current Account</string>
+    <string name="other_accounts">Other Accounts</string>
+    <string name="local_account_keys">Local Account Keys</string>
+    <string name="reload_config">Reload Config</string>
+    <string name="move_fee">Move Fee</string>
+    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
+    <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
+    <string name="add_custom_token">Add Custom Token</string>
+    <string name="add_token_success">Add Token Success</string>
+    <string name="invalid_evm_address">Invalid ERC20 address</string>
+    <string name="token_contract_address">Token Contract Address</string>
+    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
+    <string name="contracts">Contracts</string>
+    <string name="token_name">Token Name</string>
+    <string name="token_icon">Token Icon</string>
+    <string name="token_symbol">Token Symbol</string>
+    <string name="token_decimal">Token Decimal</string>
+    <string name="token_identifier">Token Identifier</string>
+    <string name="add_suggested_token">Add Suggested Token</string>
+    <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
 </resources>
