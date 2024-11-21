@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
 import com.flowfoundation.wallet.utils.ioScope
@@ -36,10 +35,10 @@ object TokenStateManager {
         ioScope {
             if (WalletManager.isEVMAccountSelected()) {
                 fetchEVMTokenStateSync()
-                FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW)?.let { token ->
-                    val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
+                FlowCoinListManager.getFlowCoin()?.let { token ->
+                    val oldState = tokenStateList.firstOrNull { it.isSameCoin(token.contractId()) }
                     tokenStateList.remove(oldState)
-                    tokenStateList.add(TokenState(token.symbol, token.address, true))
+                    tokenStateList.add(TokenState(token.symbol, token.address, true, token.contractId()))
                     dispatchListeners()
                 }
             } else if (WalletManager.isChildAccountSelected()) {
@@ -61,13 +60,13 @@ object TokenStateManager {
             val amountValue = token.balance.toBigDecimal()
             val value = amountValue.movePointLeft(token.decimal).toFloat()
             val isEnable = value > 0
-            val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
+            val oldState = tokenStateList.firstOrNull { it.isSameEVMCoin(token.address) }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.address, isEnable))
         }
         val customTokenList = CustomTokenManager.getCurrentCustomTokenList()
         customTokenList.forEach { token ->
-            val oldState = tokenStateList.firstOrNull { it.symbol == token.symbol }
+            val oldState = tokenStateList.firstOrNull { it.isSameEVMCoin(token.contractAddress) }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(token.symbol, token.contractAddress, true))
         }
@@ -95,10 +94,10 @@ object TokenStateManager {
         coinList.forEach { coin ->
             val isEnable = enabledToken[coin.contractId()] ?: false
             val oldState = tokenStateList.firstOrNull {
-                it.symbol == coin.symbol
+                it.isSameCoin(coin.contractId())
             }
             tokenStateList.remove(oldState)
-            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
+            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable, coin.contractId()))
         }
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
@@ -114,10 +113,10 @@ object TokenStateManager {
         coinList.forEach { coin ->
             val isEnable = enabledToken[coin.contractId()] ?: false
             val oldState = tokenStateList.firstOrNull {
-                it.symbol == coin.symbol
+                it.isSameCoin(coin.contractId())
             }
             tokenStateList.remove(oldState)
-            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
+            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable, coin.contractId()))
         }
         logd("WalletFragmentViewModel", "tokenStateList::${tokenStateList.size}")
         dispatchListeners()
@@ -127,9 +126,9 @@ object TokenStateManager {
     fun fetchStateSingle(coin: FlowCoin, cache: Boolean = false) {
         val isEnable = cadenceCheckTokenEnabled(coin)
         if (isEnable != null) {
-            val oldState = tokenStateList.firstOrNull { it.symbol == coin.symbol }
+            val oldState = tokenStateList.firstOrNull { it.isSameCoin(coin.contractId()) }
             tokenStateList.remove(oldState)
-            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable))
+            tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable, coin.contractId()))
             if (oldState?.isAdded != isEnable) {
                 dispatchListeners()
             }
@@ -139,7 +138,7 @@ object TokenStateManager {
         }
     }
 
-    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address.lowercase() == tokenAddress.lowercase() }?.isAdded ?: false
+    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address.equals(tokenAddress, true) }?.isAdded ?: false
 
     fun addListener(callback: TokenStateChangeListener) {
         uiScope { this.listeners.add(WeakReference(callback)) }
@@ -174,4 +173,14 @@ class TokenState(
     val address: String,
     @SerializedName("isAdded")
     val isAdded: Boolean,
-)
+    @SerializedName("contractId")
+    val contractId: String? = "",
+) {
+    fun isSameCoin(contractId: String): Boolean {
+        return this.contractId.equals(contractId, true)
+    }
+
+    fun isSameEVMCoin(address: String): Boolean {
+        return this.address.equals(address, true)
+    }
+}

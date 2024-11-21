@@ -41,7 +41,7 @@ class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRat
             }
             if (state.type == TransactionState.TYPE_TRANSFER_COIN) {
                 val coinData = state.coinData()
-                val coin = FlowCoinListManager.getCoin(coinData.coinSymbol) ?: return@viewModelIOScope
+                val coin = FlowCoinListManager.getCoinById(coinData.coinId) ?: return@viewModelIOScope
                 CoinRateManager.fetchCoinRate(coin)
             }
         }

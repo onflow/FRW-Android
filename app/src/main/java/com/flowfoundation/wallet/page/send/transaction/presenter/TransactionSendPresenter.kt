@@ -40,7 +40,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 class TransactionSendPresenter(
     private val fragmentManager: FragmentManager,
     private val binding: LayoutSendAddressSelectBinding,
-    private val coinSymbol: String? = null,
+    private val coinContractId: String? = null,
 ) : BasePresenter<TransactionSendModel> {
     private val activity by lazy { findActivity(binding.root) as FragmentActivity }
 
@@ -187,7 +187,7 @@ class TransactionSendPresenter(
         if (WalletManager.isChildAccountSelected()) {
             return
         }
-        SendAmountActivity.launch(activity, address, coinSymbol)
+        SendAmountActivity.launch(activity, address, coinContractId)
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {

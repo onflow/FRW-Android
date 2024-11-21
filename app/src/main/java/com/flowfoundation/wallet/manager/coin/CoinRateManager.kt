@@ -44,7 +44,7 @@ object CoinRateManager {
         uiScope { this.listeners.add(WeakReference(callback)) }
     }
 
-    fun coinRate(symbol: String) = coinRateMap[symbol]?.price
+    fun coinRate(contractId: String) = coinRateMap[contractId]?.price
 
     fun fetchCoinRate(coin: FlowCoin) {
         ioScope {
@@ -52,7 +52,7 @@ object CoinRateManager {
                 dispatchListeners(coin, 1.0f, 0f)
                 return@ioScope
             }
-            val cacheRate = coinRateMap[coin.symbol]
+            val cacheRate = coinRateMap[coin.contractId()]
             cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
             if (cacheRate.isExpire()) {
                 runCatching {
@@ -98,7 +98,7 @@ object CoinRateManager {
                     dispatchListeners(coin, 1.0f, 0f)
                     return@forEach
                 }
-                val cacheRate = coinRateMap[coin.symbol]
+                val cacheRate = coinRateMap[coin.contractId()]
                 cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
                 if (cacheRate.isExpire()) {
                     runCatching {
@@ -108,7 +108,7 @@ object CoinRateManager {
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
                                 if (WalletManager.isEVMAccountSelected()) {
-                                    coin.address.lowercase() == it.evmAddress?.lowercase()
+                                    coin.address.equals(it.evmAddress, true)
                                 } else {
                                     coin.contractName() == it.contractName
                                 }
@@ -135,13 +135,13 @@ object CoinRateManager {
 
     private fun updateCache(coin: FlowCoin, price: Float, quoteChange: Float) {
         ioScope {
-            coinRateMap[coin.symbol] = CoinRate(coin.symbol, price, quoteChange, System.currentTimeMillis())
+            coinRateMap[coin.contractId()] = CoinRate(coin.symbol, coin.contractId(), price, quoteChange, System.currentTimeMillis())
             cache.cache(CoinRateCacheData(coinRateMap))
         }
     }
 
     private fun dispatchListeners(coin: FlowCoin, price: Float, quoteChange: Float) {
-        logd(TAG, "dispatchListeners ${coin.symbol}:${price}")
+        logd(TAG, "dispatchListeners ${coin.contractId()}:${price}")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onCoinRateUpdate(coin, price, quoteChange) }
@@ -167,6 +167,8 @@ private class CoinRateCacheData(
 class CoinRate(
     @SerializedName("symbol")
     val symbol: String,
+    @SerializedName("contractId")
+    val contractId: String? = "",
     @SerializedName("price")
     val price: Float,
     @SerializedName("quoteChange")

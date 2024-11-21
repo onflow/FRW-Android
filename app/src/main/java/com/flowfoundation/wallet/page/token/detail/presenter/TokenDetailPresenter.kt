@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
@@ -59,7 +60,9 @@ class TokenDetailPresenter(
             Glide.with(iconView).load(coin.icon()).into(iconView)
             nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             getMoreWrapper.setOnClickListener { }
-            btnSend.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
+            btnSend.setOnClickListener {
+                TransactionSendActivity.launch(activity, coinContractId = coin.contractId())
+            }
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
@@ -101,7 +104,7 @@ class TokenDetailPresenter(
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
-                        MoveTokenDialog().showDialog(activity, coin.symbol)
+                        MoveTokenDialog().showDialog(activity, coin.contractId())
                     }
                 } else {
                     EnableEVMActivity.launch(activity)
@@ -163,7 +166,7 @@ class TokenDetailPresenter(
     private fun setupStakingRewards() {
         with(binding.stakingRewardWrapper) {
             val currency = selectedCurrency()
-            val coinRate = CoinRateManager.coinRate(FlowCoin.SYMBOL_FLOW) ?: 0f
+            val coinRate = CoinRateManager.coinRate(FlowCoinListManager.getFlowCoinContractId()) ?: 0f
             val stakingCount = StakingManager.stakingCount()
 
             val dayRewards =

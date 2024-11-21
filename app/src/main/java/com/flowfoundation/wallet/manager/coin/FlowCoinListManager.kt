@@ -46,7 +46,7 @@ object FlowCoinListManager {
     }
 
     fun deleteCustomToken(contractAddress: String) {
-        coinList.removeIf { it.address.lowercase() == contractAddress.lowercase()}
+        coinList.removeIf { it.address.equals(contractAddress, true)}
     }
 
     private fun addFlowTokenManually() {
@@ -70,7 +70,15 @@ object FlowCoinListManager {
 
     fun coinList() = coinList.toList()
 
-    fun getCoin(symbol: String) = coinList.firstOrNull { it.symbol.lowercase() == symbol.lowercase() }
+    fun getCoinById(contractId: String) = coinList.firstOrNull { it.contractId() == contractId }
+
+    fun getFlowCoin() = coinList.firstOrNull { it.isFlowCoin() }
+
+    fun getFlowCoinContractId() = getFlowCoin()?.contractId().orEmpty()
+
+    fun isFlowCoin(contractId: String) = coinList.any { it.isFlowCoin() && it.contractId().equals(contractId, true) }
+
+    fun getEVMCoin(address: String) = coinList.firstOrNull { it.isSameCoin(address, "")  }
 
     fun getEnabledCoinList() = coinList.toList().filter { TokenStateManager.isTokenAdded(it.address) }
 
@@ -131,12 +139,24 @@ data class FlowCoin(
     val evmAddress: String?
 ) : Parcelable {
 
+    fun contractId(): String {
+        return "A.${address.removeAddressPrefix()}.${contractName()}"
+    }
+
     fun icon(): String {
         return if (icon.endsWith(".svg")) {
             icon.svgToPng()
         } else {
             icon
         }
+    }
+
+    fun isSameCoin(address: String, contractName: String): Boolean {
+        return this.address.equals(address, true) && contractName().equals(contractName, true)
+    }
+
+    fun isSameCoin(contractId: String): Boolean {
+        return this.contractId().equals(contractId, true)
     }
 
     fun contractName() = contractName ?: ""

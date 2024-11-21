@@ -46,7 +46,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
             updateLiveData(detailModel)
 
-            val coin = FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW) ?: return@ioScope
+            val coin = FlowCoinListManager.getFlowCoin() ?: return@ioScope
 
             logd("xxx", "coin:$coin")
             BalanceManager.getBalanceByCoin(coin)

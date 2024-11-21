@@ -10,8 +10,8 @@ import kotlinx.parcelize.Parcelize
 class TransactionModel(
     @SerializedName("amount")
     val amount: Float,
-    @SerializedName("coinSymbol")
-    val coinSymbol: String = FlowCoin.SYMBOL_FLOW,
+    @SerializedName("coinId")
+    val coinId: String = "",
     @SerializedName("target")
     val target: AddressBookContact,
     @SerializedName("fromAddress")

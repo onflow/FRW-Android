@@ -349,7 +349,7 @@ private fun View.setupWalletItem(
 fun bindFlowBalance(balanceView: TextView, address: String) {
     ioScope {
         val balance = cadenceQueryTokenBalanceWithAddress(
-            FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW),
+            FlowCoinListManager.getFlowCoin(),
             address
         ) ?: 0f
         uiScope {

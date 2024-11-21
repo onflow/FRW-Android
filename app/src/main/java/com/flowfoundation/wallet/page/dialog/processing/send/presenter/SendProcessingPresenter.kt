@@ -90,7 +90,7 @@ class SendProcessingPresenter(
     private fun setupAmount() {
         ioScope {
             val coinData = transactionState.coinData()
-            val coin = FlowCoinListManager.getCoin(coinData.coinSymbol) ?: return@ioScope
+            val coin = FlowCoinListManager.getCoinById(coinData.coinId) ?: return@ioScope
             val amount = coinData.amount.formatNum()
             uiScope {
                 with(binding) {

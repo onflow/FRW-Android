@@ -144,7 +144,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                     cadenceQueryCOATokenBalance()
                 } else {
                     cadenceQueryTokenBalanceWithAddress(
-                        FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW),
+                        FlowCoinListManager.getFlowCoin(),
                         address
                     )
                 } ?: 0f

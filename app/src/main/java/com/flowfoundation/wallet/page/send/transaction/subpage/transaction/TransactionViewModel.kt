@@ -64,7 +64,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                 }
             }
 
-            val flow = FlowCoinListManager.coinList().first { it.symbol == transaction.coinSymbol }
+            val flow = FlowCoinListManager.coinList().first { it.isSameCoin(transaction.coinId) }
             CoinRateManager.fetchCoinRate(flow)
         }
     }
@@ -232,7 +232,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
-        if (coin.symbol != transaction.coinSymbol) {
+        if (coin.isSameCoin(transaction.coinId).not()) {
             return
         }
         amountConvertLiveData.postValue(price * transaction.amount)

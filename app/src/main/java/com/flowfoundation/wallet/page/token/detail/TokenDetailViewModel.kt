@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.network.model.CryptowatchSummaryData
 import com.flowfoundation.wallet.network.model.TransferRecord
 import com.flowfoundation.wallet.network.model.TransferRecordList

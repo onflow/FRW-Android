@@ -17,7 +17,7 @@ object CustomTokenManager {
     }
 
     fun isCustomToken(contractAddress: String): Boolean {
-        return cacheList.any { contractAddress.lowercase() == it.contractAddress }
+        return cacheList.any { contractAddress.equals(it.contractAddress, true) }
     }
 
     fun getCurrentCustomTokenList(): List<CustomTokenItem> {

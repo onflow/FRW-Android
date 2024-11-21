@@ -95,7 +95,7 @@ class SendAmountPresenter(
     }
 
     private fun minBalance(): Float {
-        return if (WalletManager.isEVMAccountSelected() || viewModel.currentCoin().lowercase() != FlowCoin.SYMBOL_FLOW.lowercase()) {
+        return if (WalletManager.isEVMAccountSelected() || FlowCoinListManager.isFlowCoin(viewModel.currentCoin()).not()) {
             0f
         } else {
             max(minFlowBalance, 0.001f)
@@ -114,9 +114,9 @@ class SendAmountPresenter(
             updateTransferAmountConvert()
 
             val icon =
-                if (viewModel.currentCoin() == selectedCurrency().flag) FlowCoinListManager.getCoin(
+                if (viewModel.currentCoin() == selectedCurrency().flag) FlowCoinListManager.getCoinById(
                     viewModel.convertCoin()
-                )?.icon() else FlowCoinListManager.getCoin(
+                )?.icon() else FlowCoinListManager.getCoinById(
                     viewModel.currentCoin()
                 )?.icon()
             Glide.with(balanceIconView).load(icon).into(balanceIconView)
@@ -144,7 +144,7 @@ class SendAmountPresenter(
     private fun updateBalance(balance: SendBalanceModel) {
         with(binding) {
             balanceAmountView.text =
-                "${balance.balance.toPlainString()} ${FlowCoinListManager.getCoin(balance.symbol)?.name?.capitalizeV2()} "
+                "${balance.balance.toPlainString()} ${FlowCoinListManager.getCoinById(balance.contractId)?.name?.capitalizeV2()} "
             balanceAmountConvertView.text =
                 "≈ " + (if (balance.coinRate > 0) balance.coinRate * balance.balance else 0f).formatPrice(
                     includeSymbol = true,
@@ -181,7 +181,7 @@ class SendAmountPresenter(
                 TransactionDialog.newInstance(
                     TransactionModel(
                         amount = amount,
-                        coinSymbol = if (viewModel.currentCoin() == selectedCurrency().flag) viewModel.convertCoin() else viewModel.currentCoin(),
+                        coinId = if (viewModel.currentCoin() == selectedCurrency().flag) viewModel.convertCoin() else viewModel.currentCoin(),
                         target = viewModel.contact(),
                         fromAddress = WalletManager.selectedWalletAddress(),
                     )
@@ -233,7 +233,7 @@ class SendAmountPresenter(
     }
 
     private fun String.coinIcon(): Any {
-        return FlowCoinListManager.getCoin(this)?.icon() ?: selectedCurrency().icon
+        return FlowCoinListManager.getCoinById(this)?.icon() ?: selectedCurrency().icon
     }
 
 }

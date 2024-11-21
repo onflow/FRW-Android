@@ -21,7 +21,7 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
     val onCoinSwap = MutableLiveData<Boolean>()
 
-    private var currentCoin = FlowCoin.SYMBOL_FLOW
+    private var currentCoin = FlowCoinListManager.getFlowCoin()?.contractId().orEmpty()
     private var convertCoin = selectedCurrency().flag
 
     init {
@@ -40,8 +40,8 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
     fun load() {
         viewModelIOScope(this) {
-            val coin = FlowCoinListManager.getCoin(currentCoin) ?: return@viewModelIOScope
-            balanceLiveData.postValue(SendBalanceModel(symbol = coin.symbol))
+            val coin = FlowCoinListManager.getCoinById(currentCoin) ?: return@viewModelIOScope
+            balanceLiveData.postValue(SendBalanceModel(contractId = coin.contractId()))
             BalanceManager.getBalanceByCoin(coin)
             CoinRateManager.fetchCoinRate(coin)
         }
@@ -55,27 +55,27 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
     fun changeCoin(coin: FlowCoin) {
-        if (currentCoin == coin.symbol) {
+        if (currentCoin == coin.contractId()) {
             return
         }
-        currentCoin = coin.symbol
+        currentCoin = coin.contractId()
         onCoinSwap.postValue(true)
         load()
     }
 
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        if (coin.symbol != currentCoin) {
+        if (coin.contractId() != currentCoin) {
             return
         }
-        val data = balanceLiveData.value ?: SendBalanceModel(coin.symbol)
+        val data = balanceLiveData.value ?: SendBalanceModel(coin.contractId())
         balanceLiveData.value = data.copy(balance = balance.balance)
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
-        if (coin.symbol != currentCoin) {
+        if (coin.contractId() != currentCoin) {
             return
         }
-        val data = balanceLiveData.value ?: SendBalanceModel(coin.symbol)
+        val data = balanceLiveData.value ?: SendBalanceModel(coin.contractId())
         balanceLiveData.value = data.copy(coinRate = price)
     }
 }

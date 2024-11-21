@@ -171,11 +171,11 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val currency = getCurrencyFlag()
             uiScope {
                 val coinToAdd =
-                    coinList.filter { coin -> dataList.none { it.coin.symbol == coin.symbol } }
+                    coinList.filter { coin -> dataList.none { it.coin.isSameCoin(coin.contractId()) } }
                 val coinToRemove =
-                    dataList.filter { coin -> coinList.none { it.symbol == coin.coin.symbol } }
-                logd(TAG, "loadCoinList coinToAdd::${coinToAdd.map { it.symbol }}")
-                logd(TAG, "loadCoinList coinToRemove::${coinToRemove.map { it.coin.symbol }}")
+                    dataList.filter { coin -> coinList.none { it.isSameCoin(coin.coin.contractId()) } }
+                logd(TAG, "loadCoinList coinToAdd::${coinToAdd.map { it.contractId() }}")
+                logd(TAG, "loadCoinList coinToRemove::${coinToRemove.map { it.coin.contractId() }}")
                 if (coinToAdd.isNotEmpty() || coinToRemove.isNotEmpty()) {
                     dataList.addAll(coinToAdd.map {
                         WalletCoinItemModel(
@@ -186,10 +186,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                         )
                     })
                     dataList.removeAll(coinToRemove.toSet())
-                    logd(TAG, "loadCoinList addCoin:${coinToAdd.map { it.symbol }}")
-                    logd(TAG, "loadCoinList removeCoin:${coinToRemove.map { it.coin.symbol }}")
-                    logd(TAG, "loadCoinList dataList:${dataList.map { it.coin.symbol }}")
-                    val filteredList = dataList.distinctBy { it.coin.symbol }
+                    logd(TAG, "loadCoinList addCoin:${coinToAdd.map { it.contractId() }}")
+                    logd(TAG, "loadCoinList removeCoin:${coinToRemove.map { it.coin.contractId() }}")
+                    logd(TAG, "loadCoinList dataList:${dataList.map { it.coin.contractId() }}")
+                    val filteredList = dataList.distinctBy { it.coin.contractId() }
                     dataList.clear()
                     dataList.addAll(filteredList)
                     dataListLiveData.postValue(dataList)
@@ -219,7 +219,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private fun updateCoinBalance(balance: Balance) {
         logd(TAG, "updateCoinBalance :$balance")
-        val oldItem = dataList.firstOrNull { it.coin.symbol == balance.symbol } ?: return
+        val oldItem = dataList.firstOrNull { balance.isSameCoin(it.coin) } ?: return
         val item = oldItem.copy(balance = balance.balance)
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()
@@ -234,9 +234,9 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         forceRate: Float? = null
     ) {
         val rate = (price ?: forceRate) ?: 0f
-        logd(TAG, "updateCoinRate ${coin.symbol}:$rate:$quoteChange")
+        logd(TAG, "updateCoinRate ${coin.contractId()}:$rate:$quoteChange")
 
-        val oldItem = dataList.firstOrNull { it.coin.symbol == coin.symbol } ?: return
+        val oldItem = dataList.firstOrNull { it.coin.isSameCoin(coin.contractId()) } ?: return
         val item = oldItem.copy(coinRate = rate, quoteChange = quoteChange)
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()

@@ -44,7 +44,7 @@ data class CustomTokenItem(
     }
 
     fun isSameToken(chainId: Int? = 0, address: String): Boolean {
-        return chainId == this.chainId && this.contractAddress.lowercase() == address.lowercase()
+        return chainId == this.chainId && this.contractAddress.equals(address, true)
     }
 
     fun isEnable(): Boolean {

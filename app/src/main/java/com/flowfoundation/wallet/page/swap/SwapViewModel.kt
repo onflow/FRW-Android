@@ -16,7 +16,6 @@ import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
@@ -52,21 +51,21 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         CoinRateManager.addListener(this)
     }
 
-    fun initFromCoin(symbol: String) {
-        FlowCoinListManager.getCoin(symbol)?.let { coin ->
+    fun initFromCoin(contractId: String) {
+        FlowCoinListManager.getCoinById(contractId)?.let { coin ->
             fromCoinLiveData.value = coin
             BalanceManager.getBalanceByCoin(coin)
             CoinRateManager.fetchCoinRate(coin)
         }
     }
 
-    fun fromCoinBalance() = if (fromCoin() == null) 0.0f else balanceMap[fromCoin()!!.symbol]?.balance ?: 0.0f
-    fun toCoinBalance() = if (toCoin() == null) 0.0f else balanceMap[toCoin()!!.symbol]?.balance ?: 0.0f
+    fun fromCoinBalance() = if (fromCoin() == null) 0.0f else balanceMap[fromCoin()?.contractId()]?.balance ?: 0.0f
+    fun toCoinBalance() = if (toCoin() == null) 0.0f else balanceMap[toCoin()?.contractId()]?.balance ?: 0.0f
 
     fun fromCoin() = fromCoinLiveData.value
     fun toCoin() = toCoinLiveData.value
 
-    fun fromCoinRate(): Float = coinRateMap[fromCoin()!!.symbol] ?: 0.0f
+    fun fromCoinRate(): Float = coinRateMap[fromCoin()?.contractId()] ?: 0.0f
 
     fun updateFromCoin(coin: FlowCoin) {
         if (fromCoin() == coin) return
@@ -124,12 +123,12 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        balanceMap[coin.symbol] = balance
+        balanceMap[coin.contractId()] = balance
         onBalanceUpdate.value = true
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
-        coinRateMap[coin.symbol] = price
+        coinRateMap[coin.contractId()] = price
         onCoinRateUpdate.value = true
     }
 

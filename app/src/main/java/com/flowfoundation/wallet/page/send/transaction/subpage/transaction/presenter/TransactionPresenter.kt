@@ -29,7 +29,7 @@ class TransactionPresenter(
 
     private val transaction by lazy { viewModel.transaction }
 
-    private val coin by lazy { FlowCoinListManager.getCoin(transaction.coinSymbol)!! }
+    private val coin by lazy { FlowCoinListManager.getCoinById(transaction.coinId)!! }
     private val contact by lazy { viewModel.transaction.target }
 
     init {
