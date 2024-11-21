@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
@@ -128,6 +129,7 @@ object TransactionStateManager {
                 delay(3000)
                 popBubbleStack(state)
             }
+            MixpanelManager.transactionResult(state.transactionId, state.isSuccess(), state.errorMsg)
         }
         ioScope {
             if (state.type == TransactionState.TYPE_ADD_TOKEN && state.isSuccess()) {

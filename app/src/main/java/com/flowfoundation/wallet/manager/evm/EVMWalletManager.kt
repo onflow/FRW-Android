@@ -25,6 +25,8 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -181,6 +183,16 @@ object EVMWalletManager {
             } else {
                 cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), id)
             }
+            val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+            MixpanelManager.transferNFT(
+                if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
+                if(isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                if (isMoveToEVM) TransferAccountType.FLOW else TransferAccountType.COA,
+                if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.FLOW,
+                true
+            )
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -197,6 +209,15 @@ object EVMWalletManager {
             } else {
                 cadenceBridgeChildNFTFromEvm(nft.getNFTIdentifier(), id, childAddress)
             }
+            MixpanelManager.transferNFT(
+                if (isMoveToEVM) childAddress else getEVMAddress().orEmpty(),
+                if (isMoveToEVM) getEVMAddress().orEmpty() else childAddress,
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                if (isMoveToEVM) TransferAccountType.CHILD else TransferAccountType.COA,
+                if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.CHILD,
+                true
+            )
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -217,6 +238,16 @@ object EVMWalletManager {
             } else {
                 cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
             }
+            val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+            MixpanelManager.transferNFT(
+                if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
+                if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
+                nftIdentifier,
+                txId.orEmpty(),
+                if (isMoveToEVM) TransferAccountType.FLOW else TransferAccountType.COA,
+                if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.FLOW,
+                true
+            )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "bridge nft list failed")
                 callback.invoke(false)
@@ -251,6 +282,15 @@ object EVMWalletManager {
             } else {
                 cadenceBridgeChildNFTListFromEvm(nftIdentifier, idList, childAddress)
             }
+            MixpanelManager.transferNFT(
+                if (isMoveToEVM) childAddress else getEVMAddress().orEmpty(),
+                if (isMoveToEVM) getEVMAddress().orEmpty() else childAddress,
+                nftIdentifier,
+                txId.orEmpty(),
+                if (isMoveToEVM) TransferAccountType.CHILD else TransferAccountType.COA,
+                if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.CHILD,
+                true
+            )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "bridge child nft list failed")
                 callback.invoke(false)

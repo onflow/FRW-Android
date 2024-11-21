@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin
 import androidx.fragment.app.Fragment
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletCreatePinCodeBinding
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.MixpanelSecurityTool
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.KeyboardType
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.keyboardT9Normal
@@ -25,6 +27,7 @@ class WalletCreatePinCodePresenter(
             )
             pinInput.setCheckCallback { passed ->
                 savePinCode(pinInput.keys().joinToString("") { "${it.number}" })
+                MixpanelManager.securityTool(MixpanelSecurityTool.PIN)
                 if (passed) MainActivity.launch(fragment.requireContext())
             }
             pinKeyboard.setOnKeyboardActionListener { onKeyPressed(it) }

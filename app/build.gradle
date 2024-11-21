@@ -306,6 +306,9 @@ dependencies {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
 
+    /** Mixpanel **/
+    implementation "com.mixpanel.android:mixpanel-android:7.5.4"
+
     /** TEST **/
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

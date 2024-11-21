@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.app
 
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.cpuScope
@@ -90,6 +91,7 @@ fun networkId(network: String): Int {
 
 fun doNetworkChangeTask() {
     NftCollectionConfig.sync()
+    MixpanelManager.networkChange()
 }
 
 fun evmChainNetworkString(): String {

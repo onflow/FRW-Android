@@ -9,8 +9,10 @@ import com.nftco.flow.sdk.simpleFlowScript
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.formatCadence
 import com.flowfoundation.wallet.manager.config.NftCollection
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.address.FlowDomainServer
 import com.flowfoundation.wallet.utils.isDev
@@ -722,6 +724,7 @@ fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? 
         }
     } catch (e: Throwable) {
         loge(ScriptExecutionException(getFirstLine(this), e))
+        MixpanelManager.scriptError(getFirstLine(this), e.message.orEmpty())
 //        reportCadenceErrorToDebugView()
         return null
     }

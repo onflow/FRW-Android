@@ -31,6 +31,10 @@ object DeviceInfoManager {
         "${R.string.app_name.res2String()} Android ${Build.VERSION.RELEASE}"
     }
 
+    fun getDeviceID(): String {
+        return currentDeviceId
+    }
+
     fun getDeviceInfoUserAgent(): String {
         return userAgent
     }

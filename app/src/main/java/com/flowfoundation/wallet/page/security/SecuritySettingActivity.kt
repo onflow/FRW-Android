@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySecuritySettingBinding
 import com.flowfoundation.wallet.manager.biometric.BlockBiometricManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.MixpanelSecurityTool
 import com.flowfoundation.wallet.page.security.pin.SecurityPinActivity
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -63,13 +65,16 @@ class SecuritySettingActivity : BaseActivity() {
         if (biometricsPreference.isChecked()) {
             biometricsPreference.setChecked(false)
             setBiometricEnable(false)
+            MixpanelManager.securityTool(MixpanelSecurityTool.NONE)
         } else {
             BlockBiometricManager.showBiometricPrompt(this@SecuritySettingActivity) { isSuccess, errorMsg ->
                 uiScope { biometricsPreference.setChecked(isSuccess) }
                 if (isSuccess) {
                     setBiometricEnable(true)
+                    MixpanelManager.securityTool(MixpanelSecurityTool.BIOMETRIC)
                 } else {
                     setBiometricEnable(false)
+                    MixpanelManager.securityTool(MixpanelSecurityTool.NONE)
                     toast(msg = errorMsg)
                 }
             }

@@ -4,6 +4,8 @@ import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.ActivitySecurityPinBinding
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.MixpanelSecurityTool
 import com.flowfoundation.wallet.page.security.pin.SecurityPinActivity.Companion.TYPE_CHECK
 import com.flowfoundation.wallet.page.security.pin.SecurityPinActivity.Companion.TYPE_CREATE
 import com.flowfoundation.wallet.page.security.pin.SecurityPinActivity.Companion.TYPE_RESET
@@ -28,6 +30,7 @@ class SecurityPinPresenter(
             pinInput.setCheckCallback { passed ->
                 if (passed && (type == TYPE_RESET || type == TYPE_CREATE)) {
                     savePinCode(pinInput.keys().joinToString("") { "${it.number}" })
+                    MixpanelManager.securityTool(MixpanelSecurityTool.PIN)
                     checkFinish()
                 }
             }

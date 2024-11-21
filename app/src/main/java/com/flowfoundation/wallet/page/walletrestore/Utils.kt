@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
@@ -125,6 +126,7 @@ suspend fun firebaseLogin(customToken: String, callback: (isSuccess: Boolean) ->
     if (isSuccess) {
         firebaseCustomLogin(customToken) { isSuccessful, _ ->
             if (isSuccessful) {
+                MixpanelManager.identifyUserProfile()
                 callback(true)
             } else callback(false)
         }

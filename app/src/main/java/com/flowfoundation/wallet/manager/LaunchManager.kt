@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.service.MessagingService
 import com.flowfoundation.wallet.utils.getThemeMode
 import com.flowfoundation.wallet.utils.ioScope
@@ -43,6 +44,7 @@ object LaunchManager {
             safeRun { AccountManager.init() }
         }
         refreshChainNetwork {
+            safeRun { MixpanelManager.init(application) }
             safeRun { WalletConnect.init(application) }
             safeRun { initFirebaseConfig() }
             safeRun { FlowApi.refreshConfig() }
@@ -83,6 +85,7 @@ object LaunchManager {
 
     private fun runWorker(application: Application) {
         CadenceApiManager.init()
+        MixpanelManager.identifyUserProfile()
     }
 
     /**

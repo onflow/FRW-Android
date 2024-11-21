@@ -24,6 +24,8 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.generatePrefix
@@ -231,6 +233,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     login(cryptoProvider) { isSuccess ->
                         uiScope {
                             if (isSuccess) {
+                                MixpanelManager.accountRestore(restoreAddress, RestoreType.MULTI_BACKUP)
                                 delay(200)
                                 MainActivity.relaunch(activity, clearTop = true)
                             } else {

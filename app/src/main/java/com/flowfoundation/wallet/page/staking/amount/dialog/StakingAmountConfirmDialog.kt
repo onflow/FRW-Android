@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.staking.createStakingDelegatorId
 import com.flowfoundation.wallet.manager.staking.delegatorId
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -141,6 +142,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
+            MixpanelManager.delegationCreated(delegatorId.toString(), provider.id, amount.toSafeDouble().toString())
             val txId = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
