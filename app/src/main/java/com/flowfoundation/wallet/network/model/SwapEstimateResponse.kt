@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.network.model
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import java.math.BigDecimal
 
 data class SwapEstimateResponse(
     @SerializedName("data")
@@ -20,11 +21,11 @@ data class SwapEstimateResponse(
         @SerializedName("routes")
         val routes: List<Route?>,
         @SerializedName("tokenInAmount")
-        val tokenInAmount: Float,
+        val tokenInAmount: BigDecimal,
         @SerializedName("tokenInKey")
         val tokenInKey: String,
         @SerializedName("tokenOutAmount")
-        val tokenOutAmount: Float,
+        val tokenOutAmount: BigDecimal,
         @SerializedName("tokenOutKey")
         val tokenOutKey: String
     ) : Parcelable {
@@ -34,9 +35,9 @@ data class SwapEstimateResponse(
             @SerializedName("route")
             val route: List<String>,
             @SerializedName("routeAmountIn")
-            val routeAmountIn: Float,
+            val routeAmountIn: BigDecimal,
             @SerializedName("routeAmountOut")
-            val routeAmountOut: Float
+            val routeAmountOut: BigDecimal
         ) : Parcelable
     }
 }

@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import java.math.BigDecimal
 
 class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
@@ -30,8 +31,8 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     val toCoinLiveData = MutableLiveData<FlowCoin>()
     val onBalanceUpdate = MutableLiveData<Boolean>()
     val onCoinRateUpdate = MutableLiveData<Boolean>()
-    val onEstimateFromUpdate = MutableLiveData<Float>()
-    val onEstimateToUpdate = MutableLiveData<Float>()
+    val onEstimateFromUpdate = MutableLiveData<BigDecimal>()
+    val onEstimateToUpdate = MutableLiveData<BigDecimal>()
 
     val onEstimateLoading = MutableLiveData<Boolean>()
     val estimateLiveData = MutableLiveData<SwapEstimateResponse.Data>()
@@ -41,7 +42,7 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     val swapTransactionStateLiveData = MutableLiveData<Boolean>()
 
     private val balanceMap: MutableMap<String, Balance> = mutableMapOf()
-    private val coinRateMap: MutableMap<String, Float> = mutableMapOf()
+    private val coinRateMap: MutableMap<String, BigDecimal> = mutableMapOf()
 
     var exactToken = ExactToken.FROM
         private set
@@ -59,13 +60,13 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         }
     }
 
-    fun fromCoinBalance() = if (fromCoin() == null) 0.0f else balanceMap[fromCoin()?.contractId()]?.balance ?: 0.0f
-    fun toCoinBalance() = if (toCoin() == null) 0.0f else balanceMap[toCoin()?.contractId()]?.balance ?: 0.0f
+    fun fromCoinBalance(): BigDecimal = if (fromCoin() == null) BigDecimal.ZERO else balanceMap[fromCoin()?.contractId()]?.balance ?: BigDecimal.ZERO
+    fun toCoinBalance(): BigDecimal = if (toCoin() == null) BigDecimal.ZERO else balanceMap[toCoin()?.contractId()]?.balance ?: BigDecimal.ZERO
 
     fun fromCoin() = fromCoinLiveData.value
     fun toCoin() = toCoinLiveData.value
 
-    fun fromCoinRate(): Float = coinRateMap[fromCoin()?.contractId()] ?: 0.0f
+    fun fromCoinRate(): BigDecimal = coinRateMap[fromCoin()?.contractId()] ?: BigDecimal.ZERO
 
     fun updateFromCoin(coin: FlowCoin) {
         if (fromCoin() == coin) return
@@ -127,7 +128,7 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         onBalanceUpdate.value = true
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
         coinRateMap[coin.contractId()] = price
         onCoinRateUpdate.value = true
     }
@@ -135,7 +136,7 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     private fun requestEstimate() {
         if (fromCoin() == null || toCoin() == null) return
         val binding = swapPageBinding() ?: return
-        if (binding.fromAmount() == 0.0f && binding.toAmount() == 0.0f) return
+        if (binding.fromAmount() == BigDecimal.ZERO && binding.toAmount() == BigDecimal.ZERO) return
 
         onEstimateLoading.value = true
         viewModelIOScope(this) {
@@ -144,8 +145,8 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
                     network = chainNetWorkString(),
                     inToken = fromCoin()!!.contractId(),
                     outToken = toCoin()!!.contractId(),
-                    inAmount = if (exactToken == ExactToken.FROM) binding.fromAmount() else null,
-                    outAmount = if (exactToken == ExactToken.TO) binding.toAmount() else null,
+                    inAmount = if (exactToken == ExactToken.FROM) binding.fromAmount().toFloat() else null,
+                    outAmount = if (exactToken == ExactToken.TO) binding.toAmount().toFloat() else null,
                 )
             }.getOrNull()
 

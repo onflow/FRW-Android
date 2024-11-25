@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.utils.uiScope
 import kotlinx.coroutines.runBlocking
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -166,7 +167,7 @@ private fun queryStakingApy(cadence: String): Float? {
     }.getOrNull()
 }
 
-suspend fun createStakingDelegatorId(provider: StakingProvider, amount: Double) = suspendCoroutine { continuation ->
+suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecimal) = suspendCoroutine { continuation ->
     runCatching {
         runBlocking {
             logd(TAG, "createStakingDelegatorId providerId：${provider.id}")

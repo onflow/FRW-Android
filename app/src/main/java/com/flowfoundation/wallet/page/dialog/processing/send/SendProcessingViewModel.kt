@@ -13,11 +13,12 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import java.math.BigDecimal
 
 class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRateUpdate {
     val userInfoLiveData = MutableLiveData<UserInfoData>()
 
-    val amountConvertLiveData = MutableLiveData<Float>()
+    val amountConvertLiveData = MutableLiveData<BigDecimal>()
 
     val stateChangeLiveData = MutableLiveData<TransactionState>()
 
@@ -55,7 +56,7 @@ class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRat
         stateChangeLiveData.postValue(state)
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
         amountConvertLiveData.postValue(price * state.coinData().amount)
     }
 }

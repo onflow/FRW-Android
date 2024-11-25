@@ -11,17 +11,18 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
-import com.flowfoundation.wallet.utils.format
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
+import java.math.BigDecimal
 
 class StakingAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
-    val balanceLiveData = MutableLiveData<Float>()
+    val balanceLiveData = MutableLiveData<BigDecimal>()
 
     val processingLiveData = MutableLiveData<Boolean>()
 
-    private var coinRate = 0.0f
+    private var coinRate = BigDecimal.ZERO
 
     init {
         BalanceManager.addListener(this)
@@ -29,14 +30,14 @@ class StakingAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
 
-    fun coinRate() = coinRate
+    fun coinRate(): BigDecimal = coinRate
 
     fun load(provider: StakingProvider, isUnstake: Boolean) {
         ioScope {
             val coin = FlowCoinListManager.getFlowCoin() ?: return@ioScope
             if (isUnstake) {
                 val node = StakingManager.stakingNode(provider) ?: return@ioScope
-                balanceLiveData.postValue((node.tokensStaked + node.tokensCommitted).formatNum().toFloat())
+                balanceLiveData.postValue((node.tokensStaked + node.tokensCommitted).formatNum().toSafeDecimal())
             } else {
                 BalanceManager.getBalanceByCoin(coin)
             }
@@ -50,7 +51,7 @@ class StakingAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
         coinRate = price
     }
 }

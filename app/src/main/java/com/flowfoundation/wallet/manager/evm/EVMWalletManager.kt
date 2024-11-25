@@ -34,6 +34,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.serialization.Serializable
+import java.math.BigDecimal
 
 private val TAG = EVMWalletManager::class.java.simpleName
 
@@ -129,7 +130,7 @@ object EVMWalletManager {
     }
 
     suspend fun moveFlowToken(
-        amount: Float,
+        amount: BigDecimal,
         isFundToEVM: Boolean,
         callback: (isSuccess: Boolean) -> Unit
     ) {
@@ -141,14 +142,14 @@ object EVMWalletManager {
     }
 
     suspend fun moveToken(
-        coin: FlowCoin, amount: Float, isFundToEVM: Boolean, callback:
+        coin: FlowCoin, amount: BigDecimal, isFundToEVM: Boolean, callback:
             (isSuccess: Boolean) -> Unit
     ) {
         try {
             val txId = if (isFundToEVM) {
                 cadenceBridgeFTToEvm(coin.getFTIdentifier(), amount)
             } else {
-                val decimalAmount = amount.toBigDecimal().movePointRight(coin.decimal)
+                val decimalAmount = amount.movePointRight(coin.decimal)
                 cadenceBridgeFTFromEvm(coin.getFTIdentifier(), decimalAmount)
             }
             if (txId.isNullOrBlank()) {
@@ -271,7 +272,7 @@ object EVMWalletManager {
         }
     }
 
-    private suspend fun fundFlowToEVM(amount: Float, callback: (isSuccess: Boolean) -> Unit) {
+    private suspend fun fundFlowToEVM(amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
         try {
             val txId = cadenceFundFlowToCOAAccount(amount)
             if (txId.isNullOrBlank()) {
@@ -295,7 +296,7 @@ object EVMWalletManager {
         }
     }
 
-    private suspend fun withdrawFlowFromEVM(amount: Float, callback: (isSuccess: Boolean) -> Unit) {
+    private suspend fun withdrawFlowFromEVM(amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
         try {
             val toAddress = WalletManager.wallet()?.walletAddress() ?: return callback.invoke(false)
             val txId = cadenceWithdrawTokenFromCOAAccount(amount, toAddress)

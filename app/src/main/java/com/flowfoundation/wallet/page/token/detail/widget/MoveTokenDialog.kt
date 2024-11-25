@@ -16,7 +16,6 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveTokenBinding
 import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
@@ -27,23 +26,23 @@ import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
+import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.toPlainString
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.math.BigDecimal
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.math.max
 
 
 class MoveTokenDialog : BottomSheetDialogFragment() {
     private var contractId: String = FlowCoinListManager.getFlowCoinContractId()
     private lateinit var binding: DialogMoveTokenBinding
     private var isFundToEVM = true
-    private var fromBalance = 0.001f
+    private var fromBalance = BigDecimal(0.001)
     private var result: Continuation<Boolean>? = null
 
     override fun onCreateView(
@@ -55,16 +54,16 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         return binding.rootView
     }
 
-    private fun getMinBalance(): Float {
+    private fun getMinBalance(): BigDecimal {
         return if (FlowCoinListManager.isFlowCoin(contractId)) {
-            0.001f
+            BigDecimal(0.001)
         } else {
-            0f
+            BigDecimal.ZERO
         }
     }
 
     private fun checkAmount() {
-        val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeFloat()
+        val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
         val isOutOfBalance = amount > (fromBalance - getMinBalance())
         if (isOutOfBalance && !binding.llErrorLayout.isVisible()) {
             TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
@@ -101,7 +100,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 initView()
             }
             tvMax.setOnClickListener {
-                val amount = max(fromBalance - getMinBalance(), 0f).toPlainString()
+                val amount = BigDecimal.ZERO.max(fromBalance - getMinBalance()).format(8)
                 etAmount.setText(amount)
                 etAmount.setSelection(etAmount.text.length)
             }
@@ -134,7 +133,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
         binding.btnMove.setProgressVisible(true)
         ioScope {
-            val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeFloat()
+            val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
             if (FlowCoinListManager.isFlowCoin(contractId)) {
                 EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
                     uiScope {
@@ -205,7 +204,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             } else {
                 val coin = FlowCoinListManager.getCoinById(contractId)
                 if (coin == null) {
-                    0f
+                    BigDecimal.ZERO
                 } else {
                     if (coin.isFlowCoin()) {
                         cadenceQueryCOATokenBalance()
@@ -213,10 +212,10 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         BalanceManager.getEVMBalanceByCoin(coin.address)
                     }
                 }
-            } ?: 0f
+            } ?: BigDecimal.ZERO
 
             uiScope {
-                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.toPlainString())
+                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
             }
         }
     }

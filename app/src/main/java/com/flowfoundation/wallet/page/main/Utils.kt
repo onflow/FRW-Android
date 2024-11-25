@@ -61,6 +61,7 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
+import java.math.BigDecimal
 import java.math.RoundingMode
 
 
@@ -351,7 +352,7 @@ fun bindFlowBalance(balanceView: TextView, address: String) {
         val balance = cadenceQueryTokenBalanceWithAddress(
             FlowCoinListManager.getFlowCoin(),
             address
-        ) ?: 0f
+        ) ?: BigDecimal.ZERO
         uiScope {
             balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
         }
@@ -361,7 +362,7 @@ fun bindFlowBalance(balanceView: TextView, address: String) {
 @SuppressLint("SetTextI18n")
 fun bindEVMFlowBalance(balanceView: TextView) {
     ioScope {
-        val balance = cadenceQueryCOATokenBalance() ?: 0f
+        val balance = cadenceQueryCOATokenBalance() ?: BigDecimal.ZERO
         uiScope {
             balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
         }

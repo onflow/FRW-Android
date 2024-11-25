@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -49,7 +50,7 @@ object CoinRateManager {
     fun fetchCoinRate(coin: FlowCoin) {
         ioScope {
             if (coin.isUSDStableCoin()) {
-                dispatchListeners(coin, 1.0f, 0f)
+                dispatchListeners(coin, BigDecimal.ONE, 0f)
                 return@ioScope
             }
             val cacheRate = coinRateMap[coin.contractId()]
@@ -70,7 +71,7 @@ object CoinRateManager {
                                 coin.contractName() == it.contractName
                             }
                         }?.let {
-                            val rate = it.rateToUSD.toFloat()
+                            val rate = it.rateToUSD
                             updateCache(coin, rate, 0f)
                             dispatchListeners(coin, rate, 0f)
                         }
@@ -95,7 +96,7 @@ object CoinRateManager {
             val tokenPriceList = tokenPriceResponse.data
             list.forEach { coin ->
                 if (coin.isUSDStableCoin()) {
-                    dispatchListeners(coin, 1.0f, 0f)
+                    dispatchListeners(coin, BigDecimal.ONE, 0f)
                     return@forEach
                 }
                 val cacheRate = coinRateMap[coin.contractId()]
@@ -113,7 +114,7 @@ object CoinRateManager {
                                     coin.contractName() == it.contractName
                                 }
                             }?.let {
-                                val rate = it.rateToUSD.toFloat()
+                                val rate = it.rateToUSD
                                 updateCache(coin, rate, 0f)
                                 dispatchListeners(coin, rate, 0f)
                             }
@@ -133,14 +134,14 @@ object CoinRateManager {
 
     private fun CoinRate?.isExpire(): Boolean = this == null || System.currentTimeMillis() - updateTime > 30 * DateUtils.SECOND_IN_MILLIS
 
-    private fun updateCache(coin: FlowCoin, price: Float, quoteChange: Float) {
+    private fun updateCache(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         ioScope {
             coinRateMap[coin.contractId()] = CoinRate(coin.symbol, coin.contractId(), price, quoteChange, System.currentTimeMillis())
             cache.cache(CoinRateCacheData(coinRateMap))
         }
     }
 
-    private fun dispatchListeners(coin: FlowCoin, price: Float, quoteChange: Float) {
+    private fun dispatchListeners(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         logd(TAG, "dispatchListeners ${coin.contractId()}:${price}")
         uiScope {
             listeners.removeAll { it.get() == null }
@@ -150,11 +151,11 @@ object CoinRateManager {
 }
 
 interface OnCoinRateUpdate {
-    fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
 
     }
 
-    fun onCoinRateUpdate(coin: FlowCoin, price: Float, quoteChange: Float) {
+    fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         onCoinRateUpdate(coin, price)
     }
 }
@@ -170,7 +171,7 @@ class CoinRate(
     @SerializedName("contractId")
     val contractId: String? = "",
     @SerializedName("price")
-    val price: Float,
+    val price: BigDecimal,
     @SerializedName("quoteChange")
     val quoteChange: Float = 0f,
     @SerializedName("updateTime")

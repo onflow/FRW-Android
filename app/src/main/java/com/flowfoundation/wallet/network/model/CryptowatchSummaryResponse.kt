@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.network.model
 
 
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 
 data class CryptowatchSummaryResponse(
     @SerializedName("data")
@@ -33,11 +34,11 @@ data class CryptowatchSummaryData(
             @SerializedName("change")
             val change: Change,
             @SerializedName("high")
-            val high: Float,
+            val high: BigDecimal,
             @SerializedName("last")
-            val last: Float,
+            val last: BigDecimal,
             @SerializedName("low")
-            val low: Float
+            val low: BigDecimal
         ) {
             data class Change(
                 @SerializedName("absolute")

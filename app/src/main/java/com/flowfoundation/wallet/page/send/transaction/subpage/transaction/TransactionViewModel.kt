@@ -40,7 +40,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
 
     val userInfoLiveData = MutableLiveData<UserInfoData>()
 
-    val amountConvertLiveData = MutableLiveData<Float>()
+    val amountConvertLiveData = MutableLiveData<BigDecimal>()
 
     val resultLiveData = MutableLiveData<Boolean>()
 
@@ -98,17 +98,17 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
                         if (WalletManager.isChildAccount(toAddress)) {
-                            val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
+                            val amount = transaction.amount.movePointRight(coin.decimal)
                             // COA -> Child
                             bridgeTokenFromEVMToChild(coin.getFTIdentifier(), amount, toAddress)
                         } else {
                             // COA -> Flow
-                            val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal)
+                            val amount = transaction.amount.movePointRight(coin.decimal)
                             bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
                         }
                     } else {
                         // COA -> EOA/COA
-                        val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
+                        val amount = transaction.amount.movePointRight(coin.decimal).toBigInteger()
                         val function = Function(
                             "transfer",
                             listOf(Address(toAddress), Uint256(amount)), emptyList()
@@ -146,7 +146,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                 }
             } else {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-                    val amount = transaction.amount.toBigDecimal().movePointRight(coin.decimal).toBigInteger()
+                    val amount = transaction.amount.movePointRight(coin.decimal).toBigInteger()
                     val function = Function(
                         "transfer",
                         listOf(Address(toAddress), Uint256(amount)), emptyList()
@@ -170,22 +170,22 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         postTransaction(txId)
     }
 
-    private suspend fun evmTransaction(to: String, amount: Float) {
-        val txId = cadenceSendEVMTransaction(to.removeAddressPrefix(), amount.toBigDecimal(), byteArrayOf())
+    private suspend fun evmTransaction(to: String, amount: BigDecimal) {
+        val txId = cadenceSendEVMTransaction(to.removeAddressPrefix(), amount, byteArrayOf())
         postTransaction(txId)
     }
 
-    private suspend fun withdrawFromCOAAccount(amount: Float, toAddress: String) {
+    private suspend fun withdrawFromCOAAccount(amount: BigDecimal, toAddress: String) {
         val txId = cadenceWithdrawTokenFromCOAAccount(amount, toAddress)
         postTransaction(txId)
     }
 
-    private suspend fun fundToCOAAccount(amount: Float) {
+    private suspend fun fundToCOAAccount(amount: BigDecimal) {
         val txId = cadenceFundFlowToCOAAccount(amount)
         postTransaction(txId)
     }
 
-    private suspend fun transferFlowToEVM(to: String, amount: Float) {
+    private suspend fun transferFlowToEVM(to: String, amount: BigDecimal) {
         val txId = cadenceTransferFlowToEvmAddress(to.removeAddressPrefix(), amount)
         postTransaction(txId)
     }
@@ -199,7 +199,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
 
     private suspend fun bridgeTokenFromChildToEVM(
         flowIdentifier: String,
-        amount: Float,
+        amount: BigDecimal,
         childAddress: String
     ) {
         val txId = cadenceBridgeChildFTToEvm(flowIdentifier, childAddress, amount)
@@ -231,7 +231,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         pushBubbleStack(transactionState)
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
         if (coin.isSameCoin(transaction.coinId).not()) {
             return
         }

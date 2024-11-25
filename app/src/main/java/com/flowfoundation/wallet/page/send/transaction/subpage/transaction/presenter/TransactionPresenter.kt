@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import java.math.BigDecimal
 
 class TransactionPresenter(
     private val fragment: TransactionDialog,
@@ -70,7 +71,7 @@ class TransactionPresenter(
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateAmountConvert(amountConvert: Float) {
+    private fun updateAmountConvert(amountConvert: BigDecimal) {
         binding.amountConvertView.text = "≈ ${amountConvert.formatPrice(includeSymbol = true, includeSymbolSpace = true)}"
     }
 }

@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
+import java.math.BigDecimal
 import kotlin.math.absoluteValue
 
 class WalletCoinItemPresenter(
@@ -39,8 +40,7 @@ class WalletCoinItemPresenter(
                 coinBalancePrice.text =
                     (model.balance * model.coinRate).formatPrice(includeSymbol = true, isAbbreviation = true)
             }
-            coinPrice.text =
-                if (model.coinRate == 0f) "-" else model.coinRate.formatPrice(includeSymbol = true)
+            coinPrice.text = if (model.coinRate == BigDecimal.ZERO) "-" else model.coinRate.formatPrice(includeSymbol = true)
             val isStable = model.quoteChange == 0f
             val isRise = model.quoteChange > 0
             tvQuoteChange.backgroundTintList =
@@ -78,7 +78,7 @@ class WalletCoinItemPresenter(
         binding.stakingAmount.text =
             view.context.getString(R.string.flow_num, model.stakeAmount.formatLargeBalanceNumber(isAbbreviation = true))
         binding.stakingAmountPrice.text =
-            (model.stakeAmount * model.coinRate).formatPrice(includeSymbol = true, isAbbreviation = true)
+            (model.stakeAmount * model.coinRate.toFloat()).formatPrice(includeSymbol = true, isAbbreviation = true)
     }
 
     private fun bindAccessible(coin: FlowCoin) {

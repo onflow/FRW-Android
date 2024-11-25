@@ -36,6 +36,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
 class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate,
@@ -94,7 +95,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         viewModelIOScope(this) { loadTransactionCount() }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float, quoteChange: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         updateCoinRate(coin, price, quoteChange)
     }
 
@@ -179,8 +180,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                 if (coinToAdd.isNotEmpty() || coinToRemove.isNotEmpty()) {
                     dataList.addAll(coinToAdd.map {
                         WalletCoinItemModel(
-                            it, it.address, 0f,
-                            0f, isHideBalance = isHideBalance, currency = currency,
+                            it, it.address, BigDecimal.ZERO,
+                            BigDecimal.ZERO, isHideBalance = isHideBalance, currency = currency,
                             isStaked = StakingManager.isStaked(),
                             stakeAmount = StakingManager.stakingCount(),
                         )
@@ -192,8 +193,8 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                     val filteredList = dataList.distinctBy { it.coin.contractId() }
                     dataList.clear()
                     dataList.addAll(filteredList)
-                    dataListLiveData.postValue(dataList)
-                    updateWalletHeader(count = dataList.size)
+                    dataListLiveData.postValue(filteredList)
+                    updateWalletHeader(count = filteredList.size)
                 }
             }
 
@@ -229,15 +230,13 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private fun updateCoinRate(
         coin: FlowCoin,
-        price: Float? = null,
-        quoteChange: Float,
-        forceRate: Float? = null
+        rate: BigDecimal? = null,
+        quoteChange: Float
     ) {
-        val rate = (price ?: forceRate) ?: 0f
         logd(TAG, "updateCoinRate ${coin.contractId()}:$rate:$quoteChange")
 
         val oldItem = dataList.firstOrNull { it.coin.isSameCoin(coin.contractId()) } ?: return
-        val item = oldItem.copy(coinRate = rate, quoteChange = quoteChange)
+        val item = oldItem.copy(coinRate = rate ?: BigDecimal.ZERO, quoteChange = quoteChange)
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()
         dataListLiveData.value = dataList
@@ -258,10 +257,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val header =
                 headerLiveData.value ?: (if (wallet == null) return@uiScope else WalletHeaderModel(
                     wallet,
-                    0f
+                    BigDecimal.ZERO
                 ))
             headerLiveData.postValue(header.copy().apply {
-                balance = dataList.toList().map { it.balance * it.coinRate }.sum()
+                balance = dataList.toList().map { it.balance * it.coinRate }.fold(BigDecimal.ZERO) { sum, value -> sum + value }
                 count?.let { coinCount = it }
                 transactionCount = getAccountTransferCount()
             })

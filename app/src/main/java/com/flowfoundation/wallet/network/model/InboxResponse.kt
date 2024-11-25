@@ -1,8 +1,10 @@
 package com.flowfoundation.wallet.network.model
 
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.wallet.toAddress
+import java.math.BigDecimal
 
 data class InboxResponse(
     @SerializedName("id")
@@ -23,9 +25,9 @@ data class InboxResponse(
                 key = it.key,
                 coinAddress = data[1].toAddress(),
                 coinSymbol = data[2],
-                it.value.toSafeFloat(),
+                it.value.toSafeDecimal(),
             )
-        }.filter { it.amount != 0f }
+        }.filter { it.amount != BigDecimal.ZERO }
     }
 
     fun nftList(): List<InboxNft> {
@@ -47,8 +49,8 @@ data class InboxToken(
     val key: String,
     val coinAddress: String,
     val coinSymbol: String,
-    val amount: Float,
-    var marketValue: Float? = null,
+    val amount: BigDecimal,
+    var marketValue: BigDecimal? = null,
 )
 
 data class InboxNft(

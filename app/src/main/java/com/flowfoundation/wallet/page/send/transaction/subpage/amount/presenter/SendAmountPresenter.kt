@@ -10,15 +10,11 @@ import androidx.transition.Fade
 import androidx.transition.Scene
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryMinFlowBalance
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -36,7 +32,7 @@ import com.flowfoundation.wallet.page.send.transaction.subpage.amount.widget.Sen
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionDialog
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.*
-import kotlin.math.max
+import java.math.BigDecimal
 
 class SendAmountPresenter(
     private val activity: SendAmountActivity,
@@ -46,7 +42,7 @@ class SendAmountPresenter(
 
     private val viewModel by lazy { ViewModelProvider(activity)[SendAmountViewModel::class.java] }
 
-    private var minFlowBalance = 0f
+    private var minFlowBalance = BigDecimal.ZERO
 
     private fun balance() = viewModel.balanceLiveData.value
 
@@ -86,19 +82,19 @@ class SendAmountPresenter(
     private fun getMinFlowBalance() {
         ioScope {
             minFlowBalance = try {
-                cadenceQueryMinFlowBalance() ?: 0.001f
+                cadenceQueryMinFlowBalance() ?: BigDecimal(0.001)
             } catch (e: Exception) {
-                0.001f
+                BigDecimal(0.001)
             }
             logd("send", "minFlowBalance $minFlowBalance")
         }
     }
 
-    private fun minBalance(): Float {
+    private fun minBalance(): BigDecimal {
         return if (WalletManager.isEVMAccountSelected() || FlowCoinListManager.isFlowCoin(viewModel.currentCoin()).not()) {
-            0f
+            BigDecimal.ZERO
         } else {
-            max(minFlowBalance, 0.001f)
+            minFlowBalance.max(BigDecimal(0.001))
         }
     }
 
@@ -127,10 +123,10 @@ class SendAmountPresenter(
     }
 
     private fun checkAmount() {
-        val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeFloat()
-        val coinRate = (balance()?.coinRate ?: 0f) * CurrencyManager.currencyPrice()
-        val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) amount else amount / (if (coinRate == 0f) 1f else coinRate)
-        val isOutOfBalance = inputBalance > ((balance()?.balance ?: 0f) - minBalance())
+        val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
+        val coinRate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
+        val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) amount else amount / (if (coinRate == BigDecimal.ZERO) BigDecimal.ONE else coinRate)
+        val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
         if (isOutOfBalance && !binding.errorWrapper.isVisible()) {
             TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
         } else if (!isOutOfBalance && binding.errorWrapper.isVisible()) {
@@ -144,9 +140,9 @@ class SendAmountPresenter(
     private fun updateBalance(balance: SendBalanceModel) {
         with(binding) {
             balanceAmountView.text =
-                "${balance.balance.toPlainString()} ${FlowCoinListManager.getCoinById(balance.contractId)?.name?.capitalizeV2()} "
+                "${balance.balance.format(8)} ${FlowCoinListManager.getCoinById(balance.contractId)?.name?.capitalizeV2()} "
             balanceAmountConvertView.text =
-                "≈ " + (if (balance.coinRate > 0) balance.coinRate * balance.balance else 0f).formatPrice(
+                "≈ " + (if (balance.coinRate > BigDecimal.ZERO) balance.coinRate * balance.balance else BigDecimal.ZERO).formatPrice(
                     includeSymbol = true,
                     includeSymbolSpace = true
                 )
@@ -173,8 +169,8 @@ class SendAmountPresenter(
     private fun showSendDialog() {
         ioScope {
             val inputAmount =
-                binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeFloat()
-            val rate = (balance()?.coinRate ?: 0f) * CurrencyManager.currencyPrice()
+                binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
+            val rate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
             val amount =
                 if (viewModel.currentCoin() == selectedCurrency().flag) inputAmount / rate else inputAmount
             uiScope {
@@ -202,9 +198,9 @@ class SendAmountPresenter(
 
     private fun setMaxAmount() {
         logd("send", "minBalance ${minBalance()}")
-        val balance = max((balance()?.balance ?: 0f) - minBalance(), 0f)
-        val coinRate = balance()?.coinRate ?: 0f
-        val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).toPlainString()
+        val balance = BigDecimal.ZERO.max((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
+        val coinRate = balance()?.coinRate ?: BigDecimal.ZERO
+        val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).format(8)
         with(binding) {
             transferAmountInput.setText(amount)
             transferAmountInput.setSelection(transferAmountInput.text.length)
@@ -225,11 +221,11 @@ class SendAmountPresenter(
     }
 
     private fun getAmountConvert(): String {
-        val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeFloat()
-        val rate = (balance()?.coinRate ?: 0f) * CurrencyManager.currencyPrice()
+        val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
+        val rate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
         val convert =
             if (viewModel.convertCoin() == selectedCurrency().flag) amount * rate else amount / rate
-        return convert.formatNum()
+        return convert.format()
     }
 
     private fun String.coinIcon(): Any {

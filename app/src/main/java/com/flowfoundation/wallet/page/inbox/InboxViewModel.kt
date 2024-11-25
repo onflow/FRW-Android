@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.toSafeInt
+import java.math.BigDecimal
 
 class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
 
@@ -48,7 +49,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
         val tokens = tokenListLiveData.value.orEmpty().toMutableList()
         tokens.toList().forEachIndexed { index, token ->
             if (token.coinAddress == coin.address) {

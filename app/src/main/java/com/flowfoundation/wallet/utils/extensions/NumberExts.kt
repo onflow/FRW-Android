@@ -39,3 +39,10 @@ fun String?.toSafeDouble(default: Double = 0.0): Double {
 fun Float.toSafeDouble(): Double {
     return BigDecimal(this.toString()).toDouble()
 }
+
+fun String?.toSafeDecimal(default: BigDecimal = BigDecimal.ZERO): BigDecimal {
+    if (this.isNullOrBlank()) {
+        return default
+    }
+    return this.toBigDecimalOrNull() ?: default
+}

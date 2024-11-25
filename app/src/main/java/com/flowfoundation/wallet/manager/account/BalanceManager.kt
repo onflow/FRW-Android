@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
 object BalanceManager {
@@ -52,7 +53,7 @@ object BalanceManager {
         coinList.forEach { coin ->
             balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = balanceMap[coin.contractId()] ?: 0f
+            val balance = balanceMap[coin.contractId()] ?: BigDecimal.ZERO
 
             val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
             val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
@@ -80,7 +81,7 @@ object BalanceManager {
                     return@forEach
                 }
                 val amountValue = tokenBalance.balance.toBigDecimal()
-                val value = amountValue.movePointLeft(tokenBalance.decimal).toFloat()
+                val value = amountValue.movePointLeft(tokenBalance.decimal)
                 val existBalance = balanceList.firstOrNull { listItem -> listItem.isSameEVMCoin(tokenBalance.address) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != value
                 if (isDiff) {
@@ -95,13 +96,12 @@ object BalanceManager {
         }
     }
 
-    suspend fun getEVMBalanceByCoin(tokenAddress: String): Float {
-        val address = EVMWalletManager.getEVMAddress() ?: return 0f
+    suspend fun getEVMBalanceByCoin(tokenAddress: String): BigDecimal {
+        val address = EVMWalletManager.getEVMAddress() ?: return BigDecimal.ZERO
         val apiService = retrofitApi().create(ApiService::class.java)
         val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
-        val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?:
-        return 0f
-        return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal).toFloat()
+        val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
+        return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
     fun getBalanceByCoin(coin: FlowCoin) {
@@ -121,7 +121,7 @@ object BalanceManager {
         uiScope { this.listeners.add(WeakReference(callback)) }
     }
 
-    private fun dispatchListeners(coin: FlowCoin, balance: Float) {
+    private fun dispatchListeners(coin: FlowCoin, balance: BigDecimal) {
         logd(TAG, "dispatchListeners ${coin.symbol}:$balance")
         uiScope {
             listeners.removeAll { it.get() == null }
@@ -169,7 +169,7 @@ interface OnBalanceUpdate {
 
 data class Balance(
     @SerializedName("balance")
-    val balance: Float,
+    val balance: BigDecimal,
     @SerializedName("address")
     val address: String? = "",
     @SerializedName("contractName")

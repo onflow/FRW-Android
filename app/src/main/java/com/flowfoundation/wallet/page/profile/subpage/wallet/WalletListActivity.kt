@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletListBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.OnEmojiUpdate
@@ -29,7 +28,7 @@ import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.formatNum
+import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.shortenEVMString
@@ -39,7 +38,7 @@ import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
-import java.math.RoundingMode
+import java.math.BigDecimal
 
 
 class WalletListActivity : BaseActivity(), OnEmojiUpdate {
@@ -147,9 +146,9 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                         FlowCoinListManager.getFlowCoin(),
                         address
                     )
-                } ?: 0f
+                } ?: BigDecimal.ZERO
                 uiScope {
-                    it.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
+                    it.text = "${balance.format()} FLOW"
                 }
             }
         }
