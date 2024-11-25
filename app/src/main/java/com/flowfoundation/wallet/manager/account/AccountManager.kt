@@ -56,6 +56,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 object AccountManager {
 
+    private val TAG = AccountManager::class.java.simpleName
+
     private val accounts = mutableListOf<Account>()
     private var uploadedAddressSet = mutableSetOf<String>()
     private val listeners = CopyOnWriteArrayList<WeakReference<OnUserInfoReload>>()
@@ -108,34 +110,40 @@ object AccountManager {
     }
 
     private suspend fun migratePrefixInfo(accountList: List<Account>?): List<Account>? {
-        userPrefixes.addAll(UserPrefixCacheManager.read() ?: emptyList())
-        val addressPrefixMap = getAddressPrefixMap()
-        accountList?.forEach { account ->
-            val userId = account.wallet?.id
-            val userPrefixInfo = userPrefixes.find { it.userId == userId }
-            if (userPrefixInfo != null) {
-                account.prefix = userPrefixInfo.prefix
-            } else {
-                val address = account.wallet?.mainnetWallet()?.address()
-                val prefix = addressPrefixMap[address]
-                if (!prefix.isNullOrEmpty()) {
-                    account.prefix = prefix
-                    if (!userId.isNullOrEmpty()) {
-                        userPrefixes.add(UserPrefix(userId, prefix))
-                        UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+        return try {
+            userPrefixes.addAll(UserPrefixCacheManager.read() ?: emptyList())
+            val addressPrefixMap = getAddressPrefixMap()
+            accountList?.forEach { account ->
+                val userId = account.wallet?.id
+                val userPrefixInfo = userPrefixes.find { it.userId == userId }
+                if (userPrefixInfo != null) {
+                    account.prefix = userPrefixInfo.prefix
+                } else {
+                    val address = account.wallet?.mainnetWallet()?.address()
+                    val prefix = addressPrefixMap[address]
+                    if (!prefix.isNullOrEmpty()) {
+                        account.prefix = prefix
+                        if (!userId.isNullOrEmpty()) {
+                            userPrefixes.add(UserPrefix(userId, prefix))
+                            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                        }
                     }
                 }
             }
+            getLocalPrefix(accountList, addressPrefixMap)
+            getLocalStoredKey(accountList)
+            accountList
+        } catch (e: Exception) {
+            loge(TAG, "Error during migration :: $e")
+            accountList
         }
-        getLocalPrefix(accountList, addressPrefixMap)
-        getLocalStoredKey(accountList)
-        return accountList
     }
 
     fun getSwitchAccountList(): List<Any> {
         val list = mutableListOf<Any>()
         list.addAll(accounts)
-        list.addAll(switchAccounts)
+        val addressSet = accounts.mapNotNull { it.wallet?.walletAddress() }.toSet()
+        list.addAll(switchAccounts.filter { it.address !in addressSet })
         return list
     }
 
@@ -238,7 +246,9 @@ object AccountManager {
                 return@ioScope
             }
             setToAnonymous()
-            accounts.removeAt(index)
+            val account = accounts.removeAt(index)
+            userPrefixes.removeAll { it.userId == account.wallet?.id}
+            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             uiScope {
                 clearUserCache()

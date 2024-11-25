@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.manager.account
 
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
@@ -10,14 +9,11 @@ import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitWithHost
-import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.nftco.flow.sdk.FlowAccessApi
-import com.nftco.flow.sdk.impl.FlowAccessApiImpl
 import kotlinx.coroutines.delay
 import java.lang.ref.WeakReference
 import java.util.Timer

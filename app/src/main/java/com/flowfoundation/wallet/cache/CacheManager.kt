@@ -19,12 +19,12 @@ class CacheManager<T>(
             return null
         }
 
-        try {
+        return try {
             return Gson().fromJson(str, type)
         } catch (e: Exception) {
-            loge(TAG, e)
+            loge(TAG, "$e \n ::JSON:: $type")
+            null
         }
-        return null
     }
 
     fun cache(data: T) {
