@@ -22,7 +22,7 @@ import com.flowfoundation.wallet.utils.toast
 class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
 
     private val contact by lazy { intent.getParcelableExtra<AddressBookContact>(EXTRA_CONTACT)!! }
-    private val coinSymbol by lazy { intent.getStringExtra(EXTRA_COIN_SYMBOL) }
+    private val coinContractId by lazy { intent.getStringExtra(EXTRA_COIN_CONTRACT_ID) }
 
     private lateinit var binding: ActivitySendAmountBinding
     private lateinit var presenter: SendAmountPresenter
@@ -38,7 +38,7 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
         presenter = SendAmountPresenter(this, binding, contact)
         viewModel = ViewModelProvider(this)[SendAmountViewModel::class.java].apply {
             setContact(contact)
-            FlowCoinListManager.getCoin(coinSymbol.orEmpty())?.let { changeCoin(it) }
+            FlowCoinListManager.getCoinById(coinContractId.orEmpty())?.let { changeCoin(it) }
             balanceLiveData.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(balance = it)) }
             onCoinSwap.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(onCoinSwap = true)) }
             load()
@@ -60,12 +60,12 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
 
     companion object {
         private const val EXTRA_CONTACT = "extra_contact"
-        private const val EXTRA_COIN_SYMBOL = "coin_symbol"
+        private const val EXTRA_COIN_CONTRACT_ID = "coin_contract_id"
 
-        fun launch(context: Context, contact: AddressBookContact, coinSymbol: String?) {
+        fun launch(context: Context, contact: AddressBookContact, coinContractId: String?) {
             context.startActivity(Intent(context, SendAmountActivity::class.java).apply {
                 putExtra(EXTRA_CONTACT, contact)
-                putExtra(EXTRA_COIN_SYMBOL, coinSymbol)
+                putExtra(EXTRA_COIN_CONTRACT_ID, coinContractId)
             })
         }
     }

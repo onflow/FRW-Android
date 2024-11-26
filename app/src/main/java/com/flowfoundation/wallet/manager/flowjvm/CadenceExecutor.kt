@@ -96,27 +96,27 @@ fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
     return result?.parseStringBoolMap()
 }
 
-fun cadenceQueryTokenListBalance(): Map<String, Float>? {
+fun cadenceQueryTokenListBalance(): Map<String, BigDecimal>? {
     val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     logd(TAG, "cadenceQueryTokenListBalance()")
     val result = CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
         arg { address(walletAddress) }
     }
     logd(TAG, "cadenceQueryTokenListBalance response:${String(result?.bytes ?: byteArrayOf())}")
-    return result?.parseStringFloatMap()
+    return result?.parseStringDecimalMap()
 }
 
-fun cadenceQueryTokenBalance(coin: FlowCoin): Float? {
+fun cadenceQueryTokenBalance(coin: FlowCoin): BigDecimal? {
     val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     logd(TAG, "cadenceQueryTokenBalance()")
     val result = coin.formatCadence(CADENCE_GET_BALANCE).executeCadence {
         arg { address(walletAddress) }
     }
     logd(TAG, "cadenceQueryTokenBalance response:${String(result?.bytes ?: byteArrayOf())}")
-    return result?.parseFloat()
+    return result?.parseDecimal()
 }
 
-fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): Float? {
+fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): BigDecimal? {
     if (coin == null || address == null) {
         return null
     }
@@ -128,7 +128,7 @@ fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): Floa
         TAG,
         "cadenceQueryTokenBalanceWithAddress response:${String(result?.bytes ?: byteArrayOf())}"
     )
-    return result?.parseFloat()
+    return result?.parseDecimal()
 }
 
 suspend fun cadenceEnableToken(coin: FlowCoin): String? {
@@ -343,7 +343,7 @@ suspend fun cadenceClaimInboxToken(
     domain: String,
     key: String,
     coin: FlowCoin,
-    amount: Float,
+    amount: BigDecimal,
     root: String = FlowDomainServer.MEOW.domain,
 ): String? {
     logd(TAG, "cadenceClaimInboxToken()")
@@ -375,14 +375,14 @@ suspend fun cadenceClaimInboxNft(
     return txid
 }
 
-fun cadenceQueryMinFlowBalance(): Float? {
+fun cadenceQueryMinFlowBalance(): BigDecimal? {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
     logd(TAG, "cadenceQueryMinFlowBalance address:$walletAddress")
     val result = CADENCE_QUERY_MIN_FLOW_BALANCE.executeCadence {
         arg { address(walletAddress) }
     }
     logd(TAG, "cadenceQueryMinFlowBalance response:${String(result?.bytes ?: byteArrayOf())}")
-    return result?.parseFloat()
+    return result?.parseDecimal()
 }
 
 suspend fun cadenceCreateCOAAccount(): String? {
@@ -418,17 +418,17 @@ fun cadenceQueryEVMAddress(): String? {
     return result?.parseString()
 }
 
-fun cadenceQueryCOATokenBalance(): Float? {
+fun cadenceQueryCOATokenBalance(): BigDecimal? {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
     logd(TAG, "cadenceQueryCOATokenBalance address:$walletAddress")
     val result = CADENCE_QUERY_COA_FLOW_BALANCE.executeCadence {
         arg { address(walletAddress) }
     }
     logd(TAG, "cadenceQueryCOATokenBalance response:${String(result?.bytes ?: byteArrayOf())}")
-    return result?.parseFloat()
+    return result?.parseDecimal()
 }
 
-suspend fun cadenceFundFlowToCOAAccount(amount: Float): String? {
+suspend fun cadenceFundFlowToCOAAccount(amount: BigDecimal): String? {
     logd(TAG, "cadenceFundFlowToCOAAccount()")
     val transactionId = CADENCE_FUND_COA_FLOW_BALANCE.transactionByMainWallet {
         arg { ufix64Safe(amount) }
@@ -437,7 +437,7 @@ suspend fun cadenceFundFlowToCOAAccount(amount: Float): String? {
     return transactionId
 }
 
-suspend fun cadenceWithdrawTokenFromCOAAccount(amount: Float, toAddress: String): String? {
+suspend fun cadenceWithdrawTokenFromCOAAccount(amount: BigDecimal, toAddress: String): String? {
     logd(TAG, "cadenceWithdrawTokenFromCOAAccount()")
     val transactionId = CADENCE_WITHDRAW_COA_FLOW_BALANCE.transactionByMainWallet {
         arg { ufix64Safe(amount) }
@@ -447,7 +447,7 @@ suspend fun cadenceWithdrawTokenFromCOAAccount(amount: Float, toAddress: String)
     return transactionId
 }
 
-suspend fun cadenceTransferFlowToEvmAddress(toAddress: String, amount: Float): String? {
+suspend fun cadenceTransferFlowToEvmAddress(toAddress: String, amount: BigDecimal): String? {
     logd(TAG, "cadenceSendEVMTransaction")
     val transactionId = CADENCE_TRANSFER_FLOW_TO_EVM.transactionByMainWallet {
         arg { string(toAddress) }
@@ -567,7 +567,7 @@ suspend fun cadenceBridgeChildNFTFromEvm(
 suspend fun cadenceBridgeChildFTToEvm(
     identifier: String,
     childAddress: String,
-    amount: Float
+    amount: BigDecimal
 ): String? {
     logd(TAG, "cadenceBridgeChildFTToEvm")
     val transactionId = CADENCE_BRIDGE_CHILD_FT_TO_EVM.transactionByMainWallet {
@@ -588,7 +588,7 @@ suspend fun cadenceBridgeChildFTFromEvm(
     val transactionId = CADENCE_BRIDGE_CHILD_FT_FROM_EVM.transactionByMainWallet {
         arg { string(identifier) }
         arg { address(childAddress) }
-        arg { uint256(amount) }
+        arg { uint256(amount.toBigInteger()) }
     }
     logd(TAG, "cadenceBridgeChildFTFromEvm transactionId:$transactionId")
     return transactionId
@@ -654,7 +654,7 @@ suspend fun cadenceBridgeNFTFromEVMToFlow(
 
 suspend fun cadenceBridgeFTToEvm(
     flowIdentifier: String,
-    amount: Float
+    amount: BigDecimal
 ): String? {
     logd(TAG, "cadenceBridgeFTToEvm")
     val transactionId = CADENCE_BRIDGE_FT_TO_EVM.transactionByMainWallet {
@@ -666,7 +666,7 @@ suspend fun cadenceBridgeFTToEvm(
 }
 
 suspend fun cadenceBridgeFTFromFlowToEVM(
-    vaultIdentifier: String, amount: Float, recipient: String
+    vaultIdentifier: String, amount: BigDecimal, recipient: String
 ): String? {
     logd(TAG, "cadenceBridgeFTFromFlowToEVM")
     val transactionId = CADENCE_BRIDGE_FT_FROM_FLOW_TO_EVM.transactionByMainWallet {
@@ -685,7 +685,7 @@ suspend fun cadenceBridgeFTFromEVMToFlow(
     logd(TAG, "cadenceBridgeFTFromEVMToFlow")
     val transactionId = CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW.transactionByMainWallet {
         arg { string(flowIdentifier) }
-        arg { uint256(amount) }
+        arg { uint256(amount.toBigInteger()) }
         arg { address(recipient) }
     }
     logd(TAG, "cadenceBridgeFTFromEVMToFlow transactionId:$transactionId")
@@ -699,7 +699,7 @@ suspend fun cadenceBridgeFTFromEvm(
     logd(TAG, "cadenceBridgeFTFromEvm")
     val transactionId = CADENCE_BRIDGE_FT_FROM_EVM.transactionByMainWallet {
         arg { string(flowIdentifier) }
-        arg { uint256(amount) }
+        arg { uint256(amount.toBigInteger()) }
     }
     logd(TAG, "cadenceBridgeFTFromEvm transactionId:$transactionId")
     return transactionId

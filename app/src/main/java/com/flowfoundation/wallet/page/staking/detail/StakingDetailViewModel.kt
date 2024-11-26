@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import kotlinx.coroutines.delay
+import java.math.BigDecimal
 
 class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
@@ -46,7 +47,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
             updateLiveData(detailModel)
 
-            val coin = FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW) ?: return@ioScope
+            val coin = FlowCoinListManager.getFlowCoin() ?: return@ioScope
 
             logd("xxx", "coin:$coin")
             BalanceManager.getBalanceByCoin(coin)
@@ -85,7 +86,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
             var delegatorId = provider.delegatorId()
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount)
+                createStakingDelegatorId(provider, amount.toBigDecimal())
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -115,15 +116,15 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
         if (coin.isFlowCoin()) {
             logd("xxx", "balance:${balance.balance}")
-            detailModel = detailModel.copy(balance = balance.balance)
+            detailModel = detailModel.copy(balance = balance.balance.toFloat())
             updateLiveData(detailModel)
         }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
         logd("xxx", "price:${price}")
         if (coin.isFlowCoin()) {
-            detailModel = detailModel.copy(coinRate = price)
+            detailModel = detailModel.copy(coinRate = price.toFloat())
             updateLiveData(detailModel)
         }
     }

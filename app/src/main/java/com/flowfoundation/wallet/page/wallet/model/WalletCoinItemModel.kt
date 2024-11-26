@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.wallet.model
 
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 
 data class WalletCoinItemModel(
     @SerializedName("coin")
@@ -9,9 +10,9 @@ data class WalletCoinItemModel(
     @SerializedName("address")
     val address: String,
     @SerializedName("balance")
-    val balance: Float,
+    val balance: BigDecimal,
     @SerializedName("coinRate")
-    val coinRate: Float,
+    val coinRate: BigDecimal,
     @SerializedName("isHideBalance")
     val isHideBalance: Boolean = false,
     @SerializedName("currency")

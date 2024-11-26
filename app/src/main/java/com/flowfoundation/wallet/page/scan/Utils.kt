@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.webkit.URLUtil
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -53,7 +54,7 @@ fun dispatchScanResult(context: Context, str: String) {
         SendAmountActivity.launch(
             context as Activity,
             AddressBookContact(address = addressText.toAddress()),
-            FlowCoin.SYMBOL_FLOW
+            FlowCoinListManager.getFlowCoinContractId()
         )
     } else if (addressPattern.matches(text) || evmAddressPattern.matches(text)) {
         if (WalletManager.isChildAccountSelected()) {
@@ -62,7 +63,7 @@ fun dispatchScanResult(context: Context, str: String) {
         SendAmountActivity.launch(
             context as Activity,
             AddressBookContact(address = text.toAddress()),
-            FlowCoin.SYMBOL_FLOW
+            FlowCoinListManager.getFlowCoinContractId()
         )
     } else if (URLUtil.isValidUrl(text.httpPrefix())) {
         openBrowser(context as Activity, text.httpPrefix())

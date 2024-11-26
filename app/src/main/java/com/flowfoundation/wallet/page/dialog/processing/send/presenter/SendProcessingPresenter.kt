@@ -17,10 +17,12 @@ import com.flowfoundation.wallet.page.send.transaction.subpage.bindNft
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import java.math.BigDecimal
 
 class SendProcessingPresenter(
     private val fragment: SendProcessingDialog,
@@ -90,8 +92,8 @@ class SendProcessingPresenter(
     private fun setupAmount() {
         ioScope {
             val coinData = transactionState.coinData()
-            val coin = FlowCoinListManager.getCoin(coinData.coinSymbol) ?: return@ioScope
-            val amount = coinData.amount.formatNum()
+            val coin = FlowCoinListManager.getCoinById(coinData.coinId) ?: return@ioScope
+            val amount = coinData.amount.format()
             uiScope {
                 with(binding) {
                     amountView.text = "$amount ${coin.name}"
@@ -103,7 +105,7 @@ class SendProcessingPresenter(
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateAmountConvert(amountConvert: Float) {
+    private fun updateAmountConvert(amountConvert: BigDecimal) {
         binding.amountConvertView.text = "≈ ${amountConvert.formatPrice(includeSymbol = true, includeSymbolSpace = true)}"
     }
 }

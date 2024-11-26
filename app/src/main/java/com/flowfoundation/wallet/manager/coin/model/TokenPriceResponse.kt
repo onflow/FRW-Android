@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.coin.model
 
 import com.google.gson.annotations.SerializedName
+import java.math.BigDecimal
 
 
 data class TokenPriceResponse(
@@ -18,9 +19,9 @@ data class TokenPrice(
     @SerializedName("contractName")
     val contractName: String,
     @SerializedName("rateToFLOW")
-    val rateToFLOW: Double,
+    val rateToFLOW: BigDecimal,
     @SerializedName("rateToUSD")
-    val rateToUSD: Double,
+    val rateToUSD: BigDecimal,
     @SerializedName("evmAddress")
     val evmAddress: String?
 )

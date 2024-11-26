@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityTransactionSendBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.page.address.AddressBookFragment
 import com.flowfoundation.wallet.page.address.AddressBookViewModel
 import com.flowfoundation.wallet.page.send.transaction.model.TransactionSendModel
@@ -27,7 +28,7 @@ class TransactionSendActivity : BaseActivity() {
     private lateinit var presenter: TransactionSendPresenter
     private lateinit var viewModel: SelectSendAddressViewModel
 
-    private val coinSymbol by lazy { intent.getStringExtra(COIN_SYMBOL)!! }
+    private val coinContractId by lazy { intent.getStringExtra(EXTRA_COIN_CONTRACT_ID)!! }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +41,7 @@ class TransactionSendActivity : BaseActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.search_container, AddressBookFragment()).commit()
 
         binding.root.addStatusBarTopPadding()
-        presenter = TransactionSendPresenter(supportFragmentManager, binding.addressContent, coinSymbol)
+        presenter = TransactionSendPresenter(supportFragmentManager, binding.addressContent, coinContractId)
         viewModel = ViewModelProvider(this)[SelectSendAddressViewModel::class.java].apply {
             onAddressSelectedLiveData.observe(this@TransactionSendActivity) { presenter.bind(TransactionSendModel(selectedAddress = it)) }
         }
@@ -70,10 +71,10 @@ class TransactionSendActivity : BaseActivity() {
     }
 
     companion object {
-        private const val COIN_SYMBOL = "COIN_SYMBOL"
-        fun launch(context: Context, coinSymbol: String = FlowCoin.SYMBOL_FLOW) {
+        private const val EXTRA_COIN_CONTRACT_ID = "extra_coin_contract_id"
+        fun launch(context: Context, coinContractId: String = FlowCoinListManager.getFlowCoinContractId()) {
             context.startActivity(Intent(context, TransactionSendActivity::class.java).apply {
-                putExtra(COIN_SYMBOL, coinSymbol)
+                putExtra(EXTRA_COIN_CONTRACT_ID, coinContractId)
             })
         }
     }

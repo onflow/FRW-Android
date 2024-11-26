@@ -8,6 +8,7 @@ import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -282,7 +283,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                                 userInfo = service.userInfo().data,
                                                 prefix = KeyManager.getCurrentPrefix()
                                             ),
-                                            uid
+                                            firebaseUid()
                                         )
                                         clearUserCache()
                                         callback.invoke(true)

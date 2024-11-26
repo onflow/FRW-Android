@@ -37,6 +37,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.registerBarcodeLauncher
 import com.flowfoundation.wallet.utils.uiScope
 import com.journeyapps.barcodescanner.ScanOptions
+import java.math.BigDecimal
 import kotlin.math.abs
 
 class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
@@ -45,7 +46,6 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
     private lateinit var viewModel: WalletFragmentViewModel
     private lateinit var presenter: WalletFragmentPresenter
     private lateinit var headerPresenter: WalletHeaderPresenter
-//    private lateinit var headerPlaceholderPresenter: WalletHeaderPlaceholderPresenter
 
     private lateinit var barcodeLauncher: ActivityResultLauncher<ScanOptions>
 
@@ -58,7 +58,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
         WallpaperManager.addListener(this)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentCoordinatorWalletBinding.inflate(inflater)
         return binding.root
     }
@@ -136,8 +136,8 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
             if (isBackupGoogleDrive() || isBackupManually() || isMultiBackupCreated()) {
                 isBackupShown = false
             } else {
-                val sumCoin = coinList.map { it.balance }.sum()
-                if (sumCoin > 0.001f) {
+                val sumCoin = coinList.map { it.balance }.fold(BigDecimal.ZERO) { sum, balance -> sum + balance }
+                if (sumCoin > BigDecimal(0.001)) {
                     isBackupShown = true
                     if (isShowBackupDialog()) {
                         BackupTipsDialog.show(childFragmentManager)

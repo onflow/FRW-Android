@@ -50,10 +50,10 @@ class SwapPresenter(
     private fun showSelectTokenDialog(isFrom: Boolean) {
         uiScope {
             val viewModel = binding.viewModel()
-            val symbol = if (isFrom) viewModel.fromCoin()?.symbol else viewModel.toCoin()?.symbol
+            val contractId = if (isFrom) viewModel.fromCoin()?.contractId() else viewModel.toCoin()?.contractId()
             SelectTokenDialog().show(
-                selectedCoin = symbol,
-                disableCoin = if (isFrom) viewModel.toCoin()?.symbol else viewModel.fromCoin()?.symbol,
+                selectedCoin = contractId,
+                disableCoin = if (isFrom) viewModel.toCoin()?.contractId() else viewModel.fromCoin()?.contractId(),
                 activity.supportFragmentManager,
             )?.let {
                 if (isFrom) viewModel.updateFromCoin(it) else viewModel.updateToCoin(it)

@@ -26,10 +26,10 @@ class TokenItemPresenter(
             symbolView.text = model.symbol.uppercase()
             Glide.with(iconView).load(model.icon()).into(iconView)
             stateButton.setVisible(false)
-            selectedView.setVisible(model.symbol.lowercase() == selectedCoin?.lowercase())
+            selectedView.setVisible(model.isSameCoin(selectedCoin.orEmpty()))
         }
 
-        val backgroundColor = if (model.symbol.lowercase() == disableCoin?.lowercase()) {
+        val backgroundColor = if (model.isSameCoin(disableCoin.orEmpty())) {
             R.color.transparent.res2color()
         } else {
             R.color.background.res2color()
@@ -37,7 +37,7 @@ class TokenItemPresenter(
 
         view.backgroundTintList = ColorStateList.valueOf(backgroundColor)
         view.setOnClickListener {
-            if (disableCoin?.lowercase() != model.symbol.lowercase()) {
+            if (model.isSameCoin(disableCoin.orEmpty()).not()) {
                 callback.invoke(model)
             }
         }

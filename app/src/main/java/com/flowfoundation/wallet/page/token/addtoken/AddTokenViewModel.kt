@@ -95,7 +95,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
                     if (state.isSuccess() && !TokenStateManager.isTokenAdded(coin.address)) {
                         TokenStateManager.fetchStateSingle(state.tokenData(), cache = true)
                     }
-                    val index = coinList.indexOfFirst { it.coin.symbol == coin.symbol }
+                    val index = coinList.indexOfFirst { it.coin.isSameCoin(coin.contractId()) }
                     if (index >= 0) {
                         val isAdded = TokenStateManager.isTokenAdded(coin.address)
                         coinList[index] = TokenItem(

@@ -32,6 +32,63 @@ fun Float.formatPrice(
     return if (includeSymbol) "${selectedCurrency().symbol}${if (includeSymbolSpace) " " else ""}$format" else format
 }
 
+fun BigDecimal.formatPrice(
+    digits: Int = 3,
+    convertCurrency: Boolean = true,
+    includeSymbol: Boolean = false,
+    includeSymbolSpace: Boolean = false,
+    isAbbreviation: Boolean = false
+): String {
+    var value = this
+    if (convertCurrency) {
+        if (CurrencyManager.currencyDecimalPrice() < BigDecimal.ZERO) {
+            return "-"
+        }
+        value *= CurrencyManager.currencyDecimalPrice()
+    }
+    val format = if (value < BigDecimal("1000000")) {
+        value.format(digits)
+    } else if (isAbbreviation) {
+        value.formatLargeNumber()
+    } else {
+        value.formatNumberWithCommas()
+    }
+    return if (includeSymbol) "${selectedCurrency().symbol}${if (includeSymbolSpace) " " else ""}$format" else format
+}
+
+fun BigDecimal.format(
+    digits: Int = 3,
+    roundingMode: RoundingMode = RoundingMode.DOWN
+): String {
+    return this.setScale(digits, roundingMode).stripTrailingZeros().toPlainString()
+}
+
+fun BigDecimal.formatLargeBalanceNumber(isAbbreviation: Boolean = false): String {
+    return if (this < BigDecimal("1000000")) {
+        this.format()
+    } else if (isAbbreviation) {
+        this.formatLargeNumber()
+    } else {
+        this.formatNumberWithCommas()
+    }
+}
+
+fun BigDecimal.formatLargeNumber(): String {
+    val decimalFormat = DecimalFormat("0.###")
+    decimalFormat.roundingMode = RoundingMode.DOWN
+    return when {
+        this >= BigDecimal("1000000000000") -> decimalFormat.format(this.divide(BigDecimal("1000000000000"))) + "t"
+        this >= BigDecimal("1000000000") -> decimalFormat.format(this.divide(BigDecimal("1000000000"))) + "b"
+        this >= BigDecimal("1000000") -> decimalFormat.format(this.divide(BigDecimal("1000000"))) + "m"
+        else -> this.format()
+    }
+}
+
+fun BigDecimal.formatNumberWithCommas(): String {
+    val formatter = NumberFormat.getNumberInstance(Locale.US)
+    return formatter.format(this)
+}
+
 fun Float.format(digits: Int = 3, roundingMode: RoundingMode = RoundingMode.DOWN): String {
     return DecimalFormat("0.${"#".repeat(digits)}").apply { setRoundingMode(roundingMode) }.format(this)
 }
@@ -41,10 +98,6 @@ fun Float.formatNum(
     roundingMode: RoundingMode = RoundingMode.DOWN,
 ): String {
     return format(digits, roundingMode)
-}
-
-fun Float.toPlainString(): String {
-    return BigDecimal(this.toString()).toPlainString()
 }
 
 fun Float.formatLargeBalanceNumber(isAbbreviation: Boolean = false): String {

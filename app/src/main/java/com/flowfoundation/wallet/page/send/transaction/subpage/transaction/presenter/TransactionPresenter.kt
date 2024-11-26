@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import java.math.BigDecimal
 
 class TransactionPresenter(
     private val fragment: TransactionDialog,
@@ -29,7 +30,7 @@ class TransactionPresenter(
 
     private val transaction by lazy { viewModel.transaction }
 
-    private val coin by lazy { FlowCoinListManager.getCoin(transaction.coinSymbol)!! }
+    private val coin by lazy { FlowCoinListManager.getCoinById(transaction.coinId)!! }
     private val contact by lazy { viewModel.transaction.target }
 
     init {
@@ -70,7 +71,7 @@ class TransactionPresenter(
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateAmountConvert(amountConvert: Float) {
+    private fun updateAmountConvert(amountConvert: BigDecimal) {
         binding.amountConvertView.text = "≈ ${amountConvert.formatPrice(includeSymbol = true, includeSymbolSpace = true)}"
     }
 }

@@ -23,7 +23,6 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.flowfoundation.wallet.widgets.ButtonState
 import kotlinx.coroutines.delay
 
@@ -54,7 +53,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
             rateView.text = (data.rate * 100).format(2) + "%"
             rewardCoinView.text =
-                "${(data.rewardCoin).formatNum(digits = 2)} " + R.string.flow_coin_name.res2String()
+                "${(data.rewardCoin).format(digits = 2)} " + R.string.flow_coin_name.res2String()
             rewardPriceView.text =
                 "≈ ${(data.rewardUsd).formatPrice(digits = 2, includeSymbol = true)}"
             rewardPriceCurrencyView.text = data.currency.name
@@ -101,7 +100,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             var delegatorId = provider.delegatorId()
             val amount = data.amount
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount.toSafeDouble())
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -134,7 +133,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             var delegatorId = provider.delegatorId()
             val amount = data.amount
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount.toSafeDouble())
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()

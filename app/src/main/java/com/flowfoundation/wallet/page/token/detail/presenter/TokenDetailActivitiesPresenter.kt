@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutTokenDetailActivitiesBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailActivitiesModel
 import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
 import com.flowfoundation.wallet.page.transaction.record.adapter.TransactionRecordListAdapter

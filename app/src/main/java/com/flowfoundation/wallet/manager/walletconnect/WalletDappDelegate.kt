@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
@@ -208,7 +209,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                                 userInfo = service.userInfo().data,
                                                 prefix = prefix,
                                             ),
-                                            uid
+                                            firebaseUid()
                                         )
                                         clearUserCache()
                                         callback.invoke(true)

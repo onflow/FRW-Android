@@ -6,10 +6,12 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.getCurrencyFlag
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 
 object CurrencyManager {
     private var flag = ""
@@ -30,6 +32,10 @@ object CurrencyManager {
 
     fun currencyPrice(): Float {
         return currencyPriceInternal(flag)
+    }
+
+    fun currencyDecimalPrice(): BigDecimal {
+        return currencyPrice().toString().toSafeDecimal()
     }
 
     fun fetch() {

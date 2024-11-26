@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.wallet.toAddress
+import java.math.BigDecimal
 
 
 suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
@@ -20,12 +21,12 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
     val slippageRate = 0.1f
 
     val estimateOut = data.tokenOutAmount
-    val amountOutMin = estimateOut * (1.0f - slippageRate)
+    val amountOutMin = estimateOut * (1.0f - slippageRate).toBigDecimal()
     val storageIn = viewModel.fromCoin()!!.storagePath
     val storageOut = viewModel.toCoin()!!.storagePath
 
     val estimateIn = data.tokenInAmount
-    val amountInMax = estimateIn / (1.0f - slippageRate)
+    val amountInMax = estimateIn / (1.0f - slippageRate).toBigDecimal()
 
     return swapSendInternal(
         swapPaths = tokenKeyFlatSplitPath,
@@ -43,11 +44,11 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
 
 private suspend fun swapSendInternal(
     swapPaths: List<String>,
-    tokenInMax: Float,
-    tokenOutMin: Float,
+    tokenInMax: BigDecimal,
+    tokenOutMin: BigDecimal,
     tokenInVaultPath: String,
-    tokenOutSplit: List<Float>,
-    tokenInSplit: List<Float>,
+    tokenOutSplit: List<BigDecimal>,
+    tokenInSplit: List<BigDecimal>,
     tokenOutVaultPath: String,
     tokenOutReceiverPath: String,
     tokenOutBalancePath: String,

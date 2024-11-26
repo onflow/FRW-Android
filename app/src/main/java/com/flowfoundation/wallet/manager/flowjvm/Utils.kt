@@ -26,8 +26,10 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringObjResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.logd
+import java.math.BigDecimal
 import java.util.Locale
 
 
@@ -80,11 +82,11 @@ internal fun FlowScriptResponse.parseStringList(): List<String>? {
     }
 }
 
-internal fun FlowScriptResponse.parseStringFloatMap(): Map<String, Float>? {
+internal fun FlowScriptResponse.parseStringDecimalMap(): Map<String, BigDecimal>? {
     return try {
         val result = Gson().fromJson(String(bytes), FlowStringMapResult::class.java)
         return result.value?.associate {
-            it.key?.value.toString() to it.value?.value.toSafeFloat()
+            it.key?.value.toString() to it.value?.value.toSafeDecimal()
         }
     } catch (e: Exception) {
         null
@@ -126,6 +128,17 @@ internal fun FlowScriptResponse?.parseFloat(default: Float = 0f): Float {
     return try {
         val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
         (result.value.toFloatOrNull()) ?: default
+    } catch (e: Exception) {
+        return default
+    }
+}
+
+internal fun FlowScriptResponse?.parseDecimal(default: BigDecimal = BigDecimal.ZERO): BigDecimal {
+    // {"type":"UFix64","value":"12.34"}
+    this ?: return default
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
+        result.value.toBigDecimalOrNull() ?: default
     } catch (e: Exception) {
         return default
     }
