@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.coin
 import android.text.format.DateUtils
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
+import com.flowfoundation.wallet.manager.coin.model.TokenPrice
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
@@ -57,19 +58,15 @@ object CoinRateManager {
             cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
             if (cacheRate.isExpire()) {
                 runCatching {
+                    val apiService = retrofitApi().create(ApiService::class.java)
+                    val tokenPriceResponse = apiService.getTokenPrices()
+                    val tokenPriceList = tokenPriceResponse.data
                     val market = QuoteMarket.fromMarketName(getQuoteMarket())
                     val coinPair = coin.getPricePair(market)
 
                     if (coinPair.isEmpty()) {
-                        val apiService = retrofitApi().create(ApiService::class.java)
-                        val tokenPriceResponse = apiService.getTokenPrices()
-                        val tokenPriceList = tokenPriceResponse.data
                         tokenPriceList?.find {
-                            if (WalletManager.isEVMAccountSelected()) {
-                                coin.address == it.evmAddress
-                            } else {
-                                coin.contractName() == it.contractName
-                            }
+                            coin.isSameCoin(it)
                         }?.let {
                             val rate = it.rateToUSD
                             updateCache(coin, rate, 0f)
@@ -80,11 +77,25 @@ object CoinRateManager {
 
                     val service = retrofit().create(ApiService::class.java)
                     val response = service.summary(market.value, coin.getPricePair(market))
-                    val price = response.data.result.price.last
+                    val price = tokenPriceList?.find {
+                        coin.isSameCoin(it)
+                    }?.rateToUSD ?: response.data.result.price.last
                     val quoteChange = response.data.result.price.change.percentage
                     updateCache(coin, price, quoteChange)
                     dispatchListeners(coin, price, quoteChange)
                 }
+            }
+        }
+    }
+
+    fun FlowCoin.isSameCoin(tokenPrice: TokenPrice): Boolean {
+        return if (isFlowCoin()) {
+            isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
+        } else {
+            if (WalletManager.isEVMAccountSelected()) {
+                address.equals(tokenPrice.evmAddress, true)
+            } else {
+                isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
             }
         }
     }
@@ -108,11 +119,7 @@ object CoinRateManager {
 
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
-                                if (WalletManager.isEVMAccountSelected()) {
-                                    coin.address.equals(it.evmAddress, true)
-                                } else {
-                                    coin.contractName() == it.contractName
-                                }
+                                coin.isSameCoin(it)
                             }?.let {
                                 val rate = it.rateToUSD
                                 updateCache(coin, rate, 0f)
@@ -122,7 +129,9 @@ object CoinRateManager {
                         }
                         val service = retrofit().create(ApiService::class.java)
                         val response = service.summary(market.value, coin.getPricePair(market))
-                        val price = response.data.result.price.last
+                        val price = tokenPriceList?.find {
+                            coin.isSameCoin(it)
+                        }?.rateToUSD ?: response.data.result.price.last
                         val quoteChange = response.data.result.price.change.percentage
                         updateCache(coin, price, quoteChange)
                         dispatchListeners(coin, price, quoteChange)
