@@ -97,7 +97,6 @@
     <string name="saved_to_album">アルバムに保存</string>
     <string name="view_on_web">ウェブで見る</string>
     <string name="empty_title">あなたはまだNFTを持っていない</string>
-    <string name="nft_empty_desc">次の発見を楽しみにしている。</string>
     <string name="receive">受け取る</string>
     <string name="buy">購入</string>
     <string name="swap">スワップ</string>
@@ -225,7 +224,7 @@
     <string name="fcl_permission_read_balance">財布の残高とアクティビティを見る</string>
     <string name="fcl_permission_transaction">取引の承認を求める</string>
     <string name="script">スクリプト</string>
-    <string name="dapps">dApps</string>
+    <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">コインを使用可能にするプロセス</string>
     <string name="mnemonic_check_fail">選択ミス</string>
     <string name="restore_with_recovery_phrase">リカバリーフレーズで復元</string>

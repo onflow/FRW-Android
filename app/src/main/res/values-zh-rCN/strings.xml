@@ -96,7 +96,6 @@
     <string name="saved_to_album">保存到相册</string>
     <string name="view_on_web">在网页上查看</string>
     <string name="empty_title">您还没有任何 NFT</string>
-    <string name="nft_empty_desc">期待你的下一个发现。</string>
     <string name="receive">接收</string>
     <string name="buy">购买</string>
     <string name="swap">兑换</string>
@@ -223,7 +222,7 @@
     <string name="fcl_permission_read_balance">查看您的钱包余额和活动</string>
     <string name="fcl_permission_transaction">请求交易批准</string>
     <string name="script">脚本</string>
-    <string name="dapps">dApps</string>
+    <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">启用代币</string>
     <string name="mnemonic_check_fail">选择错误</string>
     <string name="restore_with_recovery_phrase">用助记词恢复</string>
