@@ -36,7 +36,12 @@ object MixpanelManager {
             put(KEY_FLOW_NETWORK, chainNetWorkString())
             put(KEY_FW_DEVICE_ID, DeviceInfoManager.getDeviceID())
         }
-        mixpanel = MixpanelAPI.getInstance(application, EnvKey.get("MIXPANEL_TOKEN"), superObj, false)
+        val token = if (isTesting() || isDev()) {
+            EnvKey.get("MIXPANEL_TOKEN_DEV")
+        } else {
+            EnvKey.get("MIXPANEL_TOKEN_PROD")
+        }
+        mixpanel = MixpanelAPI.getInstance(application, token, superObj, false)
     }
 
     fun networkChange() {

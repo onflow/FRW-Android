@@ -12,8 +12,8 @@ import com.flowfoundation.wallet.utils.ioScope
 
 fun queryStorageInfo() {
     ioScope {
-        val address = WalletManager.selectedWalletAddress()
-        if (address.isEmpty()) {
+        val address = WalletManager.wallet()?.walletAddress()
+        if (address.isNullOrEmpty()) {
             return@ioScope
         }
         val response = CADENCE_QUERY_STORAGE_INFO.executeCadence {

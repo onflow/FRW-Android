@@ -142,7 +142,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            MixpanelManager.delegationCreated(delegatorId.toString(), provider.id, amount.toSafeDouble().toString())
+            MixpanelManager.delegationCreated(delegatorId.toString(), provider.id, amount.toString())
             val txId = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
