@@ -12,11 +12,13 @@ class StakeListViewModel : ViewModel() {
 
     fun load() {
         ioScope {
-            data.postValue(StakingManager.stakingInfo().nodes.map { node ->
-                StakingListItemModel(
-                    provider = StakingManager.providers().first { it.id == node.nodeID },
-                    stakingNode = node,
-                )
+            data.postValue(StakingManager.stakingInfo().nodes.mapNotNull { node ->
+                StakingManager.providers().firstOrNull { it.id == node.nodeID }?.let {
+                    StakingListItemModel(
+                        provider = it,
+                        stakingNode = node,
+                    )
+                }
             })
         }
     }
