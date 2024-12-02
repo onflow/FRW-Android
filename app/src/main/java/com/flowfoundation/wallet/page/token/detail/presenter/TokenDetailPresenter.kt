@@ -54,7 +54,6 @@ class TokenDetailPresenter(
             nameView.text = coin.name
             coinTypeView.text = coin.symbol.uppercase()
             Glide.with(iconView).load(coin.icon()).into(iconView)
-            nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener {
                 TransactionSendActivity.launch(activity, coinContractId = coin.contractId())
@@ -105,6 +104,12 @@ class TokenDetailPresenter(
                 } else {
                     EnableEVMActivity.launch(activity)
                 }
+            }
+            if (coin.website().isEmpty()) {
+                ivLink.gone()
+            } else {
+                ivLink.visible()
+                nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             }
         }
 

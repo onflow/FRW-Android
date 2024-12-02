@@ -54,26 +54,14 @@
         android:textColor="@color/neutrals6"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@id/desc"
-        app:layout_constraintTop_toBottomOf="@id/icon"/>
-
-    <TextView
-        android:id="@+id/desc"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:gravity="center"
-        android:text="@string/nft_empty_desc"
-        android:textColor="@color/neutrals8"
-        android:textSize="14sp"
         app:layout_constraintBottom_toTopOf="@id/get_new_button"
-        app:layout_constraintTop_toBottomOf="@id/title"/>
+        app:layout_constraintTop_toBottomOf="@id/icon"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/get_new_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="16dp"
         android:layout_marginBottom="30dp"
         android:backgroundTint="@color/mango_nft_16"
         android:fontFamily="@font/inter"
@@ -92,7 +80,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/desc"
+        app:layout_constraintTop_toBottomOf="@id/title"
         app:rippleColor="@color/black_20"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

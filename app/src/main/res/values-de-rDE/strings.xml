@@ -97,7 +97,6 @@
     <string name="saved_to_album">Im Album gespeichert</string>
     <string name="view_on_web">Ansicht im Web</string>
     <string name="empty_title">Sie haben noch keine NFTs</string>
-    <string name="nft_empty_desc">Ich freue mich auf Ihre nächste Entdeckung.</string>
     <string name="receive">Empfangen Sie</string>
     <string name="buy">Kaufen</string>
     <string name="swap">Tauschen Sie</string>
@@ -225,7 +224,7 @@
     <string name="fcl_permission_read_balance">Anzeige des Kontostands und der Aktivitäten in Ihrer Brieftasche</string>
     <string name="fcl_permission_transaction">Genehmigung von Transaktionen beantragen</string>
     <string name="script">Drehbuch</string>
-    <string name="dapps">dApps</string>
+    <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">Prozess der Freigabe der Münze</string>
     <string name="mnemonic_check_fail">Falsche Auswahl</string>
     <string name="restore_with_recovery_phrase">Wiederherstellen mit Recovery Phrase</string>

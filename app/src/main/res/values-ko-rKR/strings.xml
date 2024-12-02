@@ -97,7 +97,6 @@
     <string name="saved_to_album">앨범에 저장</string>
     <string name="view_on_web">웹에서 보기</string>
     <string name="empty_title">아직 NFT가 없습니다.</string>
-    <string name="nft_empty_desc">여러분의 다음 발견을 기대합니다.</string>
     <string name="receive">수신</string>
     <string name="buy">구매</string>
     <string name="swap">스왑</string>
@@ -225,7 +224,7 @@
     <string name="fcl_permission_read_balance">지갑 잔액 및 활동 보기</string>
     <string name="fcl_permission_transaction">거래 승인 요청</string>
     <string name="script">스크립트</string>
-    <string name="dapps">dApp</string>
+    <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">코인 활성화 프로세스</string>
     <string name="mnemonic_check_fail">잘못된 선택</string>
     <string name="restore_with_recovery_phrase">복구 구문으로 복원</string>
