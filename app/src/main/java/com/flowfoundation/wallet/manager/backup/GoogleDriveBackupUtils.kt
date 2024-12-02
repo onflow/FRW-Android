@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.drive.DriveServerHelper
-import com.flowfoundation.wallet.manager.env.EnvKey
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.getPinCode
@@ -24,7 +23,7 @@ import com.flowfoundation.wallet.utils.secret.aesEncrypt
 private const val TAG = "GoogleDriveBackupUtils"
 private const val FILE_NAME = "outblock_multi_backup"
 
-private val AES_KEY by lazy { EnvKey.get("DRIVE_AES_KEY") }
+private const val AES_KEY = BuildConfig.DRIVE_AES_KEY
 private val AES_PASSWORD by lazy {
     sha256(AES_KEY.toByteArray())
 }

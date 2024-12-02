@@ -14,6 +14,14 @@ def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
 properties.load(inputStream)
 
+def apiKeysFile = project.rootProject.file("key.properties")
+def apiKeys = new Properties()
+if (apiKeysFile.exists()) {
+    apiKeysFile.withInputStream { input ->
+        apiKeys.load(input)
+    }
+}
+
 android {
     compileSdk 34
 
@@ -25,6 +33,17 @@ android {
         versionName vName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "DRIVE_AES_IV", "\"${apiKeys.getProperty('DRIVE_AES_IV')}\"")
+        buildConfigField("String", "DRIVE_AES_KEY", "\"${apiKeys.getProperty('DRIVE_AES_KEY')}\"")
+        buildConfigField("String", "WALLET_CONNECT_PROJECT_ID", "\"${apiKeys.getProperty('WALLET_CONNECT_PROJECT_ID')}\"")
+        buildConfigField("String", "INSTABUG_TOKEN_DEV", "\"${apiKeys.getProperty('INSTABUG_TOKEN_DEV')}\"")
+        buildConfigField("String", "INSTABUG_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_TOKEN_PROD')}\"")
+        buildConfigField("String", "CROWDIN_PROJECT_ID", "\"${apiKeys.getProperty('CROWDIN_PROJECT_ID')}\"")
+        buildConfigField("String", "CROWDIN_API_TOKEN", "\"${apiKeys.getProperty('CROWDIN_API_TOKEN')}\"")
+        buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
+        buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
+        buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
     }
 
     signingConfigs {
@@ -272,7 +291,6 @@ dependencies {
     implementation 'org.web3j:core:4.8.7-android'
     /** FLOW **/
 
-    implementation "io.github.cdimascio:dotenv-kotlin:6.4.1"
     implementation 'com.github.translized:android-SDK:1.0.2'
 
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
