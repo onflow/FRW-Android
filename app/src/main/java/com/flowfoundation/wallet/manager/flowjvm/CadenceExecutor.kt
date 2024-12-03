@@ -724,14 +724,14 @@ fun String.executeCadence(block: ScriptBuilder.() -> Unit): FlowScriptResponse? 
         }
     } catch (e: Throwable) {
         loge(ScriptExecutionException(getFirstLine(this), e))
-        MixpanelManager.scriptError(getFirstLine(this), e.message.orEmpty())
+        MixpanelManager.scriptError(getFirstLine(this), e.cause?.message.orEmpty())
 //        reportCadenceErrorToDebugView()
         return null
     }
 }
 
 private fun getFirstLine(input: String): String {
-    return input.take(100)
+    return input.trimStart().take(100)
 }
 
 class ScriptExecutionException(
