@@ -51,6 +51,7 @@ object WalletNotificationManager {
                 when (json.asString) {
                     "canUpgrade" -> ConditionType.CAN_UPGRADE
                     "isAndroid" -> ConditionType.IS_ANDROID
+                    "insufficientStorage" -> ConditionType.INSUFFICIENT_STORAGE
                     else -> ConditionType.UNKNOWN
                 }
             })

@@ -11,6 +11,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveNftBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTFromChildToParent
@@ -142,6 +143,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 CenterCrop(),
                 RoundedCorners(8.dp2px().toInt())
             ).into(ivCollectionLogo)
+            storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
         }
     }
 

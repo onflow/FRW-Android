@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.wallet
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.Balance
 import com.flowfoundation.wallet.manager.account.BalanceManager
@@ -146,6 +147,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private fun loadCoinInfo(isRefresh: Boolean) {
         if (needReload) {
             needReload = false
+            AccountInfoManager.refreshAccountInfo()
             logd(TAG, "loadCoinInfo :: isRefresh :: $isRefresh")
             logd(TAG, "loadCoinInfo :: dataList :: ${dataList.size}")
             if (isRefresh || dataList.isEmpty()) {

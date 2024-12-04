@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
 import com.flowfoundation.wallet.page.send.nft.confirm.NftSendConfirmDialog
 import com.flowfoundation.wallet.page.send.nft.confirm.NftSendConfirmViewModel
@@ -35,6 +36,9 @@ class NftSendConfirmPresenter(
         model.userInfo?.let {
             binding.bindUserInfo(sendModel.fromAddress, contact)
             binding.bindNft(sendModel.nft)
+            binding.storageTip.setInsufficientTip(
+                AccountInfoManager.validateOtherTransaction(false)
+            )
         }
         model.isSendSuccess?.let { updateSendState(it) }
     }

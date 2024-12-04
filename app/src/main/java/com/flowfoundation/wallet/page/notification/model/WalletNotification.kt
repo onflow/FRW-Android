@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.notification.model
 
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.AppConfig.isVersionUpdateRequired
 import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
@@ -51,6 +52,7 @@ data class WalletNotification(
         return conditions?.all { condition ->
             when (condition.type) {
                 ConditionType.CAN_UPGRADE -> isVersionUpdateRequired()
+                ConditionType.INSUFFICIENT_STORAGE -> AccountInfoManager.isStorageInsufficient()
                 ConditionType.IS_ANDROID -> true
                 ConditionType.UNKNOWN -> false
             }
@@ -105,6 +107,8 @@ enum class ConditionType {
     CAN_UPGRADE,
     @SerializedName("isAndroid")
     IS_ANDROID,
+    @SerializedName("insufficientStorage")
+    INSUFFICIENT_STORAGE,
     @SerializedName("unknown")
     UNKNOWN
 }

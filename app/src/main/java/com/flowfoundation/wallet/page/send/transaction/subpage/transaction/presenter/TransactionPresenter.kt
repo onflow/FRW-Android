@@ -6,6 +6,7 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -67,6 +68,13 @@ class TransactionPresenter(
             amountView.text = "${transaction.amount} ${coin.symbol.uppercase()}"
             coinNameView.text = coin.name
             Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
+            storageTip.setInsufficientTip(
+                if (coin.isFlowCoin()) {
+                    AccountInfoManager.validateFlowTokenTransaction(transaction.amount, false)
+                } else {
+                    AccountInfoManager.validateOtherTransaction(false)
+                }
+            )
         }
     }
 

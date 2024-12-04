@@ -16,6 +16,7 @@ enum class Cadence(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_QUERY_MIN_FLOW_BALANCE("getAccountMinFlow", CadenceScriptType.BASIC),
     CADENCE_QUERY_FLOW_BALANCE("queryFlowBalance", CadenceScriptType.BASIC),
     CADENCE_REVOKE_ACCOUNT_KEY("revokeKey", CadenceScriptType.BASIC),
+    CADENCE_GET_ACCOUNT_INFO("getAccountInfo", CadenceScriptType.BASIC),
 
     // FT
     CADENCE_TRANSFER_TOKEN("transferTokens", CadenceScriptType.FT),

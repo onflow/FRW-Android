@@ -137,12 +137,16 @@ object BalanceManager {
 
             val balance = if (WalletManager.isEVMAccountSelected()) {
                 if (coin.isFlowCoin()) {
-                    cadenceQueryCOATokenBalance()
+                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryCOATokenBalance()
                 } else {
                     getEVMBalanceByCoin(coin.address)
                 }
             } else {
-                cadenceQueryTokenBalance(coin)
+                if (coin.isFlowCoin()) {
+                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin)
+                } else {
+                    cadenceQueryTokenBalance(coin)
+                }
             }
             if (balance != null) {
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }

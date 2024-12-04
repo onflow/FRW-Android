@@ -691,5 +691,9 @@ uses to turn your device into a hardware wallet.</string>
     <string name="token_identifier">Token Identifier</string>
     <string name="add_suggested_token">Add Suggested Token</string>
     <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
+    <string name="storage_limit_reached">Storage limit reached.</string>
+    <string name="flow_limit_reached">FLOW limit reached.</string>
+    <string name="storage_usage">Storage Usage</string>
+    <string name="total_balance">Total Balance </string>
 
 </resources>
