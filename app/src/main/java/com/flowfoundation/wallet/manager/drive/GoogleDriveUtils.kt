@@ -9,7 +9,6 @@ import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.username
-import com.flowfoundation.wallet.manager.env.EnvKey
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -29,7 +28,7 @@ const val ACTION_GOOGLE_DRIVE_LOGIN_FINISH = "ACTION_GOOGLE_DRIVE_LOGIN_FINISH"
 const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
 
-private val AES_KEY by lazy { EnvKey.get("DRIVE_AES_KEY") }
+private const val AES_KEY = BuildConfig.DRIVE_AES_KEY
 
 @WorkerThread
 suspend fun uploadMnemonicToGoogleDrive(driveService: Drive, password: String) {

@@ -18,9 +18,6 @@ import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
-import com.flowfoundation.wallet.manager.env.EnvKey
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -43,7 +40,6 @@ object LaunchManager {
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
         ioScope {
-            safeRun { EnvKey.init() }
             safeRun { AccountManager.init() }
         }
         refreshChainNetwork {
@@ -79,7 +75,6 @@ object LaunchManager {
         safeRun { CoinRateManager.init() }
         safeRun { CurrencyManager.init() }
         safeRun { StakingManager.init() }
-//        Translized.init(application, EnvKey.get("TRANSLIZED_PROJECT_ID"), EnvKey.get("TRANSLIZED_TOKEN"))
     }
 
     private fun setNightMode() {
