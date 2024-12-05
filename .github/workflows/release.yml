@@ -74,4 +74,4 @@ jobs:
           echo "${{ secrets.GOOGLE_SERVICES }}" > ${{ github.workspace }}/frw/app/src/dev/google-services.json
       
       - name: Build Signed APK
-        run: ./frw/gradlew assembleDev appDistributionUploadDev
+        run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
