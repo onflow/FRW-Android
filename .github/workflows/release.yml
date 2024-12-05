@@ -1,0 +1,74 @@
+name: Android CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - nialexsan/ci-cd
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
+
+      # - name: Generate Keystore
+      #   run: |
+      #     KEYSTORE_PATH="${{ github.workspace }}/app/keystore.jks"
+      #     KEYSTORE_PASSWORD="password"
+      #     KEY_ALIAS="alias_name"
+      #     KEY_PASSWORD="password"
+
+      #     # Export variables for use in later steps
+      #     echo "KEYSTORE_PATH=$KEYSTORE_PATH" >> $GITHUB_ENV
+      #     echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+      #     echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
+      #     echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+
+      #     # Generate the keystore
+      #     keytool -genkeypair -v \
+      #       -keystore "$KEYSTORE_PATH" \
+      #       -storepass "$KEYSTORE_PASSWORD" \
+      #       -alias "$KEY_ALIAS" \
+      #       -keypass "$KEY_PASSWORD" \
+      #       -keyalg RSA \
+      #       -keysize 2048 \
+      #       -validity 10000 \
+      #       -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+
+      # - name: Write Service Account Key to File
+      #   run: |
+      #     echo "${{ secrets.SERVICE_ACCOUNT_JSON }}" > ${{ github.workspace }}/app/service-account.json
+          
+      # - name: Write Key Properties to File
+      #   run: |
+      #     echo "${{ secrets.KEY_PROPERTIES }}" > ${{ github.workspace }}/key.properties
+      
+      # - name: Write Local Properties to File
+      #   run: |
+      #     echo "${{ secrets.LOCAL_PROPERTIES }}" > ${{ github.workspace }}/local.properties
+      
+      # - name: Google Services to File
+      #   run: |
+      #     echo "${{ secrets.GOOGLE_SERVICES }}" > ${{ github.workspace }}/app/src/dev/google-services.json
+      
+      # # - name: Set up local.properties
+      # #   run: echo "sdk.dir=/opt/android-sdk" >> local.properties
+      
+      # - run: ls ${{ github.workspace }}/app/keystore.jks
+
+      # - name: Build Signed APK
+      #   run: ./gradlew assembleDev appDistributionUploadDev
