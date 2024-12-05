@@ -2,12 +2,12 @@ package com.flowfoundation.wallet.mixpanel
 
 import android.annotation.SuppressLint
 import android.app.Application
+import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
-import com.flowfoundation.wallet.manager.env.EnvKey
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
@@ -38,9 +38,9 @@ object MixpanelManager {
             put(KEY_FW_DEVICE_ID, DeviceInfoManager.getDeviceID())
         }
         val token = if (isTesting() || isDev()) {
-            EnvKey.get("MIXPANEL_TOKEN_DEV")
+            BuildConfig.MIXPANEL_TOKEN_DEV
         } else {
-            EnvKey.get("MIXPANEL_TOKEN_PROD")
+            BuildConfig.MIXPANEL_TOKEN_PROD
         }
         mixpanel = MixpanelAPI.getInstance(application, token, superObj, true)
     }
