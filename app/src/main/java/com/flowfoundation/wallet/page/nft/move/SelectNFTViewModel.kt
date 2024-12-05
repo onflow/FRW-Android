@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
@@ -179,6 +181,11 @@ class SelectNFTViewModel : ViewModel() {
                 WalletManager.selectedWalletAddress(), identifier.orEmpty(),
                 collection, idList
             )
+            MixpanelManager.transferNFT(
+                WalletManager.selectedWalletAddress(), WalletManager.wallet()?.walletAddress().orEmpty(),
+                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
+                TransferAccountType.FLOW, true
+            )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "move to parent failed")
                 callback.invoke(false)
@@ -213,6 +220,11 @@ class SelectNFTViewModel : ViewModel() {
             }
             val txId = cadenceSendNFTListFromChildToChild(
                 WalletManager.selectedWalletAddress(), toAddress, identifier.orEmpty(), collection, idList
+            )
+            MixpanelManager.transferNFT(
+                WalletManager.selectedWalletAddress(), toAddress,
+                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
+                TransferAccountType.CHILD, true
             )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "send to child failed")
@@ -249,6 +261,11 @@ class SelectNFTViewModel : ViewModel() {
             }
             val txId = cadenceSendNFTListFromParentToChild(
                 childAddress, identifier.orEmpty(), collection, idList
+            )
+            MixpanelManager.transferNFT(
+                WalletManager.wallet()?.walletAddress().orEmpty(), childAddress,
+                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.FLOW,
+                TransferAccountType.CHILD, true
             )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "send to child failed")

@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -134,6 +135,15 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         binding.btnMove.setProgressVisible(true)
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
+            val parent = WalletManager.wallet()?.walletAddress().orEmpty()
+            val coin = FlowCoinListManager.getCoinById(contractId) ?: return@ioScope
+            MixpanelManager.transferFT(
+                if (isFundToEVM) parent else EVMWalletManager.getEVMAddress().orEmpty(),
+                if (isFundToEVM) EVMWalletManager.getEVMAddress().orEmpty() else parent,
+                coin.symbol,
+                amount.toString(),
+                coin.getFTIdentifier()
+            )
             if (FlowCoinListManager.isFlowCoin(contractId)) {
                 EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
                     uiScope {
@@ -148,7 +158,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     }
                 }
             } else {
-                val coin = FlowCoinListManager.getCoinById(contractId) ?: return@ioScope
                 EVMWalletManager.moveToken(coin, amount, isFundToEVM) { isSuccess ->
                     uiScope {
                         binding.btnMove.setProgressVisible(false)

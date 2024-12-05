@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceWithdrawTokenFromCOAAcco
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
@@ -73,6 +74,8 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         viewModelIOScope(this) {
             val toAddress = transaction.target.address.orEmpty().toAddress()
             val fromAddress = transaction.fromAddress
+            MixpanelManager.transferFT(fromAddress, toAddress, coin.symbol, transaction.amount.toPlainString(),
+                coin.getFTIdentifier())
             if (coin.isFlowCoin()) {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
@@ -97,13 +100,12 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
             } else if (coin.isCOABridgeCoin() || coin.canBridgeToCOA()) {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
+                        val amount = transaction.amount.movePointRight(coin.decimal)
                         if (WalletManager.isChildAccount(toAddress)) {
-                            val amount = transaction.amount.movePointRight(coin.decimal)
                             // COA -> Child
                             bridgeTokenFromEVMToChild(coin.getFTIdentifier(), amount, toAddress)
                         } else {
                             // COA -> Flow
-                            val amount = transaction.amount.movePointRight(coin.decimal)
                             bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
                         }
                     } else {

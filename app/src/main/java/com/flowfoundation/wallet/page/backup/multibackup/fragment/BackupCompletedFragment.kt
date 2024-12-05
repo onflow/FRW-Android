@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelBackupProvider
 import com.flowfoundation.wallet.network.model.LocationInfo
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupFailedDialog
@@ -94,24 +95,22 @@ class BackupCompletedFragment : Fragment() {
             binding.btnNext.isEnabled = false
 
             btnNext.setOnClickListener {
-                if (isGoogleDriveBackupSuccess == null) {
-                    if (isRecoveryPhraseBackupSuccess == true) {
-                        requireActivity().finish()
-                    } else {
-                        BackupFailedDialog(requireActivity()).show()
-                    }
-                } else if (isRecoveryPhraseBackupSuccess == null) {
-                    if (isGoogleDriveBackupSuccess == true) {
-                        requireActivity().finish()
-                    } else {
-                        BackupFailedDialog(requireActivity()).show()
-                    }
+                val provider = when {
+                    isGoogleDriveBackupSuccess == null -> MixpanelBackupProvider.SEED_PHRASE
+                    isRecoveryPhraseBackupSuccess == null -> MixpanelBackupProvider.GOOGLE_DRIVE
+                    else -> null
+                }
+
+                val isSuccess = when (provider) {
+                    MixpanelBackupProvider.SEED_PHRASE -> isRecoveryPhraseBackupSuccess
+                    MixpanelBackupProvider.GOOGLE_DRIVE -> isGoogleDriveBackupSuccess
+                    else -> isGoogleDriveBackupSuccess == true && isRecoveryPhraseBackupSuccess == true
+                }
+
+                if (isSuccess == true) {
+                    requireActivity().finish()
                 } else {
-                    if (isGoogleDriveBackupSuccess == true && isRecoveryPhraseBackupSuccess == true) {
-                        requireActivity().finish()
-                    } else {
-                        BackupFailedDialog(requireActivity()).show()
-                    }
+                    BackupFailedDialog(requireActivity()).show()
                 }
             }
         }

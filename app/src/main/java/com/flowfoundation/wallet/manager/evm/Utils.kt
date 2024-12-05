@@ -10,7 +10,9 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -97,12 +99,14 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
 
         if (txId.isNullOrBlank()) {
             logd(EvmInterface.TAG, "send transaction failed")
+            evmTransactionSigned("", false)
             callback.invoke("")
             return@ioScope
         }
         logd(EvmInterface.TAG, "send transaction transactionId:$txId")
         TransactionStateWatcher(txId).watch { result ->
             if (result.isExecuteFinished()) {
+                evmTransactionSigned(txId, true)
                 val event = result.events.find {
                     it.type.contains(
                         "evm.TransactionExecuted",
@@ -123,9 +127,20 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
                         refreshBalance(value.toFloat())
                     }
                 }
+            } else if (result.isFailed()) {
+                evmTransactionSigned(txId, false)
             }
         }
     }
+}
+
+private fun evmTransactionSigned(txId: String, isSuccess: Boolean) {
+    MixpanelManager.evmTransactionSigned(
+        txId = txId,
+        flowAddress = WalletManager.wallet()?.walletAddress().orEmpty(),
+        evmAddress = EVMWalletManager.getEVMAddress().orEmpty(),
+        isSuccess = isSuccess
+    )
 }
 
 private fun jsonArrayToByteArray(jsonArray: JsonArray): ByteArray {

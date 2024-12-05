@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.page.profile.subpage.wallet
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.storageInfoCache
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_STORAGE_INFO
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.extensions.toSafeLong
@@ -12,16 +12,12 @@ import com.flowfoundation.wallet.utils.ioScope
 
 fun queryStorageInfo() {
     ioScope {
-        val address = WalletManager.selectedWalletAddress()
-        if (address.isEmpty()) {
+        val address = WalletManager.wallet()?.walletAddress()
+        if (address.isNullOrEmpty()) {
             return@ioScope
         }
-        val response = CADENCE_QUERY_STORAGE_INFO.executeCadence {
+        val response = Cadence.CADENCE_QUERY_STORAGE_INFO.executeCadence {
             arg { address(address) }
-        }
-
-        response?.stringValue.let {
-
         }
         if (response?.stringValue.isNullOrBlank()) {
             return@ioScope

@@ -4,6 +4,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentBackupPinCodeBinding
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.MixpanelSecurityTool
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.KeyboardItem
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.pin.widgets.KeyboardType
@@ -34,6 +36,7 @@ class BackupPinCodePresenter(
             if (isVerifyPinCode.not()) {
                 pinInput.setCheckCallback { passed ->
                     savePinCode(pinInput.keys().joinToString("") { "${it.number}" })
+                    MixpanelManager.securityTool(MixpanelSecurityTool.PIN)
                     if (passed) {
                         withPinViewModel.startBackup()
                     }

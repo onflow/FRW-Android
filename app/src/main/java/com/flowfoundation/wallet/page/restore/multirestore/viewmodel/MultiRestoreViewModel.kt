@@ -14,8 +14,8 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
@@ -24,6 +24,8 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.generatePrefix
@@ -170,7 +172,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             try {
                 val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
-                val txId = CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
+                val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
                     arg { string(keyPair.public.toFormatString()) }
                     arg { uint8(SignatureAlgorithm.ECDSA_P256.index) }
                     arg { uint8(HashAlgorithm.SHA2_256.index) }
@@ -231,6 +233,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     login(cryptoProvider) { isSuccess ->
                         uiScope {
                             if (isSuccess) {
+                                MixpanelManager.accountRestore(restoreAddress, RestoreType.MULTI_BACKUP)
                                 delay(200)
                                 MainActivity.relaunch(activity, clearTop = true)
                             } else {
@@ -309,7 +312,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         restoreAddress = address
     }
 
-    private suspend fun String.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+    private suspend fun Cadence.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val providers = mnemonicList.map {
             val words = it.split(" ")
@@ -323,7 +326,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             sendTransactionWithMultiSignature(providers = providers, builder = {
                 args.build().forEach { arg(it) }
                 walletAddress(restoreAddress)
-                script(this@executeTransactionWithMultiKey.addPlatformInfo())
+                script(this@executeTransactionWithMultiKey.getScript().addPlatformInfo())
             })
         } catch (e: Exception) {
             loge(e)

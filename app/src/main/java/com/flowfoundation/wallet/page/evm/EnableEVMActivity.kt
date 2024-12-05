@@ -18,7 +18,9 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
@@ -100,6 +102,7 @@ class EnableEVMActivity : BaseActivity() {
                 uiScope { pushBubbleStack(transactionState) }
                 TransactionStateWatcher(txId).watch {
                     if (it.isExecuteFinished()) {
+                        MixpanelManager.coaCreation(txId)
                         EVMWalletManager.fetchEVMAddress { isSuccess ->
                             uiScope {
                                 hideLoading()
@@ -112,6 +115,8 @@ class EnableEVMActivity : BaseActivity() {
                                 }
                             }
                         }
+                    } else if (it.isFailed()) {
+                        MixpanelManager.coaCreation(txId, it.errorMessage)
                     }
                 }
             } catch (e: Exception) {

@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.clearUserCache
@@ -75,7 +76,6 @@ object AccountManager {
             migratePrefixInfo(migrateAccount())?.let {
                 accounts.addAll(it)
             }
-            WalletManager.walletUpdate()
             initEmojiAndEVMInfo()
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()

@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.staking.createStakingDelegatorId
 import com.flowfoundation.wallet.manager.staking.delegatorId
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -88,7 +89,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
     private fun checkStakingEnabled(): Boolean {
         return try {
-            val response = CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
+            val response = Cadence.CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
             response?.parseBool(false) ?: false
         } catch (e: Exception) {
             false
@@ -108,7 +109,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txId = CADENCE_STAKE_FLOW.transactionByMainWallet {
+            val txId = Cadence.CADENCE_STAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
                 arg { ufix64Safe(amount) }
@@ -141,7 +142,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txId = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
+            val txId = Cadence.CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
                 arg { ufix64Safe(amount) }

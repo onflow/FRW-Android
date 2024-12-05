@@ -13,6 +13,8 @@ import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.clearUserCache
@@ -63,6 +65,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     private val addressList = mutableListOf<KeystoreAddress>()
     private var currentKeyStoreAddress: KeystoreAddress? = null
+    private var restoreType: RestoreType = RestoreType.KEYSTORE
 
     val addressListLiveData = MutableLiveData<List<KeystoreAddress>>()
     val optionChangeLiveData = MutableLiveData<KeyStoreOption>()
@@ -78,6 +81,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
+        restoreType = RestoreType.KEYSTORE
         try {
             ioScope {
                 val keyStore = StoredKey.importJSON(json.toByteArray())
@@ -117,6 +121,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     fun importPrivateKey(privateKeyInput: String, address: String) {
         loadingLiveData.postValue(true)
+        restoreType = RestoreType.PRIVATE_KEY
         try {
             ioScope {
                 val privateKey = PrivateKey(privateKeyInput.hexToBytes())
@@ -153,6 +158,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         derivationPath: String
     ) {
         loadingLiveData.postValue(true)
+        restoreType = RestoreType.SEED_PHRASE
         try {
             ioScope {
                 val hdWallet = HDWallet(mnemonic, passphrase)
@@ -365,6 +371,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     loadingLiveData.postValue(false)
                     if (isSuccess) {
                         delay(200)
+                        MixpanelManager.accountRestore(cryptoProvider.getAddress(), restoreType)
                         MainActivity.relaunch(activity, clearTop = true)
                     } else {
                         toast(msgRes = R.string.login_failure)
@@ -473,6 +480,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 uiScope {
                     loadingLiveData.postValue(false)
                     if (isSuccess) {
+                        MixpanelManager.accountRestore(cryptoProvider.getAddress(), restoreType)
                         delay(200)
                         MainActivity.relaunch(activity, clearTop = true)
                     } else {
@@ -525,6 +533,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 keyStoreInfo = cryptoProvider.getKeyStoreInfo()
                                             )
                                         )
+                                        MixpanelManager.accountRestore(cryptoProvider.getAddress(), restoreType)
                                         clearUserCache()
                                         callback.invoke(true)
                                     }
@@ -600,6 +609,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                         ))
                                                     )
                                                 )
+                                                MixpanelManager.accountRestore(wallet.address, restoreType)
                                                 setRegistered()
                                                 setBackupManually()
                                                 clearUserCache()

@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityLandingBinding
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.landing.adapter.LandingItemAdapter
 import com.flowfoundation.wallet.page.landing.model.LandingItemModel
@@ -66,6 +67,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
                 pbButtonLoading.visible()
                 tvTips.visible()
             } else {
+                MixpanelManager.accountCreationFinish()
                 autoScroll?.stopAutoScroll()
                 flLandingDone.visible()
                 viewPager.invisible()

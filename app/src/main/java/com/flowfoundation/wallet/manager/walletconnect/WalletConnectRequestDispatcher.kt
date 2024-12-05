@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
@@ -134,7 +134,7 @@ private suspend fun WCRequest.evmSendTransaction() {
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
             url = metaData?.url,
-            cadence = CADENCE_CALL_EVM_CONTRACT,
+            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT.getScript(),
         )
         EVMSendTransactionDialog.show(
             activity.supportFragmentManager,

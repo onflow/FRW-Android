@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.cadence
 
 import com.flowfoundation.wallet.manager.app.chainNetwork
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.cadenceScriptApi
 import com.flowfoundation.wallet.utils.Env
@@ -65,6 +66,7 @@ object CadenceApiManager {
                     cadenceApi = response.data
                     saveCadenceToLocal(Gson().toJson(response))
                 }
+                MixpanelManager.cadenceScriptVersion(getCadenceScriptVersion(), getCadenceVersion())
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -76,6 +78,10 @@ object CadenceApiManager {
             NETWORK_TESTNET -> cadenceApi?.scripts?.testnet
             else -> cadenceApi?.scripts?.mainnet
         }
+    }
+
+    fun getCadenceVersion(): String {
+        return getCadenceScript()?.version.orEmpty()
     }
 
     fun getCadenceScriptVersion(): String {

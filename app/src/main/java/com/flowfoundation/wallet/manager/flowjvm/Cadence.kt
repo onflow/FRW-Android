@@ -1,337 +1,140 @@
-@file:Suppress("UNUSED_PARAMETER")
-
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 
-// check coin token is contains in wallet
-var CADENCE_CHECK_TOKEN_IS_ENABLED
-    get() = CadenceApiManager.getCadenceBasicScript("isTokenStorageEnabled")
-    private set(value) {}
 
-var CADENCE_GET_BALANCE
-    get() = CadenceApiManager.getCadenceBasicScript("getTokenBalanceWithModel")
-    private set(value) {}
-
-var CADENCE_TRANSFER_TOKEN
-    get() = CadenceApiManager.getCadenceFTScript("transferTokens")
-    private set(value) {}
-
-// enable new coin token for wallet
-var CADENCE_ADD_TOKEN
-    get() = CadenceApiManager.getCadenceFTScript("addToken")
-    private set(value) {}
-
-var CADENCE_GET_TOKEN_LIST_BALANCE
-    get() = CadenceApiManager.getCadenceFTScript("getTokenListBalance")
-    private set(value) {}
-
-var CADENCE_CHECK_TOKEN_LIST_ENABLED
-    get() = CadenceApiManager.getCadenceFTScript("isTokenListEnabled")
-    private set(value) {}
-
-var CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED
-    get() = CadenceApiManager.getCadenceFTScript("isLinkedAccountTokenListEnabled")
-    private set(value) {}
-
-var CADENCE_ADD_PUBLIC_KEY: String
-    get() = CadenceApiManager.getCadenceBasicScript("addKey")
-    private set(value) {}
-
-var CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS
-    get() = CadenceApiManager.getCadenceBasicScript("getFlownsAddress")
-    private set(value) {}
-
-var CADENCE_QUERY_DOMAIN_BY_ADDRESS_FLOWNS
-    get() = CadenceApiManager.getCadenceBasicScript("getFlownsDomainsByAddress")
-    private set(value) {}
-
-var CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND
-    get() = CadenceApiManager.getCadenceBasicScript("getFindAddress")
-    private set(value) {}
-
-var CADENCE_QUERY_DOMAIN_BY_ADDRESS_FIND
-    get() = CadenceApiManager.getCadenceBasicScript("getFindDomainByAddress")
-    private set(value) {}
-
-var CADENCE_CHECK_NFT_LIST_ENABLED
-    get() = CadenceApiManager.getCadenceNFTScript("checkNFTListEnabled")
-    private set(value) {}
-
-var CADENCE_NFT_CHECK_ENABLED
-    get() = CadenceApiManager.getCadenceCollectionScript("checkNFTCollection")
-    private set(value) {}
-
-var CADENCE_NFT_ENABLE
-    get() = CadenceApiManager.getCadenceCollectionScript("enableNFTStorage")
-    private set(value) {}
-
-var CADENCE_NFT_TRANSFER
-    get() = CadenceApiManager.getCadenceCollectionScript("sendNFT")
-    private set(value) {}
-
-var CADENCE_NBA_NFT_TRANSFER
-    get() = CadenceApiManager.getCadenceCollectionScript("sendNbaNFT")
-    private set(value) {}
-
-var CADENCE_CLAIM_INBOX_TOKEN
-    get() = CadenceApiManager.getCadenceDomainScript("claimFTFromInbox")
-    private set(value) {}
-
-var CADENCE_CLAIM_INBOX_NFT
-    get() = CadenceApiManager.getCadenceDomainScript("claimNFTFromInbox")
-    private set(value) {}
-
-// want use how many token to swap other token
-var CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS
-    get() = CadenceApiManager.getCadenceSwapScript("SwapExactTokensForTokens")
-    private set(value) {}
-
-// want swap how many other token
-var CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS
-    get() = CadenceApiManager.getCadenceSwapScript("SwapTokensForExactTokens")
-    private set(value) {}
-
-var CADENCE_CREATE_STAKE_DELEGATOR_ID
-    get() = CadenceApiManager.getCadenceStakingScript("createDelegator")
-    private set(value) {}
-
-var CADENCE_STAKE_FLOW
-    get() = CadenceApiManager.getCadenceStakingScript("createStake")
-    private set(value) {}
-
-var CADENCE_UNSTAKE_FLOW
-    get() = CadenceApiManager.getCadenceStakingScript("unstake")
-    private set(value) {}
-
-var CADENCE_QUERY_STAKE_INFO
-    get() = CadenceApiManager.getCadenceStakingScript("getDelegatesInfoArray")
-    private set(value) {}
-
-var CADENCE_GET_STAKE_APY_BY_WEEK
-    get() = CadenceApiManager.getCadenceStakingScript("getApyWeekly")
-    private set(value) {}
-
-var CADENCE_GET_STAKE_APY_BY_YEAR
-    get() = CadenceApiManager.getCadenceStakingScript("getApr")
-    private set(value) {}
-
-var CADENCE_CHECK_IS_STAKING_SETUP
-    get() = CadenceApiManager.getCadenceStakingScript("checkSetup")
-    private set(value) {}
-
-var CADENCE_SETUP_STAKING
-    get() = CadenceApiManager.getCadenceStakingScript("setup")
-    private set(value) {}
-
-var CADENCE_CHECK_STAKING_ENABLED
-    get() = CadenceApiManager.getCadenceStakingScript("checkStakingEnabled")
-    private set(value) {}
-
-var CADENCE_GET_DELEGATOR_INFO
-    get() = CadenceApiManager.getCadenceStakingScript("getDelegatesIndo")
-    private set(value) {}
-
-var CADENCE_CLAIM_REWARDS
-    get() = CadenceApiManager.getCadenceStakingScript("withdrawReward")
-    private set(value) {}
-
-var CADENCE_RESTAKE_REWARDS
-    get() = CadenceApiManager.getCadenceStakingScript("restakeReward")
-    private set(value) {}
-
-var CADENCE_STAKING_UNSATKED_CLAIM
-    get() = CadenceApiManager.getCadenceStakingScript("withdrawUnstaked")
-    private set(value) {}
-
-var CADENCE_STAKING_UNSATKED_RESTAKE
-    get() = CadenceApiManager.getCadenceStakingScript("restakeUnstaked")
-    private set(value) {}
-
-var CADENCE_QUERY_STORAGE_INFO
-    get() = CadenceApiManager.getCadenceBasicScript("getStorageInfo")
-    private set(value) {}
-
-var CADENCE_QUERY_CHILD_ACCOUNT_META
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("getChildAccountMeta")
-    private set(value) {}
-
-var CADENCE_QUERY_CHILD_ACCOUNT_LIST
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("getChildAccount")
-    private set(value) {}
-
-var CADENCE_UNLINK_CHILD_ACCOUNT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("unlinkChildAccount")
-    private set(value) {}
-
-var CADENCE_EDIT_CHILD_ACCOUNT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("editChildAccount")
-    private set(value) {}
-
-var CADENCE_REVOKE_ACCOUNT_KEY
-    get() = CadenceApiManager.getCadenceBasicScript("revokeKey")
-    private set(value) {}
-
-var CADENCE_QUERY_CHILD_ACCOUNT_NFT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("getAccessibleCollectionAndIdsDisplay")
-    private set(value) {}
-
-var CADENCE_QUERY_CHILD_ACCOUNT_TOKENS
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("getAccessibleCoinInfo")
-    private set(value) {}
-
-var CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("getChildAccountAllowTypes")
-    private set(value) {}
-
-var CADENCE_QUERY_MIN_FLOW_BALANCE
-    get() = CadenceApiManager.getCadenceBasicScript("getAccountMinFlow")
-    private set(value) {}
-
-var CADENCE_CREATE_COA_ACCOUNT
-    get() = CadenceApiManager.getCadenceEVMScript("createCoaEmpty")
-    private set(value) {}
-
-var CADENCE_CHECK_COA_LINK
-    get() = CadenceApiManager.getCadenceEVMScript("checkCoaLink")
-    private set(value) {}
-
-var CADENCE_COA_LINK
-    get() = CadenceApiManager.getCadenceEVMScript("coaLink")
-    private set(value) {}
-
-var CADENCE_QUERY_COA_EVM_ADDRESS
-    get() = CadenceApiManager.getCadenceEVMScript("getCoaAddr")
-    private set(value) {}
-
-var CADENCE_QUERY_COA_FLOW_BALANCE
-    get() = CadenceApiManager.getCadenceEVMScript("getCoaBalance")
-    private set(value) {}
-
-var CADENCE_FUND_COA_FLOW_BALANCE
-    get() = CadenceApiManager.getCadenceEVMScript("fundCoa")
-    private set(value) {}
-
-var CADENCE_WITHDRAW_COA_FLOW_BALANCE
-    get() = CadenceApiManager.getCadenceEVMScript("withdrawCoa")
-    private set(value) {}
-
-var CADENCE_TRANSFER_FLOW_TO_EVM
-    get() = CadenceApiManager.getCadenceEVMScript("transferFlowToEvmAddress")
-    private set(value) {}
-
-var CADENCE_CALL_EVM_CONTRACT
-    get() = CadenceApiManager.getCadenceEVMScript("callContract")
-    private set(value) {}
-
-var CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER
-    get() = CadenceApiManager.getCadenceBridgeScript("getAssociatedFlowIdentifier")
-    private set(value) {}
-
-var CADENCE_BRIDGE_FT_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_FT_FROM_FLOW_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensToEvmAddressV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_FT_FROM_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvmV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeTokensFromEvmToFlowV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_NFT_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvmV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_NFT_FROM_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_NFT_LIST_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTToEvmV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_NFT_LIST_FROM_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("batchBridgeNFTFromEvmV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTToEvmAddressV2")
-    private set(value) {}
-
-var CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW
-    get() = CadenceApiManager.getCadenceBridgeScript("bridgeNFTFromEvmToFlowV2")
-    private set(value) {}
-
-var CADENCE_QUERY_FLOW_BALANCE
-    get() = CadenceApiManager.getCadenceBasicScript("queryFlowBalance")
-    private set(value) {}
-
-var CADENCE_BRIDGE_CHILD_NFT_TO_EVM
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildNFTToEvm")
-    private set(value) {}
-
-var CADENCE_BRIDGE_CHILD_NFT_FROM_EVM
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildNFTFromEvm")
-    private set(value) {}
-
-var CADENCE_BRIDGE_CHILD_FT_TO_EVM
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildFTToEvm")
-    private set(value) {}
-
-var CADENCE_BRIDGE_CHILD_FT_FROM_EVM
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("bridgeChildFTFromEvm")
-    private set(value) {}
-
-var CADENCE_BRIDGE_CHILD_NFT_LIST_TO_EVM
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchBridgeChildNFTToEvm")
-    private set(value) {}
-
-var CADENCE_BRIDGE_CHILD_NFT_LIST_FROM_EVM
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchBridgeChildNFTFromEvm")
-    private set(value) {}
-
-var CADENCE_MOVE_NFT_FROM_CHILD_TO_PARENT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("transferChildNFT")
-    private set(value) {}
-
-var CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildNFT")
-    private set(value) {}
-
-var CADENCE_SEND_NFT_FROM_CHILD_TO_CHILD
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildNFTToChild")
-    private set(value) {}
-
-var CADENCE_SEND_NFT_LIST_FROM_CHILD_TO_CHILD
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchSendChildNFTToChild")
-    private set(value) {}
-
-var CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("transferNFTToChild")
-    private set(value) {}
-
-var CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchTransferNFTToChild")
-    private set(value) {}
-
-var CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("batchTransferChildNFT")
-    private set(value) {}
-
-var CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("transferChildFT")
-    private set(value) {}
-
-var CADENCE_SEND_FT_FROM_CHILD_TO_FLOW
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("sendChildFT")
-    private set(value) {}
-
-var CADENCE_CHECK_CHILD_LINKED_VAULT
-    get() = CadenceApiManager.getCadenceHybridCustodyScript("checkChildLinkedVaults")
-    private set(value) {}
+enum class Cadence(val scriptId: String, val type: CadenceScriptType) {
+    // BASIC
+    CADENCE_CHECK_TOKEN_IS_ENABLED("isTokenStorageEnabled", CadenceScriptType.BASIC),
+    CADENCE_GET_BALANCE("getTokenBalanceWithModel", CadenceScriptType.BASIC),
+    CADENCE_ADD_PUBLIC_KEY("addKey", CadenceScriptType.BASIC),
+    CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS("getFlownsAddress", CadenceScriptType.BASIC),
+    CADENCE_QUERY_DOMAIN_BY_ADDRESS_FLOWNS("getFlownsDomainsByAddress", CadenceScriptType.BASIC),
+    CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND("getFindAddress", CadenceScriptType.BASIC),
+    CADENCE_QUERY_DOMAIN_BY_ADDRESS_FIND("getFindDomainByAddress", CadenceScriptType.BASIC),
+    CADENCE_QUERY_STORAGE_INFO("getStorageInfo", CadenceScriptType.BASIC),
+    CADENCE_QUERY_MIN_FLOW_BALANCE("getAccountMinFlow", CadenceScriptType.BASIC),
+    CADENCE_QUERY_FLOW_BALANCE("queryFlowBalance", CadenceScriptType.BASIC),
+    CADENCE_REVOKE_ACCOUNT_KEY("revokeKey", CadenceScriptType.BASIC),
+
+    // FT
+    CADENCE_TRANSFER_TOKEN("transferTokens", CadenceScriptType.FT),
+    CADENCE_ADD_TOKEN("addToken", CadenceScriptType.FT),
+    CADENCE_GET_TOKEN_LIST_BALANCE("getTokenListBalance", CadenceScriptType.FT),
+    CADENCE_CHECK_TOKEN_LIST_ENABLED("isTokenListEnabled", CadenceScriptType.FT),
+    CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED("isLinkedAccountTokenListEnabled", CadenceScriptType.FT),
+
+    // NFT
+    CADENCE_CHECK_NFT_LIST_ENABLED("checkNFTListEnabled", CadenceScriptType.NFT),
+    CADENCE_NFT_CHECK_ENABLED("checkNFTCollection", CadenceScriptType.NFT),
+    CADENCE_NFT_ENABLE("enableNFTStorage", CadenceScriptType.NFT),
+    CADENCE_NFT_TRANSFER("sendNFT", CadenceScriptType.NFT),
+    CADENCE_NBA_NFT_TRANSFER("sendNbaNFT", CadenceScriptType.NFT),
+
+    // SWAP
+    CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS("SwapExactTokensForTokens", CadenceScriptType.SWAP),
+    CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS("SwapTokensForExactTokens", CadenceScriptType.SWAP),
+
+    // STAKING
+    CADENCE_CREATE_STAKE_DELEGATOR_ID("createDelegator", CadenceScriptType.STAKING),
+    CADENCE_STAKE_FLOW("createStake", CadenceScriptType.STAKING),
+    CADENCE_UNSTAKE_FLOW("unstake", CadenceScriptType.STAKING),
+    CADENCE_QUERY_STAKE_INFO("getDelegatesInfoArrayV2", CadenceScriptType.STAKING),
+    CADENCE_GET_STAKE_APY_BY_WEEK("getApyWeekly", CadenceScriptType.STAKING),
+    CADENCE_GET_STAKE_APY_BY_YEAR("getApr", CadenceScriptType.STAKING),
+    CADENCE_CHECK_IS_STAKING_SETUP("checkSetup", CadenceScriptType.STAKING),
+    CADENCE_SETUP_STAKING("setup", CadenceScriptType.STAKING),
+    CADENCE_CHECK_STAKING_ENABLED("checkStakingEnabled", CadenceScriptType.STAKING),
+    CADENCE_GET_DELEGATOR_INFO("getDelegatesIndo", CadenceScriptType.STAKING),
+    CADENCE_CLAIM_REWARDS("withdrawReward", CadenceScriptType.STAKING),
+    CADENCE_RESTAKE_REWARDS("restakeReward", CadenceScriptType.STAKING),
+    CADENCE_STAKING_UNSATKED_CLAIM("withdrawUnstaked", CadenceScriptType.STAKING),
+    CADENCE_STAKING_UNSATKED_RESTAKE("restakeUnstaked", CadenceScriptType.STAKING),
+
+    // HYBRID_CUSTODY
+    CADENCE_QUERY_CHILD_ACCOUNT_META("getChildAccountMeta", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_QUERY_CHILD_ACCOUNT_LIST("getChildAccount", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_UNLINK_CHILD_ACCOUNT("unlinkChildAccount", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_EDIT_CHILD_ACCOUNT("editChildAccount", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_QUERY_CHILD_ACCOUNT_NFT("getAccessibleCollectionAndIdsDisplay", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_QUERY_CHILD_ACCOUNT_TOKENS("getAccessibleCoinInfo", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS("getChildAccountAllowTypes", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_BRIDGE_CHILD_NFT_TO_EVM("bridgeChildNFTToEvm", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_BRIDGE_CHILD_NFT_FROM_EVM("bridgeChildNFTFromEvm", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_BRIDGE_CHILD_FT_TO_EVM("bridgeChildFTToEvm", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_BRIDGE_CHILD_FT_FROM_EVM("bridgeChildFTFromEvm", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_BRIDGE_CHILD_NFT_LIST_TO_EVM("batchBridgeChildNFTToEvm", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_BRIDGE_CHILD_NFT_LIST_FROM_EVM("batchBridgeChildNFTFromEvm", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_MOVE_NFT_FROM_CHILD_TO_PARENT("transferChildNFT", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW("sendChildNFT", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_SEND_NFT_FROM_CHILD_TO_CHILD("sendChildNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_SEND_NFT_LIST_FROM_CHILD_TO_CHILD("batchSendChildNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD("transferNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD("batchTransferNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT("batchTransferChildNFT", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT("transferChildFT", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_SEND_FT_FROM_CHILD_TO_FLOW("sendChildFT", CadenceScriptType.HYBRID_CUSTODY),
+    CADENCE_CHECK_CHILD_LINKED_VAULT("checkChildLinkedVaults", CadenceScriptType.HYBRID_CUSTODY),
+
+    // BRIDGE
+    CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER("getAssociatedFlowIdentifier", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_FT_TO_EVM("bridgeTokensToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_FT_FROM_FLOW_TO_EVM("bridgeTokensToEvmAddressV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_FT_FROM_EVM("bridgeTokensFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW("bridgeTokensFromEvmToFlowV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_TO_EVM("bridgeNFTToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_EVM("bridgeNFTFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_LIST_TO_EVM("batchBridgeNFTToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_LIST_FROM_EVM("batchBridgeNFTFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM("bridgeNFTToEvmAddressV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW("bridgeNFTFromEvmToFlowV2", CadenceScriptType.BRIDGE),
+
+    // EVM
+    CADENCE_CREATE_COA_ACCOUNT("createCoaEmpty", CadenceScriptType.EVM),
+    CADENCE_CHECK_COA_LINK("checkCoaLink", CadenceScriptType.EVM),
+    CADENCE_COA_LINK("coaLink", CadenceScriptType.EVM),
+    CADENCE_QUERY_COA_EVM_ADDRESS("getCoaAddr", CadenceScriptType.EVM),
+    CADENCE_QUERY_COA_FLOW_BALANCE("getCoaBalance", CadenceScriptType.EVM),
+    CADENCE_FUND_COA_FLOW_BALANCE("fundCoa", CadenceScriptType.EVM),
+    CADENCE_WITHDRAW_COA_FLOW_BALANCE("withdrawCoa", CadenceScriptType.EVM),
+    CADENCE_TRANSFER_FLOW_TO_EVM("transferFlowToEvmAddress", CadenceScriptType.EVM),
+    CADENCE_CALL_EVM_CONTRACT("callContract", CadenceScriptType.EVM),
+
+    // DOMAIN
+    CADENCE_CLAIM_INBOX_TOKEN("claimFTFromInbox", CadenceScriptType.DOMAIN),
+    CADENCE_CLAIM_INBOX_NFT("claimNFTFromInbox", CadenceScriptType.DOMAIN);
+
+    fun getScript(): String {
+        return when (type) {
+            CadenceScriptType.BASIC -> CadenceApiManager.getCadenceBasicScript(scriptId)
+            CadenceScriptType.ACCOUNT -> CadenceApiManager.getCadenceAccountScript(scriptId)
+            CadenceScriptType.COLLECTION -> CadenceApiManager.getCadenceCollectionScript(scriptId)
+            CadenceScriptType.CONTRACT -> CadenceApiManager.getCadenceContractScript(scriptId)
+            CadenceScriptType.DOMAIN -> CadenceApiManager.getCadenceDomainScript(scriptId)
+            CadenceScriptType.FT -> CadenceApiManager.getCadenceFTScript(scriptId)
+            CadenceScriptType.HYBRID_CUSTODY -> CadenceApiManager.getCadenceHybridCustodyScript(scriptId)
+            CadenceScriptType.STAKING -> CadenceApiManager.getCadenceStakingScript(scriptId)
+            CadenceScriptType.STORAGE -> CadenceApiManager.getCadenceStorageScript(scriptId)
+            CadenceScriptType.EVM -> CadenceApiManager.getCadenceEVMScript(scriptId)
+            CadenceScriptType.NFT -> CadenceApiManager.getCadenceNFTScript(scriptId)
+            CadenceScriptType.SWAP -> CadenceApiManager.getCadenceSwapScript(scriptId)
+            CadenceScriptType.BRIDGE -> CadenceApiManager.getCadenceBridgeScript(scriptId)
+        }
+    }
+}
+
+enum class CadenceScriptType {
+    BASIC,
+    ACCOUNT,
+    COLLECTION,
+    CONTRACT,
+    DOMAIN,
+    FT,
+    HYBRID_CUSTODY,
+    STAKING,
+    STORAGE,
+    EVM,
+    NFT,
+    SWAP,
+    BRIDGE;
+}
