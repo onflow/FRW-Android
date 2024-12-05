@@ -13,6 +13,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v4
+        with:
+          repository: Outblock/Flow-Wallet-Kit
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
