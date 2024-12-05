@@ -4,8 +4,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CREATE_COA_ACCOUNT
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_COA_EVM_ADDRESS
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListToEvm
@@ -57,11 +56,11 @@ object EVMWalletManager {
     }
 
     private fun canEnableEVM(): Boolean {
-        return CADENCE_CREATE_COA_ACCOUNT.isNotEmpty()
+        return Cadence.CADENCE_CREATE_COA_ACCOUNT.getScript().isNotEmpty()
     }
 
     private fun canFetchEVMAddress(): Boolean {
-        return CADENCE_QUERY_COA_EVM_ADDRESS.isNotEmpty()
+        return Cadence.CADENCE_QUERY_COA_EVM_ADDRESS.getScript().isNotEmpty()
     }
 
     fun updateEVMAddress() {

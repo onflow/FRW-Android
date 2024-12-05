@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
@@ -219,8 +220,8 @@ class FlowCoinStoragePath(
     val receiver: String,
 ) : Parcelable
 
-fun FlowCoin.formatCadence(cadence: String): String {
-    return cadence.replace("<Token>", contractName())
+fun FlowCoin.formatCadence(cadence: Cadence): String {
+    return cadence.getScript().replace("<Token>", contractName())
         .replace("<TokenAddress>", address)
         .replace("<TokenReceiverPath>", storagePath?.receiver ?: "")
         .replace("<TokenBalancePath>", storagePath?.balance ?: "")

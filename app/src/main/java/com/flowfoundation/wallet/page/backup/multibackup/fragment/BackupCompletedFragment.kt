@@ -19,7 +19,6 @@ import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelBackupProvider
-import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.LocationInfo
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupFailedDialog
@@ -109,10 +108,8 @@ class BackupCompletedFragment : Fragment() {
                 }
 
                 if (isSuccess == true) {
-                    MixpanelManager.multiBackupCreated(provider)
                     requireActivity().finish()
                 } else {
-                    MixpanelManager.multiBackupCreationFailed(provider)
                     BackupFailedDialog(requireActivity()).show()
                 }
             }
@@ -124,7 +121,6 @@ class BackupCompletedFragment : Fragment() {
             binding.lavLoading.visible()
             binding.btnNext.isEnabled = false
         } else {
-            MixpanelManager.multiBackupCreated()
             binding.lavLoading.gone()
             binding.btnNext.isEnabled = true
         }

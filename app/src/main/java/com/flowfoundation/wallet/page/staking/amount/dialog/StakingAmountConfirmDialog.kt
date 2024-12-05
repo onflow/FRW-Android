@@ -89,7 +89,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
     private fun checkStakingEnabled(): Boolean {
         return try {
-            val response = CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
+            val response = Cadence.CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
             response?.parseBool(false) ?: false
         } catch (e: Exception) {
             false
@@ -109,7 +109,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txId = CADENCE_STAKE_FLOW.transactionByMainWallet {
+            val txId = Cadence.CADENCE_STAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
                 arg { ufix64Safe(amount) }
@@ -143,7 +143,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
                 return false
             }
             MixpanelManager.delegationCreated(delegatorId.toString(), provider.id, amount.toString())
-            val txId = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
+            val txId = Cadence.CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
                 arg { ufix64Safe(amount) }

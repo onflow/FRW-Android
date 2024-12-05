@@ -56,22 +56,22 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
     fun claimRewards(provider: StakingProvider) {
-        CADENCE_CLAIM_REWARDS.rewardsAction(provider)
+        Cadence.CADENCE_CLAIM_REWARDS.rewardsAction(provider)
     }
 
     fun reStakeRewards(provider: StakingProvider) {
-        CADENCE_RESTAKE_REWARDS.rewardsAction(provider)
+        Cadence.CADENCE_RESTAKE_REWARDS.rewardsAction(provider)
     }
 
     fun claimUnStaked(provider: StakingProvider) {
-        CADENCE_STAKING_UNSATKED_CLAIM.rewardsAction(provider, true)
+        Cadence.CADENCE_STAKING_UNSATKED_CLAIM.rewardsAction(provider, true)
     }
 
     fun reStakeUnStaked(provider: StakingProvider) {
-        CADENCE_STAKING_UNSATKED_RESTAKE.rewardsAction(provider, true)
+        Cadence.CADENCE_STAKING_UNSATKED_RESTAKE.rewardsAction(provider, true)
     }
 
-    private fun String.rewardsAction(provider: StakingProvider, isUnStaked: Boolean = false) {
+    private fun Cadence.rewardsAction(provider: StakingProvider, isUnStaked: Boolean = false) {
         ioScope {
 
             val amount = if (isUnStaked) {

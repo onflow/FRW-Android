@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.loge
 import com.mixpanel.android.mpmetrics.MixpanelAPI
 import com.walletconnect.android.internal.common.crypto.sha256
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -61,7 +62,9 @@ object MixpanelManager {
     }
 
     fun identifyUserProfile() {
-        identify(firebaseUid() ?: WalletManager.wallet()?.id ?: AccountManager.userInfo()?.username ?: "")
+        identify(
+            firebaseUid() ?: WalletManager.wallet()?.id ?: AccountManager.userInfo()?.username ?: ""
+        )
     }
 
     fun scriptError(scriptName: String, errorMsg: String) {
@@ -210,9 +213,11 @@ object MixpanelManager {
             put(KEY_RESTORE_MECHANISM, restoreType.value)
             if (restoreType == RestoreType.MULTI_BACKUP) {
                 put(
-                    KEY_RESTORE_MULTI_METHODS, listOf(
-                        MixpanelBackupProvider.GOOGLE_DRIVE,
-                        MixpanelBackupProvider.SEED_PHRASE
+                    KEY_RESTORE_MULTI_METHODS, JSONArray(
+                        listOf(
+                            MixpanelBackupProvider.GOOGLE_DRIVE.value,
+                            MixpanelBackupProvider.SEED_PHRASE.value
+                        )
                     )
                 )
             }
@@ -225,9 +230,11 @@ object MixpanelManager {
             put(KEY_ADDRESS, WalletManager.wallet()?.walletAddress())
             put(
                 KEY_PROVIDERS,
-                provider?.let { listOf(it.value) } ?: listOf(
-                    MixpanelBackupProvider.GOOGLE_DRIVE,
-                    MixpanelBackupProvider.SEED_PHRASE
+                JSONArray(
+                    provider?.let { listOf(it.value) } ?: listOf(
+                        MixpanelBackupProvider.GOOGLE_DRIVE.value,
+                        MixpanelBackupProvider.SEED_PHRASE.value
+                    )
                 )
             )
         }

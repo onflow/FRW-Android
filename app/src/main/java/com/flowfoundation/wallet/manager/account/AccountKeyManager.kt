@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.manager.account
 
 import com.nftco.flow.sdk.FlowTransactionStatus
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_REVOKE_ACCOUNT_KEY
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -18,7 +18,7 @@ object AccountKeyManager {
     suspend fun revokeAccountKey(indexId: Int): Boolean {
         try {
             revokingIndexId = indexId
-            val txId = CADENCE_REVOKE_ACCOUNT_KEY.transactionByMainWallet {
+            val txId = Cadence.CADENCE_REVOKE_ACCOUNT_KEY.transactionByMainWallet {
                 arg { int(indexId) }
             }
             val transactionState = TransactionState(

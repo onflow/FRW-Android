@@ -109,12 +109,12 @@ object StakingManager {
     }
 
     private fun updateApy() {
-        queryStakingApy(CADENCE_GET_STAKE_APY_BY_WEEK)?.let {
+        queryStakingApy(Cadence.CADENCE_GET_STAKE_APY_BY_WEEK)?.let {
             apy = it
             cache()
         }
 
-        queryStakingApy(CADENCE_GET_STAKE_APY_BY_YEAR)?.let {
+        queryStakingApy(Cadence.CADENCE_GET_STAKE_APY_BY_YEAR)?.let {
             apyYear = it
             cache()
         }
@@ -128,11 +128,11 @@ object StakingManager {
     }
 
     private fun queryStakingInfo(): StakingInfo? {
-        val address = WalletManager.selectedWalletAddress()
+        val address = WalletManager.wallet()?.walletAddress() ?: return null
 
         logv(TAG, "queryStakingInfo ")
         return runCatching {
-            val response = CADENCE_QUERY_STAKE_INFO.executeCadence {
+            val response = Cadence.CADENCE_QUERY_STAKE_INFO.executeCadence {
                 arg { address(address) }
             }
             val text = String(response!!.bytes)
@@ -158,7 +158,7 @@ object StakingManager {
 
 }
 
-private fun queryStakingApy(cadence: String): Float? {
+private fun queryStakingApy(cadence: Cadence): Float? {
     return runCatching {
         val response = cadence.executeCadence {}
         val apy = response?.parseFloat()
@@ -171,7 +171,7 @@ suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecim
     runCatching {
         runBlocking {
             logd(TAG, "createStakingDelegatorId providerId：${provider.id}")
-            val txId = CADENCE_CREATE_STAKE_DELEGATOR_ID.transactionByMainWallet {
+            val txId = Cadence.CADENCE_CREATE_STAKE_DELEGATOR_ID.transactionByMainWallet {
                 arg { string(provider.id) }
                 arg { ufix64Safe(amount) }
             }
@@ -192,7 +192,7 @@ private suspend fun setupStaking(callback: () -> Unit) {
             callback.invoke()
             return
         }
-        val txId = CADENCE_SETUP_STAKING.transactionByMainWallet {} ?: return
+        val txId = Cadence.CADENCE_SETUP_STAKING.transactionByMainWallet {} ?: return
         logd(TAG, "setupStaking txId:$txId")
         TransactionStateWatcher(txId).watch { result ->
             if (result.isExecuteFinished()) {
@@ -207,7 +207,7 @@ private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
     logd(TAG, "getDelegatorInfo start")
     runCatching {
         val address = WalletManager.selectedWalletAddress()
-        val response = CADENCE_GET_DELEGATOR_INFO.executeCadence {
+        val response = Cadence.CADENCE_GET_DELEGATOR_INFO.executeCadence {
             arg { address(address) }
         }!!
         logv(TAG, "getDelegatorInfo response:${String(response.bytes)}")
@@ -219,7 +219,7 @@ private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
 private fun checkHasBeenSetup(): Boolean {
     return runCatching {
         val address = WalletManager.selectedWalletAddress()
-        val response = CADENCE_CHECK_IS_STAKING_SETUP.executeCadence { arg { address(address) } }
+        val response = Cadence.CADENCE_CHECK_IS_STAKING_SETUP.executeCadence { arg { address(address) } }
         response?.parseBool(false) ?: false
     }.getOrElse { false }
 }

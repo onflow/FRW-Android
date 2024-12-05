@@ -27,7 +27,6 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.logd
 import java.math.BigDecimal
 import java.util.Locale
@@ -166,13 +165,13 @@ fun addressVerify(address: String): Boolean {
     }
 }
 
-fun Nft.formatCadence(script: String): String {
-    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return script
-    return config.formatCadence(script)
+fun Nft.formatCadence(cadence: Cadence): String {
+    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return cadence.getScript()
+    return config.formatCadence(cadence)
 }
 
-fun NftCollection.formatCadence(script: String): String {
-    return script.replace("<NFT>", contractName ?: "")
+fun NftCollection.formatCadence(cadence: Cadence): String {
+    return cadence.getScript().replace("<NFT>", contractName ?: "")
         .replace("<NFTAddress>", address ?: "")
         .replace("<CollectionStoragePath>", path?.storagePath ?: "")
         .replace("<CollectionPublic>", path?.publicCollectionName ?: "")

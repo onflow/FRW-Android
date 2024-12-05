@@ -20,7 +20,7 @@ import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogWalletConfirmationBinding
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
@@ -131,7 +131,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
 
     private suspend fun addPublicKey(accountKey: WCAccountKey): Boolean {
         try {
-            val txId = CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
+            val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                 arg { string(accountKey.publicKey) }
                 arg { uint8(accountKey.signAlgo) }
                 arg { uint8(accountKey.hashAlgo) }
