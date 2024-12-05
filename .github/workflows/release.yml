@@ -57,21 +57,21 @@ jobs:
             -validity 10000 \
             -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
 
-      - name: Write Service Account Key to File
-        run: |
-          echo "${{ secrets.SERVICE_ACCOUNT_JSON }}" > ${{ github.workspace }}/frw/app/service-account.json
-          
       - name: Write Key Properties to File
         run: |
           echo "${{ secrets.KEY_PROPERTIES }}" > ${{ github.workspace }}/frw/key.properties
-      
+
       - name: Write Local Properties to File
         run: |
           echo "${{ secrets.LOCAL_PROPERTIES }}" > ${{ github.workspace }}/frw/local.properties
-      
+
       - name: Google Services to File
         run: |
           printf '%s' '${{ secrets.GOOGLE_SERVICES }}' > ${{ github.workspace }}/frw/app/src/dev/google-services.json
-      
+
+      - name: Write Service Account Key to File
+        run: |
+          printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
+
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
