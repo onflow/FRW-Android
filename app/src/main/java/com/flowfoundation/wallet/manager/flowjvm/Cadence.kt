@@ -39,7 +39,7 @@ enum class Cadence(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_CREATE_STAKE_DELEGATOR_ID("createDelegator", CadenceScriptType.STAKING),
     CADENCE_STAKE_FLOW("createStake", CadenceScriptType.STAKING),
     CADENCE_UNSTAKE_FLOW("unstake", CadenceScriptType.STAKING),
-    CADENCE_QUERY_STAKE_INFO("getDelegatesInfoArray", CadenceScriptType.STAKING),
+    CADENCE_QUERY_STAKE_INFO("getDelegatesInfoArrayV2", CadenceScriptType.STAKING),
     CADENCE_GET_STAKE_APY_BY_WEEK("getApyWeekly", CadenceScriptType.STAKING),
     CADENCE_GET_STAKE_APY_BY_YEAR("getApr", CadenceScriptType.STAKING),
     CADENCE_CHECK_IS_STAKING_SETUP("checkSetup", CadenceScriptType.STAKING),

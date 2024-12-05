@@ -42,7 +42,7 @@ object MixpanelManager {
         } else {
             EnvKey.get("MIXPANEL_TOKEN_PROD")
         }
-        mixpanel = MixpanelAPI.getInstance(application, token, superObj, false)
+        mixpanel = MixpanelAPI.getInstance(application, token, superObj, true)
     }
 
     fun networkChange() {

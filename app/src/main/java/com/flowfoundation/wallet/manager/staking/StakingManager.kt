@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.flowjvm.*
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -52,7 +53,8 @@ object StakingManager {
 
     fun stakingInfo() = stakingInfo
 
-    fun stakingNode(provider: StakingProvider) = stakingInfo().nodes.firstOrNull { it.nodeID == provider.id }
+    fun stakingNode(provider: StakingProvider) =
+        stakingInfo().nodes.firstOrNull { it.nodeID == provider.id }
 
     fun providers() = providers.get()
 
@@ -71,8 +73,10 @@ object StakingManager {
     fun stakingCount() = stakingInfo.nodes.sumOf { it.tokensCommitted + it.tokensStaked }.toFloat()
 
     fun isStaking(): Boolean {
-        val count = stakingInfo.nodes.sumOf { it.tokensCommitted + it.tokensStaked + it
-            .tokensRewarded + it.tokensRequestedToUnstake + it.tokensUnstaking + it.tokensUnstaked}
+        val count = stakingInfo.nodes.sumOf {
+            it.tokensCommitted + it.tokensStaked + it
+                .tokensRewarded + it.tokensRequestedToUnstake + it.tokensUnstaking + it.tokensUnstaked
+        }
             .toFloat()
         return count > 0.0f
     }
@@ -167,23 +171,29 @@ private fun queryStakingApy(cadence: Cadence): Float? {
     }.getOrNull()
 }
 
-suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecimal) = suspendCoroutine { continuation ->
-    runCatching {
-        runBlocking {
-            logd(TAG, "createStakingDelegatorId providerId：${provider.id}")
-            val txId = Cadence.CADENCE_CREATE_STAKE_DELEGATOR_ID.transactionByMainWallet {
-                arg { string(provider.id) }
-                arg { ufix64Safe(amount) }
-            }
-            logd(TAG, "createStakingDelegatorId txId：$txId")
-            TransactionStateWatcher(txId!!).watch { result ->
-                if (result.isExecuteFinished()) {
-                    continuation.resume(true)
+suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecimal) =
+    suspendCoroutine { continuation ->
+        runCatching {
+            runBlocking {
+                logd(TAG, "createStakingDelegatorId providerId：${provider.id}")
+                val txId = Cadence.CADENCE_CREATE_STAKE_DELEGATOR_ID.transactionByMainWallet {
+                    arg { string(provider.id) }
+                    arg { ufix64Safe(amount) }
+                }
+                logd(TAG, "createStakingDelegatorId txId：$txId")
+                TransactionStateWatcher(txId!!).watch { result ->
+                    if (result.isExecuteFinished()) {
+                        MixpanelManager.delegationCreated(
+                            WalletManager.wallet()?.walletAddress().orEmpty(),
+                            provider.id,
+                            amount.toString()
+                        )
+                        continuation.resume(true)
+                    }
                 }
             }
-        }
-    }.getOrElse { continuation.resume(false) }
-}
+        }.getOrElse { continuation.resume(false) }
+    }
 
 private suspend fun setupStaking(callback: () -> Unit) {
     logd(TAG, "setupStaking start")
@@ -219,7 +229,8 @@ private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
 private fun checkHasBeenSetup(): Boolean {
     return runCatching {
         val address = WalletManager.selectedWalletAddress()
-        val response = Cadence.CADENCE_CHECK_IS_STAKING_SETUP.executeCadence { arg { address(address) } }
+        val response =
+            Cadence.CADENCE_CHECK_IS_STAKING_SETUP.executeCadence { arg { address(address) } }
         response?.parseBool(false) ?: false
     }.getOrElse { false }
 }

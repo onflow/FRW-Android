@@ -76,7 +76,6 @@ object AccountManager {
             migratePrefixInfo(migrateAccount())?.let {
                 accounts.addAll(it)
             }
-            WalletManager.walletUpdate()
             initEmojiAndEVMInfo()
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
