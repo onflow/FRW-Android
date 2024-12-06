@@ -9,6 +9,7 @@ import com.nftco.flow.sdk.FlowTransactionResult
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
@@ -20,6 +21,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
+import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.page.window.bubble.tools.popBubbleStack
 import com.flowfoundation.wallet.page.window.bubble.tools.updateBubbleStack
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -28,6 +30,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
+import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 import java.lang.ref.WeakReference
@@ -128,6 +131,15 @@ object TransactionStateManager {
             uiScope {
                 delay(3000)
                 popBubbleStack(state)
+                if (state.isFailed()) {
+                    when (parseErrorCode(state.errorMsg.orEmpty())) {
+                        ERROR_STORAGE_CAPACITY_EXCEEDED -> {
+                            BaseActivity.getCurrentActivity()?.let {
+                                StorageLimitErrorDialog(it).show()
+                            }
+                        }
+                    }
+                }
             }
             MixpanelManager.transactionResult(state.transactionId, state.isSuccess(), state.errorMsg)
         }

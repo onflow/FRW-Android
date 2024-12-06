@@ -68,13 +68,15 @@ class TransactionPresenter(
             amountView.text = "${transaction.amount} ${coin.symbol.uppercase()}"
             coinNameView.text = coin.name
             Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
-            storageTip.setInsufficientTip(
-                if (coin.isFlowCoin()) {
-                    AccountInfoManager.validateFlowTokenTransaction(transaction.amount, false)
-                } else {
-                    AccountInfoManager.validateOtherTransaction(false)
-                }
-            )
+            uiScope {
+                storageTip.setInsufficientTip(
+                    if (coin.isFlowCoin()) {
+                        AccountInfoManager.validateFlowTokenTransaction(transaction.amount, false)
+                    } else {
+                        AccountInfoManager.validateOtherTransaction(false)
+                    }
+                )
+            }
         }
     }
 

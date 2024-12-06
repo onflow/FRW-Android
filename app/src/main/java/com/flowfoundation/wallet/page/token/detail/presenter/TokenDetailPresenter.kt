@@ -146,7 +146,7 @@ class TokenDetailPresenter(
 
     @SuppressLint("SetTextI18n")
     private fun bindStorageInfo(coin: FlowCoin) {
-        if (coin.isFlowCoin()) {
+        if (WalletManager.isEVMAccountSelected().not() && coin.isFlowCoin()) {
             binding.storageWrapper.visible()
             binding.tvStorageUsage.text = AccountInfoManager.getStorageUsageFlow()
             binding.tvTotalBalance.text = AccountInfoManager.getTotalFlowBalance()

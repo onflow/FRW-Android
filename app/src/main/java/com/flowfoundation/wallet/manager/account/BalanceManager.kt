@@ -137,7 +137,7 @@ object BalanceManager {
 
             val balance = if (WalletManager.isEVMAccountSelected()) {
                 if (coin.isFlowCoin()) {
-                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryCOATokenBalance()
+                    cadenceQueryCOATokenBalance()
                 } else {
                     getEVMBalanceByCoin(coin.address)
                 }

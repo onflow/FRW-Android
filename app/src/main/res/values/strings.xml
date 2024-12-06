@@ -695,5 +695,10 @@ uses to turn your device into a hardware wallet.</string>
     <string name="flow_limit_reached">FLOW limit reached.</string>
     <string name="storage_usage">Storage Usage</string>
     <string name="total_balance">Total Balance </string>
+    <string name="storage_limit_error">Storage Limit Error</string>
+    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
+    <string name="storage_limit_error_tips">You must have at least 0.001 FLOW in your account to cover your storage usage.</string>
+    <string name="deposit">Deposit</string>
+    <string name="buy_flow">Buy FLOW</string>
 
 </resources>

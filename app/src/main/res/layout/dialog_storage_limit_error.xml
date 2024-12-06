@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/background">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="20dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:text="@string/storage_limit_error"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/inter"
+            android:gravity="center_horizontal"
+            android:textSize="14sp"
+            android:textColor="@color/text_1"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/storage_limit_error_desc"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"/>
+
+        <TextView
+            android:id="@+id/tv_tips"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/inter"
+            android:gravity="center_horizontal"
+            android:textSize="14sp"
+            android:textColor="@color/button_warning"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/storage_limit_error_tips"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_desc"/>
+
+        <TextView
+            android:id="@+id/tv_learn_more"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/inter"
+            android:gravity="center_horizontal"
+            android:textSize="14sp"
+            android:textColor="@color/info_notification_blue"
+            android:lineSpacingMultiplier="1.2"
+            android:text="@string/learn_more"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_tips"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_deposit"
+            style="@style/Button"
+            android:layout_width="0dp"
+            android:layout_marginTop="26dp"
+            android:layout_marginEnd="16dp"
+            android:backgroundTint="@color/bg_3"
+            android:text="@string/deposit"
+            android:textColor="@color/text_2"
+            app:cornerRadius="12dp"
+            app:elevation="0dp"
+            app:layout_constraintEnd_toStartOf="@id/btn_buy"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_learn_more"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_buy"
+            style="@style/Button"
+            android:layout_width="0dp"
+            android:layout_marginTop="26dp"
+            android:backgroundTint="@color/accent_green"
+            android:text="@string/buy_flow"
+            android:textColor="@color/text_white"
+            app:cornerRadius="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@id/btn_deposit"
+            app:layout_constraintTop_toBottomOf="@id/tv_learn_more"/>
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/iv_close"
+        android:layout_width="60dp"
+        android:layout_height="54dp"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="15dp"
+        android:src="@drawable/ic_close_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

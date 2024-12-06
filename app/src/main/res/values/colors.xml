@@ -294,4 +294,5 @@
     <color name="border_line">#0A000000</color>
     <color name="background_2">#FFFFFF</color>
     <color name="disable_button_text">#40000000</color>
+    <color name="button_warning">#F29E0D</color>
 </resources>

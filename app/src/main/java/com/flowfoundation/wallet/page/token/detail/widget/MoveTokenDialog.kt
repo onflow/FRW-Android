@@ -76,7 +76,9 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         binding.llErrorLayout.setVisible(isOutOfBalance)
         binding.btnMove.isEnabled = verifyAmount() && !isOutOfBalance
         if (isFlowCoin) {
-            binding.storageTip.setInsufficientTip(AccountInfoManager.validateFlowTokenTransaction(amount, true))
+            uiScope {
+                binding.storageTip.setInsufficientTip(AccountInfoManager.validateFlowTokenTransaction(amount, true))
+            }
         }
     }
 
@@ -205,7 +207,9 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             tvMoveFee.text = "0.001FLOW"
             tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
             if (isFlowCoin.not()) {
-                storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(isMove = true))
+                uiScope {
+                    storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(isMove = true))
+                }
             }
         }
         fetchTokenBalance()
@@ -214,11 +218,44 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     private fun fetchTokenBalance() {
         ioScope {
+            val coin = FlowCoinListManager.getCoinById(contractId)
+            fromBalance = if (coin == null) {
+                BigDecimal.ZERO
+            } else {
+                if (isFundToEVM) {
+                    if (coin.isFlowCoin()) {
+                        AccountInfoManager.getCurrentFlowBalance()
+                            ?: cadenceQueryTokenBalanceWithAddress(
+                                coin,
+                                WalletManager.wallet()?.walletAddress()
+                            )
+                    } else {
+                        cadenceQueryTokenBalanceWithAddress(
+                            coin,
+                            WalletManager.wallet()?.walletAddress()
+                        )
+                    }
+                } else {
+                    if (coin.isFlowCoin()) {
+                        cadenceQueryCOATokenBalance()
+                    } else {
+                        BalanceManager.getEVMBalanceByCoin(coin.address)
+                    }
+                } ?: BigDecimal.ZERO
+            }
             fromBalance = if (isFundToEVM) {
-                cadenceQueryTokenBalanceWithAddress(
-                    FlowCoinListManager.getCoinById(contractId),
-                    WalletManager.wallet()?.walletAddress()
-                )
+                if (FlowCoinListManager.isFlowCoin(contractId)) {
+                    AccountInfoManager.getCurrentFlowBalance()
+                        ?: cadenceQueryTokenBalanceWithAddress(
+                            FlowCoinListManager.getCoinById(contractId),
+                            WalletManager.wallet()?.walletAddress()
+                        )
+                } else {
+                    cadenceQueryTokenBalanceWithAddress(
+                        FlowCoinListManager.getCoinById(contractId),
+                        WalletManager.wallet()?.walletAddress()
+                    )
+                }
             } else {
                 val coin = FlowCoinListManager.getCoinById(contractId)
                 if (coin == null) {

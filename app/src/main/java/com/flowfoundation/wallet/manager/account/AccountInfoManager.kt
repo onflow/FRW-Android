@@ -4,6 +4,7 @@ import com.flowfoundation.wallet.manager.account.model.AccountInfo
 import com.flowfoundation.wallet.manager.account.model.AccountInfoInner
 import com.flowfoundation.wallet.manager.account.model.ValidateTransactionResult
 import com.flowfoundation.wallet.manager.account.model.getByName
+import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -11,6 +12,7 @@ import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,7 @@ object AccountInfoManager {
 
     private val TAG = AccountInfoManager::class.java.simpleName
     private val FIXED_MOVE_FEE = BigDecimal("0.001")
-    private val AVERAGE_TX_FEE = BigDecimal("0.001")
+    private val AVERAGE_TX_FEE = BigDecimal("0.0005")
     private const val MINIMUM_STORAGE_THRESHOLD: Long = 10000
 
     private val _accountResultFlow = MutableStateFlow<AccountInfo?>(null)
@@ -43,18 +45,18 @@ object AccountInfoManager {
         }
     }
 
-    fun validateFlowTokenTransaction(
+    suspend fun validateFlowTokenTransaction(
         amount: BigDecimal,
         isMoveToken: Boolean
     ): ValidateTransactionResult {
         return validateTransaction(amount, isMoveToken)
     }
 
-    fun validateOtherTransaction(isMove: Boolean): ValidateTransactionResult {
+    suspend fun validateOtherTransaction(isMove: Boolean): ValidateTransactionResult {
         return validateTransaction(BigDecimal.ZERO, isMove)
     }
 
-    private fun validateTransaction(amount: BigDecimal, isMove: Boolean): ValidateTransactionResult {
+    private suspend fun validateTransaction(amount: BigDecimal, isMove: Boolean): ValidateTransactionResult {
         var transferAmount = amount
         val currentAccount = _accountResultFlow.value ?: return ValidateTransactionResult.FAILURE
 
@@ -66,12 +68,20 @@ object AccountInfoManager {
             transferAmount += FIXED_MOVE_FEE
         }
 
-        val noStorageAfterAction = currentAccount.availableBalance - transferAmount < AVERAGE_TX_FEE
+        val noStorageAfterAction = currentAccount.availableBalance - transferAmount < getAverageTXFee()
 
         if (noStorageAfterAction) {
             return ValidateTransactionResult.BALANCE_INSUFFICIENT
         }
         return ValidateTransactionResult.SUCCESS
+    }
+
+    private suspend fun getAverageTXFee(): BigDecimal {
+        return if (isGasFree()) {
+            BigDecimal.ZERO
+        } else {
+            AVERAGE_TX_FEE
+        }
     }
 
     fun isStorageInsufficient(): Boolean {

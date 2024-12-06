@@ -36,9 +36,11 @@ class NftSendConfirmPresenter(
         model.userInfo?.let {
             binding.bindUserInfo(sendModel.fromAddress, contact)
             binding.bindNft(sendModel.nft)
-            binding.storageTip.setInsufficientTip(
-                AccountInfoManager.validateOtherTransaction(false)
-            )
+            uiScope {
+                binding.storageTip.setInsufficientTip(
+                    AccountInfoManager.validateOtherTransaction(false)
+                )
+            }
         }
         model.isSendSuccess?.let { updateSendState(it) }
     }

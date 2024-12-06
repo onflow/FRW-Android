@@ -88,7 +88,9 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             }
             layoutFromAccount.setAccountInfo(WalletManager.selectedWalletAddress())
             configureToAccount()
-            storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
+            uiScope {
+                storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
+            }
             btnMove.isEnabled = false
             btnMove.setOnClickListener {
                 if (btnMove.isProgressVisible()) {

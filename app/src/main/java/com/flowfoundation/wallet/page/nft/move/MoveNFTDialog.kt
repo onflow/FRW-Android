@@ -143,7 +143,9 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 CenterCrop(),
                 RoundedCorners(8.dp2px().toInt())
             ).into(ivCollectionLogo)
-            storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
+            uiScope {
+                storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
+            }
         }
     }
 
