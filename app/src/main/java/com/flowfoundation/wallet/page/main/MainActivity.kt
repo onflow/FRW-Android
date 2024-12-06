@@ -5,6 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -25,6 +29,7 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
+import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 
 
 class MainActivity : BaseActivity() {
@@ -44,8 +49,14 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
 
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
-        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.navigationView.updatePadding(bottom = systemBarsInsets.bottom)
+            windowInsets
+        }
         contentPresenter = MainContentPresenter(this, binding)
         drawerLayoutPresenter = DrawerLayoutPresenter(binding.drawerLayout, binding.drawerLayoutContent)
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java].apply {

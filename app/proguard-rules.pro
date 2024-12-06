@@ -165,6 +165,10 @@
   @com.google.api.client.util.Key <fields>;
 }
 
+# barcode scanner
+-keep,includedescriptorclasses class com.journeyapps.barcodescanner.** { *; }
+-keepclassmembers class com.journeyapps.barcodescanner.** { *; }
+
 # BouncyCastleProvider
 -keep class org.bouncycastle.** {*;}
 
