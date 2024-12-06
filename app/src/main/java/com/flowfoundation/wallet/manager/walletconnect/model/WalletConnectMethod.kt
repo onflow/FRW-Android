@@ -29,7 +29,8 @@ enum class WalletConnectMethod(val value: String) {
         @JvmStatic
         fun getSupportedFlowMethod(): List<String> {
             return listOf(AUTHN.value, AUTHZ.value, PRE_AUTHZ.value, SIGN_PAYER.value,
-                SIGN_PROPOSER.value, USER_SIGNATURE.value, ACCOUNT_PROOF.value)
+                SIGN_PROPOSER.value, USER_SIGNATURE.value, ACCOUNT_PROOF.value, ACCOUNT_INFO
+                    .value, ADD_DEVICE_KEY.value, PROXY_ACCOUNT.value, PROXY_SIGN.value)
         }
 
         @JvmStatic

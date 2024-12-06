@@ -25,7 +25,7 @@ class WalletBackupActivity: BaseActivity() {
         binding = ActivityWalletBackupBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(true).colorRes(R.color.background).light(!isNightMode(this)).applyStatusBar()
-        UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
+        UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
 
         presenter = WalletBackupPresenter(this, binding)
         viewModel = ViewModelProvider(this)[WalletBackupViewModel::class.java].apply {
