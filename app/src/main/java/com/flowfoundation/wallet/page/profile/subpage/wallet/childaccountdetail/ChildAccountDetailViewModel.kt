@@ -57,7 +57,7 @@ class ChildAccountDetailViewModel : ViewModel() {
                         collection?.name ?: contractName,
                         collection?.logo() ?: "",
                         account.address,
-                        collection?.contractName ?: contractName,
+                        collection?.contractName() ?: contractName,
                         collectionWrapper?.ids ?: emptyList()
                     )
                 )

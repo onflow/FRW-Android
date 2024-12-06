@@ -21,6 +21,7 @@ fun ActivityResultLauncher<ScanOptions>.launch() {
     launch(ScanOptions().apply {
         setOrientationLocked(true)
         setBeepEnabled(false)
+        setDesiredBarcodeFormats(ScanOptions.QR_CODE)
         addExtra(Intents.Scan.SCAN_TYPE, Intents.Scan.MIXED_SCAN)
         captureActivity = ScanBarcodeActivity::class.java
     })

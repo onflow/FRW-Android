@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.swap.dialog.confirm
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import com.flowfoundation.wallet.page.swap.SwapViewModel
 import com.flowfoundation.wallet.page.swap.fromAmount
 import com.flowfoundation.wallet.page.swap.swapPageBinding
 import com.flowfoundation.wallet.page.swap.toAmount
+import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.formatNum
 
 class SwapTokenConfirmDialog : BottomSheetDialogFragment() {
@@ -38,6 +40,7 @@ class SwapTokenConfirmDialog : BottomSheetDialogFragment() {
         binding.sendButton.setOnProcessing { viewModel.swap() }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun DialogSwapTokenConfirmBinding.bindHeader() {
         val fromCoin = viewModel.fromCoin() ?: return
         val toCoin = viewModel.toCoin() ?: return
@@ -48,10 +51,11 @@ class SwapTokenConfirmDialog : BottomSheetDialogFragment() {
         toNameView.text = fromCoin.symbol.uppercase()
 
         val pageBinding = swapPageBinding() ?: return
-        fromAddressView.text = "${pageBinding.fromAmount().formatNum()} ${fromCoin.symbol.uppercase()}"
-        toAddressView.text = "${pageBinding.toAmount().formatNum()} ${toCoin.symbol.uppercase()}"
+        fromAddressView.text = "${pageBinding.fromAmount().format()} ${fromCoin.symbol.uppercase()}"
+        toAddressView.text = "${pageBinding.toAmount().format()} ${toCoin.symbol.uppercase()}"
     }
 
+    @SuppressLint("SetTextI18n")
     private fun DialogSwapTokenConfirmBinding.bindEstimate() {
         val data = viewModel.estimateLiveData.value ?: return
         val amountIn = data.routes.firstOrNull()?.routeAmountIn ?: return
@@ -59,7 +63,7 @@ class SwapTokenConfirmDialog : BottomSheetDialogFragment() {
         val fromCoin = viewModel.fromCoin() ?: return
         val toCoin = viewModel.toCoin() ?: return
 
-        bestPriceView.text = "1 ${fromCoin.symbol.uppercase()} ≈ ${(amountOut / amountIn).formatNum()} ${toCoin.symbol.uppercase()}"
+        bestPriceView.text = "1 ${fromCoin.symbol.uppercase()} ≈ ${(amountOut / amountIn).format()} ${toCoin.symbol.uppercase()}"
 
         providerIconView.setImageResource(R.drawable.ic_increment_fi)
         providerView.text = "Increment.fi"

@@ -1,21 +1,21 @@
 package com.flowfoundation.wallet.widgets.webview.evm
 
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.app.MAINNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.app.TESTNET_CHAIN_ID
+import com.flowfoundation.wallet.manager.app.networkStringByChainId
 import com.flowfoundation.wallet.manager.evm.DAppMethod
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.evm.MAINNET_CHAIN_ID
-import com.flowfoundation.wallet.manager.evm.TESTNET_CHAIN_ID
-import com.flowfoundation.wallet.manager.evm.getNetworkStringByChainId
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
+import com.flowfoundation.wallet.page.token.custom.widget.AddCustomTokenDialog
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.isShowMoveDialog
@@ -87,10 +87,10 @@ class EvmInterface(
                                 FclDialogModel(
                                     title = webView.title,
                                     url = webView.url,
-                                    network = getNetworkStringByChainId(rpcChainId)
+                                    network = networkStringByChainId(rpcChainId)
                                 )
                             )) {
-                                logd(TAG, "switch network to::${getNetworkStringByChainId(rpcChainId)}")
+                                logd(TAG, "switch network to::${networkStringByChainId(rpcChainId)}")
                                 return@uiScope
                             }
                             logd(TAG, "no need to switch")
@@ -139,6 +139,19 @@ class EvmInterface(
                     handleSignTypedMessage(id, data, raw, network)
                 }
             }
+            DAppMethod.WATCH_ASSET -> {
+                logd(TAG, "watchAsset obj::$obj")
+                val contractAddress = extractContractAddress(obj)
+                uiScope {
+                    AddCustomTokenDialog.show(
+                        activity().supportFragmentManager,
+                        contractAddress
+                    )
+                    AddCustomTokenDialog.observe { approve ->
+                        webView.sendResult(network, approve.toString(), id)
+                    }
+                }
+            }
             else -> {
                 logd("evm", "methodNotImplement:::$method")
             }
@@ -151,7 +164,7 @@ class EvmInterface(
             title = webView.title,
             logo = webView.url?.toFavIcon(),
             network = network,
-            cadence = CADENCE_CALL_EVM_CONTRACT
+            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT.getScript()
         )
         EVMSendTransactionDialog.show(
             activity().supportFragmentManager,
@@ -176,6 +189,12 @@ class EvmInterface(
         val param = json.getJSONObject("object")
         val data = param.getString("data")
         return Numeric.hexStringToByteArray(data)
+    }
+
+    private fun extractContractAddress(json: JSONObject): String {
+        val param = json.getJSONObject("object")
+        val contract = param.getString("contract")
+        return contract
     }
 
     private fun extractRaw(json: JSONObject): String {

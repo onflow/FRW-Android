@@ -27,6 +27,7 @@ import com.flowfoundation.wallet.manager.backup.viewFromGoogleDrive
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import wallet.core.jni.HDWallet
 import java.util.*
 
@@ -111,7 +112,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
 
                 doAction(googleDriveService)
             } else {
-                logd(TAG, "signIn fail ${task.exception}")
+                loge(TAG, "google account sign in fail ${task.exception}")
                 signOutAndSignInAgain()
             }
         }

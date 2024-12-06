@@ -6,12 +6,14 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.mixpanel.MixpanelBackupProvider
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.AccountSyncRequest
@@ -80,7 +82,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider.let {
                 try {
-                    val txId = CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
+                    val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
                         arg { uint8(it.getSignatureAlgorithm().index) }
                         arg { uint8(it.getHashAlgorithm().index) }
@@ -124,8 +126,10 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                     )
+                    MixpanelManager.multiBackupCreated(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(resp.status == 200)
                 } catch (e: Exception) {
+                    MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(false)
                 }
             }
@@ -137,9 +141,13 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         val transaction =
             transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
         transaction?.let { state ->
-            if (currentTxId == state.transactionId && state.isSuccess()) {
-                currentTxId = null
-                syncKeyInfo()
+            if (currentTxId == state.transactionId) {
+                if (state.isSuccess()) {
+                    currentTxId = null
+                    syncKeyInfo()
+                } else if (state.isFailed()) {
+                    MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.SEED_PHRASE)
+                }
             }
         }
     }

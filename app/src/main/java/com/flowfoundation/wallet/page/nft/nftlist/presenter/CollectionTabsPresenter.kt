@@ -37,7 +37,7 @@ class CollectionTabsPresenter(
 
         viewModel.collectionTabChangeLiveData.observe(activity) { contractName ->
             if (view.isShown) {
-                val data = adapter.getData().toList().map { it.copy() }.onEach { it.isSelected = it.collection.contractName == contractName }
+                val data = adapter.getData().toList().map { it.copy() }.onEach { it.isSelected = it.collection.contractName() == contractName }
                 adapter.setNewDiffData(data)
             }
         }

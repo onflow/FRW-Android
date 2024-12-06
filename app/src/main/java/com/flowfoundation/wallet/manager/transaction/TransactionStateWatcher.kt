@@ -5,6 +5,7 @@ import com.nftco.flow.sdk.FlowTransactionResult
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import kotlinx.coroutines.delay
@@ -32,6 +33,11 @@ class TransactionStateWatcher(
             }
 
             if (!statusCode.isProcessing() || !ret?.errorMessage.isNullOrBlank()) {
+                MixpanelManager.transactionResult(
+                    transactionId,
+                    statusCode.isProcessing().not() && ret?.errorMessage.isNullOrBlank(),
+                    ret?.errorMessage
+                )
                 break
             }
 

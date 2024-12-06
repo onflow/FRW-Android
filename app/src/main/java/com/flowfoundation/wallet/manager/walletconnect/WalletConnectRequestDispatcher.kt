@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
 import androidx.appcompat.app.AppCompatActivity
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
@@ -8,7 +9,7 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_CALL_EVM_CONTRACT
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
@@ -25,10 +26,12 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WCAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WCProxyAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
+import com.flowfoundation.wallet.manager.walletconnect.model.WatchAsset
 import com.flowfoundation.wallet.manager.walletconnect.model.walletConnectWalletInfoResponse
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.token.custom.widget.AddCustomTokenDialog
 import com.flowfoundation.wallet.page.wallet.confirm.WalletConfirmationDialog
 import com.flowfoundation.wallet.page.wallet.proxy.WalletProxyConfirmationDialog
 import com.flowfoundation.wallet.utils.Env
@@ -37,6 +40,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
@@ -88,6 +92,7 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.EVM_SEND_TRANSACTION.value -> evmSendTransaction()
         WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
         WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> evmSignTypedData()
+        WalletConnectMethod.WALLET_WATCH_ASSETS.value -> watchAssets()
     }
 }
 
@@ -129,7 +134,7 @@ private suspend fun WCRequest.evmSendTransaction() {
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
             url = metaData?.url,
-            cadence = CADENCE_CALL_EVM_CONTRACT,
+            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT.getScript(),
         )
         EVMSendTransactionDialog.show(
             activity.supportFragmentManager,
@@ -144,6 +149,27 @@ private suspend fun WCRequest.evmSendTransaction() {
                         approve(txHash)
                     }
                 }
+            } else reject()
+        }
+    }
+}
+
+private suspend fun WCRequest.watchAssets() {
+    val activity = topActivity() ?: return
+    val watchAsset = Gson().fromJson(params, WatchAsset::class.java)
+    if (watchAsset.type.equals("ERC20", ignoreCase = true).not() || watchAsset.options?.address == null) {
+        toast(msgRes = R.string.invalid_evm_address)
+        return
+    }
+    uiScope {
+        AddCustomTokenDialog.show(
+            activity.supportFragmentManager,
+            watchAsset.options.address,
+            watchAsset.options.image
+        )
+        AddCustomTokenDialog.observe { isApprove ->
+            if (isApprove) {
+                approve(true.toString())
             } else reject()
         }
     }

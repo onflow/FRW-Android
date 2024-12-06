@@ -22,11 +22,13 @@ import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringListResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringMapResult
+import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringObjResult
 import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.logd
+import java.math.BigDecimal
 import java.util.Locale
 
 
@@ -79,11 +81,11 @@ internal fun FlowScriptResponse.parseStringList(): List<String>? {
     }
 }
 
-internal fun FlowScriptResponse.parseStringFloatMap(): Map<String, Float>? {
+internal fun FlowScriptResponse.parseStringDecimalMap(): Map<String, BigDecimal>? {
     return try {
         val result = Gson().fromJson(String(bytes), FlowStringMapResult::class.java)
         return result.value?.associate {
-            it.key?.value.toString() to it.value?.value.toSafeFloat()
+            it.key?.value.toString() to it.value?.value.toSafeDecimal()
         }
     } catch (e: Exception) {
         null
@@ -109,6 +111,15 @@ internal fun FlowScriptResponse.parseString(): String? {
         return null
     }
 }
+//{"value":{"value":"A.3399d7c6c609b7e5.DAMO420.Vault","type":"String"},"type":"Optional"}
+internal fun FlowScriptResponse.parseStringObject(): String? {
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringObjResult::class.java)
+        result.value.value
+    } catch (e: Exception) {
+        return null
+    }
+}
 
 internal fun FlowScriptResponse?.parseFloat(default: Float = 0f): Float {
     // {"type":"UFix64","value":"12.34"}
@@ -116,6 +127,17 @@ internal fun FlowScriptResponse?.parseFloat(default: Float = 0f): Float {
     return try {
         val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
         (result.value.toFloatOrNull()) ?: default
+    } catch (e: Exception) {
+        return default
+    }
+}
+
+internal fun FlowScriptResponse?.parseDecimal(default: BigDecimal = BigDecimal.ZERO): BigDecimal {
+    // {"type":"UFix64","value":"12.34"}
+    this ?: return default
+    return try {
+        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
+        result.value.toBigDecimalOrNull() ?: default
     } catch (e: Exception) {
         return default
     }
@@ -143,19 +165,19 @@ fun addressVerify(address: String): Boolean {
     }
 }
 
-fun Nft.formatCadence(script: String): String {
-    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return script
-    return config.formatCadence(script)
+fun Nft.formatCadence(cadence: Cadence): String {
+    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return cadence.getScript()
+    return config.formatCadence(cadence)
 }
 
-fun NftCollection.formatCadence(script: String): String {
-    return script.replace("<NFT>", contractName)
-        .replace("<NFTAddress>", address)
+fun NftCollection.formatCadence(cadence: Cadence): String {
+    return cadence.getScript().replace("<NFT>", contractName ?: "")
+        .replace("<NFTAddress>", address ?: "")
         .replace("<CollectionStoragePath>", path?.storagePath ?: "")
         .replace("<CollectionPublic>", path?.publicCollectionName ?: "")
         .replace("<CollectionPublicPath>", path?.publicPath ?: "")
-        .replace("<Token>", contractName)
-        .replace("<TokenAddress>", address)
+        .replace("<Token>", contractName ?: "")
+        .replace("<TokenAddress>", address ?: "")
         .replace("<TokenCollectionStoragePath>", path?.storagePath ?: "")
         .replace("<TokenCollectionPublic>", path?.publicCollectionName ?: "")
         .replace("<TokenCollectionPublicPath>", path?.publicPath ?: "")

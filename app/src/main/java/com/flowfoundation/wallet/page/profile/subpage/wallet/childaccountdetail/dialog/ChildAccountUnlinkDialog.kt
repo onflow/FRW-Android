@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogUnlinkChildAccountBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_UNLINK_CHILD_ACCOUNT
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -64,7 +64,7 @@ class ChildAccountUnlinkDialog : BottomSheetDialogFragment() {
 
     private fun sendUnlinkTransaction(account: ChildAccount) {
         ioScope {
-            val transactionId = CADENCE_UNLINK_CHILD_ACCOUNT.transactionByMainWallet {
+            val transactionId = Cadence.CADENCE_UNLINK_CHILD_ACCOUNT.transactionByMainWallet {
                 arg { address(account.address.toAddress()) }
             }
 

@@ -36,6 +36,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
 class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate,
@@ -94,7 +95,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         viewModelIOScope(this) { loadTransactionCount() }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float, quoteChange: Float) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         updateCoinRate(coin, price, quoteChange)
     }
 
@@ -171,29 +172,29 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val currency = getCurrencyFlag()
             uiScope {
                 val coinToAdd =
-                    coinList.filter { coin -> dataList.none { it.coin.symbol == coin.symbol } }
+                    coinList.filter { coin -> dataList.none { it.coin.isSameCoin(coin.contractId()) } }
                 val coinToRemove =
-                    dataList.filter { coin -> coinList.none { it.symbol == coin.coin.symbol } }
-                logd(TAG, "loadCoinList coinToAdd::${coinToAdd.map { it.symbol }}")
-                logd(TAG, "loadCoinList coinToRemove::${coinToRemove.map { it.coin.symbol }}")
+                    dataList.filter { coin -> coinList.none { it.isSameCoin(coin.coin.contractId()) } }
+                logd(TAG, "loadCoinList coinToAdd::${coinToAdd.map { it.contractId() }}")
+                logd(TAG, "loadCoinList coinToRemove::${coinToRemove.map { it.coin.contractId() }}")
                 if (coinToAdd.isNotEmpty() || coinToRemove.isNotEmpty()) {
                     dataList.addAll(coinToAdd.map {
                         WalletCoinItemModel(
-                            it, it.address, 0f,
-                            0f, isHideBalance = isHideBalance, currency = currency,
+                            it, it.address, BigDecimal.ZERO,
+                            BigDecimal.ZERO, isHideBalance = isHideBalance, currency = currency,
                             isStaked = StakingManager.isStaked(),
                             stakeAmount = StakingManager.stakingCount(),
                         )
                     })
                     dataList.removeAll(coinToRemove.toSet())
-                    logd(TAG, "loadCoinList addCoin:${coinToAdd.map { it.symbol }}")
-                    logd(TAG, "loadCoinList removeCoin:${coinToRemove.map { it.coin.symbol }}")
-                    logd(TAG, "loadCoinList dataList:${dataList.map { it.coin.symbol }}")
-                    val filteredList = dataList.distinctBy { it.coin.symbol }
+                    logd(TAG, "loadCoinList addCoin:${coinToAdd.map { it.contractId() }}")
+                    logd(TAG, "loadCoinList removeCoin:${coinToRemove.map { it.coin.contractId() }}")
+                    logd(TAG, "loadCoinList dataList:${dataList.map { it.coin.contractId() }}")
+                    val filteredList = dataList.distinctBy { it.coin.contractId() }
                     dataList.clear()
                     dataList.addAll(filteredList)
-                    dataListLiveData.postValue(dataList)
-                    updateWalletHeader(count = coinList.size)
+                    dataListLiveData.postValue(filteredList)
+                    updateWalletHeader(count = filteredList.size)
                 }
             }
 
@@ -219,7 +220,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private fun updateCoinBalance(balance: Balance) {
         logd(TAG, "updateCoinBalance :$balance")
-        val oldItem = dataList.firstOrNull { it.coin.symbol == balance.symbol } ?: return
+        val oldItem = dataList.firstOrNull { balance.isSameCoin(it.coin) } ?: return
         val item = oldItem.copy(balance = balance.balance)
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()
@@ -229,15 +230,13 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
 
     private fun updateCoinRate(
         coin: FlowCoin,
-        price: Float? = null,
-        quoteChange: Float,
-        forceRate: Float? = null
+        rate: BigDecimal? = null,
+        quoteChange: Float
     ) {
-        val rate = (price ?: forceRate) ?: 0f
-        logd(TAG, "updateCoinRate ${coin.symbol}:$rate:$quoteChange")
+        logd(TAG, "updateCoinRate ${coin.contractId()}:$rate:$quoteChange")
 
-        val oldItem = dataList.firstOrNull { it.coin.symbol == coin.symbol } ?: return
-        val item = oldItem.copy(coinRate = rate, quoteChange = quoteChange)
+        val oldItem = dataList.firstOrNull { it.coin.isSameCoin(coin.contractId()) } ?: return
+        val item = oldItem.copy(coinRate = rate ?: BigDecimal.ZERO, quoteChange = quoteChange)
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()
         dataListLiveData.value = dataList
@@ -258,10 +257,10 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             val header =
                 headerLiveData.value ?: (if (wallet == null) return@uiScope else WalletHeaderModel(
                     wallet,
-                    0f
+                    BigDecimal.ZERO
                 ))
             headerLiveData.postValue(header.copy().apply {
-                balance = dataList.toList().map { it.balance * it.coinRate }.sum()
+                balance = dataList.toList().map { it.balance * it.coinRate }.fold(BigDecimal.ZERO) { sum, value -> sum + value }
                 count?.let { coinCount = it }
                 transactionCount = getAccountTransferCount()
             })

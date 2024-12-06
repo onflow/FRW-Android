@@ -1,8 +1,8 @@
 package com.flowfoundation.wallet.utils.secret
 
+import com.flowfoundation.wallet.BuildConfig
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.hexToBytes
-import com.flowfoundation.wallet.manager.env.EnvKey
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec
  * 加密解密 key 和 iv 必须16位字符
  */
 
-private val defaultIv = EnvKey.get("DRIVE_AES_IV")
+private const val defaultIv = BuildConfig.DRIVE_AES_IV
 
 fun aesEncrypt(key: String, iv: String = defaultIv, message: String): String {
     val sKey = SecretKeySpec(key.parseKey(), "AES")

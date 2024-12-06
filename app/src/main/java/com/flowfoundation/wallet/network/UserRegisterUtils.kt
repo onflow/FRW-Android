@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.network
 
 import android.webkit.WebStorage
-import android.webkit.WebView
 import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -24,6 +23,8 @@ import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.RegisterRequest
@@ -61,12 +62,20 @@ suspend fun registerOutblock(
                     setRegistered()
 
                     val service = retrofit().create(ApiService::class.java)
+                    val account = Account(
+                        userInfo = service.userInfo().data,
+                        prefix = prefix
+                    )
                     AccountManager.add(
-                        Account(
-                            userInfo = service.userInfo().data,
-                            prefix = prefix
-                        ),
+                        account,
                         firebaseUid()
+                    )
+                    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+                    MixpanelManager.accountCreated(
+                        cryptoProvider?.getPublicKey().orEmpty(),
+                        AccountCreateKeyType.KEY_STORE,
+                        cryptoProvider?.getSignatureAlgorithm()?.id.orEmpty(),
+                        cryptoProvider?.getHashAlgorithm()?.algorithm.orEmpty()
                     )
                     clearUserCache()
                     continuation.resume(true)
@@ -110,6 +119,7 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
         if (it.isSuccessful) {
             firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
                 if (isSuccessful) {
+                    MixpanelManager.identifyUserProfile()
                     callback(true)
                 } else callback(false)
             }

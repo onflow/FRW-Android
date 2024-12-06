@@ -19,6 +19,7 @@ val DATA_PATH: File = File(Env.getApp().dataDir, "data").apply { if (!exists()) 
 
 val ACCOUNT_PATH: File = File(Env.getApp().filesDir, "account").apply { if (!exists()) mkdirs() }
 val USER_PREFIX_PATH: File = File(Env.getApp().filesDir, "prefix").apply { if (!exists()) mkdirs() }
+val CUSTOM_TOKEN_PATH: File = File(Env.getApp().filesDir, "token").apply { if (!exists()) mkdirs() }
 
 val CACHE_VIDEO_PATH: File = File(CACHE_PATH, "video").apply { if (!exists()) mkdirs() }
 

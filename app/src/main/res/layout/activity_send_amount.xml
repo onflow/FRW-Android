@@ -254,8 +254,11 @@
         android:layout_marginTop="22dp"
         android:src="@drawable/ic_coin_flow"
         app:round="32dp"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/balance_title"
+        app:layout_constraintEnd_toStartOf="@id/balance_amount_view"
         tools:ignore="ContentDescription"/>
 
     <TextView
@@ -266,21 +269,36 @@
         android:fontFamily="@font/inter_medium"
         android:textColor="@color/text"
         android:textSize="16sp"
+        android:autoSizeMinTextSize="12sp"
+        app:autoSizeTextType="uniform"
+        android:gravity="center_vertical"
+        app:layout_constrainedWidth="true"
+        android:lines="1"
+        android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="@id/balance_icon_view"
         app:layout_constraintStart_toEndOf="@id/balance_icon_view"
         app:layout_constraintTop_toTopOf="@id/balance_icon_view"
+        app:layout_constraintEnd_toStartOf="@id/balance_amount_convert_view"
         tools:text="1580.88 Flow"/>
 
     <TextView
         android:id="@+id/balance_amount_convert_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="18dp"
         android:fontFamily="@font/inter_medium"
         android:textColor="@color/note"
         android:textSize="16sp"
+        android:autoSizeMinTextSize="12sp"
+        app:autoSizeTextType="uniform"
+        android:gravity="center_vertical"
+        app:layout_constrainedWidth="true"
+        android:lines="1"
+        android:maxLines="1"
         app:layout_constraintBottom_toBottomOf="@id/balance_icon_view"
         app:layout_constraintStart_toEndOf="@id/balance_amount_view"
         app:layout_constraintTop_toTopOf="@id/balance_icon_view"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:text=" ≈ $ 293844.23"/>
 
     <com.google.android.material.button.MaterialButton

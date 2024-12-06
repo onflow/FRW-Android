@@ -13,6 +13,8 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.databinding.DialogSwapCoinListBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.MixpanelRampSource
 import com.flowfoundation.wallet.network.functions.FUNCTION_MOON_PAY_SIGN
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
@@ -36,8 +38,14 @@ class SwapDialog : BottomSheetDialogFragment() {
         viewModel = ViewModelProvider(this)[SwapViewModel::class.java].apply { load() }
 
         with(binding) {
-            moonpayButton.setOnClickListener { openUrl(viewModel.moonPayUrl) }
-            coinbaseButton.setOnClickListener { openUrl(coinBaseUrl()) }
+            moonpayButton.setOnClickListener {
+                MixpanelManager.onRampClicked(MixpanelRampSource.MOONPAY)
+                openUrl(viewModel.moonPayUrl)
+            }
+            coinbaseButton.setOnClickListener {
+                MixpanelManager.onRampClicked(MixpanelRampSource.COINBASE)
+                openUrl(coinBaseUrl())
+            }
         }
     }
 

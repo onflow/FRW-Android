@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.coin
 import android.text.format.DateUtils
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
+import com.flowfoundation.wallet.manager.coin.model.TokenPrice
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
@@ -15,6 +16,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -44,33 +46,29 @@ object CoinRateManager {
         uiScope { this.listeners.add(WeakReference(callback)) }
     }
 
-    fun coinRate(symbol: String) = coinRateMap[symbol]?.price
+    fun coinRate(contractId: String) = coinRateMap[contractId]?.price
 
     fun fetchCoinRate(coin: FlowCoin) {
         ioScope {
             if (coin.isUSDStableCoin()) {
-                dispatchListeners(coin, 1.0f, 0f)
+                dispatchListeners(coin, BigDecimal.ONE, 0f)
                 return@ioScope
             }
-            val cacheRate = coinRateMap[coin.symbol]
+            val cacheRate = coinRateMap[coin.contractId()]
             cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
             if (cacheRate.isExpire()) {
                 runCatching {
+                    val apiService = retrofitApi().create(ApiService::class.java)
+                    val tokenPriceResponse = apiService.getTokenPrices()
+                    val tokenPriceList = tokenPriceResponse.data
                     val market = QuoteMarket.fromMarketName(getQuoteMarket())
                     val coinPair = coin.getPricePair(market)
 
                     if (coinPair.isEmpty()) {
-                        val apiService = retrofitApi().create(ApiService::class.java)
-                        val tokenPriceResponse = apiService.getTokenPrices()
-                        val tokenPriceList = tokenPriceResponse.data
                         tokenPriceList?.find {
-                            if (WalletManager.isEVMAccountSelected()) {
-                                coin.address == it.evmAddress
-                            } else {
-                                coin.contractName() == it.contractName
-                            }
+                            coin.isSameCoin(it)
                         }?.let {
-                            val rate = it.rateToUSD.toFloat()
+                            val rate = it.rateToUSD
                             updateCache(coin, rate, 0f)
                             dispatchListeners(coin, rate, 0f)
                         }
@@ -79,11 +77,25 @@ object CoinRateManager {
 
                     val service = retrofit().create(ApiService::class.java)
                     val response = service.summary(market.value, coin.getPricePair(market))
-                    val price = response.data.result.price.last
+                    val price = tokenPriceList?.find {
+                        coin.isSameCoin(it)
+                    }?.rateToUSD ?: response.data.result.price.last
                     val quoteChange = response.data.result.price.change.percentage
                     updateCache(coin, price, quoteChange)
                     dispatchListeners(coin, price, quoteChange)
                 }
+            }
+        }
+    }
+
+    fun FlowCoin.isSameCoin(tokenPrice: TokenPrice): Boolean {
+        return if (isFlowCoin()) {
+            isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
+        } else {
+            if (WalletManager.isEVMAccountSelected()) {
+                address.equals(tokenPrice.evmAddress, true)
+            } else {
+                isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
             }
         }
     }
@@ -95,10 +107,10 @@ object CoinRateManager {
             val tokenPriceList = tokenPriceResponse.data
             list.forEach { coin ->
                 if (coin.isUSDStableCoin()) {
-                    dispatchListeners(coin, 1.0f, 0f)
+                    dispatchListeners(coin, BigDecimal.ONE, 0f)
                     return@forEach
                 }
-                val cacheRate = coinRateMap[coin.symbol]
+                val cacheRate = coinRateMap[coin.contractId()]
                 cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
                 if (cacheRate.isExpire()) {
                     runCatching {
@@ -107,13 +119,9 @@ object CoinRateManager {
 
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
-                                if (WalletManager.isEVMAccountSelected()) {
-                                    coin.address.lowercase() == it.evmAddress?.lowercase()
-                                } else {
-                                    coin.contractName() == it.contractName
-                                }
+                                coin.isSameCoin(it)
                             }?.let {
-                                val rate = it.rateToUSD.toFloat()
+                                val rate = it.rateToUSD
                                 updateCache(coin, rate, 0f)
                                 dispatchListeners(coin, rate, 0f)
                             }
@@ -121,7 +129,9 @@ object CoinRateManager {
                         }
                         val service = retrofit().create(ApiService::class.java)
                         val response = service.summary(market.value, coin.getPricePair(market))
-                        val price = response.data.result.price.last
+                        val price = tokenPriceList?.find {
+                            coin.isSameCoin(it)
+                        }?.rateToUSD ?: response.data.result.price.last
                         val quoteChange = response.data.result.price.change.percentage
                         updateCache(coin, price, quoteChange)
                         dispatchListeners(coin, price, quoteChange)
@@ -133,15 +143,15 @@ object CoinRateManager {
 
     private fun CoinRate?.isExpire(): Boolean = this == null || System.currentTimeMillis() - updateTime > 30 * DateUtils.SECOND_IN_MILLIS
 
-    private fun updateCache(coin: FlowCoin, price: Float, quoteChange: Float) {
+    private fun updateCache(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         ioScope {
-            coinRateMap[coin.symbol] = CoinRate(coin.symbol, price, quoteChange, System.currentTimeMillis())
+            coinRateMap[coin.contractId()] = CoinRate(coin.symbol, coin.contractId(), price, quoteChange, System.currentTimeMillis())
             cache.cache(CoinRateCacheData(coinRateMap))
         }
     }
 
-    private fun dispatchListeners(coin: FlowCoin, price: Float, quoteChange: Float) {
-        logd(TAG, "dispatchListeners ${coin.symbol}:${price}")
+    private fun dispatchListeners(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
+        logd(TAG, "dispatchListeners ${coin.contractId()}:${price}")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onCoinRateUpdate(coin, price, quoteChange) }
@@ -150,11 +160,11 @@ object CoinRateManager {
 }
 
 interface OnCoinRateUpdate {
-    fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
+    fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
 
     }
 
-    fun onCoinRateUpdate(coin: FlowCoin, price: Float, quoteChange: Float) {
+    fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
         onCoinRateUpdate(coin, price)
     }
 }
@@ -167,8 +177,10 @@ private class CoinRateCacheData(
 class CoinRate(
     @SerializedName("symbol")
     val symbol: String,
+    @SerializedName("contractId")
+    val contractId: String? = "",
     @SerializedName("price")
-    val price: Float,
+    val price: BigDecimal,
     @SerializedName("quoteChange")
     val quoteChange: Float = 0f,
     @SerializedName("updateTime")

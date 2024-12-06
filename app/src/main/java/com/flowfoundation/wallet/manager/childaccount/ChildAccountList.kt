@@ -4,7 +4,7 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_META
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -57,7 +57,7 @@ class ChildAccountList(
 //    }
 
     private fun queryAccountMeta(address: String): List<ChildAccount>? {
-        val result = CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence { arg { address(address) } }
+        val result = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence() { arg { address(address) } }
         return result?.parseAccountMetas()
     }
 

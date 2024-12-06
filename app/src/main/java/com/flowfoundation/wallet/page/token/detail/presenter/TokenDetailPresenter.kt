@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.token.detail.presenter
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -12,6 +11,7 @@ import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
@@ -25,7 +25,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollect
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.staking.openStakingPage
-import com.flowfoundation.wallet.page.token.detail.TokenDetailViewModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
@@ -34,6 +33,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.uiScope
@@ -46,8 +46,6 @@ class TokenDetailPresenter(
     private val coin: FlowCoin,
 ) : BasePresenter<TokenDetailModel> {
 
-    private val viewModel by lazy { ViewModelProvider(activity)[TokenDetailViewModel::class.java] }
-
     init {
         setupToolbar()
         with(binding) {
@@ -56,9 +54,10 @@ class TokenDetailPresenter(
             nameView.text = coin.name
             coinTypeView.text = coin.symbol.uppercase()
             Glide.with(iconView).load(coin.icon()).into(iconView)
-            nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             getMoreWrapper.setOnClickListener { }
-            btnSend.setOnClickListener { TransactionSendActivity.launch(activity, coinSymbol = coin.symbol) }
+            btnSend.setOnClickListener {
+                TransactionSendActivity.launch(activity, coinContractId = coin.contractId())
+            }
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
@@ -94,24 +93,23 @@ class TokenDetailPresenter(
             btnSend.backgroundTintList = bgTintColor
             btnTrade.backgroundTintList = bgTintColor
 
-            val moveVisible = if (WalletManager.isChildAccountSelected()) {
-                false
-            } else {
-                if (coin.isFlowCoin()) {
-                    true
-                } else if (coin.evmAddress.isNullOrBlank().not()) {
-                    true
-                } else coin.flowIdentifier.isNullOrBlank().not()
-            }
+            val moveVisible = !WalletManager.isChildAccountSelected()
+                    && (coin.isFlowCoin() || coin.isCOABridgeCoin() || coin.canBridgeToCOA())
             llEvmMoveToken.setVisible(moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
-                        MoveTokenDialog().showDialog(activity, coin.symbol)
+                        MoveTokenDialog().showDialog(activity, coin.contractId())
                     }
                 } else {
                     EnableEVMActivity.launch(activity)
                 }
+            }
+            if (coin.website().isEmpty()) {
+                ivLink.gone()
+            } else {
+                ivLink.visible()
+                nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
             }
         }
 
@@ -154,7 +152,7 @@ class TokenDetailPresenter(
 
     @SuppressLint("SetTextI18n")
     override fun bind(model: TokenDetailModel) {
-        model.balanceAmount?.let { binding.balanceAmountView.text = it.formatNum() }
+        model.balanceAmount?.let { binding.balanceAmountView.text = it.formatLargeBalanceNumber() }
         model.balancePrice?.let { binding.balancePriceView.text = "${it.formatPrice(includeSymbol = true)} ${selectedCurrency().name}" }
     }
 
@@ -169,19 +167,19 @@ class TokenDetailPresenter(
     private fun setupStakingRewards() {
         with(binding.stakingRewardWrapper) {
             val currency = selectedCurrency()
-            val coinRate = CoinRateManager.coinRate(FlowCoin.SYMBOL_FLOW) ?: 0f
+            val coinRate = CoinRateManager.coinRate(FlowCoinListManager.getFlowCoinContractId()) ?: 0f
             val stakingCount = StakingManager.stakingCount()
 
             val dayRewards =
                 StakingManager.stakingInfo().nodes.sumOf { it.stakingCount() * (if (it.isLilico()) StakingManager.apy() else STAKING_DEFAULT_NORMAL_APY).toDouble() }
                     .toFloat() / 365.0f
             stakingCountView.text = activity.getString(R.string.flow_num, stakingCount.formatNum(3))
-            dailyView.text = (dayRewards * coinRate).formatPrice(3, includeSymbol = true)
+            dailyView.text = (dayRewards * coinRate.toDouble()).formatPrice(3, includeSymbol = true)
             dailyCurrencyName.text = currency.name
             dailyFlowCount.text = activity.getString(R.string.flow_num, dayRewards.formatNum(3))
 
             val monthRewards = dayRewards * 30
-            monthlyView.text = (monthRewards * coinRate).formatPrice(3, includeSymbol = true)
+            monthlyView.text = (monthRewards * coinRate.toDouble()).formatPrice(3, includeSymbol = true)
             monthlyCurrencyName.text = currency.name
             monthlyFlowCount.text =
                 activity.getString(R.string.flow_num, monthRewards.formatNum(3))

@@ -12,12 +12,12 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
 object BalanceManager {
@@ -38,7 +38,7 @@ object BalanceManager {
 
     fun refresh() {
         if (WalletManager.isEVMAccountSelected()) {
-            FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW)?.let {
+            FlowCoinListManager.getFlowCoin()?.let {
                 fetch(it)
             }
             getEVMTokenBalance()
@@ -51,16 +51,16 @@ object BalanceManager {
         val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
         val balanceMap = cadenceQueryTokenListBalance() ?: return
         coinList.forEach { coin ->
-            balanceList.firstOrNull { it.symbol == coin.symbol }?.let { dispatchListeners(coin, it.balance) }
+            balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = balanceMap[coin.contractId()] ?: 0f
+            val balance = balanceMap[coin.contractId()] ?: BigDecimal.ZERO
 
-            val existBalance = balanceList.firstOrNull { coin.symbol == it.symbol }
+            val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
             val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
             if (isDiff) {
                 dispatchListeners(coin, balance)
-                balanceList.removeAll { it.symbol == coin.symbol }
-                balanceList.add(Balance(coin.symbol, balance))
+                balanceList.removeAll { it.isSameCoin(coin) }
+                balanceList.add(Balance(balance, coin.address, coin.contractName()))
                 ioScope { cache.cache(BalanceCache(balanceList.toList())) }
             }
         }
@@ -72,8 +72,8 @@ object BalanceManager {
             val apiService = retrofitApi().create(ApiService::class.java)
             val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
             balanceResponse.data?.forEach { tokenBalance ->
-                balanceList.firstOrNull { tokenBalance.symbol == it.symbol }?.let {
-                    FlowCoinListManager.getCoin(it.symbol)?.let { coin ->
+                balanceList.firstOrNull { it.isSameEVMCoin(tokenBalance.address) }?.let {
+                    FlowCoinListManager.getEVMCoin(it.address.orEmpty())?.let { coin ->
                         dispatchListeners(coin, it.balance)
                     }
                 }
@@ -81,14 +81,14 @@ object BalanceManager {
                     return@forEach
                 }
                 val amountValue = tokenBalance.balance.toBigDecimal()
-                val value = amountValue.movePointLeft(tokenBalance.decimal).toFloat()
-                val existBalance = balanceList.firstOrNull { listItem -> tokenBalance.symbol == listItem.symbol }
+                val value = amountValue.movePointLeft(tokenBalance.decimal)
+                val existBalance = balanceList.firstOrNull { listItem -> listItem.isSameEVMCoin(tokenBalance.address) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != value
                 if (isDiff) {
-                    FlowCoinListManager.getCoin(tokenBalance.symbol)?.let { coin ->
+                    FlowCoinListManager.getEVMCoin(tokenBalance.address)?.let { coin ->
                         dispatchListeners(coin, value)
-                        balanceList.removeAll { listItem -> listItem.symbol == coin.symbol }
-                        balanceList.add(Balance(coin.symbol, value))
+                        balanceList.removeAll { listItem -> listItem.isSameCoin(coin) }
+                        balanceList.add(Balance(value, coin.address, coin.contractName()))
                         ioScope { cache.cache(BalanceCache(balanceList.toList())) }
                     }
                 }
@@ -96,12 +96,12 @@ object BalanceManager {
         }
     }
 
-    suspend fun getEVMBalanceByCoin(symbol: String): Float {
-        val address = EVMWalletManager.getEVMAddress() ?: return 0f
+    suspend fun getEVMBalanceByCoin(tokenAddress: String): BigDecimal {
+        val address = EVMWalletManager.getEVMAddress() ?: return BigDecimal.ZERO
         val apiService = retrofitApi().create(ApiService::class.java)
         val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
-        val evmBalance = balanceResponse.data?.firstOrNull { it.symbol.lowercase() == symbol.lowercase() } ?: return 0f
-        return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal).toFloat()
+        val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
+        return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
     fun getBalanceByCoin(coin: FlowCoin) {
@@ -109,8 +109,8 @@ object BalanceManager {
         fetch(coin)
     }
 
-    fun getBalanceByCoin(coinSymbol: String) {
-        val coin = FlowCoinListManager.getCoin(coinSymbol) ?: return
+    fun getBalanceByCoin(coinContractId: String) {
+        val coin = FlowCoinListManager.getCoinById(coinContractId) ?: return
         getBalanceByCoin(coin)
     }
 
@@ -121,11 +121,11 @@ object BalanceManager {
         uiScope { this.listeners.add(WeakReference(callback)) }
     }
 
-    private fun dispatchListeners(coin: FlowCoin, balance: Float) {
+    private fun dispatchListeners(coin: FlowCoin, balance: BigDecimal) {
         logd(TAG, "dispatchListeners ${coin.symbol}:$balance")
         uiScope {
             listeners.removeAll { it.get() == null }
-            listeners.forEach { it.get()?.onBalanceUpdate(coin, Balance(coin.symbol, balance)) }
+            listeners.forEach { it.get()?.onBalanceUpdate(coin, Balance(balance, coin.address, coin.contractName())) }
         }
     }
 
@@ -133,24 +133,24 @@ object BalanceManager {
 
     private fun fetch(coin: FlowCoin) {
         ioScope {
-            balanceList.firstOrNull { it.symbol == coin.symbol }?.let { dispatchListeners(coin, it.balance) }
+            balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
             val balance = if (WalletManager.isEVMAccountSelected()) {
                 if (coin.isFlowCoin()) {
                     cadenceQueryCOATokenBalance()
                 } else {
-                    getEVMBalanceByCoin(coin.symbol)
+                    getEVMBalanceByCoin(coin.address)
                 }
             } else {
                 cadenceQueryTokenBalance(coin)
             }
             if (balance != null) {
-                val existBalance = balanceList.firstOrNull { coin.symbol == it.symbol }
+                val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
                 if (isDiff) {
                     dispatchListeners(coin, balance)
-                    balanceList.removeAll { it.symbol == coin.symbol }
-                    balanceList.add(Balance(coin.symbol, balance))
+                    balanceList.removeAll { it.isSameCoin(coin) }
+                    balanceList.add(Balance(balance, coin.address, coin.contractName()))
                     ioScope { cache.cache(BalanceCache(balanceList.toList())) }
                 }
             }
@@ -168,11 +168,22 @@ interface OnBalanceUpdate {
 }
 
 data class Balance(
-    @SerializedName("symbol")
-    val symbol: String,
     @SerializedName("balance")
-    val balance: Float,
-)
+    val balance: BigDecimal,
+    @SerializedName("address")
+    val address: String? = "",
+    @SerializedName("contractName")
+    val contractName: String? = ""
+) {
+    fun isSameCoin(coin: FlowCoin): Boolean {
+        return address.equals(coin.address, ignoreCase = true)
+                && contractName.equals(coin.contractName(), ignoreCase = true)
+    }
+
+    fun isSameEVMCoin(address: String): Boolean {
+        return address.equals(address, ignoreCase = true)
+    }
+}
 
 private class BalanceCache(
     @SerializedName("data")

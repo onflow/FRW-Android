@@ -45,7 +45,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     private val fromAddress by lazy {
         WalletManager.selectedWalletAddress()
     }
-    var needMoveFee = false
+    private var needMoveFee = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -161,11 +161,19 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     child.address.takeIf { address -> address != fromAddress }
                 }?.toMutableList() ?: mutableListOf()
                 addressList.add(0, parentAddress)
+                val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                if (evmAddress.isNotEmpty()) {
+                    addressList.add(evmAddress)
+                }
                 configureToLayoutAction(addressList)
             } else if (WalletManager.isEVMAccountSelected()) {
                 val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
                 layoutToAccount.setAccountInfo(parentAddress)
-                configureToLayoutAction(emptyList())
+                val addressList = WalletManager.childAccountList(parentAddress)?.get()?.map { child ->
+                    child.address
+                }?.toMutableList() ?: mutableListOf()
+                addressList.add(0, parentAddress)
+                configureToLayoutAction(addressList)
                 needMoveFee = true
             } else {
                 val addressList = WalletManager.childAccountList(WalletManager.wallet()?.walletAddress())?.get()?.map { child ->

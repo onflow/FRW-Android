@@ -13,10 +13,11 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.findActivity
-import com.flowfoundation.wallet.utils.formatNum
+import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.formatPrice
+import java.math.BigDecimal
 
 
 fun ActivitySwapBinding.viewModel(): SwapViewModel {
@@ -41,12 +42,12 @@ fun ActivitySwapBinding.updateToCoin(coin: FlowCoin) {
     legalCheck()
 }
 
-fun ActivitySwapBinding.updateFromAmount(amount: Float) {
-    fromInput.setText(amount.formatNum())
+fun ActivitySwapBinding.updateFromAmount(amount: BigDecimal) {
+    fromInput.setText(amount.format())
 }
 
-fun ActivitySwapBinding.updateToAmount(amount: Float) {
-    toInput.setText(amount.formatNum())
+fun ActivitySwapBinding.updateToAmount(amount: BigDecimal) {
+    toInput.setText(amount.format())
 }
 
 fun ActivitySwapBinding.updateProgressState(isLoading: Boolean) {
@@ -85,7 +86,7 @@ fun ActivitySwapBinding.updateEstimate(data: SwapEstimateResponse.Data) {
     val amountIn = data.routes.firstOrNull()?.routeAmountIn ?: return
     val amountOut = data.routes.firstOrNull()?.routeAmountOut ?: return
     convertView.setVisible(true)
-    convertView.text = "1 ${fromCoin.symbol.uppercase()} ≈ ${(amountOut / amountIn).formatNum()} ${toCoin.symbol.uppercase()}"
+    convertView.text = "1 ${fromCoin.symbol.uppercase()} ≈ ${(amountOut / amountIn).format()} ${toCoin.symbol.uppercase()}"
 }
 
 private fun ActivitySwapBinding.bindFromListener() {
@@ -132,7 +133,7 @@ fun ActivitySwapBinding.onCoinRateUpdate() {
 }
 
 private fun ActivitySwapBinding.updateAmountPrice() {
-    val amount = fromInput.text.toString().toSafeFloat()
+    val amount = fromInput.text.toString().toSafeDecimal()
     priceAmountView.text = (viewModel().fromCoinRate() * amount).formatPrice(includeSymbol = true, includeSymbolSpace = true)
 }
 
@@ -145,14 +146,14 @@ private fun ActivitySwapBinding.legalCheck() {
         return
     }
 
-    if (fromAmount() == 0.0f) {
+    if (fromAmount() == BigDecimal.ZERO) {
         swapButton.isEnabled = false
         swapButton.setText(R.string.swap)
         return
     }
 
     swapButton.setText(R.string.swap)
-    swapButton.isEnabled = toAmount() > 0
+    swapButton.isEnabled = toAmount() > BigDecimal.ZERO
 }
 
 fun swapPageBinding(): ActivitySwapBinding? {
@@ -165,13 +166,13 @@ fun swapPageBinding(): ActivitySwapBinding? {
     return ActivitySwapBinding.bind(activity.findViewById(R.id.root_view))
 }
 
-fun ActivitySwapBinding.fromAmount() = fromInput.text.toString().toSafeFloat()
-fun ActivitySwapBinding.toAmount() = toInput.text.toString().toSafeFloat()
+fun ActivitySwapBinding.fromAmount() = fromInput.text.toString().toSafeDecimal()
+fun ActivitySwapBinding.toAmount() = toInput.text.toString().toSafeDecimal()
 
 fun ActivitySwapBinding.setMaxAmount() {
     val viewModel = viewModel()
     val balance = viewModel.fromCoinBalance()
     fromInput.requestFocus()
-    fromInput.setText(balance.formatNum())
+    fromInput.setText(balance.format())
     fromInput.setSelection(fromInput.length())
 }

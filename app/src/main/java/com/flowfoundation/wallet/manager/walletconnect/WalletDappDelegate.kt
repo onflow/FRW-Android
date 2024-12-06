@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.google.gson.Gson
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
@@ -15,6 +16,8 @@ import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
 import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.walletconnect.model.WCWalletResponse
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
@@ -43,6 +46,7 @@ private val TAG = WalletDappDelegate::class.java.simpleName
 internal class WalletDappDelegate : SignClient.DappDelegate {
 
     private var isConnected = false
+    private var deviceBackupAddress = ""
 
     /**
      * Triggered whenever the connection state is changed
@@ -106,6 +110,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
     override fun onSessionDelete(deletedSession: Sign.Model.DeletedSession) {
         logd(TAG, "onSessionDelete() deletedSession:${Gson().toJson(deletedSession)}")
         isConnected = false
+        deviceBackupAddress = ""
     }
 
     /**
@@ -146,6 +151,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
             val rpcResult = jsonRpcResult as Sign.Model.JsonRpcResponse.JsonRpcResult
             val accountResponse = Gson().fromJson(rpcResult.result, WCWalletResponse::class.java)
             val account = accountResponse.data ?: return
+            deviceBackupAddress = account.walletAddress
             WalletConfirmActivity.launch(
                 activity, account.userAvatar, account.userName, account.walletAddress
             )
@@ -159,6 +165,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
         login(KeyManager.getCurrentPrefix()) { isSuccess ->
             uiScope {
                 if (isSuccess) {
+                    MixpanelManager.accountRestore(deviceBackupAddress, RestoreType.DEVICE_BACKUP)
                     delay(200)
                 } else {
                     toast(msgRes = R.string.login_failure)
@@ -208,7 +215,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                                 userInfo = service.userInfo().data,
                                                 prefix = prefix,
                                             ),
-                                            uid
+                                            firebaseUid()
                                         )
                                         clearUserCache()
                                         callback.invoke(true)

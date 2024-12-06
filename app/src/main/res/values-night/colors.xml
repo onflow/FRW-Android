@@ -121,8 +121,10 @@
 
     <color name="fill_1">#4076767E</color>
     <color name="fill_3">#3176767E</color>
-    <color name="border_line">#28FFFFFF</color>
+    <color name="border_line_stroke">#28FFFFFF</color>
+    <color name="border_line">#0FFFFFFF</color>
     <color name="background_2">#28282A</color>
+    <color name="disable_button_text">#40FFFFFF</color>
 
 </resources>
 

@@ -19,11 +19,11 @@ import com.flowfoundation.wallet.manager.staking.createStakingDelegatorId
 import com.flowfoundation.wallet.manager.staking.delegatorId
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.flowfoundation.wallet.widgets.ButtonState
 import kotlinx.coroutines.delay
 
@@ -54,7 +54,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
             rateView.text = (data.rate * 100).format(2) + "%"
             rewardCoinView.text =
-                "${(data.rewardCoin).formatNum(digits = 2)} " + R.string.flow_coin_name.res2String()
+                "${(data.rewardCoin).format(digits = 2)} " + R.string.flow_coin_name.res2String()
             rewardPriceView.text =
                 "≈ ${(data.rewardUsd).formatPrice(digits = 2, includeSymbol = true)}"
             rewardPriceCurrencyView.text = data.currency.name
@@ -89,7 +89,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
     private fun checkStakingEnabled(): Boolean {
         return try {
-            val response = CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
+            val response = Cadence.CADENCE_CHECK_STAKING_ENABLED.executeCadence { }
             response?.parseBool(false) ?: false
         } catch (e: Exception) {
             false
@@ -101,7 +101,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             var delegatorId = provider.delegatorId()
             val amount = data.amount
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount.toSafeDouble())
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -109,7 +109,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txId = CADENCE_STAKE_FLOW.transactionByMainWallet {
+            val txId = Cadence.CADENCE_STAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
                 arg { ufix64Safe(amount) }
@@ -134,7 +134,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             var delegatorId = provider.delegatorId()
             val amount = data.amount
             if (delegatorId == null) {
-                createStakingDelegatorId(provider, amount.toSafeDouble())
+                createStakingDelegatorId(provider, amount)
                 delay(2000)
                 StakingManager.refreshDelegatorInfo()
                 delegatorId = provider.delegatorId()
@@ -142,7 +142,7 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             if (delegatorId == null) {
                 return false
             }
-            val txId = CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
+            val txId = Cadence.CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
                 arg { uint32(delegatorId) }
                 arg { ufix64Safe(amount) }

@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
@@ -117,9 +119,10 @@ class SelectNFTViewModel : ViewModel() {
         }
         if (WalletManager.isChildAccountSelected()) {
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
-                EVMWalletManager.moveNFTList(
+                EVMWalletManager.moveChildNFTList(
                     nftIdentifier!!,
                     selectedNFTIdList,
+                    WalletManager.selectedWalletAddress(),
                     isMoveToEVM = true,
                     callback
                 )
@@ -131,13 +134,23 @@ class SelectNFTViewModel : ViewModel() {
                 moveNFTListFromChildToParent(selectedNFTIdList, callback)
             }
         } else if (WalletManager.isEVMAccountSelected()) {
-            // batch move from evm to parent
-            EVMWalletManager.moveNFTList(
-                nftIdentifier!!,
-                selectedNFTIdList,
-                isMoveToEVM = false,
-                callback
-            )
+            if (WalletManager.isChildAccount(toAddress)) {
+                EVMWalletManager.moveChildNFTList(
+                    nftIdentifier!!,
+                    selectedNFTIdList,
+                    toAddress,
+                    isMoveToEVM = false,
+                    callback
+                )
+            } else {
+                // batch move from evm to parent
+                EVMWalletManager.moveNFTList(
+                    nftIdentifier!!,
+                    selectedNFTIdList,
+                    isMoveToEVM = false,
+                    callback
+                )
+            }
         } else {
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                 // batch move from parent to evm
@@ -167,6 +180,11 @@ class SelectNFTViewModel : ViewModel() {
             val txId = cadenceMoveNFTListFromChildToParent(
                 WalletManager.selectedWalletAddress(), identifier.orEmpty(),
                 collection, idList
+            )
+            MixpanelManager.transferNFT(
+                WalletManager.selectedWalletAddress(), WalletManager.wallet()?.walletAddress().orEmpty(),
+                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
+                TransferAccountType.FLOW, true
             )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "move to parent failed")
@@ -203,6 +221,11 @@ class SelectNFTViewModel : ViewModel() {
             val txId = cadenceSendNFTListFromChildToChild(
                 WalletManager.selectedWalletAddress(), toAddress, identifier.orEmpty(), collection, idList
             )
+            MixpanelManager.transferNFT(
+                WalletManager.selectedWalletAddress(), toAddress,
+                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
+                TransferAccountType.CHILD, true
+            )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "send to child failed")
                 callback.invoke(false)
@@ -238,6 +261,11 @@ class SelectNFTViewModel : ViewModel() {
             }
             val txId = cadenceSendNFTListFromParentToChild(
                 childAddress, identifier.orEmpty(), collection, idList
+            )
+            MixpanelManager.transferNFT(
+                WalletManager.wallet()?.walletAddress().orEmpty(), childAddress,
+                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.FLOW,
+                TransferAccountType.CHILD, true
             )
             if (txId.isNullOrBlank()) {
                 logd(TAG, "send to child failed")

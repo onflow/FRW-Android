@@ -5,10 +5,12 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
@@ -30,9 +32,22 @@ object FlowCoinListManager {
                 coinList.addAll(list.tokens.filter { it.address.isNotBlank() })
                 if (WalletManager.isEVMAccountSelected()) {
                     addFlowTokenManually()
+                    addCustomToken()
                 }
             }
         }
+    }
+
+    fun addCustomToken() {
+        val list = CustomTokenManager.getCurrentCustomTokenList()
+        val existingAddresses = coinList.map { it.address.lowercase() }.toSet()
+        coinList.addAll(list.map {
+            it.toFlowCoin()
+        }.filter { it.address !in existingAddresses }.toList())
+    }
+
+    fun deleteCustomToken(contractAddress: String) {
+        coinList.removeIf { it.address.equals(contractAddress, true)}
     }
 
     private fun addFlowTokenManually() {
@@ -44,17 +59,27 @@ object FlowCoinListManager {
                     "config/flow_token_mainnet.json"
                 }
             )
-            Gson().fromJson(text, FlowCoin::class.java)?.let {
-                coinList.add(0, it)
+            Gson().fromJson(text, FlowCoin::class.java)?.let { coin ->
+                if(coinList.none { it.address == coin.address }) {
+                    coinList.add(0, coin)
+                }
             }
         } catch (e: Exception) {
-            logd(TAG, "add flow failure")
+            loge(TAG, "manually add flow token failure :: $e")
         }
     }
 
     fun coinList() = coinList.toList()
 
-    fun getCoin(symbol: String) = coinList.firstOrNull { it.symbol.lowercase() == symbol.lowercase() }
+    fun getCoinById(contractId: String) = coinList.firstOrNull { it.contractId() == contractId }
+
+    fun getFlowCoin() = coinList.firstOrNull { it.isFlowCoin() }
+
+    fun getFlowCoinContractId() = getFlowCoin()?.contractId().orEmpty()
+
+    fun isFlowCoin(contractId: String) = coinList.any { it.isFlowCoin() && it.contractId().equals(contractId, true) }
+
+    fun getEVMCoin(address: String) = coinList.firstOrNull { it.isSameCoin(address, "")  }
 
     fun getEnabledCoinList() = coinList.toList().filter { TokenStateManager.isTokenAdded(it.address) }
 
@@ -92,7 +117,7 @@ data class TokenList(
 @Parcelize
 data class FlowCoin(
     @SerializedName("chainId")
-    val chainId: Int,
+    val chainId: Int?,
     @SerializedName("name")
     val name: String,
     @SerializedName("address")
@@ -115,12 +140,24 @@ data class FlowCoin(
     val evmAddress: String?
 ) : Parcelable {
 
+    fun contractId(): String {
+        return "A.${address.removeAddressPrefix()}.${contractName()}"
+    }
+
     fun icon(): String {
         return if (icon.endsWith(".svg")) {
             icon.svgToPng()
         } else {
             icon
         }
+    }
+
+    fun isSameCoin(address: String, contractName: String): Boolean {
+        return this.address.equals(address, true) && contractName().equals(contractName, true)
+    }
+
+    fun isSameCoin(contractId: String): Boolean {
+        return this.contractId().equals(contractId, true)
     }
 
     fun contractName() = contractName ?: ""
@@ -183,8 +220,8 @@ class FlowCoinStoragePath(
     val receiver: String,
 ) : Parcelable
 
-fun FlowCoin.formatCadence(cadence: String): String {
-    return cadence.replace("<Token>", contractName())
+fun FlowCoin.formatCadence(cadence: Cadence): String {
+    return cadence.getScript().replace("<Token>", contractName())
         .replace("<TokenAddress>", address)
         .replace("<TokenReceiverPath>", storagePath?.receiver ?: "")
         .replace("<TokenBalancePath>", storagePath?.balance ?: "")

@@ -1,11 +1,11 @@
 package com.flowfoundation.wallet.page.swap
 
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.wallet.toAddress
+import java.math.BigDecimal
 
 
 suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
@@ -20,12 +20,12 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
     val slippageRate = 0.1f
 
     val estimateOut = data.tokenOutAmount
-    val amountOutMin = estimateOut * (1.0f - slippageRate)
+    val amountOutMin = estimateOut * (1.0f - slippageRate).toBigDecimal()
     val storageIn = viewModel.fromCoin()!!.storagePath
     val storageOut = viewModel.toCoin()!!.storagePath
 
     val estimateIn = data.tokenInAmount
-    val amountInMax = estimateIn / (1.0f - slippageRate)
+    val amountInMax = estimateIn / (1.0f - slippageRate).toBigDecimal()
 
     return swapSendInternal(
         swapPaths = tokenKeyFlatSplitPath,
@@ -43,11 +43,11 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
 
 private suspend fun swapSendInternal(
     swapPaths: List<String>,
-    tokenInMax: Float,
-    tokenOutMin: Float,
+    tokenInMax: BigDecimal,
+    tokenOutMin: BigDecimal,
     tokenInVaultPath: String,
-    tokenOutSplit: List<Float>,
-    tokenInSplit: List<Float>,
+    tokenOutSplit: List<BigDecimal>,
+    tokenInSplit: List<BigDecimal>,
     tokenOutVaultPath: String,
     tokenOutReceiverPath: String,
     tokenOutBalancePath: String,
@@ -59,7 +59,7 @@ private suspend fun swapSendInternal(
     // want use how many token to swap other token
     val isExactFrom = viewModel.exactToken == ExactToken.FROM
 
-    val cadence = if (isExactFrom) CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS
+    val cadence = (if (isExactFrom) Cadence.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else Cadence.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS).getScript()
 
     val tokenName = swapPaths.last().split(".").last()
     val tokenAddress = swapPaths.last().split(".")[1].toAddress()

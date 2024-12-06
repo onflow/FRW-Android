@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.flowjvm.addressVerify
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
@@ -73,14 +74,14 @@ class AddressAddViewModel : ViewModel() {
     fun checkAddressVerify(address: String) {
         val format = if (address.startsWith("0x")) address else "0x$address"
         this.address = format
-        if (!addressPattern.matches(this.address)) {
+        if (!addressPattern.matches(this.address) && !evmAddressPattern.matches(this.address)) {
             addressVerifyStateLiveData.postValue(ADDRESS_VERIFY_STATE_FORMAT_ERROR)
             return
         } else {
             addressVerifyStateLiveData.postValue(ADDRESS_VERIFY_STATE_PENDING)
         }
         viewModelIOScope(this) {
-            val isVerified = addressVerify(format)
+            val isVerified = addressVerify(format) || evmAddressPattern.matches(this.address)
             if (format == this.address) {
                 addressVerifyStateLiveData.postValue(if (isVerified) ADDRESS_VERIFY_STATE_SUCCESS else ADDRESS_VERIFY_STATE_ERROR)
             }

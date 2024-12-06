@@ -41,7 +41,10 @@ class NftListRequester {
         if (collectionResponse.status > 200) {
             throw Exception("request nft list error: $collectionResponse")
         }
-        val collections = collectionResponse.data?.filter { it.collection?.address?.isNotBlank()== true && it.ids?.isNotEmpty() == true }.orEmpty()
+        val collections = collectionResponse.data?.filter {
+            (it.collection?.address.isNullOrBlank().not() || it.collection?.evmAddress.isNullOrBlank().not())
+                    && it.ids?.isNotEmpty() == true
+        }.orEmpty()
 
         collectionList.clear()
         collectionList.addAll(collections)
@@ -49,7 +52,7 @@ class NftListRequester {
         return collections.sort()
     }
 
-    fun cachedNfts(collection: NftCollection) = cache().list(collection.contractName).read()?.list
+    fun cachedNfts(collection: NftCollection) = cache().list(collection.contractName()).read()?.list
 
     fun cacheCollections(collections: List<NftCollectionWrapper>) {
         cache().collection().cacheSync(NftCollections(collections))
@@ -85,7 +88,7 @@ class NftListRequester {
 
         dataList.addAll(response.data.nfts.orEmpty())
 
-        cache().list(collection.contractName).cacheSync(NftList(dataList.toList()))
+        cache().list(collection.contractName()).cacheSync(NftList(dataList.toList()))
 
         return response.data.nfts.orEmpty()
     }
@@ -106,7 +109,7 @@ class NftListRequester {
 
         dataList.addAll(response.data.nfts.orEmpty())
 
-        cache().list(collection.contractName).cacheSync(NftList(dataList.toList()))
+        cache().list(collection.contractName()).cacheSync(NftList(dataList.toList()))
 
         isLoadMoreRequesting = false
 
@@ -118,7 +121,7 @@ class NftListRequester {
     fun haveMore() = count > limit && offset < count
 
     fun dataList(collection: NftCollection): List<Nft> {
-        val list = if (dataList.firstOrNull()?.contract?.name == collection.contractName) dataList.toList() else emptyList()
+        val list = if (dataList.firstOrNull()?.contract?.name == collection.contractName()) dataList.toList() else emptyList()
         return list.ifEmpty { cachedNfts(collection).orEmpty() }
     }
 

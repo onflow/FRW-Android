@@ -41,7 +41,7 @@ class NFTListItemPresenter(
                 .transform(RoundedCorners(10.dp2px().toInt()))
                 .placeholder(R.drawable.ic_placeholder).into(coverView)
             nameView.text = nft.title() ?: nft.title ?: nft.contractName()
-            priceView.text = nft.postMedia.description ?: ""
+            priceView.text = nft.postMedia?.description ?: ""
 
             coverViewWrapper.setOnClickListener {
                 NftDetailActivity.launch(context, nft.uniqueId(), nft.contractName(), fromAddress)

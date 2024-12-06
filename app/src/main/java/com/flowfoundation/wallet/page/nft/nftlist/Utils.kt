@@ -64,9 +64,9 @@ fun String?.getBase64SvgModel(): SvgModel? {
 }
 
 fun Nft.cover(): String? {
-    var image = postMedia.image
+    var image = postMedia?.image
 
-    if (!image.isNullOrBlank() && postMedia.isSvg == "true") {
+    if (!image.isNullOrBlank() && postMedia?.isSvg == "true") {
         image = "https://lilico.app/api/svg2png?url=${URLEncoder.encode(image, "UTF-8")}"
     }
 
@@ -74,22 +74,22 @@ fun Nft.cover(): String? {
 }
 
 fun Nft.name(): String? {
-    if (!postMedia.title.isNullOrBlank()) {
-        return postMedia.title
+    if (!postMedia?.title.isNullOrBlank()) {
+        return postMedia?.title
     }
     val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return null
     return "${config.name} #${id}"
 }
 
 fun Nft.desc(): String? {
-    return postMedia.description ?: metadata?.metadata?.firstOrNull { it.name == "description" }?.value
+    return postMedia?.description ?: metadata?.metadata?.firstOrNull { it.name == "description" }?.value
 }
 
 fun Nft.video(): String? {
-    return postMedia.video
+    return postMedia?.video
 }
 
-fun Nft.title(): String? = postMedia.title
+fun Nft.title(): String? = postMedia?.title
 
 fun Nft.websiteUrl(walletAddress: String) = "https://lilico" +
         ".app/nft/$walletAddress/${collectionAddress}/${contractName()}?tokenId=${id}"

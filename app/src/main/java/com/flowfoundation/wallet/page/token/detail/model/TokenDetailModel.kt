@@ -1,6 +1,8 @@
 package com.flowfoundation.wallet.page.token.detail.model
 
+import java.math.BigDecimal
+
 class TokenDetailModel(
-    val balanceAmount: Float? = null,
-    val balancePrice: Float? = null,
+    val balanceAmount: BigDecimal? = null,
+    val balancePrice: BigDecimal? = null,
 )

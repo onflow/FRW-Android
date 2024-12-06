@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.network.model.InboxToken
 import com.flowfoundation.wallet.page.inbox.InboxViewModel
 import com.flowfoundation.wallet.utils.findActivity
+import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 
@@ -27,7 +28,7 @@ class InboxTokenItemPresenter(
         with(binding) {
             val coin = FlowCoinListManager.coinList().firstOrNull { it.address == model.coinAddress } ?: return
             Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
-            amountView.text = "${model.amount.formatNum()} ${coin.symbol.uppercase()}"
+            amountView.text = "${model.amount.format()} ${coin.symbol.uppercase()}"
 
             val marketValue = model.marketValue
             priceCountView.text = marketValue?.formatPrice(includeSymbol = true, includeSymbolSpace = true) ?: "$0"

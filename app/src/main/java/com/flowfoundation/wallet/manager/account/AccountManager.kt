@@ -12,13 +12,13 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
 import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.clearUserCache
@@ -27,16 +27,13 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAccount
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.setRegistered
@@ -52,7 +49,6 @@ import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.io.File
@@ -60,6 +56,8 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 
 object AccountManager {
+
+    private val TAG = AccountManager::class.java.simpleName
 
     private val accounts = mutableListOf<Account>()
     private var uploadedAddressSet = mutableSetOf<String>()
@@ -78,7 +76,6 @@ object AccountManager {
             migratePrefixInfo(migrateAccount())?.let {
                 accounts.addAll(it)
             }
-            WalletManager.walletUpdate()
             initEmojiAndEVMInfo()
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
@@ -113,34 +110,40 @@ object AccountManager {
     }
 
     private suspend fun migratePrefixInfo(accountList: List<Account>?): List<Account>? {
-        userPrefixes.addAll(UserPrefixCacheManager.read() ?: emptyList())
-        val addressPrefixMap = getAddressPrefixMap()
-        accountList?.forEach { account ->
-            val userId = account.wallet?.id
-            val userPrefixInfo = userPrefixes.find { it.userId == userId }
-            if (userPrefixInfo != null) {
-                account.prefix = userPrefixInfo.prefix
-            } else {
-                val address = account.wallet?.mainnetWallet()?.address()
-                val prefix = addressPrefixMap[address]
-                if (!prefix.isNullOrEmpty()) {
-                    account.prefix = prefix
-                    if (!userId.isNullOrEmpty()) {
-                        userPrefixes.add(UserPrefix(userId, prefix))
-                        UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+        return try {
+            userPrefixes.addAll(UserPrefixCacheManager.read() ?: emptyList())
+            val addressPrefixMap = getAddressPrefixMap()
+            accountList?.forEach { account ->
+                val userId = account.wallet?.id
+                val userPrefixInfo = userPrefixes.find { it.userId == userId }
+                if (userPrefixInfo != null) {
+                    account.prefix = userPrefixInfo.prefix
+                } else {
+                    val address = account.wallet?.mainnetWallet()?.address()
+                    val prefix = addressPrefixMap[address]
+                    if (!prefix.isNullOrEmpty()) {
+                        account.prefix = prefix
+                        if (!userId.isNullOrEmpty()) {
+                            userPrefixes.add(UserPrefix(userId, prefix))
+                            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                        }
                     }
                 }
             }
+            getLocalPrefix(accountList, addressPrefixMap)
+            getLocalStoredKey(accountList)
+            accountList
+        } catch (e: Exception) {
+            loge(TAG, "Error during migration :: $e")
+            accountList
         }
-        getLocalPrefix(accountList, addressPrefixMap)
-        getLocalStoredKey(accountList)
-        return accountList
     }
 
     fun getSwitchAccountList(): List<Any> {
         val list = mutableListOf<Any>()
         list.addAll(accounts)
-        list.addAll(switchAccounts)
+        val addressSet = accounts.mapNotNull { it.wallet?.walletAddress() }.toSet()
+        list.addAll(switchAccounts.filter { it.address !in addressSet })
         return list
     }
 
@@ -243,7 +246,9 @@ object AccountManager {
                 return@ioScope
             }
             setToAnonymous()
-            accounts.removeAt(index)
+            val account = accounts.removeAt(index)
+            userPrefixes.removeAll { it.userId == account.wallet?.id}
+            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
             uiScope {
                 clearUserCache()

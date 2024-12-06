@@ -47,6 +47,7 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
@@ -60,6 +61,7 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
+import java.math.BigDecimal
 import java.math.RoundingMode
 
 
@@ -348,11 +350,11 @@ private fun View.setupWalletItem(
 fun bindFlowBalance(balanceView: TextView, address: String) {
     ioScope {
         val balance = cadenceQueryTokenBalanceWithAddress(
-            FlowCoinListManager.getCoin(FlowCoin.SYMBOL_FLOW),
+            FlowCoinListManager.getFlowCoin(),
             address
-        ) ?: 0f
+        ) ?: BigDecimal.ZERO
         uiScope {
-            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
+            balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
         }
     }
 }
@@ -360,9 +362,9 @@ fun bindFlowBalance(balanceView: TextView, address: String) {
 @SuppressLint("SetTextI18n")
 fun bindEVMFlowBalance(balanceView: TextView) {
     ioScope {
-        val balance = cadenceQueryCOATokenBalance() ?: 0f
+        val balance = cadenceQueryCOATokenBalance() ?: BigDecimal.ZERO
         uiScope {
-            balanceView.text = "${balance.formatNum(roundingMode = RoundingMode.HALF_UP)} FLOW"
+            balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
         }
     }
 }

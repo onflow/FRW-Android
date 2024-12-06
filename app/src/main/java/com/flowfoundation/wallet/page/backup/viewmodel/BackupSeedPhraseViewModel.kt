@@ -4,7 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_ADD_PUBLIC_KEY
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
@@ -77,7 +77,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
         ioScope {
             cryptoProvider.let {
                 try {
-                    val txId = CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
+                    val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
                         arg { uint8(it.getSignatureAlgorithm().index) }
                         arg { uint8(it.getHashAlgorithm().index) }

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_top_radius_16dp"
+    android:backgroundTint="@color/bg_1"
+    android:paddingBottom="@dimen/wallet_create_button_margin">
+
+    <View
+        android:layout_width="54dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_round_8dp"
+        android:backgroundTint="@color/border_line_stroke"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/inter"
+        android:gravity="start"
+        android:text="@string/add_suggested_token"
+        android:textColor="@color/text_1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:id="@+id/iv_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="18dp"
+        android:paddingVertical="18dp"
+        android:src="@drawable/ic_close_circle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/inter"
+        android:gravity="start"
+        android:text="@string/would_you_like_to_import_this_token"
+        android:textColor="@color/text_3"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tv_title"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/border_line"
+        app:layout_constraintTop_toBottomOf="@id/tv_desc"/>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_token_layout"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="33dp"
+        android:background="@drawable/bg_round_16dp"
+        android:backgroundTint="@color/background_2"
+        android:paddingHorizontal="16dp"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@id/tv_desc">
+
+        <ImageView
+            android:id="@+id/iv_token_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_token_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="13dp"
+            android:fontFamily="@font/inter"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:lines="1"
+            android:maxLines="1"
+            android:layout_marginEnd="10dp"
+            android:autoSizeTextType="uniform"
+            android:gravity="center_vertical"
+            android:autoSizeMinTextSize="12sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/iv_token_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/tv_token_balance"
+            tools:text="FLOW"/>
+
+        <TextView
+            android:id="@+id/tv_token_balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_1"
+            android:fontFamily="@font/inter"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="303.44 FLOW"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lav_loading"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/lottie_loading"/>
+
+    <com.flowfoundation.wallet.widgets.LoadingMaterialButton
+        android:id="@+id/btn_add"
+        style="@style/Button"
+        android:layout_width="match_parent"
+        android:layout_height="62dp"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="@dimen/wallet_create_button_margin"
+        android:text="@string/add_token"
+        app:cornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cl_token_layout"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

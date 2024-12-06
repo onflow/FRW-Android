@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentWalletCreateUsernameBinding
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.landing.LandingActivity
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
@@ -89,6 +90,7 @@ class WalletCreateUsernamePresenter(
 
     private fun onCreateUserCallback(isSuccess: Boolean) {
         if (isSuccess) {
+            MixpanelManager.accountCreationStart()
             LandingActivity.launch(binding.root.context)
         } else {
             binding.nextButton.setProgressVisible(false)

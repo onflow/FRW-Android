@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
 import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.utils.logd
@@ -32,28 +33,47 @@ private const val TAG = "FlowTransaction"
 
 suspend fun sendTransaction(
     builder: TransactionBuilder.() -> Unit,
-): String {
+): String? {
 //    updateSecurityProvider()
+    val transactionBuilder = TransactionBuilder().apply { builder(this) }
 
-    logd(TAG, "sendTransaction prepare")
-    val voucher = prepare(TransactionBuilder().apply { builder(this) })
+    try {
+        logd(TAG, "sendTransaction prepare")
+        val voucher = prepare(transactionBuilder)
 
-    logd(TAG, "sendTransaction build flow transaction")
-    var tx = voucher.toFlowTransaction()
+        logd(TAG, "sendTransaction build flow transaction")
+        var tx = voucher.toFlowTransaction()
 
-    if (tx.envelopeSignatures.isEmpty() && isGasFree()) {
-        logd(TAG, "sendTransaction request free gas envelope")
-        tx = tx.addFreeGasEnvelope()
-    } else if (tx.envelopeSignatures.isEmpty()) {
-        logd(TAG, "sendTransaction sign envelope")
-        tx = tx.addLocalSignatures()
+        if (tx.envelopeSignatures.isEmpty() && isGasFree()) {
+            logd(TAG, "sendTransaction request free gas envelope")
+            tx = tx.addFreeGasEnvelope()
+        } else if (tx.envelopeSignatures.isEmpty()) {
+            logd(TAG, "sendTransaction sign envelope")
+            tx = tx.addLocalSignatures()
+        }
+
+        logd(TAG, "sendTransaction to flow chain")
+        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex()
+        logd(TAG, "transaction id:$${txID}")
+        vibrateTransaction()
+        MixpanelManager.cadenceTransactionSigned(
+            cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it.formatted }.toList(),
+            proposer = tx.proposalKey.address.formatted,
+            payer = tx.payerAddress.formatted,
+            isSuccess = true
+        )
+        return txID
+    } catch (e: Exception) {
+        loge(e)
+        MixpanelManager.cadenceTransactionSigned(
+            cadence = transactionBuilder.script.orEmpty(), txId = "",
+            authorizers = emptyList(),
+            proposer = transactionBuilder.walletAddress?.toAddress().orEmpty(),
+            payer = transactionBuilder.payer ?: (if (isGasFree()) AppConfig.payer().address else transactionBuilder.walletAddress).orEmpty(),
+            isSuccess = false
+        )
+        return null
     }
-
-    logd(TAG, "sendTransaction to flow chain")
-    val txID = FlowApi.get().sendTransaction(tx)
-    logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
-    vibrateTransaction()
-    return txID.bytes.bytesToHex()
 }
 
 suspend fun sendTransactionWithMultiSignature(

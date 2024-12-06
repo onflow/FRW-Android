@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail
 
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.flowjvm.parseStringList
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -13,7 +11,7 @@ import org.json.JSONObject
 
 fun queryChildAccountNftCollections(childAddress: String): List<NFTCollectionData> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = CADENCE_QUERY_CHILD_ACCOUNT_NFT.executeCadence {
+    val response = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_NFT.executeCadence {
         arg { address(walletAddress) }
         arg { address(childAddress) }
 // for test
@@ -26,7 +24,7 @@ fun queryChildAccountNftCollections(childAddress: String): List<NFTCollectionDat
 
 fun queryChildAccountTokens(childAddress: String): List<TokenData> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = CADENCE_QUERY_CHILD_ACCOUNT_TOKENS.executeCadence {
+    val response = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS.executeCadence {
         arg { address(walletAddress) }
         arg { address(childAddress) }
     }
@@ -36,7 +34,7 @@ fun queryChildAccountTokens(childAddress: String): List<TokenData> {
 
 fun queryChildAccountNFTCollectionID(childAddress: String): List<String> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS.executeCadence {
+    val response = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS.executeCadence {
         arg { address(walletAddress) }
         arg { address(childAddress) }
     }

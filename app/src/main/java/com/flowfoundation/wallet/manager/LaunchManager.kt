@@ -15,11 +15,9 @@ import com.flowfoundation.wallet.manager.app.PageLifecycleObserver
 import com.flowfoundation.wallet.manager.app.refreshChainNetwork
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
+import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
-import com.flowfoundation.wallet.manager.env.EnvKey
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -27,6 +25,7 @@ import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.service.MessagingService
 import com.flowfoundation.wallet.utils.getThemeMode
 import com.flowfoundation.wallet.utils.ioScope
@@ -42,10 +41,10 @@ object LaunchManager {
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
         ioScope {
-            safeRun { EnvKey.init() }
             safeRun { AccountManager.init() }
         }
         refreshChainNetwork {
+            safeRun { MixpanelManager.init(application) }
             safeRun { WalletConnect.init(application) }
             safeRun { initFirebaseConfig() }
             safeRun { FlowApi.refreshConfig() }
@@ -69,6 +68,7 @@ object LaunchManager {
 
     private fun readCache(application: Application) {
         safeRun { WalletManager.init() }
+        safeRun { CustomTokenManager.init() }
         safeRun { NftCollectionConfig.sync() }
         safeRun { BalanceManager.reload() }
         safeRun { TransactionStateManager.reload() }
@@ -77,7 +77,6 @@ object LaunchManager {
         safeRun { CoinRateManager.init() }
         safeRun { CurrencyManager.init() }
         safeRun { StakingManager.init() }
-//        Translized.init(application, EnvKey.get("TRANSLIZED_PROJECT_ID"), EnvKey.get("TRANSLIZED_TOKEN"))
     }
 
     private fun setNightMode() {
@@ -86,6 +85,7 @@ object LaunchManager {
 
     private fun runWorker(application: Application) {
         CadenceApiManager.init()
+        MixpanelManager.identifyUserProfile()
     }
 
     /**

@@ -5,13 +5,14 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import kotlinx.parcelize.Parcelize
+import java.math.BigDecimal
 
 @Parcelize
 class TransactionModel(
     @SerializedName("amount")
-    val amount: Float,
-    @SerializedName("coinSymbol")
-    val coinSymbol: String = FlowCoin.SYMBOL_FLOW,
+    val amount: BigDecimal,
+    @SerializedName("coinId")
+    val coinId: String = "",
     @SerializedName("target")
     val target: AddressBookContact,
     @SerializedName("fromAddress")

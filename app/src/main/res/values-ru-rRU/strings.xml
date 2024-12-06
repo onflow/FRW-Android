@@ -97,7 +97,6 @@
     <string name="saved_to_album">Сохранено в альбом</string>
     <string name="view_on_web">Смотреть на сайте</string>
     <string name="empty_title">У вас еще нет NFT</string>
-    <string name="nft_empty_desc">С нетерпением ждем ваших следующих открытий.</string>
     <string name="receive">Получить</string>
     <string name="buy">Купить</string>
     <string name="swap">Обмен</string>
@@ -225,7 +224,7 @@
     <string name="fcl_permission_read_balance">Просматривайте баланс и активность вашего кошелька</string>
     <string name="fcl_permission_transaction">Запрос на одобрение операций</string>
     <string name="script">Скрипт</string>
-    <string name="dapps">dApps</string>
+    <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">Процесс создания монеты</string>
     <string name="mnemonic_check_fail">Неправильный выбор</string>
     <string name="restore_with_recovery_phrase">Восстановление с помощью фразы восстановления</string>
@@ -236,6 +235,7 @@
     <string name="file_picker_title">Выберите файл</string>
     <string name="transaction_fee">Комиссия за транзакцию</string>
     <string name="hold_to_confirm">Удерживайте, чтобы подтвердить</string>
+    <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Включить</string>
     <string name="sign_message">Знак Сообщение</string>
     <string name="transaction_history">История транзакций</string>
@@ -606,7 +606,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
     <string name="collection_list">Collection List</string>
-    <string name="balance_value">Balance %1$d</string>
+    <string name="balance_value">Balance %1$s</string>
     <string name="backup_not_found">Backup Not Found</string>
     <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
     <string name="backup_decryption_failed">Backup Decryption Failed</string>
@@ -658,4 +658,26 @@ uses to turn your device into a hardware wallet.</string>
     <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
     <string name="sign_type_message_from">Sign Type Message from</string>
     <string name="message">Message</string>
+    <string name="current_account">Current Account</string>
+    <string name="other_accounts">Other Accounts</string>
+    <string name="local_account_keys">Local Account Keys</string>
+    <string name="reload_config">Reload Config</string>
+    <string name="move_fee">Move Fee</string>
+    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
+    <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
+    <string name="add_custom_token">Add Custom Token</string>
+    <string name="add_token_success">Add Token Success</string>
+    <string name="invalid_evm_address">Invalid ERC20 address</string>
+    <string name="token_contract_address">Token Contract Address</string>
+    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
+    <string name="contracts">Contracts</string>
+    <string name="token_name">Token Name</string>
+    <string name="token_icon">Token Icon</string>
+    <string name="token_symbol">Token Symbol</string>
+    <string name="token_decimal">Token Decimal</string>
+    <string name="token_identifier">Token Identifier</string>
+    <string name="add_suggested_token">Add Suggested Token</string>
+    <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
 </resources>

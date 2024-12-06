@@ -8,7 +8,7 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.storage.uploadAvatarToFirebase
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
-import com.flowfoundation.wallet.manager.flowjvm.CADENCE_EDIT_CHILD_ACCOUNT
+import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -50,18 +50,18 @@ class ChildAccountEditViewModel : ViewModel() {
                 }
             }
 
-            val txid = CADENCE_EDIT_CHILD_ACCOUNT.transactionByMainWallet {
+            val txId = Cadence.CADENCE_EDIT_CHILD_ACCOUNT.transactionByMainWallet {
                 arg { address(childAccount.address) }
                 arg { string(name) }
                 arg { string(description) }
                 arg { string(avatarUrl.orEmpty()) }
             }
 
-            if (txid.isNullOrBlank()) {
+            if (txId.isNullOrBlank()) {
                 toast(R.string.edit_fail)
             } else {
                 val transactionState = TransactionState(
-                    transactionId = txid,
+                    transactionId = txId,
                     time = System.currentTimeMillis(),
                     state = FlowTransactionStatus.PENDING.num,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,

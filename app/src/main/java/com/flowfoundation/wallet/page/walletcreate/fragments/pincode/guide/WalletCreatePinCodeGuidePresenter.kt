@@ -4,6 +4,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentWalletCreatePinGuideBinding
 import com.flowfoundation.wallet.manager.biometric.BlockBiometricManager
+import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.mixpanel.MixpanelSecurityTool
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_PIN_CODE
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
@@ -25,6 +27,7 @@ class WalletCreatePinCodeGuidePresenter(
                 BlockBiometricManager.showBiometricPrompt(fragment.requireActivity()) { isSuccess, errorMsg ->
                     if (isSuccess) {
                         setBiometricEnable(true)
+                        MixpanelManager.securityTool(MixpanelSecurityTool.BIOMETRIC)
                         if (fragment.isAdded) {
                             MainActivity.launch(fragment.requireContext())
                         }

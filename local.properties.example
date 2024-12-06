@@ -1,0 +1,4 @@
+keyAlias=your_alias_name
+keyPassword=your_password
+storeFile=your_keystore_file_path
+storePassword=your_keystore_password

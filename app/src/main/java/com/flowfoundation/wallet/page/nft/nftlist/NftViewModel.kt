@@ -125,8 +125,8 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     private fun updateDefaultSelectCollection() {
         val cacheCollections = listRequester.cacheCollections()
         selectedCollection = selectedCollection ?: cacheCollections?.firstOrNull()?.collection
-        if (selectedCollection != null && cacheCollections?.firstOrNull { it.collection?.contractName == selectedCollection?.contractName } == null) {
-            cacheCollections?.firstOrNull()?.collection?.contractName?.let { selectCollection(it) }
+        if (selectedCollection != null && cacheCollections?.firstOrNull { it.collection?.contractName() == selectedCollection?.contractName() } == null) {
+            cacheCollections?.firstOrNull()?.collection?.contractName()?.let { selectCollection(it) }
         }
     }
 
@@ -167,10 +167,10 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     }
 
     fun selectCollection(contractName: String) {
-        if (selectedCollection?.contractName == contractName) {
+        if (selectedCollection?.contractName() == contractName) {
             return
         }
-        val collection = listRequester.cacheCollections()?.firstOrNull { it.collection?.contractName == contractName } ?: return
+        val collection = listRequester.cacheCollections()?.firstOrNull { it.collection?.contractName() == contractName } ?: return
         collectionTabChangeLiveData.postValue(contractName)
         selectedCollection = collection.collection
         viewModelIOScope(this) {
@@ -189,7 +189,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     fun onListScrollChange(scrollY: Int) = apply { listScrollChangeLiveData.postValue(scrollY) }
 
     private fun notifyNftList(collection: NftCollection) {
-        if (collection.contractName != selectedCollection?.contractName) {
+        if (collection.contractName() != selectedCollection?.contractName()) {
             return
         }
         val list = mutableListOf<Any>().apply { addAll(listRequester.dataList(collection).map { NFTItemModel(nft = it) }) }
@@ -200,7 +200,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
         logd(TAG, "notifyNftList collection:${collection.name} size:${list.size}")
 
         if (list.isEmpty()) {
-            val count = listRequester.cacheCollections()?.firstOrNull { it.collection?.contractName == collection.contractName }?.count ?: 0
+            val count = listRequester.cacheCollections()?.firstOrNull { it.collection?.contractName() == collection.contractName() }?.count ?: 0
             list.addAll(generateEmptyNftPlaceholders(count))
         }
 
@@ -208,13 +208,13 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     }
 
     private fun notifyCollectionList(collections: List<NftCollectionWrapper>?) {
-        val selectedCollection = selectedCollection?.contractName ?: collections?.firstOrNull()?.collection?.contractName
+        val selectedCollection = selectedCollection?.contractName() ?: collections?.firstOrNull()?.collection?.contractName()
         collectionsLiveData.postValue(collections.orEmpty().mapNotNull {
             val collection = it.collection ?: return@mapNotNull null
             CollectionItemModel(
                 collection = collection,
                 count = it.count ?: 0,
-                isSelected = selectedCollection == collection.contractName
+                isSelected = selectedCollection == collection.contractName()
             )
         })
     }

@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.flowscan.contractId
 import com.flowfoundation.wallet.network.model.CryptowatchSummaryData
 import com.flowfoundation.wallet.network.model.TransferRecord
 import com.flowfoundation.wallet.network.model.TransferRecordList
@@ -24,6 +23,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.updateQuoteMarket
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import kotlinx.coroutines.delay
+import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
 class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
@@ -31,15 +31,15 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
 
     private lateinit var coin: FlowCoin
 
-    val balanceAmountLiveData = MutableLiveData<Float>()
-    val balancePriceLiveData = MutableLiveData<Float>()
+    val balanceAmountLiveData = MutableLiveData<BigDecimal>()
+    val balancePriceLiveData = MutableLiveData<BigDecimal>()
 
     val chartDataLiveData = MutableLiveData<List<Quote>>()
-    val chartLoadingLiveData = MutableLiveData<Boolean>()
+    private val chartLoadingLiveData = MutableLiveData<Boolean>()
     val summaryLiveData = MutableLiveData<CryptowatchSummaryData.Result>()
     val transferListLiveData = MutableLiveData<List<TransferRecord>>()
 
-    private var coinRate = 0.0f
+    private var coinRate: BigDecimal = BigDecimal.ZERO
 
     private var period: Period? = null
     private var market: String? = null
@@ -53,16 +53,16 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
     }
 
     override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        if (coin.contractName == this.coin.contractName) {
+        if (this.coin.isSameCoin(coin.contractId())) {
             balanceAmountLiveData.value = balance.balance
             balancePriceLiveData.value = coinRate * balance.balance
         }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: Float) {
-        if (coin.contractName == this.coin.contractName) {
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
+        if (this.coin.isSameCoin(coin.contractId())) {
             coinRate = price
-            balancePriceLiveData.value = coinRate * (balanceAmountLiveData.value ?: 0f)
+            balancePriceLiveData.value = coinRate * (balanceAmountLiveData.value ?: BigDecimal.ZERO)
         }
     }
 
@@ -149,7 +149,7 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
             }
 
             val service = retrofit().create(ApiService::class.java)
-            val walletAddress = WalletManager.selectedWalletAddress() ?: return@viewModelIOScope
+            val walletAddress = WalletManager.selectedWalletAddress()
             val resp = service.getTransferRecordByToken(walletAddress, coin.contractId(), limit = 3)
             val data = resp.data?.transactions.orEmpty()
             transferListLiveData.postValue(data)

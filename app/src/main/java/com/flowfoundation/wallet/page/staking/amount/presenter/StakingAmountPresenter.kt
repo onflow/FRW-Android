@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.page.staking.amount.dialog.StakingAmountConfirm
 import com.flowfoundation.wallet.page.staking.amount.model.StakingAmountModel
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.*
+import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -51,8 +52,8 @@ class StakingAmountPresenter(
                         coinRate = viewModel.coinRate(),
                         currency = currency,
                         rate = provider.rate(),
-                        rewardCoin = amount() * StakingManager.apy(),
-                        rewardUsd = (amount() * StakingManager.apy() * viewModel.coinRate()),
+                        rewardCoin = amount() * StakingManager.apy().toBigDecimal(),
+                        rewardUsd = (amount() * StakingManager.apy().toBigDecimal() * viewModel.coinRate()),
                         provider = provider,
                         isUnstake = isUnstake,
                     )
@@ -89,30 +90,33 @@ class StakingAmountPresenter(
         }
     }
 
-    private fun onUpdateBalance(it: Float) {
+    private fun onUpdateBalance(it: BigDecimal) {
         binding.balanceView.text = if (isUnstake) {
-            activity.getString(R.string.staked_flow_num, it.formatNum(3))
-        } else activity.getString(R.string.flow_available_num, it.formatNum(3))
+            activity.getString(R.string.staked_flow_num, it.format())
+        } else activity.getString(R.string.flow_available_num, it.format())
     }
 
     private fun onAmountChange() {
         with(binding) {
             priceView.text = (amount() * viewModel.coinRate()).formatPrice(includeSymbol = true)
-            rewardCoinView.text = "${(amount() * StakingManager.apy()).formatNum(digits = 2)} " + R.string.flow_coin_name.res2String()
-            rewardPriceView.text = "≈ ${(amount() * StakingManager.apy() * viewModel.coinRate()).formatPrice(digits = 2, includeSymbol = true)} "
+            rewardCoinView.text = "${
+                (amount() * StakingManager.apy().toBigDecimal()).format(digits = 2)
+            } " + R.string.flow_coin_name.res2String()
+            rewardPriceView.text = "≈ ${(amount() * StakingManager.apy().toBigDecimal() * viewModel.coinRate())
+                .formatPrice(digits = 2, includeSymbol = true)} "
             availableCheck()
         }
     }
 
     private fun availableCheck() {
         val amount = amount()
-        if (amount == 0.0f) {
+        if (amount == BigDecimal.ZERO) {
             binding.button.setText(R.string.next)
             binding.button.isEnabled = false
         } else if (amount > balance()) {
             binding.button.setText(R.string.insufficient_balance)
             binding.button.isEnabled = false
-        } else if (amount < 50) {
+        } else if (amount < BigDecimal(50)) {
             binding.button.setText(R.string.minimum_required)
             binding.button.isEnabled = false
         } else {
@@ -122,20 +126,19 @@ class StakingAmountPresenter(
     }
 
     private fun updateAmountByPercent(percent: Float) {
-        val text = ((viewModel.balanceLiveData.value ?: 0.0f) * percent).formatNum(3)
+        val text = ((viewModel.balanceLiveData.value ?: BigDecimal.ZERO) * percent.toBigDecimal()).format()
         binding.inputView.setText(text)
         binding.inputView.setSelection(text.length)
     }
 
-    private fun balance() = viewModel.balanceLiveData.value ?: 0.0f
+    private fun balance() = viewModel.balanceLiveData.value ?: BigDecimal.ZERO
 
-    private fun amount(): Float {
+    private fun amount(): BigDecimal {
         val userInputString = binding.inputView.text.toString().trim()
         if (userInputString.isBlank()) {
-            return 0f
+            return BigDecimal.ZERO
         }
-        val numberFormat = NumberFormat.getInstance(Locale.getDefault())
-        return numberFormat.parse(binding.inputView.text.toString())?.toFloat() ?: 0f
+        return userInputString.toSafeDecimal()
     }
 
     private fun setupToolbar() {

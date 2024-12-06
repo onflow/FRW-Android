@@ -54,7 +54,7 @@ object ChildAccountCollectionManager {
         return collectionIdList.firstOrNull { it == contractId } != null
     }
 
-    fun isNFTAccessible(collectionAddress: String, collectionContractName: String): Boolean {
+    fun isNFTAccessible(collectionAddress: String?, collectionContractName: String): Boolean {
         if (WalletManager.isChildAccountSelected().not()) {
             return true
         }
