@@ -162,7 +162,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private fun loadCoinList() {
         viewModelIOScope(this) {
             val coinList =
-                FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+                FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
             logd(TAG, "coinList :: ${coinList.size}")
             if (coinList.isEmpty()) {
                 return@viewModelIOScope
