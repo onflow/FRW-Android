@@ -138,7 +138,15 @@ object TokenStateManager {
         }
     }
 
-    fun isTokenAdded(tokenAddress: String) = tokenStateList.firstOrNull { it.address.equals(tokenAddress, true) }?.isAdded ?: false
+    fun isTokenAdded(coin: FlowCoin): Boolean {
+        return tokenStateList.firstOrNull {
+            if (WalletManager.isEVMAccountSelected()) {
+                it.isSameEVMCoin(coin.address)
+            } else {
+                it.isSameCoin(coin.contractId())
+            }
+        }?.isAdded ?: false
+    }
 
     fun addListener(callback: TokenStateChangeListener) {
         uiScope { this.listeners.add(WeakReference(callback)) }

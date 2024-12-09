@@ -76,7 +76,7 @@ class WalletHeaderPresenter(
             }
 
             val count =
-                FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address) }
+                FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it) }
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }

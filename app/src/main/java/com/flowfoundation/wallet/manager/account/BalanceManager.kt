@@ -48,7 +48,7 @@ object BalanceManager {
     }
 
     private fun fetchTokenBalance() {
-        val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+        val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
         val balanceMap = cadenceQueryTokenListBalance() ?: return
         coinList.forEach { coin ->
             balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
