@@ -3,12 +3,15 @@ name: Android CI/CD Pipeline
 on:
   push:
     branches:
-      - main
-      - nialexsan/ci-cd
+      - master
+      - develop
+      - ci-cd
 
 jobs:
-  release:
+  dev:
     runs-on: ubuntu-latest
+    environment: dev
+    if: github.ref == 'refs/heads/develop'
 
     steps:
       - name: Checkout code
@@ -75,3 +78,74 @@ jobs:
 
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
+
+  release:
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: ./frw
+      
+      - name: Checkout tools repo
+        uses: actions/checkout@v4
+        with:
+          repository: Outblock/Flow-Wallet-Kit
+          path: ./Flow-Wallet-Kit
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+    
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
+
+      - name: Generate Keystore
+        run: |
+          KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"
+          KEYSTORE_PASSWORD="password"
+          KEY_ALIAS="alias_name"
+          KEY_PASSWORD="password"
+
+          # Export variables for use in later steps
+          echo "KEYSTORE_PATH=$KEYSTORE_PATH" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+          echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+
+          # Generate the keystore
+          keytool -genkeypair -v \
+            -keystore "$KEYSTORE_PATH" \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias "$KEY_ALIAS" \
+            -keypass "$KEY_PASSWORD" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+
+      - name: Write Key Properties to File
+        run: |
+          echo "${{ secrets.KEY_PROPERTIES }}" > ${{ github.workspace }}/frw/key.properties
+
+      - name: Write Local Properties to File
+        run: |
+          echo "${{ secrets.LOCAL_PROPERTIES }}" > ${{ github.workspace }}/frw/local.properties
+
+      - name: Google Services to File
+        run: |
+          printf '%s' '${{ secrets.GOOGLE_SERVICES }}' > ${{ github.workspace }}/frw/app/src/release/google-services.json
+
+      - name: Write Service Account Key to File
+        run: |
+          printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
+
+      - name: Build Signed APK
+        run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
