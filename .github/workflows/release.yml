@@ -10,7 +10,7 @@ jobs:
   dev:
     runs-on: ubuntu-latest
     environment: dev
-    #if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/develop'
 
     steps:
       - name: Checkout code
