@@ -4,6 +4,7 @@ import com.flowfoundation.wallet.manager.account.model.AccountInfo
 import com.flowfoundation.wallet.manager.account.model.AccountInfoInner
 import com.flowfoundation.wallet.manager.account.model.ValidateTransactionResult
 import com.flowfoundation.wallet.manager.account.model.getByName
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
@@ -24,6 +25,7 @@ object AccountInfoManager {
 
     private val TAG = AccountInfoManager::class.java.simpleName
     private val FIXED_MOVE_FEE = BigDecimal("0.001")
+    private val MIN_FLOW_BALANCE = BigDecimal("0.001")
     private val AVERAGE_TX_FEE = BigDecimal("0.0005")
     private const val MINIMUM_STORAGE_THRESHOLD: Long = 10000
 
@@ -56,12 +58,67 @@ object AccountInfoManager {
         return validateTransaction(BigDecimal.ZERO, isMove)
     }
 
+    /**
+     * // If it's other FT or NFT, the transferAmount is 0
+     * // It's FLOW token, then it need to be the input value
+     * var transferAmount = inputFlowTokenVaule ?? 0
+     * let fixedMoveFee = 0.001
+     * let minimumFlowBalance = 0.001
+     * let averageTxFee = freeGasEnable ? 0 : 0.001
+     * let minimumStorageThreshold = 10000
+     *
+     * let insufficientStorage = (storageCapacity - storageUsed) < minimumStorageThreshold
+     *
+     * if insufficientStorage {
+     *  // show alert
+     *   return
+     * }
+     *
+     * // insufficientFlow check
+     * if totalBalanceFlow < minimumFlowBalance {
+     *   // show alert
+     *   return
+     * }
+     *
+     * if isMovingBetweenEVMAndFlow {
+     *     transferAmount += fixedMoveFee
+     * }
+     *
+     * let noStorageAfterAction = availableBalance - transferAmount < averageTxFee
+     *
+     * if noStorageAfterAction {
+     *   // show alert (after this action)
+     *   return
+     * }
+     *
+     * // insufficientFlow check
+     * let insufficientFlowAfter = totalBalanceFlow - transferAmount < minimumFlowBalance
+     *
+     * if insufficientFlowAfter {
+     *   // show alert (after this action)
+     *   return
+     * }
+     */
+
+    private fun isShowWarning(): Boolean {
+        return WalletManager.isChildAccountSelected().not()
+                && WalletManager.isEVMAccountSelected().not()
+                && AppConfig.showTXWarning()
+    }
+
     private suspend fun validateTransaction(amount: BigDecimal, isMove: Boolean): ValidateTransactionResult {
+        if (isShowWarning().not()) {
+            return ValidateTransactionResult.FAILURE
+        }
         var transferAmount = amount
         val currentAccount = _accountResultFlow.value ?: return ValidateTransactionResult.FAILURE
 
         if (isStorageInsufficient()) {
             return ValidateTransactionResult.STORAGE_INSUFFICIENT
+        }
+
+        if (isBalanceInsufficient()) {
+            return ValidateTransactionResult.BALANCE_INSUFFICIENT
         }
 
         if (isMove) {
@@ -71,9 +128,23 @@ object AccountInfoManager {
         val noStorageAfterAction = currentAccount.availableBalance - transferAmount < getAverageTXFee()
 
         if (noStorageAfterAction) {
-            return ValidateTransactionResult.BALANCE_INSUFFICIENT
+            return ValidateTransactionResult.STORAGE_INSUFFICIENT_AFTER_ACTION
         }
+
+        val insufficientFlowAfter = currentAccount.balance - transferAmount < MIN_FLOW_BALANCE
+
+        if (insufficientFlowAfter) {
+            return ValidateTransactionResult.STORAGE_INSUFFICIENT_AFTER_ACTION
+        }
+
         return ValidateTransactionResult.SUCCESS
+    }
+
+    fun getLeastFlowBalance(): String {
+        val leastFlow = _accountResultFlow.value?.let {
+            it.storageFlow + MIN_FLOW_BALANCE
+        } ?: MIN_FLOW_BALANCE
+        return leastFlow.format() + " FLOW"
     }
 
     private suspend fun getAverageTXFee(): BigDecimal {
@@ -82,6 +153,11 @@ object AccountInfoManager {
         } else {
             AVERAGE_TX_FEE
         }
+    }
+
+    fun isBalanceInsufficient(): Boolean {
+        val currentAccount = _accountResultFlow.value ?: return false
+        return currentAccount.balance < MIN_FLOW_BALANCE
     }
 
     fun isStorageInsufficient(): Boolean {

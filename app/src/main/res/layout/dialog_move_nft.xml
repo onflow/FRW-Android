@@ -211,27 +211,28 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.flowfoundation.wallet.page.storage.StorageInsufficientTip
+        android:id="@+id/storage_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginBottom="10dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/btn_move"
+        app:layout_constraintTop_toBottomOf="@id/cl_nft_layout"/>
+
     <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_move"
         style="@style/Button"
         android:layout_width="match_parent"
         android:layout_height="62dp"
         android:layout_marginHorizontal="18dp"
-        android:layout_marginTop="21dp"
+        android:layout_marginTop="10dp"
         android:layout_marginBottom="@dimen/wallet_create_button_margin"
         android:text="@string/move"
         app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_nft_layout"/>
+        app:layout_constraintTop_toBottomOf="@id/storage_tip"/>
 
-    <com.flowfoundation.wallet.page.storage.StorageInsufficientTip
-        android:id="@+id/storage_tip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="-6dp"
-        android:layout_marginHorizontal="26dp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/btn_move"
-        app:layout_constraintTop_toBottomOf="@id/cl_nft_layout"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

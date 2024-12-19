@@ -11,6 +11,7 @@ import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.cache.CacheManager
+import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollection
@@ -135,7 +136,7 @@ object TransactionStateManager {
                     when (parseErrorCode(state.errorMsg.orEmpty())) {
                         ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                             BaseActivity.getCurrentActivity()?.let {
-                                StorageLimitErrorDialog(it).show()
+                                StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()
                             }
                         }
                     }

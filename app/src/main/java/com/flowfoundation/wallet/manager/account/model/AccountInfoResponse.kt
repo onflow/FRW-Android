@@ -7,7 +7,14 @@ enum class ValidateTransactionResult {
     SUCCESS,
     FAILURE,
     BALANCE_INSUFFICIENT,
-    STORAGE_INSUFFICIENT
+    STORAGE_INSUFFICIENT,
+    STORAGE_INSUFFICIENT_AFTER_ACTION
+}
+
+enum class StorageLimitDialogType {
+    LIMIT_REACHED_WARNING,
+    LIMIT_AFTER_ACTION_WARNING,
+    LIMIT_REACHED_ERROR
 }
 
 data class AccountInfo(

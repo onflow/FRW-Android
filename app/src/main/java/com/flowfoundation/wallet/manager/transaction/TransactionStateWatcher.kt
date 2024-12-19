@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.transaction
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.nftco.flow.sdk.FlowId
 import com.nftco.flow.sdk.FlowTransactionResult
 import com.nftco.flow.sdk.FlowTransactionStatus
@@ -47,7 +48,7 @@ class TransactionStateWatcher(
                         when (parseErrorCode(ret?.errorMessage.orEmpty())) {
                             ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                                 BaseActivity.getCurrentActivity()?.let {
-                                    StorageLimitErrorDialog(it).show()
+                                    StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()
                                 }
                             }
                         }

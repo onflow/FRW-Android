@@ -53,6 +53,7 @@ data class WalletNotification(
             when (condition.type) {
                 ConditionType.CAN_UPGRADE -> isVersionUpdateRequired()
                 ConditionType.INSUFFICIENT_STORAGE -> AccountInfoManager.isStorageInsufficient()
+                ConditionType.INSUFFICIENT_BALANCE -> AccountInfoManager.isBalanceInsufficient()
                 ConditionType.IS_ANDROID -> true
                 ConditionType.UNKNOWN -> false
             }
@@ -109,6 +110,8 @@ enum class ConditionType {
     IS_ANDROID,
     @SerializedName("insufficientStorage")
     INSUFFICIENT_STORAGE,
+    @SerializedName("insufficientBalance")
+    INSUFFICIENT_BALANCE,
     @SerializedName("unknown")
     UNKNOWN
 }

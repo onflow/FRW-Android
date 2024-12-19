@@ -494,7 +494,7 @@
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Von Recovery Phrase (Vermächtnis)</string>
     <string name="from_recovery_phrase_note">Wiederherstellung unter Verwendung eines alten Wiederherstellungssatzes (keine Mehrfachsicherungen)</string>
-    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key">Von Recovery Phrase (Vermächtnis)</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
@@ -680,4 +680,18 @@ uses to turn your device into a hardware wallet.</string>
     <string name="token_identifier">Token Identifier</string>
     <string name="add_suggested_token">Add Suggested Token</string>
     <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
+    <string name="storage_limit_reached">Storage limit reached.</string>
+    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
+    <string name="flow_limit_reached">FLOW limit reached.</string>
+    <string name="storage_usage">Storage Usage</string>
+    <string name="total_balance">Total Balance </string>
+    <string name="storage_limit_error">Storage Limit Error</string>
+    <string name="storage_limit_warning">Storage Limit Warning</string>
+    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
+    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
+    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
+    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
+        your storage usage.</string>
+    <string name="deposit">Einzahlung</string>
+    <string name="buy_flow">Buy FLOW</string>
 </resources>
