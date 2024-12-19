@@ -113,7 +113,7 @@ class TokenDetailPresenter(
             }
         }
 
-        if (!coin.isFlowCoin() && coin.symbol != FlowCoin.SYMBOL_FUSD) {
+        if (!coin.isFlowCoin()) {
             binding.getMoreWrapper.setVisible(false)
             binding.chartWrapper.root.setVisible(false)
         }
