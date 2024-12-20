@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.notification.presenter
 
+import android.net.Uri
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.UnderlineSpan
@@ -18,6 +19,7 @@ import com.flowfoundation.wallet.page.notification.model.DisplayType
 import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
+import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
@@ -77,8 +79,17 @@ class NotificationItemPresenter(
                     return@setOnClickListener
                 }
                 model.url?.let {
-                    val activity = findActivity(view) ?: return@setOnClickListener
-                    openBrowser(activity, it)
+                    val activity = BaseActivity.getCurrentActivity() ?: return@setOnClickListener
+                    val uri = Uri.parse(it)
+                    if (uri.scheme == "fw") {
+                        when (uri.host) {
+                            "buyFlow" -> {
+                                SwapDialog.show(activity.supportFragmentManager)
+                            }
+                        }
+                    } else {
+                        openBrowser(activity, it)
+                    }
                 }
             }
         }

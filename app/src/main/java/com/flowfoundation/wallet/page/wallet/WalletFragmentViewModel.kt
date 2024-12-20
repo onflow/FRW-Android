@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.coin.TokenStateChangeListener
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
+import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.price.CurrencyUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener

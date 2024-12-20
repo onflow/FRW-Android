@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
+import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
@@ -44,6 +45,7 @@ object AccountInfoManager {
             } catch (e: Exception) {
                 _accountResultFlow.value = null
             }
+            WalletNotificationManager.onWalletUpdate()
         }
     }
 
@@ -57,48 +59,6 @@ object AccountInfoManager {
     suspend fun validateOtherTransaction(isMove: Boolean): ValidateTransactionResult {
         return validateTransaction(BigDecimal.ZERO, isMove)
     }
-
-    /**
-     * // If it's other FT or NFT, the transferAmount is 0
-     * // It's FLOW token, then it need to be the input value
-     * var transferAmount = inputFlowTokenVaule ?? 0
-     * let fixedMoveFee = 0.001
-     * let minimumFlowBalance = 0.001
-     * let averageTxFee = freeGasEnable ? 0 : 0.001
-     * let minimumStorageThreshold = 10000
-     *
-     * let insufficientStorage = (storageCapacity - storageUsed) < minimumStorageThreshold
-     *
-     * if insufficientStorage {
-     *  // show alert
-     *   return
-     * }
-     *
-     * // insufficientFlow check
-     * if totalBalanceFlow < minimumFlowBalance {
-     *   // show alert
-     *   return
-     * }
-     *
-     * if isMovingBetweenEVMAndFlow {
-     *     transferAmount += fixedMoveFee
-     * }
-     *
-     * let noStorageAfterAction = availableBalance - transferAmount < averageTxFee
-     *
-     * if noStorageAfterAction {
-     *   // show alert (after this action)
-     *   return
-     * }
-     *
-     * // insufficientFlow check
-     * let insufficientFlowAfter = totalBalanceFlow - transferAmount < minimumFlowBalance
-     *
-     * if insufficientFlowAfter {
-     *   // show alert (after this action)
-     *   return
-     * }
-     */
 
     private fun isShowWarning(): Boolean {
         return WalletManager.isChildAccountSelected().not()
@@ -128,14 +88,14 @@ object AccountInfoManager {
         val noStorageAfterAction = currentAccount.availableBalance - transferAmount < getAverageTXFee()
 
         if (noStorageAfterAction) {
-            return ValidateTransactionResult.STORAGE_INSUFFICIENT_AFTER_ACTION
+            return ValidateTransactionResult.STORAGE_INSUFFICIENT
         }
 
-        val insufficientFlowAfter = currentAccount.balance - transferAmount < MIN_FLOW_BALANCE
-
-        if (insufficientFlowAfter) {
-            return ValidateTransactionResult.STORAGE_INSUFFICIENT_AFTER_ACTION
-        }
+//        val insufficientFlowAfter = currentAccount.balance - transferAmount < MIN_FLOW_BALANCE
+//
+//        if (insufficientFlowAfter) {
+//            return ValidateTransactionResult.STORAGE_INSUFFICIENT_AFTER_ACTION
+//        }
 
         return ValidateTransactionResult.SUCCESS
     }
@@ -179,6 +139,9 @@ object AccountInfoManager {
 
     fun getStorageUsageProgress(): Float {
         val currentAccount = _accountResultFlow.value ?: return 0f
+        if (currentAccount.storageCapacity == 0L) {
+            return 1f
+        }
         return currentAccount.storageUsed.toFloat() / currentAccount.storageCapacity
     }
 

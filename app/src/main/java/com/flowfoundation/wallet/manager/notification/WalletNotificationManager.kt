@@ -98,6 +98,10 @@ object WalletNotificationManager {
         }
     }
 
+    fun onWalletUpdate() {
+        dispatchListeners()
+    }
+
     fun addListener(callback: OnNotificationUpdate) {
         if (listeners.firstOrNull { it.get() == callback } != null) {
             return
