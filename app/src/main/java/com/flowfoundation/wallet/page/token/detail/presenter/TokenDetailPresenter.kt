@@ -7,6 +7,7 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
@@ -28,6 +29,7 @@ import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
+import com.flowfoundation.wallet.utils.debug.ResourceUtility.getString
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -36,6 +38,7 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
+import com.flowfoundation.wallet.utils.toHumanReadableSIPrefixes
 import com.flowfoundation.wallet.utils.uiScope
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -138,6 +141,27 @@ class TokenDetailPresenter(
             }
         }
         bindAccessible(coin)
+        bindStorageInfo(coin)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun bindStorageInfo(coin: FlowCoin) {
+        if (WalletManager.isEVMAccountSelected().not() && coin.isFlowCoin()) {
+            binding.storageWrapper.visible()
+            binding.tvStorageUsage.text = AccountInfoManager.getStorageUsageFlow()
+            binding.tvTotalBalance.text = AccountInfoManager.getTotalFlowBalance()
+
+            binding.tvStorageUsageProgress.text = getString(
+                R.string.storage_info_count,
+                toHumanReadableSIPrefixes(AccountInfoManager.getStorageUsed()),
+                toHumanReadableSIPrefixes(AccountInfoManager.getStorageCapacity())
+            )
+            val progress = AccountInfoManager.getStorageUsageProgress()
+            binding.tvStorageUsagePercent.text = (progress * 100).formatNum(3) + "%"
+            binding.storageInfoProgress.progress = (progress * 1000).toInt()
+        } else {
+            binding.storageWrapper.gone()
+        }
     }
 
     private fun bindAccessible(coin: FlowCoin) {

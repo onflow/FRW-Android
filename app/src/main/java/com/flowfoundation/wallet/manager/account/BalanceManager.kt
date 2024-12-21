@@ -142,7 +142,11 @@ object BalanceManager {
                     getEVMBalanceByCoin(coin.address)
                 }
             } else {
-                cadenceQueryTokenBalance(coin)
+                if (coin.isFlowCoin()) {
+                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin)
+                } else {
+                    cadenceQueryTokenBalance(coin)
+                }
             }
             if (balance != null) {
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }

@@ -15,6 +15,7 @@ import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogSelectNftBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
@@ -87,7 +88,9 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             }
             layoutFromAccount.setAccountInfo(WalletManager.selectedWalletAddress())
             configureToAccount()
-
+            uiScope {
+                storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
+            }
             btnMove.isEnabled = false
             btnMove.setOnClickListener {
                 if (btnMove.isProgressVisible()) {

@@ -677,16 +677,18 @@
         <key>a_config</key>
         <value>
             {
-            "version": "2.4.4",
+            "version": "2.5.1",
+            "version_prod": "2.5.1",
             "prod": {
             "features": {
             "free_gas": true,
             "wallet_connect": true,
             "on_ramp": true,
             "app_list": true,
-            "swap": false,
+            "swap": true,
             "browser": true,
-            "nft_transfer": true
+            "nft_transfer": true,
+            "tx_warning_prediction": true
             },
             "payer": {
             "mainnet": {
@@ -719,7 +721,8 @@
             "app_list": true,
             "swap": true,
             "browser": true,
-            "nft_transfer": true
+            "nft_transfer": true,
+            "tx_warning_prediction": true
             },
             "payer": {
             "mainnet": {

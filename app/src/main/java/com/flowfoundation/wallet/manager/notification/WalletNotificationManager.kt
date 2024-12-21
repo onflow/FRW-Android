@@ -51,6 +51,8 @@ object WalletNotificationManager {
                 when (json.asString) {
                     "canUpgrade" -> ConditionType.CAN_UPGRADE
                     "isAndroid" -> ConditionType.IS_ANDROID
+                    "insufficientStorage" -> ConditionType.INSUFFICIENT_STORAGE
+                    "insufficientBalance" -> ConditionType.INSUFFICIENT_BALANCE
                     else -> ConditionType.UNKNOWN
                 }
             })
@@ -94,6 +96,10 @@ object WalletNotificationManager {
             notificationList.clear()
             dispatchListeners()
         }
+    }
+
+    fun onWalletUpdate() {
+        dispatchListeners()
     }
 
     fun addListener(callback: OnNotificationUpdate) {

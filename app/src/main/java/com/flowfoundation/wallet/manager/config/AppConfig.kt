@@ -37,6 +37,8 @@ object AppConfig {
 
     fun showNFTTransfer() = isDev() || isTesting() || (config().getFeatures().nftTransfer ?: false)
 
+    fun showTXWarning() = isDev() || isTesting() || (config().getFeatures().txWarning ?: false)
+
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
@@ -173,7 +175,9 @@ private data class Features(
     @SerializedName("browser")
     val browser: Boolean?,
     @SerializedName("nft_transfer")
-    val nftTransfer: Boolean?
+    val nftTransfer: Boolean?,
+    @SerializedName("tx_warning_prediction")
+    val txWarning: Boolean?
 )
 
 private data class Payer(
