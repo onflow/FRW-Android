@@ -61,6 +61,16 @@ class BackupStartFragment : Fragment() {
                     checkBackupValid()
                 }
             }
+            if (BackupListManager.hadBackupOption(BackupType.DROPBOX)) {
+                oiDropbox.changeItemStatus(true)
+            } else {
+                oiDropbox.setOnClickListener {
+                    backupViewModel.selectOption(BackupOption.BACKUP_WITH_DROPBOX) { isSelected ->
+                        oiDropbox.changeItemStatus(isSelected)
+                    }
+                    checkBackupValid()
+                }
+            }
             if (backupViewModel.getBackupOptionList().isEmpty() && BackupListManager.backupCount() == 0) {
                 backupViewModel.selectOption(BackupOption.BACKUP_WITH_GOOGLE_DRIVE) { isSelected ->
                     oiGoogleDrive.changeItemStatus(isSelected)

@@ -45,6 +45,9 @@ android {
         buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
+        String dropboxKey = apiKeys.getProperty('DROPBOX_APP_KEY')
+        buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKey}\"")
+        manifestPlaceholders = [dropboxKey: dropboxKey]
     }
 
     signingConfigs {
@@ -298,6 +301,10 @@ dependencies {
     implementation 'com.instabug.library:instabug:13.1.0'
 
     implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
+
+    /** Dropbox **/
+    implementation 'com.dropbox.core:dropbox-core-sdk:7.0.0'
+    implementation 'com.dropbox.core:dropbox-android-sdk:7.0.0'
 
     /** Crowdin **/
     implementation ('com.github.crowdin.mobile-sdk-android:sdk:1.9.2') {
