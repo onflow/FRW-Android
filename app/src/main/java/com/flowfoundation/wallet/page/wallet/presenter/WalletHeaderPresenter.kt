@@ -81,7 +81,9 @@ class WalletHeaderPresenter(
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
-            tvAddress.text = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
+            val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
+            tvAddress.text = address
+            ivCopy.setVisible(address.isNotBlank())
             ivCopy.setOnClickListener {
                 copyAddress(
                     WalletManager.selectedWalletAddress().toAddress()
