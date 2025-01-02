@@ -705,5 +705,6 @@ uses to turn your device into a hardware wallet.</string>
         your storage usage.</string>
     <string name="deposit">Deposit</string>
     <string name="buy_flow">Buy FLOW</string>
-
+    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
+    <string name="restore_failure_key_revoked">This key has been revoked</string>
 </resources>

@@ -22,6 +22,9 @@
     <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false"/>
 
     <application
         android:name=".FlowWalletApplication"
@@ -341,7 +344,8 @@
                 <data android:host="fcw-link.lilico.app"/>
             </intent-filter>
 
-            <intent-filter android:autoVerify="true">
+            <intent-filter android:autoVerify="true"
+                tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>

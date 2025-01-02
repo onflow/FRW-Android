@@ -119,7 +119,7 @@ object EVMWalletManager {
 
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
         val address = evmAddressMap[getNetworkAddress(network)]
-        return if (address.equals("0x")) {
+        return if (address.isNullOrBlank() || address == "0x") {
             return null
         } else {
             address
@@ -127,7 +127,7 @@ object EVMWalletManager {
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
-        return evmAddressMap.values.firstOrNull { it == address } != null
+        return evmAddressMap.values.firstOrNull { address != "0x" && it == address } != null
     }
 
     suspend fun moveFlowToken(
@@ -185,7 +185,7 @@ object EVMWalletManager {
             val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
             MixpanelManager.transferNFT(
                 if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
-                if(isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
+                if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
                 nft.getNFTIdentifier(),
                 txId.orEmpty(),
                 if (isMoveToEVM) TransferAccountType.FLOW else TransferAccountType.COA,
