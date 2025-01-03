@@ -9,9 +9,9 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupCompletedFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupDropboxFragment
+import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupDropboxWithPinFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveWithPinFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupRecoveryPhraseFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartWithAboutFragment
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOptionModel
@@ -33,7 +33,7 @@ class MultiBackupPresenter(private val activity: MultiBackupActivity) :
             BackupOption.BACKUP_START -> BackupStartWithAboutFragment()
             BackupOption.BACKUP_WITH_GOOGLE_DRIVE -> BackupGoogleDriveWithPinFragment()
             BackupOption.BACKUP_WITH_RECOVERY_PHRASE -> BackupRecoveryPhraseFragment()
-            BackupOption.BACKUP_WITH_DROPBOX -> BackupDropboxFragment()
+            BackupOption.BACKUP_WITH_DROPBOX -> BackupDropboxWithPinFragment()
             BackupOption.BACKUP_COMPLETED -> BackupCompletedFragment()
         }
         fragment.enterTransition = transition

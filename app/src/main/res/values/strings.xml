@@ -710,4 +710,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="restore_failure_key_revoked">This key has been revoked</string>
     <string name="dropbox">Dropbox</string>
     <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+
 </resources>

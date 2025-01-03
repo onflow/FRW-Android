@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreCompletedFragment
+import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreDropboxWithPinFragment
 import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreErrorFragment
 import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreGoogleDriveWithPinFragment
 import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreRecoveryPhraseFragment
@@ -32,6 +33,7 @@ class MultiRestorePresenter(private val activity: MultiRestoreActivity): BasePre
             RestoreOption.RESTORE_START -> RestoreStartFragment()
             RestoreOption.RESTORE_FROM_GOOGLE_DRIVE -> RestoreGoogleDriveWithPinFragment()
             RestoreOption.RESTORE_FROM_RECOVERY_PHRASE -> RestoreRecoveryPhraseFragment()
+            RestoreOption.RESTORE_FROM_DROPBOX -> RestoreDropboxWithPinFragment()
             RestoreOption.RESTORE_COMPLETED -> RestoreCompletedFragment()
             RestoreOption.RESTORE_FAILED -> RestoreErrorFragment(RestoreErrorOption.RESTORE_FAILED)
             RestoreOption.RESTORE_FAILED_NO_ACCOUNT -> RestoreErrorFragment(RestoreErrorOption.NO_ACCOUNT_FOUND)

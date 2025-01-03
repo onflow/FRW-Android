@@ -22,6 +22,11 @@ enum class BackupGoogleDriveOption(val layoutId: Int) {
     BACKUP_GOOGLE_DRIVE(R.id.fragment_backup_google_drive)
 }
 
+enum class BackupDropboxOption(val layoutId: Int) {
+    BACKUP_PIN(R.id.fragment_backup_pin_code),
+    BACKUP_DROPBOX(R.id.fragment_backup_dropbox)
+}
+
 enum class BackupSeedPhraseOption(val layoutId: Int) {
     BACKUP_WARING(R.id.fragment_wallet_create_warning),
     BACKUP_SEED_PHRASE(R.id.fragment_backup_recovery_phrase_info)
@@ -43,8 +48,6 @@ enum class BackupAbout(val titleId: Int, val contentId: Int, val noteId: Int) {
     ABOUT_RECOVERY_PHRASE(R.string.backup_recovery_phrase_about_title, R.string.recovery_phrase,
         R.string.backup_recovery_phrase_about_note)
 }
-
-
 
 class BackupCompletedItem(
     val type: BackupType,

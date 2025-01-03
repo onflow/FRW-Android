@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_CHECK_FINISH
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_CHECK_FINISH
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelBackupProvider
@@ -40,6 +41,8 @@ class BackupCompletedFragment : Fragment() {
 
     private var isGoogleDriveBackupSuccess: Boolean? = null
     private var isRecoveryPhraseBackupSuccess: Boolean? = null
+    private var isDropboxBackupSuccess: Boolean? = null
+    private var isDropboxCheckLoading = false
     private var isGoogleDriveCheckLoading = false
     private var isRecoveryPhraseCheckLoading = false
     private var locationInfo: LocationInfo? = null
@@ -53,6 +56,21 @@ class BackupCompletedFragment : Fragment() {
                 }, 0)
             }
             isGoogleDriveCheckLoading = false
+            checkLoadingStatus()
+        }
+    }
+
+    private val checkDropboxFinishReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            isDropboxBackupSuccess = intent?.getBooleanExtra(
+                com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS,
+                false) ?: false
+            backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.DROPBOX }?.let {
+                binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
+                    setItemInfo(it, locationInfo, isDropboxBackupSuccess)
+                }, 0)
+            }
+            isDropboxCheckLoading = false
             checkLoadingStatus()
         }
     }
@@ -71,6 +89,11 @@ class BackupCompletedFragment : Fragment() {
         LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
             checkFinishReceiver, IntentFilter(
                 ACTION_GOOGLE_DRIVE_CHECK_FINISH
+            )
+        )
+        LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
+            checkDropboxFinishReceiver, IntentFilter(
+                ACTION_DROPBOX_CHECK_FINISH
             )
         )
         backupViewModel = ViewModelProvider(this.requireActivity())[MultiBackupViewModel::class.java].apply {
@@ -163,6 +186,7 @@ class BackupCompletedFragment : Fragment() {
 
     override fun onDestroyView() {
         LocalBroadcastManager.getInstance(Env.getApp()).unregisterReceiver(checkFinishReceiver)
+        LocalBroadcastManager.getInstance(Env.getApp()).unregisterReceiver(checkDropboxFinishReceiver)
         super.onDestroyView()
     }
 }

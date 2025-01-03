@@ -10,9 +10,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
-import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_LOGIN_FINISH
-import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
-import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
+import com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS
+import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_LOGIN_FINISH
+import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_UPLOAD_FINISH
 import com.flowfoundation.wallet.manager.flowjvm.Cadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
@@ -26,7 +26,6 @@ import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.AccountSyncRequest
 import com.flowfoundation.wallet.network.model.BackupInfoRequest
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveState
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupDropboxState
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
@@ -73,12 +72,12 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
         TransactionStateManager.addOnTransactionStateChange(this)
         LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
             uploadReceiver, IntentFilter(
-                ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
+                ACTION_DROPBOX_UPLOAD_FINISH
             )
         )
         LocalBroadcastManager.getInstance(Env.getApp()).registerReceiver(
             loginFinishReceiver, IntentFilter(
-                ACTION_GOOGLE_DRIVE_LOGIN_FINISH
+                ACTION_DROPBOX_LOGIN_FINISH
             )
         )
     }
