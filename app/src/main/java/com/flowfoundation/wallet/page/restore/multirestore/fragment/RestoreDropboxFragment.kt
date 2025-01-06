@@ -31,6 +31,7 @@ import com.flowfoundation.wallet.page.restore.multirestore.viewmodel.MultiRestor
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
+import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 
 class RestoreDropboxFragment: Fragment() {
@@ -42,6 +43,7 @@ class RestoreDropboxFragment: Fragment() {
     private val dropboxRestoreReceiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent?) {
+                logw("Dropbox", "broadcast receive")
                 val data = intent?.getParcelableArrayListExtra<BackupItem>(EXTRA_CONTENT) ?: return
                 if (data.isEmpty()) {
                     onRestoreEmpty()
@@ -60,6 +62,17 @@ class RestoreDropboxFragment: Fragment() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        logw("Dropbox", "fragment onResume")
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+        logw("Dropbox", "fragment onPause")
     }
 
     private fun showAccountList(data: List<BackupItem>) {

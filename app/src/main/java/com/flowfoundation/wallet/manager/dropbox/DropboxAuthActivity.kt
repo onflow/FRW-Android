@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logw
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import wallet.core.jni.HDWallet
 
@@ -34,6 +35,7 @@ class DropboxAuthActivity : AppCompatActivity() {
 
     private var isAwaitingResult = false
     private var dbxClient: DbxClientV2? = null
+    private var isCreateActivity = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,8 +59,13 @@ class DropboxAuthActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (isCreateActivity) {
+            isCreateActivity = false
+            return
+        }
         if (isAwaitingResult) {
             isAwaitingResult = false
+            logw("Dropbox", "auth activity onResume getResult")
             if (Auth.getDbxCredential() != null) {
                 handleAuthResult()
             } else if (isLogin) {
@@ -70,6 +77,7 @@ class DropboxAuthActivity : AppCompatActivity() {
     }
 
     private fun handleAuthResult() {
+        logw("Dropbox", "auth activity handle result")
         val credential = Auth.getDbxCredential() ?: return
         logd(TAG, "Dropbox authenticated successfully")
         doAction(DbxClientV2(

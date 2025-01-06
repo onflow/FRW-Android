@@ -32,6 +32,7 @@ class BackupProgressView @JvmOverloads constructor(
             1 -> handleSingleOption(option = optionList[0], isCompleted)
             2 -> handleTwoOptions(optionList, currentOption, isCompleted)
             3 -> handleThreeOptions(optionList, currentOption, isCompleted)
+            else -> gone()
         }
     }
 

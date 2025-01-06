@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.getPinCode
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.secret.aesDecrypt
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.google.gson.Gson
@@ -153,6 +154,7 @@ fun restoreFromDropbox(dropboxClient: DbxClientV2) {
         logd(TAG, "restoreMnemonicFromDropbox")
         val dropboxHelper = DropboxServerHelper(dropboxClient)
         val data = existingData(dropboxHelper)
+        logw("Dropbox", "broadcast send")
         LocalBroadcastManager.getInstance(Env.getApp())
             .sendBroadcast(Intent(ACTION_DROPBOX_RESTORE_FINISH).apply {
                 putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
