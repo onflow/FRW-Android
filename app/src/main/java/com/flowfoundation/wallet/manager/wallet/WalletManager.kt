@@ -38,6 +38,10 @@ object WalletManager {
         return EVMWalletManager.getEVMAddress()?.toAddress() == selectedWalletAddress.toAddress()
     }
 
+    fun isSelfFlowAddress(address: String): Boolean {
+        return wallet()?.walletAddress() == address
+    }
+
     fun isChildAccountSelected(): Boolean {
         val wallets = wallet()?.wallets
         if (wallets.isNullOrEmpty()) {
