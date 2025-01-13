@@ -100,6 +100,7 @@ enum class Cadence(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_WITHDRAW_COA_FLOW_BALANCE("withdrawCoa", CadenceScriptType.EVM),
     CADENCE_TRANSFER_FLOW_TO_EVM("transferFlowToEvmAddress", CadenceScriptType.EVM),
     CADENCE_CALL_EVM_CONTRACT("callContract", CadenceScriptType.EVM),
+    CADENCE_GET_NONCE("getNonce", CadenceScriptType.EVM),
 
     // DOMAIN
     CADENCE_CLAIM_INBOX_TOKEN("claimFTFromInbox", CadenceScriptType.DOMAIN),

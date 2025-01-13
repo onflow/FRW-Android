@@ -479,6 +479,15 @@ suspend fun cadenceSendEVMTransaction(
     return transactionId
 }
 
+fun cadenceGetNonce(address: String): BigDecimal? {
+    logd(TAG, "cadenceGetNonce()")
+    val result = Cadence.CADENCE_GET_NONCE.executeCadence {
+        arg { string(address) }
+    }
+    logd(TAG, "cadenceGetNonce response:${String(result?.bytes ?: byteArrayOf())}")
+    return result?.parseDecimal()
+}
+
 fun cadenceGetAssociatedFlowIdentifier(evmContractAddress: String): String? {
     logd(TAG, "cadenceGetAssociatedFlowIdentifier()")
     val result = Cadence.CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER.executeCadence {
