@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearUserCache
@@ -71,6 +72,7 @@ private class SwitchNetworkDialogView(
                     refreshChainNetworkSync()
                     doNetworkChangeTask()
                     FlowApi.refreshConfig()
+                    FlowCadenceApi.refreshConfig()
                     uiScope {
                         FlowLoadingDialog(context).show()
                         onCancel()

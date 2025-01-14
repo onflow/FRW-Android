@@ -15,7 +15,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
@@ -172,7 +172,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             try {
                 val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
-                val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
+                val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
                     arg { string(keyPair.public.toFormatString()) }
                     arg { uint8(SignatureAlgorithm.ECDSA_P256.index) }
                     arg { uint8(HashAlgorithm.SHA2_256.index) }
@@ -312,7 +312,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         restoreAddress = address
     }
 
-    private suspend fun Cadence.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+    private suspend fun CadenceScript.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val providers = mnemonicList.map {
             val words = it.split(" ")

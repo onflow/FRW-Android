@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.childaccount
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowScriptResponse
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.utils.extensions.res2String
 
@@ -58,8 +57,8 @@ class DataClasses {
     )
 }
 
-fun FlowScriptResponse.parseAccountMetas(): List<ChildAccount> {
-    val root = Gson().fromJson(String(bytes), DataClasses.Root::class.java)
+fun String.parseAccountMetas(): List<ChildAccount> {
+    val root = Gson().fromJson(this, DataClasses.Root::class.java)
 
     return root.value.map { valueItem ->
         val address = valueItem.key.value

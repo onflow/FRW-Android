@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.manager.flowjvm
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 
 
-enum class Cadence(val scriptId: String, val type: CadenceScriptType) {
+enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     // BASIC
     CADENCE_CHECK_TOKEN_IS_ENABLED("isTokenStorageEnabled", CadenceScriptType.BASIC),
     CADENCE_GET_BALANCE("getTokenBalanceWithModel", CadenceScriptType.BASIC),
