@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.profile.subpage.developer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
@@ -19,6 +20,7 @@ class DeveloperModeViewModel : ViewModel() {
     fun changeNetwork() {
         viewModelIOScope(this) {
             FlowApi.refreshConfig()
+            FlowCadenceApi.refreshConfig()
             val cacheExist = WalletManager.wallet() != null && !WalletManager.wallet()?.walletAddress().isNullOrBlank()
             if (!cacheExist && isRegistered()) {
                 progressVisibleLiveData.postValue(true)

@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
@@ -80,6 +81,7 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
                 refreshChainNetworkSync()
                 doNetworkChangeTask()
                 FlowApi.refreshConfig()
+                FlowCadenceApi.refreshConfig()
                 uiScope {
                     FlowLoadingDialog(requireContext()).show()
                     WalletManager.changeNetwork()
@@ -94,6 +96,7 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
     private fun changeNetworkFetchServer() {
         ioScope {
             FlowApi.refreshConfig()
+            FlowCadenceApi.refreshConfig()
             val cacheExist = WalletManager.wallet() != null && !WalletManager.wallet()?.walletAddress().isNullOrBlank()
             if (!cacheExist) {
                 uiScope { progressDialog.show() }
