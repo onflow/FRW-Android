@@ -11,8 +11,10 @@
         android:layout_height="40dp"
         android:scaleType="centerInside"
         android:src="@drawable/ic_backup_google_drive"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/iv_second_option"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
     <ImageView
@@ -42,7 +44,7 @@
         android:scaleType="centerInside"
         android:src="@drawable/ic_backup_recovery_phrase_gray"
         app:layout_constraintStart_toEndOf="@id/iv_first_option"
-        app:layout_constraintEnd_toStartOf="@id/iv_complete_option"
+        app:layout_constraintEnd_toStartOf="@id/iv_third_option"
         app:layout_constraintTop_toTopOf="@id/iv_first_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_first_option"/>
 
@@ -64,7 +66,52 @@
         app:layout_constraintTop_toTopOf="@id/iv_second_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_second_option"
         app:layout_constraintStart_toEndOf="@id/iv_second_option"
+        app:layout_constraintEnd_toStartOf="@id/iv_third_option"/>
+
+    <ImageView
+        android:id="@+id/iv_third_option"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_backup_recovery_phrase_gray"
+        app:layout_constraintStart_toEndOf="@id/iv_second_option"
+        app:layout_constraintEnd_toStartOf="@id/iv_complete_option"
+        app:layout_constraintTop_toTopOf="@id/iv_second_option"
+        app:layout_constraintBottom_toBottomOf="@id/iv_second_option"/>
+
+    <ImageView
+        android:id="@+id/iv_third_selected"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:visibility="gone"
+        android:src="@drawable/bg_border_circle_1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="@id/iv_third_option"
+        app:layout_constraintEnd_toEndOf="@id/iv_third_option"/>
+
+    <View
+        android:id="@+id/line_three"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/bg_3"
+        app:layout_constraintTop_toTopOf="@id/iv_third_option"
+        app:layout_constraintBottom_toBottomOf="@id/iv_third_option"
+        app:layout_constraintStart_toEndOf="@id/iv_third_option"
         app:layout_constraintEnd_toStartOf="@id/iv_complete_option"/>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_third"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:constraint_referenced_ids="iv_third_option, line_three"/>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_second"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:constraint_referenced_ids="iv_second_option, line_two"/>
 
     <ImageView
         android:id="@+id/iv_complete_option"
@@ -73,6 +120,7 @@
         android:src="@drawable/ic_backup_complete_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_third_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_first_option"/>
 
 

@@ -7,41 +7,39 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
-import com.flowfoundation.wallet.databinding.FragmentBackupGoogleDriveBinding
-import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
-import com.flowfoundation.wallet.page.backup.BackupListManager
-import com.flowfoundation.wallet.page.backup.model.BackupType
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveState
+import com.flowfoundation.wallet.databinding.FragmentBackupDropboxBinding
+import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupDropboxState
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
-import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
-import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
+import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupDropboxViewModel
+import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupDropboxWithPinViewModel
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.getPinCode
 
-class BackupGoogleDrivePresenter(
+class BackupDropboxPresenter(
     private val fragment: Fragment,
-    private val binding: FragmentBackupGoogleDriveBinding
-) : BasePresenter<BackupGoogleDriveState> {
+    private val binding: FragmentBackupDropboxBinding
+) : BasePresenter<BackupDropboxState> {
 
     private val viewModel by lazy {
-        ViewModelProvider(fragment)[BackupGoogleDriveViewModel::class.java]
+        ViewModelProvider(fragment)[BackupDropboxViewModel::class.java]
     }
 
     private val withPinViewModel by lazy {
-        ViewModelProvider(fragment.requireParentFragment())[BackupGoogleDriveWithPinViewModel::class.java]
+        ViewModelProvider(fragment.requireParentFragment())[BackupDropboxWithPinViewModel::class.java]
     }
 
     private val backupViewModel by lazy {
         ViewModelProvider(fragment.requireParentFragment().requireActivity())[MultiBackupViewModel::class.java]
     }
 
-    private var currentState = BackupGoogleDriveState.CREATE_BACKUP
+    private var currentState = BackupDropboxState.CREATE_BACKUP
 
     init {
         with(binding) {
-            backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_GOOGLE_DRIVE, false)
+            backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_DROPBOX, false)
             clStatusLayout.visibility = View.GONE
             btnNext.setOnClickListener {
                 if (btnNext.isProgressVisible()) {
@@ -49,33 +47,33 @@ class BackupGoogleDrivePresenter(
                 }
                 btnNext.setProgressVisible(true)
                 when (currentState) {
-                    BackupGoogleDriveState.CREATE_BACKUP -> loginGoogleDrive()
-                    BackupGoogleDriveState.UPLOAD_BACKUP -> {
+                    BackupDropboxState.CREATE_BACKUP -> loginDropbox()
+                    BackupDropboxState.UPLOAD_BACKUP -> {
                         viewModel.uploadToChain()
                     }
-                    BackupGoogleDriveState.UPLOAD_BACKUP_FAILURE -> {
+                    BackupDropboxState.UPLOAD_BACKUP_FAILURE -> {
                         viewModel.uploadToChain()
                     }
-                    BackupGoogleDriveState.REGISTRATION_KEY_LIST -> {}
-                    BackupGoogleDriveState.NETWORK_ERROR -> viewModel.registrationKeyList()
-                    BackupGoogleDriveState.BACKUP_SUCCESS -> withPinViewModel.backupFinish(viewModel.getMnemonic())
+                    BackupDropboxState.REGISTRATION_KEY_LIST -> {}
+                    BackupDropboxState.NETWORK_ERROR -> viewModel.registrationKeyList()
+                    BackupDropboxState.BACKUP_SUCCESS -> withPinViewModel.backupFinish(viewModel.getMnemonic())
                 }
             }
         }
     }
 
     @SuppressLint("SetTextI18n")
-    override fun bind(model: BackupGoogleDriveState) {
+    override fun bind(model: BackupDropboxState) {
         currentState = model
         with(binding) {
             when (model) {
-                BackupGoogleDriveState.CREATE_BACKUP -> {
+                BackupDropboxState.CREATE_BACKUP -> {
                     btnNext.setProgressVisible(false)
-                    tvOptionTitle.text = fragment.requireContext().getString(R.string.backup_step_google_drive, (withPinViewModel.getCurrentIndex() + 1))
+                    tvOptionTitle.text = R.string.backup_step_dropbox.res2String()
                     clStatusLayout.visibility = View.GONE
                     btnNext.text = R.string.create_backup.res2String()
                 }
-                BackupGoogleDriveState.UPLOAD_BACKUP -> {
+                BackupDropboxState.UPLOAD_BACKUP -> {
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
@@ -86,7 +84,7 @@ class BackupGoogleDrivePresenter(
                     tvRegistration.setTextColor(R.color.text_3.res2color())
                     btnNext.text = R.string.upload_backup.res2String()
                 }
-                BackupGoogleDriveState.UPLOAD_BACKUP_FAILURE -> {
+                BackupDropboxState.UPLOAD_BACKUP_FAILURE -> {
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
@@ -97,7 +95,7 @@ class BackupGoogleDrivePresenter(
                     tvRegistration.setTextColor(R.color.text_3.res2color())
                     btnNext.text = R.string.upload_again.res2String()
                 }
-                BackupGoogleDriveState.REGISTRATION_KEY_LIST -> {
+                BackupDropboxState.REGISTRATION_KEY_LIST -> {
                     tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
                     viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
@@ -107,14 +105,18 @@ class BackupGoogleDrivePresenter(
                     tvRegistration.setTextColor(R.color.text_2.res2color())
                     btnNext.text = R.string.upload_backup.res2String()
                 }
-                BackupGoogleDriveState.NETWORK_ERROR -> {
+                BackupDropboxState.NETWORK_ERROR -> {
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.network_connect_lost.res2String()
                     clStatusLayout.visibility = View.GONE
                     btnNext.text = R.string.try_to_connect.res2String()
                 }
-                BackupGoogleDriveState.BACKUP_SUCCESS -> {
-                    backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_GOOGLE_DRIVE, true)
+                BackupDropboxState.BACKUP_SUCCESS -> {
+                    backupProgress.setProgressInfo(
+                        backupViewModel.getBackupOptionList(),
+                        BackupOption.BACKUP_WITH_DROPBOX,
+                        isCompleted = true
+                    )
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.backup_uploaded.res2String()
                     clStatusLayout.visibility = View.VISIBLE
@@ -124,15 +126,15 @@ class BackupGoogleDrivePresenter(
         }
     }
 
-    private fun loginGoogleDrive() {
+    private fun loginDropbox() {
         if (getPinCode().isBlank()) {
             withPinViewModel.backToPinCode()
             return
         }
-        GoogleDriveAuthActivity.loginGoogleDriveAccount(fragment.requireContext())
+        DropboxAuthActivity.loginDropboxAccount(fragment.requireContext())
     }
 
     fun uploadMnemonic(mnemonic: String) {
-        GoogleDriveAuthActivity.multiBackupMnemonic(fragment.requireContext(), mnemonic)
+        DropboxAuthActivity.multiBackupMnemonic(fragment.requireContext(), mnemonic)
     }
 }

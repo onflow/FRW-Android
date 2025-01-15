@@ -75,6 +75,11 @@
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
         <activity
+            android:name=".manager.dropbox.DropboxAuthActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.Transparent.FullScreen"/>
+
+        <activity
             android:name=".page.walletcreate.WalletCreateActivity"
             android:launchMode="singleTop"/>
 
@@ -359,6 +364,22 @@
         </activity>
 
         <activity
+            android:name="com.dropbox.core.android.AuthActivity"
+            android:exported="true"
+            android:configChanges="orientation|keyboard"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <data android:scheme="db-${dropboxKey}" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+        </activity>
+
+        <activity
             android:name=".page.staking.providers.StakingProviderActivity"
             android:screenOrientation="portrait"/>
         <activity
@@ -445,6 +466,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key"/>
+
     </application>
 
+    <queries>
+        <package android:name="com.dropbox.android" />
+    </queries>
 </manifest>

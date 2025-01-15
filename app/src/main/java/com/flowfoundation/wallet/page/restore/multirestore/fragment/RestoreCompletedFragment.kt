@@ -29,8 +29,7 @@ class RestoreCompletedFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         with(binding) {
             val optionList = restoreViewModel.getRestoreOptionList()
-            ivOptionIconFirst.setImageResource(optionList[0].iconId)
-            ivOptionIconSecond.setImageResource(optionList[1].iconId)
+            optionView.setRestoreOptionList(optionList)
             btnNext.setOnClickListener {
                 if (btnNext.isProgressVisible()) {
                     return@setOnClickListener

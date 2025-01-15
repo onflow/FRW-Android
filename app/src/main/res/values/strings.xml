@@ -474,6 +474,7 @@
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
@@ -707,4 +708,9 @@ uses to turn your device into a hardware wallet.</string>
     <string name="buy_flow">Buy FLOW</string>
     <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
     <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+
 </resources>

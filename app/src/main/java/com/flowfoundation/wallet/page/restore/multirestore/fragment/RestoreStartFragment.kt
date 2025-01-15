@@ -44,6 +44,12 @@ class RestoreStartFragment: Fragment() {
                 }
                 checkRestoreValid()
             }
+            oiDropbox.setOnClickListener {
+                restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_DROPBOX) { isSelected ->
+                    oiDropbox.changeItemStatus(isSelected)
+                }
+                checkRestoreValid()
+            }
             btnNext.setOnClickListener {
                 restoreViewModel.startRestore()
             }
@@ -53,6 +59,9 @@ class RestoreStartFragment: Fragment() {
                 }
                 restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_RECOVERY_PHRASE) { isSelected ->
                     oiRecoveryPhrase.changeItemStatus(isSelected)
+                }
+                restoreViewModel.selectOption(RestoreOption.RESTORE_FROM_DROPBOX) { isSelected ->
+                    oiDropbox.changeItemStatus(isSelected)
                 }
                 checkRestoreValid()
             }

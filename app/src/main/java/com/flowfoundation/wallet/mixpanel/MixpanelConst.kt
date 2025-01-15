@@ -19,6 +19,7 @@ enum class MixpanelSecurityTool(val value: String) {
 
 enum class MixpanelBackupProvider(val value: String) {
     GOOGLE_DRIVE("google_drive"),
+    DROPBOX("dropbox"),
     SEED_PHRASE("seed_phrase")
 }
 
