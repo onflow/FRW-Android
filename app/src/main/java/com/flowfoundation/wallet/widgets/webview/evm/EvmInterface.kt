@@ -164,7 +164,7 @@ class EvmInterface(
             title = webView.title,
             logo = webView.url?.toFavIcon(),
             network = network,
-            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT.getScript()
+            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT_V2.getScript()
         )
         EVMSendTransactionDialog.show(
             activity().supportFragmentManager,
