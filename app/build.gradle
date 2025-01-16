@@ -22,6 +22,8 @@ if (apiKeysFile.exists()) {
         apiKeys.load(input)
     }
 }
+def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV")
+def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD")
 
 android {
     compileSdk 34
@@ -45,9 +47,8 @@ android {
         buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
-        String dropboxKey = apiKeys.getProperty('DROPBOX_APP_KEY')
-        buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKey}\"")
-        manifestPlaceholders = [dropboxKey: dropboxKey]
+        buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+        manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
 
     signingConfigs {
@@ -72,6 +73,8 @@ android {
             debuggable true
             applicationIdSuffix = ".dev"
             signingConfig signingConfigs.release
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
 
         releaseDebug {
@@ -80,6 +83,8 @@ android {
             debuggable true
             signingConfig signingConfigs.release
             matchingFallbacks = ['release']
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
 
         dev {
@@ -98,6 +103,8 @@ android {
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile")
                 testers = properties.getProperty("testers")
             }
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
 
         release {
@@ -110,6 +117,8 @@ android {
             firebaseCrashlytics {
                 mappingFileUploadEnabled true
             }
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
     }
     compileOptions {
