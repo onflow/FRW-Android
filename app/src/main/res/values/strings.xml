@@ -712,5 +712,6 @@ uses to turn your device into a hardware wallet.</string>
     <string name="backup_step_dropbox">Dropbox Backup</string>
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
+    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
 
 </resources>
