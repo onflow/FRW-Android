@@ -97,7 +97,7 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
         logd(EvmInterface.TAG, "gasValue:::${gasValue}")
         logd(EvmInterface.TAG, "value:::$value")
         val data = Numeric.hexStringToByteArray(transaction.data ?: "")
-        val txId = cadenceSendEVMV2Transaction(toAddress, value, data, gasValue)
+        val txId = cadenceSendEVMV2Transaction(toAddress, amountValue.toBigDecimal(), data, gasValue)
         val address = EVMWalletManager.getEVMAddress()?.removeAddressPrefix()
         if (txId.isNullOrBlank() || address.isNullOrBlank() || toAddress.isEmpty()) {
             logd(EvmInterface.TAG, "send transaction failed")
@@ -147,8 +147,8 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
             RlpString.create(nonce.toBigInteger()),
             RlpString.create(BigInteger.ZERO),
             RlpString.create(EVM_GAS_LIMIT.toBigInteger()),
-            RlpString.create(toAddress.toAddress()),
-            RlpString.create(value.toBigInteger()),
+            RlpString.create(Numeric.hexStringToByteArray(toAddress.toAddress())),
+            RlpString.create(amountValue),
             RlpString.create(data),
             RlpString.create(directCallTxType.toBigInteger()),
             RlpString.create(BigInteger(address, 16)),
