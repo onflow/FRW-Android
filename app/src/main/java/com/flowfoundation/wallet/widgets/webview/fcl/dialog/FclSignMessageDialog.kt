@@ -11,11 +11,13 @@ import androidx.transition.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.databinding.DialogFclSignMessageBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 
 
@@ -46,6 +48,11 @@ class FclSignMessageDialog : BottomSheetDialogFragment() {
                 dismiss()
             }
             scriptHeaderWrapper.setOnClickListener { toggleScriptVisible() }
+            uiScope {
+                binding.storageTip.setInsufficientTip(
+                    AccountInfoManager.validateOtherTransaction(false)
+                )
+            }
         }
     }
 

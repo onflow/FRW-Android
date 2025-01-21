@@ -22,6 +22,8 @@ if (apiKeysFile.exists()) {
         apiKeys.load(input)
     }
 }
+def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV")
+def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD")
 
 android {
     compileSdk 34
@@ -45,6 +47,8 @@ android {
         buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
+        buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+        manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
 
     signingConfigs {
@@ -69,6 +73,8 @@ android {
             debuggable true
             applicationIdSuffix = ".dev"
             signingConfig signingConfigs.release
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
 
         releaseDebug {
@@ -77,6 +83,8 @@ android {
             debuggable true
             signingConfig signingConfigs.release
             matchingFallbacks = ['release']
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
 
         dev {
@@ -95,6 +103,8 @@ android {
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile")
                 testers = properties.getProperty("testers")
             }
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
 
         release {
@@ -107,6 +117,8 @@ android {
             firebaseCrashlytics {
                 mappingFileUploadEnabled true
             }
+            buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+            manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
     }
     compileOptions {
@@ -298,6 +310,10 @@ dependencies {
     implementation 'com.instabug.library:instabug:13.1.0'
 
     implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
+
+    /** Dropbox **/
+    implementation 'com.dropbox.core:dropbox-core-sdk:7.0.0'
+    implementation 'com.dropbox.core:dropbox-android-sdk:7.0.0'
 
     /** Crowdin **/
     implementation ('com.github.crowdin.mobile-sdk-android:sdk:1.9.2') {

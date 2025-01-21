@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromEVMToFlow
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromFlowToEVM
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
@@ -70,7 +71,11 @@ class NftSendConfirmViewModel : ViewModel() {
                                 trackTransferNFT(nft.getNFTIdentifier(), txId, TransferAccountType.COA, TransferAccountType.CHILD)
                             } else {
                                 // COA -> Flow
-                                bridgeNFTFromEVMToFlow(nft.getNFTIdentifier(), nft.id, toAddress)
+                                if (WalletManager.isSelfFlowAddress(toAddress)) {
+                                    cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), nft.id)
+                                } else {
+                                    bridgeNFTFromEVMToFlow(nft.getNFTIdentifier(), nft.id, toAddress)
+                                }
                             }
                         } else {
                             // COA -> EOA/COA

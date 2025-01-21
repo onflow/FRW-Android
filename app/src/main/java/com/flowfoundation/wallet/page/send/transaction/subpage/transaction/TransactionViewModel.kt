@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromEVMToFlow
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromFlowToEVM
 import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
@@ -106,7 +107,11 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                             bridgeTokenFromEVMToChild(coin.getFTIdentifier(), amount, toAddress)
                         } else {
                             // COA -> Flow
-                            bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
+                            if (WalletManager.isSelfFlowAddress(toAddress)) {
+                                cadenceBridgeFTFromEvm(coin.getFTIdentifier(), amount)
+                            } else {
+                                bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
+                            }
                         }
                     } else {
                         // COA -> EOA/COA

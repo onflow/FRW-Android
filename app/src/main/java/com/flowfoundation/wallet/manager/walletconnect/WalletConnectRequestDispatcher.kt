@@ -134,7 +134,7 @@ private suspend fun WCRequest.evmSendTransaction() {
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
             url = metaData?.url,
-            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT.getScript(),
+            cadence = Cadence.CADENCE_CALL_EVM_CONTRACT_V2.getScript(),
         )
         EVMSendTransactionDialog.show(
             activity.supportFragmentManager,

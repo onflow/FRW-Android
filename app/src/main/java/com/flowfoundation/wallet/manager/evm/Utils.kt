@@ -5,7 +5,8 @@ import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
-import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMTransaction
+import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNonce
+import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMV2Transaction
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
@@ -36,6 +37,7 @@ import org.web3j.rlp.RlpType
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import wallet.core.jni.Hash
+import java.math.BigInteger
 
 
 fun loadInitJS(): String {
@@ -95,44 +97,72 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
         logd(EvmInterface.TAG, "gasValue:::${gasValue}")
         logd(EvmInterface.TAG, "value:::$value")
         val data = Numeric.hexStringToByteArray(transaction.data ?: "")
-        val txId = cadenceSendEVMTransaction(toAddress, value, data, gasValue)
-
-        if (txId.isNullOrBlank()) {
+        val txId = cadenceSendEVMV2Transaction(toAddress, amountValue.toBigDecimal(), data, gasValue)
+        val address = EVMWalletManager.getEVMAddress()?.removeAddressPrefix()
+        if (txId.isNullOrBlank() || address.isNullOrBlank() || toAddress.isEmpty()) {
             logd(EvmInterface.TAG, "send transaction failed")
             evmTransactionSigned("", false)
             callback.invoke("")
             return@ioScope
         }
         logd(EvmInterface.TAG, "send transaction transactionId:$txId")
-        TransactionStateWatcher(txId).watch { result ->
-            if (result.isExecuteFinished()) {
-                evmTransactionSigned(txId, true)
-                val event = result.events.find {
-                    it.type.contains(
-                        "evm.TransactionExecuted",
-                        ignoreCase = true
-                    )
-                }
-                if (event == null) {
-                    callback.invoke("")
-                } else {
-                    val element = event.payload.decodeToAny().toJsonElement()
-                    try {
-                        val eventHash = jsonArrayToByteArray(element.jsonObject["hash"] as
-                                JsonArray).bytesToHex().toAddress()
-                        logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
-                        callback.invoke(eventHash)
-                        refreshBalance(value.toFloat())
-                    } catch (e: Exception) {
-                        refreshBalance(value.toFloat())
+
+        val nonce = cadenceGetNonce(address)
+        if (nonce == null) {
+            TransactionStateWatcher(txId).watch { result ->
+                if (result.isExecuteFinished()) {
+                    evmTransactionSigned(txId, true)
+                    val event = result.events.find {
+                        it.type.contains(
+                            "evm.TransactionExecuted",
+                            ignoreCase = true
+                        )
                     }
+                    if (event == null) {
+                        callback.invoke("")
+                    } else {
+                        val element = event.payload.decodeToAny().toJsonElement()
+                        try {
+                            val eventHash = jsonArrayToByteArray(
+                                element.jsonObject["hash"] as
+                                        JsonArray
+                            ).bytesToHex().toAddress()
+                            logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
+                            callback.invoke(eventHash)
+                            refreshBalance(value.toFloat())
+                        } catch (e: Exception) {
+                            refreshBalance(value.toFloat())
+                        }
+                    }
+                } else if (result.isFailed()) {
+                    evmTransactionSigned(txId, false)
                 }
-            } else if (result.isFailed()) {
-                evmTransactionSigned(txId, false)
             }
+            return@ioScope
         }
+        logd(EvmInterface.TAG, "account nonce:$nonce")
+        val directCallTxType = 255
+        val contractCallSubType = 5
+        val rlpList = RlpList(listOf<RlpType>(
+            RlpString.create(nonce.toBigInteger()),
+            RlpString.create(BigInteger.ZERO),
+            RlpString.create(EVM_GAS_LIMIT.toBigInteger()),
+            RlpString.create(Numeric.hexStringToByteArray(toAddress.toAddress())),
+            RlpString.create(amountValue),
+            RlpString.create(data),
+            RlpString.create(directCallTxType.toBigInteger()),
+            RlpString.create(BigInteger(address, 16)),
+            RlpString.create(contractCallSubType.toBigInteger())
+        ))
+        val encoded = RlpEncoder.encode(rlpList)
+        val eventHash = Hash.keccak256(encoded).bytesToHex()
+        evmTransactionSigned(txId, true)
+        logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
+        callback.invoke(eventHash.toAddress())
+        refreshBalance(value.toFloat())
     }
 }
+
 
 private fun evmTransactionSigned(txId: String, isSuccess: Boolean) {
     MixpanelManager.evmTransactionSigned(

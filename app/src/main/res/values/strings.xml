@@ -474,6 +474,7 @@
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
@@ -691,5 +692,26 @@ uses to turn your device into a hardware wallet.</string>
     <string name="token_identifier">Token Identifier</string>
     <string name="add_suggested_token">Add Suggested Token</string>
     <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
+    <string name="storage_limit_reached">Storage limit reached.</string>
+    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
+    <string name="flow_limit_reached">FLOW limit reached.</string>
+    <string name="storage_usage">Storage Usage</string>
+    <string name="total_balance">Total Balance </string>
+    <string name="storage_limit_error">Storage Limit Error</string>
+    <string name="storage_limit_warning">Storage Limit Warning</string>
+    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
+    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
+    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
+    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
+        your storage usage.</string>
+    <string name="deposit">Deposit</string>
+    <string name="buy_flow">Buy FLOW</string>
+    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
+    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
 
 </resources>

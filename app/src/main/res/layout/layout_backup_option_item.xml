@@ -1,31 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="110dp"
-    android:layout_height="110dp">
+    android:layout_width="match_parent"
+    android:layout_height="68dp"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg_round_16dp"
+    android:backgroundTint="@color/bg">
 
-    <FrameLayout
-        android:id="@+id/fl_option_background"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:layout_margin="7dp"
-        android:background="@drawable/bg_backup_option">
 
-        <ImageView
-            android:id="@+id/iv_option_icon"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_gravity="center"
-            android:src="@drawable/ic_backup_google_drive"/>
-    </FrameLayout>
+    <View
+        android:id="@+id/view_selected"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@drawable/bg_border_round_16dp"
+        android:backgroundTint="@color/info_success_green"/>
+
+    <ImageView
+        android:id="@+id/iv_option_icon"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginVertical="12dp"
+        android:src="@drawable/ic_backup_google_drive"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_option_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:lines="1"
+        android:textColor="@color/text_2"
+        android:layout_marginHorizontal="12dp"
+        app:layout_constraintStart_toEndOf="@id/iv_option_icon"
+        app:layout_constraintEnd_toStartOf="@id/iv_selected"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="@string/google_drive"/>
 
     <ImageView
         android:id="@+id/iv_selected"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_gravity="end"
-        android:visibility="gone"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="16dp"
         android:src="@drawable/ic_circle_right_green"
-        app:tint="@color/accent_green"/>
+        android:visibility="gone"
+        app:tint="@color/info_success_green"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-</FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

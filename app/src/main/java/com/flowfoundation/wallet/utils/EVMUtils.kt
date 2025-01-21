@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.utils
 
 fun shortenEVMString(input: String?): String {
-    if (input == null) {
+    if (input == null || input == "0x") {
         return ""
     }
     if (evmAddressPattern.matches(input).not()) {

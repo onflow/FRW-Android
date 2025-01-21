@@ -1,13 +1,18 @@
 package com.flowfoundation.wallet.manager.transaction
 
+import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.nftco.flow.sdk.FlowId
 import com.nftco.flow.sdk.FlowTransactionResult
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.uiScope
+import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 
 private val TAG = TransactionStateWatcher::class.java.simpleName
@@ -38,6 +43,17 @@ class TransactionStateWatcher(
                     statusCode.isProcessing().not() && ret?.errorMessage.isNullOrBlank(),
                     ret?.errorMessage
                 )
+                uiScope {
+                    if (!ret?.errorMessage.isNullOrBlank()) {
+                        when (parseErrorCode(ret?.errorMessage.orEmpty())) {
+                            ERROR_STORAGE_CAPACITY_EXCEEDED -> {
+                                BaseActivity.getCurrentActivity()?.let {
+                                    StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()
+                                }
+                            }
+                        }
+                    }
+                }
                 break
             }
 

@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.wallet
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.Balance
 import com.flowfoundation.wallet.manager.account.BalanceManager
@@ -16,6 +17,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.coin.TokenStateChangeListener
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
+import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.price.CurrencyUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
@@ -146,6 +148,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private fun loadCoinInfo(isRefresh: Boolean) {
         if (needReload) {
             needReload = false
+            AccountInfoManager.refreshAccountInfo()
             logd(TAG, "loadCoinInfo :: isRefresh :: $isRefresh")
             logd(TAG, "loadCoinInfo :: dataList :: ${dataList.size}")
             if (isRefresh || dataList.isEmpty()) {
@@ -162,7 +165,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     private fun loadCoinList() {
         viewModelIOScope(this) {
             val coinList =
-                FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it.address) }
+                FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
             logd(TAG, "coinList :: ${coinList.size}")
             if (coinList.isEmpty()) {
                 return@viewModelIOScope

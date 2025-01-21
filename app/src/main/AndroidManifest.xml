@@ -22,6 +22,9 @@
     <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="false"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false"/>
 
     <application
         android:name=".FlowWalletApplication"
@@ -68,6 +71,11 @@
 
         <activity
             android:name=".manager.drive.GoogleDriveAuthActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.Transparent.FullScreen"/>
+
+        <activity
+            android:name=".manager.dropbox.DropboxAuthActivity"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>
 
@@ -341,7 +349,8 @@
                 <data android:host="fcw-link.lilico.app"/>
             </intent-filter>
 
-            <intent-filter android:autoVerify="true">
+            <intent-filter android:autoVerify="true"
+                tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
@@ -352,6 +361,22 @@
                 <data android:scheme="fcw"/>
                 <data android:scheme="lilico"/>
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.dropbox.core.android.AuthActivity"
+            android:exported="true"
+            android:configChanges="orientation|keyboard"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <data android:scheme="db-${dropboxKey}" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
         </activity>
 
         <activity
@@ -441,6 +466,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key"/>
+
     </application>
 
+    <queries>
+        <package android:name="com.dropbox.android" />
+    </queries>
 </manifest>

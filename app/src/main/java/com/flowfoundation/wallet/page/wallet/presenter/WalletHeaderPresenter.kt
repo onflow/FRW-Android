@@ -76,12 +76,14 @@ class WalletHeaderPresenter(
             }
 
             val count =
-                FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it.address) }
+                FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it) }
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
-            tvAddress.text = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
+            val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
+            tvAddress.text = address
+            ivCopy.setVisible(address.isNotBlank())
             ivCopy.setOnClickListener {
                 copyAddress(
                     WalletManager.selectedWalletAddress().toAddress()

@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDrive
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
+import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.getPinCode
@@ -32,18 +33,15 @@ class BackupGoogleDrivePresenter(
         ViewModelProvider(fragment.requireParentFragment())[BackupGoogleDriveWithPinViewModel::class.java]
     }
 
+    private val backupViewModel by lazy {
+        ViewModelProvider(fragment.requireParentFragment().requireActivity())[MultiBackupViewModel::class.java]
+    }
+
     private var currentState = BackupGoogleDriveState.CREATE_BACKUP
 
     init {
         with(binding) {
-            if (BackupListManager.hadBackupOption(BackupType.MANUAL)) {
-                backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE,
-                    isCompleted = false,
-                    isOnlyGoogleDrive = true
-                )
-            } else {
-                backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE, false)
-            }
+            backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_GOOGLE_DRIVE, false)
             clStatusLayout.visibility = View.GONE
             btnNext.setOnClickListener {
                 if (btnNext.isProgressVisible()) {
@@ -116,12 +114,7 @@ class BackupGoogleDrivePresenter(
                     btnNext.text = R.string.try_to_connect.res2String()
                 }
                 BackupGoogleDriveState.BACKUP_SUCCESS -> {
-                    if (BackupListManager.hadBackupOption(BackupType.MANUAL)) {
-                        backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_GOOGLE_DRIVE,
-                            isCompleted = true,
-                            isOnlyGoogleDrive = true
-                        )
-                    }
+                    backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_GOOGLE_DRIVE, true)
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.backup_uploaded.res2String()
                     clStatusLayout.visibility = View.VISIBLE

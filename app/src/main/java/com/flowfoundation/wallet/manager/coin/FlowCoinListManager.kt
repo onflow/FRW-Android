@@ -81,7 +81,7 @@ object FlowCoinListManager {
 
     fun getEVMCoin(address: String) = coinList.firstOrNull { it.isSameCoin(address, "")  }
 
-    fun getEnabledCoinList() = coinList.toList().filter { TokenStateManager.isTokenAdded(it.address) }
+    fun getEnabledCoinList() = coinList.toList().filter { TokenStateManager.isTokenAdded(it) }
 
     private fun getTokenListUrl(): String {
         return "https://raw.githubusercontent.com/Outblock/token-list-jsons/outblock/jsons/${chainNetWorkString()}/${getTokenType()}/${getFileName()}"
