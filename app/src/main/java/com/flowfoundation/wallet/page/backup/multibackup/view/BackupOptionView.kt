@@ -45,7 +45,8 @@ class BackupOptionView @JvmOverloads constructor(
 
     fun setRestoreOptionList(list: List<RestoreOption>) {
         with(binding) {
-            list.forEachIndexed { index, restoreOption ->
+            val optionList = list.filter { it != RestoreOption.RESTORE_COMPLETED }
+            optionList.forEachIndexed { index, restoreOption ->
                 when (index) {
                     0 -> {
                         ivOptionIconFirst.setImageResource(restoreOption.iconId)

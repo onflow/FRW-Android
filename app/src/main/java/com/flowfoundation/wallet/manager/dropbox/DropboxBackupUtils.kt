@@ -64,7 +64,7 @@ fun uploadDropboxBackup(
         )
 
         if (BuildConfig.DEBUG) {
-            val readText = dropboxHelper.readFile(dropboxHelper.getFilePath(FILE_NAME)!!)
+            val readText = dropboxHelper.readFile(dropboxHelper.getReadFilePath(FILE_NAME))
             logd(TAG, "readText:$readText")
         }
         sendCallback(true)
@@ -92,24 +92,32 @@ fun checkDropboxBackup(
 }
 
 private fun existingData(dropboxHelper: DropboxServerHelper): List<BackupItem> {
-    val filePath = dropboxHelper.getFilePath(FILE_NAME) ?: return emptyList()
-
+    val filePath = dropboxHelper.getReadFilePath(FILE_NAME)
+    if (filePath.isEmpty()) {
+        return emptyList()
+    }
     if (BuildConfig.DEBUG) {
-        dropboxHelper.fileList()?.entries?.map {
-            logd(TAG, "file list:${it.name}")
-        }
+        logd(TAG, "file list:${dropboxHelper.allFileList().joinToString(separator = ", ")}")
     }
 
     return try {
         logd(TAG, "existingData filePath:$filePath")
-        val content = dropboxHelper.readFile(filePath).second.trim { it == '"' }
-        logd(TAG, "existingData content:$content")
-        val json = aesDecrypt(key = AES_KEY, iv = AES_PASSWORD, message = content)
-        logd(TAG, "existingData:$json")
-        Gson().fromJson(json, object : TypeToken<List<BackupItem>>() {}.type)
+        val contentList = dropboxHelper.readFile(filePath)
+        logd(TAG, "existingData content:$contentList")
+        val backupItems = contentList.flatMap { pair ->
+            val content = pair.second.trim { it == '"' }
+            if (content.isNotEmpty()) {
+                val json = aesDecrypt(key = AES_KEY, iv = AES_PASSWORD, message = content)
+                logd(TAG, "existingData decrypted content:$json")
+                Gson().fromJson(json, object : TypeToken<List<BackupItem>>() {}.type)
+            } else {
+                emptyList<BackupItem>()
+            }
+        }
+        backupItems
     } catch (e: Exception) {
         loge(e)
-        throw e
+        return emptyList()
     }
 }
 
@@ -203,7 +211,7 @@ fun deleteFromDropbox(dropboxClient: DbxClientV2) {
             )
 
             if (BuildConfig.DEBUG) {
-                val readText = dropboxHelper.readFile(dropboxHelper.getFilePath(FILE_NAME)!!)
+                val readText = dropboxHelper.readFile(dropboxHelper.getReadFilePath(FILE_NAME))
                 logd(TAG, "readText:$readText")
             }
         }
