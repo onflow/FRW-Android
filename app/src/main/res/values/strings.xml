@@ -713,5 +713,12 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
 
 </resources>
