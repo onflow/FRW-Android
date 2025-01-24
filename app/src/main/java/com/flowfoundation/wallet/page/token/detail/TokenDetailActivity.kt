@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.crowdin.platform.util.inflateWithCrowdin
 import com.flowfoundation.wallet.R
@@ -21,7 +20,6 @@ import com.flowfoundation.wallet.page.token.detail.presenter.TokenDetailActiviti
 import com.flowfoundation.wallet.page.token.detail.presenter.TokenDetailChartPresenter
 import com.flowfoundation.wallet.page.token.detail.presenter.TokenDetailPresenter
 import com.flowfoundation.wallet.page.token.detail.widget.TokenDetailPopupMenu
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.isNightMode
 
 class TokenDetailActivity : BaseActivity() {
