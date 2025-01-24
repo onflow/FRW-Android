@@ -643,12 +643,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         val resp = service.login(
                             LoginRequest(
                                 signature = getSignature(
-                                    getFirebaseJwt(), privateKey, signAlgo
+                                    getFirebaseJwt(), privateKey, currentKey.hashAlgo, signAlgo
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = publicKey,
-                                    hashAlgo = HashAlgorithm.SHA2_256.index,
-                                    signAlgo = signAlgo.index
+                                    hashAlgo = currentKey.hashAlgo.index,
+                                    signAlgo = currentKey.signAlgo.index
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -715,6 +715,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun getSignature(
         jwt: String,
         privateKey: String,
+        hashAlgo: HashAlgorithm,
         signAlgo: SignatureAlgorithm
     ): String {
         checkSecurityProvider()
@@ -723,7 +724,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             privateKey = Crypto.decodePrivateKey(
                 privateKey, signAlgo
             ),
-            hashAlgo = HashAlgorithm.SHA2_256
+            hashAlgo = hashAlgo
         ).sign(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray()).bytesToHex()
     }
 }
