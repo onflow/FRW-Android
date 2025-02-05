@@ -195,7 +195,7 @@
 -keep class com.flowfoundation.wallet.widgets.webview.fcl.AccountProof {
     @org.tdf.rlp.RLP *;
 }
-
+-dontwarn java.lang.management.RuntimeMXBean
 -dontwarn com.google.ar.sceneform.animation.AnimationEngine
 -dontwarn com.google.ar.sceneform.animation.AnimationLibraryLoader
 -dontwarn com.google.ar.sceneform.assets.Loader
