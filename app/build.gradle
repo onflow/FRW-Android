@@ -229,6 +229,7 @@ dependencies {
 
     /** Kotlin 相关 **/
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
     /** Kotlin 相关 **/
 
     /** firebase **/

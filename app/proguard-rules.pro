@@ -93,9 +93,9 @@
 }
 
 ## @Serializable data class
--keep class com.example.** {
-    @kotlinx.serialization.Serializable *;
-}
+-keep @kotlinx.serialization.Serializable class * { *; }
+-keep class kotlinx.serialization.** { *; }
+-keepclassmembers class kotlinx.serialization.** { *; }
 
 # Prevent R8 from leaving Data object members always null
 -keepclassmembers,allowobfuscation class * {
@@ -195,6 +195,12 @@
 -keep class com.flowfoundation.wallet.widgets.webview.fcl.AccountProof {
     @org.tdf.rlp.RLP *;
 }
+
+# flow kmm
+-keep class org.onflow.flow.infrastructure.** { *; }
+-keep class org.onflow.flow.models.** { *; }
+-keep enum org.onflow.flow.** { *; }
+
 -dontwarn java.lang.management.RuntimeMXBean
 -dontwarn com.google.ar.sceneform.animation.AnimationEngine
 -dontwarn com.google.ar.sceneform.animation.AnimationLibraryLoader
