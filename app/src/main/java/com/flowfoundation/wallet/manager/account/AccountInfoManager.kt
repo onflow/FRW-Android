@@ -1,24 +1,23 @@
 package com.flowfoundation.wallet.manager.account
 
 import com.flowfoundation.wallet.manager.account.model.AccountInfo
-import com.flowfoundation.wallet.manager.account.model.AccountInfoInner
 import com.flowfoundation.wallet.manager.account.model.ValidateTransactionResult
-import com.flowfoundation.wallet.manager.account.model.getByName
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.onflow.flow.infrastructure.Cadence
 import java.math.BigDecimal
 
 
@@ -85,7 +84,7 @@ object AccountInfoManager {
             transferAmount += FIXED_MOVE_FEE
         }
 
-        val noStorageAfterAction = currentAccount.availableBalance - transferAmount < getAverageTXFee()
+        val noStorageAfterAction = currentAccount.availableBalance.toBigDecimal() - transferAmount < getAverageTXFee()
 
         if (noStorageAfterAction) {
             return ValidateTransactionResult.STORAGE_INSUFFICIENT
@@ -102,7 +101,7 @@ object AccountInfoManager {
 
     fun getLeastFlowBalance(): String {
         val leastFlow = _accountResultFlow.value?.let {
-            it.storageFlow + MIN_FLOW_BALANCE
+            it.storageFlow.toBigDecimal() + MIN_FLOW_BALANCE
         } ?: MIN_FLOW_BALANCE
         return leastFlow.format() + " FLOW"
     }
@@ -117,7 +116,7 @@ object AccountInfoManager {
 
     fun isBalanceInsufficient(): Boolean {
         val currentAccount = _accountResultFlow.value ?: return false
-        return currentAccount.balance < MIN_FLOW_BALANCE
+        return currentAccount.balance.toBigDecimal() < MIN_FLOW_BALANCE
     }
 
     fun isStorageInsufficient(): Boolean {
@@ -126,7 +125,7 @@ object AccountInfoManager {
     }
 
     fun getCurrentFlowBalance(): BigDecimal? {
-        return _accountResultFlow.value?.availableBalance
+        return _accountResultFlow.value?.availableBalance?.toBigDecimal()
     }
 
     fun getTotalFlowBalance(): String {
@@ -155,34 +154,14 @@ object AccountInfoManager {
         return currentAccount.storageCapacity
     }
 
-    private fun fetchOnChainAccountInfo(address: String): AccountInfo? {
+    private suspend fun fetchOnChainAccountInfo(address: String): AccountInfo? {
         try {
-            val response = Cadence.CADENCE_GET_ACCOUNT_INFO.executeCadence {
-                arg { address(address) }
+            val response = CadenceScript.CADENCE_GET_ACCOUNT_INFO.executeCadence {
+                arg { Cadence.address(address) }
             }
-            logd(TAG, "getAccountInfo response:${String(response?.bytes ?: byteArrayOf())}")
-            return parseAccountInfoResult(String(response?.bytes ?: byteArrayOf()))
+            logd(TAG, "getAccountInfo response:${response?.encode()}")
+            return response?.decode<AccountInfo>()
         } catch (e: Throwable) {
-            loge(e)
-            return null
-        }
-    }
-
-    private fun parseAccountInfoResult(json: String): AccountInfo? {
-        if (json.isEmpty()) {
-            return null
-        }
-        try {
-            val info = Gson().fromJson(json, AccountInfoInner::class.java)
-            return AccountInfo(
-                address = info.value.getByName("address").orEmpty(),
-                balance = BigDecimal(info.value.getByName("balance") ?: "0"),
-                availableBalance = BigDecimal(info.value.getByName("availableBalance") ?: "0"),
-                storageUsed = info.value.getByName("storageUsed")?.toLongOrNull() ?: 0,
-                storageCapacity = info.value.getByName("storageCapacity")?.toLongOrNull() ?: 0,
-                storageFlow = BigDecimal(info.value.getByName("storageFlow") ?: "0")
-            )
-        } catch (e: Exception) {
             loge(e)
             return null
         }

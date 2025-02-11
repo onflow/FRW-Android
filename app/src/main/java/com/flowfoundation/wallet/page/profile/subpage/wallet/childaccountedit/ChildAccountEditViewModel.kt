@@ -8,7 +8,7 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.storage.uploadAvatarToFirebase
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -50,7 +50,7 @@ class ChildAccountEditViewModel : ViewModel() {
                 }
             }
 
-            val txId = Cadence.CADENCE_EDIT_CHILD_ACCOUNT.transactionByMainWallet {
+            val txId = CadenceScript.CADENCE_EDIT_CHILD_ACCOUNT.transactionByMainWallet {
                 arg { address(childAccount.address) }
                 arg { string(name) }
                 arg { string(description) }

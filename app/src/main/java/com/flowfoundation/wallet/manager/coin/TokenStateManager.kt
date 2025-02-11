@@ -84,7 +84,7 @@ object TokenStateManager {
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
 
-    private fun fetchLinkedAccountStateSync() {
+    private suspend fun fetchLinkedAccountStateSync() {
         val coinList = FlowCoinListManager.coinList()
         val enabledToken = cadenceCheckLinkedAccountTokenListEnabled()
         if (enabledToken == null) {
@@ -103,7 +103,7 @@ object TokenStateManager {
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
 
-    private fun fetchStateSync() {
+    private suspend fun fetchStateSync() {
         val coinList = FlowCoinListManager.coinList()
         val enabledToken = cadenceCheckTokenListEnabled()
         if (enabledToken == null) {
@@ -123,7 +123,7 @@ object TokenStateManager {
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
 
-    fun fetchStateSingle(coin: FlowCoin, cache: Boolean = false) {
+    suspend fun fetchStateSingle(coin: FlowCoin, cache: Boolean = false) {
         val isEnable = cadenceCheckTokenEnabled(coin)
         if (isEnable != null) {
             val oldState = tokenStateList.firstOrNull { it.isSameCoin(coin.contractId()) }

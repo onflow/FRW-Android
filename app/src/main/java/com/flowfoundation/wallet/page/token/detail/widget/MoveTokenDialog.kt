@@ -243,32 +243,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     }
                 } ?: BigDecimal.ZERO
             }
-            fromBalance = if (isFundToEVM) {
-                if (FlowCoinListManager.isFlowCoin(contractId)) {
-                    AccountInfoManager.getCurrentFlowBalance()
-                        ?: cadenceQueryTokenBalanceWithAddress(
-                            FlowCoinListManager.getCoinById(contractId),
-                            WalletManager.wallet()?.walletAddress()
-                        )
-                } else {
-                    cadenceQueryTokenBalanceWithAddress(
-                        FlowCoinListManager.getCoinById(contractId),
-                        WalletManager.wallet()?.walletAddress()
-                    )
-                }
-            } else {
-                val coin = FlowCoinListManager.getCoinById(contractId)
-                if (coin == null) {
-                    BigDecimal.ZERO
-                } else {
-                    if (coin.isFlowCoin()) {
-                        cadenceQueryCOATokenBalance()
-                    } else {
-                        BalanceManager.getEVMBalanceByCoin(coin.address)
-                    }
-                }
-            } ?: BigDecimal.ZERO
-
             uiScope {
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
             }
