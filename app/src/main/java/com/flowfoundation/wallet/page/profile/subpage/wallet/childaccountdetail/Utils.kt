@@ -1,44 +1,45 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail
 
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
-import com.flowfoundation.wallet.manager.flowjvm.parseStringList
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Serializable
 import org.json.JSONArray
 import org.json.JSONObject
+import org.onflow.flow.infrastructure.Cadence
 
 
-fun queryChildAccountNftCollections(childAddress: String): List<NFTCollectionData> {
+suspend fun queryChildAccountNftCollections(childAddress: String): List<NFTCollectionData> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_NFT.executeCadence {
-        arg { address(walletAddress) }
-        arg { address(childAddress) }
+    val response = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_NFT.executeCadence {
+        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(childAddress) }
 // for test
 //        arg { address("0x84221fe0294044d7") }
 //        arg { address("0x16c41a2b76dee69b") }
     }
     response ?: return emptyList()
-    return parseJson(response.stringValue)
+    return parseJson(response.encode())
 }
 
-fun queryChildAccountTokens(childAddress: String): List<TokenData> {
+suspend fun queryChildAccountTokens(childAddress: String): List<TokenData> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS.executeCadence {
-        arg { address(walletAddress) }
-        arg { address(childAddress) }
+    val response = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS.executeCadence {
+        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(childAddress) }
     }
     response ?: return emptyList()
-    return parseTokenList(response.stringValue)
+    return parseTokenList(response.encode())
 }
 
-fun queryChildAccountNFTCollectionID(childAddress: String): List<String> {
+suspend fun queryChildAccountNFTCollectionID(childAddress: String): List<String> {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return emptyList()
-    val response = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS.executeCadence {
-        arg { address(walletAddress) }
-        arg { address(childAddress) }
+    val response = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS.executeCadence {
+        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(childAddress) }
     }
-    return response?.parseStringList() ?: emptyList()
+    return response?.decode<List<String>>() ?: emptyList()
 }
 
 data class CoinData(
@@ -52,6 +53,7 @@ data class CoinData(
     val balance: Float
 )
 
+@Serializable
 data class TokenData(
     @SerializedName("id")
     val id: String,

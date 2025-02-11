@@ -4,11 +4,12 @@ import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import kotlinx.parcelize.Parcelize
+import org.onflow.flow.infrastructure.Cadence
 import java.lang.ref.WeakReference
 
 
@@ -56,9 +57,9 @@ class ChildAccountList(
 //        return result.parseAddressList()
 //    }
 
-    private fun queryAccountMeta(address: String): List<ChildAccount>? {
-        val result = Cadence.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence() { arg { address(address) } }
-        return result?.parseAccountMetas()
+    private suspend fun queryAccountMeta(address: String): List<ChildAccount>? {
+        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence() { arg { Cadence.address(address) } }
+        return result?.encode()?.parseAccountMetas()
     }
 
     private fun cache(): CacheManager<ChildAccountCache> {

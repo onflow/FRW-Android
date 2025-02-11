@@ -108,7 +108,7 @@ class AddressBookViewModel : ViewModel() {
         showProgressLiveData.postValue(true)
         viewModelIOScope(this) {
             val service = retrofit().create(ApiService::class.java)
-            val resp = service.deleteAddressBook(contact.id.orEmpty())
+            service.deleteAddressBook(contact.id.orEmpty())
             loadAddressBook()
             showProgressLiveData.postValue(false)
             val data = addressBookLiveData.value?.toMutableList() ?: return@viewModelIOScope
@@ -199,23 +199,25 @@ class AddressBookViewModel : ViewModel() {
 
     private fun queryOnBlockChain(keyword: String, data: MutableList<Any>, server: FlowDomainServer) {
         safeRun {
-            val contact = queryAddressBookFromBlockchain(keyword, server) ?: return@safeRun
+            ioScope {
+                val contact = queryAddressBookFromBlockchain(keyword, server) ?: return@ioScope
 
-            if (contact.isContactInBookList()) {
-                return@safeRun
-            }
+                if (contact.isContactInBookList()) {
+                    return@ioScope
+                }
 
-            data.add(AddressBookCharModel(text = ".${server.server}"))
-            data.add(AddressBookPersonModel(data = contact))
-            if (keyword == searchKeyword) {
-                addressBookLiveData.postValue(data)
+                data.add(AddressBookCharModel(text = ".${server.server}"))
+                data.add(AddressBookPersonModel(data = contact))
+                if (keyword == searchKeyword) {
+                    addressBookLiveData.postValue(data)
+                }
             }
         }
     }
 
     private fun merge(recentList: List<AddressBookContact>, addressBookList: List<AddressBookContact>): List<AddressBookContact> {
         val recent = recentList.toMutableList()
-        recent.removeAll { addressBookList.firstOrNull { it.address == it.address } != null }
+        recent.removeAll { addressBookList.firstOrNull { bookItem -> bookItem.address == it.address } != null }
         return mutableListOf<AddressBookContact>().apply {
             addAll(recent)
             addAll(addressBookList)
