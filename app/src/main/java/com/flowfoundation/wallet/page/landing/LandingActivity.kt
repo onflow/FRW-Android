@@ -40,7 +40,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
         WalletFetcher.addListener(this)
         setupData()
-        setupViewPager()
+        // setupViewPager()
         checkWalletInfo()
     }
 
@@ -59,8 +59,8 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         with(binding) {
             if (isLoading) {
                 flLandingDone.gone()
-                viewPager.visible()
-                tabLayout.visible()
+                viewPager.gone() // slider
+                tabLayout.gone() // slider
                 clButton.setBackgroundResource(R.drawable.bg_landing_step_loading)
                 tvButtonTitle.setText(R.string.landing_step_loading)
                 tvButtonTitle.setTextColor(R.color.accent_green.res2color())
@@ -70,7 +70,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
                 MixpanelManager.accountCreationFinish()
                 autoScroll?.stopAutoScroll()
                 flLandingDone.visible()
-                viewPager.invisible()
+                viewPager.gone() // slider
                 tabLayout.gone()
                 clButton.setBackgroundResource(R.drawable.bg_landing_step_done)
                 clButton.setOnClickListener {
