@@ -6,7 +6,7 @@ import com.flowfoundation.wallet.utils.Env
 
 class FlowWalletApplication : Application() {
 
-    override fun onCreate() {
+    override fun onCreate() { // entry-point
         super.onCreate()
         Env.init(this)
         LaunchManager.init(this)
