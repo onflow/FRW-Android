@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentWalletUnregisteredBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -52,6 +55,9 @@ class WalletUnregisteredFragment : Fragment() {
             }
             importButton.setOnClickListener { WalletRestoreActivity.launch(requireContext()) }
         }
+
+        binding.legalText.text = Html.fromHtml(getString(R.string.legal_message), Html.FROM_HTML_MODE_LEGACY)
+        binding.legalText.movementMethod = LinkMovementMethod.getInstance()
 
         ioScope {
             val list = AccountManager.getSwitchAccountList()

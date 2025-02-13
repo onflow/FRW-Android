@@ -7,7 +7,7 @@ class WalletCreateViewModel : ViewModel() {
 
     val onStepChangeLiveData = MutableLiveData<Int>()
 
-    private var step = WALLET_CREATE_STEP_LEGAL
+    private var step = WALLET_CREATE_STEP_USERNAME
 
     fun nextStep() {
         step++
