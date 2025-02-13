@@ -42,6 +42,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         setupData()
         setupViewPager()
         checkWalletInfo()
+    }
 
     private fun checkWalletInfo() {
         setupButton()
