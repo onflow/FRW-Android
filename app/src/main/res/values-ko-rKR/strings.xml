@@ -248,12 +248,6 @@
     <string name="reset">초기화</string>
     <string name="skip">건너뛰기</string>
     <string name="start">시작</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
-    <string name="guide_title_2">\n모든 토큰을 모으십시오.</string>
-    <string name="guide_desc_2">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
-    <string name="guide_title_4">\n즐겨 찾는 사이트 둘러보기</string>
-    <string name="guide_desc_4">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
     <string name="import_wallet">지갑 가져오기</string>
     <string name="import_str">가져오기</string>
     <string name="welcome_desc">보안에 대한 자세한 정보 제공</string>

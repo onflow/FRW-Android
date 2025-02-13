@@ -248,12 +248,6 @@
     <string name="reset">Remise à zéro</string>
     <string name="skip">Sauter</string>
     <string name="start">Démarrage</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">Partagez d\'excellentes collections du NFT avec vos amis</string>
-    <string name="guide_title_2">Rassemblez\ntous vos jetons</string>
-    <string name="guide_desc_2">Partagez d\'excellentes collections du NFT avec vos amis</string>
-    <string name="guide_title_4">Explorer\nvotre site préféré</string>
-    <string name="guide_desc_4">Partagez d\'excellentes collections du NFT avec vos amis</string>
     <string name="import_wallet">Portefeuille d\'importation</string>
     <string name="import_str">Importation</string>
     <string name="welcome_desc">En savoir plus sur la sécurité</string>

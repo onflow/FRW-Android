@@ -250,12 +250,6 @@
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
     <string name="start">Start</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">Share excellent NFT collections with friends</string>
-    <string name="guide_title_2">Gather\nall your tokens</string>
-    <string name="guide_desc_2">Share excellent NFT collections with friends</string>
-    <string name="guide_title_4">Explore\nyour favourite site</string>
-    <string name="guide_desc_4">Share excellent NFT collections with friends</string>
     <string name="import_wallet">Import Wallet</string>
     <string name="import_str">Import</string>
     <string name="welcome_desc">Provide More About The Security</string>
