@@ -283,11 +283,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.guide.GuideActivity"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.landing.LandingActivity"
             android:screenOrientation="portrait"/>
 

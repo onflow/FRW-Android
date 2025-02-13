@@ -197,14 +197,6 @@ suspend fun updateAccountTransferCount(count: Int) {
     dataStore.edit { it[KEY_ACCOUNT_TRANSFER_COUNT] = count }
 }
 
-fun isGuidePageShown(): Boolean {
-    return sharedPreferencesTraditional.getBoolean(KEY_IS_GUIDE_PAGE_SHOWN, false)
-}
-
-fun setGuidePageShown() {
-    sharedPreferencesTraditional.edit().putBoolean(KEY_IS_GUIDE_PAGE_SHOWN, true).apply()
-}
-
 fun isStakingGuideDisplayed(): Boolean {
     return sharedPreferencesTraditional.getBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, false)
 }
