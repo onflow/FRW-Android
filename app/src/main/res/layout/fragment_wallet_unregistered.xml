@@ -42,7 +42,6 @@
             app:layout_constraintEnd_toEndOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Welcome description placed just above the buttons -->
     <TextView
         android:id="@+id/desc_view"
         android:layout_width="match_parent"
@@ -75,7 +74,7 @@
         android:textAllCaps="false"
         android:textColor="@color/welcome_page_text"
         android:textSize="16sp"
-        app:cornerRadius="100dp"
+        app:cornerRadius="16dp"
         app:layout_constraintBottom_toTopOf="@id/import_button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -95,7 +94,7 @@
         android:textAllCaps="false"
         android:textColor="@color/welcome_page_text"
         android:textSize="16sp"
-        app:cornerRadius="100dp"
+        app:cornerRadius="16dp"
         app:layout_constraintBottom_toTopOf="@id/legal_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
