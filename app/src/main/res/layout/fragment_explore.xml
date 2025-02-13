@@ -251,14 +251,14 @@
                         app:layout_constraintTop_toTopOf="@id/recent_title">
 
                         <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_width="30dp"
+                            android:layout_height="match_parent"
                             android:layout_marginEnd="3dp"
                             android:gravity="center_vertical"
                             android:text="@string/more"
                             android:textAllCaps="false"
                             android:textColor="@color/violet1"
-                            android:textSize="14sp"/>
+                            android:textSize="14sp" />
 
                         <androidx.constraintlayout.utils.widget.ImageFilterView
                             android:layout_width="wrap_content"
@@ -385,35 +385,6 @@
                     android:textSize="16sp"
                     app:layout_constraintStart_toEndOf="@id/dapp_icon"
                     app:layout_constraintTop_toTopOf="parent"/>
-
-                <LinearLayout
-                    android:id="@+id/dapp_more_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="17dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="@id/dapp_title"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/dapp_title">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="3dp"
-                        android:gravity="center_vertical"
-                        android:text="@string/more"
-                        android:textAllCaps="false"
-                        android:textColor="@color/violet1"
-                        android:textSize="14sp"/>
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:src="@drawable/ic_arrow_right_1"
-                        app:tint="@color/violet1"/>
-                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/dapp_tabs"
