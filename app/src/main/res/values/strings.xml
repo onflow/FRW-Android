@@ -709,7 +709,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="legal_message">
     <![CDATA[
-    By using Flow Wallet you agree to the <a href="https://lilico.app/about/terms"><u>Terms of Service</u></a> and <a href="https://lilico.app/about/privacy-policy"><u>Privacy Policy</u></a>
+    By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>
     ]]>
     </string>
 
