@@ -9,47 +9,64 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="54dp"
-        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toTopOf="@id/create_button"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.utils.widget.ImageFilterView
-            android:id="@+id/ifv_logo"
-            android:layout_width="130dp"
-            android:layout_height="130dp"
-            android:src="@drawable/ic_launcher_fill"
-            app:layout_constraintBottom_toTopOf="@id/title_view"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed"/>
-
         <TextView
-            android:id="@+id/title_view"
+            android:id="@+id/get_started"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:fontFamily="@font/montsettat"
-            android:gravity="center"
-            android:text="@string/app_name"
+            android:paddingHorizontal="31dp"
+            android:fontFamily="@font/inter_medium"
+            android:gravity="start"
+            android:text="@string/get_started"
             android:textColor="@color/text_2"
-            android:textSize="24sp"
-            android:textStyle="bold"
+            android:textSize="48sp"
+            app:layout_constraintBottom_toTopOf="@id/on_flow_card"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/on_flow_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-30dp"
+            android:layout_marginStart="28dp"
+            app:cardCornerRadius="50dp"
+            app:cardBackgroundColor="@color/accent_green"
+            app:strokeWidth="0dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/get_started"
             app:layout_constraintBottom_toTopOf="@id/desc_view"
-            app:layout_constraintTop_toBottomOf="@id/ifv_logo"/>
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:id="@+id/on_flow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/e_ukraine_inter_light"
+                android:gravity="start"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:text="@string/on_flow"
+                android:textColor="@color/white"
+                android:textSize="48sp" />
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/desc_view"
+            android:visibility="visible"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="90dp"
             android:paddingHorizontal="28dp"
             android:fontFamily="@font/inter"
             android:gravity="start"
             android:text="@string/welcome_desc"
             android:textColor="@color/text_2"
             android:textSize="18sp"
-            app:layout_constraintTop_toBottomOf="@id/title_view"
+            app:layout_constraintTop_toBottomOf="@id/on_flow_card"
             app:layout_constraintBottom_toTopOf="@id/cl_account_layout"/>
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -67,9 +84,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_semi_bold"
-                android:gravity="center"
+                android:gravity="start"
                 android:text="@string/login_with_registered_account"
-                android:textColor="@color/text_3"
+                android:textColor="@color/text_1"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent"/>
@@ -80,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
                 android:paddingVertical="12dp"
-                app:layout_constraintHeight_max="220dp"
+                app:layout_constraintHeight_max="180dp"
                 app:layout_constraintBottom_toTopOf="@id/ll_divider"
                 app:layout_constraintTop_toBottomOf="@id/tv_account_title"/>
 

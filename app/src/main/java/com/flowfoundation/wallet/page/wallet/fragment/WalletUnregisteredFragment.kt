@@ -39,13 +39,13 @@ class WalletUnregisteredFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val layoutParams = binding.ifvLogo.layoutParams as ConstraintLayout.LayoutParams
+        //val layoutParams = binding.ifvLogo.layoutParams as ConstraintLayout.LayoutParams
         with(binding) {
             clAccountLayout.gone()
-            ifvLogo.layoutParams = layoutParams.apply {
-                width = 130.dp2px().toInt()
-                height = 130.dp2px().toInt()
-            }
+//            ifvLogo.layoutParams = layoutParams.apply {
+//                width = 130.dp2px().toInt()
+//                height = 130.dp2px().toInt()
+//            }
             createButton.setOnClickListener {
                 if (isTestnet()) {
                     SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
@@ -65,10 +65,12 @@ class WalletUnregisteredFragment : Fragment() {
                 uiScope {
                     with(binding) {
                         clAccountLayout.visible()
-                        ifvLogo.layoutParams = layoutParams.apply {
-                            width = 92.dp2px().toInt()
-                            height = 92.dp2px().toInt()
-                        }
+                        descView.gone()
+                        onFlow.gone()
+//                        ifvLogo.layoutParams = layoutParams.apply {
+//                            width = 92.dp2px().toInt()
+//                            height = 92.dp2px().toInt()
+//                        }
                         rvAccountList.layoutManager = LinearLayoutManager(context)
                         rvAccountList.adapter = adapter
                     }
