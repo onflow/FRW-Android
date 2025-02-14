@@ -54,7 +54,7 @@ jobs:
                   "client_info": {
                     "mobilesdk_app_id": "1:000000000000:android:dummy",
                     "android_client_info": {
-                      "package_name": "com.flowfoundation.wallet"
+                      "package_name": "com.flowfoundation.wallet.dev"
                     }
                   },
                   "oauth_client": [],
