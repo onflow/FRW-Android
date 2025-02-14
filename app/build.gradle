@@ -62,16 +62,16 @@ android {
 
     signingConfigs {
         release {
-            keyAlias keyAlias
-            keyPassword keyPassword
-            storeFile file(storeFilePath)
-            storePassword storePassword
+            keyAlias = keyAlias
+            keyPassword = keyPassword
+            storeFile = file(storeFilePath)
+            storePassword = storePassword
         }
         dev {
-            keyAlias keyAlias
-            keyPassword keyPassword
-            storeFile file(storeFilePath)
-            storePassword storePassword
+            keyAlias = keyAlias
+            keyPassword = keyPassword
+            storeFile = file(storeFilePath)
+            storePassword = storePassword
         }
     }
 
