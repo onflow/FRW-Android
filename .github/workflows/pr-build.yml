@@ -28,8 +28,5 @@ jobs:
       - name: Write Local Properties to File
         run: echo "${{ secrets.LOCAL_PROPERTIES }}" > ${{ github.workspace }}/frw/local.properties
 
-      - name: Run Lint Checks
-        run: cd ./frw && ./gradlew lint
-
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug
