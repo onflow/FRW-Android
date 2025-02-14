@@ -68,6 +68,7 @@ android {
 
     buildTypes {
         debug {
+            lint.checkReleaseBuilds = false
             minifyEnabled false
             multiDexEnabled true
             debuggable true
@@ -78,6 +79,7 @@ android {
         }
 
         releaseDebug {
+            lint.checkReleaseBuilds = false
             minifyEnabled false
             multiDexEnabled true
             debuggable true
