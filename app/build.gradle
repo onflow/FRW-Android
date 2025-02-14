@@ -51,18 +51,27 @@ android {
         manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
 
+    def keyAlias = properties.getProperty("keyAlias", "debug")
+    def keyPassword = properties.getProperty("keyPassword", "android")
+    def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath.toString())
+    def storePassword = properties.getProperty("storePassword", "android")
+
+    if (storeFilePath == null || storeFilePath.isEmpty()) {
+        throw new GradleException("ERROR: storeFilePath is null or empty! Check key.properties.")
+    }
+
     signingConfigs {
         release {
-            keyAlias properties.getProperty("keyAlias")
-            keyPassword properties.getProperty("keyPassword")
-            storeFile file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
-            storePassword properties.getProperty("storePassword")
+            keyAlias keyAlias
+            keyPassword keyPassword
+            storeFile file(storeFilePath)
+            storePassword storePassword
         }
         dev {
-            keyAlias properties.getProperty("keyAlias")
-            keyPassword properties.getProperty("keyPassword")
-            storeFile file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
-            storePassword properties.getProperty("storePassword")
+            keyAlias keyAlias
+            keyPassword keyPassword
+            storeFile file(storeFilePath)
+            storePassword storePassword
         }
     }
 
