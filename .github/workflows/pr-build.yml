@@ -41,10 +41,18 @@ jobs:
             echo "⚠️ GOOGLE_SERVICES secret is missing! Using a dummy file."
           fi
 
-      - name: Generate Dummy Keystore (For PR Builds)
+      - name: Ensure Key Properties Exist
         run: |
-          KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"
-          keytool -genkeypair -v -keystore "$KEYSTORE_PATH" -storepass "password" -alias "alias_name" -keypass "password" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+          FILE_PATH="${{ github.workspace }}/frw/key.properties"
+          if [ -n "${{ secrets.KEY_PROPERTIES }}" ]; then
+            echo "${{ secrets.KEY_PROPERTIES }}" > "$FILE_PATH"
+          else
+            echo "storeFile=keystore.jks" > "$FILE_PATH"
+            echo "storePassword=password" >> "$FILE_PATH"
+            echo "keyAlias=alias_name" >> "$FILE_PATH"
+            echo "keyPassword=password" >> "$FILE_PATH"
+            echo "⚠️ WARNING: KEY_PROPERTIES secret is missing! Using a dummy file."
+          fi
 
       - name: Debug Gradle Environment Variables
         run: cd ./frw && ./gradlew -q properties
