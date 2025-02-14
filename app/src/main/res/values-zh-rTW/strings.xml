@@ -244,12 +244,6 @@
     <string name="reset">重置</string>
     <string name="skip">跳過</string>
     <string name="start">開始</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">與朋友分享優秀的 NFT 收藏</string>
-    <string name="guide_title_2">Gather\nall your tokens</string>
-    <string name="guide_desc_2">與朋友分享優秀的 NFT 收藏</string>
-    <string name="guide_title_4">Explore\nyour favourite site</string>
-    <string name="guide_desc_4">與朋友分享優秀的 NFT 收藏</string>
     <string name="import_wallet">導入錢包</string>
     <string name="import_str">Import</string>
     <string name="welcome_desc">Provide More About The Security</string>
