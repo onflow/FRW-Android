@@ -1,8 +1,8 @@
-name: PR Build Check
+name: Android Build Check
 
 on:
+  push:
   pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -27,6 +27,17 @@ jobs:
 
       - name: Write Local Properties to File
         run: echo "${{ secrets.LOCAL_PROPERTIES }}" > ${{ github.workspace }}/frw/local.properties
+
+      - name: Ensure Google Services JSON Exists
+        run: |
+          if [ -n "${{ secrets.GOOGLE_SERVICES }}" ]; then
+            printf '%s' '${{ secrets.GOOGLE_SERVICES }}' > ${{ github.workspace }}/frw/app/src/debug/google-services.json
+          else
+            echo "Warning: GOOGLE_SERVICES secret is empty or missing!"
+          fi
+
+      - name: Run Lint Checks
+        run: cd ./frw && ./gradlew lint
 
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug
