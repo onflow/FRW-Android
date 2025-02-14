@@ -25,19 +25,32 @@ jobs:
         with:
           log-accepted-android-sdk-licenses: false
 
-      - name: Write Local Properties to File
-        run: echo "${{ secrets.LOCAL_PROPERTIES }}" > ${{ github.workspace }}/frw/local.properties
+      - name: Ensure Local Properties Exist
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > ${{ github.workspace }}/frw/local.properties
+          if [ -n "${{ secrets.LOCAL_PROPERTIES }}" ]; then
+            echo "${{ secrets.LOCAL_PROPERTIES }}" >> ${{ github.workspace }}/frw/local.properties
+          fi
 
       - name: Ensure Google Services JSON Exists
         run: |
           if [ -n "${{ secrets.GOOGLE_SERVICES }}" ]; then
             printf '%s' '${{ secrets.GOOGLE_SERVICES }}' > ${{ github.workspace }}/frw/app/src/debug/google-services.json
           else
-            echo "Warning: GOOGLE_SERVICES secret is empty or missing!"
+            echo '{}' > ${{ github.workspace }}/frw/app/src/debug/google-services.json
+            echo "⚠️ GOOGLE_SERVICES secret is missing! Using a dummy file."
           fi
+
+      - name: Generate Dummy Keystore (For PR Builds)
+        run: |
+          KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"
+          keytool -genkeypair -v -keystore "$KEYSTORE_PATH" -storepass "password" -alias "alias_name" -keypass "password" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+
+      - name: Debug Gradle Environment Variables
+        run: cd ./frw && ./gradlew -q properties
 
       - name: Run Lint Checks
         run: cd ./frw && ./gradlew lint
 
       - name: Build APK (No Upload)
-        run: cd ./frw && ./gradlew assembleDebug
+        run: cd ./frw && ./gradlew assembleDebug --stacktrace
