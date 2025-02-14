@@ -4,7 +4,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListToEvm
@@ -56,11 +56,11 @@ object EVMWalletManager {
     }
 
     private fun canEnableEVM(): Boolean {
-        return Cadence.CADENCE_CREATE_COA_ACCOUNT.getScript().isNotEmpty()
+        return CadenceScript.CADENCE_CREATE_COA_ACCOUNT.getScript().isNotEmpty()
     }
 
     private fun canFetchEVMAddress(): Boolean {
-        return Cadence.CADENCE_QUERY_COA_EVM_ADDRESS.getScript().isNotEmpty()
+        return CadenceScript.CADENCE_QUERY_COA_EVM_ADDRESS.getScript().isNotEmpty()
     }
 
     fun updateEVMAddress() {
@@ -119,7 +119,7 @@ object EVMWalletManager {
 
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
         val address = evmAddressMap[getNetworkAddress(network)]
-        return if (address.equals("0x")) {
+        return if (address.isNullOrBlank() || address == "0x") {
             return null
         } else {
             address
@@ -127,7 +127,7 @@ object EVMWalletManager {
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
-        return evmAddressMap.values.firstOrNull { it == address } != null
+        return evmAddressMap.values.firstOrNull { address != "0x" && it == address } != null
     }
 
     suspend fun moveFlowToken(
@@ -185,7 +185,7 @@ object EVMWalletManager {
             val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
             MixpanelManager.transferNFT(
                 if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
-                if(isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
+                if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
                 nft.getNFTIdentifier(),
                 txId.orEmpty(),
                 if (isMoveToEVM) TransferAccountType.FLOW else TransferAccountType.COA,

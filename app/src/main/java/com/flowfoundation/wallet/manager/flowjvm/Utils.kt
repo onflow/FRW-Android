@@ -8,149 +8,35 @@ import com.nftco.flow.sdk.FlowAccount
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowArgumentsBuilder
-import com.nftco.flow.sdk.FlowScriptResponse
 import com.nftco.flow.sdk.cadence.Field
 import com.nftco.flow.sdk.cadence.JsonCadenceBuilder
 import com.nftco.flow.sdk.cadence.UFix64NumberField
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowAddressListResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolListResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolObjResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowBoolResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowSearchAddressResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringBoolResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringListResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringMapResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringObjResult
-import com.flowfoundation.wallet.manager.flowjvm.model.FlowStringResult
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.logd
+import org.onflow.flow.infrastructure.Cadence
 import java.math.BigDecimal
 import java.util.Locale
 
-
-internal fun FlowScriptResponse.parseSearchAddress(): String? {
-    // {"type":"Optional","value":{"type":"Address","value":"0x5d2cd5bf303468fa"}}
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowSearchAddressResult::class.java)
-        result.value.value
-    } catch (e: Exception) {
-        return null
-    }
-}
-
-internal fun FlowScriptResponse.parseBool(default: Boolean = false): Boolean? {
-    // {"type":"Bool","value":false}
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowBoolResult::class.java)
-        result.value
-    } catch (e: Exception) {
-        return default
-    }
-}
-
-internal fun FlowScriptResponse.parseBoolObject(default: Boolean = false): Boolean? {
-    // {"value":{"value":false,"type":"Bool"},"type":"Optional"}
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowBoolObjResult::class.java)
-        result.value.value
-    } catch (e: Exception) {
-        return default
-    }
-}
-
-internal fun FlowScriptResponse.parseBoolList(): List<Boolean>? {
-    // {"type":"Array","value":[{"type":"Bool","value":true},{"type":"Bool","value":true},{"type":"Bool","value":true},{"type":"Bool","value":true},{"type":"Bool","value":false}]}
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowBoolListResult::class.java)
-        return result.value.map { it.value }
-    } catch (e: Exception) {
-        null
-    }
-}
-
-internal fun FlowScriptResponse.parseStringList(): List<String>? {
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowStringListResult::class.java)
-        return result.value.value.map { it.value }
-    } catch (e: Exception) {
-        null
-    }
-}
-
-internal fun FlowScriptResponse.parseStringDecimalMap(): Map<String, BigDecimal>? {
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowStringMapResult::class.java)
-        return result.value?.associate {
-            it.key?.value.toString() to it.value?.value.toSafeDecimal()
-        }
-    } catch (e: Exception) {
-        null
-    }
-}
-
-internal fun FlowScriptResponse.parseStringBoolMap(): Map<String, Boolean>? {
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowStringBoolResult::class.java)
-        return result.value?.associate {
-            it.key?.value.toString() to (it.value?.value ?: false)
-        }
-    } catch (e: Exception) {
-        null
-    }
-}
-
-internal fun FlowScriptResponse.parseString(): String? {
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
-        result.value
-    } catch (e: Exception) {
-        return null
-    }
-}
-//{"value":{"value":"A.3399d7c6c609b7e5.DAMO420.Vault","type":"String"},"type":"Optional"}
-internal fun FlowScriptResponse.parseStringObject(): String? {
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowStringObjResult::class.java)
-        result.value.value
-    } catch (e: Exception) {
-        return null
-    }
-}
-
-internal fun FlowScriptResponse?.parseFloat(default: Float = 0f): Float {
-    // {"type":"UFix64","value":"12.34"}
+internal fun Cadence.Value?.parseBigDecimal(default: BigDecimal = BigDecimal.ZERO): BigDecimal {
     this ?: return default
     return try {
-        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
-        (result.value.toFloatOrNull()) ?: default
+        this.decode<String>().toBigDecimalOrNull() ?: default
     } catch (e: Exception) {
         return default
     }
 }
 
-internal fun FlowScriptResponse?.parseDecimal(default: BigDecimal = BigDecimal.ZERO): BigDecimal {
-    // {"type":"UFix64","value":"12.34"}
-    this ?: return default
+internal fun Map<String, String>?.parseBigDecimalMap(): Map<String, BigDecimal>? {
     return try {
-        val result = Gson().fromJson(String(bytes), FlowStringResult::class.java)
-        result.value.toBigDecimalOrNull() ?: default
+        this?.mapValues { (_, value) ->
+            value.toSafeDecimal()
+        }
     } catch (e: Exception) {
-        return default
-    }
-}
-
-internal fun FlowScriptResponse?.parseAddressList(): List<String> {
-    // {"value":[{"value":"0x4eaaf4f4c84dce5e","type":"Address"},{"value":"0x74dacdce5216865f","type":"Address"},{"value":"0xe424ebca3e307ef8","type":"Address"},{"value":"0x0207b0b4a27a1801","type":"Address"},{"value":"0x3da47812164a24a8","type":"Address"},{"value":"0x97e2e1f9d68910b6","type":"Address"}],"type":"Array"}
-    this ?: return emptyList()
-    return try {
-        val result = Gson().fromJson(String(bytes), FlowAddressListResult::class.java)
-        return result.value.map { it.value }
-    } catch (e: Exception) {
-        return emptyList()
+        return null
     }
 }
 
@@ -165,13 +51,13 @@ fun addressVerify(address: String): Boolean {
     }
 }
 
-fun Nft.formatCadence(cadence: Cadence): String {
-    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return cadence.getScript()
-    return config.formatCadence(cadence)
+fun Nft.formatCadence(cadenceScript: CadenceScript): String {
+    val config = NftCollectionConfig.get(collectionAddress, contractName()) ?: return cadenceScript.getScript()
+    return config.formatCadence(cadenceScript)
 }
 
-fun NftCollection.formatCadence(cadence: Cadence): String {
-    return cadence.getScript().replace("<NFT>", contractName ?: "")
+fun NftCollection.formatCadence(cadenceScript: CadenceScript): String {
+    return cadenceScript.getScript().replace("<NFT>", contractName ?: "")
         .replace("<NFTAddress>", address ?: "")
         .replace("<CollectionStoragePath>", path?.storagePath ?: "")
         .replace("<CollectionPublic>", path?.publicCollectionName ?: "")

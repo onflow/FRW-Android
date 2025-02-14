@@ -15,21 +15,18 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
 import com.flowfoundation.wallet.firebase.firebaseInformationCheck
 import com.flowfoundation.wallet.page.dialog.common.RootDetectedDialog
-import com.flowfoundation.wallet.page.guide.GuideActivity
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
-import com.flowfoundation.wallet.utils.isGuidePageShown
 import com.flowfoundation.wallet.utils.isNewVersion
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
-import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 
 
 class MainActivity : BaseActivity() {
@@ -71,9 +68,7 @@ class MainActivity : BaseActivity() {
         }
         WindowFrame.attach(this)
 
-        if (!isGuidePageShown()) {
-            GuideActivity.launch(this)
-        } else if (!isNotificationPermissionChecked() && !isNotificationPermissionGrand(this)) {
+        if (!isNotificationPermissionChecked() && !isNotificationPermissionGrand(this)) {
             NotificationPermissionActivity.launch(this)
         }
     }

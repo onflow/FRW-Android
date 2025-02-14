@@ -47,7 +47,6 @@ private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BAL
 private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
 private val KEY_ACCOUNT_TRANSFER_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSFER_COUNT")
-private const val KEY_IS_GUIDE_PAGE_SHOWN = "KEY_IS_GUIDE_PAGE_SHOWN"
 private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
 private val KEY_INBOX_READ_LIST = stringPreferencesKey("KEY_INBOX_READ_LIST")
@@ -195,14 +194,6 @@ suspend fun getAccountTransferCount(): Int = dataStore.data.map { it[KEY_ACCOUNT
 
 suspend fun updateAccountTransferCount(count: Int) {
     dataStore.edit { it[KEY_ACCOUNT_TRANSFER_COUNT] = count }
-}
-
-fun isGuidePageShown(): Boolean {
-    return sharedPreferencesTraditional.getBoolean(KEY_IS_GUIDE_PAGE_SHOWN, false)
-}
-
-fun setGuidePageShown() {
-    sharedPreferencesTraditional.edit().putBoolean(KEY_IS_GUIDE_PAGE_SHOWN, true).apply()
 }
 
 fun isStakingGuideDisplayed(): Boolean {

@@ -6,7 +6,7 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
@@ -82,7 +82,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider.let {
                 try {
-                    val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
+                    val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
                         arg { uint8(it.getSignatureAlgorithm().index) }
                         arg { uint8(it.getHashAlgorithm().index) }

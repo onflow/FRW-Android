@@ -52,11 +52,6 @@ class ReceivePresenter(
     @SuppressLint("SetTextI18n")
     private fun updateWallet(data: ReceiveData) {
         receiveData = data
-        fun copy() {
-            textToClipboard(data.address)
-            toast(msgRes = R.string.copy_address_toast)
-        }
-
         with(binding) {
             tvWalletName.text = data.walletName.ifBlank { R.string.wallet.res2String() }
             tvWalletAddress.text = data.address.toAddress()
@@ -74,6 +69,11 @@ class ReceivePresenter(
             }
             btnCopy.setOnClickListener { copy() }
         }
+    }
+
+    private fun copy() {
+        textToClipboard(binding.tvWalletAddress.text.toString().trim())
+        toast(msgRes = R.string.copy_address_toast)
     }
 
     private fun showShareQRCode() {
@@ -104,6 +104,7 @@ class ReceivePresenter(
             } else {
                 ivQrCode.setImageDrawable(cadenceQRCode)
             }
+            clEvmTip.setVisible(isSwitchToEVM)
         }
         isImageLoaded = true
     }

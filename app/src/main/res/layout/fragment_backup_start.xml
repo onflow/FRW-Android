@@ -21,53 +21,46 @@
 
     <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
         android:id="@+id/oi_google_drive"
-        android:layout_width="110dp"
-        android:layout_height="110dp"
-        android:layout_marginTop="64dp"
-        app:layout_constraintEnd_toStartOf="@id/oi_recovery_phrase"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="18dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_multi_backup_tip"
-        app:option_item_icon="@drawable/ic_backup_google_drive"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/inter"
-        android:textSize="14sp"
-        android:textColor="@color/text_2"
-        android:text="@string/google_drive"
-        app:layout_constraintTop_toBottomOf="@id/oi_google_drive"
-        app:layout_constraintStart_toStartOf="@id/oi_google_drive"
-        app:layout_constraintEnd_toEndOf="@id/oi_google_drive"/>
+        app:option_item_icon="@drawable/ic_backup_google_drive"
+        app:option_item_name="@string/google_drive"/>
 
     <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
         android:id="@+id/oi_recovery_phrase"
-        android:layout_width="110dp"
-        android:layout_height="110dp"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="18dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/oi_google_drive"
-        app:layout_constraintTop_toTopOf="@id/oi_google_drive"
-        app:option_item_icon="@drawable/ic_backup_recovery_phrase"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oi_google_drive"
+        app:option_item_icon="@drawable/ic_backup_recovery_phrase"
+        app:option_item_name="@string/recovery_phrase"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/inter"
-        android:textSize="14sp"
-        android:textColor="@color/text_2"
-        android:text="@string/recovery_phrase"
+    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
+        android:id="@+id/oi_dropbox"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="18dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/oi_recovery_phrase"
-        app:layout_constraintStart_toStartOf="@id/oi_recovery_phrase"
-        app:layout_constraintEnd_toEndOf="@id/oi_recovery_phrase"/>
+        app:option_item_icon="@drawable/ic_dropbox"
+        app:option_item_name="@string/dropbox"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="106dp"
         android:paddingHorizontal="28dp"
-        app:layout_constraintTop_toBottomOf="@id/oi_google_drive">
+        app:layout_constraintTop_toBottomOf="@id/oi_dropbox">
 
         <TextView
             android:id="@+id/tv_about_title"

@@ -28,6 +28,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.google.android.gms.common.api.Scope
 import wallet.core.jni.HDWallet
 import java.util.*
 
@@ -58,7 +59,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
 
         val signInOptions = GoogleSignInOptions.Builder()
             .requestEmail()
-//            .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))
+            .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))
             .build()
         mClient = GoogleSignIn.getClient(this, signInOptions)
 

@@ -15,7 +15,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
@@ -35,6 +35,7 @@ import com.flowfoundation.wallet.network.model.AccountSignRequest
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreDropboxOption
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreGoogleDriveOption
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOption
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOptionModel
@@ -60,6 +61,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     val optionChangeLiveData = MutableLiveData<RestoreOptionModel>()
 
     val googleDriveOptionChangeLiveData = MutableLiveData<RestoreGoogleDriveOption>()
+    val dropboxOptionChangeLiveData = MutableLiveData<RestoreDropboxOption>()
 
     private val optionList = mutableListOf<RestoreOption>()
     private var currentOption = RestoreOption.RESTORE_START
@@ -92,6 +94,10 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         googleDriveOptionChangeLiveData.postValue(option)
     }
 
+    private fun changeDropboxOption(option: RestoreDropboxOption) {
+        dropboxOptionChangeLiveData.postValue(option)
+    }
+
     fun getMnemonicData(): String {
         return mnemonicData
     }
@@ -102,15 +108,32 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun toBackupNotFound() {
-        changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_ERROR_BACKUP)
+        if (currentOption == RestoreOption.RESTORE_FROM_GOOGLE_DRIVE) {
+            changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_ERROR_BACKUP)
+        } else if (currentOption == RestoreOption.RESTORE_FROM_DROPBOX) {
+            changeDropboxOption(RestoreDropboxOption.RESTORE_ERROR_BACKUP)
+        }
     }
 
     fun toBackupDecryptionFailed() {
-        changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_ERROR_PIN)
+        if (currentOption == RestoreOption.RESTORE_FROM_GOOGLE_DRIVE) {
+            changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_ERROR_PIN)
+        } else if (currentOption == RestoreOption.RESTORE_FROM_DROPBOX) {
+            changeDropboxOption(RestoreDropboxOption.RESTORE_ERROR_PIN)
+        }
     }
 
     fun toGoogleDrive() {
         changeGoogleDriveOption(RestoreGoogleDriveOption.RESTORE_GOOGLE_DRIVE)
+    }
+
+    fun toDropboxPinCode(data: String) {
+        this.mnemonicData = data
+        changeDropboxOption(RestoreDropboxOption.RESTORE_PIN)
+    }
+
+    fun toDropbox() {
+        changeDropboxOption(RestoreDropboxOption.RESTORE_DROPBOX)
     }
 
     fun isRestoreValid(): Boolean {
@@ -172,7 +195,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             try {
                 val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
-                val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
+                val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
                     arg { string(keyPair.public.toFormatString()) }
                     arg { uint8(SignatureAlgorithm.ECDSA_P256.index) }
                     arg { uint8(HashAlgorithm.SHA2_256.index) }
@@ -312,7 +335,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         restoreAddress = address
     }
 
-    private suspend fun Cadence.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+    private suspend fun CadenceScript.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val providers = mnemonicList.map {
             val words = it.split(" ")

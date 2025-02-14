@@ -34,7 +34,7 @@ object NftCollectionStateManager {
         ioScope { fetchStateSync(onFinish) }
     }
 
-    private fun fetchStateSync(onFinish: (() -> Unit)? = null) {
+    private suspend fun fetchStateSync(onFinish: (() -> Unit)? = null) {
         val collectionList = NftCollectionConfig.list()
 
         val collectionMap = cadenceCheckNFTListEnabled()
@@ -57,7 +57,7 @@ object NftCollectionStateManager {
         onFinish?.invoke()
     }
 
-    fun fetchStateSingle(collection: NftCollection, cache: Boolean = false) {
+    suspend fun fetchStateSingle(collection: NftCollection, cache: Boolean = false) {
         val isEnable = cadenceNftCheckEnabled(collection)
         if (isEnable != null) {
             val oldState = tokenStateList.firstOrNull { it.name == collection.name }

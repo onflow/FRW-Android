@@ -19,15 +19,15 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 class BackupAboutDialog: BottomSheetDialogFragment() {
 
     private var aboutType = BackupAbout.ABOUT_MULTI_BACKUP
-    private lateinit var bining: DialogBackupAboutBinding
+    private lateinit var binding: DialogBackupAboutBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        bining = DialogBackupAboutBinding.inflate(inflater)
-        return bining.root
+        binding = DialogBackupAboutBinding.inflate(inflater)
+        return binding.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -52,7 +52,7 @@ class BackupAboutDialog: BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        with(bining) {
+        with(binding) {
             tvAboutTitle.text = aboutType.titleId.res2String()
             tvAboutContent.text = aboutType.contentId.res2String()
             tvAboutNote.text = aboutType.noteId.res2String()

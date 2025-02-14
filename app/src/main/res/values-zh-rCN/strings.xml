@@ -246,12 +246,6 @@
     <string name="reset">重置</string>
     <string name="skip">跳过</string>
     <string name="start">开始</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">与朋友分享优秀的 NFT 藏品</string>
-    <string name="guide_title_2">收集\n所有代币</string>
-    <string name="guide_desc_2">与朋友分享优秀的 NFT 藏品</string>
-    <string name="guide_title_4">探索\n您喜爱的网站</string>
-    <string name="guide_desc_4">与朋友分享优秀的 NFT 藏品</string>
     <string name="import_wallet">导入钱包</string>
     <string name="import_str">导入</string>
     <string name="welcome_desc">提供更多安全信息</string>
@@ -467,6 +461,7 @@
     <string name="other_devices">其他设备</string>
     <string name="multi_backup_tip">请选择两个或更多备份选项</string>
     <string name="upload_key_to_google_drive">将密钥上传到 Google Drive</string>
+    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">注册密钥清单</string>
     <string name="upload_backup">上传备份</string>
     <string name="backup_completed">备份完成</string>
@@ -490,9 +485,9 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">从多重备份恢复</string>
     <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
-    <string name="from_recovery_phrase">用助记词恢复(传统）</string>
+    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
-    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key">从助记词恢复（传统）</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">多重还原</string>
@@ -661,7 +656,7 @@
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="move_fee_tips">充电时在入门和流上的EVM之间移动。</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
     <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
     <string name="add_custom_token">Add Custom Token</string>
@@ -678,4 +673,26 @@
     <string name="token_identifier">Token Identifier</string>
     <string name="add_suggested_token">Add Suggested Token</string>
     <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
+    <string name="storage_limit_reached">Storage limit reached.</string>
+    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
+    <string name="flow_limit_reached">FLOW limit reached.</string>
+    <string name="storage_usage">存储使用</string>
+    <string name="total_balance">Total Balance </string>
+    <string name="storage_limit_error">Storage Limit Error</string>
+    <string name="storage_limit_warning">Storage Limit Warning</string>
+    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
+    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
+    <string name="storage_limit_error_desc">您的交易失败，因为它会导致您的帐户在您的帐户的存储使用中降到最低余额以下。</string>
+    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
+        your storage usage.</string>
+    <string name="deposit">存款</string>
+    <string name="buy_flow">购买 FLOW</string>
+    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
+    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
 </resources>

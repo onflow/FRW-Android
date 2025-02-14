@@ -1,13 +1,13 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet
 
-import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.storageInfoCache
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.utils.extensions.toSafeLong
 import com.flowfoundation.wallet.utils.ioScope
+import kotlinx.serialization.Serializable
+import org.onflow.flow.infrastructure.Cadence
 
 
 fun queryStorageInfo() {
@@ -16,47 +16,17 @@ fun queryStorageInfo() {
         if (address.isNullOrEmpty()) {
             return@ioScope
         }
-        val response = Cadence.CADENCE_QUERY_STORAGE_INFO.executeCadence {
-            arg { address(address) }
-        }
-        if (response?.stringValue.isNullOrBlank()) {
+        val response = CadenceScript.CADENCE_QUERY_STORAGE_INFO.executeCadence {
+            arg { Cadence.address(address) }
+        }?.decode<StorageInfo>()
+        if (response == null) {
             return@ioScope
         }
-        val data = Gson().fromJson(response?.stringValue, StorageInfoResult::class.java)
-        val info = StorageInfo(
-            data.getValueByName("available"),
-            data.getValueByName("used"),
-            data.getValueByName("capacity"),
-        )
-        storageInfoCache().cache(info)
+        storageInfoCache().cache(response)
     }
 }
 
-private fun StorageInfoResult.getValueByName(name: String) =
-    this.value?.find { it.key?.value == name }?.value?.value.toSafeLong()
-
-
-data class StorageInfoResult(
-    @SerializedName("type")
-    val type: String?,
-    @SerializedName("value")
-    val value: List<Item>?
-) {
-    data class Item(
-        @SerializedName("key")
-        val key: Value?,
-        @SerializedName("value")
-        val value: Value?
-    ) {
-        data class Value(
-            @SerializedName("type")
-            val type: String?,
-            @SerializedName("value")
-            val value: String?
-        )
-    }
-}
-
+@Serializable
 data class StorageInfo(
     @SerializedName("available")
     val available: Long,

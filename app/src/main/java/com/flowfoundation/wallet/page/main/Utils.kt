@@ -17,6 +17,7 @@ import com.airbnb.lottie.value.LottieValueCallback
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
+import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -349,7 +350,7 @@ private fun View.setupWalletItem(
 @SuppressLint("SetTextI18n")
 fun bindFlowBalance(balanceView: TextView, address: String) {
     ioScope {
-        val balance = cadenceQueryTokenBalanceWithAddress(
+        val balance = AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalanceWithAddress(
             FlowCoinListManager.getFlowCoin(),
             address
         ) ?: BigDecimal.ZERO

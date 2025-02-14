@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -38,6 +39,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.FlowAccount
+import com.nftco.flow.sdk.FlowAccountKey
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -94,13 +96,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val privateKey = PrivateKey(privateKeyData)
 
                 val p1PublicKey =
-                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
+                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
+                        .removePrefix("04")
 
                 val k1PublicKey =
                     privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
 
                 if (address.isEmpty()) {
-                    checkIsQueryAddress(privateKey.data().bytesToHex(), k1PublicKey, privateKey.data().bytesToHex(), p1PublicKey)
+                    checkIsQueryAddress(
+                        privateKey.data().bytesToHex(),
+                        k1PublicKey,
+                        privateKey.data().bytesToHex(),
+                        p1PublicKey
+                    )
                 } else {
                     queryAddressPublicKey(
                         address,
@@ -127,13 +135,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val privateKey = PrivateKey(privateKeyInput.hexToBytes())
 
                 val p1PublicKey =
-                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
+                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
+                        .removePrefix("04")
 
                 val k1PublicKey =
                     privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
 
                 if (address.isEmpty()) {
-                    checkIsQueryAddress(privateKey.data().bytesToHex(), k1PublicKey, privateKey.data().bytesToHex(), p1PublicKey)
+                    checkIsQueryAddress(
+                        privateKey.data().bytesToHex(),
+                        k1PublicKey,
+                        privateKey.data().bytesToHex(),
+                        p1PublicKey
+                    )
                 } else {
                     queryAddressPublicKey(
                         address,
@@ -170,7 +184,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
                         .removePrefix("04")
                 if (address.isEmpty()) {
-                    checkIsQueryAddress(k1PrivateKey.data().bytesToHex(), k1PublicKey, p1PrivateKey.data().bytesToHex(), p1PublicKey)
+                    checkIsQueryAddress(
+                        k1PrivateKey.data().bytesToHex(),
+                        k1PublicKey,
+                        p1PrivateKey.data().bytesToHex(),
+                        p1PublicKey
+                    )
                 } else {
                     queryAddressPublicKey(
                         address,
@@ -242,6 +261,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val accountKey = account.keys.lastOrNull { it.publicKey.base16Value == publicKey }
         return accountKey?.run {
             checkAndImportKeyStoreAddress(
+                this,
                 KeystoreAddress(
                     address = account.address.base16Value,
                     publicKey = publicKey,
@@ -293,7 +313,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
         addressListLiveData.postValue(addressList)
     }
 
-    private suspend fun checkIsLogin(privateKey: String, publicKey: String, signAlgo: SignatureAlgorithm): Boolean {
+    private suspend fun checkIsLogin(
+        privateKey: String,
+        publicKey: String,
+        signAlgo: SignatureAlgorithm
+    ): Boolean {
         try {
             val response = apiService.checkKeystorePublicKeyImport(publicKey)
             if (response.status == 200) {
@@ -313,7 +337,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun checkAndImportKeyStoreAddress(keystoreAddress: KeystoreAddress) {
+    private fun checkAndImportKeyStoreAddress(accountKey: FlowAccountKey, keystoreAddress: KeystoreAddress) {
         currentKeyStoreAddress = keystoreAddress
         loadingLiveData.postValue(true)
         ioScope {
@@ -326,7 +350,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             } catch (e: Exception) {
                 (e as? HttpException)?.let {
                     if (it.code() == 409) {
-                        loginWithKeyStoreAddress(keystoreAddress)
+                        loginWithKeyStoreAddress(accountKey, keystoreAddress)
                     }
                 } ?: run {
                     loadingLiveData.postValue(false)
@@ -345,7 +369,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
     fun importWithUsername(username: String) {
         if (currentKeyStoreAddress == null || username.isEmpty()
             || currentKeyStoreAddress?.address.isNullOrEmpty()
-            || currentKeyStoreAddress?.address == "0x") {
+            || currentKeyStoreAddress?.address == "0x"
+        ) {
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.login_failure)
             return
@@ -366,6 +391,23 @@ class KeyStoreRestoreViewModel : ViewModel() {
             val cryptoProvider =
                 PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+            val currentKey = currentKeyStoreAddress?.run {
+                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey.base16Value == publicKey }
+            } ?: run {
+                toast(msgRes = R.string.login_failure)
+                activity.finish()
+                return@ioScope
+            }
+            if (currentKey.weight < 1000) {
+                toast(msgRes = R.string.restore_failure_insufficient_weight)
+                activity.finish()
+                return@ioScope
+            }
+            if (currentKey.revoked) {
+                toast(msgRes = R.string.restore_failure_key_revoked)
+                activity.finish()
+                return@ioScope
+            }
             import(cryptoProvider, username) { isSuccess ->
                 uiScope {
                     loadingLiveData.postValue(false)
@@ -386,7 +428,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
         cryptoProvider: PrivateKeyStoreCryptoProvider, username: String, callback:
             (isSuccess: Boolean) -> Unit
     ) {
-
         ioScope {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
@@ -442,17 +483,21 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun loginWithPrivateKey(privateKey: String, publicKey: String, signAlgo: SignatureAlgorithm) {
+    private fun loginWithPrivateKey(
+        privateKey: String,
+        publicKey: String,
+        signAlgo: SignatureAlgorithm
+    ) {
         ioScope {
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-            loginAndFetchWallet(privateKey, publicKey, signAlgo) { isSuccess ->
+            loginAndFetchWallet(privateKey, publicKey, signAlgo) { isSuccess, errorMsg ->
                 uiScope {
                     loadingLiveData.postValue(false)
                     if (isSuccess) {
                         delay(200)
                         MainActivity.relaunch(activity, clearTop = true)
                     } else {
-                        toast(msgRes = R.string.login_failure)
+                        toast(msgRes = errorMsg)
                         activity.finish()
                     }
                 }
@@ -460,7 +505,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun loginWithKeyStoreAddress(keystoreAddress: KeystoreAddress) {
+    private fun loginWithKeyStoreAddress(flowAccountKey: FlowAccountKey, keystoreAddress: KeystoreAddress) {
         if (WalletManager.wallet()?.walletAddress() == keystoreAddress.address) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
@@ -476,6 +521,16 @@ class KeyStoreRestoreViewModel : ViewModel() {
         ioScope {
             val cryptoProvider = PrivateKeyStoreCryptoProvider(Gson().toJson(keystoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+            if (flowAccountKey.weight < 1000) {
+                toast(msgRes = R.string.restore_failure_insufficient_weight)
+                activity.finish()
+                return@ioScope
+            }
+            if (flowAccountKey.revoked) {
+                toast(msgRes = R.string.restore_failure_key_revoked)
+                activity.finish()
+                return@ioScope
+            }
             login(cryptoProvider) { isSuccess ->
                 uiScope {
                     loadingLiveData.postValue(false)
@@ -533,7 +588,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 keyStoreInfo = cryptoProvider.getKeyStoreInfo()
                                             )
                                         )
-                                        MixpanelManager.accountRestore(cryptoProvider.getAddress(), restoreType)
+                                        MixpanelManager.accountRestore(
+                                            cryptoProvider.getAddress(),
+                                            restoreType
+                                        )
                                         clearUserCache()
                                         callback.invoke(true)
                                     }
@@ -555,12 +613,27 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     private fun loginAndFetchWallet(
         privateKey: String, publicKey: String, signAlgo: SignatureAlgorithm,
-        callback: (isSuccess: Boolean) -> Unit
+        callback: (isSuccess: Boolean, errorMsg: Int) -> Unit
     ) {
         ioScope {
+            val addressResponse = queryService.queryAddress(publicKey)
+            val currentKey = addressResponse.accounts.firstOrNull()?.run {
+                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey.base16Value == publicKey }
+            } ?: run {
+                callback.invoke(false, R.string.login_failure)
+                return@ioScope
+            }
+            if (currentKey.weight < 1000) {
+                callback.invoke(false, R.string.restore_failure_insufficient_weight)
+                return@ioScope
+            }
+            if (currentKey.revoked) {
+                callback.invoke(false, R.string.restore_failure_key_revoked)
+                return@ioScope
+            }
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
-                    callback.invoke(false)
+                    callback.invoke(false, R.string.login_failure)
                     return@getFirebaseUid
                 }
                 runBlocking {
@@ -570,57 +643,61 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         val resp = service.login(
                             LoginRequest(
                                 signature = getSignature(
-                                    getFirebaseJwt(), privateKey, signAlgo
+                                    getFirebaseJwt(), privateKey, currentKey.hashAlgo, signAlgo
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = publicKey,
-                                    hashAlgo = HashAlgorithm.SHA2_256.index,
-                                    signAlgo = signAlgo.index
+                                    hashAlgo = currentKey.hashAlgo.index,
+                                    signAlgo = currentKey.signAlgo.index
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
                         )
                         if (resp.data?.customToken.isNullOrBlank()) {
-                            callback.invoke(false)
+                            callback.invoke(false, R.string.login_failure)
                         } else {
                             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
                                 if (isSuccess) {
                                     ioScope {
                                         try {
                                             val walletData = service.getWalletList()
-                                            val addressResponse = queryService.queryAddress(publicKey)
                                             val wallet = addressResponse.accounts.firstOrNull {
                                                 walletData.data?.walletAddress() == it.address
                                             }
                                             if (wallet == null) {
-                                                callback.invoke(false)
+                                                callback.invoke(false, R.string.login_failure)
                                             } else {
                                                 AccountManager.add(
                                                     Account(
                                                         userInfo = service.userInfo().data,
-                                                        keyStoreInfo = Gson().toJson(KeystoreAddress(
-                                                            address = wallet.address,
-                                                            publicKey = publicKey,
-                                                            privateKey = privateKey,
-                                                            keyId = wallet.keyId,
-                                                            weight = wallet.weight,
-                                                            hashAlgo = wallet.hashAlgo,
-                                                            signAlgo = wallet.signAlgo
-                                                        ))
+                                                        keyStoreInfo = Gson().toJson(
+                                                            KeystoreAddress(
+                                                                address = wallet.address,
+                                                                publicKey = publicKey,
+                                                                privateKey = privateKey,
+                                                                keyId = wallet.keyId,
+                                                                weight = wallet.weight,
+                                                                hashAlgo = wallet.hashAlgo,
+                                                                signAlgo = wallet.signAlgo
+                                                            )
+                                                        )
                                                     )
                                                 )
-                                                MixpanelManager.accountRestore(wallet.address, restoreType)
+                                                MixpanelManager.accountRestore(
+                                                    wallet.address,
+                                                    restoreType
+                                                )
                                                 setRegistered()
                                                 setBackupManually()
                                                 clearUserCache()
-                                                callback.invoke(true)
+                                                callback.invoke(true, 0)
                                             }
                                         } catch (e: Exception) {
-                                            callback.invoke(false)
+                                            callback.invoke(false, R.string.login_failure)
                                         }
                                     }
                                 } else {
-                                    callback.invoke(false)
+                                    callback.invoke(false, R.string.login_failure)
                                 }
                             }
                         }
@@ -628,21 +705,26 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                     if (catching.isFailure) {
                         loge(catching.exceptionOrNull())
-                        callback.invoke(false)
+                        callback.invoke(false, R.string.login_failure)
                     }
                 }
             }
         }
     }
 
-    private fun getSignature(jwt: String, privateKey: String, signAlgo: SignatureAlgorithm): String {
+    private fun getSignature(
+        jwt: String,
+        privateKey: String,
+        hashAlgo: HashAlgorithm,
+        signAlgo: SignatureAlgorithm
+    ): String {
         checkSecurityProvider()
         updateSecurityProvider()
         return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(
                 privateKey, signAlgo
             ),
-            hashAlgo = HashAlgorithm.SHA2_256
+            hashAlgo = hashAlgo
         ).sign(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray()).bytesToHex()
     }
 }

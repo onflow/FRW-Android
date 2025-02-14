@@ -248,14 +248,8 @@
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
     <string name="start">Start</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">Share excellent NFT collections with friends</string>
-    <string name="guide_title_2">Gather\nall your tokens</string>
-    <string name="guide_desc_2">Share excellent NFT collections with friends</string>
-    <string name="guide_title_4">Explore\nyour favourite site</string>
-    <string name="guide_desc_4">Share excellent NFT collections with friends</string>
     <string name="import_wallet">Import Wallet</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">IMPORT</string>
     <string name="welcome_desc">Provide More About The Security</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
@@ -368,7 +362,7 @@
     <string name="unstaking">UnStaking</string>
     <string name="request_to_unstake">Request to UnStake</string>
     <string name="will_be_processed_at_the_next_epoch">Will be processed at the next epoch</string>
-    <string name="backup_desc">Backup Recovery Phrase is important in protect your prize property.</string>
+    <string name="backup_desc">Backup your account now to protect your assets</string>
     <string name="not_now">Not Now</string>
     <string name="not_now_tip">Not now</string>
     <string name="link_account">Link Account</string>
@@ -469,6 +463,7 @@
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
@@ -492,9 +487,9 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
+    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
     <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
-    <string name="from_raw_key">From Raw Key</string>
+    <string name="from_raw_key">From Raw Keys</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
@@ -680,4 +675,26 @@ uses to turn your device into a hardware wallet.</string>
     <string name="token_identifier">Token Identifier</string>
     <string name="add_suggested_token">Add Suggested Token</string>
     <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
+    <string name="storage_limit_reached">Storage limit reached.</string>
+    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
+    <string name="flow_limit_reached">FLOW limit reached.</string>
+    <string name="storage_usage">Storage Usage</string>
+    <string name="total_balance">Total Balance </string>
+    <string name="storage_limit_error">Storage Limit Error</string>
+    <string name="storage_limit_warning">Storage Limit Warning</string>
+    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
+    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
+    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
+    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
+        your storage usage.</string>
+    <string name="deposit">Deposit</string>
+    <string name="buy_flow">Buy FLOW</string>
+    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
+    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
 </resources>

@@ -25,6 +25,8 @@ import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_VIEW_FINISH
 import com.flowfoundation.wallet.manager.backup.BackupItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
+import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_VIEW_FINISH
+import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -66,11 +68,29 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
         }
     }
 
+    private val dropboxViewReceiver by lazy {
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                binding.btnRecoveryPhrase.setProgressVisible(false)
+                val data = intent?.getParcelableArrayListExtra<BackupItem>(com.flowfoundation.wallet.manager.dropbox.EXTRA_CONTENT) ?: return
+                data.firstOrNull {
+                    it.publicKey == backupKey?.info?.pubKey?.publicKey
+                }?.let {
+                    BackupViewMnemonicActivity.launch(this@BackupDetailActivity, it.data)
+                } ?: run {
+                    toast(msgRes = R.string.backup_not_found)
+                }
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(googleDriveViewReceiver, IntentFilter(
                 ACTION_GOOGLE_DRIVE_VIEW_FINISH))
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(dropboxViewReceiver, IntentFilter(ACTION_DROPBOX_VIEW_FINISH))
         TransactionStateManager.addOnTransactionStateChange(this)
         binding = ActivityBackupDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -86,6 +106,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
 
     override fun onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(googleDriveViewReceiver)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(dropboxViewReceiver)
         super.onDestroy()
     }
 
@@ -116,7 +137,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 tvStatusLabel.text = statusType
                 tvStatusLabel.backgroundTintList = ColorStateList.valueOf(statusColor)
                 tvStatusLabel.setTextColor(statusColor)
-                btnRecoveryPhrase.setVisible(backupType == BackupType.GOOGLE_DRIVE.index)
+                btnRecoveryPhrase.setVisible(backupType == BackupType.GOOGLE_DRIVE.index || backupType == BackupType.DROPBOX.index)
             }
             backupKey?.info?.device?.let { deviceModel ->
                 tvDeviceApplication.text = deviceModel.user_agent
@@ -142,7 +163,12 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                     return@setOnClickListener
                 }
                 btnRecoveryPhrase.setProgressVisible(true)
-                GoogleDriveAuthActivity.viewMnemonic(this@BackupDetailActivity)
+                val backupType = backupKey?.info?.backupInfo?.type ?: -1
+                if (backupType == BackupType.GOOGLE_DRIVE.index) {
+                    GoogleDriveAuthActivity.viewMnemonic(this@BackupDetailActivity)
+                } else if (backupType == BackupType.DROPBOX.index) {
+                    DropboxAuthActivity.viewMnemonic(this@BackupDetailActivity)
+                }
             }
         }
 

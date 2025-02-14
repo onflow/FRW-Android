@@ -61,7 +61,7 @@ class BackupRecoveryPhraseInfoFragment : Fragment() {
                 viewModel.copyMnemonic()
             }
         }
-        binding.backupProgress.setProgressInfo(BackupOption.BACKUP_WITH_RECOVERY_PHRASE, true)
+        binding.backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_RECOVERY_PHRASE, true)
         with(binding.btnNext) {
             setOnClickListener {
                 backupViewModel.toNext(BackupCompletedItem(
