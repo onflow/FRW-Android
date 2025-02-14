@@ -57,7 +57,6 @@ android {
     def storePassword = properties.getProperty("storePassword", "android")
 
     if (storeFilePath == null || storeFilePath.isEmpty()) {
-        println("⚠️ WARNING: storeFilePath is null! Defaulting to debug.keystore")
         storeFilePath = rootProject.file("app/debug.keystore").absolutePath.toString()
     }
 
