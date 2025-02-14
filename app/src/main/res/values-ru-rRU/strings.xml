@@ -203,7 +203,7 @@
     <string name="add_collection">Добавить коллекцию</string>
     <string name="search_nft_collection">Поиск по коллекции NFT</string>
     <string name="scan_qr_code">Сканирование QR-кода</string>
-    <string name="explore_search_hint">Название сайта или URL</string>
+    <string name="explore_search_hint">Поиск по названию или URL</string>
     <string name="bookmark">Закладка</string>
     <string name="drag_here_to_unpin">Перетащите сюда, чтобы открепить</string>
     <string name="recovery_purchase_tips">Запишите или скопируйте эти слова в правильном порядке и сохраните их в надежном месте.</string>

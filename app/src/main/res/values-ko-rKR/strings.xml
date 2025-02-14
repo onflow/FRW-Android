@@ -203,7 +203,7 @@
     <string name="add_collection">컬렉션 추가</string>
     <string name="search_nft_collection">NFT 컬렉션 검색</string>
     <string name="scan_qr_code">QR코드 스캔</string>
-    <string name="explore_search_hint">사이트 이름 또는 URL</string>
+    <string name="explore_search_hint">이름 또는 URL 검색</string>
     <string name="bookmark">북마크</string>
     <string name="drag_here_to_unpin">여기로 드래그하여 고정 해제</string>
     <string name="recovery_purchase_tips">이 단어들을 올바른 순서대로 적거나 복사하여 안전한 곳에 저장하세요.</string>

@@ -60,7 +60,7 @@
     <string name="continue_str">Continue</string>
     <string name="restore_with_google_drive">Restore with Google Drive</string>
     <string name="wrong_password">wrong password</string>
-    <string name="word_not_found">Opps, word not found.</string>
+    <string name="word_not_found">Oops, word not found.</string>
     <string name="restore_mnemonic_tip">This is a 12 word phrase you were given when you created your previous wallet.</string>
     <string name="multi_restore_mnemonic_tip">This is a 15 word phrase you were given when you
         created your previous wallet.</string>
@@ -203,7 +203,7 @@
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
-    <string name="explore_search_hint">Site Name or URL</string>
+    <string name="explore_search_hint">Search name or URL</string>
     <string name="bookmark">Bookmark</string>
     <string name="drag_here_to_unpin">Drag Here To Unpin</string>
     <string name="recovery_purchase_tips">Write down or copy these words in the right order and save them somewhere safe.</string>

@@ -203,7 +203,7 @@
     <string name="add_collection">Sammlung hinzufügen</string>
     <string name="search_nft_collection">NFT-Sammlung durchsuchen</string>
     <string name="scan_qr_code">QR-Code scannen</string>
-    <string name="explore_search_hint">Name oder URL der Website</string>
+    <string name="explore_search_hint">Name oder URL suchen</string>
     <string name="bookmark">Lesezeichen</string>
     <string name="drag_here_to_unpin">Zum Entpinnen hierher ziehen</string>
     <string name="recovery_purchase_tips">Schreiben oder kopieren Sie diese Wörter in der richtigen Reihenfolge auf und bewahren Sie sie an einem sicheren Ort auf.</string>
