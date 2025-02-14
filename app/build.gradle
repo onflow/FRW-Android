@@ -55,7 +55,7 @@ android {
         release {
             keyAlias properties.getProperty("keyAlias")
             keyPassword properties.getProperty("keyPassword")
-            storeFile file(properties.getProperty("storeFile"))
+            storeFile file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore")))
             storePassword properties.getProperty("storePassword")
         }
         dev {
