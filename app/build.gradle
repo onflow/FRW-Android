@@ -57,7 +57,8 @@ android {
     def storePassword = properties.getProperty("storePassword", "android")
 
     if (storeFilePath == null || storeFilePath.isEmpty()) {
-        throw new GradleException("ERROR: storeFilePath is null or empty! Check key.properties.")
+        println("⚠️ WARNING: storeFilePath is null! Defaulting to debug.keystore")
+        storeFilePath = rootProject.file("app/debug.keystore").absolutePath.toString()
     }
 
     signingConfigs {
@@ -109,8 +110,8 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
-                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile")
-                testers = properties.getProperty("testers")
+                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
+                testers = properties.getProperty("testers", "")
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
