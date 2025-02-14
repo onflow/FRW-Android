@@ -40,46 +40,46 @@ jobs:
           fi
 
       - name: Ensure Google Services JSON Exists
+        env:
+          DUMMY_GOOGLE_SERVICES: |
+            {
+              "project_info": {
+                "project_number": "000000000000",
+                "project_id": "dummy-project-id",
+                "firebase_url": "https://dummy-project-id.firebaseio.com",
+                "storage_bucket": "dummy-project-id.appspot.com"
+              },
+              "client": [
+                {
+                  "client_info": {
+                    "mobilesdk_app_id": "1:000000000000:android:dummy",
+                    "android_client_info": {
+                      "package_name": "com.flowfoundation.wallet"
+                    }
+                  },
+                  "oauth_client": [],
+                  "api_key": [
+                    {
+                      "current_key": "dummy_api_key"
+                    }
+                  ],
+                  "services": {
+                    "appinvite_service": {
+                      "other_platform_oauth_client": []
+                    }
+                  }
+                }
+              ]
+            }
         run: |
           FILE_PATH="${{ github.workspace }}/frw/app/src/debug/google-services.json"
           if [ -n "${{ secrets.GOOGLE_SERVICES }}" ]; then
-            printf '%s' '${{ secrets.GOOGLE_SERVICES }}' > "$FILE_PATH"
+            printf '%s' "${{ secrets.GOOGLE_SERVICES }}" > "$FILE_PATH"
           else
-            cat <<EOF > "$FILE_PATH"
-      {
-        "project_info": {
-          "project_number": "000000000000",
-          "project_id": "dummy-project-id",
-          "firebase_url": "https://dummy-project-id.firebaseio.com",
-          "storage_bucket": "dummy-project-id.appspot.com"
-        },
-        "client": [
-          {
-            "client_info": {
-              "mobilesdk_app_id": "1:000000000000:android:dummy",
-              "android_client_info": {
-                "package_name": "com.flowfoundation.wallet"
-              }
-            },
-            "oauth_client": [ ],
-            "api_key": [
-              {
-                "current_key": "dummy_api_key"
-              }
-            ],
-            "services": {
-              "appinvite_service": {
-                "other_platform_oauth_client": [ ]
-              }
-            }
-          }
-        ]
-      }
-      EOF
-      echo "⚠️ WARNING: GOOGLE_SERVICES secret is missing! Using a dummy file."
-      fi
+            echo "$DUMMY_GOOGLE_SERVICES" > "$FILE_PATH"
+            echo "⚠️ WARNING: GOOGLE_SERVICES secret is missing! Using a dummy file."
+          fi
       
-
       - name: Ensure Key Properties Exist
         run: |
           FILE_PATH="${{ github.workspace }}/frw/key.properties"
