@@ -22,8 +22,8 @@ if (apiKeysFile.exists()) {
         apiKeys.load(input)
     }
 }
-def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV")
-def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD")
+def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "dummyDevKey"
+def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "dummyProdKey"
 
 android {
     compileSdk 34
