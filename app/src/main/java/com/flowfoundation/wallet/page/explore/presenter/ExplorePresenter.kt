@@ -14,10 +14,8 @@ import com.flowfoundation.wallet.page.explore.model.ExploreModel
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.MeowDomainClaimedStateChangeListener
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.observeMeowDomainClaimedStateChange
 import com.flowfoundation.wallet.utils.extensions.dp2px
-import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.location
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 import kotlinx.coroutines.delay
@@ -60,12 +58,6 @@ class ExplorePresenter(
     }
 
     override fun bind(model: ExploreModel) {
-        if (model.isModelEmpty()) {
-            binding.llEmpty.visible()
-            return
-        }
-        binding.llEmpty.gone()
-
         model.dAppList?.let {
             dappAdapter.setNewDiffData(it)
             binding.dappWrapper.setVisible(it.isNotEmpty() && AppConfig.showDappList())

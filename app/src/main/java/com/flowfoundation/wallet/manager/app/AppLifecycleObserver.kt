@@ -8,7 +8,6 @@ import com.walletconnect.android.CoreClient
 import com.flowfoundation.wallet.page.profile.subpage.wallet.queryStorageInfo
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.safeRun
 
 private const val TAG = "AppLifecycleObserver"
