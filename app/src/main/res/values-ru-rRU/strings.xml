@@ -430,7 +430,6 @@
     <string name="accessible">Доступный</string>
     <string name="none_accessible_coins">Нет доступа к монетам</string>
     <string name="no_linked_account">Нет привязанных счетов</string>
-    <string name="empty_bookmarks">Пустые закладки</string>
     <string name="view_empty_collection">Посмотреть пустой</string>
     <string name="inaccessible_tag">Недоступно</string>
     <string name="inaccessible_token_tip">Flow Wallet не имеет доступа к %1$s в аккаунте %2$s , пожалуйста, проверьте настройки связанного аккаунта.</string>

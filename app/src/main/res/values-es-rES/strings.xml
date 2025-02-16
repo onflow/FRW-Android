@@ -430,7 +430,6 @@
     <string name="accessible">Accesible</string>
     <string name="none_accessible_coins">Ninguno Monedas accesibles</string>
     <string name="no_linked_account">Sin cuentas vinculadas</string>
-    <string name="empty_bookmarks">Marcadores vacíos</string>
     <string name="view_empty_collection">Ver vacío</string>
     <string name="inaccessible_tag">Inaccesible</string>
     <string name="inaccessible_token_tip">Flow Wallet no tiene acceso a %1$s en la cuenta %2$s , por favor comprueba la configuración de tu cuenta vinculada.</string>

@@ -430,7 +430,6 @@
     <string name="accessible">アクセシブル</string>
     <string name="none_accessible_coins">なし アクセスコイン</string>
     <string name="no_linked_account">リンク口座なし</string>
-    <string name="empty_bookmarks">空のブックマーク</string>
     <string name="view_empty_collection">空を見る</string>
     <string name="inaccessible_tag">アクセス不能</string>
     <string name="inaccessible_token_tip">フローウォレットは %2$s アカウントの %1$s にアクセスできません。</string>

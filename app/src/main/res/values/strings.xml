@@ -435,7 +435,6 @@
     <string name="accessible">Accessible</string>
     <string name="none_accessible_coins">None Accessible Coins</string>
     <string name="no_linked_account">No Linked Accounts</string>
-    <string name="empty_bookmarks">Empty Bookmarks</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
     <string name="inaccessible_token_tip">Flow Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>

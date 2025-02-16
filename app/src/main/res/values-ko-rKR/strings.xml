@@ -430,7 +430,6 @@
     <string name="accessible">접근성</string>
     <string name="none_accessible_coins">접근 가능한 코인 없음</string>
     <string name="no_linked_account">연결된 계정 없음</string>
-    <string name="empty_bookmarks">빈 북마크</string>
     <string name="view_empty_collection">비어 있음 보기</string>
     <string name="inaccessible_tag">액세스 불가</string>
     <string name="inaccessible_token_tip">플로우 월렛에서 %2$s 계정의 %1$s 에 액세스할 수 없는 경우 연결된 계정 설정을 확인하세요.</string>
