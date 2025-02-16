@@ -22,8 +22,8 @@ if (apiKeysFile.exists()) {
         apiKeys.load(input)
     }
 }
-def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "dummyDevKey"
-def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "dummyProdKey"
+def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKey"
+def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
 
 android {
     compileSdk 34
@@ -62,16 +62,16 @@ android {
 
     signingConfigs {
         release {
-            keyAlias = keyAlias
-            keyPassword = keyPassword
+            keyAlias
+            keyPassword
             storeFile = file(storeFilePath)
-            storePassword = storePassword
+            storePassword
         }
         dev {
-            keyAlias = keyAlias
-            keyPassword = keyPassword
+            keyAlias
+            keyPassword
             storeFile = file(storeFilePath)
-            storePassword = storePassword
+            storePassword
         }
     }
 
