@@ -99,5 +99,15 @@ jobs:
       - name: Debug Key Properties File
         run: cat ${{ github.workspace }}/frw/key.properties
 
+      - name: Ensure Debug Keystore Exists
+        run: |
+          DEBUG_KEYSTORE_PATH="${{ github.workspace }}/frw/app/debug.keystore"
+          if [ ! -f "$DEBUG_KEYSTORE_PATH" ]; then
+            echo "Generating debug keystore..."
+            keytool -genkeypair -v -keystore "$DEBUG_KEYSTORE_PATH" -storepass "android" -alias "androiddebugkey" -keypass "android" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+          else
+            echo "Debug keystore already exists."
+          fi
+
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug --stacktrace
