@@ -62,10 +62,10 @@ android {
 
     signingConfigs {
         release {
-            keyAlias
-            keyPassword
-            storeFile = file(storeFilePath)
-            storePassword
+            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath.toString()))
+            storePassword = properties.getProperty("storePassword", "android")
+            keyAlias = properties.getProperty("keyAlias", "androiddebugkey")
+            keyPassword = properties.getProperty("keyPassword", "android")
         }
         dev {
             keyAlias
