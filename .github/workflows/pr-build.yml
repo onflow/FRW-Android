@@ -79,32 +79,5 @@ jobs:
             echo "$DEBUG_GOOGLE_SERVICES" > "$FILE_PATH"
           fi
 
-      - name: Ensure Key Properties Exist
-        run: |
-          FILE_PATH="${{ github.workspace }}/frw/key.properties"
-          echo "storeFile=app/release.keystore" > "$FILE_PATH"
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> "$FILE_PATH"
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> "$FILE_PATH"
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> "$FILE_PATH"
-      
-
-      - name: Ensure Keystore File Exists
-        run: |
-          KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"
-          keytool -genkeypair -v -keystore "$KEYSTORE_PATH" -storepass "password" -alias "alias_name" -keypass "password" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
-
-      - name: Debug Key Properties File
-        run: cat ${{ github.workspace }}/frw/key.properties
-
-      - name: Ensure Debug Keystore Exists
-        run: |
-          DEBUG_KEYSTORE_PATH="${{ github.workspace }}/frw/app/debug.keystore"
-          if [ ! -f "$DEBUG_KEYSTORE_PATH" ]; then
-            echo "Generating debug keystore..."
-            keytool -genkeypair -v -keystore "$DEBUG_KEYSTORE_PATH" -storepass "android" -alias "androiddebugkey" -keypass "android" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
-          else
-            echo "Debug keystore already exists."
-          fi
-
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug --stacktrace
