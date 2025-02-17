@@ -250,6 +250,8 @@
     <color name="text_4">#1A000000</color>
     <color name="text_5">#E6FFFFFF</color>
     <color name="line_light">#0A000000</color>
+    <color name="landing_on_flow_text">#FFFFFF</color>
+    <color name="landing_get_started_text">#000000</color>
 
     <color name="bg_skip">#26000000</color>
     <color name="evm_on_flow_start_color">#627EEA</color>

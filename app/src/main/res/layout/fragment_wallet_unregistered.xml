@@ -46,7 +46,7 @@
             android:gravity="start"
             android:paddingHorizontal="31dp"
             android:text="@string/get_started"
-            android:textColor="@color/text_2"
+            android:textColor="@color/landing_get_started_text"
             android:textSize="48sp"
             app:layout_constraintTop_toBottomOf="@id/logo_image"
             app:layout_constraintBottom_toTopOf="@id/on_flow_card"
@@ -75,7 +75,7 @@
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
                 android:text="@string/on_flow"
-                android:textColor="@color/white"
+                android:textColor="@color/landing_on_flow_text"
                 android:textSize="48sp" />
         </com.google.android.material.card.MaterialCardView>
 
@@ -88,7 +88,7 @@
             android:gravity="start"
             android:paddingHorizontal="28dp"
             android:text="@string/welcome_desc"
-            android:textColor="@color/text_2"
+            android:textColor="@color/landing_get_started_text"
             android:textSize="18sp"
             android:visibility="visible"
             app:layout_constraintBottom_toTopOf="@id/cl_account_layout"
@@ -214,7 +214,7 @@
         app:layout_constraintBottom_toTopOf="@id/legal_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:rippleColor="@color/black_10"
-        app:strokeColor="@color/welcome_page_text"
+        app:strokeColor="@color/landing_get_started_text"
         app:strokeWidth="1dp"/>
 
     <TextView
@@ -227,7 +227,7 @@
         android:paddingEnd="16dp"
         android:gravity="center"
         android:text="@string/legal_message"
-        android:textColor="@color/text_2"
+        android:textColor="@color/landing_get_started_text"
         android:textSize="14sp"
         android:linksClickable="true"
         app:layout_constraintBottom_toBottomOf="parent"
