@@ -491,7 +491,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
+    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
     <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
     <string name="from_raw_key">From Raw Key</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
@@ -668,7 +668,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">Occurs when moving between accounts on different VMs on Flow</string>
+    <string name="move_fee_tips">Charged when moving between accounts on Cadence and EVM on Flow.</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
     <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
     <string name="add_custom_token">Add Custom Token</string>
@@ -713,5 +713,12 @@ uses to turn your device into a hardware wallet.</string>
     </string>
     <string name="get_started">Let\'s get started</string>
     <string name="on_flow">#onFlow</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
 
 </resources>

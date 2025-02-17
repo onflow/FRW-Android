@@ -463,6 +463,7 @@
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Registration KeyList</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
@@ -486,9 +487,9 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Recovery Phrase (legacy)</string>
+    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
     <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
-    <string name="from_raw_key">From Recovery Phrase (legacy)</string>
+    <string name="from_raw_key">From Raw Keys</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
@@ -688,4 +689,12 @@ uses to turn your device into a hardware wallet.</string>
         your storage usage.</string>
     <string name="deposit">Deposit</string>
     <string name="buy_flow">Buy FLOW</string>
+    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
+    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
 </resources>

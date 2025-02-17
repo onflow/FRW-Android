@@ -29,6 +29,7 @@ import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
+import com.flowfoundation.wallet.page.wallet.dialog.SwapProviderDialog
 import com.flowfoundation.wallet.utils.debug.ResourceUtility.getString
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
@@ -66,9 +67,18 @@ class TokenDetailPresenter(
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener
                 }
-                openBrowser(
-                    activity, "https://${if (isTestnet()) "demo" else "app"}" +
-                        ".increment.fi/swap")
+                SwapProviderDialog.show(
+                    activity.supportFragmentManager,
+                    isEVMToken = WalletManager.isEVMAccountSelected(),
+                    isFlowToken = coin.isFlowCoin())
+            }
+            btnTrade.setVisible(coin.isFlowCoin())
+            viewTradeDivider.setVisible(coin.isFlowCoin())
+            if (coin.isFlowCoin()) {
+                btnReceive.setBackgroundColor(R.color.accent_green_8.res2color())
+            } else {
+                btnReceive.setBackgroundResource(R.drawable.bg_round_right_24dp)
+                btnReceive.backgroundTintList = ColorStateList.valueOf(R.color.accent_green_8.res2color())
             }
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {

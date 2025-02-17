@@ -1,6 +1,6 @@
 package com.flowfoundation.wallet.page.swap
 
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
@@ -59,11 +59,11 @@ private suspend fun swapSendInternal(
     // want use how many token to swap other token
     val isExactFrom = viewModel.exactToken == ExactToken.FROM
 
-    val cadence = (if (isExactFrom) Cadence.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else Cadence.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS).getScript()
+    val cadenceScript = (if (isExactFrom) CadenceScript.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else CadenceScript.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS).getScript()
 
     val tokenName = swapPaths.last().split(".").last()
     val tokenAddress = swapPaths.last().split(".")[1].toAddress()
-    return cadence.replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
+    return cadenceScript.replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
         .transactionByMainWallet {
             arg { array { swapPaths.map { string(it) } } }
 

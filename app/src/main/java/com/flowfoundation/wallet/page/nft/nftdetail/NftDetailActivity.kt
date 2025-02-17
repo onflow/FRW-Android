@@ -109,10 +109,11 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
         fun launch(context: Context, uniqueId: String, collectionContract: String,
                    fromAddress: String? = WalletManager.selectedWalletAddress()) {
+            val finalFromAddress = fromAddress?.takeIf { it.isNotEmpty() } ?: WalletManager.selectedWalletAddress()
             val intent = Intent(context, NftDetailActivity::class.java)
             intent.putExtra(EXTRA_NFT_UNIQUE_ID, uniqueId)
             intent.putExtra(EXTRA_COLLECTION_CONTRACT, collectionContract)
-            intent.putExtra(EXTRA_FROM_ADDRESS, fromAddress)
+            intent.putExtra(EXTRA_FROM_ADDRESS, finalFromAddress)
             context.startActivity(intent)
         }
     }

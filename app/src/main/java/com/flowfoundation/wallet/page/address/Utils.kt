@@ -57,7 +57,7 @@ fun List<AddressBookContact>.removeRepeated(): List<AddressBookContact> {
     return distinctBy { it.uniqueId() }
 }
 
-fun queryAddressBookFromBlockchain(keyword: String, server: FlowDomainServer): AddressBookContact? {
+suspend fun queryAddressBookFromBlockchain(keyword: String, server: FlowDomainServer): AddressBookContact? {
     val name = keyword.lowercase().removeSuffix(".${server.domain}")
     if (name.contains(".")) {
         return null

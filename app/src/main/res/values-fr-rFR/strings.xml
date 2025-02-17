@@ -463,6 +463,7 @@
     <string name="other_devices">Autres dispositifs</string>
     <string name="multi_backup_tip">Veuillez sélectionner 2 options de sauvegarde ou plus</string>
     <string name="upload_key_to_google_drive">Télécharger la clé sur Google Drive</string>
+    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Liste des clés d\'enregistrement</string>
     <string name="upload_backup">Télécharger la sauvegarde</string>
     <string name="backup_completed">Sauvegarde terminée</string>
@@ -486,7 +487,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">A partir de Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Phrase de récupération</string>
-    <string name="from_recovery_phrase">De la phrase de récupération (héritage)</string>
+    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
     <string name="from_recovery_phrase_note">Restauration à l\'aide d\'une phrase de récupération héritée (pas de multi-sauvegarde)</string>
     <string name="from_raw_key">De la phrase de récupération (héritage)</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
@@ -657,7 +658,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="move_fee_tips">Charged when moving between accounts on Cadence and EVM on Flow.</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
     <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
     <string name="add_custom_token">Add Custom Token</string>
@@ -688,4 +689,12 @@ uses to turn your device into a hardware wallet.</string>
         your storage usage.</string>
     <string name="deposit">Dépôt</string>
     <string name="buy_flow">Buy FLOW</string>
+    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
+    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="dropbox">Dropbox</string>
+    <string name="backup_step_dropbox">Dropbox Backup</string>
+    <string name="connect_to_dropbox">Connect to Dropbox</string>
+    <string name="connect_dropbox">Connect Dropbox</string>
+    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
 </resources>

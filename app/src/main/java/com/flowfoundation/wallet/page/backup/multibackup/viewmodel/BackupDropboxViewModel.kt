@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_LOGIN_FINISH
 import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_UPLOAD_FINISH
-import com.flowfoundation.wallet.manager.flowjvm.Cadence
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
@@ -91,7 +91,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider?.let {
                 try {
-                    val txId = Cadence.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
+                    val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
                         arg { uint8(it.getSignatureAlgorithm().index) }
                         arg { uint8(it.getHashAlgorithm().index) }
