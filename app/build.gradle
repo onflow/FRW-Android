@@ -51,21 +51,12 @@ android {
         manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
 
-    def keyAlias = properties.getProperty("keyAlias", "debug")
-    def keyPassword = properties.getProperty("keyPassword", "android")
-    def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath.toString())
-    def storePassword = properties.getProperty("storePassword", "android")
-
-    if (storeFilePath == null || storeFilePath.isEmpty()) {
-        storeFilePath = rootProject.file("app/debug.keystore").absolutePath.toString()
-    }
-
     signingConfigs {
         release {
+            keyAlias properties.getProperty("keyAlias")
+            keyPassword properties.getProperty("keyPassword")
             storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
-            storePassword = properties.getProperty("storePassword") ?: "android"
-            keyAlias = properties.getProperty("keyAlias") ?: "androiddebugkey"
-            keyPassword = properties.getProperty("keyPassword") ?: "android"
+            storePassword properties.getProperty("storePassword")
         }
         dev {
             keyAlias
