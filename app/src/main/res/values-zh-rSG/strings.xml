@@ -250,7 +250,7 @@
     <string name="start">Start</string>
     <string name="import_wallet">Import Wallet</string>
     <string name="import_str">Import</string>
-    <string name="welcome_desc">Provide More About The Security</string>
+    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>

@@ -176,6 +176,7 @@
     <color name="button">#1a1a1a</color>
     <color name="button_text">#ffffff</color>
     <color name="deep_bg">#ffffff</color>
+    <color name="landing_bg">#f0f0f0</color>
 
     <color name="primary0">#00ffffff</color>
     <color name="primary10">#1affffff</color>

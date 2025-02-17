@@ -250,7 +250,7 @@
     <string name="start">Start</string>
     <string name="import_wallet">Import Wallet</string>
     <string name="import_str">IMPORT</string>
-    <string name="welcome_desc">Provide More About The Security</string>
+    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>
@@ -415,7 +415,7 @@
     <string name="new_feature_title_1">Notification of Digital Assets</string>
     <string name="new_feature_desc_1">Flow Wallet will notify you when your digital assets has moved.</string>
     <string name="new_feature_desc2">Now you can add multiple accounts in your Flow Wallet app, by switching account from the side menu or profile.</string>
-    <string name="get_started">Get Started</string>
+    <string name="get_started">Let\'s get started</string>
     <string name="notification_request_title">Turn On Push Notifications</string>
     <string name="notification_request_desc">Get notified when your transfers, swaps, and approvals complete.</string>
     <string name="turn_on_notifications">Turn On Notifications</string>
