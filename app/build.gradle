@@ -81,7 +81,6 @@ android {
             multiDexEnabled true
             debuggable true
             applicationIdSuffix = ".dev"
-            signingConfig signingConfigs.release
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
