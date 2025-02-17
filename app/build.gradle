@@ -62,22 +62,16 @@ android {
 
     signingConfigs {
         release {
-            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath.toString()))
-            storePassword = properties.getProperty("storePassword", "android")
-            keyAlias = properties.getProperty("keyAlias", "androiddebugkey")
-            keyPassword = properties.getProperty("keyPassword", "android")
+            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
+            storePassword = properties.getProperty("storePassword") ?: "android"
+            keyAlias = properties.getProperty("keyAlias") ?: "androiddebugkey"
+            keyPassword = properties.getProperty("keyPassword") ?: "android"
         }
         dev {
             keyAlias
             keyPassword
             storeFile = file(storeFilePath)
             storePassword
-        }
-        debug {
-            storeFile = file(rootProject.file("app/debug.keystore"))
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
         }
     }
 
