@@ -78,18 +78,15 @@ jobs:
           else
             echo "$DEBUG_GOOGLE_SERVICES" > "$FILE_PATH"
           fi
-      
+
       - name: Ensure Key Properties Exist
         run: |
           FILE_PATH="${{ github.workspace }}/frw/key.properties"
-          if [ -n "${{ secrets.KEY_PROPERTIES }}" ]; then
-            echo "${{ secrets.KEY_PROPERTIES }}" > "$FILE_PATH"
-          else
-            echo "storeFile=${{ github.workspace }}/frw/app/keystore.jks" > "$FILE_PATH"
-            echo "storePassword=password" >> "$FILE_PATH"
-            echo "keyAlias=alias_name" >> "$FILE_PATH"
-            echo "keyPassword=password" >> "$FILE_PATH"
-          fi
+          echo "storeFile=app/release.keystore" > "$FILE_PATH"
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> "$FILE_PATH"
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> "$FILE_PATH"
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> "$FILE_PATH"
+      
 
       - name: Ensure Keystore File Exists
         run: |
