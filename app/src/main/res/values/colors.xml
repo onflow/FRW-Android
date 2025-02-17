@@ -4,7 +4,7 @@
     <color name="colorPrimaryVariant">#ffffff</color>
     <color name="colorSecondary">#41CC5D</color>
     <color name="text_sub">#565A69</color>
-    <color name="text_light">#8f8f93</color>
+    <color name="text_light">#000000</color>
 
     <color name="bg">#ffffff</color>
 

@@ -554,7 +554,7 @@
     <string name="edit_wallet">Edit Wallet</string>
     <string name="select_nft_empty">0 NFTs</string>
     <string name="profiles">Profiles</string>
-    <string name="create_profile">Create Profile</string>
+    <string name="create_profile">Create Account</string>
     <string name="features_coming">Features Coming Soon</string>
     <string name="quick_enable_evm">Quick Enable EVM</string>
     <string name="select_collection">Select Collection</string>
