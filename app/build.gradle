@@ -63,10 +63,10 @@ android {
             keyPassword = properties.getProperty("keyPassword") ?: "android"
         }
         dev {
-            keyAlias properties.getProperty("keyAlias")
-            keyPassword properties.getProperty("keyPassword")
-            storeFile file(properties.getProperty("storeFile"))
-            storePassword properties.getProperty("storePassword")
+            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
+            storePassword = properties.getProperty("storePassword") ?: "android"
+            keyAlias = properties.getProperty("keyAlias") ?: "androiddebugkey"
+            keyPassword = properties.getProperty("keyPassword") ?: "android"
         }
     }
 
