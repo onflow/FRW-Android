@@ -69,7 +69,7 @@
     <string name="account_not_found">Konto nicht gefunden</string>
     <string name="account_not_found_desc">Kein Konto mit der Wiederherstellungsphrase gefunden. Möchten Sie ein neues Konto mit Ihrer Phrase erstellen?</string>
     <string name="your_phrase">Ihr Satz</string>
-    <string name="create_wallet">Brieftasche erstellen</string>
+    <string name="create_wallet">Neues Benutzerkonto erstellen</string>
     <string name="cancel">Abbrechen</string>
     <string name="username_format_wrong">"Ihr Benutzername darf nur Buchstaben und Zahlen enthalten"</string>
     <string name="encrypt_backup">Backup verschlüsseln</string>
@@ -77,7 +77,6 @@
     <string name="biometrics">Biometrische Daten</string>
     <string name="legal">Rechtliches</string>
     <string name="information">Informationen</string>
-    <string name="legal_tip">Bitte lesen Sie die Datenschutzrichtlinie und die Nutzungsbedingungen von Flow Wallet.</string>
     <string name="i_accept">I Annehmen</string>
     <string name="terms_of_service">Bedingungen der Dienstleistung</string>
     <string name="privacy_policy">Datenschutzbestimmungen</string>
@@ -249,8 +248,9 @@
     <string name="skip">Überspringen</string>
     <string name="start">Start</string>
     <string name="import_wallet">Brieftasche importieren</string>
+    <string name="import_wallet_button">Ich habe bereits ein Konto</string>
     <string name="import_str">Importieren</string>
-    <string name="welcome_desc">Mehr über die Sicherheit bereitstellen</string>
+    <string name="welcome_desc">Willkommen bei Flow Wallet! Erstellen Sie ein Konto um loszulegen</string>
     <string name="explore_new_nfts">Neue NFTs erforschen</string>
     <string name="network_error">Netzwerkfehler</string>
     <string name="claim">Anspruch</string>
@@ -443,7 +443,7 @@
     <string name="device_ip_address">IP-Adresse</string>
     <string name="device_location">Standort</string>
     <string name="device_entry_date">Eintragungsdatum</string>
-    <string name="login_with_registered_account">Eingabe des registrierten Kontos</string>
+    <string name="login_with_registered_account">Registrierte Konten</string>
     <string name="or">Oder</string>
     <string name="sync_page_title">Öffnen Sie Ihre Flow Wallet in der mobilen App \n und scannen Sie den QR-Code, um Ihre Wallet zu synchronisieren.</string>
     <string name="sync_scan_qr_code">QR-Code mit Mobile App scannen</string>
@@ -519,6 +519,7 @@
     <string name="switch_on_mainnet">Sie können nur im Hauptnetz ein Backup erstellen.</string>
     <string name="create_on_mainnet_or_testnet">Sie können nur im Hauptnetz oder im Testnetz ein Konto erstellen.</string>
     <string name="switch_to_mainnet">Zum Mainnet wechseln</string>
+    <string name="legal_message">"     <![CDATA[     Durch die Verwendung von Flow Wallet stimmen Sie den <a href="https://wallet.flow.com/terms-of-service"><u>Nutzungsbedingungen</u></a> und <a href="https://wallet.flow.com/privacy-policy"><u>Datenschutzrichtlinie</u></a>     zu     ]]>     "</string>
     <string name="connect">Verbinden Sie</string>
     <string name="learn_more">Mehr erfahren</string>
     <string name="enable_evm_desc">Nahtlose Verwaltung von Multi-VM-Assets.</string>

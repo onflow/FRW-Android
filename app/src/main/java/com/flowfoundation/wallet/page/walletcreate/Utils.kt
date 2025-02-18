@@ -3,18 +3,16 @@ package com.flowfoundation.wallet.page.walletcreate
 import com.flowfoundation.wallet.R
 
 
-const val WALLET_CREATE_STEP_LEGAL = 0
-const val WALLET_CREATE_STEP_USERNAME = 1
-const val WALLET_CREATE_STEP_WARNING = 2
-const val WALLET_CREATE_STEP_MNEMONIC = 3
-const val WALLET_CREATE_STEP_CLOUD_PWD = 4
-const val WALLET_CREATE_STEP_MNEMONIC_CHECK = 5
-const val WALLET_CREATE_STEP_PIN_GUIDE = 6
-const val WALLET_CREATE_STEP_PIN_CODE = 7
+const val WALLET_CREATE_STEP_USERNAME = 0
+const val WALLET_CREATE_STEP_WARNING = 1
+const val WALLET_CREATE_STEP_MNEMONIC = 2
+const val WALLET_CREATE_STEP_CLOUD_PWD = 3
+const val WALLET_CREATE_STEP_MNEMONIC_CHECK = 4
+const val WALLET_CREATE_STEP_PIN_GUIDE = 5
+const val WALLET_CREATE_STEP_PIN_CODE = 6
 
 
 private val WALLET_STEP_ROOT_ID = mapOf(
-    WALLET_CREATE_STEP_LEGAL to R.id.fragment_wallet_create_legal,
     WALLET_CREATE_STEP_USERNAME to R.id.fragment_wallet_create_username,
     WALLET_CREATE_STEP_WARNING to R.id.fragment_wallet_create_warning,
     WALLET_CREATE_STEP_MNEMONIC to R.id.fragment_wallet_create_mnemonic,

@@ -4,7 +4,7 @@
     <color name="colorPrimaryVariant">#ffffff</color>
     <color name="colorSecondary">#41CC5D</color>
     <color name="text_sub">#565A69</color>
-    <color name="text_light">#8f8f93</color>
+    <color name="text_light">#000000</color>
 
     <color name="bg">#ffffff</color>
 
@@ -176,6 +176,7 @@
     <color name="button">#1a1a1a</color>
     <color name="button_text">#ffffff</color>
     <color name="deep_bg">#ffffff</color>
+    <color name="landing_bg">#f0f0f0</color>
 
     <color name="primary0">#00ffffff</color>
     <color name="primary10">#1affffff</color>
@@ -249,6 +250,8 @@
     <color name="text_4">#1A000000</color>
     <color name="text_5">#E6FFFFFF</color>
     <color name="line_light">#0A000000</color>
+    <color name="landing_on_flow_text">#FFFFFF</color>
+    <color name="landing_get_started_text">#000000</color>
 
     <color name="bg_skip">#26000000</color>
     <color name="evm_on_flow_start_color">#627EEA</color>

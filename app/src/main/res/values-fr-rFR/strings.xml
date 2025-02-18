@@ -69,7 +69,7 @@
     <string name="account_not_found">Compte non trouvé</string>
     <string name="account_not_found_desc">Aucun compte n\'a été trouvé avec la phrase de récupération. Voulez-vous créer un nouveau compte avec votre phrase ?</string>
     <string name="your_phrase">votre phrase</string>
-    <string name="create_wallet">Créer un portefeuille</string>
+    <string name="create_wallet">Créer un nouveau compte</string>
     <string name="cancel">Annuler</string>
     <string name="username_format_wrong">"Votre nom d'utilisateur ne peut contenir que des lettres et des chiffres"</string>
     <string name="encrypt_backup">Cryptage de la sauvegarde</string>
@@ -77,7 +77,6 @@
     <string name="biometrics">Biométrie</string>
     <string name="legal">Juridique</string>
     <string name="information">Informations</string>
-    <string name="legal_tip">Veuillez consulter la politique de confidentialité et les conditions d\'utilisation de Flow Wallet.</string>
     <string name="i_accept">J\'accepte</string>
     <string name="terms_of_service">Conditions d\'utilisation</string>
     <string name="privacy_policy">Politique de confidentialité</string>
@@ -249,8 +248,9 @@
     <string name="skip">Sauter</string>
     <string name="start">Démarrage</string>
     <string name="import_wallet">Portefeuille d\'importation</string>
+    <string name="import_wallet_button">J\'ai déjà un compte</string>
     <string name="import_str">Importation</string>
-    <string name="welcome_desc">En savoir plus sur la sécurité</string>
+    <string name="welcome_desc">Bienvenue sur Flow Wallet ! Créez un compte pour commencer</string>
     <string name="explore_new_nfts">Explorer de nouveaux NFT</string>
     <string name="network_error">Erreur de réseau</string>
     <string name="claim">Réclamation</string>
@@ -443,7 +443,7 @@
     <string name="device_ip_address">Adresse IP</string>
     <string name="device_location">Localisation</string>
     <string name="device_entry_date">Date d\'entrée</string>
-    <string name="login_with_registered_account">Saisir le compte enregistré</string>
+    <string name="login_with_registered_account">Comptes enregistrés</string>
     <string name="or">Ou</string>
     <string name="sync_page_title">Ouvrez votre Flow Wallet sur l\'application mobile \n et scannez le code QR pour synchroniser votre portefeuille.</string>
     <string name="sync_scan_qr_code">Scanner le code QR avec l\'application mobile</string>
@@ -696,4 +696,5 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="legal_message">"     <![CDATA[     En utilisant Flow Wallet, vous acceptez les Conditions d'utilisation <a href="https://wallet.flow.com/terms-of-service"><u></u></a> et <a href="https://wallet.flow.com/privacy-policy"><u>Politique de confidentialité</u></a>     ]]>     "</string>
 </resources>
