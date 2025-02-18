@@ -486,7 +486,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">멀티 백업에서</string>
     <string name="from_multi_backup_note">Google 드라이브/ 패스키/ 복구 문구</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">그 외</string>
     <string name="from_recovery_phrase_note">레거시 복구 구문을 사용하여 복원(다중 백업이 아님)</string>
     <string name="from_raw_key">복구 문구에서(레거시)</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>

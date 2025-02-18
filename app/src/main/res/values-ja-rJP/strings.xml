@@ -486,7 +486,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">マルチバックアップより</string>
     <string name="from_multi_backup_note">グーグルドライブ／パスキー／リカバリーフレーズ</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">その他</string>
     <string name="from_recovery_phrase_note">レガシーリカバリーフレーズを使用したリストア（マルチバックアップではない）</string>
     <string name="from_raw_key">リカバリーフレーズより（レガシー）</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
