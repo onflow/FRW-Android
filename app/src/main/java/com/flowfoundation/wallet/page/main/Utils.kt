@@ -8,12 +8,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.size
-import com.airbnb.lottie.LottieCompositionFactory
-import com.airbnb.lottie.LottieDrawable
-import com.airbnb.lottie.LottieProperty
-import com.airbnb.lottie.SimpleColorFilter
-import com.airbnb.lottie.model.KeyPath
-import com.airbnb.lottie.value.LottieValueCallback
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
@@ -24,7 +18,6 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -76,11 +69,11 @@ enum class HomeTab(val index: Int) {
 
 private val svgMenu by lazy {
     listOf(
-        R.drawable.ic_wallet,   // Replace with actual SVG icons
-        R.drawable.ic_wallet,
+        R.drawable.ic_home,   // Replace with actual SVG icons
+        R.drawable.ic_nfts,
         R.drawable.ic_explore,
-        R.drawable.ic_wallet,
-        R.drawable.ic_profile
+        R.drawable.ic_activity,
+        R.drawable.ic_settings
     )
 }
 
