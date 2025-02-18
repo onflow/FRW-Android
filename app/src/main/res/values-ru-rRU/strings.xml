@@ -77,7 +77,6 @@
     <string name="biometrics">Биометрия</string>
     <string name="legal">Юридическая</string>
     <string name="information">Информация</string>
-    <string name="legal_tip">Ознакомьтесь с Политикой конфиденциальности и Условиями обслуживания Flow Wallet.</string>
     <string name="i_accept">Я принимаю</string>
     <string name="terms_of_service">Условия предоставления услуг</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
@@ -250,7 +249,7 @@
     <string name="start">Начало</string>
     <string name="import_wallet">Я уже зарегистрирован</string>
     <string name="import_str">Импорт</string>
-    <string name="welcome_desc">Предоставьте больше информации о безопасности</string>
+    <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
     <string name="network_error">Ошибка сети</string>
     <string name="claim">Заявление</string>
@@ -444,7 +443,7 @@
     <string name="device_ip_address">IP-адрес</string>
     <string name="device_location">Расположение</string>
     <string name="device_entry_date">Дата поступления</string>
-    <string name="login_with_registered_account">Введите зарегистрированный счет</string>
+    <string name="login_with_registered_account">Зарегестрированные аккаунты</string>
     <string name="or">Или</string>
     <string name="sync_page_title">Откройте кошелек Flow в мобильном приложении \n и отсканируйте QR-код для синхронизации кошелька.</string>
     <string name="sync_scan_qr_code">Сканирование QR-кода с помощью мобильного приложения</string>
@@ -697,4 +696,5 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
 </resources>

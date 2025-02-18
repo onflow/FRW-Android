@@ -76,7 +76,6 @@
     <string name="biometrics">生物识别</string>
     <string name="legal">法律</string>
     <string name="information">信息</string>
-    <string name="legal_tip">请查看Flow Wallet的隐私政策和服务条款。</string>
     <string name="i_accept">我接受</string>
     <string name="terms_of_service">服务条款</string>
     <string name="privacy_policy">隐私政策</string>
@@ -248,7 +247,7 @@
     <string name="start">开始</string>
     <string name="import_wallet">我已有账户</string>
     <string name="import_str">导入</string>
-    <string name="welcome_desc">提供更多安全信息</string>
+    <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">网络错误</string>
     <string name="claim">申领</string>
@@ -442,7 +441,7 @@
     <string name="device_ip_address">IP地址</string>
     <string name="device_location">位置</string>
     <string name="device_entry_date">入职日期</string>
-    <string name="login_with_registered_account">输入注册账户</string>
+    <string name="login_with_registered_account">已注册账号</string>
     <string name="or">或者</string>
     <string name="sync_page_title">在手机应用 \n 上打开 Flow 钱包，扫描二维码同步钱包。</string>
     <string name="sync_scan_qr_code">使用手机应用扫描二维码</string>
@@ -695,4 +694,5 @@
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
 </resources>

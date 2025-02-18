@@ -76,7 +76,6 @@
     <string name="biometrics">生物識別</string>
     <string name="legal">法律</string>
     <string name="information">資訊</string>
-    <string name="legal_tip">請查看 Flow Wallet 的隱私政策和服務條款。</string>
     <string name="i_accept">我接受</string>
     <string name="terms_of_service">服務條款</string>
     <string name="privacy_policy">隱私政策</string>
@@ -246,7 +245,7 @@
     <string name="start">開始</string>
     <string name="import_wallet">我已有账户</string>
     <string name="import_str">Import</string>
-    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
+    <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">網絡錯誤</string>
     <string name="claim">領取</string>
@@ -442,7 +441,7 @@
     <string name="device_ip_address">IP 地址</string>
     <string name="device_location">位置</string>
     <string name="device_entry_date">錄入日期</string>
-    <string name="login_with_registered_account">輸入註冊帳戶</string>
+    <string name="login_with_registered_account">已注册账号</string>
     <string name="or">或者</string>
     <string name="sync_page_title">打開您的Flow Wallet手機應用程序\n掃描二維碼來同步您的錢包。</string>
     <string name="sync_scan_qr_code">使用手機應用掃描二維碼</string>
@@ -685,4 +684,5 @@
         your storage usage.</string>
     <string name="deposit">存款</string>
     <string name="buy_flow">Buy FLOW</string>
+    <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
 </resources>

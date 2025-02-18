@@ -77,7 +77,6 @@
     <string name="biometrics">Biometrics</string>
     <string name="legal">Legal</string>
     <string name="information">Information</string>
-    <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Wallet.</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -415,6 +414,7 @@
     <string name="new_feature_title_1">Notification of Digital Assets</string>
     <string name="new_feature_desc_1">Flow Wallet will notify you when your digital assets has moved.</string>
     <string name="new_feature_desc2">Now you can add multiple accounts in your Flow Wallet app, by switching account from the side menu or profile.</string>
+    <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="get_started">Get Started</string>
     <string name="notification_request_title">Turn On Push Notifications</string>
     <string name="notification_request_desc">Get notified when your transfers, swaps, and approvals complete.</string>
@@ -444,7 +444,7 @@
     <string name="device_ip_address">IP Address</string>
     <string name="device_location">Location</string>
     <string name="device_entry_date">Entry Date</string>
-    <string name="login_with_registered_account">Enter the Registered Account</string>
+    <string name="login_with_registered_account">Registered Accounts</string>
     <string name="or">Or</string>
     <string name="sync_page_title">Open your Flow Wallet on Mobile App \n and Scan the QR Code to Sync your Wallet.</string>
     <string name="sync_scan_qr_code">Scan QR Code with Mobile App</string>

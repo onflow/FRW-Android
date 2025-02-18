@@ -76,9 +76,7 @@
     <string name="encrypt_backup">Encrypt Backup</string>
     <string name="done">Done</string>
     <string name="biometrics">Biometrics</string>
-    <string name="legal">Legal</string>
     <string name="information">Information</string>
-    <string name="legal_tip">Please review the Privacy Policy and Terms of Service of Flow Wallet.</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
@@ -252,7 +250,6 @@
     <string name="start">Start</string>
     <string name="import_wallet">I already have an account</string>
     <string name="import_str">Import</string>
-    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>
@@ -706,11 +703,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
-    <string name="legal_message">
-    <![CDATA[
-    By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>
-    ]]>
-    </string>
+    <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="get_started">Let\'s get started</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
@@ -720,5 +713,6 @@ uses to turn your device into a hardware wallet.</string>
     <string name="trado" translatable="false">Trado</string>
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
 
 </resources>
