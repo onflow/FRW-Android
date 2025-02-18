@@ -202,7 +202,7 @@
     <string name="add_collection">コレクションを追加</string>
     <string name="search_nft_collection">NFTコレクションを検索</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
-    <string name="explore_search_hint">サイト名またはURL</string>
+    <string name="explore_search_hint">検索名または URL</string>
     <string name="bookmark">ブックマーク</string>
     <string name="drag_here_to_unpin">ピンを外すにはここをドラッグ</string>
     <string name="recovery_purchase_tips">これらの単語を正しい順番で書き留めるかコピーして、安全な場所に保存しておく。</string>
@@ -247,7 +247,8 @@
     <string name="reset">リセット</string>
     <string name="skip">スキップ</string>
     <string name="start">スタート</string>
-    <string name="import_wallet">すでにアカウントを持っています</string>
+    <string name="import_wallet">インポート・ウォレット</string>
+    <string name="import_wallet_button">すでにアカウントを持っています</string>
     <string name="import_str">輸入</string>
     <string name="welcome_desc">Flow Walletへようこそ！アカウントを作成して始めましょう</string>
     <string name="explore_new_nfts">新しいNFTの開拓</string>
@@ -423,7 +424,6 @@
     <string name="accessible">アクセシブル</string>
     <string name="none_accessible_coins">なし アクセスコイン</string>
     <string name="no_linked_account">リンク口座なし</string>
-    <string name="empty_bookmarks">空のブックマーク</string>
     <string name="view_empty_collection">空を見る</string>
     <string name="inaccessible_tag">アクセス不能</string>
     <string name="inaccessible_token_tip">フローウォレットは %2$s アカウントの %1$s にアクセスできません。</string>

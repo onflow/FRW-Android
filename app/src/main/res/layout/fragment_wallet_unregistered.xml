@@ -208,7 +208,7 @@
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:letterSpacing="0"
-        android:text="@string/import_wallet"
+        android:text="@string/import_wallet_button"
         android:textAllCaps="false"
         android:textColor="@color/welcome_page_text"
         android:textSize="16sp"

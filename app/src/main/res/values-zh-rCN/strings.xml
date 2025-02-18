@@ -200,7 +200,7 @@
     <string name="add_collection">添加收藏</string>
     <string name="search_nft_collection">搜索 NFT 收藏</string>
     <string name="scan_qr_code">扫描二维码</string>
-    <string name="explore_search_hint">网站名称或 URL</string>
+    <string name="explore_search_hint">搜索名称或 URL</string>
     <string name="bookmark">书签</string>
     <string name="drag_here_to_unpin">拖动此处以解压</string>
     <string name="recovery_purchase_tips">按正确顺序写下或复制这些单词，并将其保存在安全的地方。</string>
@@ -245,7 +245,8 @@
     <string name="reset">重置</string>
     <string name="skip">跳过</string>
     <string name="start">开始</string>
-    <string name="import_wallet">我已有账户</string>
+    <string name="import_wallet">导入钱包</string>
+    <string name="import_wallet_button">我已有账户</string>
     <string name="import_str">导入</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
@@ -421,7 +422,6 @@
     <string name="accessible">可访问</string>
     <string name="none_accessible_coins">无可用代币</string>
     <string name="no_linked_account">无关联账户</string>
-    <string name="empty_bookmarks">空书签</string>
     <string name="view_empty_collection">查看空档</string>
     <string name="inaccessible_tag">暂不可用</string>
     <string name="inaccessible_token_tip">Flow Wallet 无法访问 %2$s 账户中的 %1$s ，请检查您的关联账户设置。</string>

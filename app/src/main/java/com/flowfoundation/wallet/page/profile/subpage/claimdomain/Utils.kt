@@ -18,22 +18,6 @@ fun observeMeowDomainClaimedStateChange(listener: MeowDomainClaimedStateChangeLi
     listeners.add(WeakReference(listener))
 }
 
-fun checkMeowDomainClaimed() {
-    ioScope {
-        val username = AccountManager.userInfo()?.username ?: return@ioScope
-        val walletAddress = WalletManager.selectedWalletAddress()
-        val contact = queryAddressBookFromBlockchain(username, FlowDomainServer.MEOW) ?: return@ioScope
-        setMeowDomainClaimed(contact.address == walletAddress)
-        dispatchListeners(contact.address == walletAddress)
-        logd(TAG, "meow domain claimed: ${contact.address == walletAddress}")
-    }
-}
-
 interface MeowDomainClaimedStateChangeListener {
     fun onDomainClaimedStateChange(isClaimed: Boolean)
-}
-
-private fun dispatchListeners(isClaimed: Boolean) {
-    listeners.removeIf { it.get() == null }
-    listeners.forEach { it.get()?.onDomainClaimedStateChange(isClaimed) }
 }

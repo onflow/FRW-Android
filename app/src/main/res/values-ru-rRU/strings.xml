@@ -202,7 +202,7 @@
     <string name="add_collection">Добавить коллекцию</string>
     <string name="search_nft_collection">Поиск по коллекции NFT</string>
     <string name="scan_qr_code">Сканирование QR-кода</string>
-    <string name="explore_search_hint">Название сайта или URL</string>
+    <string name="explore_search_hint">Поиск по названию или URL</string>
     <string name="bookmark">Закладка</string>
     <string name="drag_here_to_unpin">Перетащите сюда, чтобы открепить</string>
     <string name="recovery_purchase_tips">Запишите или скопируйте эти слова в правильном порядке и сохраните их в надежном месте.</string>
@@ -247,7 +247,8 @@
     <string name="reset">Сброс</string>
     <string name="skip">Скип</string>
     <string name="start">Начало</string>
-    <string name="import_wallet">Я уже зарегистрирован</string>
+    <string name="import_wallet">Импорт кошелька</string>
+    <string name="import_wallet_button">Я уже зарегистрирован</string>
     <string name="import_str">Импорт</string>
     <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
@@ -423,7 +424,6 @@
     <string name="accessible">Доступный</string>
     <string name="none_accessible_coins">Нет доступа к монетам</string>
     <string name="no_linked_account">Нет привязанных счетов</string>
-    <string name="empty_bookmarks">Пустые закладки</string>
     <string name="view_empty_collection">Посмотреть пустой</string>
     <string name="inaccessible_tag">Недоступно</string>
     <string name="inaccessible_token_tip">Flow Wallet не имеет доступа к %1$s в аккаунте %2$s , пожалуйста, проверьте настройки связанного аккаунта.</string>
