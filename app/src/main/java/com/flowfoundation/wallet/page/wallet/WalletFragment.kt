@@ -70,18 +70,6 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
 //        headerPlaceholderPresenter = WalletHeaderPlaceholderPresenter(binding.shimmerPlaceHolder.root)
 
         binding.ivScan.setOnClickListener { barcodeLauncher.launch() }
-        binding.ivMove.setOnClickListener {
-            if (WalletManager.haveChildAccount() || WalletManager.isChildAccountSelected() || EVMWalletManager.haveEVMAddress()) {
-                uiScope {
-                    MoveDialog().showMove(childFragmentManager)
-                }
-            } else {
-                EnableEVMActivity.launch(this.requireContext())
-            }
-        }
-        binding.ivMove.setVisible(WalletManager.haveChildAccount()
-                || WalletManager.isChildAccountSelected()
-                || EVMWalletManager.haveEVMAddress())
         TransitionManager.beginDelayedTransition(binding.root)
         binding.ivTransition.setOnClickListener {
             TransactionRecordActivity.launch(this.requireContext())
