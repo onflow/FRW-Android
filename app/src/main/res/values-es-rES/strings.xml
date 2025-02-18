@@ -248,6 +248,7 @@
     <string name="skip">Saltar</string>
     <string name="start">Inicio</string>
     <string name="import_wallet">Cartera de importación</string>
+    <string name="import_wallet_button">Ya tengo una cuenta</string>
     <string name="import_str">Importar</string>
     <string name="welcome_desc">¡Bienvenido a Flow Wallet! Crea una cuenta para empezar</string>
     <string name="explore_new_nfts">Explorar nuevos NFT</string>

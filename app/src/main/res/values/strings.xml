@@ -248,7 +248,8 @@
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
     <string name="start">Start</string>
-    <string name="import_wallet">I already have an account</string>
+    <string name="import_wallet">Import Wallet</string>
+    <string name="import_wallet_button">I already have an account</string>
     <string name="import_str">Import</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>

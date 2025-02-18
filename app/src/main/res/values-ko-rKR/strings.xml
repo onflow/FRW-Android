@@ -247,7 +247,8 @@
     <string name="reset">초기화</string>
     <string name="skip">건너뛰기</string>
     <string name="start">시작</string>
-    <string name="import_wallet">이미 계정이 있습니다</string>
+    <string name="import_wallet">지갑 가져오기</string>
+    <string name="import_wallet_button">이미 계정이 있습니다</string>
     <string name="import_str">가져오기</string>
     <string name="welcome_desc">Flow Wallet에 오신 것을 환영합니다! 시작하려면 계정을 만드세요</string>
     <string name="explore_new_nfts">새로운 NFT 살펴보기</string>

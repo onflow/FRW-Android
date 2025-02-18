@@ -243,7 +243,8 @@
     <string name="reset">重置</string>
     <string name="skip">跳過</string>
     <string name="start">開始</string>
-    <string name="import_wallet">我已有账户</string>
+    <string name="import_wallet">導入錢包</string>
+    <string name="import_wallet_button">我已有账户</string>
     <string name="import_str">Import</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="explore_new_nfts">探索新的 NFT</string>

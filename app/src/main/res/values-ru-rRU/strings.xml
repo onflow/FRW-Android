@@ -247,7 +247,8 @@
     <string name="reset">Сброс</string>
     <string name="skip">Скип</string>
     <string name="start">Начало</string>
-    <string name="import_wallet">Я уже зарегистрирован</string>
+    <string name="import_wallet">Импорт кошелька</string>
+    <string name="import_wallet_button">Я уже зарегистрирован</string>
     <string name="import_str">Импорт</string>
     <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>

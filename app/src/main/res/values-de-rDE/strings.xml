@@ -247,7 +247,8 @@
     <string name="reset">Zurücksetzen</string>
     <string name="skip">Überspringen</string>
     <string name="start">Start</string>
-    <string name="import_wallet">Ich habe bereits ein Konto</string>
+    <string name="import_wallet">Brieftasche importieren</string>
+    <string name="import_wallet_button">Ich habe bereits ein Konto</string>
     <string name="import_str">Importieren</string>
     <string name="welcome_desc">Willkommen bei Flow Wallet! Erstellen Sie ein Konto um loszulegen</string>
     <string name="explore_new_nfts">Neue NFTs erforschen</string>
