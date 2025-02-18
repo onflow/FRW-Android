@@ -414,7 +414,7 @@
     <string name="new_feature_title_1">Notification des actifs numériques</string>
     <string name="new_feature_desc_1">Flow Wallet vous informera lorsque vos actifs numériques auront été déplacés.</string>
     <string name="new_feature_desc2">Désormais, vous pouvez ajouter plusieurs comptes dans votre application Flow Wallet, en changeant de compte à partir du menu latéral ou du profil.</string>
-    <string name="get_started">Commencer</string>
+    <string name="get_started">C\'est parti</string>
     <string name="notification_request_title">Activer les notifications push</string>
     <string name="notification_request_desc">Recevez une notification lorsque vos transferts, échanges et approbations sont terminés.</string>
     <string name="turn_on_notifications">Activer les notifications</string>

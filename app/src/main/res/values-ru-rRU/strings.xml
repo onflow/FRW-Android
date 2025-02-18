@@ -414,7 +414,7 @@
     <string name="new_feature_title_1">Уведомление о цифровых активах</string>
     <string name="new_feature_desc_1">Flow Wallet уведомит вас о перемещении ваших цифровых активов.</string>
     <string name="new_feature_desc2">Теперь вы можете добавить несколько счетов в приложение Flow Wallet, переключая счета в боковом меню или профиле.</string>
-    <string name="get_started">Начать</string>
+    <string name="get_started">Поехали!</string>
     <string name="notification_request_title">Включите Push-уведомления</string>
     <string name="notification_request_desc">Получайте уведомления о завершении переводов, обменов и одобрений.</string>
     <string name="turn_on_notifications">Включите уведомления</string>
