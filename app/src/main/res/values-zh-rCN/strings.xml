@@ -74,7 +74,6 @@
     <string name="encrypt_backup">加密备份</string>
     <string name="done">完成</string>
     <string name="biometrics">生物识别</string>
-    <string name="legal">法律</string>
     <string name="information">信息</string>
     <string name="i_accept">我接受</string>
     <string name="terms_of_service">服务条款</string>
@@ -484,7 +483,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">从多重备份恢复</string>
     <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">其他</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
     <string name="from_raw_key">从助记词恢复（传统）</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>

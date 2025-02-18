@@ -75,7 +75,6 @@
     <string name="encrypt_backup">Зашифровать резервную копию</string>
     <string name="done">Готово</string>
     <string name="biometrics">Биометрия</string>
-    <string name="legal">Юридическая</string>
     <string name="information">Информация</string>
     <string name="i_accept">Я принимаю</string>
     <string name="terms_of_service">Условия предоставления услуг</string>
@@ -415,7 +414,7 @@
     <string name="new_feature_title_1">Уведомление о цифровых активах</string>
     <string name="new_feature_desc_1">Flow Wallet уведомит вас о перемещении ваших цифровых активов.</string>
     <string name="new_feature_desc2">Теперь вы можете добавить несколько счетов в приложение Flow Wallet, переключая счета в боковом меню или профиле.</string>
-    <string name="get_started">Начать</string>
+    <string name="get_started">Поехали!</string>
     <string name="notification_request_title">Включите Push-уведомления</string>
     <string name="notification_request_desc">Получайте уведомления о завершении переводов, обменов и одобрений.</string>
     <string name="turn_on_notifications">Включите уведомления</string>
@@ -486,7 +485,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">Из Multi Backup</string>
     <string name="from_multi_backup_note">Google Диск / Ключ доступа / Фраза для восстановления</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">Другой</string>
     <string name="from_recovery_phrase_note">Восстановление с помощью устаревшей фразы восстановления (не мультирезервное копирование)</string>
     <string name="from_raw_key">Из фразы восстановления (наследие)</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>

@@ -75,7 +75,6 @@
     <string name="encrypt_backup">Backup verschlüsseln</string>
     <string name="done">Erledigt</string>
     <string name="biometrics">Biometrische Daten</string>
-    <string name="legal">Rechtliches</string>
     <string name="information">Informationen</string>
     <string name="i_accept">I Annehmen</string>
     <string name="terms_of_service">Bedingungen der Dienstleistung</string>
@@ -486,7 +485,7 @@
     <string name="key_store_address_hint">Geben Sie Ihre Flow Adresse ein (optional)</string>
     <string name="from_multi_backup">Von Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">Sonstige</string>
     <string name="from_recovery_phrase_note">Wiederherstellung unter Verwendung eines alten Wiederherstellungssatzes (keine Mehrfachsicherungen)</string>
     <string name="from_raw_key">Von Raw Keys (Vermächtnis)</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>

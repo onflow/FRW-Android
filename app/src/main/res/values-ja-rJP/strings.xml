@@ -75,7 +75,6 @@
     <string name="encrypt_backup">バックアップの暗号化</string>
     <string name="done">完了</string>
     <string name="biometrics">バイオメトリクス</string>
-    <string name="legal">リーガル</string>
     <string name="information">インフォメーション</string>
     <string name="i_accept">私は受け入れる</string>
     <string name="terms_of_service">利用規約</string>
@@ -415,7 +414,7 @@
     <string name="new_feature_title_1">デジタル資産に関する通知</string>
     <string name="new_feature_desc_1">Flow Walletは、あなたのデジタル資産が移動したことを通知します。</string>
     <string name="new_feature_desc2">サイドメニューやプロフィールからアカウントを切り替えることで、Flow Walletアプリに複数のアカウントを追加できるようになりました。</string>
-    <string name="get_started">スタート</string>
+    <string name="get_started">始めましょう</string>
     <string name="notification_request_title">プッシュ通知をオンにする</string>
     <string name="notification_request_desc">送金、スワップ、承認が完了したら通知を受け取ります。</string>
     <string name="turn_on_notifications">通知をオンにする</string>
@@ -486,7 +485,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">マルチバックアップより</string>
     <string name="from_multi_backup_note">グーグルドライブ／パスキー／リカバリーフレーズ</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">その他</string>
     <string name="from_recovery_phrase_note">レガシーリカバリーフレーズを使用したリストア（マルチバックアップではない）</string>
     <string name="from_raw_key">リカバリーフレーズより（レガシー）</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>

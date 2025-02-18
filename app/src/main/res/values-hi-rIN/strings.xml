@@ -75,7 +75,6 @@
     <string name="encrypt_backup">Encrypt Backup</string>
     <string name="done">Done</string>
     <string name="biometrics">Biometrics</string>
-    <string name="legal">Legal</string>
     <string name="information">Information</string>
     <string name="i_accept">I Accept</string>
     <string name="terms_of_service">Terms of Service</string>
@@ -486,7 +485,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">Other</string>
     <string name="from_recovery_phrase_note">Restore using a legacy recovery phrase (not multi-backup)</string>
     <string name="from_raw_key">From Raw Key</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>

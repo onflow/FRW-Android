@@ -75,7 +75,6 @@
     <string name="encrypt_backup">Crittografia del backup</string>
     <string name="done">Fatto</string>
     <string name="biometrics">Biometria</string>
-    <string name="legal">Legale</string>
     <string name="information">Informazioni</string>
     <string name="i_accept">Accetto</string>
     <string name="terms_of_service">Termini di servizio</string>
@@ -415,7 +414,7 @@
     <string name="new_feature_title_1">Notifica di beni digitali</string>
     <string name="new_feature_desc_1">Flow Wallet vi avviserà quando i vostri beni digitali saranno spostati.</string>
     <string name="new_feature_desc2">Ora è possibile aggiungere più account nell\'app Flow Wallet, cambiando account dal menu laterale o dal profilo.</string>
-    <string name="get_started">Iniziare</string>
+    <string name="get_started">Iniziamo</string>
     <string name="notification_request_title">Attivare le notifiche push</string>
     <string name="notification_request_desc">Ricevere una notifica quando i trasferimenti, gli scambi e le approvazioni vengono completati.</string>
     <string name="turn_on_notifications">Attivare le notifiche</string>
@@ -486,7 +485,7 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">Da Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Frase di recupero</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">Altro</string>
     <string name="from_recovery_phrase_note">Ripristino utilizzando una frase di recupero legacy (non multi-backup)</string>
     <string name="from_raw_key">Da frase di recupero (eredità)</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
