@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.text.Html
 import android.text.method.LinkMovementMethod
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.R
@@ -16,7 +15,6 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.wallet.adapter.WalletAccountAdapter
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
-import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
@@ -39,13 +37,8 @@ class WalletUnregisteredFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        //val layoutParams = binding.ifvLogo.layoutParams as ConstraintLayout.LayoutParams
         with(binding) {
             clAccountLayout.gone()
-//            ifvLogo.layoutParams = layoutParams.apply {
-//                width = 130.dp2px().toInt()
-//                height = 130.dp2px().toInt()
-//            }
             createButton.setOnClickListener {
                 if (isTestnet()) {
                     SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
@@ -67,10 +60,6 @@ class WalletUnregisteredFragment : Fragment() {
                         clAccountLayout.visible()
                         descView.gone()
                         onFlow.gone()
-//                        ifvLogo.layoutParams = layoutParams.apply {
-//                            width = 92.dp2px().toInt()
-//                            height = 92.dp2px().toInt()
-//                        }
                         rvAccountList.layoutManager = LinearLayoutManager(context)
                         rvAccountList.adapter = adapter
                     }

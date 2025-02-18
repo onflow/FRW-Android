@@ -69,7 +69,7 @@
     <string name="account_not_found">Account not Found</string>
     <string name="account_not_found_desc">No account found with the recovery phrase. Do you want to create a new account with your phrase?</string>
     <string name="your_phrase">your phrase</string>
-    <string name="create_wallet">Create Wallet</string>
+    <string name="create_wallet">Create a new account</string>
     <string name="cancel">Cancel</string>
     <string name="username_format_wrong">"Your username can only contain letters and numbers"</string>
     <string name="encrypt_backup">Encrypt Backup</string>
@@ -248,7 +248,7 @@
     <string name="reset">Reset</string>
     <string name="skip">Skip</string>
     <string name="start">Start</string>
-    <string name="import_wallet">Import Wallet</string>
+    <string name="import_wallet">I already have an account</string>
     <string name="import_str">IMPORT</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="explore_new_nfts">Explore new NFTs</string>

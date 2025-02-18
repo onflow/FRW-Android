@@ -68,7 +68,7 @@
     <string name="account_not_found">賬戶未找到</string>
     <string name="account_not_found_desc">用恢復短語未找到帳戶。你想用你的短語創建一個新帳戶嗎？</string>
     <string name="your_phrase">您的短語</string>
-    <string name="create_wallet">創建錢包</string>
+    <string name="create_wallet">建立一个新账户</string>
     <string name="cancel">取消</string>
     <string name="username_format_wrong">"您的用戶名稱只能包含字母和數字"</string>
     <string name="encrypt_backup">加密備份</string>
@@ -244,7 +244,7 @@
     <string name="reset">重置</string>
     <string name="skip">跳過</string>
     <string name="start">開始</string>
-    <string name="import_wallet">導入錢包</string>
+    <string name="import_wallet">我已有账户</string>
     <string name="import_str">Import</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="explore_new_nfts">探索新的 NFT</string>

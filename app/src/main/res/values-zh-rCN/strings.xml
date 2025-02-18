@@ -68,7 +68,7 @@
     <string name="account_not_found">找不到账户</string>
     <string name="account_not_found_desc">未找到使用当前助记词的帐户。您想用您的助记词创建一个新账户吗？</string>
     <string name="your_phrase">你的短语</string>
-    <string name="create_wallet">创建钱包</string>
+    <string name="create_wallet">建立一个新账户</string>
     <string name="cancel">取消</string>
     <string name="username_format_wrong">"您的用户名只能包含字母和数字"</string>
     <string name="encrypt_backup">加密备份</string>
@@ -246,7 +246,7 @@
     <string name="reset">重置</string>
     <string name="skip">跳过</string>
     <string name="start">开始</string>
-    <string name="import_wallet">导入钱包</string>
+    <string name="import_wallet">我已有账户</string>
     <string name="import_str">导入</string>
     <string name="welcome_desc">提供更多安全信息</string>
     <string name="explore_new_nfts">探索新的 NFT</string>

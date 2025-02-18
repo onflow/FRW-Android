@@ -69,7 +69,7 @@
     <string name="account_not_found">アカウントが見つかりません</string>
     <string name="account_not_found_desc">復旧フレーズのアカウントが見つかりません。フレーズを使って新しいアカウントを作成しますか？</string>
     <string name="your_phrase">あなたの言葉</string>
-    <string name="create_wallet">財布の作成</string>
+    <string name="create_wallet">新しいアカウントを作成します</string>
     <string name="cancel">キャンセル</string>
     <string name="username_format_wrong">"ユーザー名にはアルファベットと数字のみを使用できます。"</string>
     <string name="encrypt_backup">バックアップの暗号化</string>
@@ -248,7 +248,7 @@
     <string name="reset">リセット</string>
     <string name="skip">スキップ</string>
     <string name="start">スタート</string>
-    <string name="import_wallet">インポート・ウォレット</string>
+    <string name="import_wallet">すでにアカウントを持っています</string>
     <string name="import_str">輸入</string>
     <string name="welcome_desc">セキュリティについて</string>
     <string name="explore_new_nfts">新しいNFTの開拓</string>

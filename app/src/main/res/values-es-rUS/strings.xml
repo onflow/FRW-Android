@@ -69,7 +69,7 @@
     <string name="account_not_found">Cuenta no encontrada</string>
     <string name="account_not_found_desc">No se ha encontrado ninguna cuenta con la frase de recuperación. Desea crear una nueva cuenta con su frase?</string>
     <string name="your_phrase">tu frase</string>
-    <string name="create_wallet">Crear cartera</string>
+    <string name="create_wallet">Crear una cuenta nueva</string>
     <string name="cancel">Cancelar</string>
     <string name="username_format_wrong">"Tu nombre de usuario sólo puede contener letras y números"</string>
     <string name="encrypt_backup">Cifrar copia de seguridad</string>

@@ -69,7 +69,7 @@
     <string name="account_not_found">Учетная запись не найдена</string>
     <string name="account_not_found_desc">Не найдено ни одной учетной записи с фразой восстановления. Вы хотите создать новую учетную запись с вашей фразой?</string>
     <string name="your_phrase">ваша фраза</string>
-    <string name="create_wallet">Создать кошелек</string>
+    <string name="create_wallet">Создать новый аккаунт</string>
     <string name="cancel">Отмена</string>
     <string name="username_format_wrong">"Ваше имя пользователя может содержать только буквы и цифры"</string>
     <string name="encrypt_backup">Зашифровать резервную копию</string>
@@ -248,7 +248,7 @@
     <string name="reset">Сброс</string>
     <string name="skip">Скип</string>
     <string name="start">Начало</string>
-    <string name="import_wallet">Импортный кошелек</string>
+    <string name="import_wallet">Я уже зарегистрирован</string>
     <string name="import_str">Импорт</string>
     <string name="welcome_desc">Предоставьте больше информации о безопасности</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>

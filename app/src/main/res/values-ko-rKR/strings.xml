@@ -69,7 +69,7 @@
     <string name="account_not_found">계정을 찾을 수 없음</string>
     <string name="account_not_found_desc">복구 문구를 입력한 계정을 찾을 수 없습니다. 해당 문구로 새 계정을 만들시겠습니까?</string>
     <string name="your_phrase">귀하의 문구</string>
-    <string name="create_wallet">지갑 만들기</string>
+    <string name="create_wallet">새 계정 만들기</string>
     <string name="cancel">취소</string>
     <string name="username_format_wrong">"사용자 아이디는 문자와 숫자만 포함할 수 있습니다."</string>
     <string name="encrypt_backup">백업 암호화</string>
@@ -248,7 +248,7 @@
     <string name="reset">초기화</string>
     <string name="skip">건너뛰기</string>
     <string name="start">시작</string>
-    <string name="import_wallet">지갑 가져오기</string>
+    <string name="import_wallet">이미 계정이 있습니다</string>
     <string name="import_str">가져오기</string>
     <string name="welcome_desc">보안에 대한 자세한 정보 제공</string>
     <string name="explore_new_nfts">새로운 NFT 살펴보기</string>

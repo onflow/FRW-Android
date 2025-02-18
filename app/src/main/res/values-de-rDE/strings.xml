@@ -69,7 +69,7 @@
     <string name="account_not_found">Konto nicht gefunden</string>
     <string name="account_not_found_desc">Kein Konto mit der Wiederherstellungsphrase gefunden. Möchten Sie ein neues Konto mit Ihrer Phrase erstellen?</string>
     <string name="your_phrase">Ihr Satz</string>
-    <string name="create_wallet">Brieftasche erstellen</string>
+    <string name="create_wallet">Neues Benutzerkonto erstellen</string>
     <string name="cancel">Abbrechen</string>
     <string name="username_format_wrong">"Ihr Benutzername darf nur Buchstaben und Zahlen enthalten"</string>
     <string name="encrypt_backup">Backup verschlüsseln</string>
@@ -248,7 +248,7 @@
     <string name="reset">Zurücksetzen</string>
     <string name="skip">Überspringen</string>
     <string name="start">Start</string>
-    <string name="import_wallet">Brieftasche importieren</string>
+    <string name="import_wallet">Ich habe bereits ein Konto</string>
     <string name="import_str">Importieren</string>
     <string name="welcome_desc">Mehr über die Sicherheit bereitstellen</string>
     <string name="explore_new_nfts">Neue NFTs erforschen</string>

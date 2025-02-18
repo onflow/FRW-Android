@@ -69,7 +69,7 @@
     <string name="account_not_found">Compte non trouvé</string>
     <string name="account_not_found_desc">Aucun compte n\'a été trouvé avec la phrase de récupération. Voulez-vous créer un nouveau compte avec votre phrase ?</string>
     <string name="your_phrase">votre phrase</string>
-    <string name="create_wallet">Créer un portefeuille</string>
+    <string name="create_wallet">Créer un nouveau compte</string>
     <string name="cancel">Annuler</string>
     <string name="username_format_wrong">"Votre nom d'utilisateur ne peut contenir que des lettres et des chiffres"</string>
     <string name="encrypt_backup">Cryptage de la sauvegarde</string>
@@ -248,7 +248,7 @@
     <string name="reset">Remise à zéro</string>
     <string name="skip">Sauter</string>
     <string name="start">Démarrage</string>
-    <string name="import_wallet">Portefeuille d\'importation</string>
+    <string name="import_wallet">J\'ai déjà un compte</string>
     <string name="import_str">Importation</string>
     <string name="welcome_desc">En savoir plus sur la sécurité</string>
     <string name="explore_new_nfts">Explorer de nouveaux NFT</string>
