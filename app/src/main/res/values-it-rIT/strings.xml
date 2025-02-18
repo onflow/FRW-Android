@@ -203,7 +203,7 @@
     <string name="add_collection">Aggiungi collezione</string>
     <string name="search_nft_collection">Ricerca nella collezione NFT</string>
     <string name="scan_qr_code">Scansione del codice QR</string>
-    <string name="explore_search_hint">Nome o URL del sito</string>
+    <string name="explore_search_hint">Cerca il nome o URL</string>
     <string name="bookmark">Segnalibro</string>
     <string name="drag_here_to_unpin">Trascinare qui per staccare la spina</string>
     <string name="recovery_purchase_tips">Scrivete o copiate queste parole nell\'ordine giusto e salvatele in un posto sicuro.</string>
@@ -424,7 +424,6 @@
     <string name="accessible">Accessibile</string>
     <string name="none_accessible_coins">Nessuna Moneta accessibile</string>
     <string name="no_linked_account">Nessun conto collegato</string>
-    <string name="empty_bookmarks">Segnalibri vuoti</string>
     <string name="view_empty_collection">Visualizza il vuoto</string>
     <string name="inaccessible_tag">Inaccessibile</string>
     <string name="inaccessible_token_tip">Flow Wallet non ha accesso a %1$s nell\'account %2$s , verificare le impostazioni dell\'account collegato.</string>

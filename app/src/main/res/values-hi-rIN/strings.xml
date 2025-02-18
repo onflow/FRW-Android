@@ -203,7 +203,7 @@
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
-    <string name="explore_search_hint">Site Name or URL</string>
+    <string name="explore_search_hint">Search name or URL</string>
     <string name="bookmark">Bookmark</string>
     <string name="drag_here_to_unpin">Drag Here To Unpin</string>
     <string name="recovery_purchase_tips">Write down or copy these words in the right order and save them somewhere safe.</string>
@@ -424,7 +424,6 @@
     <string name="accessible">Accessible</string>
     <string name="none_accessible_coins">None Accessible Coins</string>
     <string name="no_linked_account">No Linked Accounts</string>
-    <string name="empty_bookmarks">Empty Bookmarks</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
     <string name="inaccessible_token_tip">Flow Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>

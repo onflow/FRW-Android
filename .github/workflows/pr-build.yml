@@ -1,0 +1,83 @@
+name: Android Build Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: ./frw
+
+      - name: Checkout tools repo
+        uses: actions/checkout@v4
+        with:
+          repository: Outblock/Flow-Wallet-Kit
+          path: ./Flow-Wallet-Kit
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          log-accepted-android-sdk-licenses: false
+
+      - name: Ensure Local Properties Exist
+        run: |
+          FILE_PATH="${{ github.workspace }}/frw/local.properties"
+          echo "sdk.dir=$ANDROID_HOME" > "$FILE_PATH"
+          if [ -n "${{ secrets.LOCAL_PROPERTIES }}" ]; then
+            echo "${{ secrets.LOCAL_PROPERTIES }}" >> "$FILE_PATH"
+          fi
+
+      - name: Ensure Google Services JSON Exists
+        env:
+          DEBUG_GOOGLE_SERVICES: |
+            {
+              "project_info": {
+                "project_number": "000000000000",
+                "project_id": "debug-project-id",
+                "firebase_url": "https://debug-project-id.firebaseio.com",
+                "storage_bucket": "debug-project-id.appspot.com"
+              },
+              "client": [
+                {
+                  "client_info": {
+                    "mobilesdk_app_id": "1:000000000000:android:debug",
+                    "android_client_info": {
+                      "package_name": "com.flowfoundation.wallet.dev"
+                    }
+                  },
+                  "oauth_client": [],
+                  "api_key": [
+                    {
+                      "current_key": "debug_api_key"
+                    }
+                  ],
+                  "services": {
+                    "appinvite_service": {
+                      "other_platform_oauth_client": []
+                    }
+                  }
+                }
+              ]
+            }
+        run: |
+          FILE_PATH="${{ github.workspace }}/frw/app/src/debug/google-services.json"
+          if [ -n "${{ secrets.GOOGLE_SERVICES }}" ]; then
+            printf '%s' "${{ secrets.GOOGLE_SERVICES }}" > "$FILE_PATH"
+          else
+            echo "$DEBUG_GOOGLE_SERVICES" > "$FILE_PATH"
+          fi
+
+      - name: Build APK (No Upload)
+        run: cd ./frw && ./gradlew assembleDebug --stacktrace

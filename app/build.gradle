@@ -22,8 +22,8 @@ if (apiKeysFile.exists()) {
         apiKeys.load(input)
     }
 }
-def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV")
-def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD")
+def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKey"
+def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
 
 android {
     compileSdk 34
@@ -51,18 +51,27 @@ android {
         manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
 
+    def keyAlias = properties.getProperty("keyAlias", "debug")
+    def keyPassword = properties.getProperty("keyPassword", "android")
+    def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath.toString())
+    def storePassword = properties.getProperty("storePassword", "android")
+
+    if (storeFilePath == null || storeFilePath.isEmpty()) {
+        storeFilePath = rootProject.file("app/debug.keystore").absolutePath.toString()
+    }
+
     signingConfigs {
         release {
-            keyAlias properties.getProperty("keyAlias")
-            keyPassword properties.getProperty("keyPassword")
-            storeFile file(properties.getProperty("storeFile"))
-            storePassword properties.getProperty("storePassword")
+            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
+            storePassword = properties.getProperty("storePassword") ?: "android"
+            keyAlias = properties.getProperty("keyAlias") ?: "androiddebugkey"
+            keyPassword = properties.getProperty("keyPassword") ?: "android"
         }
         dev {
-            keyAlias properties.getProperty("keyAlias")
-            keyPassword properties.getProperty("keyPassword")
-            storeFile file(properties.getProperty("storeFile"))
-            storePassword properties.getProperty("storePassword")
+            keyAlias
+            keyPassword
+            storeFile = file(storeFilePath)
+            storePassword
         }
     }
 
@@ -72,7 +81,6 @@ android {
             multiDexEnabled true
             debuggable true
             applicationIdSuffix = ".dev"
-            signingConfig signingConfigs.release
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
         }
@@ -100,8 +108,8 @@ android {
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
-                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile")
-                testers = properties.getProperty("testers")
+                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
+                testers = properties.getProperty("testers", "")
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
