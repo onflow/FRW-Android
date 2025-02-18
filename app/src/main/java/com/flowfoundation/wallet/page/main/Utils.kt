@@ -70,24 +70,28 @@ enum class HomeTab(val index: Int) {
     WALLET(0),
     NFT(1),
     EXPLORE(2),
-    PROFILE(3),
+    ACTIVITY(3),
+    PROFILE(4),
 }
 
-private val lottieMenu by lazy {
+private val svgMenu by lazy {
     listOf(
-        R.raw.lottie_coinhover,
-        R.raw.lottie_grid,
-        R.raw.lottie_category,
-        R.raw.lottie_avatar,
+        R.drawable.ic_wallet,   // Replace with actual SVG icons
+        R.drawable.ic_wallet,
+        R.drawable.ic_explore,
+        R.drawable.ic_wallet,
+        R.drawable.ic_profile
     )
 }
+
 
 private val menuColor by lazy {
     listOf(
         R.color.bottom_navigation_color_wallet,
-        R.color.bottom_navigation_color_nft,
-        R.color.bottom_navigation_color_explore,
-        R.color.bottom_navigation_color_profile,
+        R.color.bottom_navigation_color_wallet,
+        R.color.bottom_navigation_color_wallet,
+        R.color.bottom_navigation_color_wallet,
+        R.color.bottom_navigation_color_wallet,
     )
 }
 
@@ -96,22 +100,13 @@ fun BottomNavigationView.activeColor(index: Int): Int {
         ?.getColorForState(intArrayOf(android.R.attr.state_checked), 0)!!
 }
 
-fun BottomNavigationView.setLottieDrawable(
-    index: Int,
-    isSelected: Boolean,
-    playAnimation: Boolean = false
-) {
-    menu.getItem(index).icon = LottieDrawable().apply {
-        callback = this
-        composition = LottieCompositionFactory.fromRawResSync(context, lottieMenu[index]).value
-        addValueCallback(
-            KeyPath("**"),
-            LottieProperty.COLOR_FILTER,
-            LottieValueCallback(SimpleColorFilter(if (isSelected) activeColor(index) else R.color.neutrals8.res2color()))
-        )
-        if (playAnimation) playAnimation()
+fun BottomNavigationView.setSvgDrawable(index: Int, isSelected: Boolean) {
+    if (index !in svgMenu.indices) {
+        return
     }
+    menu.getItem(index).setIcon(svgMenu[index])  // Set the vector drawable
 }
+
 
 fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = false) {
     ioScope {

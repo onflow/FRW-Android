@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.activeColor
 import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
 import com.flowfoundation.wallet.page.main.model.MainContentModel
-import com.flowfoundation.wallet.page.main.setLottieDrawable
+import com.flowfoundation.wallet.page.main.setSvgDrawable
 
 class MainContentPresenter(
     private val activity: MainActivity,
@@ -21,6 +21,7 @@ class MainContentPresenter(
             R.id.bottom_navigation_home,
             R.id.bottom_navigation_nft,
             R.id.bottom_navigation_explore,
+            R.id.bottom_navigation_activity,
             R.id.bottom_navigation_profile,
         )
     }
@@ -57,7 +58,7 @@ class MainContentPresenter(
                 menu.findItem(R.id.bottom_navigation_explore).setVisible(false)
             }
             with(menu) {
-                (0 until size()).forEach { binding.navigationView.setLottieDrawable(it, it == 0) }
+                (0 until size()).forEach { binding.navigationView.setSvgDrawable(it, it == 0) }
             }
         }
     }
@@ -68,9 +69,9 @@ class MainContentPresenter(
         binding.navigationView.updateIndicatorColor(binding.navigationView.activeColor(index))
 
         if (prvIndex != index) {
-            binding.navigationView.setLottieDrawable(prvIndex, false)
+            binding.navigationView.setSvgDrawable(prvIndex, false)
         }
 
-        binding.navigationView.setLottieDrawable(index, true, prvIndex != index)
+        binding.navigationView.setSvgDrawable(index, true)
     }
 }
