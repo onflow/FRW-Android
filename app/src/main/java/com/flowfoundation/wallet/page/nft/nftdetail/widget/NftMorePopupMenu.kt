@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.popup.PopupListView
 
 class NftMorePopupMenu(
+    private val activity: FragmentActivity,
     private val nft: Nft,
     private val view: View,
     private val color: Int,
@@ -49,7 +50,7 @@ class NftMorePopupMenu(
 
     private fun downloadNftMedia() {
         val media = nft.video() ?: nft.cover()
-        media?.downloadToGallery(R.string.saved_to_album.res2String())
+        media?.downloadToGallery(activity, R.string.saved_to_album.res2String())
     }
 
     private fun openNftWebsite() {

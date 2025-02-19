@@ -98,7 +98,7 @@ class NftDetailPresenter(
             })
 
             moreButton.setOnClickListener {
-                nft?.let { NftMorePopupMenu(it, moreButton, pageColor).show() }
+                nft?.let { NftMorePopupMenu(activity, it, moreButton, pageColor).show() }
             }
             collectButton.setLikeDrawableTint(pageColor)
             shareButton.setOnClickListener { showShareNft() }
