@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:background="@color/landing_on_flow_text"
             android:elevation="0dp"
-            android:minHeight="72dp"
+            android:minHeight="80dp"
             app:elevation="0dp"
             app:itemHorizontalTranslationEnabled="false"
             app:labelVisibilityMode="labeled"
