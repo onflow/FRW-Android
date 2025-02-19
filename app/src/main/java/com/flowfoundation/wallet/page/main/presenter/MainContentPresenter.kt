@@ -21,8 +21,8 @@ class MainContentPresenter(
             R.id.bottom_navigation_home,
             R.id.bottom_navigation_nft,
             R.id.bottom_navigation_explore,
-            R.id.bottom_navigation_activity,
             R.id.bottom_navigation_profile,
+            R.id.bottom_navigation_activity,
         )
     }
 
@@ -39,7 +39,13 @@ class MainContentPresenter(
     private fun setupListener() {
         binding.viewPager.setOnPageChangeListener(object : ViewPager.SimpleOnPageChangeListener() {
             override fun onPageSelected(position: Int) {
-                binding.navigationView.selectedItemId = menuId[position]
+                if (isTabSwitching) return
+
+                isTabSwitching = true
+                if (binding.navigationView.selectedItemId != menuId[position]) {
+                    binding.navigationView.selectedItemId = menuId[position]
+                }
+                isTabSwitching = false
             }
         })
         binding.navigationView.setOnNavigationItemSelectedListener {
@@ -48,6 +54,7 @@ class MainContentPresenter(
                 R.id.bottom_navigation_nft -> onNavigationItemSelected(1)
                 R.id.bottom_navigation_explore -> onNavigationItemSelected(2)
                 R.id.bottom_navigation_profile -> onNavigationItemSelected(3)
+                R.id.bottom_navigation_activity -> onNavigationItemSelected(4)
             }
             true
         }
@@ -63,15 +70,22 @@ class MainContentPresenter(
         }
     }
 
+    private var isTabSwitching = false
+
     private fun onNavigationItemSelected(index: Int) {
-        val prvIndex = binding.viewPager.currentItem
-        binding.viewPager.setCurrentItem(index, false)
-        binding.navigationView.updateIndicatorColor(binding.navigationView.activeColor(index))
+        if (isTabSwitching) return
 
-        if (prvIndex != index) {
-            binding.navigationView.setSvgDrawable(prvIndex, false)
+        val currentIndex = binding.viewPager.currentItem
+        if (currentIndex == index) return
+
+        isTabSwitching = true
+        binding.viewPager.post {
+            binding.viewPager.setCurrentItem(index, false)
         }
+        isTabSwitching = false
 
+        binding.navigationView.updateIndicatorColor(binding.navigationView.activeColor(index))
+        binding.navigationView.setSvgDrawable(currentIndex, false)
         binding.navigationView.setSvgDrawable(index, true)
     }
 }
