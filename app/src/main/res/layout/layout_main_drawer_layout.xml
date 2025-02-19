@@ -85,7 +85,7 @@
             android:layout_marginTop="16dp"
             android:background="@drawable/bg_round_16dp"
             android:backgroundTint="@color/drawer_item_background"
-            android:minHeight="72dp"
+            android:minHeight="80dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 

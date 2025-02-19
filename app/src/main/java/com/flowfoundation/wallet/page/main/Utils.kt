@@ -74,6 +74,16 @@ private val svgMenu by lazy {
     )
 }
 
+private val svgMenuSelected by lazy {
+    listOf(
+        R.drawable.ic_home_filled,
+        R.drawable.ic_nfts,
+        R.drawable.ic_explore_filled,
+        R.drawable.ic_activity,
+        R.drawable.ic_settings_filled
+    )
+}
+
 
 private val menuColor by lazy {
     listOf(
@@ -215,6 +225,19 @@ private fun ViewGroup.setupWallet(
                 MainActivity.relaunch(Env.getApp())
             }
         }
+    }
+}
+
+fun BottomNavigationView.updateIcons() {
+    for (i in 0 until menu.size()) {
+        val menuItem = menu.getItem(i)
+        val isSelected = menuItem.itemId == selectedItemId
+        val iconRes = if (isSelected) {
+            svgMenuSelected[i]
+        } else {
+            svgMenu[i]
+        }
+        menuItem.setIcon(iconRes)
     }
 }
 
