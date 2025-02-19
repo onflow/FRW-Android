@@ -14,7 +14,7 @@ import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecorati
 
 class TransactionRecordFragmentPresenter(
     private val binding: FragmentTransactionRecordBinding,
-    private val activity: FragmentActivity, // Accepts FragmentActivity instead of TransactionRecordActivity
+    private val activity: FragmentActivity
 ) : BasePresenter<Int> {
 
     private val adapter by lazy { TransactionRecordListAdapter() }

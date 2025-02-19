@@ -65,7 +65,7 @@ class MainContentPresenter(
                 menu.findItem(R.id.bottom_navigation_explore).setVisible(false)
             }
             with(menu) {
-                (0 until size()).forEach { binding.navigationView.setSvgDrawable(it, it == 0) }
+                (0 until size()).forEach { binding.navigationView.setSvgDrawable(it) }
             }
         }
     }
@@ -85,7 +85,7 @@ class MainContentPresenter(
         isTabSwitching = false
 
         binding.navigationView.updateIndicatorColor(binding.navigationView.activeColor(index))
-        binding.navigationView.setSvgDrawable(currentIndex, false)
-        binding.navigationView.setSvgDrawable(index, true)
+        binding.navigationView.setSvgDrawable(currentIndex)
+        binding.navigationView.setSvgDrawable(index)
     }
 }

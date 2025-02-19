@@ -16,12 +16,12 @@ class MainPageAdapter(
 
     override fun getItem(position: Int): Fragment {
         return when (position) {
-            0 -> WalletHomeFragment() // ✅ Home tab
-            1 -> NFTFragment()        // ✅ NFT tab
-            2 -> ExploreFragment()    // ✅ Explore tab
-            3 -> ProfileFragment()    // ✅ Profile tab
-            4 -> TransactionRecordFragment() // ✅ Activity tab
-            else -> throw IllegalStateException("Unexpected position: $position") // 🚀 Debugging
+            0 -> WalletHomeFragment()
+            1 -> NFTFragment()
+            2 -> ExploreFragment()
+            3 -> ProfileFragment()
+            4 -> TransactionRecordFragment()
+            else -> throw IllegalStateException("Unexpected position: $position")
         }
     }
 }

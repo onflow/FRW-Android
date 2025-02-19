@@ -38,11 +38,9 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.extensions.colorStateList
 import com.flowfoundation.wallet.utils.extensions.gone
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
@@ -56,7 +54,6 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 
 enum class HomeTab(val index: Int) {
@@ -93,11 +90,11 @@ fun BottomNavigationView.activeColor(index: Int): Int {
         ?.getColorForState(intArrayOf(android.R.attr.state_checked), 0)!!
 }
 
-fun BottomNavigationView.setSvgDrawable(index: Int, isSelected: Boolean) {
+fun BottomNavigationView.setSvgDrawable(index: Int) {
     if (index !in svgMenu.indices) {
         return
     }
-    menu.getItem(index).setIcon(svgMenu[index])  // Set the vector drawable
+    menu.getItem(index).setIcon(svgMenu[index])
 }
 
 
