@@ -51,22 +51,23 @@ android {
         manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
 
-    def keyAlias = properties.getProperty("keyAlias", "debug")
-    def keyPassword = properties.getProperty("keyPassword", "android")
-    def storePassword = properties.getProperty("storePassword", "android")
+    def keyAliasProperty = properties.getProperty("keyAlias", "androiddebugkey")
+    def keyPasswordProperty = properties.getProperty("keyPassword", "android")
+    def storePasswordProperty = properties.getProperty("storePassword", "android")
+    def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath)
 
     signingConfigs {
         release {
-            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
-            storePassword = properties.getProperty("storePassword") ?: "android"
-            keyAlias = properties.getProperty("keyAlias") ?: "androiddebugkey"
-            keyPassword = properties.getProperty("keyPassword") ?: "android"
+            storeFile = file(storeFilePath)
+            storePassword = storePasswordProperty
+            keyAlias = keyAliasProperty
+            keyPassword = keyPasswordProperty
         }
         dev {
-            storeFile = file(properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath))
-            storePassword = properties.getProperty("storePassword") ?: "android"
-            keyAlias = properties.getProperty("keyAlias") ?: "androiddebugkey"
-            keyPassword = properties.getProperty("keyPassword") ?: "android"
+            storeFile = file(storeFilePath)
+            storePassword = storePasswordProperty
+            keyAlias = keyAliasProperty
+            keyPassword = keyPasswordProperty
         }
     }
 
