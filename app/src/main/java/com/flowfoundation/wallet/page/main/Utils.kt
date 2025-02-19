@@ -66,8 +66,8 @@ enum class HomeTab(val index: Int) {
 
 private val svgMenu by lazy {
     listOf(
-        R.drawable.ic_home,   // Replace with actual SVG icons
-        R.drawable.ic_nfts,
+        R.drawable.ic_home,
+        R.drawable.ic_nfts_unfilled,
         R.drawable.ic_explore,
         R.drawable.ic_activity,
         R.drawable.ic_settings
