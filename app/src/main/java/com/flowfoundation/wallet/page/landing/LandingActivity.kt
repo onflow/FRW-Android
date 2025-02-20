@@ -4,9 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.widget.ViewPager2
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityLandingBinding
@@ -15,10 +12,7 @@ import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
-import com.flowfoundation.wallet.page.landing.adapter.LandingItemAdapter
-import com.flowfoundation.wallet.page.landing.model.LandingItemModel
 import com.flowfoundation.wallet.page.landing.utils.AutoScrollViewPager
-import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -29,7 +23,6 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class LandingActivity: BaseActivity(), OnWalletDataUpdate {
     private lateinit var binding: ActivityLandingBinding
-    private val adapter by lazy { LandingItemAdapter() }
     private var autoScroll: AutoScrollViewPager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,8 +33,6 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         UltimateBarX.with(this).fitWindow(false).light(false).applyStatusBar()
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
         WalletFetcher.addListener(this)
-        //setupData()
-        // setupViewPager()
         checkWalletInfo()
     }
 
