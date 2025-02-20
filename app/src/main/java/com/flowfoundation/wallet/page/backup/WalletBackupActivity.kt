@@ -95,7 +95,7 @@ class WalletBackupActivity: BaseActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.exit_backup_warning_dialog_title))
             .setMessage(getString(R.string.exit_backup_warning_dialog))
-            .setPositiveButton(getString(R.string.understand)) { dialog, _ ->
+            .setPositiveButton(getString(R.string.i_understand)) { dialog, _ ->
                 if (fromRegistration) {
                     MainActivity.launch(this)
                 }
