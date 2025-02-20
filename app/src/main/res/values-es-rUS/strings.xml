@@ -696,4 +696,5 @@
     <string name="legal_message">"     <![CDATA[     Al usar Flow Wallet aceptas los <a href="https://wallet.flow.com/terms-of-service"><u>Términos de Servicio</u></a> y <a href="https://wallet.flow.com/privacy-policy"><u>Política de Privacidad</u></a>     ]]>     "</string>
     <string name="back">Volver</string>
     <string name="exit_backup_warning_dialog_title">¿Estás seguro de que no quieres hacer una copia de seguridad?</string>
+    <string name="exit_backup_warning_dialog">Si pierde su dispositivo o elimina su cartera, sus fondos se perderán para siempre.</string>
 </resources>
