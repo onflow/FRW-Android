@@ -40,7 +40,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         UltimateBarX.with(this).fitWindow(false).light(false).applyStatusBar()
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
         WalletFetcher.addListener(this)
-        setupData()
+        //setupData()
         // setupViewPager()
         checkWalletInfo()
     }
@@ -76,7 +76,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
                 tabLayout.gone()
                 clButton.setBackgroundResource(R.drawable.bg_landing_step_done)
                 clButton.setOnClickListener {
-                    WalletBackupActivity.launch(this@LandingActivity)
+                    WalletBackupActivity.launch(this@LandingActivity, fromRegistration = true)
                     finish()
                 }
                 tvButtonTitle.setText(R.string.landing_step_done)
@@ -86,44 +86,6 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
             }
         }
     }
-
-    private fun setupData() {
-        adapter.setNewDiffData(
-            listOf(
-                LandingItemModel(R.drawable.ic_landing_step_one, R.string.landing_step_one_title,
-                    R.string.landing_step_one_desc),
-                LandingItemModel(R.drawable.ic_landing_step_two, R.string.landing_step_two_title,
-                    R.string.landing_step_two_desc),
-                LandingItemModel(R.drawable.ic_landing_step_three, R.string.landing_step_three_title,
-                    R.string.landing_step_three_desc),
-                LandingItemModel(R.drawable.ic_landing_step_one, R.string.landing_step_one_title,
-                    R.string.landing_step_one_desc),
-            )
-        )
-    }
-
-//    private fun setupViewPager() {
-//        binding.tabLayout.setMaxCount(3)
-//        with(binding.viewPager) {
-//            adapter = this@LandingActivity.adapter
-//            (getChildAt(0) as RecyclerView).overScrollMode = View.OVER_SCROLL_NEVER
-//            registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-//
-//                override fun onPageSelected(position: Int) {
-//                    super.onPageSelected(position)
-//                    binding.tabLayout.onTabSelected(position)
-//                }
-//
-//                override fun onPageScrollStateChanged(state: Int) {
-//                    if (state == ViewPager2.SCROLL_STATE_IDLE && currentItem == (adapter as
-//                                LandingItemAdapter).itemCount - 1) {
-//                        setCurrentItem(0, false)
-//                    }
-//                }
-//            })
-//            autoScroll = AutoScrollViewPager(this, 10000, lifecycle)
-//        }
-//    }
 
     companion object {
         fun launch(context: Context) {
