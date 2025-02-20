@@ -2,6 +2,7 @@
 <resources>
     <string name="next">次のページ</string>
     <string name="creating_account">アカウントを作成しています…</string>
+    <string name="secure_design">セキュア・バイ・デザイン</string>
     <string name="username">ユーザー名</string>
     <string name="username_too_short">短すぎる</string>
     <string name="username_too_long">長すぎる</string>

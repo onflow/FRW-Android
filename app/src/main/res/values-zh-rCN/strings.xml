@@ -2,6 +2,7 @@
 <resources>
     <string name="next">下一步</string>
     <string name="creating_account">正在创建您的帐户…</string>
+    <string name="secure_design">设计安全</string>
     <string name="username">用户名</string>
     <string name="username_too_short">太短</string>
     <string name="username_too_long">太长</string>

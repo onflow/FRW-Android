@@ -2,6 +2,7 @@
 <resources>
     <string name="next">Siguiente</string>
     <string name="creating_account">Creando tu cuenta…</string>
+    <string name="secure_design">Seguro por diseño</string>
     <string name="username">Nombre de usuario</string>
     <string name="username_too_short">Demasiado corto</string>
     <string name="username_too_long">Demasiado tiempo</string>
