@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.WalletListData
+import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.landing.adapter.LandingItemAdapter
 import com.flowfoundation.wallet.page.landing.model.LandingItemModel
 import com.flowfoundation.wallet.page.landing.utils.AutoScrollViewPager
@@ -40,7 +41,7 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
         WalletFetcher.addListener(this)
         setupData()
-        setupViewPager()
+        // setupViewPager()
         checkWalletInfo()
     }
 
@@ -59,22 +60,23 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         with(binding) {
             if (isLoading) {
                 flLandingDone.gone()
-                viewPager.visible()
                 tabLayout.visible()
-                clButton.setBackgroundResource(R.drawable.bg_landing_step_loading)
-                tvButtonTitle.setText(R.string.landing_step_loading)
-                tvButtonTitle.setTextColor(R.color.accent_green.res2color())
+                clButton.gone()
                 pbButtonLoading.visible()
                 tvTips.visible()
             } else {
                 MixpanelManager.accountCreationFinish()
                 autoScroll?.stopAutoScroll()
+                lottieAnimation.gone()
+                tvCreatingWallet.gone()
+                tvSecureDesignText.gone()
+                tvSecureDesign.gone()
                 flLandingDone.visible()
-                viewPager.invisible()
+                clButton.visible()
                 tabLayout.gone()
                 clButton.setBackgroundResource(R.drawable.bg_landing_step_done)
                 clButton.setOnClickListener {
-                    MainActivity.launch(this@LandingActivity)
+                    WalletBackupActivity.launch(this@LandingActivity)
                     finish()
                 }
                 tvButtonTitle.setText(R.string.landing_step_done)
@@ -100,28 +102,28 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
         )
     }
 
-    private fun setupViewPager() {
-        binding.tabLayout.setMaxCount(3)
-        with(binding.viewPager) {
-            adapter = this@LandingActivity.adapter
-            (getChildAt(0) as RecyclerView).overScrollMode = View.OVER_SCROLL_NEVER
-            registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-
-                override fun onPageSelected(position: Int) {
-                    super.onPageSelected(position)
-                    binding.tabLayout.onTabSelected(position)
-                }
-
-                override fun onPageScrollStateChanged(state: Int) {
-                    if (state == ViewPager2.SCROLL_STATE_IDLE && currentItem == (adapter as
-                                LandingItemAdapter).itemCount - 1) {
-                        setCurrentItem(0, false)
-                    }
-                }
-            })
-            autoScroll = AutoScrollViewPager(this, 10000, lifecycle)
-        }
-    }
+//    private fun setupViewPager() {
+//        binding.tabLayout.setMaxCount(3)
+//        with(binding.viewPager) {
+//            adapter = this@LandingActivity.adapter
+//            (getChildAt(0) as RecyclerView).overScrollMode = View.OVER_SCROLL_NEVER
+//            registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+//
+//                override fun onPageSelected(position: Int) {
+//                    super.onPageSelected(position)
+//                    binding.tabLayout.onTabSelected(position)
+//                }
+//
+//                override fun onPageScrollStateChanged(state: Int) {
+//                    if (state == ViewPager2.SCROLL_STATE_IDLE && currentItem == (adapter as
+//                                LandingItemAdapter).itemCount - 1) {
+//                        setCurrentItem(0, false)
+//                    }
+//                }
+//            })
+//            autoScroll = AutoScrollViewPager(this, 10000, lifecycle)
+//        }
+//    }
 
     companion object {
         fun launch(context: Context) {
