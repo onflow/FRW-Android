@@ -46,9 +46,10 @@ class AddressPageFragment : Fragment() {
     }
 
     companion object {
-        const val TYPE_RECENT = 0
-        const val TYPE_ADDRESS = 1
-        const val TYPE_ACCOUNT = 2
+        const val TYPE_ACCOUNT = 0
+        const val TYPE_RECENT = 1
+        const val TYPE_ADDRESS = 2
+
 
         private const val EXTRA_TYPE = "extra_type"
 
