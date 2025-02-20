@@ -3,6 +3,7 @@
     <string name="next">Suivant</string>
     <string name="creating_account">Création de votre compte…</string>
     <string name="secure_design">Sécurisé de part sa conception</string>
+    <string name="secure_design_2">En utilisant les clés de périphérique avec la sécurité de niveau matériel, Flow Wallet est un portefeuille de matériel ultra-sécurisé auquel vous pouvez faire confiance</string>
     <string name="username">Nom d\'utilisateur</string>
     <string name="username_too_short">Trop court</string>
     <string name="username_too_long">Trop long</string>

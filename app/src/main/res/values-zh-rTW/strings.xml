@@ -3,6 +3,7 @@
     <string name="next">下一步</string>
     <string name="creating_account">正在创建您的帐户…</string>
     <string name="secure_design">设计安全</string>
+    <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
     <string name="username">用戶名</string>
     <string name="username_too_short">太短</string>
     <string name="username_too_long">太長</string>
