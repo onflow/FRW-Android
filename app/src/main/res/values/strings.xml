@@ -572,6 +572,10 @@
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
+    <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
+    <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
+    <string name="understand">I Understand</string>
+    <string name="back">Back</string>
     <string name="landing_step_four_on_flow" translatable="false">#onFlow.</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>

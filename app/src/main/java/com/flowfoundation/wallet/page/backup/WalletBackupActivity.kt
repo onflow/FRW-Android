@@ -1,9 +1,11 @@
 package com.flowfoundation.wallet.page.backup
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
@@ -90,19 +92,30 @@ class WalletBackupActivity: BaseActivity() {
 
 
     private fun showExitWarningDialog() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Warning")
-            .setMessage("You haven't backed up your wallet yet. Are you sure you want to exit?")
-            .setPositiveButton("Exit") { dialog, _ ->
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.exit_backup_warning_dialog_title))
+            .setMessage(getString(R.string.exit_backup_warning_dialog))
+            .setPositiveButton(getString(R.string.understand)) { dialog, _ ->
                 if (fromRegistration) {
                     MainActivity.launch(this)
                 }
                 finish()
             }
-            .setNegativeButton("Cancel") { dialog, _ ->
+            .setNegativeButton(getString(R.string.back)) { dialog, _ ->
                 dialog.dismiss()
             }
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(
+                ContextCompat.getColor(this, R.color.black)
+            )
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(
+                ContextCompat.getColor(this, R.color.red)
+            )
+        }
+
+        dialog.show()
     }
 
 
