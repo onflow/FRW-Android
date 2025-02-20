@@ -79,7 +79,7 @@ private val svgMenuSelected by lazy {
         R.drawable.ic_home_filled,
         R.drawable.ic_nfts,
         R.drawable.ic_explore_filled,
-        R.drawable.ic_activity,
+        R.drawable.ic_activity_filled,
         R.drawable.ic_settings_filled
     )
 }
