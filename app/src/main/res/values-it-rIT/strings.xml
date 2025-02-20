@@ -490,7 +490,7 @@
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Frase di recupero</string>
     <string name="from_recovery_phrase">Altro</string>
     <string name="from_recovery_phrase_note">Ripristino utilizzando una frase di recupero legacy (non multi-backup)</string>
-    <string name="from_raw_key">Da frase di recupero (eredità)</string>
+    <string name="from_raw_key">Altro</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Ripristino multiplo</string>

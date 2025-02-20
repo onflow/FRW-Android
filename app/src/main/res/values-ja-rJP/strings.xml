@@ -490,7 +490,7 @@
     <string name="from_multi_backup_note">グーグルドライブ／パスキー／リカバリーフレーズ</string>
     <string name="from_recovery_phrase">その他</string>
     <string name="from_recovery_phrase_note">レガシーリカバリーフレーズを使用したリストア（マルチバックアップではない）</string>
-    <string name="from_raw_key">リカバリーフレーズより（レガシー）</string>
+    <string name="from_raw_key">その他</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">マルチ復元</string>

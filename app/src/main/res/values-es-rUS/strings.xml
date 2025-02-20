@@ -490,7 +490,7 @@
     <string name="from_multi_backup_note">Google Drive/ Clave de acceso/ Frase de recuperación</string>
     <string name="from_recovery_phrase">Otro</string>
     <string name="from_recovery_phrase_note">Restaurar utilizando una frase de recuperación heredada (no una copia de seguridad múltiple)</string>
-    <string name="from_raw_key">De frase de recuperación (legado)</string>
+    <string name="from_raw_key">Otros</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
