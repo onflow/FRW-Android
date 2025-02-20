@@ -48,6 +48,10 @@ class WalletBackupActivity: BaseActivity() {
         intent.getBooleanExtra(EXTRA_FROM_REGISTRATION, false)
     }
 
+    private fun userHasNoBackups(): Boolean {
+        // Assuming backupListLiveData contains the list of backups
+        return viewModel.backupListLiveData.value.isNullOrEmpty()
+    }
 
     override fun onResume() {
         super.onResume()
@@ -55,17 +59,46 @@ class WalletBackupActivity: BaseActivity() {
         presenter.showLoading()
     }
 
+    override fun onBackPressed() {
+        if (userHasNoBackups()) {
+            showExitWarningDialog()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                if (fromRegistration) {
-                    MainActivity.launch(this)
+                if (userHasNoBackups()) {
+                    showExitWarningDialog()
+                } else {
+                    if (fromRegistration) {
+                        MainActivity.launch(this)
+                    }
+                    finish()
                 }
-                finish()
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+
+    private fun showExitWarningDialog() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Warning")
+            .setMessage("You haven't backed up your wallet yet. Are you sure you want to exit?")
+            .setPositiveButton("Exit") { dialog, _ ->
+                if (fromRegistration) {
+                    MainActivity.launch(this)
+                }
+                finish()
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
 
