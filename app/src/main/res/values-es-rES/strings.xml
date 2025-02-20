@@ -568,7 +568,7 @@
     <string name="landing_step_four_title">Tu cuenta de Flow está lista, ¡vamos a respaldarla!</string>
     <string name="landing_step_four_desc">Respaldar su cuenta asegura que su acceso es seguro y siempre bajo su control</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">Crear copia de seguridad</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>

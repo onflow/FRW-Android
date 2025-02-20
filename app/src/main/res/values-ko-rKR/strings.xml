@@ -568,7 +568,7 @@
     <string name="landing_step_four_title">Flow 계정이 준비되었습니다. 백업해 보세요!</string>
     <string name="landing_step_four_desc">계정을 백업하면 액세스가 안전하고 항상 제어할 수 있습니다.</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">백업 만들기</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
