@@ -55,7 +55,7 @@ class WalletBackupActivity: BaseActivity() {
         val devices = viewModel.devicesLiveData.value
         val seedPhrases = viewModel.seedPhraseListLiveData.value
 
-        return backupList.isNullOrEmpty() && devices.isNullOrEmpty() && seedPhrases.isNullOrEmpty()
+        return backupList.isNullOrEmpty() && seedPhrases.isNullOrEmpty()
     }
 
 
