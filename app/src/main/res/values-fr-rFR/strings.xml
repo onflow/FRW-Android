@@ -52,6 +52,7 @@
     <string name="recovery">Récupération</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFTs</string>
+    <string name="nft_collections">Collections NFT</string>
     <string name="activity">Activité</string>
     <string name="restore_wallet">Restaurer le portefeuille</string>
     <string name="restore_wallet_tip">Restaurez votre portefeuille à l\'aide de la phrase de récupération en 12 mots que vous avez notée.</string>
@@ -95,7 +96,8 @@
     <string name="download">Télécharger</string>
     <string name="saved_to_album">Sauvegardé dans l\'album</string>
     <string name="view_on_web">Voir sur le web</string>
-    <string name="empty_title">Vous n\'avez pas encore de NFT</string>
+    <string name="empty_title">Votre collection est en attente de briller !</string>
+    <string name="empty_title_2">Commencez à explorer et à ajouter vos premiers FNT dès aujourd\'hui.</string>
     <string name="receive">Recevoir</string>
     <string name="buy">Acheter</string>
     <string name="swap">Échange</string>

@@ -95,7 +95,9 @@
     <string name="download">Descargar</string>
     <string name="saved_to_album">Guardado en álbum</string>
     <string name="view_on_web">Ver en la web</string>
-    <string name="empty_title">Aún no tienes NFTs</string>
+    <string name="empty_title">¡Tu colección está a la espera de brillar!</string>
+    <string name="empty_title_2">Empieza a explorar y añade tus primeros NFT hoy.</string>
+    <string name="nft_collections">Colecciones NFT</string>
     <string name="receive">Reciba</string>
     <string name="buy">Comprar</string>
     <string name="swap">Intercambiar</string>

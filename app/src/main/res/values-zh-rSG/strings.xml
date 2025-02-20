@@ -95,7 +95,9 @@
     <string name="download">Download</string>
     <string name="saved_to_album">Saved to album</string>
     <string name="view_on_web">View on web</string>
-    <string name="empty_title">You don’t have any NFTs yet</string>
+    <string name="nft_collections">NFT Collections</string>
+    <string name="empty_title">Your collection is waiting to shine!</string>
+    <string name="empty_title_2">Start exploring and add your first NFTs today.</string>
     <string name="receive">Receive</string>
     <string name="buy">Buy</string>
     <string name="swap">Swap</string>
