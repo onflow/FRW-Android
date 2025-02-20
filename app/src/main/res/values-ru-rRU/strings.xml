@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Следующий</string>
+    <string name="creating_account">Создание аккаунта…</string>
     <string name="username">Имя пользователя</string>
     <string name="username_too_short">Слишком короткая</string>
     <string name="username_too_long">Слишком долго</string>

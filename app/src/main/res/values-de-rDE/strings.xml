@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Weiter</string>
+    <string name="creating_account">Erstellen Ihres Kontos…</string>
     <string name="username">Benutzername</string>
     <string name="username_too_short">Zu kurz</string>
     <string name="username_too_long">Zu lang</string>
