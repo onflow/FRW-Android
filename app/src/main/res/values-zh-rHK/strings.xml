@@ -685,4 +685,8 @@
         your storage usage.</string>
     <string name="deposit">Deposit</string>
     <string name="buy_flow">Buy FLOW</string>
+    <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
+    <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
+    <string name="understand">I Understand</string>
+    <string name="back">Back</string>
 </resources>

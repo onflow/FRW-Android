@@ -69,7 +69,6 @@
     <string name="restore_mnemonic_tip">Dies ist eine 12-Wort-Phrase, die Sie bei der Erstellung Ihrer vorherigen Brieftasche erhalten haben.</string>
     <string name="multi_restore_mnemonic_tip">Dies ist ein Satz mit 15 Wörtern, den Sie bei der Erstellung Ihrer vorherigen Brieftasche
         erhalten haben.</string>
-    <string name="restore_with_mnemonic">Anmeldung mit \nRecovery Phrase</string>
     <string name="restore_mnemonic_hint">Geben Sie die Wiederherstellungsphrase ein</string>
     <string name="account_not_found">Konto nicht gefunden</string>
     <string name="account_not_found_desc">Kein Konto mit der Wiederherstellungsphrase gefunden. Möchten Sie ein neues Konto mit Ihrer Phrase erstellen?</string>
@@ -694,4 +693,6 @@
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="back">Zurück</string>
+    <string name="exit_backup_warning_dialog_title">Sind Sie sicher, dass Sie keine Sicherung erstellen möchten?</string>
 </resources>

@@ -694,4 +694,8 @@
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
+    <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
+    <string name="understand">I Understand</string>
+    <string name="back">Back</string>
 </resources>

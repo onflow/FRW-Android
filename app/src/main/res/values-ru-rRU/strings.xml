@@ -694,4 +694,6 @@
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
+    <string name="back">Назад</string>
+    <string name="exit_backup_warning_dialog_title">Вы уверены, что не хотите сделать резервную копию?</string>
 </resources>

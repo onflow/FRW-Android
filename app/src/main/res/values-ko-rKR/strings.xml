@@ -694,4 +694,6 @@
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Flow Wallet을 사용하면 <a href="https://wallet.flow.com/terms-of-service"><u>서비스 약관</u></a> 및 <a href="https://wallet.flow.com/privacy-policy"><u>개인정보처리방침</u></a>에 동의하는 것입니다.     ]]>     "</string>
+    <string name="back">뒤로</string>
+    <string name="exit_backup_warning_dialog_title">백업을 하지 않으시겠습니까?</string>
 </resources>
