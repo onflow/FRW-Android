@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
 import androidx.annotation.WorkerThread
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
@@ -128,6 +129,7 @@ private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentif
         "uid": "https://frw-link.lilico.app/wc",
         "endpoint": "${WalletConnectMethod.ACCOUNT_PROOF.value}",
         "method": "WC/RPC",
+        "network": "${chainNetWorkString()}"
         "data": {
           "f_type": "account-proof",
           "f_vsn": "2.0.0",

@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.hexToBytes
@@ -18,6 +19,7 @@ private const val SIGNATURE_REPLACEMENT = "#signature"
 private const val USER_SIGNATURE_REPLACEMENT = "#user-signature"
 private const val ACCOUNT_PROOF_REPLACEMENT = "#account-proof"
 private const val NONCE_REPLACEMENT = "#nonce"
+private const val NETWORK_REPLACEMENT = "#network"
 
 
 private val FCL_AUTHN_RESPONSE = """
@@ -94,6 +96,7 @@ private val FCL_AUTHN_RESPONSE_ACCOUNT_PROOF = """
         "uid": "frw#account-proof",
         "endpoint": "chrome-extension://hpclkefagolihohboafpheddmmgdffjm/popup.html",
         "method": "EXT/RPC",
+        "network": "$NETWORK_REPLACEMENT",
         "data": {
           "f_type": "account-proof",
           "f_vsn": "2.0.0",
@@ -256,7 +259,7 @@ suspend fun fclAuthnResponseWithAccountProofSign(
             ACCOUNT_PROOF_REPLACEMENT,
             if (accountProofSign.isNullOrEmpty()) "" else FCL_AUTHN_RESPONSE_ACCOUNT_PROOF.replace(ADDRESS_REPLACEMENT, address)
                 .replace(SIGNATURE_REPLACEMENT, accountProofSign).replace(NONCE_REPLACEMENT,
-                    nonce.orEmpty()).replace(KEY_ID_REPLACEMENT, "$keyId")
+                    nonce.orEmpty()).replace(KEY_ID_REPLACEMENT, "$keyId").replace(NETWORK_REPLACEMENT, chainNetWorkString())
         )
 }
 
