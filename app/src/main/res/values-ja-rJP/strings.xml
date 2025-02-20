@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">リカバリー</string>
     <string name="phrase">フレーズ</string>
-    <string name="nft">エヌエフティー</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">アクティビティ</string>
     <string name="restore_wallet">財布の復元</string>
     <string name="restore_wallet_tip">書き留めた12語の回復フレーズで財布を回復させる。</string>
     <string name="choose_account">アカウントの選択</string>

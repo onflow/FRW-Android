@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">恢复</string>
     <string name="phrase">短语</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">活动</string>
     <string name="restore_wallet">恢复钱包</string>
     <string name="restore_wallet_tip">用你的12 位助记词恢复你的钱包。</string>
     <string name="choose_account">选择账户</string>

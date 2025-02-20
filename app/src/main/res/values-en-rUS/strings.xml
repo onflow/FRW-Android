@@ -40,6 +40,8 @@
     <string name="home">Home</string>
     <string name="explore">Explore</string>
     <string name="profile">Settings</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">Activity</string>
     <string name="things_you">Things You \nNeed to Know</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>
@@ -51,7 +53,6 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
-    <string name="nft">NFT</string>
     <string name="restore_wallet">Restore Wallet</string>
     <string name="restore_wallet_tip">Restore your wallet with the 12 word recovery phrase that you have written down.</string>
     <string name="choose_account">Choose Account</string>

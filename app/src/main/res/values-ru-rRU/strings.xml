@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Восстановление</string>
     <string name="phrase">Фраза</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">Активность</string>
     <string name="restore_wallet">Восстановить кошелек</string>
     <string name="restore_wallet_tip">Восстановите свой кошелек с помощью записанной вами фразы из 12 слов о восстановлении.</string>
     <string name="choose_account">Выберите счет</string>

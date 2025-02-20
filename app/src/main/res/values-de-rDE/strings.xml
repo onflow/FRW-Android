@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Erholung</string>
     <string name="phrase">Phrase</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">Aktivität</string>
     <string name="restore_wallet">Brieftasche wiederherstellen</string>
     <string name="restore_wallet_tip">Stellen Sie Ihr Portemonnaie mit den 12 Worten, die Sie aufgeschrieben haben, wieder her.</string>
     <string name="choose_account">Konto auswählen</string>
