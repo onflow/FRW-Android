@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">%1$s단어를 선택합니다.</string>
     <string name="home">홈</string>
     <string name="explore">탐색</string>
-    <string name="profile">프로필</string>
+    <string name="profile">설정</string>
     <string name="things_you">\n사용자가 알아야 할 사항</string>
     <string name="wallet_create_warning_tip">다음 단계에서는 비밀 문구(12단어)가 표시됩니다. 이 비밀 문구는 지갑을 복구할 수 있는 유일한 열쇠입니다.</string>
     <string name="create_wallet_warning1">비밀번호를 분실하면 계정에 영원히 액세스할 수 없습니다.</string>

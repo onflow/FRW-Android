@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Выберите слово %1$s</string>
     <string name="home">Главная</string>
     <string name="explore">Посетите сайт</string>
-    <string name="profile">Профиль</string>
+    <string name="profile">Настройки</string>
     <string name="things_you">Вещи, которые вы \nдолжны знать</string>
     <string name="wallet_create_warning_tip">На следующем шаге вы увидите секретную фразу (12 слов). Секретная фраза - единственный ключ к восстановлению вашего кошелька.</string>
     <string name="create_wallet_warning1">Если я потеряю свои секретные фразы, я не смогу получить доступ к своей учетной записи навсегда.</string>

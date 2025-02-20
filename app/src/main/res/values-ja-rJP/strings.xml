@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">%1$sを選択する。</string>
     <string name="home">ホーム</string>
     <string name="explore">エクスペリエンス</string>
-    <string name="profile">プロフィール</string>
+    <string name="profile">設定</string>
     <string name="things_you">\n知っておくべきこと</string>
     <string name="wallet_create_warning_tip">次のステップでは、秘密のフレーズ（12語）が表示されます。この秘密のフレーズこそが、あなたの財布を取り戻す唯一の鍵なのです。</string>
     <string name="create_wallet_warning1">シークレットフレーズを紛失すると、永遠に自分のアカウントにアクセスできなくなります。</string>

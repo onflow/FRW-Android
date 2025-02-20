@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">选择单词 %1$s</string>
     <string name="home">首页</string>
     <string name="explore">探索</string>
-    <string name="profile">账户</string>
+    <string name="profile">设置</string>
     <string name="things_you">您 \n需要知道的事情</string>
     <string name="wallet_create_warning_tip">在下一步中，您将看到一个助记词（12 个词）。助记词是恢复您钱包的唯一钥匙。</string>
     <string name="create_wallet_warning1">如果我丢失了我的助记词，我将无法永远访问我的账户。</string>

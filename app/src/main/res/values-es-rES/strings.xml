@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Seleccione la palabra %1$s</string>
     <string name="home">Inicio</string>
     <string name="explore">Explore</string>
-    <string name="profile">Perfil</string>
+    <string name="profile">Ajustes</string>
     <string name="things_you">Cosas que debe saber \n</string>
     <string name="wallet_create_warning_tip">En el siguiente paso, verá una frase secreta (12 palabras). La frase secreta es la única clave para recuperar tu monedero.</string>
     <string name="create_wallet_warning1">Si pierdo mis frases secretas, no podré acceder a mi cuenta para siempre.</string>

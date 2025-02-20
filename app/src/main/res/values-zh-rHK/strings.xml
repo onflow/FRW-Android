@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="home">Home</string>
     <string name="explore">Explore</string>
-    <string name="profile">Profile</string>
+    <string name="profile">Settings</string>
     <string name="things_you">Things You \nNeed to Know</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>

@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">選擇單詞 %1$s</string>
     <string name="home">主頁</string>
     <string name="explore">探索</string>
-    <string name="profile">個人資料</string>
+    <string name="profile">设置</string>
     <string name="things_you">您需要知道的事項</string>
     <string name="wallet_create_warning_tip">在下一步中，您將看到一個秘密短語（12 個單詞）。秘密短語是找回錢包的唯一密鑰。</string>
     <string name="create_wallet_warning1">如果我丟失了我的秘密短語，我將永遠無法訪問我的帳戶。</string>

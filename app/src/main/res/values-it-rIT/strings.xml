@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Selezionare la parola %1$s</string>
     <string name="home">Casa</string>
     <string name="explore">Esplorare</string>
-    <string name="profile">Profilo</string>
+    <string name="profile">Impostazioni</string>
     <string name="things_you">Cose che \ndeve sapere</string>
     <string name="wallet_create_warning_tip">Nella fase successiva, verrà visualizzata una frase segreta (12 parole). La frase segreta è l\'unica chiave per recuperare il portafoglio.</string>
     <string name="create_wallet_warning1">Se perdo le mie frasi segrete, non potrò più accedere al mio account per sempre.</string>

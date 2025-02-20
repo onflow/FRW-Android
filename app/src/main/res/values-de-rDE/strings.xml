@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Wählen Sie das Wort %1$s</string>
     <string name="home">Startseite</string>
     <string name="explore">Erkunden Sie</string>
-    <string name="profile">Profil</string>
+    <string name="profile">Einstellungen</string>
     <string name="things_you">Dinge, die Sie \nwissen müssen</string>
     <string name="wallet_create_warning_tip">Im nächsten Schritt wird Ihnen eine geheime Phrase (12 Wörter) angezeigt. Die geheime Phrase ist der einzige Schlüssel zur Wiederherstellung Ihrer Brieftasche.</string>
     <string name="create_wallet_warning1">Wenn ich meine geheimen Phrasen verliere, kann ich nicht mehr auf mein Konto zugreifen.</string>
