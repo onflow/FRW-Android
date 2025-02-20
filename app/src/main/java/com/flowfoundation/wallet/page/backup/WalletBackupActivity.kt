@@ -49,9 +49,13 @@ class WalletBackupActivity: BaseActivity() {
     }
 
     private fun userHasNoBackups(): Boolean {
-        // Assuming backupListLiveData contains the list of backups
-        return viewModel.backupListLiveData.value.isNullOrEmpty()
+        val backupList = viewModel.backupListLiveData.value
+        val devices = viewModel.devicesLiveData.value
+        val seedPhrases = viewModel.seedPhraseListLiveData.value
+
+        return backupList.isNullOrEmpty() && devices.isNullOrEmpty() && seedPhrases.isNullOrEmpty()
     }
+
 
     override fun onResume() {
         super.onResume()
