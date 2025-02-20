@@ -568,21 +568,12 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
     <string name="landing_step_four_title">Your Flow account is ready, let\'s back it up!</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
     <string name="landing_step_four_on_flow" translatable="false">#onFlow.</string>
     <string name="token_count">%1$d Tokens</string>
-
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
     <string name="wallpaper">Wallpaper</string>

@@ -566,15 +566,7 @@
     <string name="select_collection">Kollektion auswählen</string>
     <string name="import_profile">Profil importieren</string>
     <string name="notification">Benachrichtigung</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_title">Dein Flow Konto ist fertig, lass es uns wieder aufbauen!</string>
     <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>

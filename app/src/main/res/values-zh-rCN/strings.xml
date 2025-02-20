@@ -563,15 +563,7 @@
     <string name="select_collection">选择藏品</string>
     <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
-    <string name="landing_step_one_title">安全， \n由 KeyStore 提供支持。</string>
-    <string name="landing_step_two_title">您的设备，\n现在是一个硬件钱包。</string>
-    <string name="landing_step_three_title">您刚刚，\n解锁了真正的所有权。</string>
-    <string name="landing_step_four_title">蓄势待发</string>
-    <string name="landing_step_one_desc">Flow 钱包使用设备的 KeyStore 来保护您的 Flow 账户。</string>
-    <string name="landing_step_two_desc">KeyStore 是设备上的特殊硬件，Flow
-        Wallet
-利用它将设备变成硬件钱包。</string>
-    <string name="landing_step_three_desc">您的资产受到设备的保护，从而在 Flow 上实现对资产的真正所有权。</string>
+    <string name="landing_step_four_title">您的Flow 帐户已经准备好，让我们把它退回！</string>
     <string name="landing_step_four_desc">您的 Flow 账户已准备就绪，\n让我们开始吧！</string>
     <string name="landing_step_loading">创建账户中</string>
     <string name="landing_step_done">进入 Flow</string>

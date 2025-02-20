@@ -562,13 +562,7 @@
     <string name="select_collection">選擇收藏</string>
     <string name="import_profile">導入個人資料</string>
     <string name="notification">通知</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">準備開始</string>
-    <string name="landing_step_one_desc">Flow Wallet 使用您的裝置的 KeyStore 來保護您的 Flow 帳戶。</string>
-    <string name="landing_step_two_desc">KeyStore 是您裝置上的特殊硬體，Flow Wallet 用它把您的裝置變成一個硬體錢包。</string>
-    <string name="landing_step_three_desc">您的資產由您的裝置安全保護，在 Flow 上解鎖了真正的所有權。</string>
+    <string name="landing_step_four_title">您的Flow 帐户已经准备好，让我们把它退回！</string>
     <string name="landing_step_four_desc">您的 Flow 帳戶已就緒，
 讓我們開始吧！</string>
     <string name="landing_step_loading">創建您的個人資料</string>

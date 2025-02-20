@@ -565,15 +565,7 @@
     <string name="select_collection">컬렉션 선택</string>
     <string name="import_profile">프로필 가져오기</string>
     <string name="notification">알림</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
+    <string name="landing_step_four_title">Flow 계정이 준비되었습니다. 백업해 보세요!</string>
     <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
