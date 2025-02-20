@@ -6,8 +6,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.resource.bitmap.CenterCrop
-import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityChildAccountEditBinding
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
@@ -15,8 +13,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.Ch
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.ChildAccountEditViewModel
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.model.ChildAccountEditModel
 import com.flowfoundation.wallet.utils.CACHE_VIDEO_PATH
-import com.flowfoundation.wallet.utils.extensions.visible
-import com.flowfoundation.wallet.utils.image.PhotoPicker
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.toFile

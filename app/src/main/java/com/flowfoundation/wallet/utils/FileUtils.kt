@@ -1,20 +1,14 @@
 package com.flowfoundation.wallet.utils
 
-import android.app.Activity
-import android.content.ContentValues
 import android.graphics.Bitmap
 import android.net.Uri
-import android.provider.MediaStore
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.WorkerThread
 import androidx.core.content.FileProvider
-import androidx.fragment.app.FragmentActivity
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.net.URL
-import java.nio.file.Files
 
 val CACHE_PATH: File = Env.getApp().cacheDir.apply { if (!exists()) mkdirs() }
 
@@ -114,26 +108,7 @@ fun readTextFromAssets(path: String): String? {
  * download file from net, and save to gallery
  */
 
-fun String.downloadToGallery(activity: FragmentActivity, toast: String = "") {
-    val launcher = activity.registerForActivityResult(ActivityResultContracts.CreateDocument("image/jpeg")) { uri ->
-        uri?.let {
-            ioScope {
-                safeRun {
-                    activity.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        URL(this).openStream().use { inputStream ->
-                            inputStream.copyTo(outputStream)
-                        }
-                    }
-
-                    if (toast.isNotBlank()) {
-                        toast(msg = toast)
-                    }
-                }
-            }
-        }
-    }
-
-    // 生成默认文件名
+fun String.downloadToGallery(launcher: ActivityResultLauncher<String>) {
     val fileName = "${System.currentTimeMillis()}${urlFileName()}"
     launcher.launch(fileName)
 }
