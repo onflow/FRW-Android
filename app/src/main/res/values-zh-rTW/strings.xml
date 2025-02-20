@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">選擇單詞 %1$s</string>
     <string name="home">主頁</string>
     <string name="explore">探索</string>
-    <string name="profile">個人資料</string>
+    <string name="profile">设置</string>
     <string name="things_you">您需要知道的事項</string>
     <string name="wallet_create_warning_tip">在下一步中，您將看到一個秘密短語（12 個單詞）。秘密短語是找回錢包的唯一密鑰。</string>
     <string name="create_wallet_warning1">如果我丟失了我的秘密短語，我將永遠無法訪問我的帳戶。</string>
@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">恢復</string>
     <string name="phrase">短語</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">活动</string>
     <string name="restore_wallet">恢復錢包</string>
     <string name="restore_wallet_tip">用您寫下的12字恢復短語恢復您的錢包。</string>
     <string name="choose_account">選擇帳戶</string>
@@ -93,7 +94,9 @@
     <string name="download">下載</string>
     <string name="saved_to_album">已儲存到相簿</string>
     <string name="view_on_web">在網頁上查看</string>
-    <string name="empty_title">您還沒有任何NFT</string>
+    <string name="nft_collections">NFT 收藏品</string>
+    <string name="empty_title">您的收藏正在等待切换！</string>
+    <string name="empty_title_2">今天开始探索和添加您的第一个NFT。</string>
     <string name="receive">接收</string>
     <string name="buy">購買</string>
     <string name="swap">交換</string>
@@ -611,7 +614,7 @@
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>

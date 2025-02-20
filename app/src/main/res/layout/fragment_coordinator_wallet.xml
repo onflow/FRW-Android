@@ -115,17 +115,6 @@
                         android:paddingHorizontal="8dp">
 
                         <androidx.constraintlayout.utils.widget.ImageFilterView
-                            android:id="@+id/iv_transition"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:background="?attr/selectableItemBackground"
-                            android:padding="8dp"
-                            android:scaleType="center"
-                            android:src="@drawable/ic_transition"
-                            app:round="40dp"
-                            app:tint="@color/text_1"/>
-
-                        <androidx.constraintlayout.utils.widget.ImageFilterView
                             android:id="@+id/iv_scan"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

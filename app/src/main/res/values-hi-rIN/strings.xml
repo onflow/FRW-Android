@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="home">Home</string>
     <string name="explore">Explore</string>
-    <string name="profile">Profile</string>
+    <string name="profile">Settings</string>
     <string name="things_you">Things You \nNeed to Know</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>
@@ -51,7 +51,9 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="nft_collections">NFT Collections</string>
+    <string name="activity">Activity</string>
     <string name="restore_wallet">Restore Wallet</string>
     <string name="restore_wallet_tip">Restore your wallet with the 12 word recovery phrase that you have written down.</string>
     <string name="choose_account">Choose Account</string>
@@ -94,7 +96,8 @@
     <string name="download">Download</string>
     <string name="saved_to_album">Saved to album</string>
     <string name="view_on_web">View on web</string>
-    <string name="empty_title">You don’t have any NFTs yet</string>
+    <string name="empty_title">Your collection is waiting to shine!</string>
+    <string name="empty_title_2">Start exploring and add your first NFTs today.</string>
     <string name="receive">Receive</string>
     <string name="buy">Buy</string>
     <string name="swap">Swap</string>
@@ -615,7 +618,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>

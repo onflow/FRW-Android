@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">%1$s단어를 선택합니다.</string>
     <string name="home">홈</string>
     <string name="explore">탐색</string>
-    <string name="profile">프로필</string>
+    <string name="profile">설정</string>
     <string name="things_you">\n사용자가 알아야 할 사항</string>
     <string name="wallet_create_warning_tip">다음 단계에서는 비밀 문구(12단어)가 표시됩니다. 이 비밀 문구는 지갑을 복구할 수 있는 유일한 열쇠입니다.</string>
     <string name="create_wallet_warning1">비밀번호를 분실하면 계정에 영원히 액세스할 수 없습니다.</string>
@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">복구</string>
     <string name="phrase">문구</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">활동</string>
     <string name="restore_wallet">지갑 복원</string>
     <string name="restore_wallet_tip">적어둔 12단어 복구 문구로 지갑을 복원하세요.</string>
     <string name="choose_account">계정 선택</string>
@@ -94,7 +95,9 @@
     <string name="download">다운로드</string>
     <string name="saved_to_album">앨범에 저장</string>
     <string name="view_on_web">웹에서 보기</string>
-    <string name="empty_title">아직 NFT가 없습니다.</string>
+    <string name="nft_collections">NFT 컬렉션</string>
+    <string name="empty_title">귀하의 컬렉션이 빛날 기회를 기다리고 있습니다!</string>
+    <string name="empty_title_2">탐색을 시작하고 오늘 첫 번째 NFT를 추가해 보세요.</string>
     <string name="receive">수신</string>
     <string name="buy">구매</string>
     <string name="swap">스왑</string>
@@ -615,7 +618,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>

@@ -71,9 +71,6 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
 
         binding.ivScan.setOnClickListener { barcodeLauncher.launch() }
         TransitionManager.beginDelayedTransition(binding.root)
-        binding.ivTransition.setOnClickListener {
-            TransactionRecordActivity.launch(this.requireContext())
-        }
 
         viewModel = ViewModelProvider(this)[WalletFragmentViewModel::class.java].apply {
             dataListLiveData.observe(viewLifecycleOwner) {

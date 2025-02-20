@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">%1$sを選択する。</string>
     <string name="home">ホーム</string>
     <string name="explore">エクスペリエンス</string>
-    <string name="profile">プロフィール</string>
+    <string name="profile">設定</string>
     <string name="things_you">\n知っておくべきこと</string>
     <string name="wallet_create_warning_tip">次のステップでは、秘密のフレーズ（12語）が表示されます。この秘密のフレーズこそが、あなたの財布を取り戻す唯一の鍵なのです。</string>
     <string name="create_wallet_warning1">シークレットフレーズを紛失すると、永遠に自分のアカウントにアクセスできなくなります。</string>
@@ -51,7 +51,9 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">リカバリー</string>
     <string name="phrase">フレーズ</string>
-    <string name="nft">エヌエフティー</string>
+    <string name="nft">NFTs</string>
+    <string name="nft_collections">NFTコレクション</string>
+    <string name="activity">アクティビティ</string>
     <string name="restore_wallet">財布の復元</string>
     <string name="restore_wallet_tip">書き留めた12語の回復フレーズで財布を回復させる。</string>
     <string name="choose_account">アカウントの選択</string>
@@ -94,7 +96,8 @@
     <string name="download">ダウンロード</string>
     <string name="saved_to_album">アルバムに保存</string>
     <string name="view_on_web">ウェブで見る</string>
-    <string name="empty_title">あなたはまだNFTを持っていない</string>
+    <string name="empty_title">コレクションが輝きを待っています！</string>
+    <string name="empty_title_2">今すぐ探索し、最初のNFTを追加しましょう。</string>
     <string name="receive">受け取る</string>
     <string name="buy">購入</string>
     <string name="swap">スワップ</string>
@@ -615,7 +618,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>

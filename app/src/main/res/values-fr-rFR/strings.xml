@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Sélectionnez le mot %1$s</string>
     <string name="home">Accueil</string>
     <string name="explore">Explorer</string>
-    <string name="profile">Profil</string>
+    <string name="profile">Paramètres</string>
     <string name="things_you">Ce que vous devez savoir \n</string>
     <string name="wallet_create_warning_tip">À l\'étape suivante, vous verrez apparaître une phrase secrète (12 mots). Cette phrase secrète est la seule clé pour récupérer votre portefeuille.</string>
     <string name="create_wallet_warning1">Si je perds mes phrases secrètes, je ne pourrai plus jamais accéder à mon compte.</string>
@@ -51,7 +51,9 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Récupération</string>
     <string name="phrase">Phrase</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="nft_collections">Collections NFT</string>
+    <string name="activity">Activité</string>
     <string name="restore_wallet">Restaurer le portefeuille</string>
     <string name="restore_wallet_tip">Restaurez votre portefeuille à l\'aide de la phrase de récupération en 12 mots que vous avez notée.</string>
     <string name="choose_account">Choisir un compte</string>
@@ -94,7 +96,8 @@
     <string name="download">Télécharger</string>
     <string name="saved_to_album">Sauvegardé dans l\'album</string>
     <string name="view_on_web">Voir sur le web</string>
-    <string name="empty_title">Vous n\'avez pas encore de NFT</string>
+    <string name="empty_title">Votre collection est en attente de briller !</string>
+    <string name="empty_title_2">Commencez à explorer et à ajouter vos premiers FNT dès aujourd\'hui.</string>
     <string name="receive">Recevoir</string>
     <string name="buy">Acheter</string>
     <string name="swap">Échange</string>
@@ -615,7 +618,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Envoi échoué</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>
