@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Seleccione la palabra %1$s</string>
     <string name="home">Inicio</string>
     <string name="explore">Explore</string>
-    <string name="profile">Perfil</string>
+    <string name="profile">Ajustes</string>
     <string name="things_you">Cosas que debe saber \n</string>
     <string name="wallet_create_warning_tip">En el siguiente paso, verá una frase secreta (12 palabras). La frase secreta es la única clave para recuperar tu monedero.</string>
     <string name="create_wallet_warning1">Si pierdo mis frases secretas, no podré acceder a mi cuenta para siempre.</string>
@@ -51,7 +51,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Recuperación</string>
     <string name="phrase">Frase</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">Actividad</string>
     <string name="restore_wallet">Restaurar Cartera</string>
     <string name="restore_wallet_tip">Restaura tu cartera con la frase de recuperación de 12 palabras que has escrito.</string>
     <string name="choose_account">Elegir cuenta</string>
@@ -94,7 +95,9 @@
     <string name="download">Descargar</string>
     <string name="saved_to_album">Guardado en álbum</string>
     <string name="view_on_web">Ver en la web</string>
-    <string name="empty_title">Aún no tienes NFTs</string>
+    <string name="empty_title">¡Tu colección está a la espera de brillar!</string>
+    <string name="empty_title_2">Empieza a explorar y añade tus primeros NFT hoy.</string>
+    <string name="nft_collections">Colecciones NFT</string>
     <string name="receive">Reciba</string>
     <string name="buy">Comprar</string>
     <string name="swap">Intercambiar</string>

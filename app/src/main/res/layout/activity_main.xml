@@ -31,7 +31,7 @@
             app:itemHorizontalTranslationEnabled="false"
             app:labelVisibilityMode="labeled"
             app:itemIconTint="@color/bottom_nav_item_color"
-            app:itemTextColor="@color/bottom_nav_item_color"
+            app:itemTextColor="@color/text_3"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:itemIconSize="28dp"

@@ -39,7 +39,7 @@
     <string name="mnemonic_question_title">Wählen Sie das Wort %1$s</string>
     <string name="home">Startseite</string>
     <string name="explore">Erkunden Sie</string>
-    <string name="profile">Profil</string>
+    <string name="profile">Einstellungen</string>
     <string name="things_you">Dinge, die Sie \nwissen müssen</string>
     <string name="wallet_create_warning_tip">Im nächsten Schritt wird Ihnen eine geheime Phrase (12 Wörter) angezeigt. Die geheime Phrase ist der einzige Schlüssel zur Wiederherstellung Ihrer Brieftasche.</string>
     <string name="create_wallet_warning1">Wenn ich meine geheimen Phrasen verliere, kann ich nicht mehr auf mein Konto zugreifen.</string>
@@ -51,7 +51,9 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Erholung</string>
     <string name="phrase">Phrase</string>
-    <string name="nft">NFT</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">Aktivität</string>
+    <string name="nft_collections">NFT-Sammlungen</string>
     <string name="restore_wallet">Brieftasche wiederherstellen</string>
     <string name="restore_wallet_tip">Stellen Sie Ihr Portemonnaie mit den 12 Worten, die Sie aufgeschrieben haben, wieder her.</string>
     <string name="choose_account">Konto auswählen</string>
@@ -94,7 +96,8 @@
     <string name="download">Herunterladen</string>
     <string name="saved_to_album">Im Album gespeichert</string>
     <string name="view_on_web">Ansicht im Web</string>
-    <string name="empty_title">Sie haben noch keine NFTs</string>
+    <string name="empty_title">Ihre Sammlung wartet auf Glanz!</string>
+    <string name="empty_title_2">Erforschen und fügen Sie Ihre ersten NFTs noch heute hinzu.</string>
     <string name="receive">Empfangen Sie</string>
     <string name="buy">Kaufen</string>
     <string name="swap">Tauschen Sie</string>

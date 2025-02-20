@@ -49,7 +49,6 @@ class BottomNavigationViewWithIndicator : BottomNavigationView,
         if (externalSelectedListener?.onNavigationItemSelected(item) != false) {
             onItemSelected(item.itemId)
 
-            // Ensure the UI updates first before changing icons
             post {
                 updateIcons()
             }
