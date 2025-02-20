@@ -566,7 +566,7 @@
     <string name="import_profile">Profil d\'importation</string>
     <string name="notification">Notification</string>
     <string name="landing_step_four_title">Votre compte Flow est prêt, sauvegardons-le !</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_desc">Sauvegarde de votre compte assure que votre accès est sécurisé et toujours sous votre contrôle</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>

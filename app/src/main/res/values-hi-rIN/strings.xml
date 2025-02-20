@@ -566,7 +566,7 @@
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
     <string name="landing_step_four_title">Your Flow account is ready, let\'s back it up!</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>

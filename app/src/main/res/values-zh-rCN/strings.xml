@@ -564,7 +564,7 @@
     <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
     <string name="landing_step_four_title">您的Flow 帐户已经准备好，让我们把它退回！</string>
-    <string name="landing_step_four_desc">您的 Flow 账户已准备就绪，\n让我们开始吧！</string>
+    <string name="landing_step_four_desc">备份您的帐户以确保您的访问安全且始终处于您的控制</string>
     <string name="landing_step_loading">创建账户中</string>
     <string name="landing_step_done">进入 Flow</string>
     <string name="token_count">%1$d 代币</string>

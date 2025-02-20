@@ -567,7 +567,7 @@
     <string name="import_profile">Profil importieren</string>
     <string name="notification">Benachrichtigung</string>
     <string name="landing_step_four_title">Dein Flow Konto ist fertig, lass es uns wieder aufbauen!</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_desc">Die Sicherung Ihres Kontos stellt sicher, dass Ihr Zugriff sicher und immer in Ihrer Kontrolle ist</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Go with the FLOW</string>
     <string name="token_count">%1$d Tokens</string>
