@@ -696,4 +696,5 @@
     <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
     <string name="back">Назад</string>
     <string name="exit_backup_warning_dialog_title">Вы уверены, что не хотите сделать резервную копию?</string>
+    <string name="exit_backup_warning_dialog">Если вы потеряете свое устройство или удалите свой кошелек, ваши средства будут потеряны навсегда.</string>
 </resources>

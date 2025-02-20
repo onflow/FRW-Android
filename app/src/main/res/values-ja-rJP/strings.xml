@@ -696,4 +696,5 @@
     <string name="legal_message">"     <![CDATA[     Flow Walletを使用することで、 <a href="https://wallet.flow.com/terms-of-service"><u>利用規約</u></a> <a href="https://wallet.flow.com/privacy-policy"><u>プライバシーポリシー</u></a>     に同意したことになります。    ]]>     "</string>
     <string name="back">バック</string>
     <string name="exit_backup_warning_dialog_title">バックアップを作成してもよろしいですか？</string>
+    <string name="exit_backup_warning_dialog">デバイスを紛失またはウォレットを削除すると、あなたの資金は永久に失われます。</string>
 </resources>

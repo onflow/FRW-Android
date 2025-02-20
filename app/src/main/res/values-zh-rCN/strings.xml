@@ -694,4 +694,5 @@
     <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
     <string name="back">返回</string>
     <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
+    <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
 </resources>

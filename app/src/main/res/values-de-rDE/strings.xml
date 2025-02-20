@@ -695,4 +695,5 @@
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="back">Zurück</string>
     <string name="exit_backup_warning_dialog_title">Sind Sie sicher, dass Sie keine Sicherung erstellen möchten?</string>
+    <string name="exit_backup_warning_dialog">Wenn Sie Ihr Gerät verlieren oder Ihre Brieftasche löschen, wird Ihr Guthaben für immer verloren gehen.</string>
 </resources>
