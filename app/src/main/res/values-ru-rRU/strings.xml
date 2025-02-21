@@ -581,6 +581,7 @@
     <string name="upload_again">Загрузить снова</string>
     <string name="backup_uploaded">Резервная копия загружена</string>
     <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="creating_account">Создание аккаунта…</string>
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">Отозвано</string>
     <string name="revoking">Revoking...</string>

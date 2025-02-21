@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Weiter</string>
+    <string name="creating_account">Erstellen Ihres Kontos…</string>
     <string name="secure_design">Sicher durch Design</string>
     <string name="secure_design_2">Die Verwendung von Geräteschlüssen mit Hardware-Grade-Sicherheit, Flow Wallet ist eine extrem sichere Hardware-Wallet, der Sie vertrauen können</string>
     <string name="username">Benutzername</string>

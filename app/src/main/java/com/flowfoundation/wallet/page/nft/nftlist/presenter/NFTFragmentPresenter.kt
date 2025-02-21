@@ -63,17 +63,9 @@ class NFTFragmentPresenter(
     private fun updateToolbarBackground(scrollY: Int = -1) {
         if (!isTopSelectionExist) {
             binding.toolbar.background.alpha = 255
-            binding.tabsBackground.background.setTint(R.color.neutrals4.res2color())
         } else {
             val progress = listPageScrollProgress(scrollY)
             binding.toolbar.background.alpha = (255 * progress).toInt()
-            binding.tabsBackground.background.setTint(
-                ArgbEvaluator().evaluate(
-                    progress,
-                    R.color.white.res2color(),
-                    R.color.neutrals4.res2color()
-                ) as Int
-            )
         }
     }
 }

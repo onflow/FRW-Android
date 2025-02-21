@@ -578,6 +578,7 @@
     <string name="create_backup">创建备份</string>
     <string name="upload_again">重新上传</string>
     <string name="backup_uploaded">备份已上传</string>
+    <string name="creating_account">正在创建您的帐户…</string>
     <string name="network_connect_lost">网络连接丢失</string>
     <string name="try_to_connect">尝试连接</string>
     <string name="revoked">已撤销</string>

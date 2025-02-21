@@ -584,6 +584,7 @@
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">Revocato</string>
     <string name="revoking">Revoking...</string>
+    <string name="creating_account">Creazione Del Tuo Account…</string>
     <string name="full_access">Accesso completo</string>
     <string name="multi_sign">Multi-segno</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>

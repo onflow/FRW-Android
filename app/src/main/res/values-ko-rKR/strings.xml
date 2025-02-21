@@ -584,6 +584,7 @@
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">취소됨</string>
     <string name="revoking">Revoking...</string>
+    <string name="creating_account">계정 생성 중…</string>
     <string name="full_access">전체 액세스</string>
     <string name="multi_sign">멀티사인</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>

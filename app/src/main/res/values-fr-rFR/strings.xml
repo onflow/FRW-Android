@@ -541,6 +541,7 @@
     <string name="move_nft_to_evm_failed">Échec du déplacement du NFT vers l\'EVM</string>
     <string name="hide_browser_toolbar">Cacher</string>
     <string name="sync_in_processing">Numérisation réussie \nSync en cours de traitement...</string>
+    <string name="creating_account">Création de votre compte…</string>
     <string name="view_more">Voir plus</string>
     <string name="select_nft">Sélectionner les NFT</string>
     <string name="account">Compte</string>
