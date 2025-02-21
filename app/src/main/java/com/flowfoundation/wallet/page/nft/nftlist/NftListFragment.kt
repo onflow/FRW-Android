@@ -22,7 +22,6 @@ import com.flowfoundation.wallet.page.nft.nftlist.adapter.NFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionTabsModel
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.CollectionTabsPresenter
-import com.flowfoundation.wallet.page.nft.nftlist.presenter.CollectionTitlePresenter
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.SelectionItemPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftFavoriteManager
 import com.flowfoundation.wallet.utils.extensions.res2dip
