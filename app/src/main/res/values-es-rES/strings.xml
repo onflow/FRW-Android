@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Siguiente</string>
-    <string name="creating_account">Creando tu cuenta…</string>
     <string name="secure_design">Seguro por diseño</string>
     <string name="secure_design_2">Usando Device Keys con Hardware-Grade Security, Flow Wallet es una cartera de hardware ultra-segura en la que puede confiar</string>
     <string name="username">Nombre de usuario</string>

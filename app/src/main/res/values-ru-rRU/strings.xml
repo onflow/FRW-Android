@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Следующий</string>
-    <string name="creating_account">Создание аккаунта…</string>
     <string name="secure_design">Безопасно по дизайну</string>
     <string name="secure_design_2">Используя ключи устройств с аппаратной безопасностью, кошелек Flow является ультрабезопасным аппаратным кошельком, которым вы можете доверять</string>
     <string name="username">Имя пользователя</string>
