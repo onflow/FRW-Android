@@ -257,7 +257,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 "0.001"
             } else {
                 "0.00"
-            } + "FLOW"
+            } + " FLOW"
             tvMoveFeeTips.text = (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
         }
     }
