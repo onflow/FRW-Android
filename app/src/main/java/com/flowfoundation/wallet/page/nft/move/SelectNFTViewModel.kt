@@ -50,7 +50,7 @@ class SelectNFTViewModel : ViewModel() {
                 postEmpty()
                 return@viewModelIOScope
             }
-            val collection =collectionResponse.data.firstOrNull { it.collection != null }?.collection
+            val collection = collectionResponse.data.firstOrNull { it.collection != null }?.collection
 
             if (collection == null) {
                 postEmpty()
@@ -68,6 +68,7 @@ class SelectNFTViewModel : ViewModel() {
             loadNFTList(collection.id)
         }
     }
+
 
     private fun postEmpty() {
         collectionLiveData.postValue(null)

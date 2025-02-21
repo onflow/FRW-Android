@@ -120,7 +120,8 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 uiScope {
                     SelectCollectionDialog().show(
                         selectedCollectionId = selectedCollection?.id,
-                        childFragmentManager
+                        fromAddress = moveFromAddress, // pass the updated from address here
+                        fragmentManager = childFragmentManager
                     )?.let { info ->
                         viewModel.setCollectionInfo(info)
                     }
@@ -175,6 +176,10 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         needMoveFee = EVMWalletManager.isEVMWalletAddress(currentTo) ||
                 EVMWalletManager.isEVMWalletAddress(currentFrom)
         configureMoveFeeLayout()
+
+        selectedCollection = null
+        showEmptyCollection()
+
         viewModel.loadCollections(moveFromAddress)
     }
 
