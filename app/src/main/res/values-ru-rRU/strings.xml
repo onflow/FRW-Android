@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Следующий</string>
+    <string name="creating_account">Создание аккаунта…</string>
+    <string name="secure_design">Безопасно по дизайну</string>
+    <string name="secure_design_2">Используя ключи устройств с аппаратной безопасностью, кошелек Flow является ультрабезопасным аппаратным кошельком, которым вы можете доверять</string>
     <string name="username">Имя пользователя</string>
     <string name="username_too_short">Слишком короткая</string>
     <string name="username_too_long">Слишком долго</string>
@@ -490,7 +493,7 @@
     <string name="from_multi_backup_note">Google Диск / Ключ доступа / Фраза для восстановления</string>
     <string name="from_recovery_phrase">Другой</string>
     <string name="from_recovery_phrase_note">Восстановление с помощью устаревшей фразы восстановления (не мультирезервное копирование)</string>
-    <string name="from_raw_key">Из фразы восстановления (наследие)</string>
+    <string name="from_raw_key">Другое</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Мультивосстановление</string>
@@ -562,18 +565,10 @@
     <string name="select_collection">Выберите коллекцию</string>
     <string name="import_profile">Профиль импорта</string>
     <string name="notification">Уведомление</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_title">Ваш аккаунт Flow готов, давайте создадим его резервную копию!</string>
+    <string name="landing_step_four_desc">Резервное копирование вашего аккаунта обеспечивает безопасность вашего доступа и всегда под вашим контролем</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">Создание резервной копии</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -699,4 +694,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
+    <string name="back">Назад</string>
+    <string name="exit_backup_warning_dialog_title">Вы уверены, что не хотите сделать резервную копию?</string>
+    <string name="exit_backup_warning_dialog">Если вы потеряете свое устройство или удалите свой кошелек, ваши средства будут потеряны навсегда.</string>
 </resources>

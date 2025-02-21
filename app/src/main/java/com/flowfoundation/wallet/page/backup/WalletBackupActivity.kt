@@ -1,9 +1,11 @@
 package com.flowfoundation.wallet.page.backup
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.R
@@ -11,6 +13,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityWalletBackupBinding
 import com.flowfoundation.wallet.page.backup.presenter.WalletBackupPresenter
 import com.flowfoundation.wallet.page.backup.viewmodel.WalletBackupViewModel
+import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.isNightMode
 
 
@@ -43,19 +46,78 @@ class WalletBackupActivity: BaseActivity() {
         setupToolbar()
     }
 
+    private val fromRegistration: Boolean by lazy {
+        intent.getBooleanExtra(EXTRA_FROM_REGISTRATION, false)
+    }
+
+    private fun userHasNoBackups(): Boolean {
+        val backupList = viewModel.backupListLiveData.value
+        val devices = viewModel.devicesLiveData.value
+        val seedPhrases = viewModel.seedPhraseListLiveData.value
+
+        return backupList.isNullOrEmpty() && seedPhrases.isNullOrEmpty()
+    }
+
+
     override fun onResume() {
         super.onResume()
         viewModel.loadData()
         presenter.showLoading()
     }
 
+    override fun onBackPressed() {
+        if (userHasNoBackups()) {
+            showExitWarningDialog()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
-            else -> super.onOptionsItemSelected(item)
+            android.R.id.home -> {
+                if (userHasNoBackups()) {
+                    showExitWarningDialog()
+                } else {
+                    if (fromRegistration) {
+                        MainActivity.launch(this)
+                    }
+                    finish()
+                }
+                return true
+            }
         }
-        return true
+        return super.onOptionsItemSelected(item)
     }
+
+
+    private fun showExitWarningDialog() {
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.exit_backup_warning_dialog_title))
+            .setMessage(getString(R.string.exit_backup_warning_dialog))
+            .setPositiveButton(getString(R.string.i_understand)) { dialog, _ ->
+                if (fromRegistration) {
+                    MainActivity.launch(this)
+                }
+                finish()
+            }
+            .setNegativeButton(getString(R.string.back)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(
+                ContextCompat.getColor(this, R.color.black)
+            )
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(
+                ContextCompat.getColor(this, R.color.red)
+            )
+        }
+
+        dialog.show()
+    }
+
 
     private fun setupToolbar() {
         setSupportActionBar(binding.toolbar)
@@ -64,8 +126,13 @@ class WalletBackupActivity: BaseActivity() {
     }
 
     companion object {
-        fun launch(context: Context) {
-            context.startActivity(Intent(context, WalletBackupActivity::class.java))
+        private const val EXTRA_FROM_REGISTRATION = "EXTRA_FROM_REGISTRATION"
+
+        fun launch(context: Context, fromRegistration: Boolean = false) {
+            val intent = Intent(context, WalletBackupActivity::class.java).apply {
+                putExtra(EXTRA_FROM_REGISTRATION, fromRegistration)
+            }
+            context.startActivity(intent)
         }
     }
 }

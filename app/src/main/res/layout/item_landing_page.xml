@@ -29,24 +29,6 @@
         app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
-        android:id="@+id/tv_sub_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:fontFamily="@font/e_ukraine_inter_light"
-        android:text="@string/landing_step_four_on_flow"
-        android:textColor="@color/text_white"
-        android:gravity="center"
-        android:paddingTop="4dp"
-        android:paddingHorizontal="24dp"
-        android:background="@drawable/bg_round_24dp"
-        android:backgroundTint="@color/accent_green"
-        android:textSize="48sp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tv_title"
-        app:layout_constraintStart_toStartOf="@id/tv_title"/>
-
-    <TextView
         android:id="@+id/tv_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

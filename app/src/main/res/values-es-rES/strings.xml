@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Siguiente</string>
+    <string name="creating_account">Creando tu cuenta…</string>
+    <string name="secure_design">Seguro por diseño</string>
+    <string name="secure_design_2">Usando Device Keys con Hardware-Grade Security, Flow Wallet es una cartera de hardware ultra-segura en la que puede confiar</string>
     <string name="username">Nombre de usuario</string>
     <string name="username_too_short">Demasiado corto</string>
     <string name="username_too_long">Demasiado tiempo</string>
@@ -490,7 +493,7 @@
     <string name="from_multi_backup_note">Google Drive/ Clave de acceso/ Frase de recuperación</string>
     <string name="from_recovery_phrase">Otro</string>
     <string name="from_recovery_phrase_note">Restaurar utilizando una frase de recuperación heredada (no una copia de seguridad múltiple)</string>
-    <string name="from_raw_key">De frase de recuperación (legado)</string>
+    <string name="from_raw_key">Otros</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
@@ -562,18 +565,10 @@
     <string name="select_collection">Seleccionar colección</string>
     <string name="import_profile">Importar perfil</string>
     <string name="notification">Notificación</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_title">Tu cuenta de Flow está lista, ¡vamos a respaldarla!</string>
+    <string name="landing_step_four_desc">Respaldar su cuenta asegura que su acceso es seguro y siempre bajo su control</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">Crear copia de seguridad</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -699,4 +694,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Al usar Flow Wallet aceptas los <a href="https://wallet.flow.com/terms-of-service"><u>Términos de Servicio</u></a> y <a href="https://wallet.flow.com/privacy-policy"><u>Política de Privacidad</u></a>     ]]>     "</string>
+    <string name="back">Volver</string>
+    <string name="exit_backup_warning_dialog_title">¿Estás seguro de que no quieres hacer una copia de seguridad?</string>
+    <string name="exit_backup_warning_dialog">Si pierde su dispositivo o elimina su cartera, sus fondos se perderán para siempre.</string>
 </resources>

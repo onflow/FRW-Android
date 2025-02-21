@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">下一步</string>
+    <string name="creating_account">正在创建您的帐户…</string>
+    <string name="secure_design">设计安全</string>
+    <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
     <string name="username">用户名</string>
     <string name="username_too_short">太短</string>
     <string name="username_too_long">太长</string>
@@ -488,7 +491,7 @@
     <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
     <string name="from_recovery_phrase">其他</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
-    <string name="from_raw_key">从助记词恢复（传统）</string>
+    <string name="from_raw_key">其他</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">多重还原</string>
@@ -560,18 +563,10 @@
     <string name="select_collection">选择藏品</string>
     <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
-    <string name="landing_step_one_title">安全， \n由 KeyStore 提供支持。</string>
-    <string name="landing_step_two_title">您的设备，\n现在是一个硬件钱包。</string>
-    <string name="landing_step_three_title">您刚刚，\n解锁了真正的所有权。</string>
-    <string name="landing_step_four_title">蓄势待发</string>
-    <string name="landing_step_one_desc">Flow 钱包使用设备的 KeyStore 来保护您的 Flow 账户。</string>
-    <string name="landing_step_two_desc">KeyStore 是设备上的特殊硬件，Flow
-        Wallet
-利用它将设备变成硬件钱包。</string>
-    <string name="landing_step_three_desc">您的资产受到设备的保护，从而在 Flow 上实现对资产的真正所有权。</string>
-    <string name="landing_step_four_desc">您的 Flow 账户已准备就绪，\n让我们开始吧！</string>
+    <string name="landing_step_four_title">您的Flow 帐户已经准备好，让我们把它退回！</string>
+    <string name="landing_step_four_desc">备份您的帐户以确保您的访问安全且始终处于您的控制</string>
     <string name="landing_step_loading">创建账户中</string>
-    <string name="landing_step_done">进入 Flow</string>
+    <string name="landing_step_done">创建备份</string>
     <string name="token_count">%1$d 代币</string>
     <string name="wallpaper_static">静态</string>
     <string name="wallpaper_dynamic">动态</string>
@@ -697,4 +692,7 @@
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
+    <string name="back">返回</string>
+    <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
+    <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
 </resources>

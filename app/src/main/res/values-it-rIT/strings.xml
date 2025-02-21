@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Avanti</string>
+    <string name="creating_account">Creazione Del Tuo Account…</string>
+    <string name="secure_design">Progettato per essere sicuro</string>
+    <string name="secure_design_2">Utilizzando le chiavi del dispositivo con sicurezza di grado hardware, Flow Wallet è un portafoglio hardware ultra-sicuro che puoi fidarti</string>
     <string name="username">Nome utente</string>
     <string name="username_too_short">Troppo breve</string>
     <string name="username_too_long">Troppo lungo</string>
@@ -490,7 +493,7 @@
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Frase di recupero</string>
     <string name="from_recovery_phrase">Altro</string>
     <string name="from_recovery_phrase_note">Ripristino utilizzando una frase di recupero legacy (non multi-backup)</string>
-    <string name="from_raw_key">Da frase di recupero (eredità)</string>
+    <string name="from_raw_key">Altro</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Ripristino multiplo</string>
@@ -562,18 +565,10 @@
     <string name="select_collection">Seleziona la collezione</string>
     <string name="import_profile">Profilo di importazione</string>
     <string name="notification">Notifica</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_title">Il tuo account Flow è pronto, eseguiamo il backup!</string>
+    <string name="landing_step_four_desc">Il backup del tuo account assicura che il tuo accesso sia sicuro e sempre nel tuo controllo</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">Creare il backup</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -699,4 +694,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Utilizzando Flow Wallet accetti i Termini di Servizio <a href="https://wallet.flow.com/terms-of-service"><u></u></a> e <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
+    <string name="back">Indietro</string>
+    <string name="exit_backup_warning_dialog_title">Sei sicuro di non voler fare un backup?</string>
+    <string name="exit_backup_warning_dialog">Se perdi il tuo dispositivo o elimini il tuo portafoglio, i tuoi fondi andranno persi per sempre.</string>
 </resources>

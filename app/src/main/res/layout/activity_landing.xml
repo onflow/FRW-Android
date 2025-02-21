@@ -30,18 +30,65 @@
         app:layout_constraintStart_toEndOf="@id/iv_logo"
         app:layout_constraintTop_toTopOf="@id/iv_logo"/>
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:fadingEdge="none"
-        android:fadingEdgeLength="0dp"
-        android:overScrollMode="never"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <TextView
+        android:id="@+id/tv_creating_wallet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:gravity="center"
+        android:text="@string/creating_account"
+        android:fontFamily="@font/e_ukraine_inter_light"
+        android:textColor="@color/text_1"
+        android:textSize="32sp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
         app:layout_constraintTop_toBottomOf="@id/iv_logo"
-        tools:background="@color/bg_2"
-        tools:itemCount="1"
-        tools:listitem="@layout/item_landing_page"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie_animation"
+        android:layout_width="239dp"
+        android:layout_height="239dp"
+        android:layout_marginTop="16dp"
+        app:lottie_fileName="animation.json"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:layout_constraintTop_toBottomOf="@id/tv_creating_wallet"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_secure_design"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="@string/secure_design"
+        android:fontFamily="@font/inter_semi_bold"
+        android:textColor="@color/text_1"
+        android:textSize="14sp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        app:layout_constraintTop_toBottomOf="@id/lottie_animation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_secure_design_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="@string/secure_design_2"
+        android:fontFamily="@font/inter"
+        android:textColor="@color/text_1"
+        android:textSize="16sp"
+        android:paddingStart="40dp"
+        android:paddingEnd="40dp"
+        app:layout_constraintTop_toBottomOf="@id/tv_secure_design"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <com.flowfoundation.wallet.page.landing.view.LandingTabLayout
         android:id="@+id/tab_layout"
@@ -55,10 +102,10 @@
     <FrameLayout
         android:id="@+id/fl_landing_done"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/view_pager"
-        app:layout_constraintTop_toTopOf="@id/view_pager">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tv_tips">
 
         <include layout="@layout/item_landing_page"/>
     </FrameLayout>
@@ -67,7 +114,8 @@
         android:id="@+id/tv_tips"
         android:layout_width="wrap_content"
         android:layout_height="34dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="70dp"
         android:layout_marginHorizontal="18dp"
         android:background="@drawable/bg_round_8dp"
         android:backgroundTint="@color/accent_green_8"
@@ -75,14 +123,14 @@
         android:lines="1"
         android:maxLines="1"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="7dp"
+        android:text="@string/landing_tips"
         android:textColor="@color/accent_green"
         android:textSize="14sp"
-        android:text="@string/landing_tips"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toTopOf="@id/cl_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
+
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_button"

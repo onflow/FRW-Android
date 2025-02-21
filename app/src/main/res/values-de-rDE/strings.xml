@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Weiter</string>
+    <string name="creating_account">Erstellen Ihres Kontos…</string>
+    <string name="secure_design">Sicher durch Design</string>
+    <string name="secure_design_2">Die Verwendung von Geräteschlüssen mit Hardware-Grade-Sicherheit, Flow Wallet ist eine extrem sichere Hardware-Wallet, der Sie vertrauen können</string>
     <string name="username">Benutzername</string>
     <string name="username_too_short">Zu kurz</string>
     <string name="username_too_long">Zu lang</string>
@@ -66,7 +69,6 @@
     <string name="restore_mnemonic_tip">Dies ist eine 12-Wort-Phrase, die Sie bei der Erstellung Ihrer vorherigen Brieftasche erhalten haben.</string>
     <string name="multi_restore_mnemonic_tip">Dies ist ein Satz mit 15 Wörtern, den Sie bei der Erstellung Ihrer vorherigen Brieftasche
         erhalten haben.</string>
-    <string name="restore_with_mnemonic">Anmeldung mit \nRecovery Phrase</string>
     <string name="restore_mnemonic_hint">Geben Sie die Wiederherstellungsphrase ein</string>
     <string name="account_not_found">Konto nicht gefunden</string>
     <string name="account_not_found_desc">Kein Konto mit der Wiederherstellungsphrase gefunden. Möchten Sie ein neues Konto mit Ihrer Phrase erstellen?</string>
@@ -490,7 +492,7 @@
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Sonstige</string>
     <string name="from_recovery_phrase_note">Wiederherstellung unter Verwendung eines alten Wiederherstellungssatzes (keine Mehrfachsicherungen)</string>
-    <string name="from_raw_key">Von Raw Keys (Vermächtnis)</string>
+    <string name="from_raw_key">Andere</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
@@ -563,18 +565,10 @@
     <string name="select_collection">Kollektion auswählen</string>
     <string name="import_profile">Profil importieren</string>
     <string name="notification">Benachrichtigung</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_title">Dein Flow Konto ist fertig, lass es uns wieder aufbauen!</string>
+    <string name="landing_step_four_desc">Die Sicherung Ihres Kontos stellt sicher, dass Ihr Zugriff sicher und immer in Ihrer Kontrolle ist</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">Sicherung erstellen</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -699,4 +693,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="back">Zurück</string>
+    <string name="exit_backup_warning_dialog_title">Sind Sie sicher, dass Sie keine Sicherung erstellen möchten?</string>
+    <string name="exit_backup_warning_dialog">Wenn Sie Ihr Gerät verlieren oder Ihre Brieftasche löschen, wird Ihr Guthaben für immer verloren gehen.</string>
 </resources>
