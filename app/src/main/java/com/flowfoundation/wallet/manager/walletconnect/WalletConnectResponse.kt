@@ -129,7 +129,7 @@ private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentif
         "uid": "https://frw-link.lilico.app/wc",
         "endpoint": "${WalletConnectMethod.ACCOUNT_PROOF.value}",
         "method": "WC/RPC",
-        "network": "${chainNetWorkString()}"
+        "network": "${chainNetWorkString()}",
         "data": {
           "f_type": "account-proof",
           "f_vsn": "2.0.0",
