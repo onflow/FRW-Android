@@ -203,7 +203,7 @@
 
     <color name="mainnet">#41CC5D</color>
     <color name="testnet">#FF8A00</color>
-    <color name="profile_tip_background">#29579AF2</color>
+    <color name="profile_tip_background">#1441CC5D</color>
     <color name="colorSecondary_16">#2941CC5D</color>
     <color name="colorSecondary_25">#4041CC5D</color>
     <color name="colorSecondary_35">#5941CC5D</color>
