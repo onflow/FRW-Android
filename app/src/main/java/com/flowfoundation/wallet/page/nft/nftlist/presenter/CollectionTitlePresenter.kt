@@ -20,7 +20,7 @@ class CollectionTitlePresenter(
     private val viewModel by lazy { ViewModelProvider(findActivity(view) as FragmentActivity)[NftViewModel::class.java] }
 
     init {
-        binding.toggleView.setOnClickListener { viewModel.toggleCollectionExpand() }
+        // binding.toggleView.setOnClickListener { viewModel.toggleCollectionExpand() }
     }
 
     override fun bind(model: CollectionTitleModel) {

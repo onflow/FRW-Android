@@ -24,9 +24,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.utils.NftListRequester
 import com.flowfoundation.wallet.page.nft.nftlist.utils.OnNftFavoriteChangeListener
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.isNftCollectionExpanded
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.updateNftCollectionExpanded
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
 private val TAG = NftViewModel::class.java.simpleName
@@ -64,7 +62,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
 
     fun requestList() {
         viewModelIOScope(this) {
-            isCollectionExpanded = isNftCollectionExpanded()
+            isCollectionExpanded = true // default to the list view
 
             // read from cache
             val cacheCollections = listRequester.cacheCollections().orEmpty()
@@ -151,14 +149,6 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     fun requestGridNextPage() {
         viewModelIOScope(this) {
             notifyGridList(gridRequester.nextPage())
-        }
-    }
-
-    fun toggleCollectionExpand() {
-        ioScope {
-            updateNftCollectionExpanded(!isCollectionExpanded)
-            isCollectionExpanded = isNftCollectionExpanded()
-            requestList()
         }
     }
 

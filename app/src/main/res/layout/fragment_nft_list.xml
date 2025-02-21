@@ -81,7 +81,7 @@
 
                         <include
                             android:id="@+id/collection_title"
-                            layout="@layout/item_nft_list_collection_title"/>
+                            layout="@layout/item_nft_list_collection_title" />
                     </FrameLayout>
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.constraintlayout.widget.ConstraintLayout>

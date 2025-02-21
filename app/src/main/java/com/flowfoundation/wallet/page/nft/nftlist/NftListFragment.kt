@@ -47,7 +47,6 @@ internal class NftListFragment : Fragment() {
     private val selectionPresenter by lazy { SelectionItemPresenter(binding.topSelectionHeader) }
 
     private val collectionTabsPresenter by lazy { CollectionTabsPresenter(binding.collectionTabs) }
-    private val collectionTitlePresenter by lazy { CollectionTitlePresenter(binding.collectionTitle.root) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentNftListBinding.inflate(inflater)
@@ -69,7 +68,6 @@ internal class NftListFragment : Fragment() {
             }
             listNftLiveData.observe(viewLifecycleOwner) { data -> updateListData(data) }
             collectionsLiveData.observe(viewLifecycleOwner) { data -> updateCollections(data) }
-            collectionTitleLiveData.observe(viewLifecycleOwner) { collectionTitlePresenter.bind(it) }
             favoriteLiveData.observe(viewLifecycleOwner) { updateFavorite(it) }
             favoriteIndexLiveData.observe(viewLifecycleOwner) { updateSelection(it) }
         }
