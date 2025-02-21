@@ -39,13 +39,12 @@ class SelectNFTViewModel : ViewModel() {
     private var identifier: String? = null
     private var nftIdentifier: String? = null
 
-    fun loadCollections() {
+    fun loadCollections(fromAddress: String) {
         viewModelIOScope(this) {
-            val address = nftWalletAddress()
-            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(address)) {
-                service.getEVMNFTCollections(address)
+            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                service.getEVMNFTCollections(fromAddress)
             } else {
-                service.getNFTCollections(address)
+                service.getNFTCollections(fromAddress)
             }
             if (collectionResponse.data.isNullOrEmpty()) {
                 postEmpty()

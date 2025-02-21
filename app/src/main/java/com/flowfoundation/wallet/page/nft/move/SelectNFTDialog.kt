@@ -47,6 +47,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         WalletManager.selectedWalletAddress()
     }
     private var needMoveFee = false
+    private var moveFromAddress: String = WalletManager.selectedWalletAddress()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,8 +87,11 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 result?.resume(false)
                 dismissAllowingStateLoss()
             }
-            layoutFromAccount.setAccountInfo(WalletManager.selectedWalletAddress())
+            layoutFromAccount.setAccountInfo(moveFromAddress)
             configureToAccount()
+            binding.ivArrow.setOnClickListener {
+                swapAddresses()
+            }
             uiScope {
                 storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
             }
@@ -150,10 +154,30 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     }
                 }
             }
-            loadCollections()
+            loadCollections(moveFromAddress)
         }
 
     }
+
+    private fun swapAddresses() {
+        // Retrieve the current addresses from the UI components.
+        // Adjust these method calls if your custom AccountView returns a different type.
+        val currentFrom = binding.layoutFromAccount.getAccountAddress()
+        val currentTo = binding.layoutToAccount.getAccountAddress()
+
+        // Swap the values in the UI
+        binding.layoutFromAccount.setAccountInfo(currentTo)
+        binding.layoutToAccount.setAccountInfo(currentFrom)
+
+        // Update the local moveFromAddress to reflect the new from address
+        moveFromAddress = currentTo
+
+        needMoveFee = EVMWalletManager.isEVMWalletAddress(currentTo) ||
+                EVMWalletManager.isEVMWalletAddress(currentFrom)
+        configureMoveFeeLayout()
+        viewModel.loadCollections(moveFromAddress)
+    }
+
 
     private fun configureToAccount() {
         with(binding) {
