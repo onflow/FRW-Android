@@ -37,18 +37,6 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="RtlSymmetry">
 
-                <ImageButton
-                    android:id="@+id/search_button"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_marginVertical="10dp"
-                    android:layout_marginEnd="18dp"
-                    android:background="?attr/actionBarItemBackground"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_search_round"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription"
-                    tools:visibility="visible"/>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
