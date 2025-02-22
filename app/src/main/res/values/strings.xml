@@ -561,6 +561,7 @@
     <string name="account_list">Account List</string>
     <string name="edit_wallet">Edit Wallet</string>
     <string name="select_nft_empty">0 NFTs</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">Profiles</string>
     <string name="create_profile">Create Account</string>
     <string name="features_coming">Features Coming Soon</string>
