@@ -188,8 +188,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         // Set from address to the current to address
         moveFromAddress = currentTo
 
-        needMoveFee = EVMWalletManager.isEVMWalletAddress(currentTo) ||
-                EVMWalletManager.isEVMWalletAddress(currentFrom)
+        needMoveFee = EVMWalletManager.isEVMWalletAddress(currentTo) xor EVMWalletManager.isEVMWalletAddress(currentFrom)
         configureMoveFeeLayout()
 
         selectedCollection = null
@@ -253,7 +252,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                             addressList,
                             childFragmentManager
                         )?.let { address ->
-                            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) || EVMWalletManager.isEVMWalletAddress(address)
+                            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) xor EVMWalletManager.isEVMWalletAddress(address)
                             layoutToAccount.setAccountInfo(address)
                             configureMoveFeeLayout()
                         }
