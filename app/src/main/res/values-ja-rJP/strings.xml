@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">次のページ</string>
-    <string name="creating_account">アカウントを作成しています…</string>
     <string name="secure_design">セキュア・バイ・デザイン</string>
     <string name="secure_design_2">ハードウェアグレードのセキュリティでデバイスキーを使用するFlow Walletは信頼できる超安全なハードウェアウォレットです</string>
     <string name="username">ユーザー名</string>
@@ -582,6 +581,7 @@
     <string name="upload_again">再度アップロード</string>
     <string name="backup_uploaded">バックアップのアップロード</string>
     <string name="network_connect_lost">Network Connection Lost</string>
+    <string name="creating_account">アカウントを作成しています…</string>
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">取り消された</string>
     <string name="revoking">Revoking...</string>

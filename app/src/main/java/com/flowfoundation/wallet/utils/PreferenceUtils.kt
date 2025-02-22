@@ -93,12 +93,6 @@ suspend fun isNewVersion(): Boolean {
     return false
 }
 
-suspend fun isNftCollectionExpanded(): Boolean = dataStore.data.map { it[KEY_NFT_COLLECTION_EXPANDED] ?: false }.first()
-
-suspend fun updateNftCollectionExpanded(isExpanded: Boolean) {
-    dataStore.edit { it[KEY_NFT_COLLECTION_EXPANDED] = isExpanded }
-}
-
 suspend fun isBiometricEnable(): Boolean = dataStore.data.map { it[KEY_BIOMETRIC_ENABLE] ?: false }.first()
 
 fun setBiometricEnable(isEnable: Boolean) {

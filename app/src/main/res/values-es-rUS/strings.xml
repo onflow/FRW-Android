@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Siguiente</string>
-    <string name="creating_account">Creando tu cuenta…</string>
     <string name="secure_design">Seguro por diseño</string>
     <string name="secure_design_2">Usando Device Keys con Hardware-Grade Security, Flow Wallet es una cartera de hardware ultra-segura en la que puede confiar</string>
     <string name="username">Nombre de usuario</string>
@@ -541,6 +540,7 @@
     <string name="move_flow_to_evm_failed">Error al mover la ficha de flujo a EVM</string>
     <string name="move_nft_to_evm_failed">Mover NFT a EVM fallido</string>
     <string name="hide_browser_toolbar">Ocultar</string>
+    <string name="creating_account">Creando tu cuenta…</string>
     <string name="sync_in_processing">Escaneado con éxito \nSincronización en proceso...</string>
     <string name="view_more">Ver más</string>
     <string name="select_nft">Seleccionar NFT</string>
