@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -14,13 +13,8 @@ import com.flowfoundation.wallet.databinding.ActivityChildAccountEditBinding
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.model.ChildAccountEditModel
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.presenter.ChildAccountEditPresenter
-import com.flowfoundation.wallet.utils.CACHE_VIDEO_PATH
 import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
-import com.flowfoundation.wallet.utils.toFile
-import com.flowfoundation.wallet.utils.uiScope
-import java.io.File
 
 class ChildAccountEditActivity : BaseActivity() {
 
@@ -60,18 +54,6 @@ class ChildAccountEditActivity : BaseActivity() {
             else -> super.onOptionsItemSelected(item)
         }
         return true
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode != Activity.RESULT_OK) return
-        ioScope {
-            val file = data?.data?.toFile(File(CACHE_VIDEO_PATH, "${System.currentTimeMillis()}.jpg").absolutePath) ?: return@ioScope
-            uiScope {
-                presenter.bind(ChildAccountEditModel(avatarFile = file))
-                viewModel.updateAvatar(file.absolutePath)
-            }
-        }
     }
 
     private fun setupToolbar() {

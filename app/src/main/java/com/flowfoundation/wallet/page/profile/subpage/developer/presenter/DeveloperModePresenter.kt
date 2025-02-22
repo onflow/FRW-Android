@@ -169,7 +169,7 @@ class DeveloperModePresenter(
         stringBuilder.append("LocalPrefix: ${UserPrefixCacheManager.read()}\n")
 
         val fileName = "debug_account_info.txt"
-        val file = File(activity.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
+        val file = File(activity.cacheDir, fileName)
         FileOutputStream(file).use { fos ->
             OutputStreamWriter(fos).use { writer ->
                 writer.write(stringBuilder.toString())
