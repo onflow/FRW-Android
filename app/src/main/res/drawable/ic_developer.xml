@@ -5,14 +5,14 @@
     android:viewportHeight="18">
     <path
         android:pathData="M17.37,2.238C17.862,1.816 18.603,1.873 19.024,2.365L23.718,7.84C24.094,8.28 24.094,8.928 23.718,9.368L19.024,14.843C18.603,15.335 17.862,15.392 17.37,14.97C16.878,14.549 16.821,13.808 17.243,13.316L21.281,8.604L17.243,3.892C16.821,3.4 16.878,2.66 17.37,2.238Z"
-        android:fillColor="@color/accent_blue"
+        android:fillColor="@color/accent_green"
         android:fillType="evenOdd"/>
     <path
         android:pathData="M6.63,14.97C6.138,15.392 5.397,15.335 4.976,14.843L0.282,9.368C-0.094,8.928 -0.094,8.28 0.282,7.841L4.976,2.365C5.397,1.873 6.138,1.816 6.63,2.238C7.122,2.66 7.179,3.4 6.757,3.892L2.719,8.604L6.757,13.316C7.179,13.808 7.122,14.549 6.63,14.97Z"
-        android:fillColor="@color/accent_blue"
+        android:fillColor="@color/accent_green"
         android:fillType="evenOdd"/>
     <path
         android:pathData="M14.264,0.309C14.889,0.479 15.258,1.124 15.087,1.749L11.177,16.087C11.006,16.712 10.361,17.081 9.736,16.911C9.111,16.74 8.742,16.095 8.913,15.47L12.823,1.132C12.994,0.507 13.639,0.138 14.264,0.309Z"
-        android:fillColor="@color/accent_blue"
+        android:fillColor="@color/accent_green"
         android:fillType="evenOdd"/>
 </vector>

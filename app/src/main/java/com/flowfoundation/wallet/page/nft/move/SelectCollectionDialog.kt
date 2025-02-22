@@ -48,6 +48,8 @@ class SelectCollectionDialog: BottomSheetDialogFragment() {
         }
     }
 
+    private var fromAddress: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -114,7 +116,10 @@ class SelectCollectionDialog: BottomSheetDialogFragment() {
             collectionListLiveData.observe(this@SelectCollectionDialog) { list ->
                 adapter.setNewDiffData(list)
             }
-            loadCollections()
+            // Use the fromAddress to load collections; adjust loadCollections() in your ViewModel accordingly
+            fromAddress?.let {
+                loadCollections(it)
+            } ?: loadCollections()
         }
     }
 
@@ -142,10 +147,12 @@ class SelectCollectionDialog: BottomSheetDialogFragment() {
 
     suspend fun show(
         selectedCollectionId: String?,
+        fromAddress: String,
         fragmentManager: FragmentManager
-    ) = suspendCoroutine { result ->
+    ) = suspendCoroutine<CollectionDetailInfo?> { cont ->
         this.selectedCollectionId = selectedCollectionId
-        this.result = result
+        this.fromAddress = fromAddress
+        this.result = cont
         show(fragmentManager, "")
     }
 }

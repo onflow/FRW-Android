@@ -34,6 +34,11 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+enum class CollectionEmptyState {
+    LOADING,
+    NO_COLLECTIONS,        // There are no collections at all.
+    COLLECTION_EMPTY       // A collection exists but has no items.
+}
 
 class SelectNFTDialog: BottomSheetDialogFragment() {
     private lateinit var binding: DialogSelectNftBinding
@@ -47,6 +52,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         WalletManager.selectedWalletAddress()
     }
     private var needMoveFee = false
+    private var moveFromAddress: String = WalletManager.selectedWalletAddress()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,8 +92,11 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 result?.resume(false)
                 dismissAllowingStateLoss()
             }
-            layoutFromAccount.setAccountInfo(WalletManager.selectedWalletAddress())
+            layoutFromAccount.setAccountInfo(moveFromAddress)
             configureToAccount()
+            binding.ivArrow.setOnClickListener {
+                swapAddresses()
+            }
             uiScope {
                 storageTip.setInsufficientTip(AccountInfoManager.validateOtherTransaction(true))
             }
@@ -116,9 +125,10 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 uiScope {
                     SelectCollectionDialog().show(
                         selectedCollectionId = selectedCollection?.id,
-                        childFragmentManager
+                        fromAddress = moveFromAddress, // pass the updated from address here
+                        fragmentManager = childFragmentManager
                     )?.let { info ->
-                        viewModel.setCollectionInfo(info)
+                        viewModel.setCollectionInfo(moveFromAddress, info)
                     }
                 }
             }
@@ -131,15 +141,27 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         with(viewModel) {
             nftListLiveData.observe(this@SelectNFTDialog) { list ->
                 listAdapter.setNewDiffData(list)
-                binding.tvEmpty.setVisible(list.isEmpty())
+                if (list.isEmpty()) {
+                    // Check whether a collection is defined.
+                    binding.tvEmpty.text = if (viewModel.collectionLiveData.value == null) {
+                        getString(R.string.no_collections_available)
+                    } else {
+                        getString(R.string.select_nft_empty)
+                    }
+                    binding.tvEmpty.setVisible(true)
+                } else {
+                    binding.tvEmpty.setVisible(false)
+                }
             }
+
             collectionLiveData.observe(this@SelectNFTDialog) { collection ->
                 if (collection == null) {
-                    showEmptyCollection()
+                    showEmptyCollection(CollectionEmptyState.NO_COLLECTIONS)
                     return@observe
                 }
                 setCollectionInfo(collection)
             }
+
             moveCountLiveData.observe(this@SelectNFTDialog) { count ->
                 with(binding.btnMove) {
                     isEnabled = count > 0
@@ -150,10 +172,31 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     }
                 }
             }
-            loadCollections()
+            loadCollections(moveFromAddress)
         }
 
     }
+
+    private fun swapAddresses() {
+        // Retrieve the current addresses from the UI components.
+        val currentFrom = binding.layoutFromAccount.getAccountAddress()
+        val currentTo = binding.layoutToAccount.getAccountAddress()
+
+        binding.layoutFromAccount.setAccountInfo(currentTo)
+        binding.layoutToAccount.setAccountInfo(currentFrom)
+
+        // Set from address to the current to address
+        moveFromAddress = currentTo
+
+        needMoveFee = EVMWalletManager.isEVMWalletAddress(currentTo) xor EVMWalletManager.isEVMWalletAddress(currentFrom)
+        configureMoveFeeLayout()
+
+        selectedCollection = null
+        showEmptyCollection(CollectionEmptyState.LOADING)
+
+        viewModel.loadCollections(moveFromAddress)
+    }
+
 
     private fun configureToAccount() {
         with(binding) {
@@ -209,7 +252,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                             addressList,
                             childFragmentManager
                         )?.let { address ->
-                            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) || EVMWalletManager.isEVMWalletAddress(address)
+                            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) xor EVMWalletManager.isEVMWalletAddress(address)
                             layoutToAccount.setAccountInfo(address)
                             configureMoveFeeLayout()
                         }
@@ -228,25 +271,41 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 "0.001"
             } else {
                 "0.00"
-            } + "FLOW"
+            } + " FLOW"
             tvMoveFeeTips.text = (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
         }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun showEmptyCollection() {
+    private fun showEmptyCollection(state: CollectionEmptyState) {
         with(binding) {
             ivCollectionVm.setImageResource(R.drawable.ic_switch_vm_cadence)
-            tvCollectionName.text = R.string.collection_list.res2String()
+            tvCollectionName.text = getString(R.string.collection_list)
             ivCollectionLogo.setImageResource(R.drawable.bg_empty_placeholder)
             listAdapter.setNewDiffData(emptyList())
-            tvEmpty.setVisible()
+
+            when(state) {
+                CollectionEmptyState.LOADING -> {
+                    tvEmpty.text = ""
+                    clCollectionLayout.visibility = View.VISIBLE
+                }
+                CollectionEmptyState.NO_COLLECTIONS -> {
+                    tvEmpty.text = getString(R.string.no_collections_available)
+                    clCollectionLayout.visibility = View.GONE
+                }
+                CollectionEmptyState.COLLECTION_EMPTY -> {
+                    tvEmpty.text = getString(R.string.select_nft_empty)
+                    clCollectionLayout.visibility = View.VISIBLE
+                }
+            }
+            tvEmpty.visibility = View.VISIBLE
         }
     }
 
     private fun setCollectionInfo(collection: CollectionInfo) {
         this.selectedCollection = collection
         with(binding) {
+            clCollectionLayout.visibility = View.VISIBLE
             ivCollectionVm.setImageResource(
                 if (WalletManager.isEVMAccountSelected()) {
                     R.drawable.ic_switch_vm_evm
@@ -257,10 +316,13 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             tvCollectionName.text = collection.name.ifEmpty {
                 R.string.collection_list.res2String()
             }
-            Glide.with(ivCollectionLogo).load(collection.logo).transform(CenterCrop(),
-                RoundedCorners(8.dp2px().toInt())).into(ivCollectionLogo)
+            Glide.with(ivCollectionLogo)
+                .load(collection.logo)
+                .transform(CenterCrop(), RoundedCorners(8.dp2px().toInt()))
+                .into(ivCollectionLogo)
         }
     }
+
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
