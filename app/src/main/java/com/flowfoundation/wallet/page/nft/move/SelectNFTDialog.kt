@@ -128,7 +128,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                         fromAddress = moveFromAddress, // pass the updated from address here
                         fragmentManager = childFragmentManager
                     )?.let { info ->
-                        viewModel.setCollectionInfo(info)
+                        viewModel.setCollectionInfo(moveFromAddress, info)
                     }
                 }
             }
