@@ -92,7 +92,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 result?.resume(false)
                 dismissAllowingStateLoss()
             }
-            layoutFromAccount.setAccountInfo(moveFromAddress)
+            configureFromAccount()
             configureToAccount()
             binding.ivArrow.setOnClickListener {
                 swapAddresses()
@@ -178,15 +178,19 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     }
 
     private fun swapAddresses() {
-        // Retrieve the current addresses from the UI components.
         val currentFrom = binding.layoutFromAccount.getAccountAddress()
         val currentTo = binding.layoutToAccount.getAccountAddress()
 
+        // Swap the addresses in the UI.
         binding.layoutFromAccount.setAccountInfo(currentTo)
         binding.layoutToAccount.setAccountInfo(currentFrom)
 
-        // Set from address to the current to address
         moveFromAddress = currentTo
+        moveToAddress = currentFrom
+
+        // Rebuild the eligible lists based on the new state.
+        configureFromAccount()
+        configureToAccount()
 
         needMoveFee = EVMWalletManager.isEVMWalletAddress(currentTo) xor EVMWalletManager.isEVMWalletAddress(currentFrom)
         configureMoveFeeLayout()
@@ -198,48 +202,104 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     }
 
 
+
+    private val initialFromAddress = WalletManager.selectedWalletAddress()
+    private var moveToAddress: String = WalletManager.wallet()?.walletAddress().orEmpty()
+
+
+    private fun configureFromAccount() {
+        with(binding) {
+            val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@with
+            // Build a set of all possible accounts (primary, children, and initial From)
+            val allAccounts = mutableSetOf<String>().apply {
+                add(walletAddress)
+                WalletManager.childAccountList(walletAddress)
+                    ?.get()
+                    ?.forEach { add(it.address) }
+                add(initialFromAddress)
+            }
+
+            // Remove the current To account from the eligible From accounts.
+            allAccounts.remove(moveToAddress)
+
+            // Convert to a list
+            val addressList = allAccounts.toMutableList()
+
+            // Ensure the currently selected From account is at the top.
+            if (moveFromAddress !in addressList) {
+                addressList.add(0, moveFromAddress)
+            }
+
+            layoutFromAccount.setAccountInfo(moveFromAddress)
+
+            if (addressList.isNotEmpty()) {
+                layoutFromAccount.setSelectMoreAccount(true)
+                layoutFromAccount.setOnClickListener {
+                    uiScope {
+                        SelectAccountDialog().show(
+                            layoutFromAccount.getAccountAddress(),
+                            addressList,
+                            childFragmentManager
+                        )?.let { newAddress ->
+                            moveFromAddress = newAddress
+                            layoutFromAccount.setAccountInfo(newAddress)
+
+                            // After changing the From account, update the To account selection options.
+                            configureToAccount()
+                            viewModel.loadCollections(moveFromAddress)
+                        }
+                    }
+                }
+            } else {
+                layoutFromAccount.setSelectMoreAccount(false)
+            }
+        }
+    }
+
     private fun configureToAccount() {
         with(binding) {
-            if (WalletManager.isChildAccountSelected()) {
-                val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
-                layoutToAccount.setAccountInfo(parentAddress)
-                val addressList = WalletManager.childAccountList(parentAddress)?.get()?.mapNotNull { child ->
-                    child.address.takeIf { address -> address != fromAddress }
-                }?.toMutableList() ?: mutableListOf()
-                addressList.add(0, parentAddress)
-                val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
-                if (evmAddress.isNotEmpty()) {
-                    addressList.add(evmAddress)
-                }
-                configureToLayoutAction(addressList)
-            } else if (WalletManager.isEVMAccountSelected()) {
-                val parentAddress = WalletManager.wallet()?.walletAddress() ?: return@with
-                layoutToAccount.setAccountInfo(parentAddress)
-                val addressList = WalletManager.childAccountList(parentAddress)?.get()?.map { child ->
-                    child.address
-                }?.toMutableList() ?: mutableListOf()
-                addressList.add(0, parentAddress)
-                configureToLayoutAction(addressList)
-                needMoveFee = true
-            } else {
-                val addressList = WalletManager.childAccountList(WalletManager.wallet()?.walletAddress())?.get()?.map { child ->
-                    child.address
-                }?.toMutableList() ?: mutableListOf()
-                val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
-                if (evmAddress.isNotEmpty()) {
-                    layoutToAccount.setAccountInfo(evmAddress)
-                    addressList.add(evmAddress)
-                    needMoveFee = true
-                } else {
-                    val childAddress = addressList.firstOrNull() ?: return@with
-                    val childAccount = WalletManager.childAccount(childAddress) ?: return@with
-                    layoutToAccount.setAccountInfo(childAccount.address)
-                }
-                configureToLayoutAction(addressList)
+            // Build eligible list of To accounts based on current wallet state.
+            val eligibleList = mutableListOf<String>()
+            val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@with
+
+            // Only add the parent's address if it's not the current From.
+            if (walletAddress != moveFromAddress) {
+                eligibleList.add(walletAddress)
             }
+
+            // Add child accounts, excluding the current From.
+            WalletManager.childAccountList(walletAddress)?.get()?.forEach { child ->
+                if (child.address != moveFromAddress) {
+                    eligibleList.add(child.address)
+                }
+            }
+
+            // Add the EVM address if present and not the current From.
+            val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+            if (evmAddress.isNotEmpty() && evmAddress != moveFromAddress) {
+                eligibleList.add(evmAddress)
+            }
+
+            // Add the initial From address if it’s not the current From.
+            if (initialFromAddress != moveFromAddress && !eligibleList.contains(initialFromAddress)) {
+                eligibleList.add(initialFromAddress)
+            }
+
+            // Preserve the current To if it's still eligible; otherwise, choose a default candidate.
+            val currentTo = layoutToAccount.getAccountAddress()
+            val newTo = if (eligibleList.contains(currentTo)) {
+                currentTo
+            } else {
+                eligibleList.firstOrNull() ?: ""
+            }
+            layoutToAccount.setAccountInfo(newTo)
+            moveToAddress = newTo
+
+            configureToLayoutAction(eligibleList)
             configureMoveFeeLayout()
         }
     }
+
 
     private fun configureToLayoutAction(addressList: List<String>) {
         with(binding) {
@@ -254,7 +314,11 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                         )?.let { address ->
                             needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) xor EVMWalletManager.isEVMWalletAddress(address)
                             layoutToAccount.setAccountInfo(address)
+                            // Update moveToAddress so the new To account is stored
+                            moveToAddress = address
                             configureMoveFeeLayout()
+                            // Trigger reload of the From account list
+                            configureFromAccount()
                         }
                     }
                 }
@@ -263,6 +327,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             }
         }
     }
+
 
     @SuppressLint("SetTextI18n")
     private fun configureMoveFeeLayout() {
