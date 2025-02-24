@@ -32,7 +32,6 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -196,21 +195,37 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
         binding.btnMove.setProgressVisible(true)
         ioScope {
+            // Parse the amount from the EditText.
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
-            val parent = WalletManager.wallet()?.walletAddress().orEmpty()
             val coin = FlowCoinListManager.getCoinById(contractId) ?: return@ioScope
+
+            // Use the updated from address.
+            val from = moveFromAddress
+            // Determine the destination address based on isFundToEVM.
+            val to = if (isFundToEVM) {
+                // For Fund-to-EVM, move to the EVM address.
+                EVMWalletManager.getEVMAddress().orEmpty()
+            } else {
+                // Otherwise, move to the parent wallet address.
+                WalletManager.wallet()?.walletAddress().orEmpty()
+            }
+
+            // Log or track the transfer using Mixpanel.
             MixpanelManager.transferFT(
-                if (isFundToEVM) parent else EVMWalletManager.getEVMAddress().orEmpty(),
-                if (isFundToEVM) EVMWalletManager.getEVMAddress().orEmpty() else parent,
+                from,
+                to,
                 coin.symbol,
                 amount.toString(),
                 coin.getFTIdentifier()
             )
+
+            // Execute the move based on whether it's a Flow Coin.
             if (isFlowCoin) {
                 EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
+                            // Refresh balance for Flow Coin.
                             BalanceManager.getBalanceByCoin(FlowCoinListManager.getFlowCoinContractId())
                             result?.resume(true)
                             dismiss()
@@ -273,7 +288,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun fetchTokenBalance() {
         ioScope {
             val coin = FlowCoinListManager.getCoinById(contractId)
-            logd("MoveTokenDialog", "Fetching balance for moveFromAddress: $moveFromAddress")
             fromBalance = if (coin == null) {
                 BigDecimal.ZERO
             } else {
@@ -304,7 +318,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
                 val formattedBalance = fromBalance.format(8)
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, formattedBalance)
-                logd("MoveTokenDialog", "Updated balance: $formattedBalance")
             }
         }
     }
