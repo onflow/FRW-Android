@@ -24,14 +24,19 @@
             android:id="@+id/navigation_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/deep_bg"
+            android:background="@color/landing_on_flow_text"
             android:elevation="0dp"
-            android:minHeight="?actionBarSize"
+            android:minHeight="80dp"
             app:elevation="0dp"
             app:itemHorizontalTranslationEnabled="false"
-            app:labelVisibilityMode="unlabeled"
+            app:labelVisibilityMode="labeled"
+            app:itemIconTint="@color/bottom_nav_item_color"
+            app:itemTextColor="@color/text_3"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:itemIconSize="28dp"
+            app:itemPaddingTop="12dp"
+            app:itemPaddingBottom="16dp"
             app:menu="@menu/bottom_navigation"/>
 
         <com.flowfoundation.wallet.widgets.MainTabCornerView

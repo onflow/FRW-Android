@@ -16,7 +16,7 @@ class WalletCreateActivity : BaseActivity() {
     private lateinit var contentPresenter: WalletCreateContentPresenter
     private lateinit var viewModel: WalletCreateViewModel
 
-    private val step by lazy { intent.getIntExtra(STEP, WALLET_CREATE_STEP_LEGAL) }
+    private val step by lazy { intent.getIntExtra(STEP, WALLET_CREATE_STEP_USERNAME) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +67,7 @@ class WalletCreateActivity : BaseActivity() {
     companion object {
         private const val STEP = "extra_step"
 
-        fun launch(context: Context, step: Int = WALLET_CREATE_STEP_LEGAL) {
+        fun launch(context: Context, step: Int = WALLET_CREATE_STEP_USERNAME) {
             context.startActivity(Intent(context, WalletCreateActivity::class.java).apply {
                 putExtra(STEP, step)
             })

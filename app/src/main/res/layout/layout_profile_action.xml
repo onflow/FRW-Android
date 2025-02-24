@@ -33,7 +33,7 @@
             app:iconPadding="7dp"
             app:iconSize="28dp"
             app:iconTint="@color/transparent"
-            app:iconTintMode="add"/>
+            app:iconTintMode="add" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/wallet_button"
@@ -52,7 +52,7 @@
             app:iconPadding="7dp"
             app:iconSize="28dp"
             app:iconTint="@color/transparent"
-            app:iconTintMode="add"/>
+            app:iconTintMode="add" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/inbox_button"
@@ -74,7 +74,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed"/>
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
                 android:id="@+id/inbox_text"
@@ -89,7 +89,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/inbox_icon"/>
+                app:layout_constraintTop_toBottomOf="@id/inbox_icon" />
 
             <TextView
                 android:id="@+id/inbox_unread_count"
@@ -110,7 +110,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/inbox_icon"
                 app:layout_constraintEnd_toEndOf="@id/inbox_icon"
                 tools:text="5"
-                tools:visibility="visible"/>
+                tools:visibility="visible" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.appcompat.widget.LinearLayoutCompat>

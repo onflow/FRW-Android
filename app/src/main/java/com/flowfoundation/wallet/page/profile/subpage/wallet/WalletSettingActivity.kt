@@ -21,7 +21,6 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.page.emoji.EditWalletEmojiDialog
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.ClaimDomainActivity
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import com.flowfoundation.wallet.page.profile.subpage.wallet.dialog.WalletResetConfirmDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyActivity
 import com.flowfoundation.wallet.page.security.recovery.SecurityPrivateKeyActivity
@@ -48,7 +47,6 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
         binding.root.addStatusBarTopPadding()
         setupToolbar()
         setup()
-//        checkMeowDomainClaimed()
         queryStorageInfo()
     }
 

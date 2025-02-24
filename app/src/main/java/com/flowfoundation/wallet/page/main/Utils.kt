@@ -8,12 +8,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.size
-import com.airbnb.lottie.LottieCompositionFactory
-import com.airbnb.lottie.LottieDrawable
-import com.airbnb.lottie.LottieProperty
-import com.airbnb.lottie.SimpleColorFilter
-import com.airbnb.lottie.model.KeyPath
-import com.airbnb.lottie.value.LottieValueCallback
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
@@ -24,7 +18,6 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -45,11 +38,9 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.extensions.colorStateList
 import com.flowfoundation.wallet.utils.extensions.gone
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
@@ -63,31 +54,44 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 
 enum class HomeTab(val index: Int) {
     WALLET(0),
     NFT(1),
     EXPLORE(2),
-    PROFILE(3),
+    ACTIVITY(3),
+    PROFILE(4),
 }
 
-private val lottieMenu by lazy {
+private val svgMenu by lazy {
     listOf(
-        R.raw.lottie_coinhover,
-        R.raw.lottie_grid,
-        R.raw.lottie_category,
-        R.raw.lottie_avatar,
+        R.drawable.ic_home,
+        R.drawable.ic_nfts_unfilled,
+        R.drawable.ic_explore,
+        R.drawable.ic_activity,
+        R.drawable.ic_settings
     )
 }
+
+private val svgMenuSelected by lazy {
+    listOf(
+        R.drawable.ic_home_filled,
+        R.drawable.ic_nfts,
+        R.drawable.ic_explore_filled,
+        R.drawable.ic_activity_filled,
+        R.drawable.ic_settings_filled
+    )
+}
+
 
 private val menuColor by lazy {
     listOf(
         R.color.bottom_navigation_color_wallet,
-        R.color.bottom_navigation_color_nft,
-        R.color.bottom_navigation_color_explore,
-        R.color.bottom_navigation_color_profile,
+        R.color.bottom_navigation_color_wallet,
+        R.color.bottom_navigation_color_wallet,
+        R.color.bottom_navigation_color_wallet,
+        R.color.bottom_navigation_color_wallet,
     )
 }
 
@@ -96,22 +100,13 @@ fun BottomNavigationView.activeColor(index: Int): Int {
         ?.getColorForState(intArrayOf(android.R.attr.state_checked), 0)!!
 }
 
-fun BottomNavigationView.setLottieDrawable(
-    index: Int,
-    isSelected: Boolean,
-    playAnimation: Boolean = false
-) {
-    menu.getItem(index).icon = LottieDrawable().apply {
-        callback = this
-        composition = LottieCompositionFactory.fromRawResSync(context, lottieMenu[index]).value
-        addValueCallback(
-            KeyPath("**"),
-            LottieProperty.COLOR_FILTER,
-            LottieValueCallback(SimpleColorFilter(if (isSelected) activeColor(index) else R.color.neutrals8.res2color()))
-        )
-        if (playAnimation) playAnimation()
+fun BottomNavigationView.setSvgDrawable(index: Int) {
+    if (index !in svgMenu.indices) {
+        return
     }
+    menu.getItem(index).setIcon(svgMenu[index])
 }
+
 
 fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = false) {
     ioScope {
@@ -230,6 +225,19 @@ private fun ViewGroup.setupWallet(
                 MainActivity.relaunch(Env.getApp())
             }
         }
+    }
+}
+
+fun BottomNavigationView.updateIcons() {
+    for (i in 0 until menu.size()) {
+        val menuItem = menu.getItem(i)
+        val isSelected = menuItem.itemId == selectedItemId
+        val iconRes = if (isSelected) {
+            svgMenuSelected[i]
+        } else {
+            svgMenu[i]
+        }
+        menuItem.setIcon(iconRes)
     }
 }
 

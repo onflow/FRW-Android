@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">下一步</string>
+    <string name="list">列表</string>
+    <string name="creating_account">正在创建您的帐户…</string>
+    <string name="secure_design">设计安全</string>
+    <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
     <string name="username">用户名</string>
     <string name="username_too_short">太短</string>
     <string name="username_too_long">太长</string>
@@ -39,7 +43,7 @@
     <string name="mnemonic_question_title">选择单词 %1$s</string>
     <string name="home">首页</string>
     <string name="explore">探索</string>
-    <string name="profile">账户</string>
+    <string name="profile">设置</string>
     <string name="things_you">您 \n需要知道的事情</string>
     <string name="wallet_create_warning_tip">在下一步中，您将看到一个助记词（12 个词）。助记词是恢复您钱包的唯一钥匙。</string>
     <string name="create_wallet_warning1">如果我丢失了我的助记词，我将无法永远访问我的账户。</string>
@@ -52,6 +56,7 @@
     <string name="recovery">恢复</string>
     <string name="phrase">短语</string>
     <string name="nft">NFT</string>
+    <string name="activity">活动</string>
     <string name="restore_wallet">恢复钱包</string>
     <string name="restore_wallet_tip">用你的12 位助记词恢复你的钱包。</string>
     <string name="choose_account">选择账户</string>
@@ -68,21 +73,17 @@
     <string name="account_not_found">找不到账户</string>
     <string name="account_not_found_desc">未找到使用当前助记词的帐户。您想用您的助记词创建一个新账户吗？</string>
     <string name="your_phrase">你的短语</string>
-    <string name="create_wallet">创建钱包</string>
+    <string name="create_wallet">建立一个新账户</string>
     <string name="cancel">取消</string>
     <string name="username_format_wrong">"您的用户名只能包含字母和数字"</string>
     <string name="encrypt_backup">加密备份</string>
     <string name="done">完成</string>
     <string name="biometrics">生物识别</string>
-    <string name="legal">法律</string>
     <string name="information">信息</string>
-    <string name="legal_tip">请查看Flow Wallet的隐私政策和服务条款。</string>
     <string name="i_accept">我接受</string>
     <string name="terms_of_service">服务条款</string>
     <string name="privacy_policy">隐私政策</string>
     <string name="top_selection">精选</string>
-    <string name="list">列表</string>
-    <string name="grid">网格</string>
     <string name="purchase_date">购买日期</string>
     <string name="purchase_price">购买价格</string>
     <string name="coins">代币</string>
@@ -95,7 +96,9 @@
     <string name="download">下载</string>
     <string name="saved_to_album">保存到相册</string>
     <string name="view_on_web">在网页上查看</string>
-    <string name="empty_title">您还没有任何 NFT</string>
+    <string name="nft_collections">NFT 收藏品</string>
+    <string name="empty_title">您的收藏正在等待切换！</string>
+    <string name="empty_title_2">今天开始探索和添加您的第一个NFT。</string>
     <string name="receive">接收</string>
     <string name="buy">购买</string>
     <string name="swap">兑换</string>
@@ -201,7 +204,7 @@
     <string name="add_collection">添加收藏</string>
     <string name="search_nft_collection">搜索 NFT 收藏</string>
     <string name="scan_qr_code">扫描二维码</string>
-    <string name="explore_search_hint">网站名称或 URL</string>
+    <string name="explore_search_hint">搜索名称或 URL</string>
     <string name="bookmark">书签</string>
     <string name="drag_here_to_unpin">拖动此处以解压</string>
     <string name="recovery_purchase_tips">按正确顺序写下或复制这些单词，并将其保存在安全的地方。</string>
@@ -246,15 +249,9 @@
     <string name="reset">重置</string>
     <string name="skip">跳过</string>
     <string name="start">开始</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">与朋友分享优秀的 NFT 藏品</string>
-    <string name="guide_title_2">收集\n所有代币</string>
-    <string name="guide_desc_2">与朋友分享优秀的 NFT 藏品</string>
-    <string name="guide_title_4">探索\n您喜爱的网站</string>
-    <string name="guide_desc_4">与朋友分享优秀的 NFT 藏品</string>
     <string name="import_wallet">导入钱包</string>
+    <string name="import_wallet_button">我已有账户</string>
     <string name="import_str">导入</string>
-    <string name="welcome_desc">提供更多安全信息</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">网络错误</string>
     <string name="claim">申领</string>
@@ -419,7 +416,6 @@
     <string name="new_feature_title_1">数字资产通知</string>
     <string name="new_feature_desc_1">当您的数字资产发生移动时，Flow Wallet 会通知您。</string>
     <string name="new_feature_desc2">现在，您可以在 Flow Wallet 应用程序中添加多个账户，只需在侧边菜单或个人资料中切换账户即可。</string>
-    <string name="get_started">开始</string>
     <string name="notification_request_title">开启推送通知</string>
     <string name="notification_request_desc">当您的转账、交换和批准完成时会收到通知。</string>
     <string name="turn_on_notifications">打开通知</string>
@@ -428,7 +424,6 @@
     <string name="accessible">可访问</string>
     <string name="none_accessible_coins">无可用代币</string>
     <string name="no_linked_account">无关联账户</string>
-    <string name="empty_bookmarks">空书签</string>
     <string name="view_empty_collection">查看空档</string>
     <string name="inaccessible_tag">暂不可用</string>
     <string name="inaccessible_token_tip">Flow Wallet 无法访问 %2$s 账户中的 %1$s ，请检查您的关联账户设置。</string>
@@ -448,7 +443,7 @@
     <string name="device_ip_address">IP地址</string>
     <string name="device_location">位置</string>
     <string name="device_entry_date">入职日期</string>
-    <string name="login_with_registered_account">输入注册账户</string>
+    <string name="login_with_registered_account">已注册账号</string>
     <string name="or">或者</string>
     <string name="sync_page_title">在手机应用 \n 上打开 Flow 钱包，扫描二维码同步钱包。</string>
     <string name="sync_scan_qr_code">使用手机应用扫描二维码</string>
@@ -491,9 +486,9 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">从多重备份恢复</string>
     <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">其他</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
-    <string name="from_raw_key">从助记词恢复（传统）</string>
+    <string name="from_raw_key">其他</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">多重还原</string>
@@ -558,6 +553,7 @@
     <string name="account_list">账户列表</string>
     <string name="edit_wallet">编辑钱包</string>
     <string name="select_nft_empty">0 NFTs</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">账户</string>
     <string name="create_profile">创建账户</string>
     <string name="features_coming">即将推出的功能</string>
@@ -565,18 +561,13 @@
     <string name="select_collection">选择藏品</string>
     <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
-    <string name="landing_step_one_title">安全， \n由 KeyStore 提供支持。</string>
-    <string name="landing_step_two_title">您的设备，\n现在是一个硬件钱包。</string>
-    <string name="landing_step_three_title">您刚刚，\n解锁了真正的所有权。</string>
-    <string name="landing_step_four_title">蓄势待发</string>
-    <string name="landing_step_one_desc">Flow 钱包使用设备的 KeyStore 来保护您的 Flow 账户。</string>
-    <string name="landing_step_two_desc">KeyStore 是设备上的特殊硬件，Flow
-        Wallet
-利用它将设备变成硬件钱包。</string>
-    <string name="landing_step_three_desc">您的资产受到设备的保护，从而在 Flow 上实现对资产的真正所有权。</string>
-    <string name="landing_step_four_desc">您的 Flow 账户已准备就绪，\n让我们开始吧！</string>
+    <string name="landing_step_four_title">您的\nFlow 帐户\n已经准备好，\n让我们把它退回！</string>
+    <string name="landing_step_four_desc">备份您的帐户以确保您的访问安全且始终处于您的控制</string>
     <string name="landing_step_loading">创建账户中</string>
-    <string name="landing_step_done">进入 Flow</string>
+    <string name="landing_step_done">创建备份</string>
+    <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
+    <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
+    <string name="back">返回</string>
     <string name="token_count">%1$d 代币</string>
     <string name="wallpaper_static">静态</string>
     <string name="wallpaper_dynamic">动态</string>
@@ -621,7 +612,7 @@
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>
@@ -700,5 +691,9 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
+    <string name="get_started">开始</string>
+    <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
 </resources>

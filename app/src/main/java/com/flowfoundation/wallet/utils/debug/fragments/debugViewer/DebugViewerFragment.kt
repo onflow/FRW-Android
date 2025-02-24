@@ -300,7 +300,7 @@ object DebugViewerDataSource {
         }
 
         val fileName = "debug_messages.txt"
-        val file = File(context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
+        val file = File(context.cacheDir, fileName)
         FileOutputStream(file).use { fos ->
             OutputStreamWriter(fos).use { writer ->
                 writer.write(stringBuilder.toString())

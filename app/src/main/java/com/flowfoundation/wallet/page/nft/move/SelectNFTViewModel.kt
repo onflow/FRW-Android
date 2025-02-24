@@ -19,7 +19,6 @@ import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.model.NFTInfo
 import com.flowfoundation.wallet.page.nft.nftlist.cover
-import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
@@ -39,20 +38,19 @@ class SelectNFTViewModel : ViewModel() {
     private var identifier: String? = null
     private var nftIdentifier: String? = null
 
-    fun loadCollections() {
+
+    fun loadCollections(fromAddress: String) {
         viewModelIOScope(this) {
-            val address = nftWalletAddress()
-            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(address)) {
-                service.getEVMNFTCollections(address)
+            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                service.getEVMNFTCollections(fromAddress)
             } else {
-                service.getNFTCollections(address)
+                service.getNFTCollections(fromAddress)
             }
             if (collectionResponse.data.isNullOrEmpty()) {
                 postEmpty()
                 return@viewModelIOScope
             }
-            val collection =collectionResponse.data.firstOrNull { it.collection != null }?.collection
-
+            val collection = collectionResponse.data.firstOrNull { it.collection != null }?.collection
             if (collection == null) {
                 postEmpty()
                 return@viewModelIOScope
@@ -66,9 +64,11 @@ class SelectNFTViewModel : ViewModel() {
             )
             this.nftIdentifier = collection.getNFTIdentifier()
             this.identifier = collection.path?.privatePath?.removePrefix("/private/") ?: ""
-            loadNFTList(collection.id)
+            loadNFTList(fromAddress, collection.id)
         }
     }
+
+
 
     private fun postEmpty() {
         collectionLiveData.postValue(null)
@@ -76,7 +76,7 @@ class SelectNFTViewModel : ViewModel() {
         selectedNFTIdList.clear()
     }
 
-    fun setCollectionInfo(detailInfo: CollectionDetailInfo) {
+    fun setCollectionInfo(fromAddress: String, detailInfo: CollectionDetailInfo) {
         this.nftIdentifier = detailInfo.nftIdentifier
         this.identifier = detailInfo.identifier
         collectionLiveData.postValue(
@@ -87,18 +87,17 @@ class SelectNFTViewModel : ViewModel() {
             )
         )
         selectedNFTIdList.clear()
-        loadNFTList(detailInfo.id)
+        loadNFTList(fromAddress, detailInfo.id)
     }
 
-    private fun loadNFTList(collectionId: String) {
+    private fun loadNFTList(fromAddress: String, collectionId: String) {
         viewModelIOScope(this) {
-            val nftListResponse = if (WalletManager.isEVMAccountSelected()) {
-                service.getEVMNFTListOfCollection(
-                    nftWalletAddress(), collectionId, "", 40
-                )
+            val isEvmAddress = EVMWalletManager.isEVMWalletAddress(fromAddress)
+
+            val nftListResponse = if (isEvmAddress) {
+                service.getEVMNFTListOfCollection(fromAddress, collectionId, "", 40)
             } else {
-                service.getNFTListOfCollection(
-                    nftWalletAddress(), collectionId, 0, 40)
+                service.getNFTListOfCollection(fromAddress, collectionId, 0, 40)
             }
 
             val list = nftListResponse.data?.nfts?.map {
@@ -107,10 +106,11 @@ class SelectNFTViewModel : ViewModel() {
                     cover = it.cover() ?: ""
                 )
             }?.toList() ?: emptyList()
+
             nftListLiveData.postValue(list)
             selectedNFTIdList.clear()
         }
-    }
+}
 
     suspend fun moveSelectedNFT(toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
         if (nftIdentifier == null) {

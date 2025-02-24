@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryMinFlowBalance
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -90,8 +91,9 @@ class SendAmountPresenter(
         }
     }
 
-    private fun minBalance(): BigDecimal {
-        return if (WalletManager.isEVMAccountSelected() || FlowCoinListManager.isFlowCoin(viewModel.currentCoin()).not()) {
+    private suspend fun minBalance(): BigDecimal {
+        return if (WalletManager.isEVMAccountSelected() || FlowCoinListManager.isFlowCoin
+                (viewModel.currentCoin()).not() || isGasFree()) {
             BigDecimal.ZERO
         } else {
             minFlowBalance.max(BigDecimal(0.001))
@@ -123,17 +125,21 @@ class SendAmountPresenter(
     }
 
     private fun checkAmount() {
-        val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
-        val coinRate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
-        val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) amount else amount / (if (coinRate == BigDecimal.ZERO) BigDecimal.ONE else coinRate)
-        val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
-        if (isOutOfBalance && !binding.errorWrapper.isVisible()) {
-            TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
-        } else if (!isOutOfBalance && binding.errorWrapper.isVisible()) {
-            TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
+        ioScope {
+            val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
+            val coinRate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
+            val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) amount else amount / (if (coinRate == BigDecimal.ZERO) BigDecimal.ONE else coinRate)
+            val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
+            uiScope {
+                if (isOutOfBalance && !binding.errorWrapper.isVisible()) {
+                    TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
+                } else if (!isOutOfBalance && binding.errorWrapper.isVisible()) {
+                    TransitionManager.go(Scene(binding.root as ViewGroup), Fade().apply { })
+                }
+                binding.errorWrapper.setVisible(isOutOfBalance)
+                binding.nextButton.isEnabled = verifyAmount() && !isOutOfBalance
+            }
         }
-        binding.errorWrapper.setVisible(isOutOfBalance)
-        binding.nextButton.isEnabled = verifyAmount() && !isOutOfBalance
     }
 
     @SuppressLint("SetTextI18n")
@@ -197,13 +203,17 @@ class SendAmountPresenter(
     }
 
     private fun setMaxAmount() {
-        logd("send", "minBalance ${minBalance()}")
-        val balance = BigDecimal.ZERO.max((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
-        val coinRate = balance()?.coinRate ?: BigDecimal.ZERO
-        val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).format(8)
-        with(binding) {
-            transferAmountInput.setText(amount)
-            transferAmountInput.setSelection(transferAmountInput.text.length)
+        ioScope {
+            logd("send", "minBalance ${minBalance()}")
+            val balance = BigDecimal.ZERO.max((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
+            val coinRate = balance()?.coinRate ?: BigDecimal.ZERO
+            val amount = (if (viewModel.convertCoin() == selectedCurrency().flag) balance else balance * coinRate).format(8)
+            uiScope {
+                with(binding) {
+                    transferAmountInput.setText(amount)
+                    transferAmountInput.setSelection(transferAmountInput.text.length)
+                }
+            }
         }
     }
 

@@ -19,6 +19,41 @@ class SelectCollectionViewModel : ViewModel() {
 
     private var keyword = ""
 
+    fun loadCollections(fromAddress: String) {
+        viewModelIOScope(this) {
+            collectionList.clear()
+            val address = fromAddress
+            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(address)) {
+                service.getEVMNFTCollections(address)
+            } else {
+                service.getNFTCollections(address)
+            }
+            if (collectionResponse.data.isNullOrEmpty()) {
+                collectionListLiveData.postValue(emptyList())
+                return@viewModelIOScope
+            }
+            val collections = collectionResponse.data.filter {
+                it.collection != null
+            }.map {
+                val collection = it.collection!!
+                CollectionDetailInfo(
+                    id = collection.id,
+                    name = collection.name,
+                    logo = collection.logo(),
+                    contractName = collection.contractName(),
+                    contractAddress = collection.address.orEmpty(),
+                    count = it.count ?: 0,
+                    isFlowCollection = EVMWalletManager.isEVMWalletAddress(address).not(),
+                    identifier = collection.path?.privatePath?.removePrefix("/private/") ?: "",
+                    nftIdentifier = collection.getNFTIdentifier()
+                )
+            }
+            collectionList.addAll(collections)
+            collectionListLiveData.postValue(collections)
+        }
+    }
+
+
     fun loadCollections() {
         viewModelIOScope(this) {
             collectionList.clear()

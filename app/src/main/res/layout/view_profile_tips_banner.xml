@@ -22,7 +22,7 @@
             android:layout_height="16dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_tips"
-            android:tint="@color/accent_blue"/>
+            android:tint="@color/accent_green"/>
 
         <TextView
             android:layout_width="0dp"
@@ -32,7 +32,7 @@
             android:drawablePadding="12dp"
             android:gravity="center_vertical"
             android:text="@string/profile_switch_tip"
-            android:textColor="@color/accent_blue"
+            android:textColor="@color/accent_green"
             android:textSize="12sp"/>
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
@@ -42,7 +42,7 @@
             android:background="?attr/actionBarItemBackground"
             android:paddingVertical="12dp"
             android:src="@drawable/ic_baseline_close_24"
-            android:tint="@color/accent_blue"/>
+            android:tint="@color/accent_green"/>
     </LinearLayout>
 
     <androidx.constraintlayout.utils.widget.ImageFilterView

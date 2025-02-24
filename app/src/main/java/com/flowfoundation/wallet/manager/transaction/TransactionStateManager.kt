@@ -19,7 +19,6 @@ import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
@@ -153,9 +152,6 @@ object TransactionStateManager {
                 NftCollectionStateManager.fetchStateSingle(state.nftCollectionData(), cache = true)
             }
 
-//            if (state.type == TransactionState.TYPE_CLAIM_DOMAIN && state.isSuccess()) {
-//                checkMeowDomainClaimed()
-//            }
             if (state.type == TransactionState.TYPE_STAKE_FLOW && state.isSuccess()) {
                 StakingManager.refresh()
             }

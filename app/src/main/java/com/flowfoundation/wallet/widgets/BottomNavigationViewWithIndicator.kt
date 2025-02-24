@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.page.main.updateIcons
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import kotlin.math.abs
 
@@ -47,6 +48,10 @@ class BottomNavigationViewWithIndicator : BottomNavigationView,
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         if (externalSelectedListener?.onNavigationItemSelected(item) != false) {
             onItemSelected(item.itemId)
+
+            post {
+                updateIcons()
+            }
             return true
         }
         return false
@@ -63,8 +68,9 @@ class BottomNavigationViewWithIndicator : BottomNavigationView,
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        doOnPreDraw {
+        post {
             onItemSelected(selectedItemId, false)
+            updateIcons()
         }
     }
 

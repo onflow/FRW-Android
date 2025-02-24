@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
@@ -280,11 +279,6 @@
 
         <activity
             android:name=".page.profile.subpage.wallet.WalletListActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
-            android:name=".page.guide.GuideActivity"
-            android:launchMode="singleTop"
             android:screenOrientation="portrait"/>
 
         <activity

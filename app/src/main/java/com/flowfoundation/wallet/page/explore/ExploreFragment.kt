@@ -7,11 +7,11 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.journeyapps.barcodescanner.ScanOptions
 import com.flowfoundation.wallet.databinding.FragmentExploreBinding
 import com.flowfoundation.wallet.page.explore.model.ExploreModel
 import com.flowfoundation.wallet.page.explore.presenter.ExplorePresenter
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.checkMeowDomainClaimed
 import com.flowfoundation.wallet.page.scan.dispatchScanResult
 import com.flowfoundation.wallet.utils.launch
 import com.flowfoundation.wallet.utils.registerBarcodeLauncher
@@ -36,7 +36,6 @@ class ExploreFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-//        checkMeowDomainClaimed()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

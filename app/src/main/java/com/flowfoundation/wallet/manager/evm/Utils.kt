@@ -48,7 +48,7 @@ fun loadInitJS(): String {
                     chainId: ${networkChainId()},
                     rpcUrl: "${networkRPCUrl()}"
                 },
-                isDebug: true
+                isDebug: false
             };
             trustwallet.ethereum = new trustwallet.Provider(config);
             trustwallet.postMessage = (json) => {

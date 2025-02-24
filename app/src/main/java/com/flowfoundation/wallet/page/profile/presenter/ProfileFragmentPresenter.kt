@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.profile.presenter
 
 import androidx.lifecycle.ViewModelProvider
-import androidx.transition.TransitionManager
 import com.instabug.library.Instabug
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -35,14 +34,11 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccoun
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
-import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
-import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
 import com.flowfoundation.wallet.utils.getNotificationSettingIntent
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.isMeowDomainClaimed
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
@@ -166,19 +162,6 @@ class ProfileFragmentPresenter(
                     group0.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
                 }
                 updateWalletConnectSessionCount()
-            }
-        }
-    }
-
-    private fun updateClaimDomainState() {
-        ioScope {
-            val isClaimedDomain = isMeowDomainClaimed()
-            val isVisibleChange = binding.actionGroup.inboxButton.isVisible() != isClaimedDomain
-            if (isVisibleChange) {
-                uiScope {
-                    TransitionManager.beginDelayedTransition(binding.actionGroup.root)
-                    binding.actionGroup.inboxButton.setVisible(isClaimedDomain)
-                }
             }
         }
     }

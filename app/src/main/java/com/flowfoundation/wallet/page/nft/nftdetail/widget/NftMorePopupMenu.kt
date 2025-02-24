@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.page.nft.nftdetail.NftDetailViewModel
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.nft.nftlist.websiteUrl
-import com.flowfoundation.wallet.utils.downloadToGallery
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
@@ -20,9 +19,11 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.popup.PopupListView
 
 class NftMorePopupMenu(
+    private val activity: FragmentActivity,
     private val nft: Nft,
     private val view: View,
     private val color: Int,
+    private val onDownloadRequest: (String) -> Unit,
 ) {
     private val viewModel by lazy { ViewModelProvider(findActivity(view) as FragmentActivity)[NftDetailViewModel::class.java] }
 
@@ -49,7 +50,9 @@ class NftMorePopupMenu(
 
     private fun downloadNftMedia() {
         val media = nft.video() ?: nft.cover()
-        media?.downloadToGallery(R.string.saved_to_album.res2String())
+        media?.let {
+            onDownloadRequest(it)
+        }
     }
 
     private fun openNftWebsite() {

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">다음</string>
+    <string name="list">목록</string>
+    <string name="creating_account">계정 생성 중…</string>
+    <string name="secure_design">설계에 의한 보안</string>
+    <string name="secure_design_2">하드웨어 등급 보안을 갖춘 장치 키를 사용하는 Flow Wallet은 신뢰할 수 있는 매우 안전한 하드웨어 지갑입니다.</string>
     <string name="username">사용자 이름</string>
     <string name="username_too_short">너무 짧음</string>
     <string name="username_too_long">너무 길다</string>
@@ -39,7 +43,7 @@
     <string name="mnemonic_question_title">%1$s단어를 선택합니다.</string>
     <string name="home">홈</string>
     <string name="explore">탐색</string>
-    <string name="profile">프로필</string>
+    <string name="profile">설정</string>
     <string name="things_you">\n사용자가 알아야 할 사항</string>
     <string name="wallet_create_warning_tip">다음 단계에서는 비밀 문구(12단어)가 표시됩니다. 이 비밀 문구는 지갑을 복구할 수 있는 유일한 열쇠입니다.</string>
     <string name="create_wallet_warning1">비밀번호를 분실하면 계정에 영원히 액세스할 수 없습니다.</string>
@@ -52,6 +56,7 @@
     <string name="recovery">복구</string>
     <string name="phrase">문구</string>
     <string name="nft">NFT</string>
+    <string name="activity">활동</string>
     <string name="restore_wallet">지갑 복원</string>
     <string name="restore_wallet_tip">적어둔 12단어 복구 문구로 지갑을 복원하세요.</string>
     <string name="choose_account">계정 선택</string>
@@ -69,21 +74,17 @@
     <string name="account_not_found">계정을 찾을 수 없음</string>
     <string name="account_not_found_desc">복구 문구를 입력한 계정을 찾을 수 없습니다. 해당 문구로 새 계정을 만들시겠습니까?</string>
     <string name="your_phrase">귀하의 문구</string>
-    <string name="create_wallet">지갑 만들기</string>
+    <string name="create_wallet">새 계정 만들기</string>
     <string name="cancel">취소</string>
     <string name="username_format_wrong">"사용자 아이디는 문자와 숫자만 포함할 수 있습니다."</string>
     <string name="encrypt_backup">백업 암호화</string>
     <string name="done">완료</string>
     <string name="biometrics">생체 인식</string>
-    <string name="legal">법률</string>
     <string name="information">정보</string>
-    <string name="legal_tip">플로우 월렛의 개인정보처리방침 및 서비스 약관을 검토하시기 바랍니다.</string>
     <string name="i_accept">동의함</string>
     <string name="terms_of_service">서비스 약관</string>
     <string name="privacy_policy">개인정보 보호정책</string>
     <string name="top_selection">상위 선택</string>
-    <string name="list">목록</string>
-    <string name="grid">그리드</string>
     <string name="purchase_date">구매 날짜</string>
     <string name="purchase_price">구매 가격</string>
     <string name="coins">코인</string>
@@ -96,7 +97,9 @@
     <string name="download">다운로드</string>
     <string name="saved_to_album">앨범에 저장</string>
     <string name="view_on_web">웹에서 보기</string>
-    <string name="empty_title">아직 NFT가 없습니다.</string>
+    <string name="nft_collections">NFT 컬렉션</string>
+    <string name="empty_title">귀하의 컬렉션이 빛날 기회를 기다리고 있습니다!</string>
+    <string name="empty_title_2">탐색을 시작하고 오늘 첫 번째 NFT를 추가해 보세요.</string>
     <string name="receive">수신</string>
     <string name="buy">구매</string>
     <string name="swap">스왑</string>
@@ -203,7 +206,7 @@
     <string name="add_collection">컬렉션 추가</string>
     <string name="search_nft_collection">NFT 컬렉션 검색</string>
     <string name="scan_qr_code">QR코드 스캔</string>
-    <string name="explore_search_hint">사이트 이름 또는 URL</string>
+    <string name="explore_search_hint">이름 또는 URL 검색</string>
     <string name="bookmark">북마크</string>
     <string name="drag_here_to_unpin">여기로 드래그하여 고정 해제</string>
     <string name="recovery_purchase_tips">이 단어들을 올바른 순서대로 적거나 복사하여 안전한 곳에 저장하세요.</string>
@@ -248,15 +251,9 @@
     <string name="reset">초기화</string>
     <string name="skip">건너뛰기</string>
     <string name="start">시작</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
-    <string name="guide_title_2">\n모든 토큰을 모으십시오.</string>
-    <string name="guide_desc_2">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
-    <string name="guide_title_4">\n즐겨 찾는 사이트 둘러보기</string>
-    <string name="guide_desc_4">우수한 NFT 컬렉션을 친구들과 공유하세요</string>
     <string name="import_wallet">지갑 가져오기</string>
+    <string name="import_wallet_button">이미 계정이 있습니다</string>
     <string name="import_str">가져오기</string>
-    <string name="welcome_desc">보안에 대한 자세한 정보 제공</string>
     <string name="explore_new_nfts">새로운 NFT 살펴보기</string>
     <string name="network_error">네트워크 오류</string>
     <string name="claim">클레임</string>
@@ -421,7 +418,6 @@
     <string name="new_feature_title_1">디지털 자산 알림</string>
     <string name="new_feature_desc_1">플로우 월렛은 디지털 자산이 이동하면 이를 알려줍니다.</string>
     <string name="new_feature_desc2">이제 플로우 지갑 앱에서 사이드 메뉴 또는 프로필에서 계정을 전환하여 여러 계정을 추가할 수 있습니다.</string>
-    <string name="get_started">시작하기</string>
     <string name="notification_request_title">푸시 알림 켜기</string>
     <string name="notification_request_desc">전송, 스왑 및 승인이 완료되면 알림을 받습니다.</string>
     <string name="turn_on_notifications">알림 켜기</string>
@@ -430,7 +426,6 @@
     <string name="accessible">접근성</string>
     <string name="none_accessible_coins">접근 가능한 코인 없음</string>
     <string name="no_linked_account">연결된 계정 없음</string>
-    <string name="empty_bookmarks">빈 북마크</string>
     <string name="view_empty_collection">비어 있음 보기</string>
     <string name="inaccessible_tag">액세스 불가</string>
     <string name="inaccessible_token_tip">플로우 월렛에서 %2$s 계정의 %1$s 에 액세스할 수 없는 경우 연결된 계정 설정을 확인하세요.</string>
@@ -450,7 +445,7 @@
     <string name="device_ip_address">IP 주소</string>
     <string name="device_location">위치</string>
     <string name="device_entry_date">입력 날짜</string>
-    <string name="login_with_registered_account">등록 계정 입력</string>
+    <string name="login_with_registered_account">등록 계정</string>
     <string name="or">또는</string>
     <string name="sync_page_title">모바일 앱 \n 에서 플로우 지갑을 열고 QR 코드를 스캔하여 지갑을 동기화합니다.</string>
     <string name="sync_scan_qr_code">모바일 앱으로 QR코드 스캔</string>
@@ -493,9 +488,9 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">멀티 백업에서</string>
     <string name="from_multi_backup_note">Google 드라이브/ 패스키/ 복구 문구</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">그 외</string>
     <string name="from_recovery_phrase_note">레거시 복구 구문을 사용하여 복원(다중 백업이 아님)</string>
-    <string name="from_raw_key">복구 문구에서(레거시)</string>
+    <string name="from_raw_key">다른</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">다중 복원</string>
@@ -560,6 +555,7 @@
     <string name="account_list">계정 목록</string>
     <string name="edit_wallet">지갑 편집</string>
     <string name="select_nft_empty">0 NFT</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">프로필</string>
     <string name="create_profile">프로필 만들기</string>
     <string name="features_coming">곧 출시될 기능</string>
@@ -567,18 +563,13 @@
     <string name="select_collection">컬렉션 선택</string>
     <string name="import_profile">프로필 가져오기</string>
     <string name="notification">알림</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_title">Flow 계정이 준비되었습니다. 백업해 보세요!</string>
+    <string name="landing_step_four_desc">계정을 백업하면 액세스가 안전하고 항상 제어할 수 있습니다.</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">백업 만들기</string>
+    <string name="exit_backup_warning_dialog_title">백업을 하지 않으시겠습니까?</string>
+    <string name="exit_backup_warning_dialog">기기를 분실하거나 지갑을 삭제하면 자금은 영구적으로 손실됩니다.</string>
+    <string name="back">뒤로</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -623,7 +614,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>
@@ -702,5 +693,9 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="legal_message">"     <![CDATA[     Flow Wallet을 사용하면 <a href="https://wallet.flow.com/terms-of-service"><u>서비스 약관</u></a> 및 <a href="https://wallet.flow.com/privacy-policy"><u>개인정보처리방침</u></a>에 동의하는 것입니다.     ]]>     "</string>
+    <string name="get_started">시작해 봅시다</string>
+    <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">Flow Wallet에 오신 것을 환영합니다! 시작하려면 계정을 만드세요</string>
 </resources>

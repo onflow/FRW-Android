@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityCreateWalletBinding
 import com.flowfoundation.wallet.page.walletcreate.*
 import com.flowfoundation.wallet.page.walletcreate.fragments.cloudpwd.WalletCreateCloudPwdFragment
-import com.flowfoundation.wallet.page.walletcreate.fragments.legal.WalletCreateLegalFragment
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.WalletCreateMnemonicFragment
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemoniccheck.WalletCreateMnemonicCheckFragment
 import com.flowfoundation.wallet.page.walletcreate.fragments.pincode.guide.WalletCreatePinCodeGuideFragment
@@ -32,7 +31,6 @@ class WalletCreateContentPresenter(
     private fun onStepChane(step: Int) {
         val transition = createTransition(currentStep, step)
         val fragment = when (step) {
-            WALLET_CREATE_STEP_LEGAL -> WalletCreateLegalFragment()
             WALLET_CREATE_STEP_WARNING -> WalletCreateWarningFragment()
             WALLET_CREATE_STEP_MNEMONIC -> WalletCreateMnemonicFragment()
             WALLET_CREATE_STEP_CLOUD_PWD -> WalletCreateCloudPwdFragment()

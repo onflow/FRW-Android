@@ -18,8 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="18dp"
             android:orientation="horizontal"
-            android:paddingTop="18dp"
-            android:paddingBottom="23dp"
+            android:paddingVertical="10dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
             <TextView
@@ -30,6 +29,7 @@
                 android:fontFamily="@font/inter_semi_bold"
                 android:text="@string/explore"
                 android:textColor="@color/text"
+                android:textStyle="bold"
                 android:textSize="24sp"
                 app:layout_constraintTop_toTopOf="parent"/>
 
@@ -81,280 +81,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="20dp">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/claim_domain_wrapper"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="18dp"
-                android:paddingBottom="16dp"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <androidx.constraintlayout.utils.widget.ImageFilterView
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bg_explore_claim_domain_banner"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:round="12dp"/>
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/claim_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:layout_marginEnd="16dp"
-                    android:elevation="0dp"
-                    android:fontFamily="@font/inter_semi_bold"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingHorizontal="14dp"
-                    android:stateListAnimator="@null"
-                    android:text="@string/claim"
-                    android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    app:backgroundTint="@color/violet1"
-                    app:cornerRadius="100dp"
-                    app:elevation="0dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:rippleColor="@color/white_30"/>
-
-                <TextView
-                    android:id="@+id/claim_text"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="16dp"
-                    android:layout_marginTop="12dp"
-                    android:autoSizeMinTextSize="10sp"
-                    android:autoSizeTextType="uniform"
-                    android:fontFamily="@font/montsettat"
-                    android:text="@string/claim_free_domain_at_lilico"
-                    android:textColor="@color/neutrals3"
-                    android:textSize="16sp"
-                    android:textStyle="italic|bold"
-                    app:layout_constraintEnd_toStartOf="@id/claim_button"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
-
-                <androidx.appcompat.widget.LinearLayoutCompat
-                    android:id="@+id/support_container"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:orientation="horizontal"
-                    android:paddingBottom="12dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/claim_text"
-                    app:layout_constraintVertical_chainStyle="packed">
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:scaleType="centerCrop"
-                        android:src="@mipmap/ic_launcher"
-                        app:round="14dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="3dp"
-                        android:fontFamily="@font/inter"
-                        android:text="@string/app_name"
-                        android:textColor="@color/neutrals2"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        tools:ignore="SmallSp"/>
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:layout_width="9dp"
-                        android:layout_height="9dp"
-                        android:layout_marginHorizontal="3dp"
-                        android:scaleType="fitCenter"
-                        android:src="@drawable/ic_close_no_space"/>
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/ic_domain_logo_flowns"
-                        app:round="14dp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="3dp"
-                        android:fontFamily="@font/inter"
-                        android:text="Flowns"
-                        android:textColor="@color/neutrals2"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        tools:ignore="HardcodedText,SmallSp"/>
-                </androidx.appcompat.widget.LinearLayoutCompat>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/recent_wrapper"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="18dp"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <LinearLayout
-                    android:id="@+id/recent_title_wrapper"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintTop_toTopOf="parent">
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:id="@+id/recent_icon"
-                        android:layout_width="15dp"
-                        android:layout_height="15dp"
-                        android:layout_marginStart="18dp"
-                        android:src="@drawable/ic_recent"
-                        app:layout_constraintBottom_toBottomOf="@id/recent_title"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="@id/recent_title"
-                        app:tint="@color/violet1"/>
-
-                    <TextView
-                        android:id="@+id/recent_title"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/inter_semi_bold"
-                        android:text="@string/recent"
-                        android:textColor="@color/text"
-                        android:textSize="16sp"
-                        app:layout_constraintStart_toEndOf="@id/recent_icon"
-                        app:layout_constraintTop_toTopOf="parent"/>
-
-                    <LinearLayout
-                        android:id="@+id/recent_more_button"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="17dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        app:layout_constraintBottom_toBottomOf="@id/recent_title"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="@id/recent_title">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="3dp"
-                            android:gravity="center_vertical"
-                            android:text="@string/more"
-                            android:textAllCaps="false"
-                            android:textColor="@color/violet1"
-                            android:textSize="14sp"/>
-
-                        <androidx.constraintlayout.utils.widget.ImageFilterView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:src="@drawable/ic_arrow_right_1"
-                            app:tint="@color/violet1"/>
-                    </LinearLayout>
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recent_list_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:clipToPadding="false"
-                    android:paddingStart="18dp"
-                    android:paddingEnd="0dp"
-                    android:paddingBottom="10dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/recent_title_wrapper"
-                    tools:itemCount="2"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/bookmark_wrapper"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="18dp"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <androidx.constraintlayout.utils.widget.ImageFilterView
-                    android:id="@+id/bookmark_icon"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:layout_marginStart="18dp"
-                    android:src="@drawable/ic_bookmark"
-                    app:layout_constraintBottom_toBottomOf="@id/bookmark_title"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/bookmark_title"
-                    app:tint="@color/violet1"/>
-
-                <TextView
-                    android:id="@+id/bookmark_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:fontFamily="@font/inter_semi_bold"
-                    android:text="@string/bookmark"
-                    android:textColor="@color/text"
-                    android:textSize="16sp"
-                    app:layout_constraintStart_toEndOf="@id/bookmark_icon"
-                    app:layout_constraintTop_toTopOf="parent"/>
-
-                <LinearLayout
-                    android:id="@+id/bookmark_more_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="17dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="@id/bookmark_title"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/bookmark_title">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="3dp"
-                        android:gravity="center_vertical"
-                        android:text="@string/more"
-                        android:textAllCaps="false"
-                        android:textColor="@color/violet1"
-                        android:textSize="14sp"/>
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:src="@drawable/ic_arrow_right_1"
-                        app:tint="@color/violet1"/>
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/bookmark_list_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:clipToPadding="false"
-                    android:paddingBottom="10dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/bookmark_title"
-                    tools:itemCount="2"
-                    tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            android:paddingTop="0dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/dapp_wrapper"
@@ -362,58 +89,6 @@
                 android:layout_height="wrap_content"
                 android:visibility="gone"
                 tools:visibility="visible">
-
-                <androidx.constraintlayout.utils.widget.ImageFilterView
-                    android:id="@+id/dapp_icon"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:layout_marginStart="18dp"
-                    android:src="@drawable/ic_dapp"
-                    app:layout_constraintBottom_toBottomOf="@id/dapp_title"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/dapp_title"
-                    app:tint="@color/violet1"/>
-
-                <TextView
-                    android:id="@+id/dapp_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:fontFamily="@font/inter_semi_bold"
-                    android:text="@string/dapps"
-                    android:textColor="@color/text"
-                    android:textSize="16sp"
-                    app:layout_constraintStart_toEndOf="@id/dapp_icon"
-                    app:layout_constraintTop_toTopOf="parent"/>
-
-                <LinearLayout
-                    android:id="@+id/dapp_more_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="17dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    app:layout_constraintBottom_toBottomOf="@id/dapp_title"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/dapp_title">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="3dp"
-                        android:gravity="center_vertical"
-                        android:text="@string/more"
-                        android:textAllCaps="false"
-                        android:textColor="@color/violet1"
-                        android:textSize="14sp"/>
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:src="@drawable/ic_arrow_right_1"
-                        app:tint="@color/violet1"/>
-                </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/dapp_tabs"
@@ -424,10 +99,10 @@
                     android:paddingTop="18dp"
                     android:paddingEnd="16dp"
                     android:paddingBottom="10dp"
-                    app:layout_constraintTop_toBottomOf="@id/dapp_title"
                     tools:itemCount="3"
                     tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_dapp_category"
+                    app:layout_constraintTop_toTopOf="parent"
                     tools:orientation="horizontal"/>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -442,31 +117,6 @@
                     tools:itemCount="5"
                     tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_empty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="180dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:visibility="gone">
-                <ImageView
-                    android:layout_width="160dp"
-                    android:layout_height="132dp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:src="@drawable/ic_linked_account_empty"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:fontFamily="@font/inter_semi_bold"
-                    android:textColor="@color/text_3"
-                    android:text="@string/empty_bookmarks"/>
-            </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
 

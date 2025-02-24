@@ -1,6 +1,9 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.presenter
 
 import android.widget.EditText
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.base.presenter.BasePresenter
@@ -9,9 +12,13 @@ import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.ChildAccountEditActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.ChildAccountEditViewModel
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountedit.model.ChildAccountEditModel
+import com.flowfoundation.wallet.utils.CACHE_VIDEO_PATH
+import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
-import com.flowfoundation.wallet.utils.startGallery
+import com.flowfoundation.wallet.utils.toFile
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.ProgressDialog
+import java.io.File
 
 class ChildAccountEditPresenter(
     private val binding: ActivityChildAccountEditBinding,
@@ -20,11 +27,23 @@ class ChildAccountEditPresenter(
 
     private var progressDialog: ProgressDialog? = null
     private val viewModel by lazy { ViewModelProvider(activity)[ChildAccountEditViewModel::class.java] }
+    private  lateinit var photoPicker: ActivityResultLauncher<PickVisualMediaRequest>
 
     init {
         with(binding) {
-            avatarContainer.setOnClickListener { startGallery(activity) }
+            avatarContainer.setOnClickListener {
+                photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
             saveButton.setOnClickListener { viewModel.save(nameEditTextView.text(), descriptionEditTextView.text()) }
+        }
+        photoPicker = activity.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            ioScope {
+                val file = uri?.toFile(File(CACHE_VIDEO_PATH, "${System.currentTimeMillis()}" + ".jpg").absolutePath) ?: return@ioScope
+                uiScope {
+                    bind(ChildAccountEditModel(avatarFile = file))
+                    viewModel.updateAvatar(file.absolutePath)
+                }
+            }
         }
     }
 

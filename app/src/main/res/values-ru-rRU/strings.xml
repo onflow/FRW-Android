@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Следующий</string>
+    <string name="list">Список</string>
+    <string name="creating_account">Создание аккаунта…</string>
+    <string name="secure_design">Безопасно по дизайну</string>
+    <string name="secure_design_2">Используя ключи устройств с аппаратной безопасностью, кошелек Flow является ультрабезопасным аппаратным кошельком, которым вы можете доверять</string>
     <string name="username">Имя пользователя</string>
     <string name="username_too_short">Слишком короткая</string>
     <string name="username_too_long">Слишком долго</string>
@@ -39,7 +43,7 @@
     <string name="mnemonic_question_title">Выберите слово %1$s</string>
     <string name="home">Главная</string>
     <string name="explore">Посетите сайт</string>
-    <string name="profile">Профиль</string>
+    <string name="profile">Настройки</string>
     <string name="things_you">Вещи, которые вы \nдолжны знать</string>
     <string name="wallet_create_warning_tip">На следующем шаге вы увидите секретную фразу (12 слов). Секретная фраза - единственный ключ к восстановлению вашего кошелька.</string>
     <string name="create_wallet_warning1">Если я потеряю свои секретные фразы, я не смогу получить доступ к своей учетной записи навсегда.</string>
@@ -52,6 +56,7 @@
     <string name="recovery">Восстановление</string>
     <string name="phrase">Фраза</string>
     <string name="nft">NFT</string>
+    <string name="activity">Активность</string>
     <string name="restore_wallet">Восстановить кошелек</string>
     <string name="restore_wallet_tip">Восстановите свой кошелек с помощью записанной вами фразы из 12 слов о восстановлении.</string>
     <string name="choose_account">Выберите счет</string>
@@ -69,21 +74,17 @@
     <string name="account_not_found">Учетная запись не найдена</string>
     <string name="account_not_found_desc">Не найдено ни одной учетной записи с фразой восстановления. Вы хотите создать новую учетную запись с вашей фразой?</string>
     <string name="your_phrase">ваша фраза</string>
-    <string name="create_wallet">Создать кошелек</string>
+    <string name="create_wallet">Создать новый аккаунт</string>
     <string name="cancel">Отмена</string>
     <string name="username_format_wrong">"Ваше имя пользователя может содержать только буквы и цифры"</string>
     <string name="encrypt_backup">Зашифровать резервную копию</string>
     <string name="done">Готово</string>
     <string name="biometrics">Биометрия</string>
-    <string name="legal">Юридическая</string>
     <string name="information">Информация</string>
-    <string name="legal_tip">Ознакомьтесь с Политикой конфиденциальности и Условиями обслуживания Flow Wallet.</string>
     <string name="i_accept">Я принимаю</string>
     <string name="terms_of_service">Условия предоставления услуг</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="top_selection">Топ-отбор</string>
-    <string name="list">Список</string>
-    <string name="grid">Сетка</string>
     <string name="purchase_date">Дата покупки</string>
     <string name="purchase_price">Покупная цена</string>
     <string name="coins">Монеты</string>
@@ -96,7 +97,9 @@
     <string name="download">Скачать</string>
     <string name="saved_to_album">Сохранено в альбом</string>
     <string name="view_on_web">Смотреть на сайте</string>
-    <string name="empty_title">У вас еще нет NFT</string>
+    <string name="nft_collections">Коллекции NFT</string>
+    <string name="empty_title">Ваша коллекция ждет своего часа!</string>
+    <string name="empty_title_2">Начните исследовать и добавьте свои первые NFT сегодня.</string>
     <string name="receive">Получить</string>
     <string name="buy">Купить</string>
     <string name="swap">Обмен</string>
@@ -203,7 +206,7 @@
     <string name="add_collection">Добавить коллекцию</string>
     <string name="search_nft_collection">Поиск по коллекции NFT</string>
     <string name="scan_qr_code">Сканирование QR-кода</string>
-    <string name="explore_search_hint">Название сайта или URL</string>
+    <string name="explore_search_hint">Поиск по названию или URL</string>
     <string name="bookmark">Закладка</string>
     <string name="drag_here_to_unpin">Перетащите сюда, чтобы открепить</string>
     <string name="recovery_purchase_tips">Запишите или скопируйте эти слова в правильном порядке и сохраните их в надежном месте.</string>
@@ -248,15 +251,9 @@
     <string name="reset">Сброс</string>
     <string name="skip">Скип</string>
     <string name="start">Начало</string>
-    <string name="guide_title_1">Playground\nfor your NFTs</string>
-    <string name="guide_desc_1">Поделитесь отличными коллекциями NFT с друзьями</string>
-    <string name="guide_title_2">Соберите\nвсе свои жетоны.</string>
-    <string name="guide_desc_2">Поделитесь отличными коллекциями NFT с друзьями</string>
-    <string name="guide_title_4">Изучите\nваш любимый сайт.</string>
-    <string name="guide_desc_4">Поделитесь отличными коллекциями NFT с друзьями</string>
-    <string name="import_wallet">Импортный кошелек</string>
+    <string name="import_wallet">Импорт кошелька</string>
+    <string name="import_wallet_button">Я уже зарегистрирован</string>
     <string name="import_str">Импорт</string>
-    <string name="welcome_desc">Предоставьте больше информации о безопасности</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
     <string name="network_error">Ошибка сети</string>
     <string name="claim">Заявление</string>
@@ -421,7 +418,6 @@
     <string name="new_feature_title_1">Уведомление о цифровых активах</string>
     <string name="new_feature_desc_1">Flow Wallet уведомит вас о перемещении ваших цифровых активов.</string>
     <string name="new_feature_desc2">Теперь вы можете добавить несколько счетов в приложение Flow Wallet, переключая счета в боковом меню или профиле.</string>
-    <string name="get_started">Начать</string>
     <string name="notification_request_title">Включите Push-уведомления</string>
     <string name="notification_request_desc">Получайте уведомления о завершении переводов, обменов и одобрений.</string>
     <string name="turn_on_notifications">Включите уведомления</string>
@@ -430,7 +426,6 @@
     <string name="accessible">Доступный</string>
     <string name="none_accessible_coins">Нет доступа к монетам</string>
     <string name="no_linked_account">Нет привязанных счетов</string>
-    <string name="empty_bookmarks">Пустые закладки</string>
     <string name="view_empty_collection">Посмотреть пустой</string>
     <string name="inaccessible_tag">Недоступно</string>
     <string name="inaccessible_token_tip">Flow Wallet не имеет доступа к %1$s в аккаунте %2$s , пожалуйста, проверьте настройки связанного аккаунта.</string>
@@ -450,7 +445,7 @@
     <string name="device_ip_address">IP-адрес</string>
     <string name="device_location">Расположение</string>
     <string name="device_entry_date">Дата поступления</string>
-    <string name="login_with_registered_account">Введите зарегистрированный счет</string>
+    <string name="login_with_registered_account">Зарегестрированные аккаунты</string>
     <string name="or">Или</string>
     <string name="sync_page_title">Откройте кошелек Flow в мобильном приложении \n и отсканируйте QR-код для синхронизации кошелька.</string>
     <string name="sync_scan_qr_code">Сканирование QR-кода с помощью мобильного приложения</string>
@@ -493,9 +488,9 @@
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">Из Multi Backup</string>
     <string name="from_multi_backup_note">Google Диск / Ключ доступа / Фраза для восстановления</string>
-    <string name="from_recovery_phrase">From Raw Keys (legacy)</string>
+    <string name="from_recovery_phrase">Другой</string>
     <string name="from_recovery_phrase_note">Восстановление с помощью устаревшей фразы восстановления (не мультирезервное копирование)</string>
-    <string name="from_raw_key">Из фразы восстановления (наследие)</string>
+    <string name="from_raw_key">Другое</string>
     <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
     <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
     <string name="multi_restore">Мультивосстановление</string>
@@ -560,6 +555,7 @@
     <string name="account_list">Список счетов</string>
     <string name="edit_wallet">Редактировать кошелек</string>
     <string name="select_nft_empty">0 NFTs</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">Профили</string>
     <string name="create_profile">Создать профиль</string>
     <string name="features_coming">Функции скоро появятся</string>
@@ -567,18 +563,13 @@
     <string name="select_collection">Выберите коллекцию</string>
     <string name="import_profile">Профиль импорта</string>
     <string name="notification">Уведомление</string>
-    <string name="landing_step_one_title">security, \npowered by KeyStore.</string>
-    <string name="landing_step_two_title">your device, \nis now a Hardware Wallet.</string>
-    <string name="landing_step_three_title">you just, \nunlocked True Ownership.</string>
-    <string name="landing_step_four_title">ready to get started</string>
-    <string name="landing_step_one_desc">Flow Wallet uses your device’s KeyStore to secure your Flow account.</string>
-    <string name="landing_step_two_desc">KeyStore is special hardware on your device that Flow
-        Wallet
-uses to turn your device into a hardware wallet.</string>
-    <string name="landing_step_three_desc">Your assets are secured by your device, unlocking true ownership of your assets on Flow.</string>
-    <string name="landing_step_four_desc">Your Flow account is ready, \nlet’s get started!</string>
+    <string name="landing_step_four_title">Ваш аккаунт Flow готов, давайте создадим его резервную копию!</string>
+    <string name="landing_step_four_desc">Резервное копирование вашего аккаунта обеспечивает безопасность вашего доступа и всегда под вашим контролем</string>
     <string name="landing_step_loading">Creating your Profile</string>
-    <string name="landing_step_done">Go with the FLOW</string>
+    <string name="landing_step_done">Создание резервной копии</string>
+    <string name="exit_backup_warning_dialog_title">Вы уверены, что не хотите сделать резервную копию?</string>
+    <string name="exit_backup_warning_dialog">Если вы потеряете свое устройство или удалите свой кошелек, ваши средства будут потеряны навсегда.</string>
+    <string name="back">Назад</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -623,7 +614,7 @@ uses to turn your device into a hardware wallet.</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
     <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">😃It might take 1–2 mins</string>
+    <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
     <string name="backup_failed">Backup Failed</string>
@@ -702,5 +693,9 @@ uses to turn your device into a hardware wallet.</string>
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
+    <string name="get_started">Поехали!</string>
+    <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
 </resources>

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
@@ -26,7 +27,6 @@ import com.flowfoundation.wallet.page.nft.move.MoveNFTDialog
 import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.shareNft
 import com.flowfoundation.wallet.page.nft.nftdetail.widget.NftMorePopupMenu
-import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.desc
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.isDomain
@@ -37,6 +37,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.send.nft.NftSendAddressDialog
 import com.flowfoundation.wallet.utils.ScreenUtils
+import com.flowfoundation.wallet.utils.downloadToGallery
 import com.flowfoundation.wallet.utils.exoplayer.createExoPlayer
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
@@ -47,6 +48,7 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.shareFile
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.likebutton.LikeButton
@@ -55,6 +57,7 @@ import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import jp.wasabeef.glide.transformations.BlurTransformation
+import java.net.URL
 import kotlin.math.min
 
 private val filterMetadata by lazy { listOf("uri", "img", "description") }
@@ -73,6 +76,23 @@ class NftDetailPresenter(
     private val screenHeight by lazy { ScreenUtils.getScreenHeight() }
 
     private val videoPlayer by lazy { createExoPlayer(activity) }
+
+    private var currentDownloadUrl: String? = null
+
+    private val downloadLauncher = activity.registerForActivityResult(ActivityResultContracts.CreateDocument("image/jpeg"))  { uri ->
+        uri?.let {
+            ioScope {
+                safeRun {
+                    activity.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        URL(currentDownloadUrl).openStream().use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    toast(msg = R.string.saved_to_album.res2String())
+                }
+            }
+        }
+    }
 
     init {
         setupToolbar()
@@ -98,7 +118,11 @@ class NftDetailPresenter(
             })
 
             moreButton.setOnClickListener {
-                nft?.let { NftMorePopupMenu(it, moreButton, pageColor).show() }
+                nft?.let { NftMorePopupMenu(activity, it, moreButton, pageColor,
+                    onDownloadRequest = { mediaUrl ->
+                        currentDownloadUrl = mediaUrl
+                        mediaUrl.downloadToGallery(downloadLauncher)
+                    }).show() }
             }
             collectButton.setLikeDrawableTint(pageColor)
             shareButton.setOnClickListener { showShareNft() }
