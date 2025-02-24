@@ -210,22 +210,24 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     private fun configureFromAccount() {
         with(binding) {
             val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@with
-            // Build a set of all possible accounts (primary, children, and initial From)
             val allAccounts = mutableSetOf<String>().apply {
                 add(walletAddress)
                 WalletManager.childAccountList(walletAddress)
                     ?.get()
                     ?.forEach { add(it.address) }
                 add(initialFromAddress)
+                // Include the EVM address if available.
+                val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                if (evmAddress.isNotEmpty()) {
+                    add(evmAddress)
+                }
             }
 
             // Remove the current To account from the eligible From accounts.
             allAccounts.remove(moveToAddress)
-
-            // Convert to a list
             val addressList = allAccounts.toMutableList()
 
-            // Ensure the currently selected From account is at the top.
+            // Ensure currently selected From account is at the top.
             if (moveFromAddress !in addressList) {
                 addressList.add(0, moveFromAddress)
             }
@@ -255,6 +257,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             }
         }
     }
+
 
     private fun configureToAccount() {
         with(binding) {
