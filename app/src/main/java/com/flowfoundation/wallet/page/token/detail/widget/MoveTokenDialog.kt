@@ -269,7 +269,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 }
             }
 
-            // Determine eligibility for arrows.
+            // Conditionally render arrows in dropdown
             val eligibleFrom = getEligibleAccounts().filter { it != layoutToAccount.getAccountAddress() }
             val eligibleTo = getEligibleAccounts().filter { it != layoutFromAccount.getAccountAddress() }
 
