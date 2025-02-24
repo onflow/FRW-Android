@@ -70,7 +70,7 @@ class BackupProgressView @JvmOverloads constructor(
                         isFirstCompleted = isCompleted,
                         isSecondCompleted = false
                     )
-                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
+                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
                 secondOption -> {
                     updateOptionUI(
@@ -80,7 +80,7 @@ class BackupProgressView @JvmOverloads constructor(
                         isSecondCompleted = isCompleted
                     )
                     ivCompleteOption.setImageResource(
-                        if (isCompleted) R.drawable.ic_backup_complete_green else R.drawable.ic_backup_complete_gray
+                        if (isCompleted) R.drawable.ic_backup_complete_green else R.drawable.ic_backup_complete_progress
                     )
                 }
                 else -> {}
@@ -103,12 +103,12 @@ class BackupProgressView @JvmOverloads constructor(
                 firstOption -> {
                     updateOptionUI(firstOption, secondOption, isCompleted, false)
                     updateThirdOption(thirdOption, false, R.color.bg_3)
-                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
+                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
                 secondOption -> {
                     updateOptionUI(firstOption, secondOption, true, isCompleted)
                     updateThirdOption(thirdOption, false, R.color.bg_3)
-                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
+                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
                 thirdOption -> {
                     updateOptionUI(
@@ -121,7 +121,7 @@ class BackupProgressView @JvmOverloads constructor(
                         isCompleted,
                         if (isCompleted) R.color.accent_green else R.color.bg_3
                     )
-                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
+                    ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
                 else -> {}
             }
@@ -154,43 +154,11 @@ class BackupProgressView @JvmOverloads constructor(
     }
 
     private fun getBackupOptionIcon(backupOption: BackupOption, isCompleted: Boolean): Int {
-        return when (backupOption) {
-            BackupOption.BACKUP_WITH_RECOVERY_PHRASE -> {
-                if (isCompleted) {
-                    R.drawable.ic_backup_recovery_phrase_green
-                } else {
-                    R.drawable.ic_backup_recovery_phrase_gray
-                }
-            }
-
-            else -> backupOption.iconId
+        return if (isCompleted) {
+            backupOption.iconId
+        } else {
+            backupOption.progressIcon
         }
     }
 
-
-    fun setProgressInfo(
-        currentOption: BackupOption,
-        isCompleted: Boolean,
-        isOnlyGoogleDrive: Boolean = false
-    ) {
-        with(binding) {
-            ivSecondOption.setVisible(isOnlyGoogleDrive.not())
-            if (isCompleted) {
-                ivSecondOption.setImageResource(R.drawable.ic_backup_recovery_phrase_green)
-                lineOne.setBackgroundResource(R.color.accent_green)
-                ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_green)
-                lineTwo.setBackgroundResource(R.color.accent_green)
-            } else if (currentOption == BackupOption.BACKUP_WITH_RECOVERY_PHRASE) {
-                ivSecondOption.setImageResource(R.drawable.ic_backup_recovery_phrase_green)
-                lineOne.setBackgroundResource(R.color.accent_green)
-                ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
-                lineTwo.setBackgroundResource(R.color.bg_3)
-            } else {
-                ivSecondOption.setImageResource(R.drawable.ic_backup_recovery_phrase_gray)
-                lineOne.setBackgroundResource(R.color.bg_3)
-                ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
-                lineTwo.setBackgroundResource(R.color.bg_3)
-            }
-        }
-    }
 }
