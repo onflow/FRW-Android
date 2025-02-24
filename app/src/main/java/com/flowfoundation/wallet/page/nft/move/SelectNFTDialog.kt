@@ -106,6 +106,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     return@setOnClickListener
                 }
                 btnMove.setProgressVisible(true)
+                WalletManager.selectWalletAddress(moveFromAddress)
                 ioScope {
                     viewModel.moveSelectedNFT(layoutToAccount.getAccountAddress()) { isSuccess ->
                         uiScope {
@@ -245,7 +246,6 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                         )?.let { newAddress ->
                             moveFromAddress = newAddress
                             layoutFromAccount.setAccountInfo(newAddress)
-
                             // After changing the From account, update the To account selection options.
                             configureToAccount()
                             viewModel.loadCollections(moveFromAddress)
