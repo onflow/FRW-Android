@@ -32,6 +32,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -272,20 +273,23 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun fetchTokenBalance() {
         ioScope {
             val coin = FlowCoinListManager.getCoinById(contractId)
+            logd("MoveTokenDialog", "Fetching balance for moveFromAddress: $moveFromAddress")
             fromBalance = if (coin == null) {
                 BigDecimal.ZERO
             } else {
                 if (isFundToEVM) {
                     if (coin.isFlowCoin()) {
-                        AccountInfoManager.getCurrentFlowBalance()
-                            ?: cadenceQueryTokenBalanceWithAddress(
-                                coin,
-                                moveFromAddress  // use updated from address here
-                            )
+                        // For child accounts, query the From address balance directly
+                        if (WalletManager.isChildAccount(moveFromAddress)) {
+                            cadenceQueryTokenBalanceWithAddress(coin, moveFromAddress)
+                        } else {
+                            AccountInfoManager.getCurrentFlowBalance() ?:
+                            cadenceQueryTokenBalanceWithAddress(coin, moveFromAddress)
+                        }
                     } else {
                         cadenceQueryTokenBalanceWithAddress(
                             coin,
-                            moveFromAddress  // use updated from address here
+                            moveFromAddress
                         )
                     }
                 } else {
@@ -298,6 +302,9 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             }
             uiScope {
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
+                val formattedBalance = fromBalance.format(8)
+                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, formattedBalance)
+                logd("MoveTokenDialog", "Updated balance: $formattedBalance")
             }
         }
     }
