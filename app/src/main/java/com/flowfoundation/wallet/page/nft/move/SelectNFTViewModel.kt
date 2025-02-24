@@ -113,6 +113,9 @@ class SelectNFTViewModel : ViewModel() {
 }
 
     suspend fun moveSelectedNFT(toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
+
+        logd(TAG, "moveSelectedNFT called with: fromAddress = ${WalletManager.selectedWalletAddress()}, toAddress = $toAddress, nftIdentifier = $nftIdentifier, selectedNFTs = $selectedNFTIdList")
+
         if (nftIdentifier == null) {
             callback.invoke(false)
             return
