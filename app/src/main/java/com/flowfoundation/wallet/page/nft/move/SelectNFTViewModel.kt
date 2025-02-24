@@ -121,6 +121,7 @@ class SelectNFTViewModel : ViewModel() {
             return
         }
         if (WalletManager.isChildAccountSelected()) {
+            logd(TAG, "moveSelectedNFT from child account")
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                 EVMWalletManager.moveChildNFTList(
                     nftIdentifier!!,
@@ -137,6 +138,7 @@ class SelectNFTViewModel : ViewModel() {
                 moveNFTListFromChildToParent(selectedNFTIdList, callback)
             }
         } else if (WalletManager.isEVMAccountSelected()) {
+            logd(TAG, "moveSelectedNFT from EVM account")
             if (WalletManager.isChildAccount(toAddress)) {
                 EVMWalletManager.moveChildNFTList(
                     nftIdentifier!!,

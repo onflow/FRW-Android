@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -47,6 +48,10 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private var fromBalance = BigDecimal(0.001)
     private var result: Continuation<Boolean>? = null
     private var isFlowCoin = false
+
+    private var moveFromAddress: String = WalletManager.wallet()?.walletAddress().orEmpty()
+    private var moveToAddress: String = EVMWalletManager.getEVMAddress().orEmpty()
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -81,6 +86,16 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             }
         }
     }
+
+    private fun getEligibleAccounts(): List<String> {
+        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        val childAccounts = WalletManager.childAccountList(walletAddress)
+            ?.get()
+            ?.map { it.address } ?: emptyList()
+        val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+        return listOf(walletAddress) + childAccounts + listOf(evmAddress)
+    }
+
 
     private fun verifyAmount(): Boolean {
         val number = binding.etAmount.text.toString().toFloatOrNull()
@@ -134,6 +149,44 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             }
         }
         initView()
+
+        // Set up From address selection.
+        binding.layoutFromAccount.setOnClickListener {
+            uiScope {
+                // Build the eligible list for the From account (exclude current To)
+                val eligibleFrom = getEligibleAccounts().filter { it != binding.layoutToAccount.getAccountAddress() }
+                val newFromAddress = SelectAccountDialog().show(
+                    selectedAddress = binding.layoutFromAccount.getAccountAddress(),
+                    addressList = eligibleFrom,
+                    fragmentManager = childFragmentManager
+                )
+                newFromAddress?.let { selected ->
+                    binding.layoutFromAccount.setAccountInfo(selected)
+                    moveFromAddress = selected
+                    // Refresh the balance displayed when the From token changes.
+                    fetchTokenBalance()
+                }
+            }
+        }
+
+        // Set up To address selection.
+        binding.layoutToAccount.setOnClickListener {
+            uiScope {
+                // Build list of eligible To accounts (exclude current From address)
+                val eligibleTo = getEligibleAccounts().filter { it != binding.layoutFromAccount.getAccountAddress() }
+                val newToAddress = SelectAccountDialog().show(
+                    selectedAddress = binding.layoutToAccount.getAccountAddress(),
+                    addressList = eligibleTo,
+                    fragmentManager = childFragmentManager
+                )
+                newToAddress?.let { selected ->
+                    binding.layoutToAccount.setAccountInfo(selected)
+                    moveToAddress = selected
+                }
+            }
+
+        }
+
     }
 
     private fun moveToken() {
@@ -204,7 +257,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             tvBalance.text = ""
             etAmount.setText("")
             btnMove.isEnabled = false
-            tvMoveFee.text = "0.001FLOW"
+            tvMoveFee.text = "0.001 FLOW"
             tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
             if (isFlowCoin.not()) {
                 uiScope {
@@ -227,12 +280,12 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         AccountInfoManager.getCurrentFlowBalance()
                             ?: cadenceQueryTokenBalanceWithAddress(
                                 coin,
-                                WalletManager.wallet()?.walletAddress()
+                                moveFromAddress  // use updated from address here
                             )
                     } else {
                         cadenceQueryTokenBalanceWithAddress(
                             coin,
-                            WalletManager.wallet()?.walletAddress()
+                            moveFromAddress  // use updated from address here
                         )
                     }
                 } else {
