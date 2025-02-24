@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Avanti</string>
+    <string name="list">Elenco</string>
+    <string name="creating_account">Creazione Del Tuo Account…</string>
     <string name="secure_design">Progettato per essere sicuro</string>
     <string name="secure_design_2">Utilizzando le chiavi del dispositivo con sicurezza di grado hardware, Flow Wallet è un portafoglio hardware ultra-sicuro che puoi fidarti</string>
     <string name="username">Nome utente</string>
@@ -53,7 +55,7 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Recupero</string>
     <string name="phrase">Frase</string>
-    <string name="nft">NFTs</string>
+    <string name="nft">NFT</string>
     <string name="activity">Attività</string>
     <string name="restore_wallet">Ripristino del portafoglio</string>
     <string name="restore_wallet_tip">Ripristinate il vostro portafoglio con la frase di recupero di 12 parole che avete scritto.</string>
@@ -83,8 +85,6 @@
     <string name="terms_of_service">Termini di servizio</string>
     <string name="privacy_policy">Informativa sulla privacy</string>
     <string name="top_selection">Selezione Top</string>
-    <string name="list">Elenco</string>
-    <string name="grid">Griglia</string>
     <string name="purchase_date">Data di acquisto</string>
     <string name="purchase_price">Prezzo di acquisto</string>
     <string name="coins">Monete</string>
@@ -254,7 +254,6 @@
     <string name="import_wallet">Portafoglio di importazione</string>
     <string name="import_wallet_button">Ho gia un account</string>
     <string name="import_str">Importazione</string>
-    <string name="welcome_desc">Benvenuto in Flow Wallet! Crea un account per iniziare</string>
     <string name="explore_new_nfts">Esplorare nuovi NFT</string>
     <string name="network_error">Errore di rete</string>
     <string name="claim">Rivendicazione</string>
@@ -419,7 +418,6 @@
     <string name="new_feature_title_1">Notifica di beni digitali</string>
     <string name="new_feature_desc_1">Flow Wallet vi avviserà quando i vostri beni digitali saranno spostati.</string>
     <string name="new_feature_desc2">Ora è possibile aggiungere più account nell\'app Flow Wallet, cambiando account dal menu laterale o dal profilo.</string>
-    <string name="get_started">Iniziamo</string>
     <string name="notification_request_title">Attivare le notifiche push</string>
     <string name="notification_request_desc">Ricevere una notifica quando i trasferimenti, gli scambi e le approvazioni vengono completati.</string>
     <string name="turn_on_notifications">Attivare le notifiche</string>
@@ -557,6 +555,7 @@
     <string name="account_list">Elenco dei conti</string>
     <string name="edit_wallet">Modifica del portafoglio</string>
     <string name="select_nft_empty">0 NFT</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">Profili</string>
     <string name="create_profile">Crea profilo</string>
     <string name="features_coming">Caratteristiche in arrivo</string>
@@ -568,6 +567,9 @@
     <string name="landing_step_four_desc">Il backup del tuo account assicura che il tuo accesso sia sicuro e sempre nel tuo controllo</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Creare il backup</string>
+    <string name="exit_backup_warning_dialog_title">Sei sicuro di non voler fare un backup?</string>
+    <string name="exit_backup_warning_dialog">Se perdi il tuo dispositivo o elimini il tuo portafoglio, i tuoi fondi andranno persi per sempre.</string>
+    <string name="back">Indietro</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -584,7 +586,6 @@
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">Revocato</string>
     <string name="revoking">Revoking...</string>
-    <string name="creating_account">Creazione Del Tuo Account…</string>
     <string name="full_access">Accesso completo</string>
     <string name="multi_sign">Multi-segno</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>
@@ -692,9 +693,9 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
-    <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Utilizzando Flow Wallet accetti i Termini di Servizio <a href="https://wallet.flow.com/terms-of-service"><u></u></a> e <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
-    <string name="back">Indietro</string>
-    <string name="exit_backup_warning_dialog_title">Sei sicuro di non voler fare un backup?</string>
-    <string name="exit_backup_warning_dialog">Se perdi il tuo dispositivo o elimini il tuo portafoglio, i tuoi fondi andranno persi per sempre.</string>
+    <string name="get_started">Iniziamo</string>
+    <string name="on_flow">#onFlow</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">Benvenuto in Flow Wallet! Crea un account per iniziare</string>
 </resources>

@@ -90,32 +90,59 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <com.flowfoundation.wallet.page.landing.view.LandingTabLayout
-        android:id="@+id/tab_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="26dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toTopOf="@id/tv_tips"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <FrameLayout
-        android:id="@+id/fl_landing_done"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_landing_done"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginBottom="65dp"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/tv_tips">
+        app:layout_constraintTop_toBottomOf="@id/iv_logo"
+        app:layout_constraintBottom_toTopOf="@id/cl_button">
 
-        <include layout="@layout/item_landing_page"/>
-    </FrameLayout>
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="9dp"
+            android:scaleType="fitEnd"
+            android:src="@drawable/ic_landing_step_four"
+            android:layout_marginEnd="-90dp"
+            android:layout_marginBottom="-80dp"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:layout_marginTop="44dp"
+            android:fontFamily="@font/e_ukraine_inter_light"
+            android:text="@string/landing_step_four_title"
+            android:textColor="@color/text_1"
+            android:textSize="40sp"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_desc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:fontFamily="@font/inter"
+            android:lineSpacingMultiplier="1.2"
+            android:layout_marginBottom="10dp"
+            android:text="@string/landing_step_four_desc"
+            android:textColor="@color/text_2"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/tv_tips"
         android:layout_width="wrap_content"
         android:layout_height="34dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="70dp"
+        android:layout_marginTop="63dp"
         android:layout_marginHorizontal="18dp"
         android:background="@drawable/bg_round_8dp"
         android:backgroundTint="@color/accent_green_8"
@@ -127,18 +154,18 @@
         android:textColor="@color/accent_green"
         android:textSize="14sp"
         app:layout_constrainedWidth="true"
-        app:layout_constraintBottom_toTopOf="@id/cl_button"
+        app:layout_constraintTop_toBottomOf="@id/tv_secure_design_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_button"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_marginHorizontal="70dp"
-        android:layout_marginBottom="50dp"
-        android:background="@drawable/bg_landing_step_loading"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="80dp"
+        android:background="@drawable/bg_landing_step_done"
         android:paddingHorizontal="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -149,26 +176,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/inter"
-            android:text="@string/landing_step_loading"
-            android:textColor="@color/accent_green"
+            android:text="@string/landing_step_done"
+            android:textColor="@color/text_5"
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <ProgressBar
-            android:id="@+id/pb_button_loading"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:layout_gravity="center"
-            android:layout_marginStart="12dp"
-            android:progressTint="@color/accent_green"
-            android:visibility="visible"
-            app:layout_constraintBottom_toBottomOf="@id/tv_button_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tv_button_title"
-            app:layout_constraintTop_toTopOf="@id/tv_button_title"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

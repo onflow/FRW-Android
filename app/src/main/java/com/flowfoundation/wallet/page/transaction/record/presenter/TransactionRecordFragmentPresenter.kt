@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.transaction.record.presenter
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,9 +31,10 @@ class TransactionRecordFragmentPresenter(
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun bind(model: Int) {
         if (model > 0) {
-            binding.toolbar.title = R.string.transactions.res2String() + " $model"
+            binding.tvTitle.text = R.string.transactions.res2String() + " $model"
         }
     }
 

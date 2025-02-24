@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.page.nft.nftlist.presenter
 
-import android.animation.ArgbEvaluator
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.R
@@ -32,8 +31,6 @@ class NFTFragmentPresenter(
             with(toolbar) { post { setPadding(paddingLeft, paddingTop + statusBarHeight, paddingRight, paddingBottom) } }
             viewPager.adapter = NftListPageAdapter(fragment)
             addButton.setOnClickListener { NftCollectionListActivity.launch(fragment.requireContext()) }
-            addButton.setVisible(WalletManager.isEVMAccountSelected().not() && WalletManager
-                .isChildAccountSelected().not())
 
             with(refreshLayout) {
                 isEnabled = true
@@ -46,6 +43,7 @@ class NFTFragmentPresenter(
     }
 
     override fun bind(model: NFTFragmentModel) {
+        binding.addButton.setVisible(WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not())
         model.favorite?.let {
             isTopSelectionExist = it.isNotEmpty()
             updateToolbarBackground()

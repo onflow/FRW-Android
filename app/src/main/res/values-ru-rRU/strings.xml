@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Следующий</string>
+    <string name="list">Список</string>
+    <string name="creating_account">Создание аккаунта…</string>
     <string name="secure_design">Безопасно по дизайну</string>
     <string name="secure_design_2">Используя ключи устройств с аппаратной безопасностью, кошелек Flow является ультрабезопасным аппаратным кошельком, которым вы можете доверять</string>
     <string name="username">Имя пользователя</string>
@@ -53,8 +55,7 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Восстановление</string>
     <string name="phrase">Фраза</string>
-    <string name="nft">NFTs</string>
-    <string name="nft_collections">Коллекции NFT</string>
+    <string name="nft">NFT</string>
     <string name="activity">Активность</string>
     <string name="restore_wallet">Восстановить кошелек</string>
     <string name="restore_wallet_tip">Восстановите свой кошелек с помощью записанной вами фразы из 12 слов о восстановлении.</string>
@@ -84,8 +85,6 @@
     <string name="terms_of_service">Условия предоставления услуг</string>
     <string name="privacy_policy">Политика конфиденциальности</string>
     <string name="top_selection">Топ-отбор</string>
-    <string name="list">Список</string>
-    <string name="grid">Сетка</string>
     <string name="purchase_date">Дата покупки</string>
     <string name="purchase_price">Покупная цена</string>
     <string name="coins">Монеты</string>
@@ -98,6 +97,7 @@
     <string name="download">Скачать</string>
     <string name="saved_to_album">Сохранено в альбом</string>
     <string name="view_on_web">Смотреть на сайте</string>
+    <string name="nft_collections">Коллекции NFT</string>
     <string name="empty_title">Ваша коллекция ждет своего часа!</string>
     <string name="empty_title_2">Начните исследовать и добавьте свои первые NFT сегодня.</string>
     <string name="receive">Получить</string>
@@ -254,7 +254,6 @@
     <string name="import_wallet">Импорт кошелька</string>
     <string name="import_wallet_button">Я уже зарегистрирован</string>
     <string name="import_str">Импорт</string>
-    <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
     <string name="network_error">Ошибка сети</string>
     <string name="claim">Заявление</string>
@@ -419,7 +418,6 @@
     <string name="new_feature_title_1">Уведомление о цифровых активах</string>
     <string name="new_feature_desc_1">Flow Wallet уведомит вас о перемещении ваших цифровых активов.</string>
     <string name="new_feature_desc2">Теперь вы можете добавить несколько счетов в приложение Flow Wallet, переключая счета в боковом меню или профиле.</string>
-    <string name="get_started">Поехали!</string>
     <string name="notification_request_title">Включите Push-уведомления</string>
     <string name="notification_request_desc">Получайте уведомления о завершении переводов, обменов и одобрений.</string>
     <string name="turn_on_notifications">Включите уведомления</string>
@@ -557,6 +555,7 @@
     <string name="account_list">Список счетов</string>
     <string name="edit_wallet">Редактировать кошелек</string>
     <string name="select_nft_empty">0 NFTs</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">Профили</string>
     <string name="create_profile">Создать профиль</string>
     <string name="features_coming">Функции скоро появятся</string>
@@ -568,6 +567,9 @@
     <string name="landing_step_four_desc">Резервное копирование вашего аккаунта обеспечивает безопасность вашего доступа и всегда под вашим контролем</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Создание резервной копии</string>
+    <string name="exit_backup_warning_dialog_title">Вы уверены, что не хотите сделать резервную копию?</string>
+    <string name="exit_backup_warning_dialog">Если вы потеряете свое устройство или удалите свой кошелек, ваши средства будут потеряны навсегда.</string>
+    <string name="back">Назад</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -581,7 +583,6 @@
     <string name="upload_again">Загрузить снова</string>
     <string name="backup_uploaded">Резервная копия загружена</string>
     <string name="network_connect_lost">Network Connection Lost</string>
-    <string name="creating_account">Создание аккаунта…</string>
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">Отозвано</string>
     <string name="revoking">Revoking...</string>
@@ -692,9 +693,9 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
-    <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Используя Flow Wallet, вы соглашаетесь с <a href="https://wallet.flow.com/terms-of-service"><u>Условиями обслуживания</u></a> и <a href="https://wallet.flow.com/privacy-policy"><u>Политикой конфиденциальности</u></a>     ]]>     "</string>
-    <string name="back">Назад</string>
-    <string name="exit_backup_warning_dialog_title">Вы уверены, что не хотите сделать резервную копию?</string>
-    <string name="exit_backup_warning_dialog">Если вы потеряете свое устройство или удалите свой кошелек, ваши средства будут потеряны навсегда.</string>
+    <string name="get_started">Поехали!</string>
+    <string name="on_flow">#onFlow</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
 </resources>

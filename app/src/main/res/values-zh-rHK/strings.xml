@@ -565,7 +565,7 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-    <string name="landing_step_four_title">Your Flow account is ready, let\'s back it up!</string>
+    <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
