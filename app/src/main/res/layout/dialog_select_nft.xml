@@ -90,7 +90,7 @@
             android:background="@drawable/bg_round_24dp"
             android:backgroundTint="@color/bg_2"
             android:padding="6dp"
-            android:src="@drawable/ic_circle_arrow_right_2"
+            android:src="@drawable/ic_arrows_horizontal"
             app:layout_constraintBottom_toBottomOf="@id/layout_from_account"
             app:layout_constraintEnd_toStartOf="@id/layout_to_account"
             app:layout_constraintStart_toEndOf="@id/layout_from_account"
