@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.cache.nftCollectionStateCache
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckNFTListEnabled
-import com.flowfoundation.wallet.manager.flowjvm.cadenceNftCheckEnabled
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -55,21 +54,6 @@ object NftCollectionStateManager {
         }
         nftCollectionStateCache().cache(NftCollectionStateCache(tokenStateList.toList()))
         onFinish?.invoke()
-    }
-
-    suspend fun fetchStateSingle(collection: NftCollection, cache: Boolean = false) {
-        val isEnable = cadenceNftCheckEnabled(collection)
-        if (isEnable != null) {
-            val oldState = tokenStateList.firstOrNull { it.name == collection.name }
-            tokenStateList.remove(oldState)
-            tokenStateList.add(NftCollectionState(collection.name, collection.address.orEmpty(), isEnable))
-            if (oldState?.isAdded != isEnable) {
-                dispatchListeners(collection, isEnable)
-            }
-        }
-        if (cache) {
-            nftCollectionStateCache().cache(NftCollectionStateCache(tokenStateList.toList()))
-        }
     }
 
     fun isTokenAdded(tokenAddress: String?) = tokenStateList.firstOrNull { it.address == tokenAddress }?.isAdded ?: false

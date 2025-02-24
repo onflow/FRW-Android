@@ -72,7 +72,8 @@ class NftSendConfirmViewModel : ViewModel() {
                             } else {
                                 // COA -> Flow
                                 if (WalletManager.isSelfFlowAddress(toAddress)) {
-                                    cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), nft.id)
+                                    val txId = cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), nft.id)
+                                    postTransaction(txId)
                                 } else {
                                     bridgeNFTFromEVMToFlow(nft.getNFTIdentifier(), nft.id, toAddress)
                                 }

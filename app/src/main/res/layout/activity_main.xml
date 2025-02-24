@@ -37,6 +37,7 @@
             app:itemIconSize="28dp"
             app:itemPaddingTop="12dp"
             app:itemPaddingBottom="16dp"
+            android:paddingBottom="16dp"
             app:menu="@menu/bottom_navigation"/>
 
         <com.flowfoundation.wallet.widgets.MainTabCornerView
