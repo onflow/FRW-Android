@@ -163,7 +163,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 newFromAddress?.let { selected ->
                     binding.layoutFromAccount.setAccountInfo(selected)
                     moveFromAddress = selected
-                    // Refresh the balance displayed when the From token changes.
                     fetchTokenBalance()
                 }
             }
@@ -195,22 +194,13 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
         binding.btnMove.setProgressVisible(true)
         ioScope {
-            // Parse the amount from the EditText.
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
             val coin = FlowCoinListManager.getCoinById(contractId) ?: return@ioScope
 
-            // Use the updated from address.
             val from = moveFromAddress
-            // Determine the destination address based on isFundToEVM.
-            val to = if (isFundToEVM) {
-                // For Fund-to-EVM, move to the EVM address.
-                EVMWalletManager.getEVMAddress().orEmpty()
-            } else {
-                // Otherwise, move to the parent wallet address.
-                WalletManager.wallet()?.walletAddress().orEmpty()
-            }
+            // Use the selected destination address instead of computing it here.
+            val to = moveToAddress
 
-            // Log or track the transfer using Mixpanel.
             MixpanelManager.transferFT(
                 from,
                 to,
@@ -219,13 +209,11 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 coin.getFTIdentifier()
             )
 
-            // Execute the move based on whether it's a Flow Coin.
             if (isFlowCoin) {
                 EVMWalletManager.moveFlowToken(amount, isFundToEVM) { isSuccess ->
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            // Refresh balance for Flow Coin.
                             BalanceManager.getBalanceByCoin(FlowCoinListManager.getFlowCoinContractId())
                             result?.resume(true)
                             dismiss()
