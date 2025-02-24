@@ -9,7 +9,7 @@
         android:id="@+id/iv_first_option"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:scaleType="centerInside"
+        android:scaleType="centerCrop"
         android:src="@drawable/ic_backup_google_drive"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,10 +39,10 @@
 
     <ImageView
         android:id="@+id/iv_second_option"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_backup_recovery_phrase_gray"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_backup_recovery_phrase_progress"
         app:layout_constraintStart_toEndOf="@id/iv_first_option"
         app:layout_constraintEnd_toStartOf="@id/iv_third_option"
         app:layout_constraintTop_toTopOf="@id/iv_first_option"
@@ -70,10 +70,10 @@
 
     <ImageView
         android:id="@+id/iv_third_option"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_backup_recovery_phrase_gray"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_backup_recovery_phrase_progress"
         app:layout_constraintStart_toEndOf="@id/iv_second_option"
         app:layout_constraintEnd_toStartOf="@id/iv_complete_option"
         app:layout_constraintTop_toTopOf="@id/iv_second_option"
@@ -115,9 +115,9 @@
 
     <ImageView
         android:id="@+id/iv_complete_option"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_backup_complete_gray"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_backup_complete_progress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toEndOf="@id/iv_third_option"

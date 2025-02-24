@@ -48,8 +48,12 @@ class CollectionActivity : BaseActivity() {
                     CollectionContentModel(collection = it)
                 )
             }
-            load(contractName, accountAddress, collectionSize)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.load(contractName, accountAddress, collectionSize)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
