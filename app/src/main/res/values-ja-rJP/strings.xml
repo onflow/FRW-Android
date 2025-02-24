@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">次のページ</string>
+    <string name="list">リスト</string>
+    <string name="creating_account">アカウントを作成しています…</string>
     <string name="secure_design">セキュア・バイ・デザイン</string>
     <string name="secure_design_2">ハードウェアグレードのセキュリティでデバイスキーを使用するFlow Walletは信頼できる超安全なハードウェアウォレットです</string>
     <string name="username">ユーザー名</string>
@@ -53,8 +55,7 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">リカバリー</string>
     <string name="phrase">フレーズ</string>
-    <string name="nft">NFTs</string>
-    <string name="nft_collections">NFTコレクション</string>
+    <string name="nft">エヌエフティー</string>
     <string name="activity">アクティビティ</string>
     <string name="restore_wallet">財布の復元</string>
     <string name="restore_wallet_tip">書き留めた12語の回復フレーズで財布を回復させる。</string>
@@ -84,8 +85,6 @@
     <string name="terms_of_service">利用規約</string>
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="top_selection">トップセレクション</string>
-    <string name="list">リスト</string>
-    <string name="grid">グリッド</string>
     <string name="purchase_date">購入日</string>
     <string name="purchase_price">購入価格</string>
     <string name="coins">コイン</string>
@@ -98,6 +97,7 @@
     <string name="download">ダウンロード</string>
     <string name="saved_to_album">アルバムに保存</string>
     <string name="view_on_web">ウェブで見る</string>
+    <string name="nft_collections">NFTコレクション</string>
     <string name="empty_title">コレクションが輝きを待っています！</string>
     <string name="empty_title_2">今すぐ探索し、最初のNFTを追加しましょう。</string>
     <string name="receive">受け取る</string>
@@ -254,7 +254,6 @@
     <string name="import_wallet">インポート・ウォレット</string>
     <string name="import_wallet_button">すでにアカウントを持っています</string>
     <string name="import_str">輸入</string>
-    <string name="welcome_desc">Flow Walletへようこそ！アカウントを作成して始めましょう</string>
     <string name="explore_new_nfts">新しいNFTの開拓</string>
     <string name="network_error">ネットワークエラー</string>
     <string name="claim">クレーム</string>
@@ -419,7 +418,6 @@
     <string name="new_feature_title_1">デジタル資産に関する通知</string>
     <string name="new_feature_desc_1">Flow Walletは、あなたのデジタル資産が移動したことを通知します。</string>
     <string name="new_feature_desc2">サイドメニューやプロフィールからアカウントを切り替えることで、Flow Walletアプリに複数のアカウントを追加できるようになりました。</string>
-    <string name="get_started">始めましょう</string>
     <string name="notification_request_title">プッシュ通知をオンにする</string>
     <string name="notification_request_desc">送金、スワップ、承認が完了したら通知を受け取ります。</string>
     <string name="turn_on_notifications">通知をオンにする</string>
@@ -557,6 +555,7 @@
     <string name="account_list">口座リスト</string>
     <string name="edit_wallet">財布を編集する</string>
     <string name="select_nft_empty">0 NFT</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">プロフィール</string>
     <string name="create_profile">プロフィール作成</string>
     <string name="features_coming">近日公開予定</string>
@@ -568,6 +567,9 @@
     <string name="landing_step_four_desc">アカウントをバックアップすることで、アクセスが安全で常に制御されます</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">バックアップの作成</string>
+    <string name="exit_backup_warning_dialog_title">バックアップを作成してもよろしいですか？</string>
+    <string name="exit_backup_warning_dialog">デバイスを紛失またはウォレットを削除すると、あなたの資金は永久に失われます。</string>
+    <string name="back">バック</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -581,7 +583,6 @@
     <string name="upload_again">再度アップロード</string>
     <string name="backup_uploaded">バックアップのアップロード</string>
     <string name="network_connect_lost">Network Connection Lost</string>
-    <string name="creating_account">アカウントを作成しています…</string>
     <string name="try_to_connect">Try to Connect</string>
     <string name="revoked">取り消された</string>
     <string name="revoking">Revoking...</string>
@@ -692,9 +693,9 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
-    <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     Flow Walletを使用することで、 <a href="https://wallet.flow.com/terms-of-service"><u>利用規約</u></a> <a href="https://wallet.flow.com/privacy-policy"><u>プライバシーポリシー</u></a>     に同意したことになります。    ]]>     "</string>
-    <string name="back">バック</string>
-    <string name="exit_backup_warning_dialog_title">バックアップを作成してもよろしいですか？</string>
-    <string name="exit_backup_warning_dialog">デバイスを紛失またはウォレットを削除すると、あなたの資金は永久に失われます。</string>
+    <string name="get_started">始めましょう</string>
+    <string name="on_flow">#onFlow</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">Flow Walletへようこそ！アカウントを作成して始めましょう</string>
 </resources>

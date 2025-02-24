@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">下一步</string>
+    <string name="list">列表</string>
+    <string name="creating_account">正在创建您的帐户…</string>
     <string name="secure_design">设计安全</string>
     <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
     <string name="username">用户名</string>
@@ -53,8 +55,7 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">恢复</string>
     <string name="phrase">短语</string>
-    <string name="nft">NFTs</string>
-    <string name="nft_collections">NFT 收藏品</string>
+    <string name="nft">NFT</string>
     <string name="activity">活动</string>
     <string name="restore_wallet">恢复钱包</string>
     <string name="restore_wallet_tip">用你的12 位助记词恢复你的钱包。</string>
@@ -83,8 +84,6 @@
     <string name="terms_of_service">服务条款</string>
     <string name="privacy_policy">隐私政策</string>
     <string name="top_selection">精选</string>
-    <string name="list">列表</string>
-    <string name="grid">网格</string>
     <string name="purchase_date">购买日期</string>
     <string name="purchase_price">购买价格</string>
     <string name="coins">代币</string>
@@ -97,6 +96,7 @@
     <string name="download">下载</string>
     <string name="saved_to_album">保存到相册</string>
     <string name="view_on_web">在网页上查看</string>
+    <string name="nft_collections">NFT 收藏品</string>
     <string name="empty_title">您的收藏正在等待切换！</string>
     <string name="empty_title_2">今天开始探索和添加您的第一个NFT。</string>
     <string name="receive">接收</string>
@@ -252,7 +252,6 @@
     <string name="import_wallet">导入钱包</string>
     <string name="import_wallet_button">我已有账户</string>
     <string name="import_str">导入</string>
-    <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">网络错误</string>
     <string name="claim">申领</string>
@@ -417,7 +416,6 @@
     <string name="new_feature_title_1">数字资产通知</string>
     <string name="new_feature_desc_1">当您的数字资产发生移动时，Flow Wallet 会通知您。</string>
     <string name="new_feature_desc2">现在，您可以在 Flow Wallet 应用程序中添加多个账户，只需在侧边菜单或个人资料中切换账户即可。</string>
-    <string name="get_started">开始</string>
     <string name="notification_request_title">开启推送通知</string>
     <string name="notification_request_desc">当您的转账、交换和批准完成时会收到通知。</string>
     <string name="turn_on_notifications">打开通知</string>
@@ -555,6 +553,7 @@
     <string name="account_list">账户列表</string>
     <string name="edit_wallet">编辑钱包</string>
     <string name="select_nft_empty">0 NFTs</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">账户</string>
     <string name="create_profile">创建账户</string>
     <string name="features_coming">即将推出的功能</string>
@@ -562,10 +561,13 @@
     <string name="select_collection">选择藏品</string>
     <string name="import_profile">导入账户</string>
     <string name="notification">通知</string>
-    <string name="landing_step_four_title">您的Flow 帐户已经准备好，让我们把它退回！</string>
+    <string name="landing_step_four_title">您的\nFlow 帐户\n已经准备好，\n让我们把它退回！</string>
     <string name="landing_step_four_desc">备份您的帐户以确保您的访问安全且始终处于您的控制</string>
     <string name="landing_step_loading">创建账户中</string>
     <string name="landing_step_done">创建备份</string>
+    <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
+    <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
+    <string name="back">返回</string>
     <string name="token_count">%1$d 代币</string>
     <string name="wallpaper_static">静态</string>
     <string name="wallpaper_dynamic">动态</string>
@@ -578,7 +580,6 @@
     <string name="create_backup">创建备份</string>
     <string name="upload_again">重新上传</string>
     <string name="backup_uploaded">备份已上传</string>
-    <string name="creating_account">正在创建您的帐户…</string>
     <string name="network_connect_lost">网络连接丢失</string>
     <string name="try_to_connect">尝试连接</string>
     <string name="revoked">已撤销</string>
@@ -690,9 +691,9 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
-    <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
-    <string name="back">返回</string>
-    <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
-    <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
+    <string name="get_started">开始</string>
+    <string name="on_flow">#onFlow</string>
+    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
 </resources>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">Next</string>
+    <string name="list">List</string>
     <string name="creating_account">Creating Your Account…</string>
     <string name="secure_design">Secure by Design</string>
     <string name="secure_design_2">Using Device Keys with Hardware-Grade Security, Flow Wallet is an ultra-secure hardware wallet you can trust</string>
@@ -43,8 +44,6 @@
     <string name="home">Home</string>
     <string name="explore">Explore</string>
     <string name="profile">Settings</string>
-    <string name="nft">NFTs</string>
-    <string name="activity">Activity</string>
     <string name="things_you">Things You \nNeed to Know</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>
@@ -56,6 +55,8 @@
     <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
     <string name="recovery">Recovery</string>
     <string name="phrase">Phrase</string>
+    <string name="nft">NFTs</string>
+    <string name="activity">Activity</string>
     <string name="restore_wallet">Restore Wallet</string>
     <string name="restore_wallet_tip">Restore your wallet with the 12 word recovery phrase that you have written down.</string>
     <string name="choose_account">Choose Account</string>
@@ -84,8 +85,6 @@
     <string name="terms_of_service">Terms of Service</string>
     <string name="privacy_policy">Privacy Policy</string>
     <string name="top_selection">Top Selection</string>
-    <string name="list">List</string>
-    <string name="grid">Grid</string>
     <string name="purchase_date">Purchase Date</string>
     <string name="purchase_price">Purchase Price</string>
     <string name="coins">Coins</string>
@@ -255,7 +254,6 @@
     <string name="import_wallet">Import Wallet</string>
     <string name="import_wallet_button">I already have an account</string>
     <string name="import_str">IMPORT</string>
-    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>
@@ -420,8 +418,6 @@
     <string name="new_feature_title_1">Notification of Digital Assets</string>
     <string name="new_feature_desc_1">Flow Wallet will notify you when your digital assets has moved.</string>
     <string name="new_feature_desc2">Now you can add multiple accounts in your Flow Wallet app, by switching account from the side menu or profile.</string>
-    <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
-    <string name="get_started">Let\'s get started</string>
     <string name="notification_request_title">Turn On Push Notifications</string>
     <string name="notification_request_desc">Get notified when your transfers, swaps, and approvals complete.</string>
     <string name="turn_on_notifications">Turn On Notifications</string>
@@ -559,6 +555,7 @@
     <string name="account_list">Account List</string>
     <string name="edit_wallet">Edit Wallet</string>
     <string name="select_nft_empty">0 NFTs</string>
+    <string name="no_collections_available">No collections available</string>
     <string name="profiles">Profiles</string>
     <string name="create_profile">Create Account</string>
     <string name="features_coming">Features Coming Soon</string>
@@ -566,10 +563,13 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-    <string name="landing_step_four_title">Your Flow account is ready, let\'s back it up!</string>
+    <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
+    <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
+    <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
+    <string name="back">Back</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -693,9 +693,9 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
+    <string name="get_started">Let\'s get started</string>
+    <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
-    <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
-    <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
-    <string name="understand">I Understand</string>
-    <string name="back">Back</string>
+    <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
 </resources>
