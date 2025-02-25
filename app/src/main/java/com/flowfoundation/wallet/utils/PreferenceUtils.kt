@@ -148,7 +148,7 @@ fun updateSendStateBubblePosition(point: Point) {
     edit { dataStore.edit { it[KEY_SEND_STATE_BUBBLE_POSITION] = "${point.x},${point.y}" } }
 }
 
-suspend fun getThemeMode(): Int = dataStore.data.map { it[KEY_THEME_MODE] ?: AppCompatDelegate.MODE_NIGHT_NO }.first()
+suspend fun getThemeMode(): Int = dataStore.data.map { it[KEY_THEME_MODE] ?: AppCompatDelegate.MODE_NIGHT_YES }.first()
 
 fun updateThemeMode(themeMode: Int) {
     edit { dataStore.edit { it[KEY_THEME_MODE] = themeMode } }

@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.backup.multibackup.fragment
 
+import android.app.Activity.RESULT_OK
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -115,6 +116,7 @@ class BackupCompletedFragment : Fragment() {
                 ).all { it }
 
                 if (isAllBackupSuccess) {
+                    requireActivity().setResult(RESULT_OK)
                     requireActivity().finish()
                 } else {
                     BackupFailedDialog(requireActivity()).show()

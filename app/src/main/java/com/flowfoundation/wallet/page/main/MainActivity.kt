@@ -65,6 +65,7 @@ class MainActivity : BaseActivity() {
             if (isNewVersion()) {
                 firebaseInformationCheck()
             }
+            contentPresenter.checkAndShowContent()
         }
         WindowFrame.attach(this)
 
@@ -85,7 +86,7 @@ class MainActivity : BaseActivity() {
         super.onRestart()
         uiScope {
             if (isRegistered != isRegistered()) {
-                viewModel.walletRegisterSuccessLiveData.value = isRegistered()
+                contentPresenter.checkAndShowContent()
             }
             drawerLayoutPresenter.bind(MainDrawerLayoutModel(refreshData = true))
         }

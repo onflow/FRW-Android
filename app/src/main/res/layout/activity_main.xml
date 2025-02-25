@@ -9,6 +9,7 @@
     tools:openDrawer="start">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -31,13 +32,13 @@
             app:itemHorizontalTranslationEnabled="false"
             app:labelVisibilityMode="labeled"
             app:itemIconTint="@color/bottom_nav_item_color"
-            app:itemTextColor="@color/text_3"
+            app:itemTextColor="@color/bottom_navigation_color_wallet"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:itemIconSize="28dp"
             app:itemPaddingTop="12dp"
             app:itemPaddingBottom="16dp"
-            android:paddingBottom="16dp"
+            android:paddingBottom="2dp"
             app:menu="@menu/bottom_navigation"/>
 
         <com.flowfoundation.wallet.widgets.MainTabCornerView
@@ -50,4 +51,10 @@
     <include
         layout="@layout/layout_main_drawer_layout"
         android:id="@+id/drawer_layout_content"/>
+
+    <FrameLayout
+        android:id="@+id/fl_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 </androidx.drawerlayout.widget.DrawerLayout>
