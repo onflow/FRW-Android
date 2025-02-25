@@ -14,7 +14,7 @@
     <item
         android:id="@+id/bottom_navigation_nft"
         android:enabled="true"
-        android:icon="@drawable/ic_explore"
+        android:icon="@drawable/ic_nfts"
         android:title="@string/nft"
         app:showAsAction="always"/>
 
@@ -35,7 +35,7 @@
     <item
         android:id="@+id/bottom_navigation_profile"
         android:enabled="true"
-        android:icon="@drawable/ic_profile"
+        android:icon="@drawable/ic_settings"
         android:title="@string/profile"
         app:showAsAction="always"/>
 </menu>
