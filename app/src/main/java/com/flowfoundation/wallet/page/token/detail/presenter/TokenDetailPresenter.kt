@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
@@ -9,7 +8,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -74,11 +72,6 @@ class TokenDetailPresenter(
             }
             btnTrade.setVisible(coin.isFlowCoin())
             viewTradeDivider.setVisible(coin.isFlowCoin())
-//            if (coin.isFlowCoin()) {
-//                 btnReceive.setBackgroundColor(R.color.accent_green_8.res2color())
-//            } else {
-//                btnReceive.setBackgroundResource(R.drawable.bg_round_right_24dp)
-//            }
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener
@@ -86,12 +79,6 @@ class TokenDetailPresenter(
                 SwapDialog.show(activity.supportFragmentManager)
             }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
-            val bgColor = if (WalletManager.isChildAccountSelected()) {
-                R.color.accent_gray_8.res2color()
-            } else {
-                R.color.accent_green_8.res2color()
-            }
-
             val moveVisible = !WalletManager.isChildAccountSelected()
                     && (coin.isFlowCoin() || coin.isCOABridgeCoin() || coin.canBridgeToCOA())
             llEvmMoveToken.setVisible(moveVisible)
