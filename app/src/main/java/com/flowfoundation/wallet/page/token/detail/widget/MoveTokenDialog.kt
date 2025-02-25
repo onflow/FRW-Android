@@ -136,19 +136,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 result?.resume(false)
                 dismiss()
             }
-            binding.coinWrapper.setOnClickListener {
-                uiScope {
-                    SelectMoveTokenDialog().show(
-                        selectedCoin = contractId,
-                        disableCoin = null,
-                        childFragmentManager,
-                    )?.let { selectedToken ->
-                        contractId = selectedToken.contractId()
-                        logd("MoveTokenDialog", "Updated contractId: $contractId")
-                        fetchTokenBalance()
-                    }
-                }
-            }
         }
         initView()
 
@@ -164,8 +151,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 newFromAddress?.let { selected ->
                     binding.layoutFromAccount.setAccountInfo(selected)
                     moveFromAddress = selected
-                    isFundToEVM = EVMWalletManager.isEVMWalletAddress(selected)
-                    logd("MoveTokenDialog", "Updated From Address: $moveFromAddress, isFundToEVM: $isFundToEVM")
+                    isFundToEVM = !EVMWalletManager.isEVMWalletAddress(selected)
                     fetchTokenBalance()
                 }
             }
@@ -294,21 +280,24 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun fetchTokenBalance() {
         ioScope {
             val coin = FlowCoinListManager.getCoinById(contractId)
-            if (coin != null) {
-                fromBalance = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-                    logd("MoveTokenDialog", "Fetching EVM balance for: $moveFromAddress")
-                    BalanceManager.getEVMBalanceByCoin(coin.address, moveFromAddress)
+            fromBalance = if (coin == null) {
+                BigDecimal.ZERO
+            } else {
+                if (isFundToEVM) {
+                    cadenceQueryTokenBalanceWithAddress(
+                        coin,
+                        moveFromAddress
+                    )
                 } else {
-                    logd("MoveTokenDialog", "Fetching Flow balance for: $moveFromAddress")
-                    cadenceQueryTokenBalanceWithAddress(coin, moveFromAddress)
+                    if (coin.isFlowCoin()) {
+                        cadenceQueryCOATokenBalance()
+                    } else {
+                        BalanceManager.getEVMBalanceByCoin(coin.address)
+                    }
                 } ?: BigDecimal.ZERO
             }
-
-            logd("MoveTokenDialog", "Updated Balance: $fromBalance")
-
             uiScope {
-                val formattedBalance = fromBalance.format(8)
-                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, formattedBalance)
+                binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
             }
         }
     }

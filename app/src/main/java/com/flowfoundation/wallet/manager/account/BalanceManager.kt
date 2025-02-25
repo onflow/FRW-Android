@@ -106,13 +106,6 @@ object BalanceManager {
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
-    suspend fun getEVMBalanceByCoin(tokenAddress: String, address: String): BigDecimal {
-        val apiService = retrofitApi().create(ApiService::class.java)
-        val balanceResponse = apiService.getEVMTokenBalance(address, chainNetWorkString())
-        val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
-        return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
-    }
-
     fun getBalanceByCoin(coin: FlowCoin) {
         logd(TAG, "getBalanceByCoin:${coin.symbol}")
         fetch(coin)
