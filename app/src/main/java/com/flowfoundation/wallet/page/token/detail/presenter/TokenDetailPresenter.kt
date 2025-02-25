@@ -74,12 +74,11 @@ class TokenDetailPresenter(
             }
             btnTrade.setVisible(coin.isFlowCoin())
             viewTradeDivider.setVisible(coin.isFlowCoin())
-            if (coin.isFlowCoin()) {
-                btnReceive.setBackgroundColor(R.color.accent_green_8.res2color())
-            } else {
-                btnReceive.setBackgroundResource(R.drawable.bg_round_right_24dp)
-                btnReceive.backgroundTintList = ColorStateList.valueOf(R.color.accent_green_8.res2color())
-            }
+//            if (coin.isFlowCoin()) {
+//                 btnReceive.setBackgroundColor(R.color.accent_green_8.res2color())
+//            } else {
+//                btnReceive.setBackgroundResource(R.drawable.bg_round_right_24dp)
+//            }
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener
@@ -92,19 +91,6 @@ class TokenDetailPresenter(
             } else {
                 R.color.accent_green_8.res2color()
             }
-            val icColor = if (WalletManager.isChildAccountSelected()) {
-                R.color.accent_gray.res2color()
-            } else {
-                R.color.accent_green.res2color()
-            }
-            val bgTintColor = ColorStateList.valueOf(bgColor)
-            val icTintColor = ColorStateList.valueOf(icColor)
-            ivSend.imageTintList = icTintColor
-            ivSwap.imageTintList = icTintColor
-            ivTrade.imageTintList = icTintColor
-            btnSwap.setBackgroundColor(bgColor)
-            btnSend.backgroundTintList = bgTintColor
-            btnTrade.backgroundTintList = bgTintColor
 
             val moveVisible = !WalletManager.isChildAccountSelected()
                     && (coin.isFlowCoin() || coin.isCOABridgeCoin() || coin.canBridgeToCOA())

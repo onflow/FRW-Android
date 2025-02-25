@@ -220,6 +220,7 @@
 
                 <!-- SEND button -->
                 <LinearLayout
+                    android:id="@+id/btn_send"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -256,8 +257,48 @@
                     android:layout_width="2dp"
                     android:layout_height="40dp"/>
 
+                <!-- RECEIVE button -->
+                <LinearLayout
+                    android:id="@+id/btn_receive"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <FrameLayout
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/bg_circle_green">
+
+                        <ImageView
+                            android:id="@+id/iv_receive"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            app:tint="@color/text_white_90"
+                            android:src="@drawable/ic_token_action_receive"
+                            />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tv_receive"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/receive"
+                        android:textColor="@color/text_2"
+                        android:textSize="12sp"/>
+                </LinearLayout>
+
+
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="40dp"/>
+
                 <!-- SWAP button -->
                 <LinearLayout
+                    android:id="@+id/btn_swap"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -288,41 +329,7 @@
                         android:textSize="12sp"/>
                 </LinearLayout>
 
-                <View
-                    android:layout_width="2dp"
-                    android:layout_height="40dp"/>
 
-                <!-- RECEIVE button -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_circle_green">
-
-                        <ImageView
-                            android:id="@+id/iv_receive"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_token_action_receive"
-                            app:tint="@color/text_white_90"/>
-                    </FrameLayout>
-
-                    <TextView
-                        android:id="@+id/tv_receive"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/receive"
-                        android:textColor="@color/text_2"
-                        android:textSize="12sp"/>
-                </LinearLayout>
 
                 <View
                     android:id="@+id/view_trade_divider"
@@ -330,8 +337,9 @@
                     android:layout_height="40dp"
                     android:visibility="gone"/>
 
-                <!-- BUY / TRADE button (example) -->
+                <!-- BUY / TRADE button -->
                 <LinearLayout
+                    android:id="@+id/btn_trade"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -345,7 +353,7 @@
                         android:background="@drawable/bg_circle_green">
 
                         <ImageView
-                            android:id="@+id/iv_buy"
+                            android:id="@+id/iv_trade"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
