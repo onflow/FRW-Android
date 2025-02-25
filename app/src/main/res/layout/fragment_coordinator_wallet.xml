@@ -130,7 +130,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:gravity="center_vertical"
-                            android:paddingStart="2dp"
                             android:paddingEnd="8dp"
                             android:text="@string/scan"
                             android:textColor="@color/text_1"
