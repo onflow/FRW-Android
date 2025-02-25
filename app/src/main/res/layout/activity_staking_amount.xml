@@ -34,7 +34,7 @@
             android:layout_marginHorizontal="4dp"
             android:layout_marginTop="-15dp"
             android:background="@drawable/bg_round_16dp"
-            android:backgroundTint="@color/neutrals12"
+            android:backgroundTint="@color/bg_1"
             android:paddingHorizontal="14dp"
             android:paddingTop="27dp"
             android:paddingBottom="12dp"
