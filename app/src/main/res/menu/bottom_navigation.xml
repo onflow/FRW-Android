@@ -14,7 +14,7 @@
     <item
         android:id="@+id/bottom_navigation_nft"
         android:enabled="true"
-        android:icon="@drawable/ic_nfts_unfilled"
+        android:icon="@drawable/ic_explore"
         android:title="@string/nft"
         app:showAsAction="always"/>
 

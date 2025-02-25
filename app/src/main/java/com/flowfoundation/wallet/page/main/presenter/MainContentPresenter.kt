@@ -84,7 +84,7 @@ class MainContentPresenter(
         }
         isTabSwitching = false
 
-        binding.navigationView.updateIndicatorColor(binding.navigationView.activeColor(index))
+        binding.navigationView.updateIndicatorColor(binding.navigationView.activeColor())
         binding.navigationView.setSvgDrawable(currentIndex)
         binding.navigationView.setSvgDrawable(index)
     }

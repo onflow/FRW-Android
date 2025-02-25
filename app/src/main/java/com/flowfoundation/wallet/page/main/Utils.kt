@@ -67,7 +67,7 @@ enum class HomeTab(val index: Int) {
 private val svgMenu by lazy {
     listOf(
         R.drawable.ic_home,
-        R.drawable.ic_nfts_unfilled,
+        R.drawable.ic_nfts,
         R.drawable.ic_explore,
         R.drawable.ic_activity,
         R.drawable.ic_settings
@@ -77,7 +77,7 @@ private val svgMenu by lazy {
 private val svgMenuSelected by lazy {
     listOf(
         R.drawable.ic_home_filled,
-        R.drawable.ic_nfts,
+        R.drawable.ic_nfts_filled,
         R.drawable.ic_explore_filled,
         R.drawable.ic_activity_filled,
         R.drawable.ic_settings_filled
@@ -95,8 +95,8 @@ private val menuColor by lazy {
     )
 }
 
-fun BottomNavigationView.activeColor(index: Int): Int {
-    return menuColor[index].colorStateList(context)
+fun BottomNavigationView.activeColor(): Int {
+    return R.color.bottom_navigation_color_wallet.colorStateList(context)
         ?.getColorForState(intArrayOf(android.R.attr.state_checked), 0)!!
 }
 

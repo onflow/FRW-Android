@@ -31,13 +31,13 @@
             app:itemHorizontalTranslationEnabled="false"
             app:labelVisibilityMode="labeled"
             app:itemIconTint="@color/bottom_nav_item_color"
-            app:itemTextColor="@color/text_3"
+            app:itemTextColor="@color/bottom_navigation_color_wallet"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:itemIconSize="28dp"
             app:itemPaddingTop="12dp"
             app:itemPaddingBottom="16dp"
-            android:paddingBottom="16dp"
+            android:paddingBottom="2dp"
             app:menu="@menu/bottom_navigation"/>
 
         <com.flowfoundation.wallet.widgets.MainTabCornerView
