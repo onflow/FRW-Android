@@ -12,7 +12,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
+        android:background="@color/home_page_background"
         android:padding="16dp">
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
