@@ -154,6 +154,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     isFundToEVM = !EVMWalletManager.isEVMWalletAddress(selected)
                     binding.etAmount.setText("")
                     fetchTokenBalance()
+                    updateMoveFeeVisibility()
                 }
             }
         }
@@ -171,6 +172,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 newToAddress?.let { selected ->
                     binding.layoutToAccount.setAccountInfo(selected)
                     moveToAddress = selected
+                    updateMoveFeeVisibility()
                 }
             }
 
@@ -232,6 +234,13 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
     }
 
+    private fun updateMoveFeeVisibility() {
+        val isFlowToFlow = !EVMWalletManager.isEVMWalletAddress(moveFromAddress) &&
+                !EVMWalletManager.isEVMWalletAddress(moveToAddress)
+        binding.clMoveFee.visibility = if (isFlowToFlow) View.GONE else View.VISIBLE
+    }
+
+
     @SuppressLint("SetTextI18n")
     private fun initView() {
         with(binding) {
@@ -274,6 +283,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             binding.layoutToAccount.invalidate()
 
         }
+        updateMoveFeeVisibility()
         fetchTokenBalance()
     }
 
