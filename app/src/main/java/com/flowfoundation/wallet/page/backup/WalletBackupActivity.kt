@@ -1,10 +1,12 @@
 package com.flowfoundation.wallet.page.backup
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -22,6 +24,16 @@ class WalletBackupActivity: BaseActivity() {
     private lateinit var binding: ActivityWalletBackupBinding
     private lateinit var viewModel: WalletBackupViewModel
     private lateinit var presenter: WalletBackupPresenter
+
+    val backupResultLauncher = registerForActivityResult(ActivityResultContracts
+        .StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            if (fromRegistration) {
+                MainActivity.launch(this)
+            }
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

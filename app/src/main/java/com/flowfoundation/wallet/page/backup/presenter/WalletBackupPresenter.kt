@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
 import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
+import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
@@ -50,14 +51,14 @@ class WalletBackupPresenter(
                 if (isTestnet()) {
                     SwitchNetworkDialog(activity, DialogType.BACKUP).show()
                 } else {
-                    MultiBackupActivity.launch(activity)
+                    activity.backupResultLauncher.launch(MultiBackupActivity.createIntent(activity))
                 }
             }
             cvCreateSeedPhraseBackup.setOnClickListener {
                 if (isTestnet()) {
                     SwitchNetworkDialog(activity, DialogType.BACKUP).show()
                 } else {
-                    BackupRecoveryPhraseActivity.launch(activity)
+                    activity.backupResultLauncher.launch(BackupRecoveryPhraseActivity.createIntent(activity))
                 }
             }
         }
