@@ -357,7 +357,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_token_action_trade"
+                            android:src="@drawable/ic_account_add"
                             app:tint="@color/text_white_90"/>
                     </FrameLayout>
 
