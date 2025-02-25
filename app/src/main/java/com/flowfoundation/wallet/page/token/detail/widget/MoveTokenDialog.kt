@@ -178,6 +178,25 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
         }
 
+        binding.ivArrow.setOnClickListener {
+            // Swap the addresses
+            val temp = moveFromAddress
+            moveFromAddress = moveToAddress
+            moveToAddress = temp
+
+            // Also swap the account info in the UI:
+            binding.layoutFromAccount.setAccountInfo(moveFromAddress)
+            binding.layoutToAccount.setAccountInfo(moveToAddress)
+
+            // Toggle the flag accordingly.
+            isFundToEVM = !isFundToEVM
+
+            // Recalculate balance and move fee visibility.
+            fetchTokenBalance()
+            updateMoveFeeVisibility()  // if you extracted the fee update logic into a helper
+        }
+
+
     }
 
     private fun moveToken() {
