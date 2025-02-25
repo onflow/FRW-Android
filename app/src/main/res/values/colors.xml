@@ -291,6 +291,7 @@
     <color name="fill_1">#0F76767E</color>
     <color name="fill_3">#1476767E</color>
     <color name="info_success_green">#0AC26C</color>
+    <color name="info_success_green_transparent">#340AC26C</color>
     <color name="info_success_green_16">#290AC26C</color>
     <color name="info_notification_blue">#0F71F2</color>
     <color name="info_error_red">#E93C3C</color>

@@ -49,6 +49,7 @@
             android:layout_height="18dp"
             android:layout_marginStart="4dp"
             android:background="@drawable/bg_round_4dp"
+            android:backgroundTint="@color/info_success_green_transparent"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="7dp"
@@ -72,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter_semi_bold"
-                android:textColor="@color/success1"
+                android:textColor="@color/info_success_green"
                 android:textSize="12sp"
                 tools:text="%1.23"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
