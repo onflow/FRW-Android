@@ -90,15 +90,15 @@ class WalletHeaderPresenter(
                 )
             }
             if (WalletManager.isChildAccountSelected()) {
-                llSend.changeLayoutParams(LinearLayoutCompat.HORIZONTAL, 44f)
-                llReceive.changeLayoutParams(LinearLayoutCompat.HORIZONTAL, 44f)
+                //llSend.changeLayoutParams(LinearLayoutCompat.HORIZONTAL, 44f)
+                //llReceive.changeLayoutParams(LinearLayoutCompat.HORIZONTAL, 44f)
                 cvSwap.gone()
                 cvStake.gone()
                 cvBuy.gone()
                 ivAddToken.gone()
             } else {
-                llSend.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
-                llReceive.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
+                //llSend.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
+                //llReceive.changeLayoutParams(LinearLayoutCompat.VERTICAL, 64f)
                 ivAddToken.setOnClickListener {
                     if (WalletManager.isEVMAccountSelected()) {
                         AddCustomTokenActivity.launch(view.context)
