@@ -56,12 +56,11 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <View
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/deep_bg"
+                android:layout_height="wrap_content"
+                app:cardUseCompatPadding="true"
+                app:cardElevation="5dp"
                 app:layout_constraintBottom_toBottomOf="@id/button_wrapper"
                 app:layout_constraintTop_toTopOf="@id/icon_view"
                 app:layout_constraintVertical_bias="0.0"
@@ -306,10 +305,15 @@
 
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-            <FrameLayout
-                android:id="@+id/banner_wrapper"
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:cardUseCompatPadding="true"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/home_page_card_background"
+                app:cardCornerRadius="16dp"
+                app:cardPreventCornerOverlap="true"
+                android:id="@+id/banner_wrapper"
                 app:layout_constraintTop_toBottomOf="@id/button_wrapper">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -362,7 +366,7 @@
                     android:id="@+id/staking_reward_wrapper"
                     layout="@layout/layout_token_detail_staking_rewards"/>
 
-            </FrameLayout>
+            </androidx.cardview.widget.CardView>
 
             <include
                 android:id="@+id/activities_wrapper"

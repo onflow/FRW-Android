@@ -1,0 +1,27 @@
+<!-- res/drawable/shadow_background.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Shadow layer (offset by top=2dp to simulate "Y=2" offset) -->
+    <item
+        android:left="0dp"
+        android:top="4dp"
+        android:right="0dp"
+        android:bottom="0dp">
+        <shape android:shape="rectangle">
+            <!-- Semi-transparent fill to mimic a shadow color -->
+            <solid android:color="#000000" />
+            <!-- Slightly rounded corners if you want the background corners to match -->
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+    <!-- Main background layer -->
+    <item>
+        <shape android:shape="rectangle">
+            <!-- Replace with your actual background color -->
+            <solid android:color="@color/home_page_card_background" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+</layer-list>
