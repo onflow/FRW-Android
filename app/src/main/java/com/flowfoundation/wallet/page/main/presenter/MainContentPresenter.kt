@@ -4,12 +4,17 @@ import androidx.viewpager.widget.ViewPager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
+import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.activeColor
 import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.setSvgDrawable
+import com.flowfoundation.wallet.page.wallet.fragment.WalletUnregisteredFragment
+import com.flowfoundation.wallet.utils.extensions.gone
+import com.flowfoundation.wallet.utils.extensions.visible
+import com.flowfoundation.wallet.utils.isRegistered
 
 class MainContentPresenter(
     private val activity: MainActivity,
@@ -30,6 +35,31 @@ class MainContentPresenter(
         setupListener()
         binding.viewPager.offscreenPageLimit = 4
         binding.viewPager.adapter = MainPageAdapter(activity)
+    }
+
+    suspend fun checkAndShowContent() {
+        if (isRegistered() && isUserSignIn()) {
+            showMainContent()
+        } else {
+            showUnregisteredFragment()
+        }
+    }
+
+    private fun showUnregisteredFragment() {
+        binding.flContainer.visible()
+        binding.clContent.gone()
+        activity.supportFragmentManager.beginTransaction()
+            .replace(R.id.fl_container, WalletUnregisteredFragment()).commitAllowingStateLoss()
+    }
+
+    private fun showMainContent() {
+        activity.supportFragmentManager.findFragmentById(R.id.fl_container)?.let {
+            activity.supportFragmentManager.beginTransaction()
+                .remove(it)
+                .commitAllowingStateLoss()
+        }
+        binding.flContainer.gone()
+        binding.clContent.visible()
     }
 
     override fun bind(model: MainContentModel) {

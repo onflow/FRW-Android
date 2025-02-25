@@ -28,10 +28,7 @@ class WalletBackupActivity: BaseActivity() {
     val backupResultLauncher = registerForActivityResult(ActivityResultContracts
         .StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            if (fromRegistration) {
-                MainActivity.launch(this)
-            }
-            finish()
+            finishBackupActivity()
         }
     }
 
@@ -64,7 +61,6 @@ class WalletBackupActivity: BaseActivity() {
 
     private fun userHasNoBackups(): Boolean {
         val backupList = viewModel.backupListLiveData.value
-        val devices = viewModel.devicesLiveData.value
         val seedPhrases = viewModel.seedPhraseListLiveData.value
 
         return backupList.isNullOrEmpty() && seedPhrases.isNullOrEmpty()
@@ -91,10 +87,7 @@ class WalletBackupActivity: BaseActivity() {
                 if (userHasNoBackups()) {
                     showExitWarningDialog()
                 } else {
-                    if (fromRegistration) {
-                        MainActivity.launch(this)
-                    }
-                    finish()
+                    finishBackupActivity()
                 }
                 return true
             }
@@ -107,11 +100,8 @@ class WalletBackupActivity: BaseActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.exit_backup_warning_dialog_title))
             .setMessage(getString(R.string.exit_backup_warning_dialog))
-            .setPositiveButton(getString(R.string.i_understand)) { dialog, _ ->
-                if (fromRegistration) {
-                    MainActivity.launch(this)
-                }
-                finish()
+            .setPositiveButton(getString(R.string.i_understand)) { _, _ ->
+                finishBackupActivity()
             }
             .setNegativeButton(getString(R.string.back)) { dialog, _ ->
                 dialog.dismiss()
@@ -128,6 +118,13 @@ class WalletBackupActivity: BaseActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun finishBackupActivity() {
+        if (fromRegistration) {
+            MainActivity.relaunch(this, clearTop = true)
+        }
+        finish()
     }
 
 
