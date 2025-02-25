@@ -87,7 +87,7 @@
             android:text="@string/data_from"
             android:textColor="@color/neutrals5"
             android:textSize="16sp"
-            app:drawableStartCompat="@drawable/ic_baseline_arrow_down_18"
+            app:drawableEndCompat="@drawable/ic_baseline_arrow_down_18"
             app:drawableTint="@color/neutrals5"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/title_view"/>
