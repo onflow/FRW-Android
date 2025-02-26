@@ -71,7 +71,7 @@ class TokenDetailPresenter(
                     isFlowToken = coin.isFlowCoin())
             }
             btnTrade.setVisible(coin.isFlowCoin())
-            viewTradeDivider.setVisible(coin.isFlowCoin())
+            //viewTradeDivider.setVisible(coin.isFlowCoin())
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener

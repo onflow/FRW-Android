@@ -33,8 +33,10 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="10dp"
                 android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/icon_view"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/top_card">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
                     android:layout_width="16dp"
@@ -57,320 +59,274 @@
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardUseCompatPadding="true"
-                app:cardElevation="5dp"
-                app:layout_constraintBottom_toBottomOf="@id/button_wrapper"
-                app:layout_constraintTop_toTopOf="@id/icon_view"
-                app:layout_constraintVertical_bias="0.0"
-                tools:layout_editor_absoluteX="0dp"/>
-
-            <FrameLayout
-                android:id="@+id/name_wrapper"
+                android:id="@+id/top_card"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="20dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token"
-                app:layout_constraintHorizontal_weight="1"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/icon_view">
-
-                <androidx.appcompat.widget.LinearLayoutCompat
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_token_detail_coin_gradient"
-                    android:gravity="center_vertical"
-                    android:minHeight="32dp"
-                    android:orientation="horizontal"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/icon_view"
-                    tools:ignore="RtlSymmetry">
-
-                    <TextView
-                        android:id="@+id/name_view"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="80dp"
-                        android:layout_marginEnd="6dp"
-                        android:fontFamily="@font/montsettat"
-                        android:lineSpacingMultiplier="1.1"
-                        android:textColor="@color/neutrals1"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        tools:text="Flow"/>
-
-                    <androidx.constraintlayout.utils.widget.ImageFilterView
-                        android:id="@+id/iv_link"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_marginEnd="10dp"
-                        android:src="@drawable/ic_circle_arrow_right"
-                        android:visibility="gone"/>
-                </androidx.appcompat.widget.LinearLayoutCompat>
-            </FrameLayout>
-
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_evm_move_token"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:background="@drawable/bg_round_8dp"
-                android:backgroundTint="@color/colorSecondary_16"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="9dp"
-                android:paddingVertical="4dp"
-                android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/name_wrapper">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="8dp"
-                    android:fontFamily="@font/inter"
-                    android:text="@string/move"
-                    android:textColor="@color/accent_green"
-                    android:textSize="14sp"/>
-
-                <ImageView
-                    android:layout_width="11dp"
-                    android:layout_height="12dp"
-                    android:src="@drawable/ic_evm_move_token"/>
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-            <androidx.constraintlayout.utils.widget.ImageFilterView
-                android:id="@+id/icon_view"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_marginStart="14dp"
-                android:layout_marginTop="10dp"
-                android:elevation="3dp"
-                android:outlineAmbientShadowColor="@color/border_2"
-                android:outlineSpotShadowColor="@color/border_2"
-                android:scaleType="centerCrop"
-                app:layout_constraintStart_toStartOf="parent"
+                app:cardUseCompatPadding="true"
+                app:cardElevation="2dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/home_page_card_background"
+                app:cardPreventCornerOverlap="true"
                 app:layout_constraintTop_toBottomOf="@id/inaccessible_tip"
-                app:round="64dp"
-                tools:src="@drawable/ic_coin_flow"/>
-
-            <TextView
-                android:id="@+id/balance_amount_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
-                android:layout_marginTop="18dp"
-                android:autoSizeMinTextSize="14sp"
-                android:autoSizeTextType="uniform"
-                android:fontFamily="@font/inter"
-                android:gravity="center_vertical"
-                android:lines="1"
-                android:maxLines="1"
-                android:textColor="@color/neutrals1"
-                android:textSize="32sp"
-                android:textStyle="bold"
-                app:layout_constrainedWidth="true"
-                app:layout_constraintEnd_toStartOf="@id/coin_type_view"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/icon_view"
-                tools:text="1580.8"/>
+                app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
-                android:id="@+id/coin_type_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginBottom="7dp"
-                android:fontFamily="@font/inter_medium"
-                android:textColor="@color/neutrals8"
-                android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="@id/balance_amount_view"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/balance_amount_view"
-                tools:text="FLOW"/>
-
-            <TextView
-                android:id="@+id/balance_price_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
-                android:fontFamily="@font/inter_medium"
-                android:textColor="@color/text"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/balance_amount_view"
-                tools:text="$29801.99 USD"/>
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/button_wrapper"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="18dp"
-                android:layout_marginTop="22dp"
-                android:orientation="horizontal"
-                android:paddingBottom="18dp"
-                app:layout_constraintTop_toBottomOf="@id/balance_price_view">
-
-                <!-- SEND button -->
-                <LinearLayout
-                    android:id="@+id/btn_send"
-                    android:layout_width="0dp"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    android:padding="16dp">
 
-                    <!-- The icon inside a green circle -->
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_circle_green">
+                    <!-- Token Icon -->
 
-                        <ImageView
-                            android:id="@+id/iv_send"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_token_action_send"
-                            app:tint="@color/text_white_90"/>
-                    </FrameLayout>
-
-                    <!-- Label underneath -->
-                    <TextView
-                        android:id="@+id/tv_send"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/send"
-                        android:textColor="@color/text_2"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-
-                <View
-                    android:layout_width="2dp"
-                    android:layout_height="40dp"/>
-
-                <!-- RECEIVE button -->
-                <LinearLayout
-                    android:id="@+id/btn_receive"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
+                    <!-- Name Wrapper with ivLink -->
+                    <androidx.constraintlayout.utils.widget.ImageFilterView
+                        android:id="@+id/icon_view"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:scaleType="centerCrop"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:round="64dp"
+                        tools:src="@drawable/ic_coin_flow" />
 
                     <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_circle_green">
-
-                        <ImageView
-                            android:id="@+id/iv_receive"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            app:tint="@color/text_white_90"
-                            android:src="@drawable/ic_token_action_receive"
-                            />
-                    </FrameLayout>
-
-                    <TextView
-                        android:id="@+id/tv_receive"
+                        android:id="@+id/name_wrapper"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/receive"
-                        android:textColor="@color/text_2"
-                        android:textSize="12sp"/>
-                </LinearLayout>
+                        android:layout_marginStart="0dp"
+                        android:layout_marginEnd="100dp"
+                        app:layout_constraintTop_toTopOf="@id/icon_view"
+                        app:layout_constraintStart_toEndOf="@id/icon_view"
+                        app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token">
 
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_token_detail_coin_gradient"
+                            android:gravity="center_vertical"
+                            android:minHeight="32dp"
+                            tools:ignore="RtlSymmetry"
+                            android:orientation="horizontal">
 
-                <View
-                    android:layout_width="2dp"
-                    android:layout_height="40dp"/>
+                            <TextView
+                                android:id="@+id/name_view"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="80dp"
+                                android:layout_marginEnd="6dp"
+                                android:fontFamily="@font/montsettat"
+                                android:lineSpacingMultiplier="1.1"
+                                android:textColor="@color/neutrals1"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                tools:text="Flow"/>
 
-                <!-- SWAP button -->
-                <LinearLayout
-                    android:id="@+id/btn_swap"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_circle_green">
-
-                        <ImageView
-                            android:id="@+id/iv_swap"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_token_action_swap"
-                            app:tint="@color/text_white_90"/>
+                            <androidx.constraintlayout.utils.widget.ImageFilterView
+                                android:id="@+id/iv_link"
+                                android:layout_width="14dp"
+                                android:layout_height="14dp"
+                                android:layout_marginEnd="10dp"
+                                android:src="@drawable/ic_circle_arrow_right"
+                                android:visibility="gone"/>
+                        </androidx.appcompat.widget.LinearLayoutCompat>
                     </FrameLayout>
 
-                    <TextView
-                        android:id="@+id/tv_swap"
+                    <!-- EVM Move Token Button -->
+                    <LinearLayout
+                        android:id="@+id/ll_evm_move_token"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/swap"
-                        android:textColor="@color/text_2"
-                        android:textSize="12sp"/>
-                </LinearLayout>
-
-
-
-                <View
-                    android:id="@+id/view_trade_divider"
-                    android:layout_width="2dp"
-                    android:layout_height="40dp"
-                    android:visibility="gone"/>
-
-                <!-- BUY / TRADE button -->
-                <LinearLayout
-                    android:id="@+id/btn_trade"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <FrameLayout
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginBottom="4dp"
-                        android:background="@drawable/bg_circle_green">
-
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/bg_round_8dp"
+                        android:backgroundTint="@color/colorSecondary_16"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="4dp"
+                        app:layout_constraintTop_toTopOf="@id/name_wrapper"
+                        app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
+                        app:layout_constraintEnd_toEndOf="parent">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:fontFamily="@font/inter"
+                            android:text="@string/move"
+                            android:textColor="@color/accent_green"
+                            android:textSize="14sp"/>
                         <ImageView
-                            android:id="@+id/iv_trade"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_account_add"
-                            app:tint="@color/text_white_90"/>
-                    </FrameLayout>
+                            android:layout_width="11dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/ic_evm_move_token"/>
+                    </LinearLayout>
 
+                    <!-- Balance amount & coin type -->
                     <TextView
-                        android:id="@+id/tv_buy"
+                        android:id="@+id/balance_amount_view"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/buy"
-                        android:textColor="@color/text_2"
-                        android:textSize="12sp"/>
-                </LinearLayout>
+                        android:text="1580.8"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/neutrals1"
+                        app:layout_constraintTop_toBottomOf="@id/icon_view"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginTop="16dp"/>
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                    <TextView
+                        android:id="@+id/coin_type_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="FLOW"
+                        android:textSize="14sp"
+                        android:textColor="@color/neutrals8"
+                        app:layout_constraintBaseline_toBaselineOf="@id/balance_amount_view"
+                        app:layout_constraintStart_toEndOf="@id/balance_amount_view"
+                        android:layout_marginStart="8dp"/>
+
+                    <!-- Balance price -->
+                    <TextView
+                        android:id="@+id/balance_price_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="$29801.99 USD"
+                        android:textSize="16sp"
+                        android:textColor="@color/text"
+                        app:layout_constraintTop_toBottomOf="@id/balance_amount_view"
+                        app:layout_constraintStart_toStartOf="parent"
+                        android:layout_marginTop="8dp"/>
+
+                    <!-- Four action buttons -->
+                    <LinearLayout
+                        android:id="@+id/button_wrapper"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_constraintTop_toBottomOf="@id/balance_price_view"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginTop="16dp"
+                        android:paddingBottom="16dp">
+
+                        <!-- SEND button -->
+                        <LinearLayout
+                            android:id="@+id/btn_send"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <FrameLayout
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_circle_green">
+                                <ImageView
+                                    android:id="@+id/iv_send"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_token_action_send"
+                                    app:tint="@color/text_white_90"/>
+                            </FrameLayout>
+                            <TextView
+                                android:id="@+id/tv_send"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/send"
+                                android:textColor="@color/text_2"
+                                android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- RECEIVE button -->
+                        <LinearLayout
+                            android:id="@+id/btn_receive"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <FrameLayout
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_circle_green">
+                                <ImageView
+                                    android:id="@+id/iv_receive"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_token_action_receive"
+                                    app:tint="@color/text_white_90"/>
+                            </FrameLayout>
+                            <TextView
+                                android:id="@+id/tv_receive"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/receive"
+                                android:textColor="@color/text_2"
+                                android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- SWAP button -->
+                        <LinearLayout
+                            android:id="@+id/btn_swap"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <FrameLayout
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_circle_green">
+                                <ImageView
+                                    android:id="@+id/iv_swap"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_token_action_swap"
+                                    app:tint="@color/text_white_90"/>
+                            </FrameLayout>
+                            <TextView
+                                android:id="@+id/tv_swap"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/swap"
+                                android:textColor="@color/text_2"
+                                android:textSize="12sp"/>
+                        </LinearLayout>
+
+                        <!-- BUY/TRADE button -->
+                        <LinearLayout
+                            android:id="@+id/btn_trade"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center">
+                            <FrameLayout
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_circle_green">
+                                <ImageView
+                                    android:id="@+id/iv_trade"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_account_add"
+                                    app:tint="@color/text_white_90"/>
+                            </FrameLayout>
+                            <TextView
+                                android:id="@+id/tv_buy"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/buy"
+                                android:textColor="@color/text_2"
+                                android:textSize="12sp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
@@ -381,7 +337,7 @@
                 app:cardCornerRadius="16dp"
                 app:cardPreventCornerOverlap="true"
                 android:id="@+id/banner_wrapper"
-                app:layout_constraintTop_toBottomOf="@id/button_wrapper">
+                app:layout_constraintTop_toBottomOf="@id/top_card">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/get_more_wrapper"
