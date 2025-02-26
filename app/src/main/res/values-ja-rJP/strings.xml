@@ -202,7 +202,7 @@
     <string name="market_binance">バイナンス</string>
     <string name="market_huobi">フオビ</string>
     <string name="market_kraken">クラーケン</string>
-    <string name="data_from">データ・フロム</string>
+    <string name="data_from">情報元</string>
     <string name="add_collection">コレクションを追加</string>
     <string name="search_nft_collection">NFTコレクションを検索</string>
     <string name="scan_qr_code">QRコードをスキャン</string>

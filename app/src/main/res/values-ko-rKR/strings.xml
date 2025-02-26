@@ -202,7 +202,7 @@
     <string name="market_binance">바이낸스</string>
     <string name="market_huobi">후오비</string>
     <string name="market_kraken">크라켄</string>
-    <string name="data_from">데이터 출처</string>
+    <string name="data_from">데이터 소스</string>
     <string name="add_collection">컬렉션 추가</string>
     <string name="search_nft_collection">NFT 컬렉션 검색</string>
     <string name="scan_qr_code">QR코드 스캔</string>
