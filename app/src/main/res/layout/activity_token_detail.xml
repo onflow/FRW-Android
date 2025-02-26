@@ -369,11 +369,6 @@
                 app:cardUseCompatPadding="true"
                 app:layout_constraintTop_toBottomOf="@id/top_card">
 
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_card">
-
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/get_more_wrapper"
                         android:layout_width="match_parent"
@@ -424,7 +419,6 @@
                         android:id="@+id/staking_reward_wrapper"
                         layout="@layout/layout_token_detail_staking_rewards" />
 
-                </FrameLayout>
             </androidx.cardview.widget.CardView>
 
             <include
