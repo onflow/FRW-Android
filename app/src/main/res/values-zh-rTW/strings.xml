@@ -204,6 +204,7 @@
     <string name="add_collection">添加收藏</string>
     <string name="search_nft_collection">搜索 NFT 收藏</string>
     <string name="scan_qr_code">掃描 QR 碼</string>
+    <string name="scan">扫描</string>
     <string name="explore_search_hint">搜索名称或 URL</string>
     <string name="bookmark">書籤</string>
     <string name="drag_here_to_unpin">拖曳至此以取消釘選</string>

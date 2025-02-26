@@ -206,6 +206,7 @@
     <string name="add_collection">コレクションを追加</string>
     <string name="search_nft_collection">NFTコレクションを検索</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
+    <string name="scan">スキャン</string>
     <string name="explore_search_hint">検索名または URL</string>
     <string name="bookmark">ブックマーク</string>
     <string name="drag_here_to_unpin">ピンを外すにはここをドラッグ</string>
