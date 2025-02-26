@@ -45,9 +45,9 @@ object NftCollectionStateManager {
         }
         collectionList.forEach { collection ->
             val isEnable = collectionMap.getOrDefault(collection.contractId(), false)
-            val oldState = tokenStateList.firstOrNull { it.address == collection.address }
+            val oldState = tokenStateList.firstOrNull { it.contractId == collection.contractId() }
             tokenStateList.remove(oldState)
-            tokenStateList.add(NftCollectionState(collection.name, collection.address.orEmpty(), isEnable))
+            tokenStateList.add(NftCollectionState(collection.name, collection.contractId(), isEnable))
             if (oldState?.isAdded != isEnable) {
                 dispatchListeners(collection, isEnable)
             }
@@ -56,7 +56,7 @@ object NftCollectionStateManager {
         onFinish?.invoke()
     }
 
-    fun isTokenAdded(tokenAddress: String?) = tokenStateList.firstOrNull { it.address == tokenAddress }?.isAdded ?: false
+    fun isTokenAdded(contractId: String?) = tokenStateList.firstOrNull { it.contractId == contractId }?.isAdded ?: false
 
     fun addListener(callback: NftCollectionStateChangeListener) {
         uiScope { this.listeners.add(WeakReference(callback)) }
@@ -88,8 +88,8 @@ class NftCollectionStateCache(
 class NftCollectionState(
     @SerializedName("name")
     val name: String,
-    @SerializedName("address")
-    val address: String,
+    @SerializedName("contractId")
+    val contractId: String,
     @SerializedName("isAdded")
     val isAdded: Boolean,
 )
