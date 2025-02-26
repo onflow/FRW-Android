@@ -130,18 +130,6 @@ suspend fun cadenceTransferToken(coin: FlowCoin, toAddress: String, amount: Doub
     return transactionId
 }
 
-suspend fun cadenceNftCheckEnabled(nft: NftCollection): Boolean? {
-    logd(TAG, "cadenceNftCheckEnabled() nft:${nft.name}")
-    val walletAddress = WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceNftCheckEnabled() walletAddress:${walletAddress}")
-    val script = CadenceScript.CADENCE_NFT_CHECK_ENABLED
-    val result = nft.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceNftCheckEnabled response:${result?.encode()}")
-    return result?.decode<Boolean>()
-}
-
 suspend fun cadenceNftEnabled(nft: NftCollection): String? {
     logd(TAG, "cadenceNftEnabled() nft:${nft.name}")
     val transactionId = nft.formatCadence(CadenceScript.CADENCE_NFT_ENABLE).transactionByMainWallet {}

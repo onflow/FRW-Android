@@ -9,7 +9,7 @@ enum class BackupType(val index: Int, val displayName: String, val iconRes: Int,
     MANUAL(2, "Backup - Manual", R.drawable.ic_backup_recovery_phrase, R.drawable.ic_key_type_recovery_phrase),
     PASSKEY(3, "Backup - Passkey", R.drawable.ic_backup_passkey, R.drawable.ic_key_type_passkey),
     FULL_WEIGHT_SEED_PHRASE(4, "Backup - Full Weight Seed Phrase", R.drawable.ic_backup_recovery_phrase, R.drawable.ic_key_type_recovery_phrase),
-    DROPBOX(5, "Backup - Dropbox", R.drawable.ic_dropbox, R.drawable.ic_dropbox);
+    DROPBOX(5, "Backup - Dropbox", R.drawable.ic_backup_dropbox, R.drawable.ic_key_type_dropbox);
 
     companion object {
 

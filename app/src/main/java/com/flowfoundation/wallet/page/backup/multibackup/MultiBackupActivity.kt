@@ -52,5 +52,7 @@ class MultiBackupActivity : BaseActivity() {
         fun launch(context: Context) {
             context.startActivity(Intent(context, MultiBackupActivity::class.java))
         }
+
+        fun createIntent(context: Context) = Intent(context, MultiBackupActivity::class.java)
     }
 }

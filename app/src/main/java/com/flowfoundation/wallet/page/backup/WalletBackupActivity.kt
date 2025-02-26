@@ -1,10 +1,12 @@
 package com.flowfoundation.wallet.page.backup
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -22,6 +24,13 @@ class WalletBackupActivity: BaseActivity() {
     private lateinit var binding: ActivityWalletBackupBinding
     private lateinit var viewModel: WalletBackupViewModel
     private lateinit var presenter: WalletBackupPresenter
+
+    val backupResultLauncher = registerForActivityResult(ActivityResultContracts
+        .StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            finishBackupActivity()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +61,6 @@ class WalletBackupActivity: BaseActivity() {
 
     private fun userHasNoBackups(): Boolean {
         val backupList = viewModel.backupListLiveData.value
-        val devices = viewModel.devicesLiveData.value
         val seedPhrases = viewModel.seedPhraseListLiveData.value
 
         return backupList.isNullOrEmpty() && seedPhrases.isNullOrEmpty()
@@ -79,10 +87,7 @@ class WalletBackupActivity: BaseActivity() {
                 if (userHasNoBackups()) {
                     showExitWarningDialog()
                 } else {
-                    if (fromRegistration) {
-                        MainActivity.launch(this)
-                    }
-                    finish()
+                    finishBackupActivity()
                 }
                 return true
             }
@@ -95,11 +100,8 @@ class WalletBackupActivity: BaseActivity() {
         val dialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.exit_backup_warning_dialog_title))
             .setMessage(getString(R.string.exit_backup_warning_dialog))
-            .setPositiveButton(getString(R.string.i_understand)) { dialog, _ ->
-                if (fromRegistration) {
-                    MainActivity.launch(this)
-                }
-                finish()
+            .setPositiveButton(getString(R.string.i_understand)) { _, _ ->
+                finishBackupActivity()
             }
             .setNegativeButton(getString(R.string.back)) { dialog, _ ->
                 dialog.dismiss()
@@ -116,6 +118,13 @@ class WalletBackupActivity: BaseActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun finishBackupActivity() {
+        if (fromRegistration) {
+            MainActivity.relaunch(this, clearTop = true)
+        }
+        finish()
     }
 
 

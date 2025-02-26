@@ -149,7 +149,7 @@ object TransactionStateManager {
             }
 
             if (state.type == TransactionState.TYPE_ENABLE_NFT && state.isSuccess()) {
-                NftCollectionStateManager.fetchStateSingle(state.nftCollectionData(), cache = true)
+                NftCollectionStateManager.fetchState()
             }
 
             if (state.type == TransactionState.TYPE_STAKE_FLOW && state.isSuccess()) {

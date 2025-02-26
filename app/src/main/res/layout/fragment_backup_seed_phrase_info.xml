@@ -131,7 +131,7 @@
         android:layout_width="match_parent"
         android:layout_marginHorizontal="@dimen/activity_padding"
         android:layout_marginBottom="@dimen/wallet_create_button_margin"
-        android:text="@string/next"
+        android:text="@string/done"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

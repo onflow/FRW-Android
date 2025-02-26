@@ -30,7 +30,7 @@ class BottomNavigationViewWithIndicator : BottomNavigationView,
 
     private val indicator = RectF()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = ContextCompat.getColor(context, R.color.colorSecondary)
+        color = ContextCompat.getColor(context, R.color.accent_green)
     }
 
     private val bottomOffset = 4.dp2px()

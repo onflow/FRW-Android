@@ -54,5 +54,7 @@ class BackupRecoveryPhraseActivity : BaseActivity() {
         fun launch(context: Context) {
             context.startActivity(Intent(context, BackupRecoveryPhraseActivity::class.java))
         }
+
+        fun createIntent(context: Context) = Intent(context, BackupRecoveryPhraseActivity::class.java)
     }
 }

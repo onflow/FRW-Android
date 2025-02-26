@@ -5,8 +5,6 @@ import androidx.lifecycle.ViewModel
 
 class MainActivityViewModel : ViewModel() {
 
-    val walletRegisterSuccessLiveData = MutableLiveData<Boolean>()
-
     internal val changeTabLiveData = MutableLiveData<HomeTab>()
     internal val openDrawerLayoutLiveData = MutableLiveData<Boolean>()
 

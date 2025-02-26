@@ -29,7 +29,6 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_CHECK_NFT_LIST_ENABLED("checkNFTListEnabled", CadenceScriptType.NFT),
 
     // COLLECTION
-    CADENCE_NFT_CHECK_ENABLED("checkNFTCollection", CadenceScriptType.COLLECTION),
     CADENCE_NFT_ENABLE("enableNFTStorage", CadenceScriptType.COLLECTION),
     CADENCE_NFT_TRANSFER("sendNFTV3", CadenceScriptType.COLLECTION),
     CADENCE_NBA_NFT_TRANSFER("sendNbaNFTV3", CadenceScriptType.COLLECTION),
