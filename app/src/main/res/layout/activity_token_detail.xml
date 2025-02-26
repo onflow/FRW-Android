@@ -96,12 +96,14 @@
 
                         <FrameLayout
                             android:id="@+id/name_wrapper"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_marginEnd="8dp"
-                            app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token"
+                            android:translationZ="10dp"
                             app:layout_constraintStart_toEndOf="@id/icon_view"
+                            app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token"
+                            app:layout_constraintHorizontal_bias="0"
                             app:layout_constraintTop_toTopOf="@id/icon_view">
 
                             <!-- “Pill” container -->
@@ -120,6 +122,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="12dp"
                                     android:layout_marginEnd="6dp"
+                                    android:maxWidth="110dp"
                                     android:fontFamily="@font/montsettat"
                                     android:lineSpacingMultiplier="1.1"
                                     android:text="Flow"
