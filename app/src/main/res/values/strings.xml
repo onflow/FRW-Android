@@ -208,6 +208,7 @@
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
+    <string name="scan">Scan</string>
     <string name="explore_search_hint">Search name or URL</string>
     <string name="bookmark">Bookmark</string>
     <string name="drag_here_to_unpin">Drag Here To Unpin</string>
