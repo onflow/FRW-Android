@@ -5,11 +5,9 @@
     android:id="@+id/chart_wrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="12dp"
-    app:cardUseCompatPadding="true"
+    android:layout_marginTop="5dp"
     app:cardElevation="5dp"
-    app:cardBackgroundColor="@color/home_page_card_background"
-    app:cardCornerRadius="16dp"
+    android:background="@drawable/bg_card"
     app:layout_constraintTop_toBottomOf="@id/activities_wrapper">
 
     <androidx.constraintlayout.widget.ConstraintLayout

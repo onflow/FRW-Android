@@ -64,8 +64,7 @@
                 android:layout_height="wrap_content"
                 app:cardUseCompatPadding="true"
                 app:cardElevation="2dp"
-                app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="@color/home_page_card_background"
+                android:background="@drawable/bg_card"
                 app:cardPreventCornerOverlap="true"
                 app:layout_constraintTop_toBottomOf="@id/inaccessible_tip"
                 app:layout_constraintStart_toStartOf="parent"
@@ -93,41 +92,42 @@
                         android:id="@+id/name_wrapper"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="0dp"
-                        android:layout_marginEnd="100dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
                         app:layout_constraintTop_toTopOf="@id/icon_view"
                         app:layout_constraintStart_toEndOf="@id/icon_view"
                         app:layout_constraintEnd_toStartOf="@id/ll_evm_move_token">
 
+                        <!-- “Pill” container -->
                         <androidx.appcompat.widget.LinearLayoutCompat
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_token_detail_coin_gradient"
                             android:gravity="center_vertical"
                             android:minHeight="32dp"
-                            tools:ignore="RtlSymmetry"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            tools:ignore="RtlSymmetry">
 
                             <TextView
-                                android:id="@+id/name_view"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="80dp"
-                                android:layout_marginEnd="6dp"
-                                android:fontFamily="@font/montsettat"
-                                android:lineSpacingMultiplier="1.1"
-                                android:textColor="@color/neutrals1"
-                                android:textSize="16sp"
-                                android:textStyle="bold"
-                                tools:text="Flow"/>
+                            android:id="@+id/name_view"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_marginEnd="6dp"
+                            android:fontFamily="@font/montsettat"
+                            android:lineSpacingMultiplier="1.1"
+                            android:textColor="@color/neutrals1"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:text="Flow"/>
 
                             <androidx.constraintlayout.utils.widget.ImageFilterView
                                 android:id="@+id/iv_link"
                                 android:layout_width="14dp"
                                 android:layout_height="14dp"
                                 android:layout_marginEnd="10dp"
-                                android:src="@drawable/ic_circle_arrow_right"
-                                android:visibility="gone"/>
+                            android:src="@drawable/ic_circle_arrow_right"
+                            android:visibility="gone"/>
                         </androidx.appcompat.widget.LinearLayoutCompat>
                     </FrameLayout>
 
@@ -168,6 +168,7 @@
                         android:text="1580.8"
                         android:textSize="32sp"
                         android:textStyle="bold"
+                        android:layout_marginStart="10dp"
                         android:textColor="@color/neutrals1"
                         app:layout_constraintTop_toBottomOf="@id/icon_view"
                         app:layout_constraintStart_toStartOf="parent"
@@ -190,6 +191,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="$29801.99 USD"
+                        android:layout_marginStart="10dp"
                         android:textSize="16sp"
                         android:textColor="@color/text"
                         app:layout_constraintTop_toBottomOf="@id/balance_amount_view"
@@ -333,8 +335,7 @@
                 android:layout_height="wrap_content"
                 app:cardUseCompatPadding="true"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/home_page_card_background"
-                app:cardCornerRadius="16dp"
+                android:background="@drawable/bg_card"
                 app:cardPreventCornerOverlap="true"
                 android:id="@+id/banner_wrapper"
                 app:layout_constraintTop_toBottomOf="@id/top_card">
@@ -407,7 +408,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:cardUseCompatPadding="true"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/home_page_card_background"
+                app:cardBackgroundColor="@color/token_pricing_card_background"
                 app:cardCornerRadius="16dp"
                 app:cardPreventCornerOverlap="true"
                 android:id="@+id/storage_card_wrapper"
@@ -418,7 +419,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@color/home_page_card_background"
+                android:background="@color/token_pricing_card_background"
                 android:padding="16dp"
                 android:visibility="gone"
                 >
