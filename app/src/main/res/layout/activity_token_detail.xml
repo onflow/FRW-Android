@@ -246,6 +246,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="@string/send"
+                                    android:layout_marginTop="10dp"
                                     android:textColor="@color/text_2"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -277,6 +278,7 @@
                                     android:id="@+id/tv_receive"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginTop="10dp"
                                     android:text="@string/receive"
                                     android:textColor="@color/text_2"
                                     android:textSize="12sp" />
@@ -310,6 +312,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="@string/swap"
+                                    android:layout_marginTop="10dp"
                                     android:textColor="@color/text_2"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -342,6 +345,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="@string/buy"
+                                    android:layout_marginTop="10dp"
                                     android:textColor="@color/text_2"
                                     android:textSize="12sp" />
                             </LinearLayout>
