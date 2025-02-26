@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:ellipsize="end"
-                android:fontFamily="@font/montsettat"
+                android:fontFamily="@font/inter_semi_bold"
                 android:maxLines="1"
                 android:textColor="@color/text"
                 android:textSize="14sp"
@@ -49,32 +49,19 @@
                 tools:text="Behance Behance Behance Behance" />
 
             <TextView
-                android:id="@+id/domain_view"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textColor="@color/text"
-                android:textSize="14sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/icon_view"
-                app:layout_constraintTop_toBottomOf="@id/title_view"
-                tools:text="Behance Behance Behance Behance" />
-
-            <TextView
                 android:id="@+id/desc_view"
                 android:layout_width="0dp"
+                android:fontFamily="@font/inter"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textColor="@color/neutrals7"
                 android:textSize="12sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/icon_view"
-                app:layout_constraintTop_toBottomOf="@id/domain_view"
+                app:layout_constraintTop_toBottomOf="@id/title_view"
                 tools:text="Flow-based Domain Name Service where every domain is an NFT" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
