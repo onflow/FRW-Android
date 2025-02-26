@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
-import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.NFTFragmentPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.NftEmptyPresenter
