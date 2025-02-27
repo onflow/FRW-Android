@@ -108,7 +108,8 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         } else {
                             // COA -> Flow
                             if (WalletManager.isSelfFlowAddress(toAddress)) {
-                                cadenceBridgeFTFromEvm(coin.getFTIdentifier(), amount)
+                                val txId = cadenceBridgeFTFromEvm(coin.getFTIdentifier(), amount)
+                                postTransaction(txId)
                             } else {
                                 bridgeTokenToFlow(coin.getFTIdentifier(), amount, toAddress)
                             }
