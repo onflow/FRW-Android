@@ -66,7 +66,7 @@
     <color name="transparent">#00000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_8">#14FFFFFF</color>
-    <color name="white_t10">#1AFFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
     <color name="white_20">#33FFFFFF</color>
     <color name="white_25">#40FFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
