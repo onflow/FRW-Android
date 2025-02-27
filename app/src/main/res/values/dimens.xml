@@ -5,6 +5,5 @@
     <dimen name="wallet_create_button_margin">24dp</dimen>
     <dimen name="nft_tool_bar_height">52dp</dimen>
     <dimen name="nft_list_divider_size">16dp</dimen>
-    <dimen name="nft_list_divider_size_narrow">8dp</dimen>
     <dimen name="browser_input_vertical_padding">12dp</dimen>
 </resources>
