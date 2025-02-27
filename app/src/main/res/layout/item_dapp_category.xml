@@ -21,7 +21,7 @@
         android:gravity="center"
         android:paddingHorizontal="17dp"
         android:textAllCaps="true"
-        android:textColor="@color/black_30"
+        android:textColor="@color/contrast_text"
         android:textSize="14sp"
         tools:text="ALL"/>
 </com.google.android.material.card.MaterialCardView>

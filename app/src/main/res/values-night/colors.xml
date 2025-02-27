@@ -104,6 +104,7 @@
     <color name="text_light">#FFFFFF</color>
     <color name="text_1">#FFFFFF</color>
     <color name="text_2">#CCFFFFFF</color>
+    <color name="contrast_text">#66FFFFFF</color>
     <color name="landing_on_flow_text">#000000</color>
     <color name="landing_get_started_text">#FFFFFF</color>
 
