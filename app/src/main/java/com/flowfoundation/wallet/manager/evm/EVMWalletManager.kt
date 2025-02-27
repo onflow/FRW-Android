@@ -5,18 +5,21 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromCOA
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTToCOA
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTListToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildNFTToEvm
-import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromEvm
-import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTToEvm
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTFromCOA
+import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeFTToCOA
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTListFromEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTListToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeNFTToEvm
 import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
+import com.flowfoundation.wallet.manager.flowjvm.cadenceTransferToken
 import com.flowfoundation.wallet.manager.flowjvm.cadenceWithdrawTokenFromCOAAccount
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -131,46 +134,65 @@ object EVMWalletManager {
     }
 
     suspend fun moveFlowToken(
+        coin: FlowCoin,
         amount: BigDecimal,
-        isFundToEVM: Boolean,
+        fromAddress: String,
+        toAddress: String,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        if (isFundToEVM) {
-            fundFlowToEVM(amount, callback)
+        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+            if (WalletManager.isChildAccount(toAddress)) {
+                // COA -> Linked Account
+                val moveAmount = amount.movePointRight(coin.decimal)
+                bridgeTokenFromCOAToChild(coin.getFTIdentifier(), moveAmount, toAddress, callback)
+            } else {
+                // COA -> Parent Flow
+                withdrawFlowFromCOA(amount, toAddress, callback)
+            }
+        } else if (WalletManager.isChildAccount(fromAddress)) {
+            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                // Linked Account -> COA
+                bridgeTokenFromChildToCOA(coin.getFTIdentifier(), amount, fromAddress, callback)
+            } else {
+                // Linked Account -> Parent Flow / Linked Account
+                transferToken(coin, toAddress, amount, callback)
+            }
         } else {
-            withdrawFlowFromEVM(amount, callback)
+            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                // Parent Flow -> COA
+                fundFlowToCOA(amount, callback)
+            } else {
+                // Parent Flow -> Linked Account
+                transferToken(coin, toAddress, amount, callback)
+            }
         }
     }
 
-    suspend fun moveToken(
-        coin: FlowCoin, amount: BigDecimal, isFundToEVM: Boolean, callback:
-            (isSuccess: Boolean) -> Unit
+    suspend fun moveBridgeToken(
+        coin: FlowCoin, amount: BigDecimal, fromAddress: String, toAddress: String, callback: (isSuccess: Boolean) -> Unit
     ) {
-        try {
-            val txId = if (isFundToEVM) {
-                cadenceBridgeFTToEvm(coin.getFTIdentifier(), amount)
+        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+            val moveAmount = amount.movePointRight(coin.decimal)
+            if (WalletManager.isChildAccount(toAddress)) {
+                // COA -> Linked Account
+                bridgeTokenFromCOAToChild(coin.getFTIdentifier(), moveAmount, toAddress, callback)
             } else {
-                val decimalAmount = amount.movePointRight(coin.decimal)
-                cadenceBridgeFTFromEvm(coin.getFTIdentifier(), decimalAmount)
+                // COA -> Parent Flow
+                bridgeTokenFromCOAToFlow(coin.getFTIdentifier(), moveAmount, callback)
             }
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge ft failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge ft success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "bridge ft failed")
-                    callback.invoke(false)
+        } else {
+            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                if (WalletManager.isChildAccount(fromAddress)) {
+                    // Linked Account -> COA
+                    bridgeTokenFromChildToCOA(coin.getFTIdentifier(), amount, fromAddress, callback)
+                } else {
+                    // Parent Flow -> COA
+                    bridgeTokenFromFlowToCOA(coin.getFTIdentifier(), amount, callback)
                 }
+            } else {
+                // Linked Account / Parent Flow -> Parent Flow / Linked Account
+                transferToken(coin, toAddress, amount, callback)
             }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge ft failed")
-            e.printStackTrace()
         }
     }
 
@@ -231,41 +253,28 @@ object EVMWalletManager {
         isMoveToEVM: Boolean,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        try {
-            val txId = if (isMoveToEVM) {
-                cadenceBridgeNFTListToEvm(nftIdentifier, idList)
-            } else {
-                cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
-            }
-            val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
-            MixpanelManager.transferNFT(
-                if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
-                if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
-                nftIdentifier,
-                txId.orEmpty(),
-                if (isMoveToEVM) TransferAccountType.FLOW else TransferAccountType.COA,
-                if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.FLOW,
-                true
-            )
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge nft list failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge nft list success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "bridge nft list failed")
-                    callback.invoke(false)
+        executeTransaction(
+            action = {
+                val txId = if (isMoveToEVM) {
+                    cadenceBridgeNFTListToEvm(nftIdentifier, idList)
+                } else {
+                    cadenceBridgeNFTListFromEvm(nftIdentifier, idList)
                 }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge nft list failed")
-            e.printStackTrace()
-        }
+                val parentAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+                MixpanelManager.transferNFT(
+                    if (isMoveToEVM) parentAddress else getEVMAddress().orEmpty(),
+                    if (isMoveToEVM) getEVMAddress().orEmpty() else parentAddress,
+                    nftIdentifier,
+                    txId.orEmpty(),
+                    if (isMoveToEVM) TransferAccountType.FLOW else TransferAccountType.COA,
+                    if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.FLOW,
+                    true
+                )
+                txId
+            },
+            operationName = "bridge nft list",
+            callback = callback
+        )
     }
 
     suspend fun moveChildNFTList(
@@ -275,89 +284,115 @@ object EVMWalletManager {
         isMoveToEVM: Boolean,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        try {
-            val txId = if (isMoveToEVM) {
-                cadenceBridgeChildNFTListToEvm(nftIdentifier, idList, childAddress)
-            } else {
-                cadenceBridgeChildNFTListFromEvm(nftIdentifier, idList, childAddress)
-            }
-            MixpanelManager.transferNFT(
-                if (isMoveToEVM) childAddress else getEVMAddress().orEmpty(),
-                if (isMoveToEVM) getEVMAddress().orEmpty() else childAddress,
-                nftIdentifier,
-                txId.orEmpty(),
-                if (isMoveToEVM) TransferAccountType.CHILD else TransferAccountType.COA,
-                if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.CHILD,
-                true
-            )
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "bridge child nft list failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "bridge child nft list success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "bridge child nft list failed")
-                    callback.invoke(false)
+        executeTransaction(
+            action = {
+                val txId = if (isMoveToEVM) {
+                    cadenceBridgeChildNFTListToEvm(nftIdentifier, idList, childAddress)
+                } else {
+                    cadenceBridgeChildNFTListFromEvm(nftIdentifier, idList, childAddress)
                 }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "bridge child nft list failed")
-            e.printStackTrace()
-        }
+                MixpanelManager.transferNFT(
+                    if (isMoveToEVM) childAddress else getEVMAddress().orEmpty(),
+                    if (isMoveToEVM) getEVMAddress().orEmpty() else childAddress,
+                    nftIdentifier,
+                    txId.orEmpty(),
+                    if (isMoveToEVM) TransferAccountType.CHILD else TransferAccountType.COA,
+                    if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.CHILD,
+                    true
+                )
+                txId
+            },
+            operationName = "bridge child nft list",
+            callback = callback
+        )
     }
 
-    private suspend fun fundFlowToEVM(amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
-        try {
-            val txId = cadenceFundFlowToCOAAccount(amount)
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "fund flow to evm failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "fund flow to evm success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "fund flow to evm failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "fund flow to evm failed")
-            e.printStackTrace()
-        }
+    private suspend fun fundFlowToCOA(amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceFundFlowToCOAAccount(amount) },
+            operationName = "fund flow to evm",
+            callback = callback
+        )
     }
 
-    private suspend fun withdrawFlowFromEVM(amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+    suspend fun transferToken(coin: FlowCoin, toAddress: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceTransferToken(coin, toAddress, amount.toDouble()) },
+            operationName = "transfer token",
+            callback = callback
+        )
+    }
+
+    private suspend fun bridgeTokenFromCOAToFlow(flowIdentifier: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceBridgeFTFromCOA(flowIdentifier, amount) },
+            operationName = "bridge token from coa to flow",
+            callback = callback
+        )
+    }
+
+    private suspend fun bridgeTokenFromChildToCOA(flowIdentifier: String, amount: BigDecimal,
+                                                  childAddress: String, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceBridgeChildFTToCOA(flowIdentifier, childAddress, amount) },
+            operationName = "bridge token from child to coa",
+            callback = callback
+        )
+    }
+
+    private suspend fun bridgeTokenFromFlowToCOA(flowIdentifier: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceBridgeFTToCOA(flowIdentifier, amount) },
+            operationName = "bridge token from flow to coa",
+            callback = callback
+        )
+    }
+
+    private suspend fun bridgeTokenFromCOAToChild(flowIdentifier: String, amount: BigDecimal,
+                                                  toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceBridgeChildFTFromCOA(flowIdentifier, toAddress, amount) },
+            operationName = "bridge token from coa to child",
+            callback = callback
+        )
+    }
+
+    private suspend fun withdrawFlowFromCOA(amount: BigDecimal, toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
+        executeTransaction(
+            action = { cadenceWithdrawTokenFromCOAAccount(amount, toAddress) },
+            operationName = "withdraw flow from evm",
+            callback = callback
+        )
+    }
+
+    private suspend inline fun executeTransaction(
+        crossinline action: suspend () -> String?,
+        operationName: String,
+        crossinline callback: (Boolean) -> Unit
+    ) {
         try {
-            val toAddress = WalletManager.wallet()?.walletAddress() ?: return callback.invoke(false)
-            val txId = cadenceWithdrawTokenFromCOAAccount(amount, toAddress)
+            val txId = action()
             if (txId.isNullOrBlank()) {
-                logd(TAG, "withdraw flow from evm failed")
-                callback.invoke(false)
+                logd(TAG, "$operationName failed")
+                callback(false)
                 return
             }
+
             TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "withdraw flow from evm success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "withdraw flow from evm failed")
-                    callback.invoke(false)
+                when {
+                    result.isExecuteFinished() -> {
+                        logd(TAG, "$operationName success")
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        logd(TAG, "$operationName failed")
+                        callback(false)
+                    }
                 }
             }
-
         } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "withdraw flow from evm failed")
-            e.printStackTrace()
+            logd(TAG, "$operationName failed :: ${e.message}")
+            callback(false)
         }
     }
 
