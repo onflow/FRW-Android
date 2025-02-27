@@ -7,8 +7,8 @@
     <solid android:color="@color/explore_chip_bg" />
 
     <padding
+        android:bottom="4dp"
         android:left="8dp"
         android:right="8dp"
-        android:top="4dp"
-        android:bottom="4dp" />
+        android:top="4dp" />
 </shape>

@@ -6,8 +6,8 @@
     android:layout_height="wrap_content"
     app:cardBackgroundColor="@color/transparent"
     app:cardCornerRadius="16dp"
-    app:cardUseCompatPadding="true"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -51,11 +51,11 @@
             <TextView
                 android:id="@+id/desc_view"
                 android:layout_width="0dp"
-                android:fontFamily="@font/inter"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="4dp"
                 android:ellipsize="end"
+                android:fontFamily="@font/inter"
                 android:maxLines="2"
                 android:textColor="@color/contrast_text"
                 android:textSize="12sp"
@@ -68,13 +68,13 @@
                 android:id="@+id/category_chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_explore_chip"
+                android:fontFamily="@font/inter"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
-                android:background="@drawable/bg_explore_chip"
                 android:text="Finance"
-                android:textSize="12sp"
                 android:textColor="@color/contrast_text"
-                android:fontFamily="@font/inter"
+                android:textSize="12sp"
                 android:textStyle="normal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
