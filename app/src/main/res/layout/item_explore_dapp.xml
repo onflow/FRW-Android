@@ -63,6 +63,23 @@
                 app:layout_constraintStart_toEndOf="@id/icon_view"
                 app:layout_constraintTop_toBottomOf="@id/title_view"
                 tools:text="Flow-based Domain Name Service where every domain is an NFT" />
+
+            <TextView
+                android:id="@+id/category_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/bg_explore_chip"
+                android:text="Finance"
+                android:textSize="12sp"
+                android:textColor="@color/contrast_text"
+                android:fontFamily="@font/inter"
+                android:textStyle="normal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="DeFi" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

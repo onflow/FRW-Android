@@ -28,6 +28,7 @@ class ExploreDAppItemPresenter(
             Glide.with(iconView).load(model.logo).into(iconView)
             titleView.text = model.name
             descView.text = model.description
+            categoryChip.text = model.category.uppercase()
 
             view.setOnClickListener {
                 val url = if (isTestnet()) model.testnetUrl else model.url
