@@ -4,5 +4,4 @@
     <solid android:color="@color/home_page_card_background" />
 
     <corners android:radius="16dp" />
-
 </shape>
