@@ -112,15 +112,15 @@ class SelectNFTViewModel : ViewModel() {
         }
 }
 
-    suspend fun moveSelectedNFT(toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
+    suspend fun moveSelectedNFT(fromAddress: String, toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
 
-        logd(TAG, "moveSelectedNFT called with: fromAddress = ${WalletManager.selectedWalletAddress()}, toAddress = $toAddress, nftIdentifier = $nftIdentifier, selectedNFTs = $selectedNFTIdList")
+        logd(TAG, "moveSelectedNFT called with: fromAddress = ${fromAddress}, toAddress = $toAddress, nftIdentifier = $nftIdentifier, selectedNFTs = $selectedNFTIdList")
 
         if (nftIdentifier == null) {
             callback.invoke(false)
             return
         }
-        if (WalletManager.isChildAccountSelected()) {
+        if (WalletManager.isChildAccount(fromAddress)) {
             logd(TAG, "moveSelectedNFT from child account")
             if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                 EVMWalletManager.moveChildNFTList(
@@ -132,12 +132,12 @@ class SelectNFTViewModel : ViewModel() {
                 )
             } else if (WalletManager.isChildAccount(toAddress)) {
                 // batch move from child to child
-                sendNFTListFromChildToChild(toAddress, selectedNFTIdList, callback)
+                sendNFTListFromChildToChild(fromAddress, toAddress, selectedNFTIdList, callback)
             } else {
                 // batch move from child to parent/child
-                moveNFTListFromChildToParent(selectedNFTIdList, callback)
+                moveNFTListFromChildToParent(fromAddress, selectedNFTIdList, callback)
             }
-        } else if (WalletManager.isEVMAccountSelected()) {
+        } else if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
             logd(TAG, "moveSelectedNFT from EVM account")
             if (WalletManager.isChildAccount(toAddress)) {
                 EVMWalletManager.moveChildNFTList(
@@ -173,84 +173,51 @@ class SelectNFTViewModel : ViewModel() {
     }
 
     private suspend fun moveNFTListFromChildToParent(
+        fromAddress: String,
         idList: List<String>,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        try {
-            val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())
-            if (collection == null) {
-                callback.invoke(false)
-                return
-            }
-            val txId = cadenceMoveNFTListFromChildToParent(
-                WalletManager.selectedWalletAddress(), identifier.orEmpty(),
-                collection, idList
-            )
-            MixpanelManager.transferNFT(
-                WalletManager.selectedWalletAddress(), WalletManager.wallet()?.walletAddress().orEmpty(),
-                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
-                TransferAccountType.FLOW, true
-            )
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "move to parent failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "move to parent success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "move to parent failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "move to parent failed")
-            e.printStackTrace()
-        }
+        executeTransaction(
+            action = {
+                val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())?: return@executeTransaction null
+                val txId = cadenceMoveNFTListFromChildToParent(
+                    fromAddress, identifier.orEmpty(),
+                    collection, idList
+                )
+                MixpanelManager.transferNFT(
+                    fromAddress, WalletManager.wallet()?.walletAddress().orEmpty(),
+                    nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
+                    TransferAccountType.FLOW, true
+                )
+                txId
+            },
+            operationName = "move to parent",
+            callback = callback
+        )
     }
 
     private suspend fun sendNFTListFromChildToChild(
+        fromAddress: String,
         toAddress: String,
         idList: List<String>,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        try {
-            val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())
-            if (collection == null) {
-                callback.invoke(false)
-                return
-            }
-            val txId = cadenceSendNFTListFromChildToChild(
-                WalletManager.selectedWalletAddress(), toAddress, identifier.orEmpty(), collection, idList
-            )
-            MixpanelManager.transferNFT(
-                WalletManager.selectedWalletAddress(), toAddress,
-                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
-                TransferAccountType.CHILD, true
-            )
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "send to child failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "send to child success")
-                    callback.invoke(true)
-
-                } else if (result.isFailed()) {
-                    logd(TAG, "send to child failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "send to child failed")
-            e.printStackTrace()
-        }
+        executeTransaction(
+            action = {
+                val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty()) ?: return@executeTransaction null
+                val txId = cadenceSendNFTListFromChildToChild(
+                    fromAddress, toAddress, identifier.orEmpty(), collection, idList
+                )
+                MixpanelManager.transferNFT(
+                    fromAddress, toAddress,
+                    nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
+                    TransferAccountType.CHILD, true
+                )
+                txId
+            },
+            operationName = "send to child",
+            callback = callback
+        )
     }
 
     private suspend fun sendNFTListFromParentToChild(
@@ -258,39 +225,22 @@ class SelectNFTViewModel : ViewModel() {
         idList: List<String>,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        try {
-            val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty())
-            if (collection == null) {
-                callback.invoke(false)
-                return
-            }
-            val txId = cadenceSendNFTListFromParentToChild(
-                childAddress, identifier.orEmpty(), collection, idList
-            )
-            MixpanelManager.transferNFT(
-                WalletManager.wallet()?.walletAddress().orEmpty(), childAddress,
-                nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.FLOW,
-                TransferAccountType.CHILD, true
-            )
-            if (txId.isNullOrBlank()) {
-                logd(TAG, "send to child failed")
-                callback.invoke(false)
-                return
-            }
-            TransactionStateWatcher(txId).watch { result ->
-                if (result.isExecuteFinished()) {
-                    logd(TAG, "send to child success")
-                    callback.invoke(true)
-                } else if (result.isFailed()) {
-                    logd(TAG, "send to child failed")
-                    callback.invoke(false)
-                }
-            }
-        } catch (e: Exception) {
-            callback.invoke(false)
-            logd(TAG, "send to child failed")
-            e.printStackTrace()
-        }
+        executeTransaction(
+            action = {
+                val collection = NftCollectionConfig.getByNFTIdentifier(nftIdentifier.orEmpty()) ?: return@executeTransaction null
+                val txId = cadenceSendNFTListFromParentToChild(
+                    childAddress, identifier.orEmpty(), collection, idList
+                )
+                MixpanelManager.transferNFT(
+                    WalletManager.wallet()?.walletAddress().orEmpty(), childAddress,
+                    nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.FLOW,
+                    TransferAccountType.CHILD, true
+                )
+                txId
+            },
+            operationName = "send to child",
+            callback = callback
+        )
     }
 
     fun isNFTSelected(nftId: String): Boolean {
@@ -309,6 +259,37 @@ class SelectNFTViewModel : ViewModel() {
     fun unSelectNFT(nftId: String) {
         selectedNFTIdList.remove(nftId)
         moveCountLiveData.postValue(selectedNFTIdList.size)
+    }
+
+    private suspend inline fun executeTransaction(
+        crossinline action: suspend () -> String?,
+        operationName: String,
+        crossinline callback: (Boolean) -> Unit
+    ) {
+        try {
+            val txId = action()
+            if (txId.isNullOrBlank()) {
+                logd(TAG, "$operationName failed")
+                callback(false)
+                return
+            }
+
+            TransactionStateWatcher(txId).watch { result ->
+                when {
+                    result.isExecuteFinished() -> {
+                        logd(TAG, "$operationName success")
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        logd(TAG, "$operationName failed")
+                        callback(false)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logd(TAG, "$operationName failed :: ${e.message}")
+            callback(false)
+        }
     }
 
 }
