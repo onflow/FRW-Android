@@ -99,11 +99,13 @@
     <color name="bg_1">#000000</color>
     <color name="bg_2">#222222</color>
     <color name="bg_3">#2C2C2C</color>
+    <color name="explore_chip_bg">#2A2A2A</color>
 
     <color name="text_white">#000000</color>
     <color name="text_light">#FFFFFF</color>
     <color name="text_1">#FFFFFF</color>
     <color name="text_2">#CCFFFFFF</color>
+    <color name="contrast_text">#66FFFFFF</color>
     <color name="landing_on_flow_text">#000000</color>
     <color name="landing_get_started_text">#FFFFFF</color>
 
@@ -119,6 +121,7 @@
 
     <color name="landing_tab_dot_normal">#29FFFFFF</color>
 
+    <color name="token_pricing_card_background">#121212</color>
     <color name="home_page_background">#000000</color>
     <color name="home_page_card_background">#28282A</color>
     <color name="wallet_notification_background">#CC2C2C2C</color>

@@ -22,9 +22,9 @@ class ExploreDAppTagItemPresenter(
     override fun bind(model: DAppTagModel) {
         with(binding) {
             textView.text = model.category
-            textView.setTextColor(if (model.isSelected) R.color.text.res2color() else R.color.text_sub.res2color())
+            textView.setTextColor(if (model.isSelected) R.color.accent_green.res2color() else R.color.contrast_text.res2color())
 
-            root.strokeColor = if (model.isSelected) R.color.violet1.res2color() else R.color.bg_icon.res2color()
+            root.strokeColor = if (model.isSelected) R.color.accent_green.res2color() else R.color.contrast_text.res2color()
             view.setOnClickListener {
                 viewModel.selectDappTag(model.category)
             }
