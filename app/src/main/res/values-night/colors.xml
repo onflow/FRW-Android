@@ -123,7 +123,6 @@
 
     <color name="token_pricing_card_background">#121212</color>
     <color name="home_page_background">#000000</color>
-    <color name="token_pricing_card_background">#121212</color>
     <color name="home_page_card_background">#28282A</color>
     <color name="wallet_notification_background">#CC2C2C2C</color>
     <color name="buy_background">#323234</color>
