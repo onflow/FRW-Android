@@ -3,9 +3,9 @@
 
     <solid android:color="@color/token_pricing_card_background" />
 
-    <stroke
-        android:width="0dp"
-        android:color="@android:color/transparent" />
+<!--    <stroke-->
+<!--        android:width="0dp"-->
+<!--        android:color="@android:color/transparent" />-->
 
     <corners android:radius="16dp" />
 
