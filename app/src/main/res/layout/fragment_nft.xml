@@ -14,8 +14,9 @@
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:paddingTop="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbar"
@@ -45,45 +46,46 @@
         <include
             android:id="@+id/empty_container"
             layout="@layout/layout_nft_empty"
-            tools:visibility="gone"/>
+            tools:visibility="gone" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/toolbar_nft"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="35dp"
+            app:layout_constraintTop_toTopOf="parent"
+
             >
 
             <TextView
                 android:id="@+id/nft_heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/nft_collections"
-                android:textSize="24sp"
-                android:fontFamily="@font/inter_semi_bold"
-                android:textStyle="bold"
-                android:textColor="@color/text_1"
-                android:layout_marginStart="18dp"
                 android:layout_marginVertical="10dp"
-                app:layout_constraintStart_toStartOf="parent"
+                android:layout_marginStart="24dp"
+                android:fontFamily="@font/inter_semi_bold"
+                android:text="@string/nft_collections"
+                android:textColor="@color/text_1"
+                android:textSize="20sp"
+                android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.constraintlayout.utils.widget.ImageFilterButton
                 android:id="@+id/add_button"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginEnd="18dp"
                 android:layout_marginVertical="10dp"
-                android:background="@color/neutrals3_25"
+                android:layout_marginEnd="18dp"
+                android:background="@color/contrast_text"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_add_white"
-                app:round="32dp"
-                tools:ignore="ContentDescription"
-                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:round="32dp"
+                tools:ignore="ContentDescription" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -91,7 +93,7 @@
         <include
             android:id="@+id/shimmer_layout"
             layout="@layout/layout_shimmer_nft"
-            tools:visibility="gone"/>
+            tools:visibility="gone" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

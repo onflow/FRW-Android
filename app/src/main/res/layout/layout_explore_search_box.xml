@@ -20,15 +20,15 @@
             android:layout_height="20dp"
             android:layout_marginStart="13dp"
             android:src="@drawable/ic_baseline_search_24"
-            app:tint="@color/violet1"/>
+            app:tint="@color/contrast_text" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:fontFamily="@font/inter_semi_bold"
+            android:layout_marginStart="14dp"
+            android:fontFamily="@font/inter"
             android:text="@string/explore_search_hint"
-            android:textColor="@color/text"
-            android:textSize="16sp"/>
+            android:textColor="@color/contrast_text"
+            android:textSize="16sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
