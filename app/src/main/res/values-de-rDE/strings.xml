@@ -2,6 +2,7 @@
 <resources>
     <string name="next">Weiter</string>
     <string name="list">Liste</string>
+    <string name="grid">Raster</string>
     <string name="creating_account">Erstellen Ihres Kontos…</string>
     <string name="secure_design">Sicher durch Design</string>
     <string name="secure_design_2">Die Verwendung von Geräteschlüssen mit Hardware-Grade-Sicherheit, Flow Wallet ist eine extrem sichere Hardware-Wallet, der Sie vertrauen können</string>
