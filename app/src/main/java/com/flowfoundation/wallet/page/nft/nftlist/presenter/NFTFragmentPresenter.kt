@@ -20,6 +20,8 @@ import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.startShimmer
 import java.lang.Float.min
+import android.view.Gravity
+
 
 class NFTFragmentPresenter(
     private val fragment: NFTFragment,
@@ -74,6 +76,7 @@ class NFTFragmentPresenter(
             width = (ScreenUtils.getScreenWidth() * 0.3).toInt()
             setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.rounded_popup))
             setVerticalOffset(verticalOffset)
+
             setOnItemClickListener { _, _, position, _ ->
                 if (position == 0) {
                     // Ignore header click
@@ -88,6 +91,8 @@ class NFTFragmentPresenter(
                 dismiss()
             }
         }
+        listPopupWindow.setDropDownGravity(Gravity.END)
+        listPopupWindow.setHorizontalOffset(-context.resources.getDimensionPixelSize(R.dimen.popup_horizontal_margin))
         listPopupWindow.show()
     }
 

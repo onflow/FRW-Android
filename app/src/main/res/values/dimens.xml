@@ -7,4 +7,5 @@
     <dimen name="nft_list_divider_size">16dp</dimen>
     <dimen name="browser_input_vertical_padding">12dp</dimen>
     <dimen name="popup_vertical_margin">16dp</dimen>
+    <dimen name="popup_horizontal_margin">4dp</dimen>
 </resources>
