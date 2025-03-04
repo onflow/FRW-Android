@@ -227,7 +227,7 @@
     <string name="fcl_connect_permission_title">Esta aplicación desea</string>
     <string name="fcl_permission_read_balance">Consulta el saldo y la actividad de tu monedero</string>
     <string name="fcl_permission_transaction">Solicitar la aprobación de transacciones</string>
-    <string name="script">Guión</string>
+    <string name="script">Guion</string>
     <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">Proceso de habilitación de Coin</string>
     <string name="mnemonic_check_fail">Selección incorrecta</string>
@@ -262,7 +262,7 @@
     <string name="claim_free_domain_at_lilico">Solicitar dominio <font color="#32E355">gratis</font>\nen Lilico</string>
     <string name="free_domain">Dominio libre</string>
     <string name="things_you_should_know">Cosas que debe saber</string>
-    <string name="claim_domain_desc_1">El dominio lilico libre te ayuda a encontrarte mas facilmente en la cadena.</string>
+    <string name="claim_domain_desc_1">El dominio lilico libre le ayuda a encontrarse más fácilmente en la cadena.</string>
     <string name="claim_domain_desc_2">Un sistema de bandeja de entrada te ayudará a enviar fichas y NFT a tu amigo sin habilitar la bóveda.</string>
     <string name="claim_domain_desc_3">El modo anónimo se verá afectado, otros podrán encontrar tu dirección por tu dominio.</string>
     <string name="claim_domain_failed">Dominio de reclamación fallido</string>
