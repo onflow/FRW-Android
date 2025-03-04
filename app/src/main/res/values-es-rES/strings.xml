@@ -622,81 +622,81 @@
     <string name="backup_failed_desc">Error al crear tu copia de seguridad. Inténtalo de nuevo más tarde.</string>
     <string name="backup_recovery_phrase_warning_note">Podrá revisar su frase de recuperación después de crear la copia de seguridad.</string>
     <string name="backup_recovery_phrase_warning_1">Entiendo si pierdo mi frase de recuperación, es posible que no pueda recuperar mi cuenta.</string>
-    <string name="backup_recovery_phrase_warning_2">I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.</string>
-    <string name="backup_recovery_phrase_warning_3">I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.</string>
+    <string name="backup_recovery_phrase_warning_2">Entiendo que se trata de una frase de recuperación de peso parcial que por sí sola no me concede el control total de mi cuenta.</string>
+    <string name="backup_recovery_phrase_warning_3">Entiendo que esta frase de recuperación de peso parcial debe ser utilizada junto con mis otras copias de seguridad múltiples para recuperar el acceso a mi cuenta.</string>
     <string name="backup_recovery_phrase_about_title">Sobre tu</string>
-    <string name="backup_recovery_phrase_about_note">You have selected to use a 15-word
-        partial-weight recovery phrase. \n \nYour partial-weight recovery will correspond to a
-        partial-weight recovery key on your Flow account. \n \nYour partial-weight recovery
-        phrase on its own does not secure full access to your account. It must be used together with your other multi-backups to recover access to your account.</string>
-    <string name="recommended">Recommended</string>
-    <string name="backup_start_about_title">What is a</string>
+    <string name="backup_recovery_phrase_about_note">Ha seleccionado utilizar una frase de recuperación de peso parcial
+        de 15 palabras. \n \nSu recuperación de peso parcial corresponderá a una clave
+        de recuperación de peso parcial en su cuenta de Flow. \n \nTu frase de recuperación de peso parcial
+        por sí sola no garantiza el acceso total a tu cuenta. Debe ser utilizado junto con sus otras copias de seguridad múltiples para recuperar el acceso a su cuenta.</string>
+    <string name="recommended">Recomendado</string>
+    <string name="backup_start_about_title">Qué es</string>
     <string name="backup_start_about_content">Copia de seguridad múltiple</string>
     <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
-    <string name="what_is_multi_backup">What is Multi-Backup?</string>
-    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
-    <string name="secured_by_key_store">Secured by KeyStore</string>
-    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
-        and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
-        using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
-    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
-    <string name="keystore_select_account_tips">Choose an account you want to import</string>
-    <string name="keystore_select_account_title">%1$d Accounts Found</string>
-    <string name="keystore_no_account_title">No Account Found</string>
-    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
-        key. \n \nPlease check your input and try again.</string>
-    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
-    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
-    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
-    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
-    <string name="sign_type_message_from">Sign Type Message from</string>
+    <string name="what_is_multi_backup">¿Qué es Multi-Backup?</string>
+    <string name="backup_start_about_tip">Copia de seguridad múltiple es donde Flow Wallet crea múltiples claves de peso parcial (peso 500) y las almacena en las plataformas deseadas, iCloud, Google Drive o Frase de Semilla</string>
+    <string name="secured_by_key_store">Seguro por KeyStore</string>
+    <string name="secured_note">Flow Wallet utiliza la KeyStore de su dispositivo para proteger su cuenta
+        y activos. Esta clave privada no se puede recuperar. \n \nKeyStore protege su clave privada
+        usando la seguridad de nivel de hardware de su dispositivo, eliminar la necesidad de una frase de semilla. \n \nPor favor, crea copias de seguridad para tu monedero para asegurarte de que conservas el acceso a tu cuenta de Flow y activos en caso de que pierdas tu dispositivo.</string>
+    <string name="backup_seed_phrase_warning">Ha seleccionado utilizar una copia de seguridad de la frase de recuperación de 12 palabras. \n \nEsta copia de seguridad de la frase de recuperación tendrá el control total de su cuenta.</string>
+    <string name="keystore_select_account_tips">Elija una cuenta que desea importar</string>
+    <string name="keystore_select_account_title">%1$d cuentas encontradas</string>
+    <string name="keystore_no_account_title">No se encontró ninguna cuenta</string>
+    <string name="keystore_no_account_desc">Lo sentimos, no podemos encontrar tu cuenta \nen Flow con esta tecla
+        . \n \nPor favor revisa tus datos e inténtalo de nuevo.</string>
+    <string name="raw_key_restore_google_drive_note">Importa tu copia de seguridad antigua de Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Soporte para semilla de 12 palabras.</string>
+    <string name="raw_key_restore_keystore_note">Importar archivo keystore (Blocto backup).</string>
+    <string name="raw_key_restore_private_key_note">Importar con clave hexadecimal cruda.</string>
+    <string name="sign_type_message_from">Firmar mensaje de tipo de</string>
     <string name="message">Message</string>
-    <string name="current_account">Current Account</string>
-    <string name="other_accounts">Other Accounts</string>
-    <string name="local_account_keys">Local Account Keys</string>
-    <string name="reload_config">Reload Config</string>
-    <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">Charged when moving between accounts on Cadence and EVM on Flow.</string>
-    <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
-    <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
-    <string name="add_custom_token">Add Custom Token</string>
-    <string name="add_token_success">Add Token Success</string>
-    <string name="invalid_evm_address">Invalid ERC20 address</string>
-    <string name="token_contract_address">Token Contract Address</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
-    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
-    <string name="contracts">Contracts</string>
-    <string name="token_name">Token Name</string>
-    <string name="token_icon">Token Icon</string>
-    <string name="token_symbol">Token Symbol</string>
-    <string name="token_decimal">Token Decimal</string>
-    <string name="token_identifier">Token Identifier</string>
-    <string name="add_suggested_token">Add Suggested Token</string>
-    <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
-    <string name="storage_limit_reached">Storage limit reached.</string>
-    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
-    <string name="flow_limit_reached">FLOW limit reached.</string>
-    <string name="storage_usage">Storage Usage</string>
-    <string name="total_balance">Total Balance </string>
-    <string name="storage_limit_error">Storage Limit Error</string>
-    <string name="storage_limit_warning">Storage Limit Warning</string>
-    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
-    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
-    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
-    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
-        your storage usage.</string>
+    <string name="current_account">Cuenta corriente</string>
+    <string name="other_accounts">Otras cuentas</string>
+    <string name="local_account_keys">Claves de cuenta locales</string>
+    <string name="reload_config">Recargar configuración</string>
+    <string name="move_fee">Tarifa de mudanza</string>
+    <string name="move_fee_tips">Cargado al mover entre cuentas en Cadence y EVM en Flow.</string>
+    <string name="no_move_fee_tips">Sin cargo entre tus cuentas de Flow 🤟</string>
+    <string name="wait_website_fully_loaded">Por favor, espere hasta que el sitio web esté completamente cargado</string>
+    <string name="add_custom_token">Agregar token personalizado</string>
+    <string name="add_token_success">Añadir éxito del token</string>
+    <string name="invalid_evm_address">Dirección ERC20 inválida</string>
+    <string name="token_contract_address">Dirección del contrato de token</string>
+    <string name="token_contract_address_hint">Enter your FLOW token contract address</string>
+    <string name="evm_token_contract_address_error">Por favor, introduzca una dirección de contrato de EVM válida</string>
+    <string name="contracts">Contratos</string>
+    <string name="token_name">Nombre del Token</string>
+    <string name="token_icon">Icono de Token</string>
+    <string name="token_symbol">Símbolo del token</string>
+    <string name="token_decimal">Decimales del token</string>
+    <string name="token_identifier">Identificador de token</string>
+    <string name="add_suggested_token">Añadir token sugerido</string>
+    <string name="would_you_like_to_import_this_token">¿Le gustaría importar este token?</string>
+    <string name="storage_limit_reached">Límite de almacenamiento alcanzado.</string>
+    <string name="storage_limit_reached_after_action">Límite de almacenamiento alcanzado después de esta acción.</string>
+    <string name="flow_limit_reached">Límite de FLOW alcanzado.</string>
+    <string name="storage_usage">Uso de almacenamiento</string>
+    <string name="total_balance">Saldo Total</string>
+    <string name="storage_limit_error">Error de límite de almacenamiento</string>
+    <string name="storage_limit_warning">Advertencia de límite de almacenamiento</string>
+    <string name="storage_limit_reached_desc">Su cuenta está por debajo del saldo FLOW mínimo requerido para su uso de almacenamiento, lo que puede causar que las transacciones posteriores fallen.</string>
+    <string name="storage_limit_after_action_desc">Esta acción puede fallar porque puede reducir la cantidad de FLOW en tu cuenta debajo de lo necesario para cubrir su uso de almacenamiento.  </string>
+    <string name="storage_limit_error_desc">Su transacción falló porque su cuenta cayó por debajo del saldo mínimo de FLOW para el uso de almacenamiento de su cuenta.</string>
+    <string name="storage_limit_error_tips">Debes tener al menos %1$s en tu cuenta para cubrir
+        tu consumo de almacenamiento.</string>
     <string name="deposit">Depósito</string>
-    <string name="buy_flow">Buy FLOW</string>
-    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
-    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="buy_flow">Comprar FLOW</string>
+    <string name="restore_failure_insufficient_weight">Esta clave no tiene peso suficiente</string>
+    <string name="restore_failure_key_revoked">Esta clave ha sido revocada</string>
     <string name="dropbox">Dropbox</string>
-    <string name="backup_step_dropbox">Dropbox Backup</string>
-    <string name="connect_to_dropbox">Connect to Dropbox</string>
-    <string name="connect_dropbox">Connect Dropbox</string>
-    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="backup_step_dropbox">Copia de seguridad de Dropbox</string>
+    <string name="connect_to_dropbox">Conectar a Dropbox</string>
+    <string name="connect_dropbox">Conectar Dropbox</string>
+    <string name="deposit_evm_tip">Por favor, asegúrese de que su depósito está en la red FLOW EVM, si su depósito a través de otra red sus activos pueden perderse.</string>
     <string name="legal_message">"     <![CDATA[     Al usar Flow Wallet aceptas los <a href="https://wallet.flow.com/terms-of-service"><u>Términos de Servicio</u></a> y <a href="https://wallet.flow.com/privacy-policy"><u>Política de Privacidad</u></a>     ]]>     "</string>
     <string name="get_started">Empecemos!</string>
     <string name="on_flow">#onFlow</string>
-    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="choose_swap_provider">Elegir proveedor de intercambio</string>
     <string name="welcome_desc">¡Bienvenido a Flow Wallet! Crea una cuenta para empezar</string>
 </resources>
