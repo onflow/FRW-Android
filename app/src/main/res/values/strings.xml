@@ -715,5 +715,4 @@
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
-
 </resources>
