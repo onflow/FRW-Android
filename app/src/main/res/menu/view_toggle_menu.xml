@@ -1,0 +1,10 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_list_view"
+        android:title="List"
+        android:icon="@drawable/ic_add_white" />
+    <item
+        android:id="@+id/menu_grid_view"
+        android:title="Grid"
+        android:icon="@drawable/ic_add_white" />
+</menu>

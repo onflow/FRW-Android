@@ -50,10 +50,16 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     private var selectedCollection: NftCollection? = null
     private var isCollectionExpanded = false
 
+    val isGridViewLiveData = MutableLiveData<Boolean>().apply { value = false } // Default: List view
+
     init {
         NftFavoriteManager.addOnNftSelectionChangeListener(this)
         TransactionStateManager.addOnTransactionStateChange(this)
         observeWalletUpdate()
+    }
+
+    fun toggleViewType(isGridView: Boolean) {
+        isGridViewLiveData.postValue(isGridView)
     }
 
     fun requestChildAccountCollectionList() {
@@ -62,7 +68,8 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
 
     fun requestList() {
         viewModelIOScope(this) {
-            isCollectionExpanded = true // default to the list view
+            isCollectionExpanded = isGridViewLiveData.value!!
+            log
 
             // read from cache
             val cacheCollections = listRequester.cacheCollections().orEmpty()

@@ -1,7 +1,12 @@
 package com.flowfoundation.wallet.page.nft.nftlist.presenter
 
+import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.widget.PopupMenu
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
+import com.flyco.tablayout.listener.OnTabSelectListener
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
@@ -12,6 +17,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.NftViewModel
 import com.flowfoundation.wallet.page.nft.nftlist.adapter.NftListPageAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.utils.ScreenUtils
+import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.startShimmer
@@ -37,6 +43,16 @@ class NFTFragmentPresenter(
                 setOnRefreshListener { viewModel.refresh() }
                 setColorSchemeColors(R.color.colorSecondary.res2color())
             }
+
+            binding.viewToggleButton.setOnClickListener { view ->
+                showPopupMenu(view)
+            }
+
+//            viewModel.isGridViewLiveData.observe(fragment.viewLifecycleOwner) { isGridView ->
+//                binding.viewToggleButton.setImageResource(
+//                    if (isGridView) R.drawable.ic_nft_tab else R.drawable.ic_change_nft_id
+//                )
+//            }
         }
 
         startShimmer(binding.shimmerLayout.shimmerLayout)
@@ -52,6 +68,43 @@ class NFTFragmentPresenter(
         model.listPageData?.let { binding.refreshLayout.isRefreshing = false }
     }
 
+    private fun showPopupMenu(view: View) {
+        val popupMenu = PopupMenu(fragment.requireContext(), view)
+        popupMenu.menuInflater.inflate(R.menu.view_toggle_menu, popupMenu.menu)
+
+        val isGridView = viewModel.isGridViewLiveData.value ?: false
+
+        // Change icons dynamically
+        val menuListView = popupMenu.menu.findItem(R.id.menu_list_view)
+        val menuGridView = popupMenu.menu.findItem(R.id.menu_grid_view)
+
+        menuListView.setIcon(R.drawable.ic_list_view)
+        menuGridView.setIcon(R.drawable.ic_grid_view)
+
+        // Check the current selection
+        menuListView.isChecked = !isGridView
+        menuGridView.isChecked = isGridView
+
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_list_view -> {
+                    viewModel.toggleViewType(false) // Switch to List View
+                    Log.d("NFT_GRID", "showPopupMenu:  false")
+                    true
+                }
+                R.id.menu_grid_view -> {
+                    viewModel.toggleViewType(true) // Switch to Grid View
+                    Log.d("NFT_GRID", "showPopupMenu:  true")
+                    true
+                }
+                else -> false
+            }
+        }
+
+        popupMenu.show()
+    }
+
+
     private fun listPageScrollProgress(scrollY: Int): Float {
         val scroll = if (scrollY < 0) viewModel.listScrollChangeLiveData.value ?: 0 else scrollY
         val maxScrollY = ScreenUtils.getScreenHeight() * 0.25f
@@ -59,11 +112,21 @@ class NFTFragmentPresenter(
     }
 
     private fun updateToolbarBackground(scrollY: Int = -1) {
-        if (!isTopSelectionExist) {
+        if (isGridTabSelected()) {
             binding.toolbar.background.alpha = 255
         } else {
+            if (!isTopSelectionExist) {
+                // no selection
+                binding.toolbar.background.alpha = 255
+            } else {
+                val progress = listPageScrollProgress(scrollY)
+                binding.toolbar.background.alpha = (255 * progress).toInt()
+            }
+
             val progress = listPageScrollProgress(scrollY)
             binding.toolbar.background.alpha = (255 * progress).toInt()
         }
     }
+
+    private fun isGridTabSelected() = true
 }
