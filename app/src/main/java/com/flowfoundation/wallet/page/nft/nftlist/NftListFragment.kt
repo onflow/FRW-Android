@@ -47,7 +47,11 @@ internal class NftListFragment : Fragment() {
 
     private val collectionTabsPresenter by lazy { CollectionTabsPresenter(binding.collectionTabs) }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentNftListBinding.inflate(inflater)
         return binding.root
     }
@@ -69,12 +73,8 @@ internal class NftListFragment : Fragment() {
             collectionsLiveData.observe(viewLifecycleOwner) { data -> updateCollections(data) }
             favoriteLiveData.observe(viewLifecycleOwner) { updateFavorite(it) }
             favoriteIndexLiveData.observe(viewLifecycleOwner) { updateSelection(it) }
-
-
             isGridViewLiveData.observe(viewLifecycleOwner) { isGridView ->
                 updateRecyclerViewLayout(isGridView)
-
-
             }
         }
         binding.topSelectionHeader.setVisible(WalletManager.isChildAccountSelected().not())
@@ -121,7 +121,12 @@ internal class NftListFragment : Fragment() {
             preOffset = verticalOffset
         })
         with(binding.scrollView) {
-            setPadding(paddingLeft, R.dimen.nft_tool_bar_height.res2pix() + statusBarHeight, paddingRight, paddingBottom)
+            setPadding(
+                paddingLeft,
+                R.dimen.nft_tool_bar_height.res2pix() + statusBarHeight,
+                paddingRight,
+                paddingBottom
+            )
         }
     }
 
@@ -135,7 +140,14 @@ internal class NftListFragment : Fragment() {
                     }
                 }
             }
-            addItemDecoration(GridSpaceItemDecoration(vertical = dividerSize, horizontal = dividerSize, start = dividerSize, end = dividerSize))
+            addItemDecoration(
+                GridSpaceItemDecoration(
+                    vertical = dividerSize,
+                    horizontal = dividerSize,
+                    start = dividerSize,
+                    end = dividerSize
+                )
+            )
         }
     }
 
@@ -163,7 +175,10 @@ internal class NftListFragment : Fragment() {
                 val oldUrl = binding.backgroundImage.tag as? String
                 Glide.with(binding.backgroundImage)
                     .load(nft.getNFTCover())
-                    .thumbnail(Glide.with(requireContext()).load(oldUrl).transform(BlurTransformation(10, 20)))
+                    .thumbnail(
+                        Glide.with(requireContext()).load(oldUrl)
+                            .transform(BlurTransformation(10, 20))
+                    )
                     .transition(DrawableTransitionOptions.withCrossFade(250))
                     .transform(BlurTransformation(10, 20))
                     .into(binding.backgroundImage)

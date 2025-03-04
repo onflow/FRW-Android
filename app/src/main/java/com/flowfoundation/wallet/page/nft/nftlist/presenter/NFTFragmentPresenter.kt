@@ -75,8 +75,13 @@ class NFTFragmentPresenter(
             setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.rounded_popup))
             setVerticalOffset(verticalOffset)
             setOnItemClickListener { _, _, position, _ ->
-                adapter.setSelectedIndex(position)
-                when (position) {
+                if (position == 0) {
+                    // Ignore header click
+                    return@setOnItemClickListener
+                }
+                // Adjust index because header occupies position 0
+                adapter.setSelectedIndex(position - 1)
+                when (position - 1) {
                     0 -> viewModel.toggleViewType(false)
                     1 -> viewModel.toggleViewType(true)
                 }
@@ -85,6 +90,7 @@ class NFTFragmentPresenter(
         }
         listPopupWindow.show()
     }
+
 
     private fun listPageScrollProgress(scrollY: Int): Float {
         val scroll = if (scrollY < 0) viewModel.listScrollChangeLiveData.value ?: 0 else scrollY
