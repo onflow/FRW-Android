@@ -3,6 +3,7 @@
     <string name="next">Следующий</string>
     <string name="list">Список</string>
     <string name="grid">Сетка</string>
+    <string name="view_as">Показать как</string>
     <string name="creating_account">Создание аккаунта…</string>
     <string name="secure_design">Безопасно по дизайну</string>
     <string name="secure_design_2">Используя ключи устройств с аппаратной безопасностью, кошелек Flow является ультрабезопасным аппаратным кошельком, которым вы можете доверять</string>
