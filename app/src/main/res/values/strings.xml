@@ -32,7 +32,7 @@
     <string name="protection">Protection</string>
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
-
+    <string name="grid">Grid</string>
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
