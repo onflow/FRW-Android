@@ -9,13 +9,11 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import com.flowfoundation.wallet.R
 
-class HardcodedMenuAdapter(
+class NFTViewAdapter(
     private val context: Context,
-    // Set initial selected index (0 for list, 1 for grid)
     private var selectedIndex: Int = 0
 ) : BaseAdapter() {
 
-    // Hardcoded list of items: Pair<iconRes, title>
     private val items = listOf(
         Pair(R.drawable.ic_list_view, "List"),
         Pair(R.drawable.ic_grid_view, "Grid")
@@ -37,18 +35,15 @@ class HardcodedMenuAdapter(
         icon.setImageResource(iconRes)
         title.text = text
 
-        // Determine tint color based on selected index
         val tintColor = if (position == selectedIndex)
             ContextCompat.getColor(context, R.color.accent_green)
         else
             ContextCompat.getColor(context, R.color.text_light)
 
-        // Properly wrap and tint the drawable
         val wrappedDrawable = DrawableCompat.wrap(icon.drawable).mutate()
         DrawableCompat.setTint(wrappedDrawable, tintColor)
         icon.setImageDrawable(wrappedDrawable)
 
-        // Set text color accordingly
         title.setTextColor(tintColor)
 
         return view

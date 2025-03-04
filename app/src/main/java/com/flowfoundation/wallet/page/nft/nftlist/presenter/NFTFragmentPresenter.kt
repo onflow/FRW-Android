@@ -1,21 +1,11 @@
 package com.flowfoundation.wallet.page.nft.nftlist.presenter
 
-import HardcodedMenuAdapter
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
+import NFTViewAdapter
 import android.view.View
-import android.widget.ImageView
 import android.widget.ListPopupWindow
-import android.widget.PopupMenu
-import android.widget.TextView
-import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
-import com.flyco.tablayout.listener.OnTabSelectListener
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
@@ -26,7 +16,6 @@ import com.flowfoundation.wallet.page.nft.nftlist.NftViewModel
 import com.flowfoundation.wallet.page.nft.nftlist.adapter.NftListPageAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.utils.ScreenUtils
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.startShimmer
@@ -74,7 +63,7 @@ class NFTFragmentPresenter(
     private fun showCustomPopupMenu(anchorView: View) {
         val context = anchorView.context
         val initialIndex = if (viewModel.isGridViewLiveData.value == true) 1 else 0
-        val adapter = HardcodedMenuAdapter(context, initialIndex)
+        val adapter = NFTViewAdapter(context, initialIndex)
 
         val verticalOffset = context.resources.getDimensionPixelSize(R.dimen.popup_vertical_margin)
 
