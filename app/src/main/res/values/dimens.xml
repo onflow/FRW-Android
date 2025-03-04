@@ -6,4 +6,5 @@
     <dimen name="nft_tool_bar_height">52dp</dimen>
     <dimen name="nft_list_divider_size">16dp</dimen>
     <dimen name="browser_input_vertical_padding">12dp</dimen>
+    <dimen name="popup_vertical_margin">16dp</dimen>
 </resources>

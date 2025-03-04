@@ -83,10 +83,9 @@ internal class NftListFragment : Fragment() {
     fun updateRecyclerViewLayout(isGridView: Boolean) {
         if (isGridView) {
             binding.nftRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+            binding.nftRecyclerView.adapter?.notifyDataSetChanged()
         }
-        binding.nftRecyclerView.adapter?.notifyDataSetChanged()
     }
-
 
     private fun updateFavorite(nfts: List<Nft>) {
         if (WalletManager.isChildAccountSelected()) {

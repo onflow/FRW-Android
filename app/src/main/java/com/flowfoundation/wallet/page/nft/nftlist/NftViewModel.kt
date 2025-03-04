@@ -79,7 +79,6 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     fun requestList() {
         viewModelIOScope(this) {
             isCollectionExpanded = isNftCollectionExpanded()
-            logd("NFT_GRID", isCollectionExpanded.toString() + " collection Expanded")
 
             // read from cache
             val cacheCollections = listRequester.cacheCollections().orEmpty()
