@@ -63,8 +63,6 @@ class NFTFragment : Fragment() {
                 val nftListFragment =
                     childFragmentManager.findFragmentByTag("NFT_LIST_FRAGMENT") as? NftListFragment
                 nftListFragment?.updateRecyclerViewLayout(isGridView)
-                viewModel.toggleCollectionExpand()
-
             }
 
         }

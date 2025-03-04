@@ -52,7 +52,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     private var selectedCollection: NftCollection? = null
     private var isCollectionExpanded = false
 
-    val isGridViewLiveData = MutableLiveData<Boolean>().apply { value = false } // Default: List view
+    val isGridViewLiveData = MutableLiveData<Boolean>().apply { value = false }
 
     init {
         NftFavoriteManager.addOnNftSelectionChangeListener(this)
