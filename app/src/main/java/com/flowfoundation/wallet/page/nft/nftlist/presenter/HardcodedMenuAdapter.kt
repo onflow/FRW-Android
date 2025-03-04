@@ -41,7 +41,7 @@ class HardcodedMenuAdapter(
         val tintColor = if (position == selectedIndex)
             ContextCompat.getColor(context, R.color.accent_green)
         else
-            ContextCompat.getColor(context, R.color.black)
+            ContextCompat.getColor(context, R.color.text_light)
 
         // Properly wrap and tint the drawable
         val wrappedDrawable = DrawableCompat.wrap(icon.drawable).mutate()
