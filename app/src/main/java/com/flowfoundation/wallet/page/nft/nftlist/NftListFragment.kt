@@ -22,7 +22,6 @@ import com.flowfoundation.wallet.page.nft.nftlist.adapter.NFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionTabsModel
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.CollectionTabsPresenter
-import com.flowfoundation.wallet.page.nft.nftlist.presenter.CollectionTitlePresenter
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.SelectionItemPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftFavoriteManager
 import com.flowfoundation.wallet.utils.extensions.res2dip
@@ -47,7 +46,6 @@ internal class NftListFragment : Fragment() {
     private val selectionPresenter by lazy { SelectionItemPresenter(binding.topSelectionHeader) }
 
     private val collectionTabsPresenter by lazy { CollectionTabsPresenter(binding.collectionTabs) }
-    private val collectionTitlePresenter by lazy { CollectionTitlePresenter(binding.collectionTitle.root) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentNftListBinding.inflate(inflater)
@@ -71,9 +69,24 @@ internal class NftListFragment : Fragment() {
             collectionsLiveData.observe(viewLifecycleOwner) { data -> updateCollections(data) }
             favoriteLiveData.observe(viewLifecycleOwner) { updateFavorite(it) }
             favoriteIndexLiveData.observe(viewLifecycleOwner) { updateSelection(it) }
+
+
+            isGridViewLiveData.observe(viewLifecycleOwner) { isGridView ->
+                updateRecyclerViewLayout(isGridView)
+
+
+            }
         }
         binding.topSelectionHeader.setVisible(WalletManager.isChildAccountSelected().not())
     }
+
+    fun updateRecyclerViewLayout(isGridView: Boolean) {
+        if (isGridView) {
+            binding.nftRecyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+        }
+        binding.nftRecyclerView.adapter?.notifyDataSetChanged()
+    }
+
 
     private fun updateFavorite(nfts: List<Nft>) {
         if (WalletManager.isChildAccountSelected()) {

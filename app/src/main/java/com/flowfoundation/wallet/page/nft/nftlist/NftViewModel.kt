@@ -24,7 +24,9 @@ import com.flowfoundation.wallet.page.nft.nftlist.utils.NftListRequester
 import com.flowfoundation.wallet.page.nft.nftlist.utils.OnNftFavoriteChangeListener
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isNftCollectionExpanded
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.updateNftCollectionExpanded
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
 private val TAG = NftViewModel::class.java.simpleName
@@ -62,14 +64,22 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
         isGridViewLiveData.postValue(isGridView)
     }
 
+    fun toggleCollectionExpand() {
+        ioScope {
+            updateNftCollectionExpanded(!isCollectionExpanded)
+            isCollectionExpanded = isNftCollectionExpanded()
+            requestList()
+        }
+    }
+
     fun requestChildAccountCollectionList() {
         ChildAccountCollectionManager.loadChildAccountNFTCollectionList()
     }
 
     fun requestList() {
         viewModelIOScope(this) {
-            isCollectionExpanded = isGridViewLiveData.value!!
-            log
+            isCollectionExpanded = isNftCollectionExpanded()
+            logd("NFT_GRID", isCollectionExpanded.toString() + " collection Expanded")
 
             // read from cache
             val cacheCollections = listRequester.cacheCollections().orEmpty()
