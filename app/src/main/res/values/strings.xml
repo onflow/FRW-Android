@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Flow Wallet</string>
     <string name="next">Next</string>
     <string name="list">List</string>
     <string name="creating_account">Creating Your Account…</string>
@@ -32,7 +32,6 @@
     <string name="protection">Protection</string>
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
-
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
@@ -66,7 +65,7 @@
     <string name="continue_str">Continue</string>
     <string name="restore_with_google_drive">Restore with Google Drive</string>
     <string name="wrong_password">wrong password</string>
-    <string name="word_not_found">Opps, word not found.</string>
+    <string name="word_not_found">Oops, word not found.</string>
     <string name="restore_mnemonic_tip">This is a 12 word phrase you were given when you created your previous wallet.</string>
     <string name="multi_restore_mnemonic_tip">This is a 15 word phrase you were given when you
         created your previous wallet.</string>
@@ -145,12 +144,11 @@
     <string name="address_check_format_error">Invalid address</string>
     <string name="address_check_chain_error">Can\'t find address in chain</string>
     <string name="address_check_success">Validated address</string>
-    <string name="address_search_empty_tip">No results. Please check your input and try again.</string>
+    <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
     <string name="move_do_not_ask_me">Do not ask me again.</string>
     <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
         %1$s can view your assets</string>
-
     <string name="send_to">Send to</string>
     <string name="send_search_hint">Username, address(0x), Find or Flowns</string>
     <string name="recent">Recent</string>
@@ -204,11 +202,10 @@
     <string name="market_binance">Binance</string>
     <string name="market_huobi">Huobi</string>
     <string name="market_kraken">Kraken</string>
-    <string name="data_from">DATA FROM</string>
+    <string name="data_from">Data Source</string>
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
-    <string name="scan">Scan</string>
     <string name="explore_search_hint">Search name or URL</string>
     <string name="bookmark">Bookmark</string>
     <string name="drag_here_to_unpin">Drag Here To Unpin</string>
@@ -216,7 +213,7 @@
     <string name="open_in_browser">Open in browser</string>
     <string name="clear_cache">Clear Cache</string>
     <string name="pending_transaction">Pending Transaction</string>
-    <string name="welcome_to_wallet">Welcome to Flow Wallet!</string>
+    <string name="welcome_to_wallet">Welcome to Flow Wallet !</string>
     <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
@@ -256,12 +253,12 @@
     <string name="start">Start</string>
     <string name="import_wallet">Import Wallet</string>
     <string name="import_wallet_button">I already have an account</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">IMPORT</string>
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>
-    <string name="claim_free_domain">Claim for your <font color='#32E355'>FREE</font> Lilico domain!</string>
-    <string name="claim_free_domain_at_lilico">Claim <font color='#32E355'>Free</font> Domain\nAt Lilico</string>
+    <string name="claim_free_domain">Claim for your <font color="#32E355">FREE</font> Lilico domain!</string>
+    <string name="claim_free_domain_at_lilico">Claim <font color="#32E355">Free</font> Domain\nAt Lilico</string>
     <string name="free_domain">Free Domain</string>
     <string name="things_you_should_know">Things You Should Know</string>
     <string name="claim_domain_desc_1">Free lilico domain help you find each other easier on chain.</string>
@@ -310,11 +307,23 @@
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Let\'s Staking</string>
-    <string name="stake_guide_desc_1">Earn up to <font color='#60C293'><strong>13%</strong></font>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293">
+  <strong>13%</strong>
+</font>
         per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color='#60C293'><strong>Flow</strong></font> you receive <font color='#60C293'><strong>Flow</strong></font>. You can <font color='#60C293'><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color='#60C293'><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color='#60C293'><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293">
+  <strong>Flow</strong>
+</font> you receive <font color="#60C293">
+  <strong>Flow</strong>
+</font>. You can <font color="#60C293">
+  <strong>trade</strong>
+</font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293">
+  <strong>right away</strong>
+</font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293">
+  <strong>every few days</strong>
+</font>.</string>
     <string name="staking_provider">Staking Provider</string>
     <string name="select_provider">Select Provider</string>
     <string name="stake">Stake</string>
@@ -386,7 +395,6 @@
     <string name="linked_account">Linked Accounts</string>
     <string name="devices">Devices</string>
     <string name="device_info">Device Info</string>
-
     <string name="default_child_account_name">Linked Account</string>
     <string name="default_evm_account_name">EVM Wallet</string>
     <string name="description">Description</string>
@@ -406,7 +414,6 @@
     <string name="root_detect_warning3">Your keychain will exposing in threats.</string>
     <string name="i_understand">I understand</string>
     <string name="root_detection_alert">Root Detection Alert</string>
-
     <string name="notification_channel_name">Push Notification</string>
     <string name="add_new_profile">Add a New Profile</string>
     <string name="import_existing_profile">Import an Existing Profile</string>
@@ -414,7 +421,6 @@
     <string name="new_feature">New Feature</string>
     <string name="new_feature_desc">We have made the following updates to improve your experiences.</string>
     <string name="profile_switch_tip">Tap the profile name to switch profiles.</string>
-
     <string name="all">All</string>
     <string name="avatar">Avatar</string>
     <string name="edit_fail">Edit fail</string>
@@ -489,9 +495,9 @@
     <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
     <string name="restore_private_key_hint">Enter your private key</string>
-    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
-    <string name="key_store_password_hint">Enter password for json file</string>
-    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
+    <string name="key_store_json_hint">You can import the JSON file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for JSON file</string>
+    <string name="key_store_address_hint">Enter your Flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Other</string>
@@ -576,7 +582,6 @@
     <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
     <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
     <string name="back">Back</string>
-    <string name="landing_step_four_on_flow" translatable="false">#onFlow.</string>
     <string name="token_count">%1$d Tokens</string>
     <string name="wallpaper_static">Static</string>
     <string name="wallpaper_dynamic">Dynamic</string>
@@ -624,7 +629,6 @@
     <string name="landing_tips">Please allow 1–2 mins</string>
     <string name="update_avatar_success">Update Avatar Success</string>
     <string name="update_avatar_failed">Update Avatar Failed</string>
-    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
     <string name="backup_failed">Backup Failed</string>
     <string name="backup_failed_desc">Your backup creation failed. Please try again later.</string>
     <string name="backup_recovery_phrase_warning_note">You will be able to review your recovery phrase after you create the backup.</string>
@@ -647,9 +651,6 @@
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
     <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
-
-    <string name="json" translatable="false">JSON</string>
-    <string name="required_asterisk" translatable="false">" *"</string>
     <string name="keystore_select_account_tips">Choose an account you want to import</string>
     <string name="keystore_select_account_title">%1$d Accounts Found</string>
     <string name="keystore_no_account_title">No Account Found</string>
@@ -673,8 +674,8 @@
     <string name="add_token_success">Add Token Success</string>
     <string name="invalid_evm_address">Invalid ERC20 address</string>
     <string name="token_contract_address">Token Contract Address</string>
-    <string name="token_contract_address_hint">Enter the token contract address</string>
-    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
+    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="evm_token_contract_address_error">Please enter valid EVM contract address</string>
     <string name="contracts">Contracts</string>
     <string name="token_name">Token Name</string>
     <string name="token_icon">Token Icon</string>
@@ -708,11 +709,6 @@
     <string name="get_started">Let\'s get started</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
-    <string name="punch_swap" translatable="false">Punch Swap</string>
-    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
-    <string name="trado_url" translatable="false">trado.one</string>
-    <string name="trado" translatable="false">Trado</string>
-    <string name="increment_finance" translatable="false">Increment Finance</string>
-    <string name="increment_url" translatable="false">increment.fi</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
+    <string name="scan">Scan</string>
 </resources>

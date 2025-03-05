@@ -202,7 +202,7 @@
     <string name="market_binance">Binance</string>
     <string name="market_huobi">Huobi</string>
     <string name="market_kraken">Kraken</string>
-    <string name="data_from">DATA FROM</string>
+    <string name="data_from">Data Source</string>
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
@@ -227,7 +227,7 @@
     <string name="fcl_permission_read_balance">View your wallet balance and activity</string>
     <string name="fcl_permission_transaction">Request approval for transactions</string>
     <string name="script">Script</string>
-    <string name="dapps">Apps</string>
+    <string name="dapps">dApps</string>
     <string name="process_of_enabling_coin">Process of Enabling Coin</string>
     <string name="mnemonic_check_fail">Wrong selection</string>
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
@@ -241,7 +241,7 @@
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
-    <string name="transaction_history">Transaction History</string>
+    <string name="transaction_history">Transaction history</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Profile</string>
@@ -307,11 +307,23 @@
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Let\'s Staking</string>
-    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
+    <string name="stake_guide_desc_1">Earn up to <font color="#60C293">
+  <strong>13%</strong>
+</font>
         per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_2">When you stake <font color="#60C293">
+  <strong>Flow</strong>
+</font> you receive <font color="#60C293">
+  <strong>Flow</strong>
+</font>. You can <font color="#60C293">
+  <strong>trade</strong>
+</font> this liquid asset at any time.</string>
+    <string name="stake_guide_desc_3">You start earning <font color="#60C293">
+  <strong>right away</strong>
+</font>.</string>
+    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293">
+  <strong>every few days</strong>
+</font>.</string>
     <string name="staking_provider">Staking Provider</string>
     <string name="select_provider">Select Provider</string>
     <string name="stake">Stake</string>
@@ -449,7 +461,6 @@
     <string name="or">Or</string>
     <string name="sync_page_title">Open your Flow Wallet on Mobile App \n and Scan the QR Code to Sync your Wallet.</string>
     <string name="sync_scan_qr_code">Scan QR Code with Mobile App</string>
-    <string name="scan">Scan</string>
     <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">Find 1 Matching Wallet</string>
     <string name="wallet_confirmation">Wallet Confirmation</string>
@@ -486,7 +497,7 @@
     <string name="restore_private_key_hint">Enter your private key</string>
     <string name="key_store_json_hint">You can import the JSON file from other wallet (eg. Blockto)</string>
     <string name="key_store_password_hint">Enter password for JSON file</string>
-    <string name="key_store_address_hint">Enter your flow address (Optional)</string>
+    <string name="key_store_address_hint">Enter your Flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Other</string>
@@ -656,7 +667,7 @@
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="move_fee_tips">Charged when moving between accounts on Cadence and EVM on Flow.</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
     <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
     <string name="add_custom_token">Add Custom Token</string>
@@ -699,4 +710,5 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
+    <string name="scan">Scan</string>
 </resources>
