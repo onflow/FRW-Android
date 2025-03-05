@@ -183,6 +183,10 @@ fun openInFlowScan(activity: Activity, transactionId: String) {
     openBrowser(activity, "https://${if (isTestnet()) "testnet." else ""}flowscan" + ".io/tx/$transactionId")
 }
 
+fun openInFlowEVMScan(activity: Activity, transactionId: String) {
+    openBrowser(activity, "https://${if (isTestnet()) "evm-testnet" else "evm"}.flowscan.io/tx/$transactionId")
+}
+
 class BrowserParams(
     val searchBoxPosition: Point? = null,
 )

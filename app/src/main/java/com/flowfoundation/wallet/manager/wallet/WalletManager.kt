@@ -35,7 +35,7 @@ object WalletManager {
     fun wallet() = AccountManager.get()?.wallet
 
     fun isEVMAccountSelected(): Boolean {
-        return EVMWalletManager.getEVMAddress()?.toAddress() == selectedWalletAddress.toAddress()
+        return selectedWalletAddress.toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {
@@ -47,7 +47,8 @@ object WalletManager {
         if (wallets.isNullOrEmpty()) {
             return false
         }
-        return wallets.firstOrNull { it.address() == selectedWalletAddress } == null && isEVMAccountSelected().not()
+        return wallets.firstOrNull { it.address().equals(selectedWalletAddress, ignoreCase = true) } == null
+                && isEVMAccountSelected().not()
     }
 
     fun haveChildAccount(): Boolean {
@@ -61,7 +62,9 @@ object WalletManager {
     }
 
     fun childAccount(childAddress: String): ChildAccount? {
-        return childAccountMap.toMap().values.flatMap { it.get() }.firstOrNull { it.address == childAddress }
+        return childAccountMap.toMap().values.flatMap { it.get() }.firstOrNull {
+            it.address.equals(childAddress, ignoreCase = true)
+        }
     }
 
     fun isChildAccount(address: String): Boolean {
@@ -78,17 +81,17 @@ object WalletManager {
 
     // @return network
     fun selectWalletAddress(address: String): String {
-        if (selectedWalletAddress == address) return chainNetWorkString()
+        if (selectedWalletAddress.equals(address, ignoreCase = true)) return chainNetWorkString()
 
         selectedWalletAddress = address
         updateSelectedWalletAddress(address)
 
-        val walletData = wallet()?.wallets?.firstOrNull { it.address() == address }
+        val walletData = wallet()?.wallets?.firstOrNull { it.address().equals(address, ignoreCase = true) }
         val networkStr = if (walletData == null) {
             val walletAddress = childAccountMap.values
-                .firstOrNull { child -> child.get().any { it.address == address } }?.address
+                .firstOrNull { child -> child.get().any { it.address.equals(address, true) } }?.address
 
-            val data = wallet()?.wallets?.firstOrNull { it.address() == walletAddress }
+            val data = wallet()?.wallets?.firstOrNull { it.address().equals(walletAddress, ignoreCase = true) }
 
             data?.network()
         } else walletData.network()

@@ -46,7 +46,6 @@ private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
 private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
-private val KEY_ACCOUNT_TRANSFER_COUNT = intPreferencesKey("KEY_ACCOUNT_TRANSFER_COUNT")
 private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
 private val KEY_INBOX_READ_LIST = stringPreferencesKey("KEY_INBOX_READ_LIST")
@@ -188,12 +187,6 @@ suspend fun isFreeGasPreferenceEnable(): Boolean = dataStore.data.map { it[KEY_F
 
 suspend fun setFreeGasPreferenceEnable(isEnable: Boolean) {
     dataStore.edit { it[KEY_FREE_GAS_ENABLE] = isEnable }
-}
-
-suspend fun getAccountTransferCount(): Int = dataStore.data.map { it[KEY_ACCOUNT_TRANSFER_COUNT] ?: 0 }.first()
-
-suspend fun updateAccountTransferCount(count: Int) {
-    dataStore.edit { it[KEY_ACCOUNT_TRANSFER_COUNT] = count }
 }
 
 fun isStakingGuideDisplayed(): Boolean {
