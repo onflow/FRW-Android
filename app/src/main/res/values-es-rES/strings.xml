@@ -202,7 +202,7 @@
     <string name="market_binance">Binance</string>
     <string name="market_huobi">Huobi</string>
     <string name="market_kraken">Kraken</string>
-    <string name="data_from">DATOS DE</string>
+    <string name="data_from">Fuente de Datos</string>
     <string name="add_collection">Añadir colección</string>
     <string name="search_nft_collection">Buscar en la colección NFT</string>
     <string name="scan_qr_code">Escanear código QR</string>

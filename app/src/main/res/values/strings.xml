@@ -204,7 +204,7 @@
     <string name="market_binance">Binance</string>
     <string name="market_huobi">Huobi</string>
     <string name="market_kraken">Kraken</string>
-    <string name="data_from">DATA FROM</string>
+    <string name="data_from">Data Source</string>
     <string name="add_collection">Add Collection</string>
     <string name="search_nft_collection">Search NFT Collection</string>
     <string name="scan_qr_code">Scan QR code</string>
@@ -244,7 +244,7 @@
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
-    <string name="transaction_history">Transaction history</string>
+    <string name="transaction_history">Transaction History</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Profile</string>

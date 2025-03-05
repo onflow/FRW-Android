@@ -38,6 +38,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.serialization.Serializable
+import org.web3j.crypto.Keys
 import java.math.BigDecimal
 
 private val TAG = EVMWalletManager::class.java.simpleName
@@ -70,6 +71,10 @@ object EVMWalletManager {
         if (evmAddressMap.isEmpty() || getEVMAddress().isNullOrBlank()) {
             fetchEVMAddress()
         }
+    }
+
+    fun toChecksumEVMAddress(evmAddress: String): String {
+        return Keys.toChecksumAddress(evmAddress)
     }
 
     // todo get evm address for each network
@@ -125,12 +130,12 @@ object EVMWalletManager {
         return if (address.isNullOrBlank() || address == "0x") {
             return null
         } else {
-            address
+            toChecksumEVMAddress(address)
         }
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
-        return evmAddressMap.values.firstOrNull { address != "0x" && it == address } != null
+        return evmAddressMap.values.firstOrNull { address != "0x" && it.equals(address, ignoreCase = true)} != null
     }
 
     suspend fun moveFlowToken(
