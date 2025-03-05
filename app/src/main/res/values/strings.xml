@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name" translatable="false">Flow Wallet</string>
     <string name="next">Next</string>
     <string name="list">List</string>
     <string name="creating_account">Creating Your Account…</string>
@@ -711,4 +712,13 @@
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="scan">Scan</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
 </resources>

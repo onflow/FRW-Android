@@ -481,7 +481,7 @@
     <string name="restore_seed_derivation_path">Chemin de dérivation</string>
     <string name="restore_seed_passphrase">Phrase secrète</string>
     <string name="restore_seed_phrase_hint">12 ou 24 mots séparés par des espaces</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Chemin de dérivation(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Chemin de dérivation (m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Phrase de passe (facultatif)</string>
     <string name="restore_private_key_hint">Entrez votre clé privée</string>
     <string name="key_store_json_hint">Vous pouvez importer le fichier JSON à partir d\'un autre portefeuille (par exemple Blockto)</string>
@@ -614,7 +614,7 @@
     <string name="clear">Effacer</string>
     <string name="send_success">Envoi réussi</string>
     <string name="send_failed">Envoi échoué</string>
-    <string name="unsupported_chain_id">ChainId non pris en charge : %1$d</string>
+    <string name="unsupported_chain_id">ChainId non pris en charge: %1$d</string>
     <string name="landing_tips">Veuillez accorder 1 à 2 minutes</string>
     <string name="update_avatar_success">Mise à jour de l\'avatar réussie</string>
     <string name="update_avatar_failed">Échec de la mise à jour de l\'avatar</string>
@@ -625,21 +625,18 @@
     <string name="backup_recovery_phrase_warning_2">Je comprends qu\'il s\'agit d\'une phrase de récupération partielle qui, à elle seule, ne m\'accorde pas le contrôle total de mon compte.</string>
     <string name="backup_recovery_phrase_warning_3">Je comprends que cette phrase de récupération de poids partiel doit être utilisée avec mes autres sauvegardes pour récupérer l\'accès à mon compte.</string>
     <string name="backup_recovery_phrase_about_title">À propos de votre</string>
-    <string name="backup_recovery_phrase_about_note">Vous avez sélectionné pour utiliser une phrase de récupération de 15 mots
-        . \n \nVotre récupération de poids partiel correspondra à une clé de récupération de poids partiel
-        sur votre compte FLOW. \n \nVotre phrase de récupération de poids partiel
-        seul ne sécurise pas l'accès complet à votre compte. Il doit être utilisé en même temps que vos autres sauvegardes pour récupérer l'accès à votre compte.</string>
+    <string name="backup_recovery_phrase_about_note">Vous avez sélectionné pour utiliser une phrase de récupération de 15 mots. Votre récupération de poids partiel correspondra à une clé de récupération de poids partiel sur votre compte FLOW. Votre phrase de récupération de poids partiel seul ne sécurise pas l\'accès complet à votre compte. Il doit être utilisé en même temps que vos autres sauvegardes pour récupérer l\'accès à votre compte.</string>
     <string name="recommended">Configuration recommandée</string>
     <string name="backup_seed_phrase_warning">Vous avez sélectionné d\'utiliser une sauvegarde de phrase de récupération de 12 mots. \n \nCette sauvegarde de phrase de récupération aura le contrôle total de votre compte.</string>
-    <string name="backup_start_about_title">Qu\'est-ce qu'un</string>
+    <string name="backup_start_about_title">Qu\'est-ce qu\'un</string>
     <string name="backup_start_about_content">Multi-sauvegarde</string>
-    <string name="backup_start_about_note">Une sauvegarde multiple stocke plusieurs clés de poids partiel sur vos comptes sur des fournisseurs de confiance comme Google Drive et iCloud, ou une phrase de récupération. \n \nDeux clés de poids partiel doivent être utilisées ensemble pour récupérer l\'accès à votre compte. Chaque clé individuellement ne peut pas être utilisée. \n \nCela signifie que pour récupérer l'accès à votre compte, Flow Wallet nécessite l'accès à deux de vos sauvegardes. \n \nVos sauvegardes sont chiffrées à l'aide du code PIN de votre portefeuille. Vous devez mémoriser ou noter votre code PIN et le stocker dans un endroit sûr.</string>
+    <string name="backup_start_about_note">Une sauvegarde multiple stocke plusieurs clés de poids partiel sur vos comptes sur des fournisseurs de confiance comme Google Drive et iCloud, ou une phrase de récupération. \n \nDeux clés de poids partiel doivent être utilisées ensemble pour récupérer l\'accès à votre compte. Chaque clé individuellement ne peut pas être utilisée. \n \nCela signifie que pour récupérer l\'accès à votre compte, Flow Wallet nécessite l\'accès à deux de vos sauvegardes. \n \nVos sauvegardes sont chiffrées à l\'aide du code PIN de votre portefeuille. Vous devez mémoriser ou noter votre code PIN et le stocker dans un endroit sûr.</string>
     <string name="what_is_multi_backup">Qu\'est-ce que Multi-Backup?</string>
     <string name="backup_start_about_tip">Flow Wallet crée plusieurs clés de poids partiel (500 poids) et les stocke sur les plates-formes souhaitées, iCloud, Google Drive ou Seed Phrase</string>
     <string name="secured_by_key_store">Sécurisé par KeyStore</string>
     <string name="secured_note">Flow Wallet utilise le KeyStore de votre appareil pour protéger votre compte
         et vos actifs. Cette clé privée ne peut pas être récupérée. \n \nKeyStore protège votre clé privée
-        en utilisant la sécurité au niveau du matériel de votre appareil, éliminant le besoin d\'une phrase de graine. \n \nVeuillez créer des sauvegardes pour votre portefeuille afin de vous assurer de conserver l'accès à votre compte Flow et à vos actifs en cas de perte de votre appareil.</string>
+        en utilisant la sécurité au niveau du matériel de votre appareil, éliminant le besoin d\'une phrase de graine. \n \nVeuillez créer des sauvegardes pour votre portefeuille afin de vous assurer de conserver l\'accès à votre compte Flow et à vos actifs en cas de perte de votre appareil.</string>
     <string name="keystore_select_account_tips">Choisissez un compte que vous souhaitez importer</string>
     <string name="keystore_select_account_title">Comptes %1$d trouvés</string>
     <string name="keystore_no_account_title">Aucun compte trouvé</string>

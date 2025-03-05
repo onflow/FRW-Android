@@ -68,7 +68,7 @@
     <string name="word_not_found">Opps, palabra no encontrada.</string>
     <string name="restore_mnemonic_tip">Se trata de una frase de 12 palabras que te dieron cuando creaste tu cartera anterior.</string>
     <string name="multi_restore_mnemonic_tip">Se trata de una frase de 15 palabras que te dieron cuando creaste tu cartera anterior en
-        .</string>
+            .</string>
     <string name="restore_with_mnemonic">Inicie sesión con \nFrase de recuperación</string>
     <string name="restore_mnemonic_hint">Introduzca la frase de recuperación</string>
     <string name="account_not_found">Cuenta no encontrada</string>
@@ -148,7 +148,7 @@
     <string name="search_the_id">Busque el identificador: %1$s</string>
     <string name="move_do_not_ask_me">No preguntarme de nuevo.</string>
     <string name="move_to_desc_borwser">Mueva sus activos entre su dirección de cadencia en Flow, por lo que
-        %1$s puede ver sus activos</string>
+            %1$s puede ver sus activos</string>
     <string name="send_to">Enviar a</string>
     <string name="send_search_hint">Nombre de usuario, dirección(0x), Find o Flowns</string>
     <string name="recent">Recientes</string>
@@ -235,7 +235,7 @@
     <string name="not_logged_in_toast">No ha iniciado sesión en el monedero</string>
     <string name="free_gas_fee">Tasa de gas gratis</string>
     <string name="free_gas_fee_desc">Permitir que Flow Wallet pague la tasa de gas para todas mis transacciones
-        .</string>
+            .</string>
     <string name="file_picker_title">Seleccionar archivo</string>
     <string name="transaction_fee">Tasa de transacción</string>
     <string name="hold_to_confirm">Mantener pulsado para confirmar</string>
@@ -248,7 +248,7 @@
     <string name="reset_wallet">Restablecer Cartera</string>
     <string name="reset_wallet_confirm_title">¿Estás seguro de que quieres reiniciar tu monedero?</string>
     <string name="reset_wallet_tips">Eliminar el monedero de Flow Wallet no elimina el monedero
-        de Flow blockchain. Puedes importar tu monedero de nuevo usando tu frase de recuperación o la copia de seguridad de Google Drive.</string>
+            de Flow blockchain. Puedes importar tu monedero de nuevo usando tu frase de recuperación o la copia de seguridad de Google Drive.</string>
     <string name="reset">Restablecer</string>
     <string name="skip">Saltar</string>
     <string name="start">Inicio</string>
@@ -309,7 +309,7 @@
     <string name="stake_guide_header2">Estaca tu flujo</string>
     <string name="lets_staking">Vamos a apostar</string>
     <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
-        per year.</string>
+            per year.</string>
     <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
     <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
     <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
@@ -481,7 +481,7 @@
     <string name="restore_seed_derivation_path">Ruta de Derivación</string>
     <string name="restore_seed_passphrase">Frase de contraseña</string>
     <string name="restore_seed_phrase_hint">12 o 24 palabras divididas con espacios en blanco</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Ruta de derivación (m/44\'/539'/0'/0/0)</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Ruta de derivación (m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Frase de contraseña (opcional)</string>
     <string name="restore_private_key_hint">Introduce tu clave privada</string>
     <string name="key_store_json_hint">Puede importar el archivo JSON de otra cartera (por ejemplo, Blockto)</string>
@@ -626,9 +626,9 @@
     <string name="backup_recovery_phrase_warning_3">Entiendo que esta frase de recuperación de peso parcial debe ser utilizada junto con mis otras copias de seguridad múltiples para recuperar el acceso a mi cuenta.</string>
     <string name="backup_recovery_phrase_about_title">Sobre tu</string>
     <string name="backup_recovery_phrase_about_note">Ha seleccionado utilizar una frase de recuperación de peso parcial
-        de 15 palabras. \n \nSu recuperación de peso parcial corresponderá a una clave
-        de recuperación de peso parcial en su cuenta de Flow. \n \nTu frase de recuperación de peso parcial
-        por sí sola no garantiza el acceso total a tu cuenta. Debe ser utilizado junto con sus otras copias de seguridad múltiples para recuperar el acceso a su cuenta.</string>
+            de 15 palabras. \n \nSu recuperación de peso parcial corresponderá a una clave
+            de recuperación de peso parcial en su cuenta de Flow. \n \nTu frase de recuperación de peso parcial
+            por sí sola no garantiza el acceso total a tu cuenta. Debe ser utilizado junto con sus otras copias de seguridad múltiples para recuperar el acceso a su cuenta.</string>
     <string name="recommended">Recomendado</string>
     <string name="backup_start_about_title">Qué es</string>
     <string name="backup_start_about_content">Copia de seguridad múltiple</string>
@@ -637,14 +637,14 @@
     <string name="backup_start_about_tip">Copia de seguridad múltiple es donde Flow Wallet crea múltiples claves de peso parcial (peso 500) y las almacena en las plataformas deseadas, iCloud, Google Drive o Frase de Semilla</string>
     <string name="secured_by_key_store">Seguro por KeyStore</string>
     <string name="secured_note">Flow Wallet utiliza la KeyStore de su dispositivo para proteger su cuenta
-        y activos. Esta clave privada no se puede recuperar. \n \nKeyStore protege su clave privada
-        usando la seguridad de nivel de hardware de su dispositivo, eliminar la necesidad de una frase de semilla. \n \nPor favor, crea copias de seguridad para tu monedero para asegurarte de que conservas el acceso a tu cuenta de Flow y activos en caso de que pierdas tu dispositivo.</string>
+            y activos. Esta clave privada no se puede recuperar. \n \nKeyStore protege su clave privada
+            usando la seguridad de nivel de hardware de su dispositivo, eliminar la necesidad de una frase de semilla. \n \nPor favor, crea copias de seguridad para tu monedero para asegurarte de que conservas el acceso a tu cuenta de Flow y activos en caso de que pierdas tu dispositivo.</string>
     <string name="backup_seed_phrase_warning">Ha seleccionado utilizar una copia de seguridad de la frase de recuperación de 12 palabras. \n \nEsta copia de seguridad de la frase de recuperación tendrá el control total de su cuenta.</string>
     <string name="keystore_select_account_tips">Elija una cuenta que desea importar</string>
     <string name="keystore_select_account_title">%1$d cuentas encontradas</string>
     <string name="keystore_no_account_title">No se encontró ninguna cuenta</string>
     <string name="keystore_no_account_desc">Lo sentimos, no podemos encontrar tu cuenta \nen Flow con esta tecla
-        . \n \nPor favor revisa tus datos e inténtalo de nuevo.</string>
+            . \n \nPor favor revisa tus datos e inténtalo de nuevo.</string>
     <string name="raw_key_restore_google_drive_note">Importa tu copia de seguridad antigua de Google Drive.</string>
     <string name="raw_key_restore_seed_phrase_note">Soporte para semilla de 12 palabras.</string>
     <string name="raw_key_restore_keystore_note">Importar archivo keystore (Blocto backup).</string>
@@ -684,7 +684,7 @@
     <string name="storage_limit_after_action_desc">Esta acción puede fallar porque puede reducir la cantidad de FLOW en tu cuenta debajo de lo necesario para cubrir su uso de almacenamiento.  </string>
     <string name="storage_limit_error_desc">Su transacción falló porque su cuenta cayó por debajo del saldo mínimo de FLOW para el uso de almacenamiento de su cuenta.</string>
     <string name="storage_limit_error_tips">Debes tener al menos %1$s en tu cuenta para cubrir
-        tu consumo de almacenamiento.</string>
+            tu consumo de almacenamiento.</string>
     <string name="deposit">Depósito</string>
     <string name="buy_flow">Comprar FLOW</string>
     <string name="restore_failure_insufficient_weight">Esta clave no tiene peso suficiente</string>

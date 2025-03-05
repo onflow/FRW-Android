@@ -481,7 +481,7 @@
     <string name="restore_seed_derivation_path">Ableitungsstruktur</string>
     <string name="restore_seed_passphrase">Passphrase</string>
     <string name="restore_seed_phrase_hint">12 oder 24 Wörter geteilt mit Leerzeichen</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Derivationspfad (m/44'/539'/0'/0/0)</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivationspfad (m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
     <string name="restore_private_key_hint">Geben Sie Ihren Private Key ein</string>
     <string name="key_store_json_hint">Sie können die JSON-Datei von anderen Wallets importieren (z.B. Blockto)</string>
