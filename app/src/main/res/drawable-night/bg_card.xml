@@ -8,5 +8,4 @@
         android:color="@color/border_line_stroke_token_pricing" />
 
     <corners android:radius="16dp" />
-
 </shape>
