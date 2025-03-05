@@ -484,8 +484,8 @@
     <string name="restore_seed_phrase_derivation_path_hint">Ruta de derivación (m/44\'/539'/0'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Frase de contraseña (opcional)</string>
     <string name="restore_private_key_hint">Introduce tu clave privada</string>
-    <string name="key_store_json_hint">Puede importar el archivo json de otra cartera (por ejemplo, Blockto)</string>
-    <string name="key_store_password_hint">Introduzca la contraseña para el archivo json</string>
+    <string name="key_store_json_hint">Puede importar el archivo JSON de otra cartera (por ejemplo, Blockto)</string>
+    <string name="key_store_password_hint">Introduzca la contraseña para el archivo JSON</string>
     <string name="key_store_address_hint">Introduzca su dirección de Flow (opcional)</string>
     <string name="from_multi_backup">Desde Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Clave de acceso/ Frase de recuperación</string>
@@ -632,7 +632,7 @@
     <string name="recommended">Recomendado</string>
     <string name="backup_start_about_title">Qué es</string>
     <string name="backup_start_about_content">Copia de seguridad múltiple</string>
-    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
+    <string name="backup_start_about_note">Una copia de seguridad múltiple almacena varias claves de peso parcial en todas tus cuentas en proveedores de confianza como Google Drive e iCloud, o una frase de recuperación. \n \nSe deben usar dos claves de peso parcial juntas para recuperar el acceso a tu cuenta. No se puede usar cada clave individualmente. \n \nEsto significa que, para recuperar el acceso a tu cuenta, Flow Wallet requiere acceso a dos de tus copias de seguridad. \n \nTus copias de seguridad se cifran con el código PIN de tu billetera. Debes recordar o anotar tu código PIN y guardarlo en un lugar seguro.</string>
     <string name="what_is_multi_backup">¿Qué es Multi-Backup?</string>
     <string name="backup_start_about_tip">Copia de seguridad múltiple es donde Flow Wallet crea múltiples claves de peso parcial (peso 500) y las almacena en las plataformas deseadas, iCloud, Google Drive o Frase de Semilla</string>
     <string name="secured_by_key_store">Seguro por KeyStore</string>

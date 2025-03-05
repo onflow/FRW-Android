@@ -484,8 +484,8 @@
     <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
     <string name="restore_private_key_hint">Enter your private key</string>
-    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
-    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="key_store_json_hint">You can import the JSON file from other wallet (eg. Blockto)</string>
+    <string name="key_store_password_hint">Enter password for JSON file</string>
     <string name="key_store_address_hint">Enter your flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
@@ -664,7 +664,7 @@
     <string name="invalid_evm_address">Invalid ERC20 address</string>
     <string name="token_contract_address">Token Contract Address</string>
     <string name="token_contract_address_hint">Enter your flow token contract address</string>
-    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
+    <string name="evm_token_contract_address_error">Please enter valid EVM contract address</string>
     <string name="contracts">Contracts</string>
     <string name="token_name">Token Name</string>
     <string name="token_icon">Token Icon</string>

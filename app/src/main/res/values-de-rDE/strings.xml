@@ -481,11 +481,11 @@
     <string name="restore_seed_derivation_path">Ableitungsstruktur</string>
     <string name="restore_seed_passphrase">Passphrase</string>
     <string name="restore_seed_phrase_hint">12 oder 24 Wörter geteilt mit Leerzeichen</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivationspfad (m/44'/539'/0'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
     <string name="restore_private_key_hint">Geben Sie Ihren Private Key ein</string>
-    <string name="key_store_json_hint">Sie können die json-Datei von anderen Wallets importieren (z.B. Blockto)</string>
-    <string name="key_store_password_hint">Passwort für json-Datei eingeben</string>
+    <string name="key_store_json_hint">Sie können die JSON-Datei von anderen Wallets importieren (z.B. Blockto)</string>
+    <string name="key_store_password_hint">Passwort für JSON-Datei eingeben</string>
     <string name="key_store_address_hint">Geben Sie Ihre Flow Adresse ein (optional)</string>
     <string name="from_multi_backup">Von Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
@@ -664,7 +664,7 @@
     <string name="invalid_evm_address">Ungültige ERC20-Adresse</string>
     <string name="token_contract_address">Token-Vertragsadresse</string>
     <string name="token_contract_address_hint">Enter your flow token contract address</string>
-    <string name="evm_token_contract_address_error">Bitte geben Sie eine gültige evm Vertragsadresse ein</string>
+    <string name="evm_token_contract_address_error">Bitte geben Sie eine gültige EVM Vertragsadresse ein</string>
     <string name="contracts">Verträge</string>
     <string name="token_name">Token-Name</string>
     <string name="token_icon">Token-Logo</string>
