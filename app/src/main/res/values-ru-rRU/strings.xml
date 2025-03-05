@@ -532,7 +532,7 @@
     <string name="label_evm">EVM</string>
     <string name="move">Переместить</string>
     <string name="current_vm">Текущий ВМ</string>
-    <string name="cadence">Каденс</string>
+    <string name="cadence">Cadence</string>
     <string name="share_qr_code">Поделиться QR-кодом</string>
     <string name="move_token">Жетон перемещения</string>
     <string name="move_flow_to_evm_failed">Не удалось переместить токен потока в EVM</string>

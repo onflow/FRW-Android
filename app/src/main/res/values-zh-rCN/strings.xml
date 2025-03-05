@@ -146,7 +146,7 @@
     <string name="address_search_empty_tip">抱歉，未找到相关账户，请检查您的输入并重试。</string>
     <string name="search_the_id">搜索 ID： %1$s</string>
     <string name="move_do_not_ask_me">不再提示</string>
-    <string name="move_to_desc_borwser">在 Flow 上的 cadence 地址之间转移您的资产，以便 %1$s 查看您的资产</string>
+    <string name="move_to_desc_borwser">在 Flow 上的 Cadence 地址之间转移您的资产，以便 %1$s 查看您的资产</string>
     <string name="send_to">发送到</string>
     <string name="send_search_hint">用户名，地址(0x)，Find或 Flowns</string>
     <string name="recent">最近</string>

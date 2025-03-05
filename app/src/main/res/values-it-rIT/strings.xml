@@ -532,7 +532,7 @@
     <string name="label_evm">EVM</string>
     <string name="move">Muoversi</string>
     <string name="current_vm">Catena attuale</string>
-    <string name="cadence">Cadenza</string>
+    <string name="cadence">Cadence</string>
     <string name="share_qr_code">Condividi il codice QR</string>
     <string name="move_token">Gettone di spostamento</string>
     <string name="move_flow_to_evm_failed">Spostamento del token di Flow in EVM non riuscito</string>

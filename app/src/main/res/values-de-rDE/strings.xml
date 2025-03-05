@@ -533,7 +533,7 @@
     <string name="label_evm">EVM</string>
     <string name="move">Verschieben</string>
     <string name="current_vm">Aktuelle VM</string>
-    <string name="cadence">Kadenz</string>
+    <string name="cadence">Cadence</string>
     <string name="share_qr_code">QR-Code teilen</string>
     <string name="move_token">Token bewegen</string>
     <string name="move_flow_to_evm_failed">Verschieben des Flow-Tokens auf EVM fehlgeschlagen</string>
