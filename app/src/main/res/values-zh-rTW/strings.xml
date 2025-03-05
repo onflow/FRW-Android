@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">下一步</string>
+    <string name="view_as">显示方式</string>
     <string name="secure_design">设计安全</string>
     <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
     <string name="username">用戶名</string>
