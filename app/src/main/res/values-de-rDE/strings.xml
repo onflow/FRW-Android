@@ -2,6 +2,8 @@
 <resources>
     <string name="next">Weiter</string>
     <string name="list">Liste</string>
+    <string name="grid">Raster</string>
+    <string name="view_as">Anzeigen als</string>
     <string name="creating_account">Erstellen Ihres Kontos…</string>
     <string name="secure_design">Sicher durch Design</string>
     <string name="scan">Scannen</string>

@@ -2,6 +2,8 @@
 <resources>
     <string name="next">次のページ</string>
     <string name="list">リスト</string>
+    <string name="grid">グリッド</string>
+    <string name="view_as">表示</string>
     <string name="creating_account">アカウントを作成しています…</string>
     <string name="secure_design">セキュア・バイ・デザイン</string>
     <string name="secure_design_2">ハードウェアグレードのセキュリティでデバイスキーを使用するFlow Walletは信頼できる超安全なハードウェアウォレットです</string>
