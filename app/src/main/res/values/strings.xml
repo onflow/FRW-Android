@@ -230,7 +230,7 @@
     <string name="fcl_permission_read_balance">View your wallet balance and activity</string>
     <string name="fcl_permission_transaction">Request approval for transactions</string>
     <string name="script">Script</string>
-    <string name="dapps">dApps</string>
+    <string name="dapps">Apps</string>
     <string name="process_of_enabling_coin">Process of Enabling Coin</string>
     <string name="mnemonic_check_fail">Wrong selection</string>
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
