@@ -172,7 +172,6 @@ fun Double.formatNum(
     return format(digits, roundingMode)
 }
 
-// Helper: converts an integer to its subscript representation.
 private fun toSubscript(n: Int): String {
     val subscripts = mapOf(
         '0' to '₀',
