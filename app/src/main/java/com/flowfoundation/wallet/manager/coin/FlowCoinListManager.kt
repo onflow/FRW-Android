@@ -29,7 +29,16 @@ object FlowCoinListManager {
             val list = Gson().fromJson(text, TokenList::class.java)
             if (list.tokens.isNotEmpty()) {
                 coinList.clear()
-                coinList.addAll(list.tokens.filter { it.address.isNotBlank() })
+                coinList.addAll(
+                    list.tokens.filter { it.address.isNotBlank() }.map { token ->
+                        val coinType = if (WalletManager.isEVMAccountSelected()) {
+                            FlowCoinType.EVM
+                        } else {
+                            FlowCoinType.CADENCE
+                        }
+                        token.copy(type = coinType)
+                    }
+                )
                 if (WalletManager.isEVMAccountSelected()) {
                     addFlowTokenManually()
                     addCustomToken()
@@ -61,7 +70,7 @@ object FlowCoinListManager {
             )
             Gson().fromJson(text, FlowCoin::class.java)?.let { coin ->
                 if(coinList.none { it.address == coin.address }) {
-                    coinList.add(0, coin)
+                    coinList.add(0, coin.copy(type = FlowCoinType.EVM))
                 }
             }
         } catch (e: Exception) {
@@ -137,7 +146,9 @@ data class FlowCoin(
     @SerializedName("flowIdentifier")
     val flowIdentifier: String?,
     @SerializedName("evmAddress")
-    val evmAddress: String?
+    val evmAddress: String?,
+    @SerializedName("type")
+    val type: FlowCoinType? = if (evmAddress.isNullOrBlank()) FlowCoinType.EVM else FlowCoinType.CADENCE,
 ) : Parcelable {
 
     fun contractId(): String {
@@ -184,6 +195,12 @@ data class FlowCoin(
         const val SYMBOL_THUL = "thul"
         const val SYMBOL_STARLY = "STARLY"
     }
+}
+
+@Parcelize
+enum class FlowCoinType : Parcelable {
+    CADENCE,
+    EVM
 }
 
 @Parcelize

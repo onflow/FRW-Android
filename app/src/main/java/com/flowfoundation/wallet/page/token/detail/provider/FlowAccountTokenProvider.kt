@@ -4,6 +4,7 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.coin.TokenList
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
@@ -52,7 +53,7 @@ class FlowAccountTokenProvider : MoveTokenProvider {
         val text = URL(getTokenListUrl()).readText()
         val list = Gson().fromJson(text, TokenList::class.java)
         coinList.clear()
-        coinList.addAll(list.tokens)
+        coinList.addAll(list.tokens.map { it.copy(type = FlowCoinType.CADENCE) })
         return list.tokens
     }
 

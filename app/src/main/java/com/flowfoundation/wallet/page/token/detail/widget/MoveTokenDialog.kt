@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.databinding.DialogMoveTokenBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -30,12 +31,15 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.setDecimalDigitsFilter
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isFlowAddress
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.wallet.toAddress
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.math.BigDecimal
 import kotlin.coroutines.Continuation
@@ -117,6 +121,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             EVMWalletManager.getEVMAddress().orEmpty()
         }
         with(binding.etAmount) {
+            setDecimalDigitsFilter(contractId.decimal())
             doOnTextChanged { _, _, _, _ ->
                 checkAmount()
             }
@@ -307,6 +312,12 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
             }
         }
+    }
+
+    private fun String.decimal(): Int {
+        return FlowCoinListManager.getCoinById(this)?.run {
+            kotlin.math.min(decimal, 8)
+        } ?: 8
     }
 
     override fun onCancel(dialog: DialogInterface) {
