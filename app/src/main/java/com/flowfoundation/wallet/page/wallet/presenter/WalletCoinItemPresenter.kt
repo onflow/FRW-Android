@@ -40,26 +40,18 @@ class WalletCoinItemPresenter(
                 coinBalancePrice.text =
                     (model.balance * model.coinRate).formatPrice(includeSymbol = true, isAbbreviation = true)
             }
-            coinPrice.text = if (model.coinRate == BigDecimal.ZERO) "-" else model.coinRate.formatPrice(includeSymbol = true)
+            coinPrice.text = if (model.coinRate == BigDecimal.ZERO) "" else model.coinRate.formatPrice(includeSymbol = true)
             val isStable = model.quoteChange == 0f
             val isRise = model.quoteChange > 0
             tvQuoteChange.backgroundTintList =
                 ColorStateList.valueOf(
-                    if (isStable) {
-                        R.color.accent_gray_8.res2color()
-                    } else {
-                        if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color()
-                    }
+                    if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color()
                 )
             tvQuoteChange.setTextColor(
-                if (isStable) {
-                    R.color.accent_gray.res2color()
-                } else {
-                    if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color()
-                }
+                if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color()
             )
             tvQuoteChange.text = if (isStable) {
-                "-"
+                ""
             } else {
                 (if (isRise) "+" else "-") + "${model.quoteChange.absoluteValue.formatNum(2)}%"
             }
