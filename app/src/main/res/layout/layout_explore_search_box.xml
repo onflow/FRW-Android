@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/explore_search_box"
@@ -13,22 +12,34 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingEnd="13dp"
+        android:paddingStart="13dp">
 
+        <!-- Search icon -->
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:layout_marginStart="13dp"
             android:src="@drawable/ic_baseline_search_24"
             app:tint="@color/contrast_text" />
 
+        <!-- Search hint text -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
+            android:layout_weight="1"
             android:fontFamily="@font/inter"
             android:text="@string/explore_search_hint"
             android:textColor="@color/contrast_text"
             android:textSize="16sp" />
+
+        <androidx.constraintlayout.utils.widget.ImageFilterButton
+            android:id="@+id/scan_button"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/actionBarItemBackground"
+            android:src="@drawable/ic_scan_explore" />
+      
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

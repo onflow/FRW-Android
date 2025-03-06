@@ -16,6 +16,28 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/background"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="10dp"
+            android:layout_marginTop="10dp"
+            app:layout_scrollFlags="scroll|snap">
+
+            <FrameLayout
+                android:id="@+id/search_box_wrapper"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_border_radius_16dp_2">
+
+                <include
+                    android:id="@+id/search_box"
+                    layout="@layout/layout_explore_search_box" />
+            </FrameLayout>
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="18dp"
             android:orientation="horizontal"
             android:paddingVertical="10dp"
@@ -32,38 +54,6 @@
                 android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <androidx.constraintlayout.utils.widget.ImageFilterButton
-                android:id="@+id/scan_button"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="end|center_vertical"
-                android:background="?attr/actionBarItemBackground"
-                android:src="@drawable/ic_scan_explore"
-                app:layout_constraintBottom_toBottomOf="@id/title_view"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/title_view" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/background"
-            android:paddingHorizontal="18dp"
-            android:paddingVertical="5dp"
-            app:layout_scrollFlags="scroll|snap">
-
-            <FrameLayout
-                android:id="@+id/search_box_wrapper"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_input_border_radius_16dp_2">
-
-                <include
-                    android:id="@+id/search_box"
-                    layout="@layout/layout_explore_search_box" />
-            </FrameLayout>
-
         </FrameLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
