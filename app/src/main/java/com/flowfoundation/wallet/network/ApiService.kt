@@ -194,6 +194,11 @@ interface ApiService {
         @Query("after") after: String = "",
     ): TransferRecordResponse
 
+    @GET("/api/evm/{evmAddress}/transactions")
+    suspend fun getEVMTransferRecord(
+        @Path("evmAddress") address: String
+    ): EVMTransferRecordResponse
+
     @POST("/api/template")
     suspend fun securityCadenceCheck(@Body params: CadenceSecurityCheck): CadenceSecurityCheckResponse
 

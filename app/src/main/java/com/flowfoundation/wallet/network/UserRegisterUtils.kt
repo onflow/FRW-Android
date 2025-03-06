@@ -37,7 +37,6 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
 import io.outblock.wallet.KeyManager
@@ -211,7 +210,6 @@ suspend fun clearUserCache() {
     BalanceManager.clear()
     StakingManager.clear()
     CryptoProviderManager.clear()
-    updateAccountTransferCount(0)
     cleanBackupMnemonicPreference()
     delay(1000)
 }

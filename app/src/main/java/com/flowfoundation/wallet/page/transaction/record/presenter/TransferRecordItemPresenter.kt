@@ -2,18 +2,24 @@ package com.flowfoundation.wallet.page.transaction.record.presenter
 
 import android.annotation.SuppressLint
 import android.view.View
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toUpperCase
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemTransferRecordBinding
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.TransferRecord
 import com.flowfoundation.wallet.network.model.TransferRecord.Companion.TRANSFER_TYPE_SEND
+import com.flowfoundation.wallet.page.browser.openInFlowEVMScan
 import com.flowfoundation.wallet.page.browser.openInFlowScan
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.formatNum
+import com.flowfoundation.wallet.utils.shortenEVMString
+import com.flowfoundation.wallet.utils.svgToPng
 import org.joda.time.format.ISODateTimeFormat
 import java.math.RoundingMode
 
@@ -25,27 +31,28 @@ class TransferRecordItemPresenter(
 
     override fun bind(model: TransferRecord) {
         with(binding) {
-            if (model.image.isNullOrBlank()) {
+            if (model.logo().isEmpty()) {
                 iconView.setImageResource(R.drawable.ic_transaction_default)
             } else {
-                Glide.with(iconView).load(model.image).into(iconView)
+                Glide.with(iconView).load(model.logo().svgToPng()).into(iconView)
             }
             transferTypeView.rotation = if (model.transferType == TRANSFER_TYPE_SEND) 0.0f else 180.0f
-//            val title = model.token?.replaceBeforeLast(".", "")?.removePrefix(".")
-//            titleView.text = if (title.isNullOrBlank()) {
-//                model.title
-//            } else {
-//                title
-//            }
             titleView.text = model.title ?: ""
-//            val amount = if (model.amount.isNullOrBlank()) "" else (model.amount.toSafeFloat() / 100000000f).formatNum(8, RoundingMode.HALF_UP)
             amountView.text = model.amount ?: ""
             bindStatus(model)
             bindTime(model)
             bindAddress(model)
         }
 
-        binding.root.setOnClickListener { openInFlowScan(findActivity(view)!!, model.txid!!) }
+        binding.root.setOnClickListener {
+            findActivity(view)?.let {
+                if (WalletManager.isEVMAccountSelected()) {
+                    openInFlowEVMScan(it, model.txid.orEmpty())
+                    return@setOnClickListener
+                }
+                openInFlowScan(it, model.txid.orEmpty())
+            }
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -62,15 +69,19 @@ class TransferRecordItemPresenter(
         }
 
         statusView.setTextColor(color)
-        statusView.text = transfer.status
+        statusView.text = transfer.status?.toUpperCase(Locale.current) ?: ""
     }
 
     @SuppressLint("StringFormatInvalid")
     private fun ItemTransferRecordBinding.bindAddress(transfer: TransferRecord) {
         val str = if (transfer.transferType == TRANSFER_TYPE_SEND) {
-            view.context.getString(R.string.to_address, transfer.receiver)
+            if (transfer.receiver.isNullOrEmpty()) {
+                ""
+            } else {
+                view.context.getString(R.string.to_address, shortenEVMString(transfer.receiver))
+            }
         } else if (!transfer.sender.isNullOrEmpty()) {
-            view.context.getString(R.string.from_address, transfer.sender)
+            view.context.getString(R.string.from_address, shortenEVMString(transfer.sender))
         } else ""
         toView.text = str
     }

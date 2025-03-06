@@ -21,7 +21,6 @@ class TransactionRecordFragmentPresenter(
     private val adapter by lazy { TransactionRecordListAdapter() }
 
     init {
-        binding.refreshLayout.isEnabled = false
         binding.refreshLayout.setColorSchemeColors(R.color.salmon_primary.res2color())
 
         with(binding.recyclerView) {
@@ -39,6 +38,7 @@ class TransactionRecordFragmentPresenter(
     }
 
     fun setListData(list: List<Any>) {
+        binding.refreshLayout.isRefreshing = false
         adapter.setNewDiffData(list)
     }
 }

@@ -75,8 +75,7 @@ class WalletHeaderPresenter(
                 ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
 
-            val count =
-                FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it) }
+            val count = if (model.coinCount > 0 ) model.coinCount else FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it) }
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
