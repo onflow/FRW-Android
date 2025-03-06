@@ -45,10 +45,18 @@ class WalletCoinItemPresenter(
             val isRise = model.quoteChange > 0
             tvQuoteChange.backgroundTintList =
                 ColorStateList.valueOf(
-                    if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color()
+                    if (isStable) {
+                       R.color.transparent.res2color()
+                    } else {
+                        if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color()
+                    }
                 )
             tvQuoteChange.setTextColor(
-                if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color()
+                if (isStable) {
+                    R.color.accent_gray.res2color()
+                } else {
+                    if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color()
+                }
             )
             tvQuoteChange.text = if (isStable) {
                 ""
