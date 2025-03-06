@@ -6,6 +6,7 @@
     <string name="view_as">Anzeigen als</string>
     <string name="creating_account">Erstellen Ihres Kontos…</string>
     <string name="secure_design">Sicher durch Design</string>
+    <string name="scan">Scannen</string>
     <string name="secure_design_2">Die Verwendung von Geräteschlüssen mit Hardware-Grade-Sicherheit, Flow Wallet ist eine extrem sichere Hardware-Wallet, der Sie vertrauen können</string>
     <string name="username">Benutzername</string>
     <string name="username_too_short">Zu kurz</string>
@@ -37,8 +38,8 @@
     <string name="create_pin">Eine PIN erstellen</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Bitte geben Sie\nIhre PIN erneut ein.</string>
-    <string name="reset_pin">Please type\nyour new PIN</string>
-    <string name="reset_check_pin">Please type\nyour new PIN again</string>
+    <string name="reset_pin">Bitte geben Sie\nIhre neue PIN ein</string>
+    <string name="reset_check_pin">Bitte geben Sie\nIhre neue PIN erneut ein</string>
     <string name="check_pin_tip">Bitte stellen Sie sicher, dass Sie sich Ihre PIN merken können.</string>
     <string name="create_pin_tip">So kann niemand außer Ihnen Ihre Brieftasche entsperren.</string>
     <string name="backup_pin_tip">Ihr PIN-Code wird für die sichere Verschlüsselung Ihrer Kontosicherung verwendet.</string>
@@ -54,7 +55,7 @@
     <string name="backup_manually">Manuelles Backup</string>
     <string name="backup_to_google_drive">Sicherung auf Google Drive</string>
     <string name="recovery_phrase">Wiederherstellungsphrase</string>
-    <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
+    <string name="recovery_phrase_note">Notieren Sie diese Wörter in der richtigen Reihenfolge und speichern Sie sie an einem sicheren Ort.</string>
     <string name="recovery">Erholung</string>
     <string name="phrase">Phrase</string>
     <string name="nft">NFT</string>
@@ -148,9 +149,9 @@
     <string name="address_check_success">Bestätigte Adresse</string>
     <string name="address_search_empty_tip">Tut uns leid, wir haben kein entsprechendes Konto gefunden. Bitte überprüfen Sie Ihre Eingabe und suchen Sie erneut.</string>
     <string name="search_the_id">Suche nach der ID: %1$s</string>
-    <string name="move_do_not_ask_me">Do not ask me again.</string>
-    <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
-        %1$s can view your assets</string>
+    <string name="move_do_not_ask_me">Nicht erneut nachfragen</string>
+    <string name="move_to_desc_borwser">Verschieben Sie Ihre Assets zwischen Ihrer Kadenz-Adresse auf Flow, so dass
+        %1$s Ihre Assets anzeigen kann</string>
     <string name="send_to">Senden an</string>
     <string name="send_search_hint">Benutzername, Adresse(0x), Suchen oder Flowns</string>
     <string name="recent">Neueste</string>
@@ -162,7 +163,7 @@
     <string name="transaction">Transaktion</string>
     <string name="from">Von</string>
     <string name="to">An</string>
-    <string name="sign_message_primary_type">Primary type</string>
+    <string name="sign_message_primary_type">Primärer Type</string>
     <string name="amount_confirmation">Betrag Bestätigung</string>
     <string name="insufficient_balance">Unzureichendes Gleichgewicht</string>
     <string name="minimum_required">Mindestens 50 Ströme</string>
@@ -213,7 +214,7 @@
     <string name="drag_here_to_unpin">Zum Entpinnen hierher ziehen</string>
     <string name="recovery_purchase_tips">Schreiben oder kopieren Sie diese Wörter in der richtigen Reihenfolge auf und bewahren Sie sie an einem sicheren Ort auf.</string>
     <string name="open_in_browser">Im Browser öffnen</string>
-    <string name="clear_cache">Clear Cache</string>
+    <string name="clear_cache">Cache löschen</string>
     <string name="pending_transaction">Anhängige Transaktion</string>
     <string name="welcome_to_wallet">Willkommen bei Flow Wallet!</string>
     <string name="profile_sign_tips"><![CDATA[Schließen Sie sich uns an und schalten Sie alle brillanten und neuen Erfahrungen frei!]]></string>
@@ -240,7 +241,7 @@
     <string name="file_picker_title">Datei auswählen</string>
     <string name="transaction_fee">Transaktionsgebühr</string>
     <string name="hold_to_confirm">Halten zum Bestätigen</string>
-    <string name="hold_to_sign">Hold to sign</string>
+    <string name="hold_to_sign">Zum Link halten</string>
     <string name="enable">Aktivieren Sie</string>
     <string name="sign_message">Zeichen Nachricht</string>
     <string name="transaction_history">Verlauf der Transaktionen</string>
@@ -269,7 +270,7 @@
     <string name="claim_domain_failed">Claim-Domain fehlgeschlagen</string>
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Falsche Mnemonik</string>
-    <string name="address_incorrect">Incorrect address</string>
+    <string name="address_incorrect">Falscher Adresse</string>
     <string name="copied_to_clipboard">In die Zwischenablage kopiert</string>
     <string name="inbox">Token-Posteingang</string>
     <string name="token">Token</string>
@@ -309,11 +310,11 @@
     <string name="stake_guide_header1">Verdienen Sie Belohnungen, wenn Sie</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
     <string name="lets_staking">Abstecken</string>
-    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
-        per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_1">Verdienen Sie bis zu <font color="#60C293"><strong>13%</strong></font>
+        pro Jahr.</string>
+    <string name="stake_guide_desc_2">Wenn Sie einen Einsatz machen <font color="#60C293"><strong>Durchfluss</strong></font> erhalten Sie <font color="#60C293"><strong>Flow</strong></font>. Sie können <font color="#60C293"><strong>handeln</strong></font> diesen liquiden Vermögenswert jederzeit handeln.</string>
+    <string name="stake_guide_desc_3">Sie beginnen zu verdienen <font color="#60C293"><strong>sofort</strong></font>.</string>
+    <string name="stake_guide_desc_4">Die Belohnungen werden automatisch auf Ihre Einzahlung gutgeschrieben <font color="#60C293"><strong>alle paar Tage</strong></font>.</string>
     <string name="staking_provider">Absteckdienstleister</string>
     <string name="select_provider">Anbieter auswählen</string>
     <string name="stake">Pfahl</string>
@@ -451,22 +452,22 @@
     <string name="or">Oder</string>
     <string name="sync_page_title">Öffnen Sie Ihre Flow Wallet in der mobilen App \n und scannen Sie den QR-Code, um Ihre Wallet zu synchronisieren.</string>
     <string name="sync_scan_qr_code">QR-Code mit Mobile App scannen</string>
-    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="sync_note">Hinweis: Ihre Wiederherstellungsphrase wird niemals über den Server von Flow Wallet laufen. Sie ist Ende-zu-Ende verschlüsselt und wir können sie nie lesen.</string>
     <string name="wallet_confirm_desc">1 passende Brieftasche finden</string>
     <string name="wallet_confirmation">Wallet-Bestätigung</string>
     <string name="loading">Laden</string>
     <string name="loading_desc">Es kann eine Weile dauern, bitte nicht abbrechen...</string>
     <string name="create_device_backup">Gerätesicherung erstellen</string>
-    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
+    <string name="google_backup_note">Hinweis: Ihr Sicherungsschlüssel ist Ende-zu-Ende verschlüsselt und wird nie an Flow Wallet Server gesendet</string>
     <string name="create_multi_backup">Multi-Backup erstellen</string>
-    <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
+    <string name="create_seed_phrase_backup">Seed Phrase Sicherung erstellen</string>
     <string name="multi_backup">Mehrfachsicherungen</string>
-    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
+    <string name="full_weight_seed_phrase">Volle Gewichtsseed-Phrase</string>
     <string name="device_backup">Gerät sichern</string>
     <string name="other_devices">Andere Geräte</string>
     <string name="multi_backup_tip">Bitte wählen Sie 2 oder mehr Backup-Optionen</string>
     <string name="upload_key_to_google_drive">Schlüssel zu Google Drive hochladen</string>
-    <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
+    <string name="upload_key_to_dropbox">Schlüssel zu Dropbox hochladen</string>
     <string name="registration_key_list">Registrierung KeyList</string>
     <string name="upload_backup">Backup hochladen</string>
     <string name="backup_completed">Sicherung abgeschlossen</string>
@@ -474,27 +475,27 @@
     <string name="import_wallet_note">Stellen Sie Ihr Portemonnaie mit Hilfe eines Backups wieder her.</string>
     <string name="from_device_backup">Von der Gerätesicherung</string>
     <string name="from_device_backup_note">Wiederherstellen von einem anderen Mobiltelefon oder einer erweiterten Brieftasche</string>
-    <string name="from_key_store">From Keystore</string>
-    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="from_key_store">Von Keystore</string>
+    <string name="from_key_store_note">Keystore-Datei importieren (Blocto Backup).</string>
     <string name="key_store">Keystore</string>
     <string name="seed_phrase">Seed Phrase</string>
-    <string name="restore_seed_phrase_advanced">Advanced</string>
-    <string name="restore_seed_derivation_path">Derivation Path</string>
+    <string name="restore_seed_phrase_advanced">Fortgeschritten</string>
+    <string name="restore_seed_derivation_path">Ableitungsstruktur</string>
     <string name="restore_seed_passphrase">Passphrase</string>
-    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_hint">12 oder 24 Wörter geteilt mit Leerzeichen</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivationspfad (m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
-    <string name="restore_private_key_hint">Enter your private key</string>
-    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
-    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="restore_private_key_hint">Geben Sie Ihren Private Key ein</string>
+    <string name="key_store_json_hint">Sie können die JSON-Datei von anderen Wallets importieren (z.B. Blockto)</string>
+    <string name="key_store_password_hint">Passwort für JSON-Datei eingeben</string>
     <string name="key_store_address_hint">Geben Sie Ihre Flow Adresse ein (optional)</string>
     <string name="from_multi_backup">Von Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Recovery Phrase</string>
     <string name="from_recovery_phrase">Sonstige</string>
     <string name="from_recovery_phrase_note">Wiederherstellung unter Verwendung eines alten Wiederherstellungssatzes (keine Mehrfachsicherungen)</string>
     <string name="from_raw_key">Andere</string>
-    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
-    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
+    <string name="from_raw_key_note">Unterstütze alte Google Drive, Seed Phrase, Key Store und privaten Schlüssel</string>
+    <string name="import_raw_key_note">Von Flow Wallet Legacy Backup, Seed Phrase, Key Store und Private Key.</string>
     <string name="multi_restore">Multi-Restore</string>
     <string name="multi_restore_title">Von Multi-Backup</string>
     <string name="multi_restore_note">Bitte wählen Sie 2 oder mehr Backup-Optionen</string>
@@ -503,10 +504,10 @@
     <string name="prepared_to_restore_wallet">Vorbereitet auf die Wiederherstellung der Brieftasche</string>
     <string name="view_all">Alle anzeigen</string>
     <string name="create_device_backup_title">Synchronisieren Sie Ihre Brieftasche zwischen Ihren Geräten</string>
-    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="device_backup_note">Scannen Sie den QR-Code, der von der Flow Wallet-Browser-Erweiterung angezeigt wird, um Ihre Wallet zwischen Ihren Geräten zu synchronisieren</string>
     <string name="create_device_backup_note">Hinweis: Ihr Google Drive-Backup wird NIEMALS über den Server von Flow Wallet laufen. Es ist Ende-zu-Ende verschlüsselt und wir können es niemals lesen.</string>
-    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
-    <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
+    <string name="create_multi_backup_note">Erstellen Sie eine Cloudsicherung mit vertrauenswürdigen Anbietern wie Google Drive, Passwort und Sichern Sie Ihre Wiederherstellungsphrase</string>
+    <string name="create_seed_phrase_backup_note">Erstelle eine 12-Wort-Wiederherstellungsphrase</string>
     <string name="scan_desktop_device">Desktop-Gerät scannen</string>
     <string name="backup_detail">Sicherung Detail</string>
     <string name="backup_info">Backup-Informationen</string>
@@ -518,7 +519,7 @@
     <string name="add_other_device">Anderes Gerät hinzufügen</string>
     <string name="revoke_device">Gerät widerrufen</string>
     <string name="wrong_network">Netzwerk wechseln</string>
-    <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
+    <string name="backup_on_mainnet">Sie können nur im Mainnet ein Backup erstellen.</string>
     <string name="restore_on_mainnet">Sie können die Brieftasche nur im Mainnet wiederherstellen.</string>
     <string name="switch_on_mainnet">Sie können nur im Hauptnetz ein Backup erstellen.</string>
     <string name="create_on_mainnet_or_testnet">Sie können nur im Hauptnetz oder im Testnetz ein Konto erstellen.</string>
@@ -534,7 +535,7 @@
     <string name="label_evm">EVM</string>
     <string name="move">Verschieben</string>
     <string name="current_vm">Aktuelle VM</string>
-    <string name="cadence">Kadenz</string>
+    <string name="cadence">Cadence</string>
     <string name="share_qr_code">QR-Code teilen</string>
     <string name="move_token">Token bewegen</string>
     <string name="move_flow_to_evm_failed">Verschieben des Flow-Tokens auf EVM fehlgeschlagen</string>
@@ -557,7 +558,7 @@
     <string name="account_list">Konto-Liste</string>
     <string name="edit_wallet">Brieftasche bearbeiten</string>
     <string name="select_nft_empty">0 NFTs</string>
-    <string name="no_collections_available">No collections available</string>
+    <string name="no_collections_available">Keine Kollektionen verfügbar</string>
     <string name="profiles">Profile</string>
     <string name="create_profile">Profil erstellen</string>
     <string name="features_coming">Funktionen demnächst verfügbar</string>
@@ -567,137 +568,137 @@
     <string name="notification">Benachrichtigung</string>
     <string name="landing_step_four_title">Dein \nFlow Konto \nist fertig, \nlass es uns wieder aufbauen!</string>
     <string name="landing_step_four_desc">Die Sicherung Ihres Kontos stellt sicher, dass Ihr Zugriff sicher und immer in Ihrer Kontrolle ist</string>
-    <string name="landing_step_loading">Creating your Profile</string>
+    <string name="landing_step_loading">Profilfortschritt</string>
     <string name="landing_step_done">Sicherung erstellen</string>
     <string name="exit_backup_warning_dialog_title">Sind Sie sicher, dass Sie keine Sicherung erstellen möchten?</string>
     <string name="exit_backup_warning_dialog">Wenn Sie Ihr Gerät verlieren oder Ihre Brieftasche löschen, wird Ihr Guthaben für immer verloren gehen.</string>
     <string name="back">Zurück</string>
     <string name="token_count">%1$d Tokens</string>
-    <string name="wallpaper_static">Static</string>
-    <string name="wallpaper_dynamic">Dynamic</string>
-    <string name="wallpaper">Wallpaper</string>
-    <string name="change_wallpaper">Change Wallpaper</string>
-    <string name="appearance">Appearance</string>
+    <string name="wallpaper_static">Statisch</string>
+    <string name="wallpaper_dynamic">Dynamisch</string>
+    <string name="wallpaper">Hintergrundbild</string>
+    <string name="change_wallpaper">Hintergrundbild ändern</string>
+    <string name="appearance">Aussehen</string>
     <string name="current_device">Aktuelles Gerät</string>
     <string name="create_username_tip">Andere Flow Wallet-Nutzer können Sie über Ihren eindeutigen Benutzernamen finden und Ihnen Zahlungen senden.</string>
     <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
     <string name="create_backup">Sicherung erstellen</string>
     <string name="upload_again">Erneut hochladen</string>
     <string name="backup_uploaded">Sicherung hochgeladen</string>
-    <string name="network_connect_lost">Network Connection Lost</string>
-    <string name="try_to_connect">Try to Connect</string>
+    <string name="network_connect_lost">Netzwerkverbindung verloren</string>
+    <string name="try_to_connect">Versuchen zu verbinden</string>
     <string name="revoked">Widerrufen</string>
-    <string name="revoking">Revoking...</string>
+    <string name="revoking">Widerrufen...</string>
     <string name="full_access">Vollständiger Zugang</string>
     <string name="multi_sign">Mehrere Zeichen</string>
-    <string name="can_not_revoke">Can not Revoke Current Device Key</string>
-    <string name="login_failure">Login Failure</string>
+    <string name="can_not_revoke">Aktuellen Geräteschlüssel kann nicht widerrufen</string>
+    <string name="login_failure">Anmelden fehlgeschlagen</string>
     <string name="move_nft_failed">NFT verschieben fehlgeschlagen</string>
     <string name="move_nft_success">NFT-Erfolg bewegen</string>
     <string name="send_nft_success">NFT-Erfolg senden</string>
     <string name="send_nft_failed">NFT senden fehlgeschlagen</string>
-    <string name="sync_account_info_failure">Sync Account Info Failure</string>
-    <string name="add_public_key_failure">Add Public Key Failure</string>
-    <string name="send_response_failure">Send Response Failure</string>
-    <string name="collection_list">Collection List</string>
-    <string name="balance_value">Balance %1$s</string>
-    <string name="backup_not_found">Backup Not Found</string>
-    <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
-    <string name="backup_decryption_failed">Backup Decryption Failed</string>
+    <string name="sync_account_info_failure">Synchronisiere Account Info Fehler</string>
+    <string name="add_public_key_failure">Public-Key-Fehler hinzufügen</string>
+    <string name="send_response_failure">Antwortfehler senden</string>
+    <string name="collection_list">Buchungssätze</string>
+    <string name="balance_value">Kontostand: %1$s</string>
+    <string name="backup_not_found">Sicherung wurde nicht gefunden</string>
+    <string name="backup_not_found_desc">Ihrem Konto ist keine Sicherungsdatei zugeordnet. Bitte verifizieren und erneut versuchen.</string>
+    <string name="backup_decryption_failed">Backup Entschlüsselung fehlgeschlagen</string>
     <string name="backup_decryption_failed_desc">Der eingegebene PIN-Code hat das Backup nicht entschlüsselt. Bitte überprüfen Sie Ihre PIN und versuchen Sie es erneut.</string>
-    <string name="no_account_found">No Backup Account Found</string>
-    <string name="no_account_found_desc">No multi-sign account is linked to your backup option. Please verify and try again.</string>
+    <string name="no_account_found">Kein Backup-Konto gefunden</string>
+    <string name="no_account_found_desc">Es ist kein Multi-Sign-Konto mit Ihrer Backup-Option verknüpft. Bitte überprüfen und erneut versuchen.</string>
     <string name="restore_failed">Wiederherstellung fehlgeschlagen</string>
-    <string name="restore_failed_desc">Please try again later.</string>
-    <string name="debug_view">Debug View</string>
-    <string name="export_log">Export Log</string>
+    <string name="restore_failed_desc">Bitte versuchen Sie es später erneut.</string>
+    <string name="debug_view">Debug-Ansicht</string>
+    <string name="export_log">Export-Log</string>
     <string name="view_recovery_phrase">Ansicht Recovery Phrase</string>
-    <string name="clear">Clear</string>
-    <string name="send_success">Send Success</string>
-    <string name="send_failed">Send Failed</string>
-    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">Please allow 1–2 mins</string>
-    <string name="update_avatar_success">Update Avatar Success</string>
-    <string name="update_avatar_failed">Update Avatar Failed</string>
-    <string name="backup_failed">Backup Failed</string>
-    <string name="backup_failed_desc">Your backup creation failed. Please try again later.</string>
-    <string name="backup_recovery_phrase_warning_note">You will be able to review your recovery phrase after you create the backup.</string>
-    <string name="backup_recovery_phrase_warning_1">I understand if I lose my recovery phrase, I may not be able to recover my account.</string>
-    <string name="backup_recovery_phrase_warning_2">I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.</string>
-    <string name="backup_recovery_phrase_warning_3">I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.</string>
-    <string name="backup_recovery_phrase_about_title">About Your</string>
-    <string name="backup_recovery_phrase_about_note">You have selected to use a 15-word
-        partial-weight recovery phrase. \n \nYour partial-weight recovery will correspond to a
-        partial-weight recovery key on your Flow account. \n \nYour partial-weight recovery
-        phrase on its own does not secure full access to your account. It must be used together with your other multi-backups to recover access to your account.</string>
-    <string name="recommended">Recommended</string>
-    <string name="backup_start_about_title">What is a</string>
+    <string name="clear">Löschen</string>
+    <string name="send_success">Erfolg</string>
+    <string name="send_failed">Senden fehlgeschlagen</string>
+    <string name="unsupported_chain_id">Nicht unterstützte ChainId: %1$d</string>
+    <string name="landing_tips">Bitte erlauben Sie 1–2 Minuten</string>
+    <string name="update_avatar_success">Avatar erfolgreich aktualisiert</string>
+    <string name="update_avatar_failed">Update Avatar fehlgeschlagen</string>
+    <string name="backup_failed">Sicherung gescheitert</string>
+    <string name="backup_failed_desc">Ihre Sicherung konnte nicht erstellt werden. Bitte versuchen Sie es später erneut.</string>
+    <string name="backup_recovery_phrase_warning_note">Sie können Ihre Wiederherstellungsphrase nach dem Erstellen der Sicherung überprüfen.</string>
+    <string name="backup_recovery_phrase_warning_1">Ich verstehe, wenn ich meine Wiederherstellungspraxis verliere, kann ich mein Konto nicht wiederherstellen.</string>
+    <string name="backup_recovery_phrase_warning_2">Ich verstehe, dass es sich dabei um eine Teilgewichtsrettungspraxis handelt, die mir nicht die volle Kontrolle über mein Konto gewährt.</string>
+    <string name="backup_recovery_phrase_warning_3">Ich verstehe, dass diese partielle Wiederherstellungsphrase zusammen mit meinen anderen Multi-Backups verwendet werden muss, um den Zugriff auf mein Konto wiederherzustellen.</string>
+    <string name="backup_recovery_phrase_about_title">Über Ihre</string>
+    <string name="backup_recovery_phrase_about_note">Sie haben eine 15-Wort-
+        -Wiederherstellungs-Phrase ausgewählt. \n \nIhre Teilgewichtswiederherstellung entspricht einem
+        Teilgewichtsschlüssel auf Ihrem Flow-Konto. \n \nIhre partielle Wiederherstellung
+        Phrase allein sichert keinen vollen Zugriff auf Ihr Konto. Es muss zusammen mit Ihren anderen Multi-Backups verwendet werden, um den Zugriff auf Ihr Konto wiederherzustellen.</string>
+    <string name="recommended">Erforderlich</string>
+    <string name="backup_start_about_title">Was ist</string>
     <string name="backup_start_about_content">Mehrfachsicherungen</string>
-    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
-    <string name="what_is_multi_backup">What is Multi-Backup?</string>
-    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
-    <string name="secured_by_key_store">Secured by KeyStore</string>
-    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
-        and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
-        using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
-    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="backup_start_about_note">Ein Mehrfach-Backup speichert mehrere Teilgewichtsschlüssel auf Ihren Konten bei vertrauenswürdigen Anbietern wie Google Drive und iCloud oder einer Wiederherstellungsphrase. \n \nZwei Teilgewichtsschlüssel müssen zusammen verwendet werden, um den Zugriff auf Ihr Konto wiederherzustellen. Jeder Schlüssel kann nicht einzeln verwendet werden. \n \nDies bedeutet, dass Flow Wallet Zugriff auf zwei Ihrer Sicherungen benötigt, um den Zugriff auf Ihr Konto wiederherzustellen. \n \nIhre Sicherungen werden mit Ihrem PIN-Code verschlüsselt. Sie müssen Ihren PIN-Code merken oder schreiben und ihn an einem sicheren Ort speichern.</string>
+    <string name="what_is_multi_backup">Was ist Multi-Backup?</string>
+    <string name="backup_start_about_tip">Multi-Backup ist der Ort, an dem Flow Wallet mehrere Teilgewichtstasten (500 Gewichte) erstellt und diese auf Ihren gewünschten Plattformen, iCloud, Google Drive oder Seed Phrase speichert</string>
+    <string name="secured_by_key_store">Über KeyStore gesichert</string>
+    <string name="secured_note">Flow Wallet verwendet den KeyStore Ihres Geräts, um Ihr Konto
+        und Assets zu schützen. Dieser private Schlüssel kann nicht abgerufen werden. \n \nKeyStore schützt Ihren privaten Schlüssel
+        mithilfe der Hardware-Sicherheit Ihres Geräts, die Notwendigkeit einer Saatgut-Phrase zu vermeiden. \n \nBitte erstellen Sie Backups für Ihre Wallet um sicherzustellen, dass Sie den Zugriff auf Ihr Flow-Konto und Ihre Assets behalten, falls Sie Ihr Gerät verlieren.</string>
+    <string name="backup_seed_phrase_warning">Sie haben eine 12-Wort-Wiederherstellungsphrase Sicherungskopie ausgewählt. \n \nDiese Sicherungskopie hat die volle Kontrolle über Ihr Konto.</string>
     <string name="keystore_select_account_tips">Wählen Sie ein Konto, dass Sie importieren möchten</string>
-    <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_select_account_title">%1$d Konten gefunden</string>
     <string name="keystore_no_account_title">Kein Konto gefunden</string>
-    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
-        key. \n \nPlease check your input and try again.</string>
-    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
-    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
-    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
-    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
-    <string name="sign_type_message_from">Sign Type Message from</string>
-    <string name="message">Message</string>
-    <string name="current_account">Current Account</string>
-    <string name="other_accounts">Other Accounts</string>
-    <string name="local_account_keys">Local Account Keys</string>
-    <string name="reload_config">Reload Config</string>
-    <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">Charged when moving between accounts on Cadence and EVM on Flow.</string>
-    <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
-    <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
-    <string name="add_custom_token">Add Custom Token</string>
-    <string name="add_token_success">Add Token Success</string>
-    <string name="invalid_evm_address">Invalid ERC20 address</string>
-    <string name="token_contract_address">Token Contract Address</string>
+    <string name="keystore_no_account_desc">Leider können wir Ihr Konto \nnicht auf Flow mit dieser
+        Taste finden. \n \nBitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.</string>
+    <string name="raw_key_restore_google_drive_note">Importieren Sie Ihre alte Sicherung von Google Drive.</string>
+    <string name="raw_key_restore_seed_phrase_note">Unterstützen Sie 12 Wort Seed Phrase.</string>
+    <string name="raw_key_restore_keystore_note">Keystore-Datei importieren (Blocto-Sicherung).</string>
+    <string name="raw_key_restore_private_key_note">Mit rohem Hex-Schlüssel importieren.</string>
+    <string name="sign_type_message_from">Signaturtyp Nachricht von</string>
+    <string name="message">Nachricht</string>
+    <string name="current_account">Aktuelles Konto</string>
+    <string name="other_accounts">Andere Konten</string>
+    <string name="local_account_keys">Lokale Kontoschlüssel</string>
+    <string name="reload_config">Konfigurationsdatei neu laden</string>
+    <string name="move_fee">Verschiebe Gebühr</string>
+    <string name="move_fee_tips">Wird beim Wechsel zwischen Konten auf Cadence und EVM auf Flow berechnet.</string>
+    <string name="no_move_fee_tips">Keine Gebühr zwischen Ihren Flow-Konten 🤟</string>
+    <string name="wait_website_fully_loaded">Bitte warten Sie, bis die Webseite vollständig geladen ist</string>
+    <string name="add_custom_token">Token hinzufügen</string>
+    <string name="add_token_success">Token erfolgreich hinzugefügt</string>
+    <string name="invalid_evm_address">Ungültige ERC20-Adresse</string>
+    <string name="token_contract_address">Token-Vertragsadresse</string>
     <string name="token_contract_address_hint">Enter your flow token contract address</string>
-    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
-    <string name="contracts">Contracts</string>
-    <string name="token_name">Token Name</string>
-    <string name="token_icon">Token Icon</string>
-    <string name="token_symbol">Token Symbol</string>
-    <string name="token_decimal">Token Decimal</string>
+    <string name="evm_token_contract_address_error">Bitte geben Sie eine gültige EVM Vertragsadresse ein</string>
+    <string name="contracts">Verträge</string>
+    <string name="token_name">Token-Name</string>
+    <string name="token_icon">Token-Logo</string>
+    <string name="token_symbol">Token-Symbol</string>
+    <string name="token_decimal">Token-Dezimalzahl</string>
     <string name="token_identifier">Token Identifier</string>
-    <string name="add_suggested_token">Add Suggested Token</string>
-    <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
-    <string name="storage_limit_reached">Storage limit reached.</string>
-    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
-    <string name="flow_limit_reached">FLOW limit reached.</string>
+    <string name="add_suggested_token">Vorgeschlagenes Token hinzufügen</string>
+    <string name="would_you_like_to_import_this_token">Möchten Sie diesen Token importieren?</string>
+    <string name="storage_limit_reached">Speicherlimit erreicht.</string>
+    <string name="storage_limit_reached_after_action">Speicherlimit nach dieser Aktion erreicht.</string>
+    <string name="flow_limit_reached">FLOW Limit erreicht.</string>
     <string name="storage_usage">Storage Usage</string>
-    <string name="total_balance">Total Balance </string>
-    <string name="storage_limit_error">Storage Limit Error</string>
-    <string name="storage_limit_warning">Storage Limit Warning</string>
-    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
-    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
-    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
-    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
-        your storage usage.</string>
+    <string name="total_balance">Kontostand:</string>
+    <string name="storage_limit_error">Speicherlimit-Fehler</string>
+    <string name="storage_limit_warning">Warnung für Speicherlimit</string>
+    <string name="storage_limit_reached_desc">Ihr Konto liegt unter dem Minimum von FLOW-Guthaben, das für seine Speichernutzung benötigt wird, was zu einem Scheitern der nachfolgenden Transaktionen führen kann.</string>
+    <string name="storage_limit_after_action_desc">Diese Aktion kann fehlschlagen, da sie die Menge an FLOW in Ihrem Konto unter dem unten angegebenen Wert reduzieren kann, um den Speicherverbrauch abzudecken. </string>
+    <string name="storage_limit_error_desc">Ihre Transaktion ist fehlgeschlagen, da Ihr Konto unter den Mindestbetrag von FLOW für den Speicherverbrauch Ihres Kontos fällt.</string>
+    <string name="storage_limit_error_tips">Sie müssen mindestens %1$s in Ihrem Konto haben, um den Speicherverbrauch von
+        abzudecken.</string>
     <string name="deposit">Einzahlung</string>
-    <string name="buy_flow">Buy FLOW</string>
-    <string name="restore_failure_insufficient_weight">This key has insufficient weight</string>
-    <string name="restore_failure_key_revoked">This key has been revoked</string>
+    <string name="buy_flow">FLOW kaufen</string>
+    <string name="restore_failure_insufficient_weight">Dieser Schlüssel hat ein ungenügendes Gewicht</string>
+    <string name="restore_failure_key_revoked">Dieser Schlüssel wurde widerrufen</string>
     <string name="dropbox">Dropbox</string>
-    <string name="backup_step_dropbox">Dropbox Backup</string>
-    <string name="connect_to_dropbox">Connect to Dropbox</string>
-    <string name="connect_dropbox">Connect Dropbox</string>
-    <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="backup_step_dropbox">Dropbox-Backup</string>
+    <string name="connect_to_dropbox">Mit Dropbox verbinden</string>
+    <string name="connect_dropbox">Dropbox verbinden</string>
+    <string name="deposit_evm_tip">Bitte stellen Sie sicher, dass Ihre Einzahlung über FLOW EVM Netzwerk erfolgt, wenn Ihre Einzahlung über ein anderes Netzwerk verloren geht.</string>
     <string name="legal_message">"     <![CDATA[     Durch die Verwendung von Flow Wallet stimmen Sie den <a href="https://wallet.flow.com/terms-of-service"><u>Nutzungsbedingungen</u></a> und <a href="https://wallet.flow.com/privacy-policy"><u>Datenschutzrichtlinie</u></a>     zu     ]]>     "</string>
     <string name="get_started">Los geht\'s</string>
     <string name="on_flow">#onFlow</string>
-    <string name="choose_swap_provider">Choose Swap Provider</string>
+    <string name="choose_swap_provider">Swap-Anbieter auswählen</string>
     <string name="welcome_desc">Willkommen bei Flow Wallet! Erstellen Sie ein Konto um loszulegen</string>
 </resources>
