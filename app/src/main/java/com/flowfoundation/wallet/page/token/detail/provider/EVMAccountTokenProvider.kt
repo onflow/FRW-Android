@@ -4,6 +4,7 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.coin.TokenList
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -34,7 +35,7 @@ class EVMAccountTokenProvider : MoveTokenProvider {
         val text = URL(getTokenListUrl()).readText()
         val list = Gson().fromJson(text, TokenList::class.java)
         coinList.clear()
-        coinList.addAll(list.tokens)
+        coinList.addAll(list.tokens.map { it.copy(type = FlowCoinType.EVM) })
         addFlowTokenManually()
         addCustomToken()
         return coinList.toList()
@@ -50,8 +51,8 @@ class EVMAccountTokenProvider : MoveTokenProvider {
                 }
             )
             Gson().fromJson(text, FlowCoin::class.java)?.let { coin ->
-                if(coinList.none { it.address == coin.address }) {
-                    coinList.add(0, coin)
+                if (coinList.none { it.address == coin.address }) {
+                    coinList.add(0, coin.copy(type = FlowCoinType.EVM))
                 }
             }
         } catch (e: Exception) {
