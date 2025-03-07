@@ -171,12 +171,12 @@ class WalletHeaderPresenter(
             }.filter { it.metadata != null }
             requests.firstOrNull()?.let {
                 logd("notification", "pendingRequest::$it")
-                if (WalletNotificationManager.alreadyExist(it.request.requestId.toString())) {
+                if (WalletNotificationManager.alreadyExist(it.request.request.id.toString())) {
                     return@ioScope
                 }
                 WalletNotificationManager.addNotification(
                     WalletNotification(
-                        id = it.request.requestId.toString(),
+                        id = it.request.request.id.toString(),
                         icon = it.metadata?.icons?.firstOrNull(),
                         title = it.metadata?.name.orEmpty(),
                         body = "View More",
