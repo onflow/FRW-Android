@@ -195,8 +195,8 @@ fun formatTokenPrice(price: Double): String {
 
     // For prices at least $0.0001, use normal formatting with min 2 and max 4 decimals.
     if (price >= 0.0001) {
-        // Use BigDecimal for precise rounding. Scale to 4, rounding up.
-        val bd = BigDecimal(price).setScale(4, RoundingMode.UP)
+        // Use BigDecimal for precise rounding. Scale to 4, rounding down.
+        val bd = BigDecimal(price).setScale(4, RoundingMode.DOWN)
         var formatted = bd.toPlainString()
         // Ensure a decimal point exists and we have at least 2 decimals.
         if (!formatted.contains(".")) {
@@ -219,8 +219,8 @@ fun formatTokenPrice(price: Double): String {
         return "$$formatted"
     } else {
         // For prices below $0.0001, apply subscript formatting.
-        val bd = BigDecimal(price).setScale(10, RoundingMode.UP)
-        val priceStr = bd.toPlainString() // e.g., "0.0000033450"
+        val bd = BigDecimal(price).setScale(10, RoundingMode.DOWN)
+        val priceStr = bd.toPlainString()
         val fraction = priceStr.substringAfter(".")
 
         val leadingZerosCount = fraction.takeWhile { it == '0' }.length
@@ -228,7 +228,7 @@ fun formatTokenPrice(price: Double): String {
 
         val significant = if (nonZeroPart.length > 3) {
             // Construct a BigDecimal from "0.<nonZeroPart>" and round to 3 decimals.
-            BigDecimal("0.$nonZeroPart").setScale(3, RoundingMode.UP).toPlainString()
+            BigDecimal("0.$nonZeroPart").setScale(3, RoundingMode.DOWN).toPlainString()
                 .substringAfter(".")
         } else {
             nonZeroPart
