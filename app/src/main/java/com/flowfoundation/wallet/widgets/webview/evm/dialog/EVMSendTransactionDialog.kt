@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.widgets.webview.evm.dialog
 
-import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater

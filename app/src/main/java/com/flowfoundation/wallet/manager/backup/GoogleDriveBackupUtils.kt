@@ -9,7 +9,6 @@ import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.FlowAddress
 import com.walletconnect.android.internal.common.crypto.sha256
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.drive.DriveServerHelper
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
@@ -29,7 +28,6 @@ private val AES_PASSWORD by lazy {
 }
 
 const val ACTION_GOOGLE_DRIVE_UPLOAD_FINISH = "ACTION_GOOGLE_DRIVE_UPLOAD_FINISH"
-const val ACTION_GOOGLE_DRIVE_DELETE_FINISH = "ACTION_GOOGLE_DRIVE_DELETE_FINISH"
 const val ACTION_GOOGLE_DRIVE_RESTORE_FINISH = "ACTION_GOOGLE_DRIVE_RESTORE_FINISH"
 const val ACTION_GOOGLE_DRIVE_CHECK_FINISH = "ACTION_GOOGLE_DRIVE_CHECK_FINISH"
 const val ACTION_GOOGLE_DRIVE_VIEW_FINISH = "ACTION_GOOGLE_DRIVE_VIEW_FINISH"
@@ -37,7 +35,7 @@ const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
 
 @WorkerThread
-suspend fun uploadGoogleDriveBackup(
+fun uploadGoogleDriveBackup(
     driveService: Drive,
     backupCryptoProvider: BackupCryptoProvider
 ) {
@@ -125,7 +123,6 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 address = wallet.walletAddress() ?: "",
                 userId = wallet.id,
                 userName = account.userInfo.username,
-                userAvatar = account.userInfo.avatar,
                 publicKey = provider.getPublicKey(),
                 signAlgo = provider.getSignatureAlgorithm().index,
                 hashAlgo = provider.getHashAlgorithm().index,
@@ -176,48 +173,6 @@ fun viewFromGoogleDrive(driveService: Drive) {
     }
 }
 
-@WorkerThread
-fun deleteFromGoogleDrive(driveService: Drive) {
-    try {
-        logd(TAG, "deleteMnemonicFromGoogleDrive")
-        val driveServiceHelper = DriveServerHelper(driveService)
-        val data = existingData(driveService).toMutableList()
-        if (data.isNotEmpty()) {
-            data.removeIf { it.userId == firebaseUid() }
-
-            driveServiceHelper.writeStringToFile(
-                FILE_NAME, "\"${
-                    aesEncrypt(
-                        key = AES_KEY,
-                        iv = AES_PASSWORD,
-                        message = Gson().toJson(data)
-                    )
-                }\""
-            )
-
-            if (BuildConfig.DEBUG) {
-                val readText =
-                    driveServiceHelper.readFile(driveServiceHelper.getFileId(FILE_NAME)!!)
-                logd(TAG, "readText:$readText")
-            }
-        }
-        sendDeleteCallback(true)
-    } catch (e: Exception) {
-        loge(e)
-        sendDeleteCallback(false)
-        throw e
-    }
-}
-
-fun encryptMnemonic(data: String?, pinCode: String): String {
-    if (data == null) {
-        return ""
-    }
-    val aesKey = sha256(pinCode.toByteArray())
-    val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
-    return aesEncrypt(aesKey, aesIv, data)
-}
-
 fun decryptMnemonic(data: String?, pinCode: String): String {
     if (data == null) {
         return ""
@@ -234,9 +189,3 @@ private fun sendCallback(isSuccess: Boolean) {
         })
 }
 
-private fun sendDeleteCallback(isSuccess: Boolean) {
-    LocalBroadcastManager.getInstance(Env.getApp())
-        .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_DELETE_FINISH).apply {
-            putExtra(EXTRA_SUCCESS, isSuccess)
-        })
-}

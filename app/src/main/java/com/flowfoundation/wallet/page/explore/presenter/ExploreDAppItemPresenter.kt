@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.explore.ExploreViewModel
 import com.flowfoundation.wallet.page.explore.model.DAppModel
-import com.flowfoundation.wallet.utils.extensions.urlHost
 import com.flowfoundation.wallet.utils.findActivity
 
 class ExploreDAppItemPresenter(

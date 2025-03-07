@@ -68,10 +68,6 @@ object CryptoProviderManager {
         }
     }
 
-    fun isHDWalletCrypto(): Boolean {
-        return cryptoProvider != null && cryptoProvider is HDWalletCryptoProvider
-    }
-
     fun clear() {
         cryptoProvider = null
     }

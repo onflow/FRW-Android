@@ -5,7 +5,6 @@ import androidx.annotation.WorkerThread
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.dropbox.core.v2.DbxClientV2
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.backup.BackupItem
@@ -137,7 +136,6 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 address = wallet.walletAddress() ?: "",
                 userId = wallet.id,
                 userName = account.userInfo.username,
-                userAvatar = account.userInfo.avatar,
                 publicKey = provider.getPublicKey(),
                 signAlgo = provider.getSignatureAlgorithm().index,
                 hashAlgo = provider.getHashAlgorithm().index,
@@ -187,38 +185,6 @@ fun viewFromDropbox(dropboxClient: DbxClientV2) {
     } catch (e: Exception) {
         loge(e)
         sendCallback(false)
-        throw e
-    }
-}
-
-@WorkerThread
-fun deleteFromDropbox(dropboxClient: DbxClientV2) {
-    try {
-        logd(TAG, "deleteMnemonicFromDropbox")
-        val dropboxHelper = DropboxServerHelper(dropboxClient)
-        val data = existingData(dropboxHelper).toMutableList()
-        if (data.isNotEmpty()) {
-            data.removeIf { it.userId == firebaseUid() }
-
-            dropboxHelper.writeStringToFile(
-                FILE_NAME, "\"${
-                    aesEncrypt(
-                        key = AES_KEY,
-                        iv = AES_PASSWORD,
-                        message = Gson().toJson(data)
-                    )
-                }\""
-            )
-
-            if (BuildConfig.DEBUG) {
-                val readText = dropboxHelper.readFile(dropboxHelper.getReadFilePath(FILE_NAME))
-                logd(TAG, "readText:$readText")
-            }
-        }
-        sendDeleteCallback(true)
-    } catch (e: Exception) {
-        loge(e)
-        sendDeleteCallback(false)
         throw e
     }
 }

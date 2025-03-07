@@ -124,10 +124,6 @@ object CadenceApiManager {
         return getCadenceScript()?.storage?.get(method)?.decodeBase64()?.utf8() ?: ""
     }
 
-    fun getCadenceSwitchboardScript(method: String): String {
-        return getCadenceScript()?.switchboard?.get(method)?.decodeBase64()?.utf8() ?: ""
-    }
-
     fun getCadenceEVMScript(method: String): String {
         return getCadenceScript()?.evm?.get(method)?.decodeBase64()?.utf8() ?: ""
     }

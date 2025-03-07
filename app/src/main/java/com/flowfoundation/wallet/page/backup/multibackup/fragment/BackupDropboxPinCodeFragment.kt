@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.flowfoundation.wallet.databinding.FragmentBackupPinCodeBinding
 import com.flowfoundation.wallet.page.backup.multibackup.presenter.BackupDropboxPinCodePresenter
-import com.flowfoundation.wallet.page.backup.multibackup.presenter.BackupPinCodePresenter
 
 class BackupDropboxPinCodeFragment: Fragment() {
     private lateinit var binding: FragmentBackupPinCodeBinding

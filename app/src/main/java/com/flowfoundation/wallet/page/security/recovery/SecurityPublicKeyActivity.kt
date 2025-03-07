@@ -4,17 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import com.instabug.library.Instabug
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.flowfoundation.wallet.databinding.ActivitySecurityPrivateKeyBinding
 import com.flowfoundation.wallet.databinding.ActivitySecurityPublicKeyBinding
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
+import com.instabug.library.Instabug
 
 class SecurityPublicKeyActivity : BaseActivity() {
 

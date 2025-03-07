@@ -2,8 +2,6 @@ package com.flowfoundation.wallet.page.send.nft.confirm
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
@@ -28,7 +26,8 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.addressPattern
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
-import com.flowfoundation.wallet.wallet.toAddress
+import com.google.gson.Gson
+import com.nftco.flow.sdk.FlowTransactionStatus
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function

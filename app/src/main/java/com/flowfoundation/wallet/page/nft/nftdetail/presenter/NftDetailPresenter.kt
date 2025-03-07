@@ -118,7 +118,10 @@ class NftDetailPresenter(
             })
 
             moreButton.setOnClickListener {
-                nft?.let { NftMorePopupMenu(activity, it, moreButton, pageColor,
+                nft?.let { NftMorePopupMenu(
+                    it,
+                    moreButton,
+                    pageColor,
                     onDownloadRequest = { mediaUrl ->
                         currentDownloadUrl = mediaUrl
                         mediaUrl.downloadToGallery(downloadLauncher)

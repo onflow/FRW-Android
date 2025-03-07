@@ -54,13 +54,9 @@ import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 import java.math.BigDecimal
 
-
 enum class HomeTab(val index: Int) {
     WALLET(0),
     NFT(1),
-    EXPLORE(2),
-    ACTIVITY(3),
-    PROFILE(4),
 }
 
 private val svgMenu by lazy {

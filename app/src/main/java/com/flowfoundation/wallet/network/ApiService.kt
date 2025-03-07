@@ -149,13 +149,6 @@ interface ApiService {
         @Query("pair") coinPair: String
     ): CryptowatchSummaryResponse
 
-    @GET("/v2/account/query")
-    suspend fun flowScanQuery(
-        @Query("address") walletAddress: String,
-        @Query("limit") limit: Int = 25,
-        @Query("after") after: String = "",
-    ): TransferCountResponse
-
     @GET("/v1/flowns/prepare")
     suspend fun claimDomainPrepare(): ClaimDomainPrepareResponse
 

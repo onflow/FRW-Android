@@ -9,8 +9,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentBackupGoogleDriveBinding
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
-import com.flowfoundation.wallet.page.backup.BackupListManager
-import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveState
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveViewModel

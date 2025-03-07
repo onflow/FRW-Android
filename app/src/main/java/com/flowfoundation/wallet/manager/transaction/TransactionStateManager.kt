@@ -170,8 +170,6 @@ object TransactionStateManager {
     }
 
     private fun Int.isProcessing() = this < FlowTransactionStatus.SEALED.num && this >= FlowTransactionStatus.UNKNOWN.num
-
-    private fun Int.isUnknown() = this == FlowTransactionStatus.UNKNOWN.num || this == FlowTransactionStatus.EXPIRED.num
 }
 
 interface OnTransactionStateChange {

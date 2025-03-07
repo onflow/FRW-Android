@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import com.google.android.material.transition.MaterialSharedAxis
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 

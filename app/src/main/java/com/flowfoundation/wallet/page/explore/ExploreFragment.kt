@@ -33,10 +33,6 @@ class ExploreFragment : Fragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.searchBox.scanButton.setOnClickListener {
             barcodeLauncher.launch()

@@ -23,7 +23,7 @@ class WalletCreateActivity : BaseActivity() {
         binding = ActivityCreateWalletBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        contentPresenter = WalletCreateContentPresenter(this, binding)
+        contentPresenter = WalletCreateContentPresenter(this)
 
         viewModel = ViewModelProvider(this)[WalletCreateViewModel::class.java].apply {
             onStepChangeLiveData.observe(this@WalletCreateActivity) {

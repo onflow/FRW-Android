@@ -8,7 +8,6 @@ import android.view.inputmethod.EditorInfo
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentCustomTokenAddressInputBinding
 import com.flowfoundation.wallet.page.token.custom.CustomTokenViewModel
 import com.flowfoundation.wallet.utils.evmAddressPattern
@@ -16,7 +15,6 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.flowfoundation.wallet.utils.toast
 
 
 class CustomTokenAddressInputFragment : Fragment() {

@@ -28,7 +28,6 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 
-
 class MainActivity : BaseActivity() {
 
     private lateinit var contentPresenter: MainContentPresenter

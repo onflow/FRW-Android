@@ -1,9 +1,11 @@
 package com.flowfoundation.wallet.utils
 
 import android.app.Activity
-import android.app.ActivityManager
-import android.app.Service
-import android.content.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
+import android.content.ServiceConnection
 import android.os.IBinder
 import android.view.View
 

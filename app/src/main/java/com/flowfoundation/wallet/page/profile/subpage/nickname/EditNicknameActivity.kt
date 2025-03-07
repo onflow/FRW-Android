@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.widgets.ProgressDialog
 
-
 class EditNicknameActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEditNicknameBinding

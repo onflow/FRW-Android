@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.network.model.InboxToken
 import com.flowfoundation.wallet.page.inbox.InboxViewModel
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.format
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 
 class InboxTokenItemPresenter(

@@ -23,7 +23,7 @@ class TransactionDialog : BottomSheetDialogFragment() {
     private lateinit var viewModel: TransactionViewModel
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogSendConfirmBinding.inflate(inflater)
         return binding.root
     }
