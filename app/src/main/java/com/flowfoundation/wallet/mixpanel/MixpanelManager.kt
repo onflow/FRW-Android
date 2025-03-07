@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.loge
 import com.mixpanel.android.mpmetrics.MixpanelAPI
-import com.walletconnect.android.internal.common.crypto.sha256
+import com.reown.android.internal.common.crypto.sha256
 import org.json.JSONArray
 import org.json.JSONObject
 

@@ -62,8 +62,8 @@ import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.hexToBytes
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
 import org.web3j.crypto.StructuredDataEncoder
