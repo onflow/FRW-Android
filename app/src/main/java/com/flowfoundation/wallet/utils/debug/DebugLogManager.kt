@@ -12,13 +12,4 @@ object DebugLogManager {
             return super.add(element)
         }
     }
-
-    fun addDebugTweak(tag: String?, msg: Any?) {
-        val debugTweak = DebugTweak(
-            category = "Log",
-            name = tag ?: "",
-            defaultValue = msg
-        )
-        tweaks.add(debugTweak as DebugTweak<Any>)
-    }
 }

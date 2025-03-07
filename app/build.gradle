@@ -151,8 +151,10 @@ android {
 
 
     namespace 'com.flowfoundation.wallet'
-    lint {
-        abortOnError false
+    lintOptions {
+        checkAllWarnings true
+        abortOnError true // stop the build if errors found
+        warningsAsErrors false // do not treat warnings as errors
     }
 }
 

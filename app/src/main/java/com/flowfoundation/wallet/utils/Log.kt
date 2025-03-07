@@ -4,9 +4,6 @@ import android.util.Log
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.analytics.reportErrorToDebugView
 import com.flowfoundation.wallet.firebase.analytics.reportException
-import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
-import com.nftco.flow.sdk.FlowException
-import retrofit2.HttpException
 
 fun logv(tag: String?, msg: Any?) {
     log(tag, msg, Log.VERBOSE)
@@ -14,10 +11,6 @@ fun logv(tag: String?, msg: Any?) {
 
 fun logd(tag: String?, msg: Any?) {
     log(tag, msg, Log.DEBUG)
-}
-
-fun logi(tag: String?, msg: Any?) {
-    log(tag, msg, Log.INFO)
 }
 
 fun logw(tag: String?, msg: Any?) {
@@ -37,26 +30,6 @@ fun loge(msg: Throwable?, printStackTrace: Boolean = true, report: Boolean = tru
     if (report) {
         ioScope { msg?.let { reportException("exception_report", it) } }
     }
-}
-
-fun reportApiErrorToDebugView(api: String, throwable: Throwable?) {
-    val title = throwable?.javaClass?.simpleName ?: "api_error"
-    val params = mutableMapOf(
-        "api" to api,
-        "message" to throwable?.message.orEmpty(),
-        "response" to (throwable as? HttpException)?.response().toString()
-    )
-    DebugViewerDataSource.error(title, params.toString())
-}
-
-fun reportCadenceErrorToDebugView(cadence: String, throwable: Throwable?) {
-    val title = throwable?.javaClass?.simpleName ?: "cadence_error"
-    val params = mutableMapOf(
-        "cadence" to cadence,
-        "message" to throwable?.message.orEmpty(),
-        "cause" to (throwable as? FlowException)?.cause.toString()
-    )
-    DebugViewerDataSource.error(title, params.toString())
 }
 
 private fun log(tag: String?, msg: Any?, version: Int) {

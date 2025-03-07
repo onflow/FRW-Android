@@ -1,10 +1,8 @@
 package com.flowfoundation.wallet.utils
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.BuildConfig
 
 
@@ -41,9 +39,4 @@ fun sendEmail(
         intent.type = "message/rfc822"
         context.startActivitySafe(Intent.createChooser(intent, chooserTitle))
     }
-}
-
-fun CharSequence.isLegalAmountNumber(): Boolean {
-    val number = toString().toFloatOrNull()
-    return number != null && number > 0
 }
