@@ -29,9 +29,9 @@ public class ColorDividerItemDecoration extends RecyclerView.ItemDecoration {
     private static final String TAG = "DividerItem";
     private static final int[] ATTRS = new int[]{android.R.attr.listDivider};
 
-    private int mSize;
+    private final int mSize;
 
-    private ColorDrawable mDrawable;
+    private final ColorDrawable mDrawable;
 
     private DividerVisibleCheck mDividerVisibleCheck;
 

@@ -37,7 +37,7 @@ import java.util.List;
 
 public class PopupBuilder {
     public final PopupInfo popupInfo = new PopupInfo();
-    private Context context;
+    private final Context context;
 
     public PopupBuilder(Context context) {
         this.context = context;

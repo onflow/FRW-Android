@@ -21,7 +21,7 @@ import wallet.core.jni.*
 class TestWallet {
 
     init {
-        System.loadLibrary("TrustWalletCore");
+        System.loadLibrary("TrustWalletCore")
     }
 
     @Test

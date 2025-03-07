@@ -16,31 +16,10 @@
 
     <color name="disable">#d9d9d9</color>
 
-    <color name="border_1">#000</color>
     <color name="border_2">#b1b1b3</color>
     <color name="border_3">#E6E6E6</color>
 
     <color name="success">#00B23C</color>
-
-    <color name="primary_1">#FF6E4FBF</color>
-    <color name="primary_2">#FF6E4F80</color>
-    <color name="primary_3">#FF6E4F4D</color>
-    <color name="primary_4">#FF6E4F26</color>
-    <color name="primary_5">#FFFFFF</color>
-
-    <color name="purple_1">#46449C</color>
-    <color name="purple_2">#6562EA</color>
-    <color name="purple_3">#8C8AEF</color>
-    <color name="purple_4">#B2B1F4</color>
-    <color name="purple_5">#C9C8F8</color>
-    <color name="purple_6">#F0EFFD</color>
-
-    <color name="blue_1">#3FB4D8</color>
-    <color name="blue_2">#80CCE3</color>
-    <color name="blue_3">#A0D9EA</color>
-    <color name="blue_4">#BFE5F1</color>
-    <color name="blue_5">#D3EDF5</color>
-    <color name="blue_6">#F2FAFC</color>
 
     <color name="green_1">#26C390</color>
     <color name="green_2">#49D9A9</color>
@@ -49,36 +28,16 @@
     <color name="green_5">#BFF2E1</color>
     <color name="green_6">#EDFBF6</color>
 
-    <color name="yellow_1">#FFBD12</color>
-    <color name="yellow_2">#FFC908</color>
-    <color name="yellow_3">#FFD646</color>
-    <color name="yellow_4">#FFE483</color>
-    <color name="yellow_5">#FFECA9</color>
-    <color name="yellow_6">#FFFAE6</color>
-
     <color name="red_1">#ED0B0D</color>
-    <color name="red_2">#EF383A</color>
-    <color name="red_3">#F36A6B</color>
-    <color name="red_4">#F79B9C</color>
-    <color name="red_5">#F9B9BA</color>
-    <color name="red_6">#FDEBEB</color>
 
     <color name="transparent">#00000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_8">#14FFFFFF</color>
-    <color name="white_10">#1AFFFFFF</color>
     <color name="white_20">#33FFFFFF</color>
     <color name="white_25">#40FFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
-    <color name="white_40">#66FFFFFF</color>
-    <color name="white_50">#80FFFFFF</color>
     <color name="white_60">#99FFFFFF</color>
-    <color name="white_70">#B3FFFFFF</color>
     <color name="white_80">#CCFFFFFF</color>
-    <color name="white_90">#E6FFFFFF</color>
-    <color name="white_95">#EFFFFFFF</color>
-    <color name="white_98">#F8FFFFFF</color>
-    <color name="white_100">#FFFFFFFF</color>
 
     <color name="gray_11">#111111</color>
     <color name="gray_22">#222222</color>

@@ -195,7 +195,7 @@ public class DraggableLayout extends FrameLayout {
 
     protected class MoveAnimator implements Runnable {
 
-        private Handler handler = new Handler(Looper.getMainLooper());
+        private final Handler handler = new Handler(Looper.getMainLooper());
         private float destinationX;
         private float destinationY;
         private long startingTime;

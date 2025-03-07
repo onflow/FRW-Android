@@ -22,10 +22,10 @@ public class CircleView extends View {
     private int START_COLOR = 0xFFFF5722;
     private int END_COLOR = 0xFFFFC107;
 
-    private ArgbEvaluator argbEvaluator = new ArgbEvaluator();
+    private final ArgbEvaluator argbEvaluator = new ArgbEvaluator();
 
-    private Paint circlePaint = new Paint();
-    private Paint maskPaint = new Paint();
+    private final Paint circlePaint = new Paint();
+    private final Paint maskPaint = new Paint();
 
     private Bitmap tempBitmap;
     private Canvas tempCanvas;

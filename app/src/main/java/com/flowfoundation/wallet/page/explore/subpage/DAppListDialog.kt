@@ -46,7 +46,7 @@ class DAppListDialog : BottomSheetDialogFragment() {
     private val tagAdapter by lazy { ExploreDAppTagsAdapter() }
     private val adapter by lazy { ExploreDAppAdapter() }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogDappListBinding.inflate(inflater)
         return binding.root
     }

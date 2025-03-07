@@ -8,6 +8,6 @@ import org.junit.runner.RunWith
 class TestFlowTransaction {
 
     init {
-        System.loadLibrary("TrustWalletCore");
+        System.loadLibrary("TrustWalletCore")
     }
 }

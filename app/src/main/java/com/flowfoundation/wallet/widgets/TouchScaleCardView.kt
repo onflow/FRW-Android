@@ -100,6 +100,5 @@ open class TouchScaleCardView : MaterialCardView {
         }
     }
 
-    companion object {
-    }
+    companion object
 }

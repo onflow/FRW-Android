@@ -36,7 +36,7 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogFclWrongNetworkBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogFclWrongNetworkBinding.inflate(inflater)
         return binding.root
     }

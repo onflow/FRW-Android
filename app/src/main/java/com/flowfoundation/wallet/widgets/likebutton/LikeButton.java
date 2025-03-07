@@ -81,9 +81,9 @@ public class LikeButton extends FrameLayout implements View.OnClickListener {
      */
     private void init(Context context, AttributeSet attrs, int defStyle) {
         LayoutInflater.from(getContext()).inflate(R.layout.widget_like_button, this, true);
-        icon = (ImageView) findViewById(R.id.icon);
-        dotsView = (DotsView) findViewById(R.id.dots);
-        circleView = (CircleView) findViewById(R.id.circle);
+        icon = findViewById(R.id.icon);
+        dotsView = findViewById(R.id.dots);
+        circleView = findViewById(R.id.circle);
 
         final TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.LikeButton, defStyle, 0);
 

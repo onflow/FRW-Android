@@ -17,7 +17,7 @@ class StakingSetupDialog : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogStakingSetupBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogStakingSetupBinding.inflate(inflater)
         return binding.rootView
     }

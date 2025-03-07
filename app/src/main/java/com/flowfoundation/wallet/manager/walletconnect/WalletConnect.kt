@@ -151,5 +151,5 @@ private fun setup(application: Application) {
 }
 
 fun getWalletConnectPendingRequests(): List<Sign.Model.PendingRequest> {
-    return SignClient.getListOfSettledSessions().map { SignClient.getPendingRequests(it.topic) }.flatten()
+    return SignClient.getListOfActiveSessions().map { SignClient.getPendingRequests(it.topic) }.flatten()
 }

@@ -29,7 +29,7 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogEvmTransactionBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogEvmTransactionBinding.inflate(inflater)
         return binding.root
     }

@@ -30,7 +30,7 @@ class BookmarkListDialog : BottomSheetDialogFragment() {
 
     private val adapter by lazy { ExploreBookmarkManageAdapter() }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogRecentHistoryBinding.inflate(inflater)
         return binding.root
     }
