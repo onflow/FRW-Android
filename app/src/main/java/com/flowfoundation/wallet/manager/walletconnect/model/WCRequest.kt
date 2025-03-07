@@ -12,17 +12,6 @@ class WCRequest(
     val topic: String,
 )
 
-fun Sign.Model.PendingRequest.toWcRequest(metaData: Core.Model.AppMetaData?): WCRequest {
-    return WCRequest(
-        metaData = metaData,
-        requestId = requestId,
-        method = method,
-        params = params,
-        topic = topic,
-        chainId = chainId,
-    )
-}
-
 fun Sign.Model.SessionRequest.toWcRequest(): WCRequest {
     return WCRequest(
         metaData = peerMetaData,
