@@ -31,7 +31,6 @@ private val AES_PASSWORD by lazy {
 }
 
 const val ACTION_DROPBOX_UPLOAD_FINISH = "ACTION_DROPBOX_UPLOAD_FINISH"
-const val ACTION_DROPBOX_DELETE_FINISH = "ACTION_DROPBOX_DELETE_FINISH"
 const val ACTION_DROPBOX_RESTORE_FINISH = "ACTION_DROPBOX_RESTORE_FINISH"
 const val ACTION_DROPBOX_CHECK_FINISH = "ACTION_DROPBOX_CHECK_FINISH"
 const val ACTION_DROPBOX_VIEW_FINISH = "ACTION_DROPBOX_VIEW_FINISH"
@@ -196,9 +195,3 @@ private fun sendCallback(isSuccess: Boolean) {
         })
 }
 
-private fun sendDeleteCallback(isSuccess: Boolean) {
-    LocalBroadcastManager.getInstance(Env.getApp())
-        .sendBroadcast(Intent(ACTION_DROPBOX_DELETE_FINISH).apply {
-            putExtra(EXTRA_SUCCESS, isSuccess)
-        })
-}

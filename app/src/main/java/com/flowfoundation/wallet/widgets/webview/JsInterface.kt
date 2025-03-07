@@ -1,14 +1,10 @@
 package com.flowfoundation.wallet.widgets.webview
 
-import android.graphics.Color
 import android.webkit.JavascriptInterface
-import androidx.core.graphics.toColorInt
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -48,13 +44,6 @@ class JsInterface(
                 pushBubbleStack(transactionState)
             }
         }
-    }
-
-    @JavascriptInterface
-    fun windowColor(color: String) {
-        logd(TAG, "window color:$color")
-        val colorInt = color.toColorInt()
-        webView.onWindowColorChange(if (colorInt == Color.BLACK) R.color.deep_bg.res2color() else colorInt)
     }
 
     companion object {

@@ -105,7 +105,6 @@ class MainActivity : BaseActivity() {
     }
 
     companion object {
-        private val TAG = MainActivity::class.java.simpleName
 
         private var INSTANCE: MainActivity? = null
         fun launch(context: Context) {

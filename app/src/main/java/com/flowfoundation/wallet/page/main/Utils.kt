@@ -80,16 +80,6 @@ private val svgMenuSelected by lazy {
 }
 
 
-private val menuColor by lazy {
-    listOf(
-        R.color.bottom_navigation_color_wallet,
-        R.color.bottom_navigation_color_wallet,
-        R.color.bottom_navigation_color_wallet,
-        R.color.bottom_navigation_color_wallet,
-        R.color.bottom_navigation_color_wallet,
-    )
-}
-
 fun BottomNavigationView.activeColor(): Int {
     return R.color.bottom_navigation_color_wallet.colorStateList(context)
         ?.getColorForState(intArrayOf(android.R.attr.state_checked), 0)!!

@@ -28,7 +28,6 @@ class AddCustomTokenActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAddCustomTokenBinding
     private lateinit var viewModel: CustomTokenViewModel
-    private val addEVMCustomToken = true
     private var currentOption: CustomTokenOption? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

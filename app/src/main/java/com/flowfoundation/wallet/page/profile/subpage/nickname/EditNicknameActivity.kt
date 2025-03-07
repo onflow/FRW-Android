@@ -82,7 +82,6 @@ class EditNicknameActivity : BaseActivity() {
     }
 
     companion object {
-        private const val EXTRA_TYPE = "EXTRA_TYPE"
 
         fun launch(context: Context) {
             context.startActivity(Intent(context, EditNicknameActivity::class.java))

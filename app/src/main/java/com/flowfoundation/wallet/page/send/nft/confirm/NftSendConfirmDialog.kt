@@ -36,7 +36,9 @@ class NftSendConfirmDialog : BottomSheetDialogFragment() {
             Gson().fromJson(this@NftSendConfirmDialog.nft, NftSendModel::class.java)?.let {
                 bindSendModel(it)
             }
-            userInfoLiveData.observe(this@NftSendConfirmDialog) { presenter.bind(NftSendConfirmDialogModel(userInfo = it)) }
+            userInfoLiveData.observe(this@NftSendConfirmDialog) { presenter.bind(NftSendConfirmDialogModel(
+                userInfo = it
+            )) }
             resultLiveData.observe(this@NftSendConfirmDialog) { isSuccess ->
                 presenter.bind(NftSendConfirmDialogModel(isSendSuccess = isSuccess))
                 if (!isSuccess) {

@@ -10,8 +10,6 @@ import wallet.core.jni.CoinType
 import wallet.core.jni.PrivateKey
 import wallet.core.jni.StoredKey
 
-private const val TAG = "TestKeyStore.kt"
-
 class TestKeyStore {
 
     init {

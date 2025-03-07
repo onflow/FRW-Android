@@ -54,7 +54,6 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_QUERY_CHILD_ACCOUNT_META("getChildAccountMeta", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_UNLINK_CHILD_ACCOUNT("unlinkChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_EDIT_CHILD_ACCOUNT("editChildAccount", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_QUERY_CHILD_ACCOUNT_NFT("getAccessibleCollectionAndIdsDisplay", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_TOKENS("getAccessibleCoinInfo", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS("getChildAccountAllowTypes", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_BRIDGE_CHILD_NFT_TO_EVM("bridgeChildNFTToEvm", CadenceScriptType.HYBRID_CUSTODY),

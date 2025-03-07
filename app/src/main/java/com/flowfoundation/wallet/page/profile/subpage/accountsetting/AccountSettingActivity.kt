@@ -77,7 +77,7 @@ class AccountSettingActivity : BaseActivity() {
         ioScope {
             try {
                 val response = retrofit().create(ApiService::class.java)
-                    .updateProfilePreference(UpdateProfilePreferenceRequest(isPrivate = if (toVisible) 2 else 1))
+                    .updateProfilePreference(UpdateProfilePreferenceRequest())
                 if (response.status == 200) {
                     AccountManager.userInfo()?.copy(isPrivate = if (toVisible) 2 else 1)?.let { AccountManager.updateUserInfo(it) }
 

@@ -70,10 +70,6 @@ class LilicoWebView : WebView {
         this.callback = callback
     }
 
-    fun onWindowColorChange(@ColorInt color: Int) {
-        callback?.onWindowColorChange(color)
-    }
-
     private inner class WebChromeClient : android.webkit.WebChromeClient() {
         override fun onProgressChanged(view: WebView, newProgress: Int) {
             super.onProgressChanged(view, newProgress)

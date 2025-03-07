@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 class StepProgressBar : FrameLayout {
 
     private var step = 7
-    private var progress = 1
 
     private var wrapper: ViewGroup
 

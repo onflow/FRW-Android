@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
-import com.flowfoundation.wallet.page.dialog.linkaccount.LINK_ACCOUNT_TAG
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -33,11 +32,6 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclService
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSignMessageResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSimpleResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.toAuthzTransaction
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.JsonParser
 import java.lang.reflect.Type
 
 private val TAG = FclMessageHandler::class.java.simpleName
@@ -269,42 +263,6 @@ data class ParsedMessage(
     val type: String? = null,
     val service: Map<String, Any>? = null
 ) {
-    fun isService(): Boolean {
-        return type == null && service?.let {
-            it["type"] != null || it["f_type"] == "Service"
-        } == true
-    }
-}
-
-class ParsedMessageAdapter : JsonDeserializer<ParsedMessage> {
-    override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ParsedMessage {
-        val jsonObject = json.asJsonObject
-
-        val type = jsonObject.get("type")?.asString
-        val service = jsonObject.get("service")?.let { context.deserialize<Map<String, Any>>(it, object : TypeToken<Map<String, Any>>() {}.type) }
-
-        return ParsedMessage(type, service)
-    }
-}
-
-private fun parseMessage(message: String): ParsedMessage? {
-    val gson = GsonBuilder()
-        .registerTypeAdapter(ParsedMessage::class.java, ParsedMessageAdapter())
-        .create()
-
-    val jsonElement = JsonParser.parseString(message)
-    val jsonObject = if (jsonElement.isJsonObject) {
-        jsonElement.asJsonObject
-    } else {
-        JsonParser.parseString(jsonElement.asString).asJsonObject
-    }
-
-    return try {
-        gson.fromJson(jsonObject, ParsedMessage::class.java)
-    } catch (e: Exception) {
-        loge(e)
-        null
-    }
 }
 
 private fun Map<String, Any>.isService(): Boolean {
@@ -353,6 +311,3 @@ private fun FclAuthzResponse.Body.Roles.isSignPayload(): Boolean {
     return !payer && authorizer && proposer
 }
 
-fun FclAuthzResponse.isLinkAccount(): Boolean {
-    return body.cadence.trim().startsWith(LINK_ACCOUNT_TAG)
-}

@@ -51,7 +51,6 @@ private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
 private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
 private const val KEY_IS_NOTIFICATION_PERMISSION_CHECKED = "KEY_IS_NOTIFICATION_PERMISSION_CHECKED"
 private const val KEY_TOKEN_UPLOADED_ADDRESS_SET = "KEY_TOKEN_UPLOADED_ADDRESS_SET"
-private const val KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET = "KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET"
 private const val KEY_COA_LINK_CHECKED_ADDRESS_SET = "KEY_COA_LINK_CHECKED_ADDRESS_SET"
 private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -175,8 +174,6 @@ suspend fun setMeowDomainClaimed(isClaimed: Boolean) {
     dataStore.edit { it[KEY_IS_MEOW_DOMAIN_CLAIMED] = isClaimed }
 }
 
-suspend fun getInboxReadList(): String = dataStore.data.map { it[KEY_INBOX_READ_LIST] ?: "" }.first()
-
 suspend fun updateInboxReadListPref(list: String) {
     dataStore.edit { it[KEY_INBOX_READ_LIST] = list }
 }
@@ -243,14 +240,6 @@ fun setUploadedAddressSet(addressSet: Set<String>) {
 
 fun getUploadedAddressSet(): Set<String> {
     return sharedPreferencesTraditional.getStringSet(KEY_TOKEN_UPLOADED_ADDRESS_SET, setOf()) ?: setOf()
-}
-
-fun setDoNotTipBackupAddressSet(addressSet: Set<String>) {
-    sharedPreferencesTraditional.edit().putStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, addressSet).apply()
-}
-
-fun getDoNotTipBackupAddressSet(): Set<String> {
-    return sharedPreferencesTraditional.getStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, setOf()) ?: setOf()
 }
 
 fun getCOALinkCheckedAddressSet(): Set<String> {

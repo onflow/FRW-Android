@@ -2,10 +2,8 @@ package com.flowfoundation.wallet.manager.account
 
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -22,14 +20,6 @@ object WalletFetcher {
     private val listeners = CopyOnWriteArrayList<WeakReference<OnWalletDataUpdate>>()
 
     private val apiService by lazy { retrofit().create(ApiService::class.java) }
-
-    private val queryMainnetService by lazy {
-        retrofitWithHost("https://production.key-indexer.flow.com").create(OtherHostService::class.java)
-    }
-
-    private val queryTestnetService by lazy {
-        retrofitWithHost("https://staging.key-indexer.flow.com").create(OtherHostService::class.java)
-    }
 
     fun fetch() {
         ioScope {

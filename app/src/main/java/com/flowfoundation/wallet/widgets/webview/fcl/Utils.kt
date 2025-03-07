@@ -2,12 +2,9 @@ package com.flowfoundation.wallet.widgets.webview.fcl
 
 import android.webkit.WebView
 import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.hexToBytes
-import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
-import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
 
 private val accountProofTag = DomainTag.normalize("FCL-ACCOUNT-PROOF-V0.0")
@@ -28,18 +25,14 @@ fun encodeAccountProof(
     assert(address.isNotBlank()) { "Encode Message For Provable Authn Error: address must be defined" }
     assert(nonce.length >= 64) { "Encode Message For Provable Authn Error: nonce must be minimum of 32 bytes" }
 
-    val rpl = RLPCodec.encode(AccountProof(appIdentifier, address.toAddress().hexToBytes(), nonce.hexToBytes()))
+    val rpl = RLPCodec.encode(AccountProof())
 
     return if (includeDomainTag) {
         accountProofTag + rpl
     } else rpl
 }
 
-private class AccountProof(
-    @RLP(0) val appIdentifier: String,
-    @RLP(1) val address: ByteArray,
-    @RLP(2) val nonce: ByteArray,
-)
+private class AccountProof
 
 fun FclAuthzResponse.toFclDialogModel(webView: WebView): FclDialogModel {
     return FclDialogModel(

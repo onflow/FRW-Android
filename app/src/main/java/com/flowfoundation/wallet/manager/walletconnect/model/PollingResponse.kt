@@ -7,7 +7,6 @@ import com.google.gson.reflect.TypeToken
 enum class ResponseStatus(val value: String) {
     PENDING("PENDING"),
     APPROVED("APPROVED"),
-    DECLINED("DECLINED")
 }
 
 data class PollingResponse(
@@ -89,38 +88,6 @@ data class Service(
     val data: FCLDataResponse? = null,
 )
 
-data class LocalService(
-    @SerializedName("method")
-    var method: String? = null,
-    @SerializedName("endpoint")
-    var endpoint: String? = null,
-    @SerializedName("height")
-    var height: String? = null,
-    @SerializedName("width")
-    var width: String? = null,
-    @SerializedName("background")
-    var background: String? = null
-)
-
-enum class FCLServiceType(val value: String) {
-    authn("authn"),
-    authz("authz"),
-    preAuthz("pre-authz"),
-    userSignature("user-signature"),
-    accountProof("account-proof"),
-    backChannel("back-channel-rpc"),
-    localView("local-view"),
-    openID("open-id"),
-}
-
-enum class FCLServiceMethod(val value: String) {
-    httpPost("HTTP/POST"),
-    httpGet("HTTP/GET"),
-    iframe("VIEW/IFRAME"),
-    iframeRPC("IFRAME/RPC"),
-    dataa("DATA"),
-}
-
 class Identity(
     @SerializedName("address")
     val address: String,
@@ -129,10 +96,6 @@ class Identity(
 )
 
 class Provider(
-    @SerializedName("f_type")
-    val fType: String?,
-    @SerializedName("f_vsn")
-    val fVsn: String?,
     @SerializedName("address")
     val address: String,
     @SerializedName("name")
@@ -140,16 +103,10 @@ class Provider(
 )
 
 class FCLDataResponse(
-    @SerializedName("f_type")
-    val fType: String,
-    @SerializedName("f_vsn")
-    val fVsn: String,
     @SerializedName("nonce")
     val nonce: String?,
     @SerializedName("address")
     val address: String?,
-    @SerializedName("signatures")
-    val signatures: List<Signature>?,
 ) {
     class Signature(
         @SerializedName("addr")

@@ -36,7 +36,6 @@ class CustomTokenViewModel : ViewModel() {
     val loadingLiveData = MutableLiveData<Boolean>()
     val importSuccessLiveData = MutableLiveData<Boolean>()
     private var currentToken: CustomTokenItem? = null
-    val customTokenListLiveData = MutableLiveData<List<CustomTokenItem>>()
     private var isLoading = false
 
     fun changeOption(option: CustomTokenOption) {
