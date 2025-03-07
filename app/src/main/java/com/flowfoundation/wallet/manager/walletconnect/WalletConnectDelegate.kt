@@ -29,7 +29,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
      * Triggered whenever the connection state is changed
      */
     override fun onConnectionStateChange(state: Sign.Model.ConnectionState) {
-        logd(TAG, "onConnectionStateChange() state:${Gson().toJson(state)}")
+        logd(TAG, "onConnectionStateChange() state:${state.isAvailable}")
         isConnected = state.isAvailable
     }
 
