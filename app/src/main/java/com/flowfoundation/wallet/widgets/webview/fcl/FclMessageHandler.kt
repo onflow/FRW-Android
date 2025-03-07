@@ -259,12 +259,6 @@ class FclMessageHandler(
     }
 }
 
-data class ParsedMessage(
-    val type: String? = null,
-    val service: Map<String, Any>? = null
-) {
-}
-
 private fun Map<String, Any>.isService(): Boolean {
     return this["type"] == null && ((this["service"] as? Map<*, *>)?.get("type") != null || (this["service"] as? Map<*, *>)?.get("f_type") == "Service")
 }

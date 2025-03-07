@@ -34,12 +34,6 @@ fun View.setVisible(visible: Boolean = true, invisible: Boolean = false) {
     }
 }
 
-fun View.scale(scale: Float): View {
-    scaleX = scale
-    scaleY = scale
-    return this
-}
-
 fun View.location(): Point {
     val location = IntArray(2)
     getLocationInWindow(location)
