@@ -247,4 +247,7 @@ interface ApiService {
 
     @GET("/v3/checkimport")
     suspend fun checkKeystorePublicKeyImport(@Query("key") publicKey: String): CommonResponse
+
+    @POST("/api/evm/decodeData")
+    suspend fun getEVMTransactionDecodeData(@Body params: TransactionDecodeParams): TransactionDecodeDataResponse
 }
