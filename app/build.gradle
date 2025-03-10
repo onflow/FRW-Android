@@ -235,7 +235,7 @@ dependencies {
 
     /** Kotlin 相关 **/
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
     /** Kotlin 相关 **/
 
     /** firebase **/
@@ -279,8 +279,8 @@ dependencies {
     implementation 'com.github.varunest:sparkbutton:1.0.6'
 
     implementation 'com.github.li-xiaojun:XPopup:2.9.4'
-    implementation 'com.google.android.exoplayer:exoplayer:2.18.0'
-    implementation 'com.google.zxing:core:3.4.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+    implementation 'com.google.zxing:core:3.5.1'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.github.Justson.AgentWeb:agentweb-core:v5.0.0-alpha.1-androidx'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
