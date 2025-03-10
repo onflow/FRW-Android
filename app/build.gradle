@@ -215,7 +215,7 @@ dependencies {
         exclude group: 'com.google.guava'
     }
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
-    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
     implementation 'com.google.http-client:google-http-client:1.40.1'
     implementation 'com.google.api-client:google-api-client-android:1.32.1'
     implementation('com.google.oauth-client:google-oauth-client-jetty:1.23.0') {
@@ -269,7 +269,7 @@ dependencies {
 
     implementation 'com.gitee.zackratos:UltimateBarX:0.6.1'
 
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
     implementation 'io.github.h07000223:flycoTabLayout:3.0.0'
@@ -287,7 +287,7 @@ dependencies {
     implementation 'joda-time:joda-time:2.10.3'
     implementation 'commons-validator:commons-validator:1.7'
     implementation 'com.airbnb.android:lottie:5.2.0'
-    implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.browser:browser:1.4.0'
 
     /** FLOW **/
     // implementation "com.nftco:flow-jvm-sdk:0.7.3"
@@ -329,7 +329,7 @@ dependencies {
     }
 
     /** Mixpanel **/
-    implementation "com.mixpanel.android:mixpanel-android:8.0.2"
+    implementation "com.mixpanel.android:mixpanel-android:7.5.4"
 
     /** TEST **/
     testImplementation 'junit:junit:4.13.2'

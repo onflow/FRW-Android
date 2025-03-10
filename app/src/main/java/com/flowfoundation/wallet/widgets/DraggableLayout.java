@@ -31,8 +31,7 @@ public class DraggableLayout extends FrameLayout {
     private int mStatusBarHeight;
     private boolean isNearestLeft = true;
     private float mPortraitY;
-    private boolean dragEnable = true;
-    private boolean autoMoveToEdge = true;
+    private final boolean dragEnable = true;
 
     private OnClickListener onClickListener;
 
@@ -57,13 +56,6 @@ public class DraggableLayout extends FrameLayout {
         setClickable(true);
     }
 
-    public void updateDragState(boolean dragEnable) {
-        this.dragEnable = dragEnable;
-    }
-
-    public void setAutoMoveToEdge(boolean autoMoveToEdge) {
-        this.autoMoveToEdge = autoMoveToEdge;
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -80,9 +72,7 @@ public class DraggableLayout extends FrameLayout {
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 clearPortraitY();
-                if (autoMoveToEdge) {
-                    moveToEdge();
-                }
+                moveToEdge();
                 if (isOnClickEvent()) {
                     dealClickEvent();
                 }
@@ -238,12 +228,9 @@ public class DraggableLayout extends FrameLayout {
         if (getParent() != null) {
             final boolean isLandscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
             markPortraitY(isLandscape);
-            ((ViewGroup) getParent()).post(new Runnable() {
-                @Override
-                public void run() {
-                    updateSize();
-                    moveToEdge(isNearestLeft, isLandscape);
-                }
+            ((ViewGroup) getParent()).post(() -> {
+                updateSize();
+                moveToEdge(isNearestLeft, isLandscape);
             });
         }
     }
@@ -267,7 +254,6 @@ public class DraggableLayout extends FrameLayout {
         boolean intercepted = false;
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                intercepted = false;
                 touchDownX = ev.getX();
                 initTouchDown(ev);
                 break;
@@ -275,7 +261,6 @@ public class DraggableLayout extends FrameLayout {
                 intercepted = Math.abs(touchDownX - ev.getX()) >= ViewConfiguration.get(getContext()).getScaledTouchSlop();
                 break;
             case MotionEvent.ACTION_UP:
-                intercepted = false;
                 break;
         }
         return intercepted;

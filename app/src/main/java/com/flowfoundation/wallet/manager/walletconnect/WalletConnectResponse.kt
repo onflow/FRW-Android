@@ -119,8 +119,11 @@ private fun preAuthz(): String {
 private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
     if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) return ""
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val accountProofSign = cryptoProvider.signData(encodeAccountProof(address, nonce, appIdentifier,
-        includeDomainTag = true))
+    val accountProofSign = cryptoProvider.signData(encodeAccountProof(
+        address,
+        nonce,
+        includeDomainTag = true
+    ))
     return """
     {
         "f_type": "Service",
