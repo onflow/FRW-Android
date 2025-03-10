@@ -11,3 +11,13 @@ class EVMDialogModel(
     val network: String? = null,
     val cadence: String? = null,
 ) : Parcelable
+
+@kotlinx.parcelize.Parcelize
+class EVMTransactionDialogModel(
+    val title: String? = null,
+    val logo: String? = null,
+    val url: String? = null,
+    val toAddress: String? = null,
+    val value: String? = null,
+    val data: String? = null
+) : Parcelable

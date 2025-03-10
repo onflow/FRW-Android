@@ -1,0 +1,35 @@
+package com.flowfoundation.wallet.network.model
+
+import com.google.gson.annotations.SerializedName
+
+
+data class TransactionDecodeDataResponse(
+    val abi: List<Any> = emptyList(),
+    val name: String = "",
+    @SerializedName("is_verified")
+    val isVerified: Boolean = false,
+    val decodedData: DecodedData? = null,
+    val status: Int = 0
+)
+
+data class DecodedData(
+    val allPossibilities: List<Possibility> = emptyList()
+)
+
+@Suppress("UNCHECKED_CAST")
+data class Possibility(
+    val function: String = "",
+    val params: Any? = null
+) {
+
+    fun getStringParams(): List<String>? {
+        return params as? List<String>
+    }
+
+    fun getMapParams(): Map<String, String>? {
+        return params as? Map<String, String>
+    }
+
+    fun isStringListParams(): Boolean = params is List<*>
+    fun isMapParams(): Boolean = params is Map<*, *>
+}
