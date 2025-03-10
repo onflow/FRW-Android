@@ -16,6 +16,7 @@
 
     <color name="disable">#d9d9d9</color>
 
+    <color name="border_1">#ffffff</color>
     <color name="border_2">#b1b1b3</color>
     <color name="border_3">#E6E6E6</color>
 
@@ -33,11 +34,19 @@
     <color name="transparent">#00000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_8">#14FFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
     <color name="white_20">#33FFFFFF</color>
     <color name="white_25">#40FFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
+    <color name="white_40">#66FFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
     <color name="white_60">#99FFFFFF</color>
+    <color name="white_70">#B3FFFFFF</color>
     <color name="white_80">#CCFFFFFF</color>
+    <color name="white_90">#E6FFFFFF</color>
+    <color name="white_95">#EFFFFFFF</color>
+    <color name="white_98">#F8FFFFFF</color>
+    <color name="white_100">#FFFFFFFF</color>
 
     <color name="gray_11">#111111</color>
     <color name="gray_22">#222222</color>
