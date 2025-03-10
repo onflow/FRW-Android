@@ -453,7 +453,7 @@
     <string name="loading">加载中</string>
     <string name="loading_desc">可能需要一段时间，请不要退出...</string>
     <string name="create_device_backup">创建设备备份</string>
-    <string name="google_backup_note">注意：您的备份密钥是端到端的加密密，不会发送到流钱包服务器</string>
+    <string name="google_backup_note">注意：您的备份密钥是端到端的加密，不会发送到流钱包服务器</string>
     <string name="create_multi_backup">创建多重备份</string>
     <string name="create_seed_phrase_backup">创建种子词组备份</string>
     <string name="multi_backup">多重备份</string>
