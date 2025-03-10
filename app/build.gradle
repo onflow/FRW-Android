@@ -211,20 +211,20 @@ dependencies {
     implementation 'androidx.compose.ui:ui-tooling:1.7.8'
 
     /** Google Drive **/
-    implementation('com.google.api-client:google-api-client:1.30.9') {
+    implementation('com.google.api-client:google-api-client:1.23.0') {
         exclude group: 'com.google.guava'
     }
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
-    implementation 'com.google.android.gms:play-services-auth:21.3.0'
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
     implementation 'com.google.http-client:google-http-client:1.40.1'
     implementation 'com.google.api-client:google-api-client-android:1.32.1'
-    implementation('com.google.oauth-client:google-oauth-client-jetty:1.31.0') {
+    implementation('com.google.oauth-client:google-oauth-client-jetty:1.23.0') {
         exclude group: 'com.google.guava'
     }
     implementation('com.google.apis:google-api-services-drive:v3-rev110-1.23.0') {
         exclude group: 'com.google.guava'
     }
-    implementation 'com.google.android.gms:play-services-maps:19.1.0'
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
     /** Google Drive **/
 
     /** ARCore **/
@@ -235,7 +235,7 @@ dependencies {
 
     /** Kotlin 相关 **/
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0"
     /** Kotlin 相关 **/
 
     /** firebase **/
@@ -262,14 +262,14 @@ dependencies {
     ksp 'com.github.bumptech.glide:ksp:5.0.0-rc01'
     implementation 'com.caverock:androidsvg-aar:1.4'
 
-    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.retrofit2:converter-scalars:2.0.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
 
     implementation 'com.gitee.zackratos:UltimateBarX:0.6.1'
 
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
 
     implementation 'io.github.h07000223:flycoTabLayout:3.0.0'
@@ -279,15 +279,15 @@ dependencies {
     implementation 'com.github.varunest:sparkbutton:1.0.6'
 
     implementation 'com.github.li-xiaojun:XPopup:2.9.4'
-    implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
-    implementation 'com.google.zxing:core:3.5.1'
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.0'
+    implementation 'com.google.zxing:core:3.4.1'
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.github.Justson.AgentWeb:agentweb-core:v5.0.0-alpha.1-androidx'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'joda-time:joda-time:2.10.3'
     implementation 'commons-validator:commons-validator:1.7'
     implementation 'com.airbnb.android:lottie:5.2.0'
-    implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.browser:browser:1.4.0'
 
     /** FLOW **/
     // implementation "com.nftco:flow-jvm-sdk:0.7.3"
@@ -306,7 +306,7 @@ dependencies {
 
     implementation 'org.bouncycastle:bcprov-jdk18on:1.77'
     implementation 'com.github.trustwallet:trust-web3-provider:3.0.0'
-    implementation 'org.web3j:core:5.0.0'
+    implementation 'org.web3j:core:4.8.7-android'
     /** FLOW **/
 
     implementation 'com.github.translized:android-SDK:1.0.2'
@@ -329,11 +329,11 @@ dependencies {
     }
 
     /** Mixpanel **/
-    implementation "com.mixpanel.android:mixpanel-android:8.0.2"
+    implementation "com.mixpanel.android:mixpanel-android:7.5.4"
 
     /** TEST **/
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     /** TEST **/
 }
