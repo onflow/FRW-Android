@@ -146,7 +146,7 @@
     <string name="address_check_format_error">無効なアドレス</string>
     <string name="address_check_chain_error">チェーン内のアドレスが見つからない</string>
     <string name="address_check_success">有効なアドレス</string>
-    <string name="address_search_empty_tip">申し訳ございませんが、関連するアカウントが見つかりませんでした。</string>
+    <string name="address_search_empty_tip">結果がありません。入力内容を確認してもう一度お試しください。</string>
     <string name="search_the_id">IDを検索: %1$s</string>
     <string name="move_do_not_ask_me">二度と聞かないでくれ。</string>
     <string name="move_to_desc_borwser">Flow 上の Cadence アドレス間で資産を移動すると、%1$s が資産を表示できるようになります</string>
@@ -366,7 +366,7 @@
     <string name="unstaking">アン・ステイキング</string>
     <string name="request_to_unstake">ステーク解除の要請</string>
     <string name="will_be_processed_at_the_next_epoch">次のエポックで処理される</string>
-    <string name="backup_desc">バックアップ・リカバリ・フレーズは、あなたの大切な財産を守るために重要です。</string>
+    <string name="backup_desc">アセットを保護するために今すぐアカウントをバックアップしてください</string>
     <string name="not_now">今ではない</string>
     <string name="not_now_tip">今ではない</string>
     <string name="link_account">リンクアカウント</string>
@@ -665,7 +665,7 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="add_token_success">トークンの追加成功</string>
     <string name="invalid_evm_address">無効な ERC20 アドレス</string>
     <string name="token_contract_address">トークンコントラクトアドレス</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">トークンコントラクトアドレスを入力してください</string>
     <string name="evm_token_contract_address_error">有効なEVMコントラクトアドレスを入力してください</string>
     <string name="contracts">コントラクト</string>
     <string name="token_name">トークンの名前</string>

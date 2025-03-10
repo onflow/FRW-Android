@@ -38,7 +38,7 @@
     <string name="pin">PIN</string>
     <string name="check_pin">Escriba de nuevo su PIN en\n</string>
     <string name="reset_pin">Por favor, escribe\ntu nuevo PIN de nuevo</string>
-    <string name="reset_check_pin">Please type\nyour new PIN again</string>
+    <string name="reset_check_pin">Por favor, escribe\ntu nuevo PIN de nuevo</string>
     <string name="check_pin_tip">Asegúrese de que puede recordar su PIN.</string>
     <string name="create_pin_tip">Para que nadie más que tú pueda desbloquear tu cartera.</string>
     <string name="backup_pin_tip">Su código PIN se utilizará para cifrar de forma segura la copia de seguridad de su cuenta.</string>
@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Dirección no válida</string>
     <string name="address_check_chain_error">No encuentro la dirección en la cadena</string>
     <string name="address_check_success">Dirección validada</string>
-    <string name="address_search_empty_tip">Lo sentimos, no hemos encontrado ninguna cuenta relacionada, por favor compruebe su entrada y vuelva a buscarla.</string>
+    <string name="address_search_empty_tip">No hay resultados. Por favor, comprueba tu entrada e inténtalo de nuevo.</string>
     <string name="search_the_id">Busque el identificador: %1$s</string>
     <string name="move_do_not_ask_me">No preguntarme de nuevo.</string>
     <string name="move_to_desc_borwser">Mueva sus activos entre su dirección de cadencia en Flow, por lo que
@@ -368,7 +368,7 @@
     <string name="unstaking">UnStaking</string>
     <string name="request_to_unstake">Solicitud de baja</string>
     <string name="will_be_processed_at_the_next_epoch">Se procesará en la siguiente época</string>
-    <string name="backup_desc">Frase de recuperación de copia de seguridad es importante en la protección de su propiedad premio.</string>
+    <string name="backup_desc">Copia de seguridad de tu cuenta ahora para proteger tus activos</string>
     <string name="not_now">Ahora no</string>
     <string name="not_now_tip">Ahora no</string>
     <string name="link_account">Cuenta de enlace</string>
@@ -665,7 +665,7 @@
     <string name="add_token_success">Añadir éxito del token</string>
     <string name="invalid_evm_address">Dirección ERC20 inválida</string>
     <string name="token_contract_address">Dirección del contrato de token</string>
-    <string name="token_contract_address_hint">Enter your FLOW token contract address</string>
+    <string name="token_contract_address_hint">Introduzca la dirección del contrato de token</string>
     <string name="evm_token_contract_address_error">Por favor, introduzca una dirección de contrato de EVM válida</string>
     <string name="contracts">Contratos</string>
     <string name="token_name">Nombre del Token</string>
