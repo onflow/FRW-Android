@@ -26,9 +26,7 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
 
     private lateinit var binding: ActivitySendAmountBinding
     private lateinit var presenter: SendAmountPresenter
-    val viewModel: SendAmountViewModel by lazy {
-        ViewModelProvider(this)[SendAmountViewModel::class.java]
-    }
+    private lateinit var viewModel: SendAmountViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,11 +36,13 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
         UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
         TransactionStateManager.addOnTransactionStateChange(this)
         presenter = SendAmountPresenter(this, binding, contact)
-        viewModel.setContact(contact)
-        FlowCoinListManager.getCoinById(coinContractId.orEmpty())?.let { viewModel.changeCoin(it) }
-        viewModel.balanceLiveData.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(balance = it)) }
-        viewModel.onCoinSwap.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(onCoinSwap = true)) }
-        viewModel.load()
+        viewModel = ViewModelProvider(this)[SendAmountViewModel::class.java].apply {
+            setContact(contact)
+            FlowCoinListManager.getCoinById(coinContractId.orEmpty())?.let { changeCoin(it) }
+            balanceLiveData.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(balance = it)) }
+            onCoinSwap.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(onCoinSwap = true)) }
+            load()
+        }
     }
 
     override fun onDestroy() {
