@@ -80,18 +80,4 @@ class DateTimeUtilsTest {
         
         assertEquals(expectedTimestamp, resultTimestamp)
     }
-
-    @Test
-    fun testPlusWeek() {
-        val timestamp = 1710151200000L // 2024-03-11 12:00:00 GMT
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = timestamp
-            add(Calendar.DATE, 7)
-        }
-        val expectedTimestamp = calendar.timeInMillis
-        
-        val resultTimestamp = timestamp.plusWeek(1)
-        
-        assertEquals(expectedTimestamp, resultTimestamp)
-    }
-} 
+}

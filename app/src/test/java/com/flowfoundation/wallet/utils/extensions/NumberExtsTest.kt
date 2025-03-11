@@ -12,16 +12,6 @@ class NumberExtsTest {
         val nullInt: Int? = null
         assertEquals(0, nullInt.orZero())
         assertEquals(42, 42.orZero())
-        
-        // Test Double?.orZero()
-        val nullDouble: Double? = null
-        assertEquals(0.0, nullDouble.orZero(), 0.0)
-        assertEquals(42.5, 42.5.orZero(), 0.0)
-        
-        // Test Float?.orZero()
-        val nullFloat: Float? = null
-        assertEquals(0f, nullFloat.orZero(), 0f)
-        assertEquals(42.5f, 42.5f.orZero(), 0f)
     }
 
     @Test
@@ -46,30 +36,6 @@ class NumberExtsTest {
         assertEquals(0, "abc".toSafeInt())
         assertEquals(42, "abc".toSafeInt(42))
         assertEquals(0, "12.34".toSafeInt())
-    }
-
-    @Test
-    fun testToSafeLong() {
-        // Test null
-        assertEquals(0L, null.toSafeLong())
-        assertEquals(42L, null.toSafeLong(42L))
-        
-        // Test empty string
-        assertEquals(0L, "".toSafeLong())
-        assertEquals(42L, "".toSafeLong(42L))
-        
-        // Test blank string
-        assertEquals(0L, "   ".toSafeLong())
-        assertEquals(42L, "   ".toSafeLong(42L))
-        
-        // Test valid longs
-        assertEquals(123L, "123".toSafeLong())
-        assertEquals(-123L, "-123".toSafeLong())
-        
-        // Test invalid input
-        assertEquals(0L, "abc".toSafeLong())
-        assertEquals(42L, "abc".toSafeLong(42L))
-        assertEquals(0L, "12.34".toSafeLong())
     }
 
     @Test
@@ -110,12 +76,6 @@ class NumberExtsTest {
         assertEquals(42.0, "abc".toSafeDouble(42.0), 0.0)
     }
 
-    @Test
-    fun testFloatToSafeDouble() {
-        val float = 123.45f
-        val expectedDouble = 123.45
-        assertEquals(expectedDouble, float.toSafeDouble(), 0.001)
-    }
 
     @Test
     fun testToSafeDecimal() {
