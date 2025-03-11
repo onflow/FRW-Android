@@ -45,7 +45,7 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
         barcodeLauncher = registerBarcodeLauncher { presenter.bind(TransactionSendModel(qrcode = it)) }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogSendNftAddressBinding.inflate(inflater)
         return binding.root
     }

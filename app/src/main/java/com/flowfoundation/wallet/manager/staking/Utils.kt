@@ -4,7 +4,6 @@ import android.text.format.DateUtils
 import com.flowfoundation.wallet.utils.extensions.toSafeDouble
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.extensions.toSafeInt
 
 // 2022-10-27 07:00

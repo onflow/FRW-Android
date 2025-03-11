@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.currencyCache
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.getCurrencyFlag
@@ -50,10 +49,6 @@ object CurrencyManager {
         this.flag = flag
         fetchInternal(flag)
         ioScope { dispatchListener(flag, currencyPriceInternal(flag)) }
-    }
-
-    private suspend fun currency(): Currency {
-        return findCurrencyFromFlag(flag.ifBlank { getCurrencyFlag() })
     }
 
     private fun currencyPriceInternal(flag: String): Float = currencyMap[flag] ?: -1.0f

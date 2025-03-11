@@ -5,7 +5,6 @@ import androidx.core.view.children
 import com.flowfoundation.wallet.page.browser.tools.clearBrowserTabs
 import com.flowfoundation.wallet.page.window.WindowFrame
 
-
 internal fun browserInstance() = WindowFrame.browserContainer()?.children?.firstOrNull() as? Browser
 
 internal fun attachBrowser(activity: Activity, url: String? = null, params: BrowserParams) {

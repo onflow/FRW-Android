@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.transition.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.DialogFclAuthzBinding
@@ -21,7 +20,6 @@ import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.uiScope
-
 
 class FclTransactionProcessingDialog : BottomSheetDialogFragment(), OnTransactionStateChange {
 

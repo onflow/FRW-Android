@@ -68,8 +68,6 @@ object StakingManager {
 
     fun apy() = apy
 
-    fun apyYear() = apyYear
-
     fun isStaked(): Boolean {
         return stakingCount() > 0.0f
     }

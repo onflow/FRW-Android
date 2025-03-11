@@ -145,7 +145,7 @@ object EVMWalletManager {
         toAddress: String,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+        if (isEVMWalletAddress(fromAddress)) {
             if (WalletManager.isChildAccount(toAddress)) {
                 // COA -> Linked Account
                 val moveAmount = amount.movePointRight(coin.decimal)
@@ -155,7 +155,7 @@ object EVMWalletManager {
                 withdrawFlowFromCOA(amount, toAddress, callback)
             }
         } else if (WalletManager.isChildAccount(fromAddress)) {
-            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+            if (isEVMWalletAddress(toAddress)) {
                 // Linked Account -> COA
                 bridgeTokenFromChildToCOA(coin.getFTIdentifier(), amount, fromAddress, callback)
             } else {
@@ -163,7 +163,7 @@ object EVMWalletManager {
                 transferToken(coin, toAddress, amount, callback)
             }
         } else {
-            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+            if (isEVMWalletAddress(toAddress)) {
                 // Parent Flow -> COA
                 fundFlowToCOA(amount, callback)
             } else {
@@ -176,7 +176,7 @@ object EVMWalletManager {
     suspend fun moveBridgeToken(
         coin: FlowCoin, amount: BigDecimal, fromAddress: String, toAddress: String, callback: (isSuccess: Boolean) -> Unit
     ) {
-        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+        if (isEVMWalletAddress(fromAddress)) {
             val moveAmount = amount.movePointRight(coin.decimal)
             if (WalletManager.isChildAccount(toAddress)) {
                 // COA -> Linked Account
@@ -186,7 +186,7 @@ object EVMWalletManager {
                 bridgeTokenFromCOAToFlow(coin.getFTIdentifier(), moveAmount, callback)
             }
         } else {
-            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+            if (isEVMWalletAddress(toAddress)) {
                 if (WalletManager.isChildAccount(fromAddress)) {
                     // Linked Account -> COA
                     bridgeTokenFromChildToCOA(coin.getFTIdentifier(), amount, fromAddress, callback)

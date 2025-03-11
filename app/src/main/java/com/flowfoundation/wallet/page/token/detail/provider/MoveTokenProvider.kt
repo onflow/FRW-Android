@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.token.detail.provider
 
 import com.flowfoundation.wallet.page.token.detail.model.MoveToken
-import java.math.BigDecimal
 
 
 interface MoveTokenProvider {

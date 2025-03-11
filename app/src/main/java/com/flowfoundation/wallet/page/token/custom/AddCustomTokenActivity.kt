@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import com.google.android.material.transition.MaterialSharedAxis
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
@@ -29,7 +28,6 @@ class AddCustomTokenActivity : BaseActivity() {
 
     private lateinit var binding: ActivityAddCustomTokenBinding
     private lateinit var viewModel: CustomTokenViewModel
-    private val addEVMCustomToken = true
     private var currentOption: CustomTokenOption? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

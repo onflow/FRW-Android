@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.page.browser.model.BrowserModel
 import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
-import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
 import com.flowfoundation.wallet.page.window.WindowFrame
@@ -22,7 +21,6 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.uiScope
 
 class BrowserPresenter(
-    private val browser: Browser,
     private val binding: LayoutBrowserBinding,
     private val viewModel: BrowserViewModel,
 ) : BasePresenter<BrowserModel>, WebviewCallback {

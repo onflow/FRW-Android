@@ -64,11 +64,3 @@ fun Long.plusYear(plus: Int): Long {
     }
     return calendar.timeInMillis
 }
-
-fun Long.plusWeek(plus: Int): Long {
-    val calendar = Calendar.getInstance().apply {
-        time = Date(this@plusWeek)
-        add(Calendar.DATE, plus * 7)
-    }
-    return calendar.timeInMillis
-}

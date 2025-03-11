@@ -9,12 +9,9 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_GET_BALANCE("getTokenBalanceWithModel", CadenceScriptType.BASIC),
     CADENCE_ADD_PUBLIC_KEY("addKey", CadenceScriptType.BASIC),
     CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS("getFlownsAddress", CadenceScriptType.BASIC),
-    CADENCE_QUERY_DOMAIN_BY_ADDRESS_FLOWNS("getFlownsDomainsByAddress", CadenceScriptType.BASIC),
     CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND("getFindAddress", CadenceScriptType.BASIC),
-    CADENCE_QUERY_DOMAIN_BY_ADDRESS_FIND("getFindDomainByAddress", CadenceScriptType.BASIC),
     CADENCE_QUERY_STORAGE_INFO("getStorageInfo", CadenceScriptType.BASIC),
     CADENCE_QUERY_MIN_FLOW_BALANCE("getAccountMinFlow", CadenceScriptType.BASIC),
-    CADENCE_QUERY_FLOW_BALANCE("queryFlowBalance", CadenceScriptType.BASIC),
     CADENCE_REVOKE_ACCOUNT_KEY("revokeKey", CadenceScriptType.BASIC),
     CADENCE_GET_ACCOUNT_INFO("getAccountInfo", CadenceScriptType.BASIC),
 
@@ -55,10 +52,8 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
 
     // HYBRID_CUSTODY
     CADENCE_QUERY_CHILD_ACCOUNT_META("getChildAccountMeta", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_QUERY_CHILD_ACCOUNT_LIST("getChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_UNLINK_CHILD_ACCOUNT("unlinkChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_EDIT_CHILD_ACCOUNT("editChildAccount", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_QUERY_CHILD_ACCOUNT_NFT("getAccessibleCollectionAndIdsDisplay", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_TOKENS("getAccessibleCoinInfo", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS("getChildAccountAllowTypes", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_BRIDGE_CHILD_NFT_TO_EVM("bridgeChildNFTToEvm", CadenceScriptType.HYBRID_CUSTODY),
@@ -74,9 +69,6 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD("transferNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD("batchTransferNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT("batchTransferChildNFT", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT("transferChildFT", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_SEND_FT_FROM_CHILD_TO_FLOW("sendChildFT", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_CHECK_CHILD_LINKED_VAULT("checkChildLinkedVaults", CadenceScriptType.HYBRID_CUSTODY),
 
     // BRIDGE
     CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER("getAssociatedFlowIdentifier", CadenceScriptType.BRIDGE),

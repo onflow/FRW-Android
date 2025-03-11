@@ -100,7 +100,5 @@ open class TouchScaleCardView : MaterialCardView {
         }
     }
 
-    companion object {
-        private const val TAG = "VpnSwitchButton"
-    }
+    companion object
 }

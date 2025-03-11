@@ -42,13 +42,4 @@ object CustomTokenCacheManager {
     fun clear() {
         ioScope { file.delete() }
     }
-
-    fun isCacheExist(): Boolean = file.exists() && file.length() > 0
-
-    fun modifyTime() = file.lastModified()
-
-    fun isExpired(duration: Long): Boolean {
-        return System.currentTimeMillis() - modifyTime() > duration
-    }
-
 }

@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.page.explore.model.DAppTagModel
 import com.flowfoundation.wallet.page.explore.presenter.ExploreDAppTagItemPresenter
 
 class ExploreDAppTagsAdapter : BaseAdapter<DAppTagModel>(diffCallback) {
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return ExploreDAppTagItemPresenter(parent.inflate(R.layout.item_dapp_category))
     }

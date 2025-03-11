@@ -8,7 +8,3 @@ data class TransactionRecord(
     val transaction: FlowScanTransaction
 )
 
-data class TransactionRecordList(
-    @SerializedName("list")
-    val list: List<FlowScanTransaction>
-)

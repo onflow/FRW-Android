@@ -10,7 +10,6 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityCollectionBinding
 import com.flowfoundation.wallet.page.collection.model.CollectionContentModel
 import com.flowfoundation.wallet.page.collection.presenter.CollectionContentPresenter
-import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.utils.isNightMode
 
 class CollectionActivity : BaseActivity() {

@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.widgets.webview.evm.dialog
 
-import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -30,7 +29,7 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogEvmTransactionBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogEvmTransactionBinding.inflate(inflater)
         return binding.root
     }

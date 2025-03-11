@@ -6,7 +6,6 @@ import android.content.Intent
 import android.graphics.Point
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -211,11 +210,8 @@ class DebugViewerTab(private val binding: DebugViewerRvBinding) :
 }
 
 enum class DebugMessageCategory {
-    API,
-    MISC,
     LOG,
     ERROR,
-    ANALYTICS
 }
 
 data class DebugMessage(
@@ -238,7 +234,7 @@ object DebugViewerDataSource {
         return list.value?.get(category) ?: listOf()
     }
 
-    fun append(category: DebugMessageCategory, message: DebugMessage) {
+    private fun append(category: DebugMessageCategory, message: DebugMessage) {
         if (!DebugManager.isProductionBuild) {
             mainScope.launch {
                 val map = list.value?.toMutableMap() ?: mutableMapOf()

@@ -61,14 +61,6 @@ class WalletCreateCloudPwdPresenter(
         model.isBackupSuccess?.let { onBackupCallback(it) }
     }
 
-    fun unbind() {
-        with(rootView.viewTreeObserver) {
-            if (isAlive) {
-                removeOnGlobalLayoutListener(keyboardObserver)
-            }
-        }
-    }
-
     private fun onBackupCallback(isSuccess: Boolean) {
         if (isSuccess) {
             setBackupGoogleDrive(true)

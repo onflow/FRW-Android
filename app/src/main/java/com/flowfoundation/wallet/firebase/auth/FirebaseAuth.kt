@@ -42,7 +42,7 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
 
 fun firebaseUid() = Firebase.auth.currentUser?.uid
 
-suspend fun getFirebaseJwt(forceRefresh: Boolean = false) = suspendCoroutine<String> { continuation ->
+suspend fun getFirebaseJwt(forceRefresh: Boolean = false) = suspendCoroutine { continuation ->
     ioScope {
         val auth = Firebase.auth
         if (auth.currentUser == null) {
@@ -65,7 +65,7 @@ suspend fun getFirebaseJwt(forceRefresh: Boolean = false) = suspendCoroutine<Str
     }
 }
 
-suspend fun deleteAnonymousUser() = suspendCoroutine<Boolean> { continuation ->
+suspend fun deleteAnonymousUser() = suspendCoroutine { continuation ->
     FirebaseMessaging.getInstance().deleteToken()
     Firebase.auth.currentUser?.delete()?.addOnCompleteListener { task ->
         logd(TAG, "delete anonymous user finish , exception:${task.exception}")
@@ -73,7 +73,7 @@ suspend fun deleteAnonymousUser() = suspendCoroutine<Boolean> { continuation ->
     }
 }
 
-suspend fun signInAnonymously() = suspendCoroutine<Boolean> { continuation ->
+suspend fun signInAnonymously() = suspendCoroutine { continuation ->
     Firebase.auth.signInAnonymously().addOnCompleteListener { signInTask ->
         continuation.resume(signInTask.isSuccessful)
     }

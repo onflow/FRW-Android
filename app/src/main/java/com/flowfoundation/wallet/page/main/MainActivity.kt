@@ -28,7 +28,6 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 
-
 class MainActivity : BaseActivity() {
 
     private lateinit var contentPresenter: MainContentPresenter
@@ -106,7 +105,6 @@ class MainActivity : BaseActivity() {
     }
 
     companion object {
-        private val TAG = MainActivity::class.java.simpleName
 
         private var INSTANCE: MainActivity? = null
         fun launch(context: Context) {

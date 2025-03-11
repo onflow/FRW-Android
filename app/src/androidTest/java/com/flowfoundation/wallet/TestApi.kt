@@ -1,14 +1,13 @@
 package com.flowfoundation.wallet
 
-import android.util.Base64
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.nftco.flow.sdk.bytesToHex
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.retrofit
+import com.nftco.flow.sdk.bytesToHex
 import io.outblock.wallet.KeyManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

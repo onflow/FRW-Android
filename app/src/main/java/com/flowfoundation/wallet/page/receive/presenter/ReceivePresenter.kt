@@ -1,10 +1,8 @@
 package com.flowfoundation.wallet.page.receive.presenter
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import androidx.core.view.drawToBitmap
-import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityReceiveBinding
@@ -26,6 +24,7 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.ProgressDialog
+import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import java.io.File
 
 class ReceivePresenter(
