@@ -101,6 +101,7 @@
     <color name="bg_2">#222222</color>
     <color name="bg_3">#2C2C2C</color>
     <color name="explore_chip_bg">#2A2A2A</color>
+    <color name="bottom_sheet_bg">#1E1E1F</color>
 
     <color name="text_white">#000000</color>
     <color name="text_light">#FFFFFF</color>

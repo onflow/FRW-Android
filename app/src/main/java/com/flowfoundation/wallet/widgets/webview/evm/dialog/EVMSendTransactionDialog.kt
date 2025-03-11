@@ -13,7 +13,7 @@ import com.flowfoundation.wallet.databinding.DialogEvmTransactionBinding
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.TransactionDecodeParams
-import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.gone
@@ -26,6 +26,8 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMTransactionDialogModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 
 
 class EVMSendTransactionDialog: BottomSheetDialogFragment() {
@@ -70,8 +72,10 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
                     }
                 }
             }
-            tvContactAddress.text = data.toAddress
-            tvAmount.text = "${data.value} FLOW"
+            tvAddress.text = data.toAddress
+            val amountValue = Numeric.decodeQuantity(data.value ?: "0")
+            val value = Convert.fromWei(amountValue.toString(), Convert.Unit.ETHER)
+            tvAmount.text = "$value FLOW"
             tvCallData.text = data.data
             ivCopy.setOnClickListener {
                 textToClipboard(data.data.orEmpty())
@@ -83,7 +87,7 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
     private fun loadTransactionDecodeData(data: EVMTransactionDialogModel) {
         ioScope {
             try {
-                val service = retrofit().create(ApiService::class.java)
+                val service = retrofitApi().create(ApiService::class.java)
                 val response = service.getEVMTransactionDecodeData(
                     TransactionDecodeParams(
                         to = data.toAddress ?: "",
