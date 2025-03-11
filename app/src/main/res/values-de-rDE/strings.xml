@@ -147,7 +147,7 @@
     <string name="address_check_format_error">Ungültige Adresse</string>
     <string name="address_check_chain_error">Adresse nicht in Kette finden</string>
     <string name="address_check_success">Bestätigte Adresse</string>
-    <string name="address_search_empty_tip">Tut uns leid, wir haben kein entsprechendes Konto gefunden. Bitte überprüfen Sie Ihre Eingabe und suchen Sie erneut.</string>
+    <string name="address_search_empty_tip">Keine Ergebnisse. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.</string>
     <string name="search_the_id">Suche nach der ID: %1$s</string>
     <string name="move_do_not_ask_me">Nicht erneut nachfragen</string>
     <string name="move_to_desc_borwser">Verschieben Sie Ihre Assets zwischen Ihrer Kadenz-Adresse auf Flow, so dass
@@ -368,7 +368,7 @@
     <string name="unstaking">UnStaking</string>
     <string name="request_to_unstake">Anfrage an UnStake</string>
     <string name="will_be_processed_at_the_next_epoch">Wird in der nächsten Epoche verarbeitet</string>
-    <string name="backup_desc">Backup Recovery Phrase ist wichtig, um Ihr Eigentum zu schützen.</string>
+    <string name="backup_desc">Sichern Sie Ihr Konto jetzt, um Ihre Assets zu schützen</string>
     <string name="not_now">Nicht jetzt</string>
     <string name="not_now_tip">Nicht jetzt</string>
     <string name="link_account">Link Konto</string>
@@ -665,7 +665,7 @@
     <string name="add_token_success">Token erfolgreich hinzugefügt</string>
     <string name="invalid_evm_address">Ungültige ERC20-Adresse</string>
     <string name="token_contract_address">Token-Vertragsadresse</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Geben Sie die Token-Vertragsadresse ein</string>
     <string name="evm_token_contract_address_error">Bitte geben Sie eine gültige EVM Vertragsadresse ein</string>
     <string name="contracts">Verträge</string>
     <string name="token_name">Token-Name</string>

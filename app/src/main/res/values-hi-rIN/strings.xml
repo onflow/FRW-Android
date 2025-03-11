@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Invalid address</string>
     <string name="address_check_chain_error">Can\'t find address in chain</string>
     <string name="address_check_success">Validated address</string>
-    <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
+    <string name="address_search_empty_tip">No results. Please check your input and try again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
     <string name="move_do_not_ask_me">Do not ask me again.</string>
     <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
@@ -676,7 +676,7 @@
     <string name="add_token_success">Add Token Success</string>
     <string name="invalid_evm_address">Invalid ERC20 address</string>
     <string name="token_contract_address">Token Contract Address</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Enter the token contract address</string>
     <string name="evm_token_contract_address_error">Please enter valid EVM contract address</string>
     <string name="contracts">Contracts</string>
     <string name="token_name">Token Name</string>

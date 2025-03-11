@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Indirizzo non valido</string>
     <string name="address_check_chain_error">Non è possibile trovare l\'indirizzo nella catena</string>
     <string name="address_check_success">Indirizzo convalidato</string>
-    <string name="address_search_empty_tip">Siamo spiacenti, non abbiamo trovato alcun account correlato, si prega di controllare l\'inserimento e di effettuare nuovamente la ricerca.</string>
+    <string name="address_search_empty_tip">Nessun risultato. Controlla il tuo input e riprova.</string>
     <string name="search_the_id">Cerca l\'ID: %1$s</string>
     <string name="move_do_not_ask_me">Non chiedermelo di nuovo.</string>
     <string name="move_to_desc_borwser">Sposta i tuoi asset tra il tuo indirizzo di cadenza su Flow, così
@@ -367,7 +367,7 @@
     <string name="unstaking">Non prendere in mano la situazione</string>
     <string name="request_to_unstake">Richiesta di unStake</string>
     <string name="will_be_processed_at_the_next_epoch">Verrà elaborato all\'epoca successiva</string>
-    <string name="backup_desc">La frase di ripristino del backup è importante per proteggere la proprietà del premio.</string>
+    <string name="backup_desc">Backup del tuo account ora per proteggere le tue risorse</string>
     <string name="not_now">Non ora</string>
     <string name="not_now_tip">Non ora</string>
     <string name="link_account">Collegamento del conto</string>
@@ -664,7 +664,7 @@
     <string name="add_token_success">Aggiungi Token Con Successo</string>
     <string name="invalid_evm_address">Indirizzo ERC20 non valido</string>
     <string name="token_contract_address">Indirizzo del Contratto Token</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Inserisci l\'indirizzo del contratto token</string>
     <string name="evm_token_contract_address_error">Inserisci un indirizzo di contratto EVM valido</string>
     <string name="contracts">Contratti</string>
     <string name="token_name">Nome del Token</string>

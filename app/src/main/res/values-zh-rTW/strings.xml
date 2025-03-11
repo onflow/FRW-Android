@@ -144,7 +144,7 @@
     <string name="address_check_format_error">無效地址</string>
     <string name="address_check_chain_error">無法在鏈上找到地址</string>
     <string name="address_check_success">地址已驗證</string>
-    <string name="address_search_empty_tip">抱歉，未找到相關賬戶，請檢查您的輸入並重新搜索。</string>
+    <string name="address_search_empty_tip">沒有結果。請檢查您的輸入並重試。</string>
     <string name="search_the_id">搜尋 ID: %1$s</string>
     <string name="move_do_not_ask_me">不要再次詢問我。</string>
     <string name="move_to_desc_borwser">在 Flow 上搬移您的資產到您的 Cadence 地址，以便 %1$s 可以查看您的資產</string>
@@ -366,7 +366,7 @@
     <string name="unstaking">取消質押中</string>
     <string name="request_to_unstake">申請解質押</string>
     <string name="will_be_processed_at_the_next_epoch">將在下一個周期處理</string>
-    <string name="backup_desc">備份恢復短語對保護您的獎品財產非常重要。</string>
+    <string name="backup_desc">立即備份您的帳戶以保護您的資產</string>
     <string name="not_now">稍後</string>
     <string name="not_now_tip">稍後再說</string>
     <string name="link_account">連接帳戶</string>
@@ -656,7 +656,7 @@
     <string name="add_token_success">添加代幣成功</string>
     <string name="invalid_evm_address">無效的 ERC20 地址</string>
     <string name="token_contract_address">代幣合約地址</string>
-    <string name="token_contract_address_hint">輸入您的 Flow 代幣合約地址</string>
+    <string name="token_contract_address_hint">輸入代幣合約地址</string>
     <string name="evm_token_contract_address_error">請輸入有效的 EVM 合約地址</string>
     <string name="contracts">合約</string>
     <string name="token_name">代幣名稱</string>
