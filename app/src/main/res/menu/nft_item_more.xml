@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_select"
+        android:icon="@drawable/ic_selection_star"
+        android:title="@string/top_selection"/>
+    <item
+        android:id="@+id/action_share"
+        android:icon="@drawable/ic_share"
+        android:title="@string/share"/>
+    <item
+        android:id="@+id/action_send"
+        android:icon="@drawable/ic_send_simple"
+        android:title="@string/send"/>
+</menu>

@@ -22,11 +22,6 @@
 
     <color name="success">#00B23C</color>
 
-    <color name="green_1">#26C390</color>
-    <color name="green_2">#49D9A9</color>
-    <color name="green_3">#77E2BF</color>
-    <color name="green_4">#A4ECD4</color>
-    <color name="green_5">#BFF2E1</color>
     <color name="green_6">#EDFBF6</color>
 
     <color name="red_1">#ED0B0D</color>
@@ -129,7 +124,6 @@
     <color name="colorSecondary_65">#a641CC5D</color>
     <color name="colorSecondary_80">#CC41CC5D</color>
     <color name="colorSecondary_95">#F241CC5D</color>
-    <color name="swap_token_selected">#363636</color>
     <color name="accent_blue">#579AF2</color>
     <color name="accent_green">#41CC5D</color>
     <color name="accent_gray">#8C9BAB</color>
@@ -139,7 +133,6 @@
     <color name="evm">#627EEA</color>
     <color name="accent_quote_up_opacity">#1441CC5D</color>
     <color name="accent_quote_down_opacity">#14E54040</color>
-    <color name="profile_card_background">#FAFAFA</color>
     <color name="profile_card_divider">#F0F0F0</color>
     <color name="welcome_page_text">#000000</color>
     <color name="drawer_item_background">#F4F4F7</color>
