@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.utils
 
 import android.app.Activity
 import android.content.res.Configuration
+import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.storage.firebaseImage
 import io.mockk.*
 import org.junit.After
@@ -72,5 +73,19 @@ class AppUtilsTest {
         
         val result = testUrl.parseAvatarUrl()
         assertTrue(result.contains("https://firebase.storage.url/"))
+    }
+
+    @Test
+    fun `test isDev returns true for dev build`() {
+        // Since we're in test environment with debug build type
+        // This should match the actual BuildConfig.APPLICATION_ID value
+        val result = isDev()
+        assertEquals(BuildConfig.APPLICATION_ID.contains("dev"), result)
+    }
+
+    @Test
+    fun `test isTesting returns true in debug build`() {
+        // In test environment, BuildConfig.DEBUG should be true
+        assertTrue(isTesting())
     }
 }
