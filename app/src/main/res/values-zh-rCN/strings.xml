@@ -143,7 +143,7 @@
     <string name="address_check_format_error">无效地址</string>
     <string name="address_check_chain_error">在链上找不到地址</string>
     <string name="address_check_success">已验证地址</string>
-    <string name="address_search_empty_tip">抱歉，未找到相关账户，请检查您的输入并重试。</string>
+    <string name="address_search_empty_tip">没有结果。请检查您的输入并重试。</string>
     <string name="search_the_id">搜索 ID： %1$s</string>
     <string name="move_do_not_ask_me">不再提示</string>
     <string name="move_to_desc_borwser">在 Flow 上的 Cadence 地址之间转移您的资产，以便 %1$s 查看您的资产</string>
@@ -363,7 +363,7 @@
     <string name="unstaking">取消质押中</string>
     <string name="request_to_unstake">请求取消质押</string>
     <string name="will_be_processed_at_the_next_epoch">将在下一个纪元处理中</string>
-    <string name="backup_desc">备份助记词对于保护您的重要资产很重要。</string>
+    <string name="backup_desc">立即备份您的帐户以保护您的资产</string>
     <string name="not_now">稍后</string>
     <string name="not_now_tip">稍后</string>
     <string name="link_account">关联账户</string>
@@ -654,14 +654,14 @@
     <string name="local_account_keys">本地账户密钥</string>
     <string name="reload_config">重新装入配置</string>
     <string name="move_fee">移动费用</string>
-    <string name="move_fee_tips">充电时在入门和流上的EVM之间移动。</string>
+    <string name="move_fee_tips">在 Cadence 账户与 Flow 上的 EVM 账户之间进行转移时会收取费用。</string>
     <string name="no_move_fee_tips">您的 Flow 帐户之间没有收费 🤟</string>
     <string name="wait_website_fully_loaded">请稍候直到网站已完全加载</string>
     <string name="add_custom_token">添加自定义代币</string>
     <string name="add_token_success">添加令牌成功</string>
     <string name="invalid_evm_address">无效的 ERC20 地址</string>
     <string name="token_contract_address">Token 合约地址</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">输入代币合约地址</string>
     <string name="evm_token_contract_address_error">请输入有效的EVM合同地址</string>
     <string name="contracts">合同</string>
     <string name="token_name">令牌名称</string>
