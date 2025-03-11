@@ -43,70 +43,33 @@
     <color name="white_60">#99FFFFFF</color>
     <color name="white_70">#B3FFFFFF</color>
     <color name="white_80">#CCFFFFFF</color>
-    <color name="white_90">#E6FFFFFF</color>
-    <color name="white_95">#EFFFFFFF</color>
-    <color name="white_98">#F8FFFFFF</color>
-    <color name="white_100">#FFFFFFFF</color>
 
-    <color name="gray_11">#111111</color>
-    <color name="gray_22">#222222</color>
     <color name="gray_33">#333333</color>
-    <color name="gray_44">#444444</color>
     <color name="gray_55">#555555</color>
-    <color name="gray_66">#666666</color>
-    <color name="gray_6a">#6A6A6A</color>
-    <color name="gray_77">#777777</color>
     <color name="gray_88">#888888</color>
-    <color name="gray_99">#999999</color>
-    <color name="gray_aa">#AAAAAA</color>
     <color name="gray_cc">#CCCCCC</color>
-    <color name="gray_dd">#DDDDDD</color>
-    <color name="gray_ee">#EEEEEE</color>
     <color name="gray_ef">#efefef</color>
-    <color name="gray_f4">#F4F4F4</color>
-    <color name="gray_fd">#FDFDFD</color>
-    <color name="gray_fe">#FEFEFE</color>
-
-    <color name="gray_33_30">#4D333333</color>
 
     <color name="black">#FF000000</color>
-    <color name="black_00">#00000000</color>
-    <color name="black_2">#05000000</color>
-    <color name="black_4">#0A000000</color>
-    <color name="black_6">#0F000000</color>
-    <color name="black_8">#14000000</color>
     <color name="black_10">#1A000000</color>
     <color name="black_15">#26000000</color>
     <color name="black_20">#33000000</color>
-    <color name="black_25">#40000000</color>
     <color name="black_30">#4D000000</color>
     <color name="black_40">#66000000</color>
     <color name="black_50">#80000000</color>
     <color name="black_60">#99000000</color>
     <color name="black_70">#B3000000</color>
     <color name="black_80">#CC000000</color>
-    <color name="black_90">#E6000000</color>
-    <color name="black_95">#EF000000</color>
-    <color name="black_98">#F8000000</color>
 
     <color name="background">#FFFAFAFA</color>
     <color name="front_color">#FFFFFF</color>
-    <color name="mango_nft">#FFD500</color>
-    <color name="mango_nft_16">#29FFD500</color>
     <color name="mango1">#E0BF16</color>
-    <color name="mango3">#FADD4B</color>
-    <color name="mango4">#FAE57D</color>
-    <color name="mango5">#FFF9D9</color>
     <color name="navy_wallet">#0F71F2</color>
-    <color name="navy1">#0B59BF</color>
-    <color name="navy3">#579AF2</color>
-    <color name="navy4">#8FBFFF</color>
     <color name="navy5">#DBEBFF</color>
     <color name="neutrals1">#1A1A1A</color>
     <color name="neutrals1_a8">#141A1A1A</color>
     <color name="neutrals2">#333333</color>
     <color name="neutrals3">#4D4D4D</color>
-    <color name="neutrals3_25">#404D4D4D</color>
     <color name="neutrals4">#666666</color>
     <color name="neutrals5">#777777</color>
     <color name="neutrals6">#999999</color>
@@ -117,30 +80,17 @@
     <color name="note">#808080</color>
     <color name="outline">#E6E6E6</color>
     <color name="salmon_primary">#41CC5D</color>
-    <color name="salmon1">#C9683A</color>
-    <color name="salmon3">#FCA47C</color>
-    <color name="salmon4">#FCC7AE</color>
     <color name="salmon5">#FCE9E1</color>
-    <color name="shades2">#000000</color>
-    <color name="success1">#309600</color>
     <color name="success2">#38B000</color>
     <color name="success3">#69C93C</color>
-    <color name="success4">#A5E388</color>
     <color name="success5">#EBFCE3</color>
     <color name="text">#333333</color>
-    <color name="violet_discover">#7678ED</color>
     <color name="violet1">#474AED</color>
-    <color name="violet3">#AAABF2</color>
     <color name="violet4">#C2C3F2</color>
     <color name="violet5">#E6E6F2</color>
-    <color name="warning1">#80160D</color>
     <color name="warning2">#C44536</color>
-    <color name="warning3">#FF8A80</color>
-    <color name="warning4">#FFB9B2</color>
     <color name="warning5">#FFE8E5</color>
-    <color name="warning6">#FFF3F2</color>
     <color name="neutrals11">#E6E6E6</color>
-    <color name="neutrals12">#FAFAFA</color>
     <color name="neutrals12_background">#0D0D0D</color>
     <color name="salmon_primary_8">#1432E355</color>
     <color name="button">#1a1a1a</color>
@@ -164,7 +114,6 @@
     <color name="quote_down_opacity">#1CF75744</color>
     <color name="quote_down">#F75744</color>
     <color name="red">#FF0000</color>
-    <color name="blur">#26000000</color>
     <color name="image_bg">@color/neutrals8</color>
     <color name="wallet_connect">#3396FF</color>
     <color name="stake">#60C293</color>
@@ -203,7 +152,6 @@
     <color name="accent_gray_12">#1C8C9BAB</color>
     <color name="accent_gray_8">#148C9BAB</color>
     <color name="accent_green_8">#1441CC5D</color>
-    <color name="accent_green_12">#1c41CC5D</color>
     <color name="accent_orange_16">#29FF8A00</color>
 
 
@@ -236,7 +184,6 @@
     <color name="main_account_cover_color_start">#2941CC5D</color>
     <color name="main_account_cover_color_end">#0041CC5D</color>
 
-    <color name="emoji_koala">#DFCFC8</color>
     <color name="emoji_lion">#FFA600</color>
     <color name="emoji_panda">#F4F3F3</color>
     <color name="emoji_butterfly">#36A5F8</color>
@@ -249,8 +196,6 @@
     <color name="emoji_lemon">#FDEF85</color>
     <color name="emoji_coconut">#E3CAAA</color>
     <color name="emoji_avocado">#B2C45C</color>
-
-    <color name="landing_tab_dot_normal">#14000000</color>
 
     <color name="home_page_background">#FFF5F5F5</color>
     <color name="token_pricing_card_background">#FAFAFA</color>
