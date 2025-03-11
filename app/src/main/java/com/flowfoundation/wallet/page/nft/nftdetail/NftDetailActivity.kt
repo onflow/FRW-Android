@@ -2,8 +2,6 @@ package com.flowfoundation.wallet.page.nft.nftdetail
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -23,7 +21,6 @@ import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.utils.isNightMode
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.toast
 import com.google.gson.Gson
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX

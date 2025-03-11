@@ -32,10 +32,6 @@ class TransactionBuilder {
 
     fun arg(argument: JsonCadenceBuilder.() -> Field<*>) = arg(argument(JsonCadenceBuilder()))
 
-    fun gaslimit(limit: Int) {
-        this.limit = limit
-    }
-
     fun walletAddress(address: String) {
         this.walletAddress = address
     }

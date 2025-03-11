@@ -45,14 +45,6 @@ fun Float.dp2px(): Float {
     return this * scale + 0.5f
 }
 
-fun Int.toHexColorString(withAlpha: Boolean = false): String {
-    return if (withAlpha) {
-        String.format("#%08X", this)
-    } else {
-        String.format("#%06X", 0xFFFFFF and this)
-    }
-}
-
 @ColorInt
 fun Int.alpha(alpha: Float): Int {
     return Color.argb(

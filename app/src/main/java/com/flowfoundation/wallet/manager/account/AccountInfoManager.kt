@@ -8,15 +8,11 @@ import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import org.onflow.flow.infrastructure.Cadence
 import java.math.BigDecimal
 
@@ -30,7 +26,6 @@ object AccountInfoManager {
     private const val MINIMUM_STORAGE_THRESHOLD: Long = 10000
 
     private val _accountResultFlow = MutableStateFlow<AccountInfo?>(null)
-    val accountResultFlow: StateFlow<AccountInfo?> = _accountResultFlow.asStateFlow()
 
     fun refreshAccountInfo() {
         ioScope {

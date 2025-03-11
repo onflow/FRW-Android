@@ -21,7 +21,7 @@ import wallet.core.jni.*
 class TestWallet {
 
     init {
-        System.loadLibrary("TrustWalletCore");
+        System.loadLibrary("TrustWalletCore")
     }
 
     @Test
@@ -173,11 +173,7 @@ class TestWallet {
         const val P256_SHA3_256_SIGNATURE =
             "74bae2badfff9e8193292978b07acb703ffafee2b81b551ab6dffa1135a144fd68e352ec7057eca55f5deac2307b8919797d0a7417cc4da983c5608a861afe9500"
 
-        const val TEST_ADDRESS = "0xcfe03e16d57ad8ad"
-
-        const val HOST_MAINNET = "access.mainnet.nodes.onflow.org"
         const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
-        const val HOST_CANARYNET = "access.canary.nodes.onflow.org"
 
         const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
     }

@@ -75,8 +75,6 @@ class SwapTokenConfirmDialog : BottomSheetDialogFragment() {
 
 
     companion object {
-        private const val EXTRA_DATA = "extra_data"
-
         fun show(fragmentManager: FragmentManager) {
             SwapTokenConfirmDialog().apply {
             }.show(fragmentManager, "")

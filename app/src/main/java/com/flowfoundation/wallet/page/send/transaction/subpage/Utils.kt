@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.shortenEVMString
 
-
 @SuppressLint("SetTextI18n")
 fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressBookContact) {
     fromAddressView.text = "(${shortenEVMString(fromAddress)})"

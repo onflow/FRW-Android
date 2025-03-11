@@ -42,7 +42,7 @@ class CacheManager<T>(
 
     fun isCacheExist(): Boolean = file.exists() && file.length() > 0
 
-    fun modifyTime() = file.lastModified()
+    private fun modifyTime() = file.lastModified()
 
     fun isExpired(duration: Long): Boolean {
         return System.currentTimeMillis() - modifyTime() > duration

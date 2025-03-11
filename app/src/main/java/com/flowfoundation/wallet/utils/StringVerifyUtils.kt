@@ -3,21 +3,13 @@ package com.flowfoundation.wallet.utils
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.utils.extensions.res2String
 
-
-private val PASSWORD_REGEX by lazy { Regex("^(?=.*[A-Za-z])[A-Za-z\\d@\$!%*#?&]{6,}\$") }
-private val REGEX_CONTAINS_NUMBER by lazy { Regex(".*\\d.*") }
-private val REGEX_CONTAINS_CHARACTER by lazy { Regex(".*[A-Za-z].*") }
-
 private val USERNAME_REGEX by lazy { Regex("^[A-Za-z0-9]{3,15}\$") }
 
 private const val USERNAME_MAX_SIZE = 15
 private const val USERNAME_MIN_SIZE = 3
 
 fun verifyPassword(password: String): Boolean {
-    if (password.length < 8) {
-        return false
-    }
-    return true
+    return password.length >= 8
 }
 
 

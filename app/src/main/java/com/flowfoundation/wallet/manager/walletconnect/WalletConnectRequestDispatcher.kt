@@ -67,10 +67,8 @@ import com.walletconnect.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
 import org.web3j.crypto.StructuredDataEncoder
-import java.io.ByteArrayOutputStream
 import java.lang.reflect.Type
 import java.util.zip.GZIPInputStream
-import java.util.zip.GZIPOutputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -468,12 +466,6 @@ private class SignableDeserializer : JsonDeserializer<Signable> {
     }
 }
 
-
-fun gzip(content: String): ByteArray {
-    val bos = ByteArrayOutputStream()
-    GZIPOutputStream(bos).bufferedWriter(Charsets.UTF_8).use { it.write(content) }
-    return bos.toByteArray()
-}
 
 fun ungzip(content: ByteArray): String =
     GZIPInputStream(content.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }

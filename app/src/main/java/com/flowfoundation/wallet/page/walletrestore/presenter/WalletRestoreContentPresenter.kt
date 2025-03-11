@@ -5,7 +5,6 @@ import androidx.transition.Transition
 import com.google.android.material.transition.MaterialSharedAxis
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
-import com.flowfoundation.wallet.databinding.ActivityRestoreWalletBinding
 import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreErrorOption
 import com.flowfoundation.wallet.page.walletcreate.getRootIdByStep
@@ -20,7 +19,6 @@ import com.flowfoundation.wallet.page.walletrestore.model.WalletRestoreContentMo
 
 class WalletRestoreContentPresenter(
     private val activity: WalletRestoreActivity,
-    private val binding: ActivityRestoreWalletBinding,
 ) : BasePresenter<WalletRestoreContentModel> {
 
     private var currentStep = -1

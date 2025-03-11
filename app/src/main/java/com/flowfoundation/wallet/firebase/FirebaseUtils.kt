@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.firebase
 import android.app.Application
 import com.google.firebase.BuildConfig
 import com.google.firebase.FirebaseApp
-import com.google.firebase.FirebaseOptions
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory

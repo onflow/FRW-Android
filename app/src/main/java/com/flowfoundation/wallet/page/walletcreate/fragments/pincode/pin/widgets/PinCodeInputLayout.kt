@@ -45,11 +45,6 @@ class PinCodeInputLayout : LinearLayout {
         clear()
     }
 
-    fun setChecking(isChecking: Boolean) {
-        this.isChecking = isChecking
-        clear()
-    }
-
     fun input(key: KeyboardItem) {
         val child = children.firstOrNull { !it.isSelected } ?: return
         child.isSelected = true
@@ -99,7 +94,7 @@ class PinCodeInputLayout : LinearLayout {
 
     fun shakeAndClear(keysCLear: Boolean = false) {
         vibrateKeyboard()
-        val animation = AnimationUtils.loadAnimation(context, R.anim.pin_code_shake);
+        val animation = AnimationUtils.loadAnimation(context, R.anim.pin_code_shake)
         children.forEach { child ->
             child.startAnimation(animation)
         }

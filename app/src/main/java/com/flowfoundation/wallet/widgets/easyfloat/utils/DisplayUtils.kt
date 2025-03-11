@@ -17,24 +17,9 @@ import com.flowfoundation.wallet.widgets.easyfloat.permission.rom.RomUtils
  */
 object DisplayUtils {
 
-    fun px2dp(context: Context, pxVal: Float): Int {
-        val density = context.resources.displayMetrics.density
-        return (pxVal / density + 0.5f).toInt()
-    }
-
     fun dp2px(context: Context, dpVal: Float): Int {
         val density = context.resources.displayMetrics.density
         return (dpVal * density + 0.5f).toInt()
-    }
-
-    fun px2sp(context: Context, pxValue: Float): Int {
-        val fontScale = context.resources.displayMetrics.scaledDensity
-        return (pxValue / fontScale + 0.5f).toInt()
-    }
-
-    fun sp2px(context: Context, spValue: Float): Int {
-        val fontScale = context.resources.displayMetrics.scaledDensity
-        return (spValue * fontScale + 0.5f).toInt()
     }
 
     /**

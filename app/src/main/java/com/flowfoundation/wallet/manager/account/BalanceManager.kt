@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -104,16 +103,11 @@ object BalanceManager {
         return getEVMBalanceByCoin(tokenAddress, address)
     }
 
-    suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
+    private suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
         val apiService = retrofitApi().create(ApiService::class.java)
         val balanceResponse = apiService.getEVMTokenBalance(evmAddress, chainNetWorkString())
         val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
-    }
-
-    suspend fun getFlowBalanceByContractId(contractId: String, flowAddress: String): BigDecimal {
-        val balanceMap = cadenceQueryTokenListBalanceWithAddress(flowAddress) ?: return BigDecimal.ZERO
-        return balanceMap[contractId]?: BigDecimal.ZERO
     }
 
     fun getBalanceByCoin(coin: FlowCoin) {
@@ -140,8 +134,6 @@ object BalanceManager {
             listeners.forEach { it.get()?.onBalanceUpdate(coin, Balance(balance, coin.address, coin.contractName())) }
         }
     }
-
-    fun getBalanceList() = balanceList.toList()
 
     private fun fetch(coin: FlowCoin) {
         ioScope {

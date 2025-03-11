@@ -11,18 +11,12 @@ import kotlin.math.absoluteValue
 
 class NftCoordinatorLayout : CoordinatorLayout, GestureDetector.OnGestureListener {
 
-    private val gestureDetector by lazy { GestureDetector(context, this) }
-
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int)
       : super(context, attrs, defStyleAttr)
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-//        gestureDetector.onTouchEvent(ev)
-//        if (ev.action == MotionEvent.ACTION_UP || ev.action == MotionEvent.ACTION_CANCEL) {
-//            findSwipeRefreshLayout(this)?.isEnabled = true
-//        }
         return super.dispatchTouchEvent(ev)
     }
 

@@ -8,11 +8,9 @@ import com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
 import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
-import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.flowfoundation.wallet.utils.getBackupMnemonicFromPreference
 import com.flowfoundation.wallet.utils.setMultiBackupCreated
 import com.flowfoundation.wallet.utils.setMultiBackupDeleted
 import com.flowfoundation.wallet.widgets.DialogType
@@ -76,11 +74,6 @@ class WalletBackupPresenter(
             llSeedPhraseList.gone()
             lavLoading.visible()
         }
-    }
-
-    private fun checkCreateSeedPhraseStatus() {
-        val backupMnemonic = getBackupMnemonicFromPreference()
-        binding.cvCreateSeedPhraseBackup.setVisible(backupMnemonic.isEmpty())
     }
 
     fun bindSeedPhraseList(list: List<Any>) {

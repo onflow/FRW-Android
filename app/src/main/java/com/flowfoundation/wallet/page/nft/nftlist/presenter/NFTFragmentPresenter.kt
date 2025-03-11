@@ -64,7 +64,7 @@ class NFTFragmentPresenter(
 
     private fun showCustomPopupMenu(anchorView: View) {
         val context = anchorView.context
-        val initialIndex = if (viewModel.isGridViewLiveData.value ?: false) 1 else 0
+        val initialIndex = if (viewModel.isGridViewLiveData.value == true) 1 else 0
         val adapter = NFTViewAdapter(context, initialIndex)
 
         val verticalOffset = context.resources.getDimensionPixelSize(R.dimen.popup_vertical_margin)
@@ -98,7 +98,7 @@ class NFTFragmentPresenter(
             }
         }
         listPopupWindow.setDropDownGravity(Gravity.END)
-        listPopupWindow.setHorizontalOffset(-context.resources.getDimensionPixelSize(R.dimen.popup_horizontal_margin))
+        listPopupWindow.horizontalOffset = -context.resources.getDimensionPixelSize(R.dimen.popup_horizontal_margin)
         listPopupWindow.show()
     }
 

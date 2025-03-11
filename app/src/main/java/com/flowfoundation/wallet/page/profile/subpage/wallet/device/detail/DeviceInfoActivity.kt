@@ -33,7 +33,6 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatGMTToDate
 import com.flowfoundation.wallet.utils.isNightMode
 
-
 class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback, OnTransactionStateChange {
 
     private lateinit var binding: ActivityDeviceInfoBinding

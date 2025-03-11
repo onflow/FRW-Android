@@ -58,7 +58,7 @@ class ChildAccountList(
 //    }
 
     private suspend fun queryAccountMeta(address: String): List<ChildAccount>? {
-        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence() { arg { Cadence.address(address) } }
+        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence { arg { Cadence.address(address) } }
         return result?.encode()?.parseAccountMetas()
     }
 

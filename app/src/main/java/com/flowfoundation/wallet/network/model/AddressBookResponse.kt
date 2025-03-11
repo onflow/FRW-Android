@@ -53,7 +53,6 @@ data class AddressBookContact(
     fun uniqueId() = "${address}-${domain?.domainType}-${name()}-$contactType"
 
     companion object {
-        const val CONTACT_TYPE_EXTERNAL = 0
         const val CONTACT_TYPE_USER = 1
         const val CONTACT_TYPE_DOMAIN = 2
     }
@@ -68,6 +67,5 @@ data class AddressBookDomain(
 ) : Parcelable {
     companion object {
         val DOMAIN_FIND_XYZ = FlowDomainServer.FIND.type
-        val DOMAIN_FLOWNS = FlowDomainServer.FLOWNS.type
     }
 }

@@ -2,14 +2,12 @@ package com.flowfoundation.wallet.page.nft.nftlist.presenter
 
 import android.annotation.SuppressLint
 import android.view.View
-import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemNftListBinding
-import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.page.nft.nftdetail.NftDetailActivity
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTItemModel
@@ -17,20 +15,13 @@ import com.flowfoundation.wallet.page.nft.nftlist.title
 import com.flowfoundation.wallet.page.nft.nftlist.widget.NftItemPopupMenu
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
-import com.flowfoundation.wallet.utils.extensions.res2pix
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.findActivity
 
 class NFTListItemPresenter(
     private val view: View,
 ) : BaseViewHolder(view), BasePresenter<NFTItemModel> {
     private val binding by lazy { ItemNftListBinding.bind(view) }
-    private val activity by lazy { findActivity(view) as FragmentActivity }
     private val context = view.context
-
-    private val dividerSize by lazy { R.dimen.nft_list_divider_size.res2pix() }
-
-    private val isCollectionPage by lazy { activity.javaClass == CollectionActivity::class.java }
 
     @SuppressLint("SetTextI18n")
     override fun bind(model: NFTItemModel) {

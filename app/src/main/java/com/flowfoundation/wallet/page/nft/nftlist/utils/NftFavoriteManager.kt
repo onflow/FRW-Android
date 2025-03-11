@@ -9,9 +9,7 @@ import com.flowfoundation.wallet.network.model.*
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.readTextFromAssets
 import com.flowfoundation.wallet.utils.uiScope
-import com.google.gson.Gson
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -39,8 +37,8 @@ object NftFavoriteManager {
             dispatchListener(favorites.apply { add(0, nft) })
             cache().cacheSync(FavoriteCache(favorites))
 
-            val address = WalletManager.selectedWalletAddress() ?: return@ioScope
-            val resp = service.addNftFavorite(AddNftFavoriteRequest(address, nft.contractName().orEmpty(), nft.tokenId()))
+            val address = WalletManager.selectedWalletAddress()
+            val resp = service.addNftFavorite(AddNftFavoriteRequest(address, nft.contractName(), nft.tokenId()))
             if (resp.status == 200) {
                 fetchFromServer()
             }

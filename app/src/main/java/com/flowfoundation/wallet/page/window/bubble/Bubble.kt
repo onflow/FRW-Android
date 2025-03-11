@@ -26,7 +26,7 @@ class Bubble : FrameLayout {
         addView(binding.root)
 
         floatTabsPresenter = FloatTabsPresenter(binding, viewModel)
-        bubblePresenter = BubblePresenter(binding, viewModel)
+        bubblePresenter = BubblePresenter(binding)
 
         with(viewModel) {
             onTabChange = {

@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.recyclerview.BaseAdapter
 import com.flowfoundation.wallet.page.nft.move.presenter.SelectAccountPresenter
 
-
 class SelectAccountAdapter(
     private val selectedAddress: String,
     private val callback: (String) -> Unit

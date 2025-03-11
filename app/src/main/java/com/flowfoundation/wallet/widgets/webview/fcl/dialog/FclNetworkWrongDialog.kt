@@ -12,7 +12,6 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogFclWrongNetworkBinding
-import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.isMainnet
@@ -21,17 +20,13 @@ import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
-import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
-import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import kotlinx.coroutines.delay
 
@@ -41,9 +36,7 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogFclWrongNetworkBinding
 
-    private val progressDialog by lazy { ProgressDialog(requireContext()) }
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogFclWrongNetworkBinding.inflate(inflater)
         return binding.root
     }
@@ -89,33 +82,6 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
                     MainActivity.relaunch(requireContext(), true)
                     dismiss()
                 }
-            }
-        }
-    }
-
-    private fun changeNetworkFetchServer() {
-        ioScope {
-            FlowApi.refreshConfig()
-            FlowCadenceApi.refreshConfig()
-            val cacheExist = WalletManager.wallet() != null && !WalletManager.wallet()?.walletAddress().isNullOrBlank()
-            if (!cacheExist) {
-                uiScope { progressDialog.show() }
-                try {
-                    val service = retrofit().create(ApiService::class.java)
-                    val resp = service.getWalletList()
-
-                    // request success & wallet list is empty (wallet not create finish)
-                    if (!resp.data!!.wallets.isNullOrEmpty()) {
-                        AccountManager.updateWalletInfo(resp.data)
-                    }
-                } catch (e: Exception) {
-                    loge(e)
-                }
-                uiScope { progressDialog.dismiss() }
-            }
-            uiScope {
-                MainActivity.relaunch(requireContext(), clearTop = true)
-                dismiss()
             }
         }
     }

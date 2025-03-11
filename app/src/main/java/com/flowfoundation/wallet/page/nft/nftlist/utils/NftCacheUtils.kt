@@ -3,11 +3,8 @@ package com.flowfoundation.wallet.page.nft.nftlist.utils
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
-import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollections
-import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
-
 
 class NftCache(
     private val address: String

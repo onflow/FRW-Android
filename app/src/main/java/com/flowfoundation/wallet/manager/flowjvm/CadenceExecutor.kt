@@ -203,22 +203,6 @@ suspend fun cadenceMoveNFTFromChildToParent(childAddress: String, identifier: St
     return transactionId
 }
 
-suspend fun cadenceMoveFTFromChildToParent(coin: FlowCoin, childAddress: String, path:
-String, amount: Double):
-        String? {
-    logd(TAG, "cadenceMoveFTFromChildToParent()")
-    val transactionId =
-        coin.formatCadence(
-            CadenceScript.CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(path) }
-            arg { ufix64Safe(BigDecimal(amount)) }
-        }
-    logd(TAG, "cadenceMoveFTFromChildToParent() transactionId:$transactionId")
-    return transactionId
-}
-
 suspend fun cadenceMoveNFTListFromChildToParent(
     childAddress: String, identifier: String, collection: NftCollection, nftIdList: List<String>
 ): String? {
@@ -302,20 +286,6 @@ suspend fun cadenceSendNFTFromChildToChild(
             arg { uint64(nft.id) }
         }
     logd(TAG, "cadenceSendNFTFromChildToChild() transactionId:$transactionId")
-    return transactionId
-}
-
-suspend fun cadenceSendFTFromChildToFlow(
-    coin: FlowCoin, childAddress: String, path: String, amount: Double
-): String? {
-    logd(TAG, "cadenceSendFTFromChildToFlow()")
-    val transactionId =
-        coin.formatCadence(CadenceScript.CADENCE_SEND_FT_FROM_CHILD_TO_FLOW).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(path) }
-            arg { ufix64Safe(BigDecimal(amount)) }
-        }
-    logd(TAG, "cadenceSendFTFromChildToFlow() transactionId:$transactionId")
     return transactionId
 }
 
@@ -775,15 +745,3 @@ private fun devPrefix(): String {
     }
 }
 
-suspend fun String.executeTransaction(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
-    val args = CadenceArgumentsBuilder().apply { arguments(this) }
-    return try {
-        sendTransaction {
-            args.build().forEach { arg(it) }
-            script(this@executeTransaction)
-        }
-    } catch (e: Exception) {
-        loge(e)
-        null
-    }
-}

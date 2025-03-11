@@ -10,6 +10,7 @@ import android.util.Property;
 import android.view.View;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 
 /**
  * Created by Miroslaw Stanek on 21.12.2015.
@@ -44,7 +45,7 @@ public class DotsView extends View {
     private float currentDotSize2 = 0;
     private float currentRadius2 = 0;
 
-    private ArgbEvaluator argbEvaluator = new ArgbEvaluator();
+    private final ArgbEvaluator argbEvaluator = new ArgbEvaluator();
 
     public DotsView(Context context) {
         super(context);
@@ -75,12 +76,12 @@ public class DotsView extends View {
         centerX = w / 2;
         centerY = h / 2;
         maxDotSize = 5;
-        maxOuterDotsRadius = w / 2 - maxDotSize * 2;
+        maxOuterDotsRadius = (float) w / 2 - maxDotSize * 2;
         maxInnerDotsRadius = 0.8f * maxOuterDotsRadius;
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         drawOuterDotsFrame(canvas);
         drawInnerDotsFrame(canvas);
     }
@@ -197,7 +198,7 @@ public class DotsView extends View {
     }
 
 
-    public static final Property<DotsView, Float> DOTS_PROGRESS = new Property<DotsView, Float>(Float.class, "dotsProgress") {
+    public static final Property<DotsView, Float> DOTS_PROGRESS = new Property<>(Float.class, "dotsProgress") {
         @Override
         public Float get(DotsView object) {
             return object.getCurrentProgress();

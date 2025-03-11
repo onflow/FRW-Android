@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.key.adapter
 
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.recyclerview.BaseAdapter

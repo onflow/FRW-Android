@@ -20,10 +20,8 @@ import com.flowfoundation.wallet.page.nft.nftlist.NftViewModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
-import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 
 class CollectionTabsAdapter : BaseAdapter<CollectionItemModel>(diffCallback) {

@@ -23,7 +23,7 @@ class SvgModelLoader : ModelLoader<SvgModel, PictureDrawable> {
         width: Int,
         height: Int,
         options: Options
-    ): ModelLoader.LoadData<PictureDrawable>? {
+    ): ModelLoader.LoadData<PictureDrawable> {
         return ModelLoader.LoadData(ObjectKey(model), SvgDataFetcher(model.svgString))
     }
 }

@@ -38,7 +38,6 @@ import org.web3j.abi.datatypes.generated.Uint256
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
 
-
 class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
 
     val userInfoLiveData = MutableLiveData<UserInfoData>()

@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyInfoBinding
-import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
-import com.flowfoundation.wallet.wallet.toAddress
 
 
 class PrivateKeyInfoFragment: Fragment() {

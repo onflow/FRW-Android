@@ -17,7 +17,7 @@ enum class Wallpaper(val id: Int, val drawableId: Int, val isDynamic: Boolean) {
 
         @JvmStatic
         fun getWallpaper(id: Int): Wallpaper {
-            return values().firstOrNull { it.id == id } ?: STATIC_LIGHT_GREEN
+            return entries.firstOrNull { it.id == id } ?: STATIC_LIGHT_GREEN
         }
     }
 }

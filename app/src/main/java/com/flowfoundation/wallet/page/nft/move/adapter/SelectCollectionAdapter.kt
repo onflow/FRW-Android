@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.base.recyclerview.BaseAdapter
 import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
 import com.flowfoundation.wallet.page.nft.move.presenter.SelectCollectionItemPresenter
 
-
 class SelectCollectionAdapter(
     private val selectedCollectionId: String? = null,
     private val callback: (CollectionDetailInfo) -> Unit,

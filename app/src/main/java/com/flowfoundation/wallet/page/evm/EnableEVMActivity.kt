@@ -33,7 +33,6 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class EnableEVMActivity : BaseActivity() {
-
     private lateinit var binding: ActivityEnableEvmBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

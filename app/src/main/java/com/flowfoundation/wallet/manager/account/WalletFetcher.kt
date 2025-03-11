@@ -1,19 +1,12 @@
 package com.flowfoundation.wallet.manager.account
 
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.OtherHostService
-import com.flowfoundation.wallet.network.model.BlockchainData
-import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 import java.lang.ref.WeakReference
 import java.util.Timer
@@ -28,15 +21,7 @@ object WalletFetcher {
 
     private val apiService by lazy { retrofit().create(ApiService::class.java) }
 
-    private val queryMainnetService by lazy {
-        retrofitWithHost("https://production.key-indexer.flow.com").create(OtherHostService::class.java)
-    }
-
-    private val queryTestnetService by lazy {
-        retrofitWithHost("https://staging.key-indexer.flow.com").create(OtherHostService::class.java)
-    }
-
-    suspend fun fetch() {
+    fun fetch() {
         ioScope {
 //            WalletManager.wallet()?.let { dispatchListeners(it) }
             var dataReceived = false
@@ -68,46 +53,6 @@ object WalletFetcher {
                 }
             }
         }
-    }
-
-    suspend fun fetchAddressFromChain() {
-        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-        val mainnetAccounts = queryMainnetService.queryAddress(cryptoProvider.getPublicKey())
-        val mainnetAccount = mainnetAccounts.accounts.firstOrNull {
-            it.hashAlgo == cryptoProvider.getHashAlgorithm().index && it.signAlgo == cryptoProvider.getSignatureAlgorithm().index
-        }
-        val testnetAccounts = queryTestnetService.queryAddress(cryptoProvider.getPublicKey())
-        val testnetAccount = testnetAccounts.accounts.firstOrNull {
-            it.hashAlgo == cryptoProvider.getHashAlgorithm().index && it.signAlgo == cryptoProvider.getSignatureAlgorithm().index
-        }
-        val data = WalletListData(
-            id = Firebase.auth.currentUser?.uid.orEmpty(),
-            username = AccountManager.userInfo()?.username.orEmpty(),
-            wallets = listOf(
-                WalletData(
-                    name = "flow",
-                    blockchain = if (testnetAccount == null) null else listOf(
-                        BlockchainData(
-                            chainId = "testnet",
-                            address = testnetAccount.address
-                        )
-                    )
-                ),
-                WalletData(
-                   name = "flow",
-                   blockchain = if (mainnetAccount == null) null else listOf(
-                        BlockchainData(
-                            chainId = "mainnet",
-                            address = mainnetAccount.address
-                        )
-                   )
-                )
-            )
-        )
-        AccountManager.updateWalletInfo(data)
-        EVMWalletManager.updateEVMAddress()
-
-        dispatchListeners(data)
     }
 
     fun addListener(callback: OnWalletDataUpdate) {

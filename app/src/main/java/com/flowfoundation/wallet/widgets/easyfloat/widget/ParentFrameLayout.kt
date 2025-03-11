@@ -93,19 +93,6 @@ internal class ParentFrameLayout(
         return config.isDragging && config.dragEnable
     }
 
-    private fun isIgnoreDragEvent(event: MotionEvent): Boolean {
-        return ignoreDragViewList.findLast {
-            if (it.isVisible()) {
-                val location = intArrayOf(0, 0)
-                it.getLocationInWindow(location)
-                val rect = Rect(location[0], location[1], location[0] + it.width, location[1] + it.height)
-                rect.contains(event.x.toInt(), event.y.toInt())
-            } else {
-                false
-            }
-        } != null
-    }
-
     private fun isContainsDragEvent(views: List<View>, event: MotionEvent): Boolean {
         return views.findLast {
             if (it.isVisible()) {

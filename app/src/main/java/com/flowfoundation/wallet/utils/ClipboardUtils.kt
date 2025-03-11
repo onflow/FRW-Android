@@ -9,8 +9,3 @@ fun textToClipboard(text: String) {
     val clip: ClipData = ClipData.newPlainText("", text)
     clipboard.setPrimaryClip(clip)
 }
-
-fun clipboardToText(): CharSequence? {
-    val clipboard = Env.getApp().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    return clipboard.primaryClip?.getItemAt(0)?.text
-}

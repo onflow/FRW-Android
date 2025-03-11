@@ -72,7 +72,7 @@ class EditAvatarViewModel : ViewModel() {
         }
     }
 
-    private fun getNftAddress(): String? {
+    private fun getNftAddress(): String {
         return WalletManager.selectedWalletAddress()
     }
 }

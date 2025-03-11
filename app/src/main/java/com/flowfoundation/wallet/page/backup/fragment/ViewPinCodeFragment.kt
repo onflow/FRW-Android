@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.flowfoundation.wallet.databinding.FragmentRestorePinCodeBinding
 import com.flowfoundation.wallet.page.backup.presenter.ViewPinCodePresenter
-import com.flowfoundation.wallet.page.restore.multirestore.presenter.RestorePinCodePresenter
 
 
 class ViewPinCodeFragment: Fragment() {
