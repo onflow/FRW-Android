@@ -17,6 +17,7 @@ fun safeRun(printLog: Boolean = true, block: () -> Unit) {
     }
 }
 
+
 fun sendEmail(
     context: Context,
     email: String,
