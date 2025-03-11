@@ -708,4 +708,10 @@
     <string name="nft_list_loading_error">错误，请检查您的网络或刷新。</string>
     <string name="refresh">刷新</string>
     <string name="no_relevant_nft">未找到相关的 NFT 。</string>
+    <string name="contact_address">通讯地址</string>
+    <string name="amount">数量</string>
+    <string name="contact">联系信息</string>
+    <string name="function">函数</string>
+    <string name="parameters">参数</string>
+    <string name="call_data">调用数据</string>
 </resources>

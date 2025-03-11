@@ -706,4 +706,10 @@
     <string name="nft_list_loading_error">Erreur, veuillez vérifier votre connexion Internet ou rafraîchir.</string>
     <string name="refresh">Rafraîchir</string>
     <string name="no_relevant_nft">Aucune NFT correspondante trouvée.</string>
+    <string name="contact_address">Adresse de contact</string>
+    <string name="amount">Montant</string>
+    <string name="contact">Contact</string>
+    <string name="function">Fonction</string>
+    <string name="parameters">Paramètres</string>
+    <string name="call_data">Données d\'appel</string>
 </resources>
