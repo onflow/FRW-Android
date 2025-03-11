@@ -40,7 +40,7 @@ class StepProgressBar : FrameLayout {
         setProgress(progress)
     }
 
-    fun setProgress(progress: Int) {
+    private fun setProgress(progress: Int) {
         if (progress < 0 || progress > step || wrapper.childCount == 0) return
         (0 until step).forEach { index ->
             wrapper.getChildAt(index).setBackgroundResource(if (index + 1 <= progress) R.color.salmon_primary else R.color.transparent)

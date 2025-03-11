@@ -59,7 +59,7 @@ class FclMessageHandler(
         ioScope { dispatch(message) }
     }
 
-    private suspend fun dispatch(message: String) {
+    private fun dispatch(message: String) {
         if (message.isBlank() || message == this.message) {
             return
         }
@@ -133,7 +133,7 @@ class FclMessageHandler(
         finishService()
     }
 
-    private suspend fun dispatchAuthz(fcl: FclAuthzResponse) {
+    private fun dispatchAuthz(fcl: FclAuthzResponse) {
         if (fcl.isDispatching()) {
             logd(TAG, "fcl isDispatching:${fcl.uniqueId()}")
             return

@@ -8,8 +8,11 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Objects;
 
 /**
  * DividerItemDecoration is a {@link RecyclerView.ItemDecoration} that can be used as a divider
@@ -25,9 +28,6 @@ import androidx.recyclerview.widget.RecyclerView;
 public class ColorDividerItemDecoration extends RecyclerView.ItemDecoration {
     public static final int HORIZONTAL = LinearLayout.HORIZONTAL;
     public static final int VERTICAL = LinearLayout.VERTICAL;
-
-    private static final String TAG = "DividerItem";
-    private static final int[] ATTRS = new int[]{android.R.attr.listDivider};
 
     private final int mSize;
 
@@ -75,7 +75,7 @@ public class ColorDividerItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+    public void onDraw(@NonNull Canvas c, RecyclerView parent, @NonNull RecyclerView.State state) {
         if (parent.getLayoutManager() == null) {
             return;
         }
@@ -133,7 +133,7 @@ public class ColorDividerItemDecoration extends RecyclerView.ItemDecoration {
         final int childCount = parent.getChildCount();
         for (int i = 0; i < childCount; i++) {
             final View child = parent.getChildAt(i);
-            parent.getLayoutManager().getDecoratedBoundsWithMargins(child, mBounds);
+            Objects.requireNonNull(parent.getLayoutManager()).getDecoratedBoundsWithMargins(child, mBounds);
             final int right = mBounds.right + Math.round(child.getTranslationX());
             final int left = right - mSize;
             if (isDividerVisible(i)) {
@@ -145,8 +145,8 @@ public class ColorDividerItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
-                               RecyclerView.State state) {
+    public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
+                               @NonNull RecyclerView.State state) {
         if (mDrawable == null) {
             outRect.set(0, 0, 0, 0);
             return;
@@ -156,10 +156,6 @@ public class ColorDividerItemDecoration extends RecyclerView.ItemDecoration {
         } else {
             outRect.set(0, 0, mSize, 0);
         }
-    }
-
-    public void setDividerVisibleCheck(DividerVisibleCheck dividerVisibleCheck) {
-        this.mDividerVisibleCheck = dividerVisibleCheck;
     }
 
     private boolean isDividerVisible(int position) {

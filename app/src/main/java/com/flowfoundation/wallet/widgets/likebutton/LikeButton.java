@@ -91,7 +91,7 @@ public class LikeButton extends FrameLayout implements View.OnClickListener {
         if (iconSize == -1)
             iconSize = 40;
 
-        String iconType = array.getString(R.styleable.LikeButton_icon_type);
+        array.getString(R.styleable.LikeButton_icon_type);
 
         likeDrawable = getDrawableFromResource(array, R.styleable.LikeButton_like_drawable);
 
