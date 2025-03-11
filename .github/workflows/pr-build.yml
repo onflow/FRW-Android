@@ -80,7 +80,7 @@ jobs:
           fi
 
       - name: Run Unit Tests
-        run: cd ./frw && ./gradlew testDebug --stacktrace
+        run: cd ./frw && ./gradlew testDebugUnitTest
 
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug --stacktrace
