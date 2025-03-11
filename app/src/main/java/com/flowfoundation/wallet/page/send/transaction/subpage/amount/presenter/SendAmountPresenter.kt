@@ -130,7 +130,12 @@ class SendAmountPresenter(
         ioScope {
             val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
             val coinRate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
-            val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) amount else amount / (if (coinRate == BigDecimal.ZERO) BigDecimal.ONE else coinRate)
+            val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) {
+                amount
+            } else {
+                // If we don't have a valid rate (zero or negative), use the original amount rather than attempting an invalid conversion
+                if (coinRate.compareTo(BigDecimal.ZERO) <= 0) amount else amount / coinRate 
+            }
             val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
             uiScope {
                 if (isOutOfBalance && !binding.errorWrapper.isVisible()) {
