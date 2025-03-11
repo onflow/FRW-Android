@@ -29,22 +29,6 @@ fun formatGMTToDate(inputDate: String): String {
     }
 }
 
-fun isToday(ts: Long): Boolean {
-    if (Math.abs(System.currentTimeMillis() - ts) > DateUtils.DAY_IN_MILLIS) {
-        return false
-    }
-
-    val other = Calendar.getInstance().apply {
-        timeInMillis = ts
-    }
-
-    val now = Calendar.getInstance().apply {
-        timeInMillis = System.currentTimeMillis()
-    }
-
-    return now.get(Calendar.DAY_OF_YEAR) == other.get(Calendar.DAY_OF_YEAR)
-}
-
 fun Long.plusDays(days: Int): Long {
     return this + DateUtils.DAY_IN_MILLIS * days
 }

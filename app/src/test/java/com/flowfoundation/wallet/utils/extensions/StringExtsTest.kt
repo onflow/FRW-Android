@@ -98,12 +98,12 @@ class StringExtsTest {
         assertEquals("d41d8cd98f00b204e9800998ecf8427e", "".md5())
         
         // Test string with special characters
-        assertEquals("96c05e63f5343c93781d6ed541c7c5f8", "!@#$%^&*()".md5())
+        assertEquals("05b28d17a7b6e7024b6e5d8cc43a8bf7", "!@#$%^&*()".md5())
         
         // Test numbers
         assertEquals("202cb962ac59075b964b07152d234b70", "123".md5())
         
         // Test longer string
-        assertEquals("d3b07384d113edec49eaa6238ad5ff00", "Hello, this is a test string".md5())
+        assertEquals("2e3d2415b6975f5df43943fb382b6bbc", "Hello, this is a test string".md5())
     }
 } 
