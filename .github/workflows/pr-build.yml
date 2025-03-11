@@ -79,5 +79,8 @@ jobs:
             echo "$DEBUG_GOOGLE_SERVICES" > "$FILE_PATH"
           fi
 
+      - name: Run Unit Tests
+        run: cd ./frw && ./gradlew test --stacktrace
+
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug --stacktrace
