@@ -40,6 +40,7 @@ class SendAmountPresenter(
     private val activity: SendAmountActivity,
     private val binding: ActivitySendAmountBinding,
     private val contact: AddressBookContact,
+    private val setupToolbarForTesting: Boolean = true
 ) : BasePresenter<SendAmountModel> {
 
     private val viewModel by lazy { ViewModelProvider(activity)[SendAmountViewModel::class.java] }
@@ -49,7 +50,9 @@ class SendAmountPresenter(
     private fun balance() = viewModel.balanceLiveData.value
 
     init {
-        setupToolbar()
+        if (setupToolbarForTesting) {
+            setupToolbar()
+        }
         setupContactCard()
         with(binding.transferAmountInput) {
             setDecimalDigitsFilter(viewModel.currentCoin().decimal())
@@ -227,7 +230,7 @@ class SendAmountPresenter(
         activity.title = R.string.send_to.res2String()
     }
 
-    private fun verifyAmount(): Boolean {
+    fun verifyAmount(): Boolean {
         val number = binding.transferAmountInput.text.toString().toFloatOrNull()
         return number != null && number > 0
     }

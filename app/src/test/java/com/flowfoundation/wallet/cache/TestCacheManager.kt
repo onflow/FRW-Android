@@ -1,44 +1,45 @@
 package com.flowfoundation.wallet.cache
 
-import androidx.annotation.WorkerThread
 import com.google.gson.Gson
-import com.flowfoundation.wallet.utils.*
 import java.io.File
 
-class CacheManager<T>(
+class TestCacheManager<T>(
     private val fileName: String,
     private val type: Class<T>,
-    private val cacheDir: File = CACHE_PATH
+    private val cacheDir: File
 ) {
-
     private val file by lazy { File(cacheDir, fileName) }
 
-    @WorkerThread
     fun read(): T? {
-        val str = file.read()
+        if (!file.exists()) {
+            return null
+        }
+        
+        val str = try {
+            file.readText()
+        } catch (e: Exception) {
+            return null
+        }
+        
         if (str.isBlank()) {
             return null
         }
 
         return try {
-            return Gson().fromJson(str, type)
+            Gson().fromJson(str, type)
         } catch (e: Exception) {
-            loge(TAG, "$e \n ::JSON:: $type")
             null
         }
     }
 
-    fun cache(data: T) {
-        ioScope { cacheSync(data) }
-    }
-
     fun cacheSync(data: T) {
         val str = Gson().toJson(data)
-        str.saveToFile(file)
+        file.parentFile?.mkdirs() // Ensure parent directory exists
+        file.writeText(str)
     }
 
     fun clear() {
-        ioScope { file.delete() }
+        file.delete()
     }
 
     fun isCacheExist(): Boolean = file.exists() && file.length() > 0
@@ -48,8 +49,4 @@ class CacheManager<T>(
     fun isExpired(duration: Long): Boolean {
         return System.currentTimeMillis() - modifyTime() > duration
     }
-
-    companion object {
-        private val TAG = CacheManager::class.java.simpleName
-    }
-}
+} 

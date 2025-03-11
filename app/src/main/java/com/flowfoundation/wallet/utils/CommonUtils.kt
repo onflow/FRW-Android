@@ -12,9 +12,13 @@ fun safeRun(printLog: Boolean = true, block: () -> Unit) {
     return try {
         block()
     } catch (e: Throwable) {
-        if (printLog && BuildConfig.DEBUG) {
-            loge(e)
+        if (!printLog || !BuildConfig.DEBUG) {
         } else {
+            try {
+                loge(e)
+            } catch (logError: Throwable) {
+                // Ignore logging errors in test environment
+            }
         }
     }
 }
