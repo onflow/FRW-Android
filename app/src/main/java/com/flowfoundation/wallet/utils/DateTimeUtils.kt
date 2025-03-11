@@ -29,10 +29,6 @@ fun formatGMTToDate(inputDate: String): String {
     }
 }
 
-fun Long.plusDays(days: Int): Long {
-    return this + DateUtils.DAY_IN_MILLIS * days
-}
-
 fun Long.plusMonth(plus: Int): Long {
     val calendar = Calendar.getInstance().apply {
         time = Date(this@plusMonth)

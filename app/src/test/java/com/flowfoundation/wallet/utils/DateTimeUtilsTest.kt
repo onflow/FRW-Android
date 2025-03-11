@@ -43,17 +43,6 @@ class DateTimeUtilsTest {
     }
 
     @Test
-    fun testPlusDays() {
-        val timestamp = 1710151200000L // 2024-03-11 12:00:00 GMT
-        val daysToAdd = 3
-        val expectedTimestamp = timestamp + (DateUtils.DAY_IN_MILLIS * daysToAdd)
-        
-        val resultTimestamp = timestamp.plusDays(daysToAdd)
-        
-        assertEquals(expectedTimestamp, resultTimestamp)
-    }
-
-    @Test
     fun testPlusMonth() {
         val timestamp = 1710151200000L // 2024-03-11 12:00:00 GMT
         val calendar = Calendar.getInstance().apply {

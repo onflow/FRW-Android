@@ -16,7 +16,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryMinFlowBalance
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -40,7 +39,6 @@ class SendAmountPresenter(
     private val activity: SendAmountActivity,
     private val binding: ActivitySendAmountBinding,
     private val contact: AddressBookContact,
-    private val setupToolbarForTesting: Boolean = true
 ) : BasePresenter<SendAmountModel> {
 
     private val viewModel by lazy { ViewModelProvider(activity)[SendAmountViewModel::class.java] }
@@ -50,12 +48,9 @@ class SendAmountPresenter(
     private fun balance() = viewModel.balanceLiveData.value
 
     init {
-        if (setupToolbarForTesting) {
-            setupToolbar()
-        }
+        setupToolbar()
         setupContactCard()
         with(binding.transferAmountInput) {
-            setDecimalDigitsFilter(viewModel.currentCoin().decimal())
             doOnTextChanged { _, _, _, _ ->
                 updateTransferAmountConvert()
                 checkAmount()
@@ -113,7 +108,7 @@ class SendAmountPresenter(
             } else {
                 coinIconView.imageTintList = null
             }
-            transferAmountInput.setDecimalDigitsFilter(viewModel.currentCoin().decimal())
+
             updateTransferAmountConvert()
 
             val icon =
@@ -133,12 +128,7 @@ class SendAmountPresenter(
         ioScope {
             val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
             val coinRate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
-            val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) {
-                amount
-            } else {
-                // If we don't have a valid rate (zero or negative), use the original amount rather than attempting an invalid conversion
-                if (coinRate.compareTo(BigDecimal.ZERO) <= 0) amount else amount / coinRate 
-            }
+            val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) amount else amount / (if (coinRate == BigDecimal.ZERO) BigDecimal.ONE else coinRate)
             val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
             uiScope {
                 if (isOutOfBalance && !binding.errorWrapper.isVisible()) {
@@ -235,7 +225,7 @@ class SendAmountPresenter(
         activity.title = R.string.send_to.res2String()
     }
 
-    fun verifyAmount(): Boolean {
+    private fun verifyAmount(): Boolean {
         val number = binding.transferAmountInput.text.toString().toFloatOrNull()
         return number != null && number > 0
     }
@@ -250,22 +240,6 @@ class SendAmountPresenter(
 
     private fun String.coinIcon(): Any {
         return FlowCoinListManager.getCoinById(this)?.icon() ?: selectedCurrency().icon
-    }
-
-    private fun String.decimal(): Int {
-        return FlowCoinListManager.getCoinById(this)?.run {
-            when (type) {
-                FlowCoinType.EVM -> {
-                    if (isFlowAddress(contact.address.orEmpty())) {
-                        kotlin.math.min(decimal, 8)
-                    } else {
-                        kotlin.math.min(decimal, 18)
-                    }
-                }
-                FlowCoinType.CADENCE -> kotlin.math.min(decimal, 8)
-                null -> 8
-            }
-        } ?: 8
     }
 
 }
