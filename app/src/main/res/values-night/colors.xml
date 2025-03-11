@@ -68,7 +68,6 @@
     <color name="image_bg">@color/neutrals10</color>
     <color name="stake">#60C293</color>
     <color name="stake_12">#1c60C293</color>
-    <color name="deep_bg_0">#00000000</color>
 
     <color name="profile_card_divider">#14FFFFFF</color>
     <color name="welcome_page_text">#FFFFFF</color>
@@ -97,8 +96,6 @@
 
 
     <color name="bg_skip">#4DFFFFFF</color>
-
-    <color name="landing_tab_dot_normal">#29FFFFFF</color>
 
     <color name="token_pricing_card_background">#121212</color>
     <color name="home_page_background">#000000</color>

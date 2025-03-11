@@ -22,21 +22,13 @@
 
     <color name="success">#00B23C</color>
 
-    <color name="green_6">#EDFBF6</color>
-
     <color name="red_1">#ED0B0D</color>
 
     <color name="transparent">#00000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_8">#14FFFFFF</color>
-    <color name="white_10">#1AFFFFFF</color>
     <color name="white_20">#33FFFFFF</color>
-    <color name="white_25">#40FFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
-    <color name="white_40">#66FFFFFF</color>
-    <color name="white_50">#80FFFFFF</color>
-    <color name="white_60">#99FFFFFF</color>
-    <color name="white_70">#B3FFFFFF</color>
     <color name="white_80">#CCFFFFFF</color>
 
     <color name="gray_33">#333333</color>
@@ -113,7 +105,6 @@
     <color name="wallet_connect">#3396FF</color>
     <color name="stake">#60C293</color>
     <color name="stake_12">#1c60C293</color>
-    <color name="deep_bg_0">#00ffffff</color>
     <color name="mainnet">#41CC5D</color>
     <color name="testnet">#FF8A00</color>
     <color name="profile_tip_background">#1441CC5D</color>
