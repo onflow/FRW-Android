@@ -1,6 +1,6 @@
 package com.flowfoundation.wallet.utils
 
-import android.icu.text.DecimalFormat
+import java.text.DecimalFormat
 
 private const val BYTE = 1L
 private const val KiB = BYTE shl 10
@@ -18,14 +18,14 @@ private const val TB = GB * 1000
 private const val PB = TB * 1000
 private const val EB = PB * 1000
 
-private val DEC_FORMAT: DecimalFormat = DecimalFormat("#.##")
+private val DEC_FORMAT = DecimalFormat("#.##")
 
-private fun formatSize(size: Long, divider: Long, unitName: String): String? {
-    return DEC_FORMAT.format(size.toDouble() / divider).toString() + " " + unitName
+private fun formatSize(size: Long, divider: Long, unitName: String): String {
+    return DEC_FORMAT.format(size.toDouble() / divider) + " " + unitName
 }
 
 
-fun toHumanReadableBinaryPrefixes(size: Long): String? {
+fun toHumanReadableBinaryPrefixes(size: Long): String {
     require(size >= 0) { "Invalid file size: $size" }
     if (size >= EiB) return formatSize(size, EiB, "EiB")
     if (size >= PiB) return formatSize(size, PiB, "PiB")
@@ -36,7 +36,7 @@ fun toHumanReadableBinaryPrefixes(size: Long): String? {
 }
 
 
-fun toHumanReadableSIPrefixes(size: Long): String? {
+fun toHumanReadableSIPrefixes(size: Long): String {
     require(size >= 0) { "Invalid file size: $size" }
     if (size >= EB) return formatSize(size, EB, "EB")
     if (size >= PB) return formatSize(size, PB, "PB")
