@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Next</string>
     <string name="list">List</string>
-    <string name="grid">Grid</string>
     <string name="view_as">View as</string>
     <string name="creating_account">Creating Your Account…</string>
     <string name="secure_design">Secure by Design</string>
@@ -34,6 +33,7 @@
     <string name="protection">Protection</string>
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
+    <string name="grid">Grid</string>
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
@@ -238,7 +238,7 @@
     <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
         .</string>
     <string name="file_picker_title">Select File</string>
-    <string name="transaction_fee">Transaction fee</string>
+    <string name="transaction_fee">Transaction Fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
@@ -577,7 +577,7 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-    <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
+    <string name="landing_step_four_title">Your Flow account is ready, let\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
@@ -713,4 +713,10 @@
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="scan">Scan</string>
+    <string name="contact_address">Contact Address</string>
+    <string name="amount">Amount</string>
+    <string name="contact">Contact</string>
+    <string name="function">Function</string>
+    <string name="parameters">Parameters</string>
+    <string name="call_data">Call Data</string>
 </resources>
