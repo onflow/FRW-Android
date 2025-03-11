@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Неверный адрес</string>
     <string name="address_check_chain_error">Не могу найти адрес в цепочке</string>
     <string name="address_check_success">Подтвержденный адрес</string>
-    <string name="address_search_empty_tip">Извините, мы не нашли ни одного связанного аккаунта, пожалуйста, проверьте свой ввод и выполните поиск снова.</string>
+    <string name="address_search_empty_tip">Нет результатов. Проверьте введенные данные и повторите попытку.</string>
     <string name="search_the_id">Поиск по идентификатору: %1$s</string>
     <string name="move_do_not_ask_me">Не спрашивать в следующий раз.</string>
     <string name="move_to_desc_borwser">Перемещайте свои активы между адресом Cadence на Flow, чтобы
@@ -367,7 +367,7 @@
     <string name="unstaking">UnStaking</string>
     <string name="request_to_unstake">Запрос на снятие с учета</string>
     <string name="will_be_processed_at_the_next_epoch">Будет обработан в следующую эпоху</string>
-    <string name="backup_desc">Фраза резервного восстановления важна для защиты вашей призовой собственности.</string>
+    <string name="backup_desc">Резервное копирование вашего аккаунта сейчас для защиты ваших активов</string>
     <string name="not_now">Не сейчас</string>
     <string name="not_now_tip">Не сейчас</string>
     <string name="link_account">Счет по ссылке</string>
@@ -661,7 +661,7 @@
     <string name="add_token_success">Токен добавлен успешно</string>
     <string name="invalid_evm_address">Неверный ERC20 адрес</string>
     <string name="token_contract_address">Адрес контракта токена</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Введите адрес контракта токена</string>
     <string name="evm_token_contract_address_error">Пожалуйста, введите действительный адрес контракта EVM</string>
     <string name="contracts">Контракты</string>
     <string name="token_name">Название токена</string>

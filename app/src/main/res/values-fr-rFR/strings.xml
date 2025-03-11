@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Adresse invalide</string>
     <string name="address_check_chain_error">Impossible de trouver l\'adresse dans la chaîne</string>
     <string name="address_check_success">Adresse validée</string>
-    <string name="address_search_empty_tip">Désolé, nous n\'avons pas trouvé de compte associé, veuillez vérifier votre saisie et effectuer une nouvelle recherche.</string>
+    <string name="address_search_empty_tip">Aucun résultat. Veuillez vérifier votre saisie et réessayer.</string>
     <string name="search_the_id">Rechercher l\'identifiant : %1$s</string>
     <string name="move_do_not_ask_me">Ne plus me demander</string>
     <string name="move_to_desc_borwser">Déplacez vos actifs entre votre adresse Cadence sur Flow, donc
@@ -368,7 +368,7 @@
     <string name="unstaking">UnStaking</string>
     <string name="request_to_unstake">Demande d\'annulation</string>
     <string name="will_be_processed_at_the_next_epoch">Sera traité à l\'époque suivante</string>
-    <string name="backup_desc">La phrase de récupération des sauvegardes est importante pour protéger vos biens.</string>
+    <string name="backup_desc">Sauvegardez votre compte maintenant pour protéger vos actifs</string>
     <string name="not_now">Pas maintenant</string>
     <string name="not_now_tip">Pas maintenant</string>
     <string name="link_account">Compte de liaison</string>
@@ -662,7 +662,7 @@
     <string name="add_token_success">Ajout de jeton réussi</string>
     <string name="invalid_evm_address">Adresse ERC20 invalide</string>
     <string name="token_contract_address">Adresse du contrat de Token</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Entrer l\'adresse du contrat de jeton</string>
     <string name="evm_token_contract_address_error">Veuillez entrer une adresse de contrat EVM valide</string>
     <string name="contracts">Contrats</string>
     <string name="token_name">Nom du token</string>
