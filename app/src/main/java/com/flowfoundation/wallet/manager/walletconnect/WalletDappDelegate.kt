@@ -295,7 +295,9 @@ class WalletConnectExceptionAdapter : TypeAdapter<WalletConnectException>() {
         }
         reader.endObject()
 
-        return WalletConnectException(message ?: "Unknown error")
+        return ConcreteWalletConnectException(message ?: "Unknown error")
     }
 }
+
+class ConcreteWalletConnectException(message: String) : WalletConnectException(message)
 
