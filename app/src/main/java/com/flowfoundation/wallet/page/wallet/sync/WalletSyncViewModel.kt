@@ -48,23 +48,30 @@ class WalletSyncViewModel : ViewModel() {
         )
 
         val pairing: Core.Model.Pairing = CoreClient.Pairing.create { error ->
-            continuation.resume(null)
-            throw IllegalStateException("Creating Pairing failed: ${error.throwable.stackTraceToString()}")
-        }!!
+            loge(WalletSyncViewModel::class.java.simpleName, "Creating Pairing failed: ${error.throwable.stackTraceToString()}")
+            continuation.resumeWithException(error.throwable)
+            return@create
+        } ?: run {
+            continuation.resumeWithException(IllegalStateException("Failed to create pairing"))
+            return@suspendCoroutine
+        }
 
-        val connectParams =
-            Sign.Params.Connect(
+        try {
+            val connectParams = Sign.Params.Connect(
                 namespaces = namespaces.toMutableMap(),
                 pairing = pairing
             )
 
-        SignClient.connect(
-            connectParams,
-            onSuccess = { _ -> continuation.resume(pairing.uri) },
-            onError = { error ->
-                loge(error.throwable)
-                continuation.resumeWithException(error.throwable)
-            }
-        )
+            SignClient.connect(
+                connectParams,
+                onSuccess = { _ -> continuation.resume(pairing.uri) },
+                onError = { error ->
+                    loge(error.throwable)
+                    continuation.resumeWithException(error.throwable)
+                }
+            )
+        } catch (e: Exception) {
+            continuation.resumeWithException(e)
+        }
     }
 }
