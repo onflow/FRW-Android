@@ -6,6 +6,11 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
 import com.walletconnect.sign.client.Sign
 import com.walletconnect.sign.client.SignClient
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
@@ -37,9 +42,13 @@ import io.outblock.wallet.KeyManager
 import io.outblock.wallet.KeyStoreCryptoProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import com.walletconnect.android.internal.common.exception.WalletConnectException
 
 private val TAG = WalletDappDelegate::class.java.simpleName
 
+val gson: Gson = GsonBuilder()
+    .registerTypeAdapter(WalletConnectException::class.java, WalletConnectExceptionAdapter())
+    .create()
 
 internal class WalletDappDelegate : SignClient.DappDelegate {
 
@@ -259,4 +268,34 @@ internal fun updateWalletConnectSession(session: Sign.Model.ApprovedSession) {
 }
 
 internal fun currentWcSession() = currentSession
+
+class WalletConnectExceptionAdapter : TypeAdapter<WalletConnectException>() {
+    override fun write(out: JsonWriter, value: WalletConnectException) {
+        out.beginObject()
+        out.name("wallet_connect_message").value(value.message)
+        // Add other fields if necessary
+        out.endObject()
+    }
+
+    override fun read(reader: JsonReader): WalletConnectException {
+        var message: String? = null
+
+        reader.beginObject()
+        while (reader.hasNext()) {
+            when (reader.nextName()) {
+                "wallet_connect_message" -> {
+                    if (reader.peek() == JsonToken.NULL) {
+                        reader.nextNull()
+                    } else {
+                        message = reader.nextString()
+                    }
+                }
+                else -> reader.skipValue()
+            }
+        }
+        reader.endObject()
+
+        return WalletConnectException(message ?: "Unknown error")
+    }
+}
 
