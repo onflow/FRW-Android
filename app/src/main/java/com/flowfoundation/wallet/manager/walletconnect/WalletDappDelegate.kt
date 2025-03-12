@@ -273,7 +273,6 @@ class WalletConnectExceptionAdapter : TypeAdapter<WalletConnectException>() {
     override fun write(out: JsonWriter, value: WalletConnectException) {
         out.beginObject()
         out.name("wallet_connect_message").value(value.message)
-        // Add other fields if necessary
         out.endObject()
     }
 
