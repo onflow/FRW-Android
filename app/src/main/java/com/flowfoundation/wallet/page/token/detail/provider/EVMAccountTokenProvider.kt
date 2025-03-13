@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.coin.TokenList
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
@@ -103,7 +104,7 @@ class EVMAccountTokenProvider : MoveTokenProvider {
             return MoveToken(getFlowCoinBalance(), coin)
         }
         val apiService = retrofitApi().create(ApiService::class.java)
-        val balanceResponse = apiService.getEVMTokenBalance(WalletManager.selectedWalletAddress(), chainNetWorkString())
+        val balanceResponse = apiService.getEVMTokenBalance(EVMWalletManager.getEVMAddress().orEmpty(), chainNetWorkString())
         return balanceResponse.data?.firstOrNull { it.address.equals(coin.address, true) }?.let { evmBalance ->
             val balance = evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
             MoveToken(balance, coin)

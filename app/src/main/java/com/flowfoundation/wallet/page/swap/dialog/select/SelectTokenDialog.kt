@@ -16,22 +16,29 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
+import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import java.math.BigDecimal
 
 class SelectTokenDialog : BottomSheetDialogFragment() {
 
     private var selectedCoin: String? = null
     private var disableCoin: String? = null
     private var result: Continuation<FlowCoin?>? = null
+    private var currentSearchKeyword: String = ""
+    private var moveFromAddress: String? = null
+    private var availableCoins: List<FlowCoin>? = null
 
     private lateinit var binding: DialogSelectTokenBinding
 
@@ -49,14 +56,14 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
-        with(binding.recyclerView) {
+        with(binding.tokenList) {
             adapter = this@SelectTokenDialog.adapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             addItemDecoration(
                 ColorDividerItemDecoration(Color.TRANSPARENT, 12.dp2px().toInt())
             )
         }
-        with(binding.editText) {
+        with(binding.searchInput) {
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     hideKeyboard()
@@ -71,32 +78,77 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus -> onSearchFocusChange(hasFocus) }
         }
 
-        binding.cancelButton.setOnClickListener {
+        binding.closeButton.setOnClickListener {
             onSearchFocusChange(false)
-            binding.editText.hideKeyboard()
-            binding.editText.setText("")
-            binding.editText.clearFocus()
+            binding.searchInput.hideKeyboard()
+            binding.searchInput.setText("")
+            binding.searchInput.clearFocus()
             clearSearch()
+            result?.resume(null)
+            dismiss()
         }
 
-        adapter.setNewDiffData(FlowCoinListManager.coinList())
+        loadCoins()
+    }
+
+    fun refreshTokenList() {
+        selectedCoin = null
+        adapter.updateSelectedCoin(null)
+        loadCoins()
+    }
+
+    private fun loadCoins() {
+        ioScope {
+            val coins = availableCoins ?: run {
+                BalanceManager.refresh(moveFromAddress)
+                val allCoins = FlowCoinListManager.coinList()
+                allCoins
+                    .distinctBy { it.contractId() }
+                    .filter { coin ->
+                        val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                        balance > BigDecimal.ZERO
+                    }
+            }
+            
+            uiScope {
+                if (currentSearchKeyword.isBlank()) {
+                    adapter.setNewDiffData(coins)
+                } else {
+                    adapter.setNewDiffData(coins.filter {
+                        it.name.lowercase().contains(currentSearchKeyword.lowercase()) || 
+                        it.symbol.lowercase().contains(currentSearchKeyword.lowercase())
+                    })
+                }
+            }
+        }
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {
-        val isVisible = hasFocus || !binding.editText.text.isNullOrBlank()
-        val isVisibleChange = isVisible != binding.cancelButton.isVisible()
+        val isVisible = hasFocus || !binding.searchInput.text.isNullOrBlank()
+        val isVisibleChange = isVisible != binding.closeButton.isVisible()
 
         if (isVisibleChange) {
             TransitionManager.go(Scene(binding.root as ViewGroup), Slide(Gravity.END).apply { duration = 150 })
-            binding.cancelButton.setVisible(isVisible)
+            binding.closeButton.setVisible(isVisible)
         }
     }
 
     fun search(keyword: String) {
+        currentSearchKeyword = keyword
+        val coins = availableCoins ?: run {
+            val allCoins = FlowCoinListManager.coinList()
+            allCoins
+                .distinctBy { it.contractId() }
+                .filter { coin ->
+                    val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                    balance > BigDecimal.ZERO
+                }
+        }
+
         if (keyword.isBlank()) {
-            adapter.setNewDiffData(FlowCoinListManager.coinList())
+            adapter.setNewDiffData(coins)
         } else {
-            adapter.setNewDiffData(FlowCoinListManager.coinList().filter {
+            adapter.setNewDiffData(coins.filter {
                 it.name.lowercase().contains(keyword.lowercase()) || it.symbol.lowercase().contains(keyword.lowercase())
             })
         }
@@ -114,10 +166,15 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
         selectedCoin: String?,
         disableCoin: String?,
         fragmentManager: FragmentManager,
+        moveFromAddress: String?,
+        availableCoins: List<FlowCoin>? = null
     ) = suspendCoroutine<FlowCoin?> { result ->
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
         this.result = result
+        this.moveFromAddress = moveFromAddress
+        this.availableCoins = availableCoins
+        adapter.updateSelectedCoin(selectedCoin)
         show(fragmentManager, "")
     }
 
