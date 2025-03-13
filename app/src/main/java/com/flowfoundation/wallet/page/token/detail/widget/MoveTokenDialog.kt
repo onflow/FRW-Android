@@ -34,7 +34,6 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -72,8 +71,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
     private fun getProvider(moveFromAddress: String): MoveTokenProvider {
         val isEVMAddress = EVMWalletManager.isEVMWalletAddress(moveFromAddress)
-        logd("getProvider", "isEVMAddress: $isEVMAddress, currentProvider: ${currentTokenProvider?.javaClass?.simpleName}")
-        
+
         // Always create a new provider if the address type doesn't match the current provider
         return when {
             isEVMAddress && currentTokenProvider is EVMAccountTokenProvider -> currentTokenProvider!!
