@@ -49,14 +49,14 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
-        with(binding.recyclerView) {
+        with(binding.tokenList) {
             adapter = this@SelectTokenDialog.adapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             addItemDecoration(
                 ColorDividerItemDecoration(Color.TRANSPARENT, 12.dp2px().toInt())
             )
         }
-        with(binding.editText) {
+        with(binding.searchInput) {
             setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     hideKeyboard()
@@ -71,11 +71,11 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus -> onSearchFocusChange(hasFocus) }
         }
 
-        binding.cancelButton.setOnClickListener {
+        binding.closeButton.setOnClickListener {
             onSearchFocusChange(false)
-            binding.editText.hideKeyboard()
-            binding.editText.setText("")
-            binding.editText.clearFocus()
+            binding.searchInput.hideKeyboard()
+            binding.searchInput.setText("")
+            binding.searchInput.clearFocus()
             clearSearch()
         }
 
@@ -83,12 +83,12 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {
-        val isVisible = hasFocus || !binding.editText.text.isNullOrBlank()
-        val isVisibleChange = isVisible != binding.cancelButton.isVisible()
+        val isVisible = hasFocus || !binding.searchInput.text.isNullOrBlank()
+        val isVisibleChange = isVisible != binding.closeButton.isVisible()
 
         if (isVisibleChange) {
             TransitionManager.go(Scene(binding.root as ViewGroup), Slide(Gravity.END).apply { duration = 150 })
-            binding.cancelButton.setVisible(isVisible)
+            binding.closeButton.setVisible(isVisible)
         }
     }
 

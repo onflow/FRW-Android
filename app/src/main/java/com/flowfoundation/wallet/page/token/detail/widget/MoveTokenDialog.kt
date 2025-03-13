@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
+import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
 import com.flowfoundation.wallet.page.token.detail.model.MoveToken
 import com.flowfoundation.wallet.page.token.detail.provider.EVMAccountTokenProvider
 import com.flowfoundation.wallet.page.token.detail.provider.FlowAccountTokenProvider
@@ -41,6 +42,7 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.internal.ViewUtils.hideKeyboard
 import java.math.BigDecimal
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -58,6 +60,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private var moveToAddress: String = EVMWalletManager.getEVMAddress().orEmpty()
     private var currentTokenProvider: MoveTokenProvider? = null
     private var currentToken: MoveToken? = null
+    private var availableTokens: List<MoveToken> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,28 +115,37 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         return number != null && number > 0
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupViews()
+        loadTokens()
+    }
+
+    private fun setupViews() {
         moveFromAddress = WalletManager.selectedWalletAddress()
         moveToAddress = if (WalletManager.isEVMAccountSelected()) {
             WalletManager.wallet()?.walletAddress().orEmpty()
         } else {
             EVMWalletManager.getEVMAddress().orEmpty()
         }
-        with(binding.etAmount) {
-            setDecimalDigitsFilter(contractId.decimal())
-            doOnTextChanged { _, _, _, _ ->
+
+        with(binding) {
+            etAmount.setDecimalDigitsFilter(contractId.decimal())
+            etAmount.doOnTextChanged { _, _, _, _ ->
                 checkAmount()
             }
-            setOnEditorActionListener { _, actionId, _ ->
+            etAmount.setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                    hideKeyboard()
+                    //hideKeyboard()
                     if (verifyAmount() && !binding.llErrorLayout.isVisible()) moveToken()
                 }
                 return@setOnEditorActionListener false
             }
-        }
-        with(binding) {
+
+            coinWrapper.setOnClickListener {
+                showTokenSelection()
+            }
+
             tvMoveFee.text = "0.001 FLOW"
             tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
             ivArrow.setOnClickListener {
@@ -188,7 +200,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         updateMoveFeeVisibility()
                     }
                 }
-
             }
             // Conditionally render arrows in dropdown
             val eligibleFrom = getEligibleAccounts().filter { it != layoutToAccount.getAccountAddress() }
@@ -200,6 +211,57 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             layoutToAccount.invalidate()
         }
         initView()
+    }
+
+    private fun loadTokens() {
+        ioScope {
+            val provider = getProvider(moveFromAddress)
+            availableTokens = provider.getMoveTokenList(moveFromAddress)
+            if (availableTokens.isNotEmpty()) {
+                val token = availableTokens.firstOrNull { it.tokenInfo.contractId() == contractId }
+                    ?: availableTokens.first()
+                uiScope {
+                    updateSelectedToken(token)
+                }
+            }
+        }
+    }
+
+    private fun showTokenSelection() {
+        ioScope {
+            val dialog = SelectTokenDialog()
+            val selectedToken = dialog.show(
+                selectedCoin = currentToken?.tokenInfo?.contractId(),
+                disableCoin = null,
+                fragmentManager = childFragmentManager
+            )
+            if (selectedToken != null) {
+                uiScope {
+                    // Convert FlowCoin to MoveToken
+                    val moveToken = availableTokens.find { it.tokenInfo.contractId() == selectedToken.contractId() }
+                    moveToken?.let {
+                        updateSelectedToken(it)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateSelectedToken(token: MoveToken) {
+        currentToken = token
+        contractId = token.tokenInfo.contractId()
+        isFlowCoin = token.tokenInfo.isFlowCoin()
+        fromBalance = token.tokenBalance
+
+        with(binding) {
+            etAmount.setDecimalDigitsFilter(contractId.decimal())
+            Glide.with(ivTokenIcon).load(token.tokenInfo.icon()).into(ivTokenIcon)
+            tvBalance.text = "${token.tokenBalance.toPlainString()} ${token.tokenInfo.symbol.uppercase()}"
+            etAmount.setText("")
+            btnMove.isEnabled = false
+            updateMoveFeeVisibility()
+            checkAmount()
+        }
     }
 
     private fun moveToken() {

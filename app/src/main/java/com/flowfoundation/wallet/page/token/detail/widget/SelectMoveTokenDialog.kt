@@ -41,7 +41,7 @@ class SelectMoveTokenDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
-        with(binding.recyclerView) {
+        with(binding.tokenList) {
             adapter = this@SelectMoveTokenDialog.adapter
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
             addItemDecoration(
