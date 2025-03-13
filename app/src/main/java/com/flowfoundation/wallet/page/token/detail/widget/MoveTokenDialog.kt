@@ -1,9 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.widget
 
-import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,13 +34,10 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.isFlowAddress
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.wallet.toAddress
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.internal.ViewUtils.hideKeyboard
 import java.math.BigDecimal
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -84,7 +79,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             isEVMAddress && currentTokenProvider is EVMAccountTokenProvider -> currentTokenProvider!!
             isEVMAddress.not() && currentTokenProvider is FlowAccountTokenProvider -> currentTokenProvider!!
             else -> {
-                logd("getProvider", "Creating new provider for ${if (isEVMAddress) "EVM" else "Flow"} address")
                 if (isEVMAddress) {
                     EVMAccountTokenProvider()
                 } else {
@@ -235,19 +229,16 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
     private fun loadTokens() {
         ioScope {
-            logd("loadingTokens", "moveFromAddress $moveFromAddress")
             // Force provider refresh by setting currentTokenProvider to null
             currentTokenProvider = null
             val provider = getProvider(moveFromAddress)
-            logd("loadingTokens", "Using provider: ${provider.javaClass.simpleName}")
-            
+
             // Always refresh balances for the current from address
             BalanceManager.refresh(moveFromAddress)
             
             // Get fresh token list with updated balances
             availableTokens = provider.getMoveTokenList(moveFromAddress)
-            logd("loadingTokens", "Available tokens: ${availableTokens.size}")
-            
+
             if (availableTokens.isNotEmpty()) {
                 // If we have a current token, try to find it in the new list
                 val token = if (currentToken != null) {
@@ -284,22 +275,19 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             // Force provider refresh and use consistent balance refresh logic
             currentTokenProvider = null
             val provider = getProvider(moveFromAddress)
-            logd("showTokenSelection", "Using provider: ${provider.javaClass.simpleName}")
-            
+
             // Always refresh balances for the current from address
             BalanceManager.refresh(moveFromAddress)
             
             // Get fresh token list with updated balances
             availableTokens = provider.getMoveTokenList(moveFromAddress)
-            logd("showTokenSelection", "Available tokens: ${availableTokens.size}")
-            
+
             // Convert MoveTokens to FlowCoins for the dialog, filtering out zero balances
             val coinsWithBalance = availableTokens
                 .filter { it.tokenBalance > BigDecimal.ZERO }
                 .map { it.tokenInfo }
             
-            logd("showTokenSelection", "Tokens with non-zero balance: ${coinsWithBalance.size}")
-            
+
             val selectedToken = dialog.show(
                 selectedCoin = currentToken?.tokenInfo?.contractId(),
                 disableCoin = null,

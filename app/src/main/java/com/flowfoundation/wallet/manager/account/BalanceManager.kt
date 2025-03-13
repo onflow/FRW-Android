@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.flowjvm.parseBigDecimalMap
@@ -187,11 +186,9 @@ object BalanceManager {
 
     suspend fun cadenceQueryTokenListBalance(address: String): Map<String, BigDecimal>? {
         val walletAddress = address.toAddress()
-        logd(TAG, "cadenceQueryTokenListBalance() for address: $walletAddress")
         val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
             arg { Cadence.address(walletAddress) }
         }
-        logd(TAG, "cadenceQueryTokenListBalance response:${result?.encode()}")
         return result?.decode<Map<String, String>>().parseBigDecimalMap()
     }
 }
