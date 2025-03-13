@@ -20,12 +20,20 @@
             tools:background="@color/red_1"
             tools:layout_height="30dp"/>
 
-        <FrameLayout
-            android:id="@+id/webview_container"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            app:cardElevation="0dp"
+            app:rippleColor="@color/transparent"
+            app:cardPreventCornerOverlap="false"
+            app:shapeAppearanceOverlay="@style/TopRoundedCornersShapeAppearance"
             app:layout_constraintTop_toBottomOf="@id/status_bar_holder"
-            app:layout_constraintBottom_toTopOf="@id/cl_toolbar"/>
+            app:layout_constraintBottom_toTopOf="@id/cl_toolbar">
+            <FrameLayout
+                android:id="@+id/webview_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </com.google.android.material.card.MaterialCardView>
 
         <com.flowfoundation.wallet.page.browser.widgets.BrowserProgressView
             android:id="@+id/progress_bar"
