@@ -16,7 +16,9 @@ class ClipboardUtilsTest {
 
     @Before
     fun setup() {
-        clipboardManager = RuntimeEnvironment.getApplication().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val application = RuntimeEnvironment.getApplication()
+        Env.init(application)
+        clipboardManager = application.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
 
     @Test
