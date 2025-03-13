@@ -16,16 +16,20 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
+import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import java.math.BigDecimal
 
 class SelectTokenDialog : BottomSheetDialogFragment() {
 
@@ -77,9 +81,25 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             binding.searchInput.setText("")
             binding.searchInput.clearFocus()
             clearSearch()
+            result?.resume(null)
+            dismiss()
         }
 
-        adapter.setNewDiffData(FlowCoinListManager.coinList())
+        loadCoins()
+    }
+
+    private fun loadCoins() {
+        ioScope {
+            BalanceManager.refresh()
+            val allCoins = FlowCoinListManager.coinList()
+            val coinsWithBalance = allCoins.filter { coin ->
+                val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                balance > BigDecimal.ZERO
+            }
+            uiScope {
+                adapter.setNewDiffData(coinsWithBalance)
+            }
+        }
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {
@@ -93,10 +113,16 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
     }
 
     fun search(keyword: String) {
+        val allCoins = FlowCoinListManager.coinList()
+        val coinsWithBalance = allCoins.filter { coin ->
+            val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+            balance > BigDecimal.ZERO
+        }
+
         if (keyword.isBlank()) {
-            adapter.setNewDiffData(FlowCoinListManager.coinList())
+            adapter.setNewDiffData(coinsWithBalance)
         } else {
-            adapter.setNewDiffData(FlowCoinListManager.coinList().filter {
+            adapter.setNewDiffData(coinsWithBalance.filter {
                 it.name.lowercase().contains(keyword.lowercase()) || it.symbol.lowercase().contains(keyword.lowercase())
             })
         }
