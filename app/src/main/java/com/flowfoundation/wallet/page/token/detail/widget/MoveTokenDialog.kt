@@ -230,10 +230,12 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun showTokenSelection() {
         ioScope {
             val dialog = SelectTokenDialog()
+            dialog.refreshTokenList()
             val selectedToken = dialog.show(
                 selectedCoin = currentToken?.tokenInfo?.contractId(),
                 disableCoin = null,
-                fragmentManager = childFragmentManager
+                fragmentManager = childFragmentManager,
+                moveFromAddress = moveFromAddress
             )
             if (selectedToken != null) {
                 uiScope {
