@@ -212,8 +212,8 @@ data class Balance(
                 && contractName.equals(coin.contractName(), ignoreCase = true)
     }
 
-    fun isSameEVMCoin(address: String): Boolean {
-        return address.equals(address, ignoreCase = true)
+    fun isSameEVMCoin(tokenAddress: String): Boolean {
+        return address.equals(tokenAddress, ignoreCase = true)
     }
 }
 
