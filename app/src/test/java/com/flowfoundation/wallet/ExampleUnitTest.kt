@@ -26,7 +26,7 @@ class ExampleUnitTest {
         val response = accessApi.simpleFlowScript {
             script {
                 """
-                    pub fun main(): String {
+                    access(all) fun main(): String {
                         return "Hello World"
                     }
                 """

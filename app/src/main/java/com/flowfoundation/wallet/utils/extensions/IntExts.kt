@@ -32,7 +32,7 @@ fun Int.res2String(): String {
 @ColorInt
 fun Int.res2color(context: Context? = null): Int {
     val ctx = context ?: (BaseActivity.getCurrentActivity() ?: Env.getApp())
-    return ctx.getColor(this)
+    return ContextCompat.getColor(ctx, this)
 }
 
 fun Int.colorStateList(context: Context? = null): ColorStateList? {

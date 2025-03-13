@@ -106,6 +106,7 @@ jobs:
         with:
           log-accepted-android-sdk-licenses: false
 
+
       - name: Generate Keystore
         run: |
           KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"

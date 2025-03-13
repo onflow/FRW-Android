@@ -1,13 +1,14 @@
 package com.flowfoundation.wallet.utils
 
 import android.annotation.SuppressLint
+import android.text.format.DateUtils
 import java.text.SimpleDateFormat
 import java.util.*
 
 
 @SuppressLint("SimpleDateFormat")
 fun String.gmtToTs(): Long {
-    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").apply { timeZone = TimeZone.getTimeZone("GMT") }.parse(this).time
+    return SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").apply { timeZone = TimeZone.getTimeZone("GMT") }.parse(this)!!.time
 }
 
 @SuppressLint("SimpleDateFormat")

@@ -134,7 +134,7 @@ class SendAmountPresenter(
                 amount
             } else {
                 // If we don't have a valid rate (zero or negative), use the original amount rather than attempting an invalid conversion
-                if (coinRate.compareTo(BigDecimal.ZERO) <= 0) amount else amount / coinRate 
+                if (coinRate.compareTo(BigDecimal.ZERO) <= 0) amount else amount / coinRate
             }
             val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
             uiScope {
