@@ -117,11 +117,15 @@ class AnimationUtilsTest {
     }
 
     private fun getFloatValues(holder: PropertyValuesHolder): FloatArray {
-        val valuesField = PropertyValuesHolder::class.java.getDeclaredField("mKeyframes")
-        valuesField.isAccessible = true
-        val keyframes = valuesField.get(holder)
-        
-        val valuesGetter = keyframes.javaClass.getMethod("getFloatValues")
-        return valuesGetter.invoke(keyframes) as FloatArray
+        val view = mock<View>()
+        val animator = ObjectAnimator.ofPropertyValuesHolder(view, holder)
+        animator.start() // Start the animation
+
+        val startValue = animator.getAnimatedValue(holder.propertyName) as? Float ?: 0f
+        animator.currentPlayTime = animator.duration // Move to end
+        val endValue = animator.getAnimatedValue(holder.propertyName) as? Float ?: 0f
+
+        return floatArrayOf(startValue, endValue)
     }
+
 } 

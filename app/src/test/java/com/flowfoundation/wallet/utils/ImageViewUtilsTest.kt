@@ -2,8 +2,9 @@ package com.flowfoundation.wallet.utils
 
 import android.os.Build
 import android.widget.ImageView
-import androidx.test.core.app.ApplicationProvider
+import android.content.Context
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import jp.wasabeef.glide.transformations.BlurTransformation
 import org.junit.Before
 import org.junit.Test
@@ -12,39 +13,53 @@ import org.mockito.kotlin.*
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.assertj.core.api.Assertions.assertThat
+import org.mockito.Mockito.mockStatic
+import org.robolectric.RuntimeEnvironment
+import java.net.URLEncoder
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.P])
+@Config(sdk = [Build.VERSION_CODES.P], manifest = Config.NONE)
 class ImageViewUtilsTest {
 
     private lateinit var mockImageView: ImageView
+    private lateinit var mockRequestManager: RequestManager
 
     @Before
     fun setup() {
-        // Setup Env singleton with test context
-        val context = ApplicationProvider.getApplicationContext()
-        Env.setup(context)
-        
-        mockImageView = mock()
-        whenever(mockImageView.context).thenReturn(context)
+        val realContext = RuntimeEnvironment.getApplication() // Use real Context
+        mockImageView = spy(ImageView(RuntimeEnvironment.getApplication()))
+        mockImageView.layout(0, 0, 100, 100)
+
+        mockRequestManager = mock()
+
+        // Make sure ImageView returns a real context
+        whenever(mockImageView.context).thenReturn(realContext)
+
+        // Correct way to mock Glide.with()
+        mockStatic(Glide::class.java).use { mockedGlide ->
+            mockedGlide.`when`<RequestManager> { Glide.with(realContext) }
+                .thenReturn(mockRequestManager)
+        }
+
+        Env.init(realContext)
     }
 
     @Test
     fun `test loadAvatar with normal URL`() {
         val url = "https://example.com/avatar.jpg"
         mockImageView.loadAvatar(url)
-        
-        // Verify that Glide was used to load the image
-        verify(mockImageView).context
+
+        verify(mockRequestManager).load(any<String>())
+
     }
 
     @Test
     fun `test loadAvatar with flovatar URL`() {
         val url = "https://flovatar.com/api/image/123.svg"
         mockImageView.loadAvatar(url)
-        
-        // Verify that the URL was converted to PNG and loaded
-        verify(mockImageView).context
+
+        verify(mockRequestManager).load(any<String>())
+
     }
 
     @Test
@@ -52,8 +67,23 @@ class ImageViewUtilsTest {
         val url = "https://example.com/avatar.jpg"
         val transformation = BlurTransformation()
         mockImageView.loadAvatar(url, transformation = transformation)
-        
-        verify(mockImageView).context
+
+        verify(mockRequestManager).load(any<String>())
+
+    }
+
+    @Test
+    fun `test loadAvatar with empty URL`() {
+        mockImageView.loadAvatar("")
+        verify(mockRequestManager).load(any<String>())
+
+    }
+
+    @Test
+    fun `test loadAvatar with invalid URL`() {
+        mockImageView.loadAvatar("not a valid url")
+        verify(mockRequestManager).load(any<String>())
+
     }
 
     @Test
@@ -62,7 +92,7 @@ class ImageViewUtilsTest {
         val pngUrl = svgUrl.svgToPng()
         
         assertThat(pngUrl).startsWith("https://lilico.app/api/svg2png?url=")
-        assertThat(pngUrl).contains(svgUrl)
+        assertThat(pngUrl).contains(URLEncoder.encode(svgUrl, "UTF-8"))
     }
 
     @Test
@@ -86,29 +116,27 @@ class ImageViewUtilsTest {
     fun `test loadAvatar with placeholder enabled`() {
         val url = "https://example.com/avatar.jpg"
         mockImageView.loadAvatar(url, placeholderEnable = true)
-        
-        verify(mockImageView).context
+
+        verify(mockRequestManager).load(any<String>())
+
     }
 
     @Test
     fun `test loadAvatar with placeholder disabled`() {
         val url = "https://example.com/avatar.jpg"
         mockImageView.loadAvatar(url, placeholderEnable = false)
-        
-        verify(mockImageView).context
-    }
 
-    @Test
-    fun `test loadAvatar with empty URL`() {
-        mockImageView.loadAvatar("")
-        
-        verify(mockImageView).context
+        verify(mockRequestManager).load(any<String>())
+
     }
 
     @Test
     fun `test loadAvatar with malformed URL`() {
         mockImageView.loadAvatar("not-a-url")
-        
-        verify(mockImageView).context
+
+        verify(mockRequestManager).load(any<String>())
+
     }
+
+
 } 
