@@ -7,7 +7,7 @@ import com.flowfoundation.wallet.base.recyclerview.BaseAdapter
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 
 internal class TokenListAdapter(
-    private val selectedCoin: String? = null,
+    private var selectedCoin: String? = null,
     private var disableCoin: String? = null,
     private val callback: (FlowCoin) -> Unit,
 ) : BaseAdapter<FlowCoin>() {
@@ -20,5 +20,10 @@ internal class TokenListAdapter(
         when (holder) {
             is TokenItemPresenter -> holder.bind(getItem(position))
         }
+    }
+
+    fun updateSelectedCoin(newSelectedCoin: String?) {
+        selectedCoin = newSelectedCoin
+        notifyDataSetChanged()
     }
 }

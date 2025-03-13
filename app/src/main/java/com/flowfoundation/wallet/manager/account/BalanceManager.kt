@@ -43,7 +43,8 @@ object BalanceManager {
     }
 
     fun refresh(address: String? = null) {
-        if (WalletManager.isEVMAccountSelected()) {
+        val targetAddress = address ?: WalletManager.selectedWalletAddress()
+        if (EVMWalletManager.isEVMWalletAddress(targetAddress)) {
             FlowCoinListManager.getFlowCoin()?.let {
                 fetch(it)
             }
