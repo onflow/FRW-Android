@@ -225,18 +225,43 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.flowfoundation.wallet.page.nft.search.widget.NFTListSearchLayout
+        android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="18dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/cl_collection_layout"/>
+
+    <com.flowfoundation.wallet.page.nft.search.widget.NFTListLoadingLayout
+        android:id="@+id/loading_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rv_nft_list"
+        app:layout_constraintBottom_toBottomOf="@id/rv_nft_list"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_nft_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="26dp"
+        android:layout_marginTop="12dp"
         android:clipToPadding="false"
         android:paddingHorizontal="18dp"
         android:paddingBottom="20dp"
         app:layout_constraintBottom_toTopOf="@id/storage_tip"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cl_collection_layout"/>
+        app:layout_constraintTop_toBottomOf="@id/search_layout"/>
+
+    <com.flowfoundation.wallet.page.nft.search.widget.NFTListErrorLayout
+        android:id="@+id/error_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rv_nft_list"
+        app:layout_constraintBottom_toBottomOf="@id/rv_nft_list"/>
 
     <TextView
         android:id="@+id/tv_empty"

@@ -17,8 +17,6 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
-import com.flowfoundation.wallet.page.nft.move.model.NFTInfo
-import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
@@ -30,7 +28,6 @@ class SelectNFTViewModel : ViewModel() {
         const val SELECT_NFT_LIMIT = 10
     }
 
-    val nftListLiveData = MutableLiveData<List<NFTInfo>>()
     val collectionLiveData = MutableLiveData<CollectionInfo?>()
     val moveCountLiveData = MutableLiveData<Int>()
     private val selectedNFTIdList = mutableListOf<String>()
@@ -64,7 +61,6 @@ class SelectNFTViewModel : ViewModel() {
             )
             this.nftIdentifier = collection.getNFTIdentifier()
             this.identifier = collection.path?.privatePath?.removePrefix("/private/") ?: ""
-            loadNFTList(fromAddress, collection.id)
         }
     }
 
@@ -72,7 +68,6 @@ class SelectNFTViewModel : ViewModel() {
 
     private fun postEmpty() {
         collectionLiveData.postValue(null)
-        nftListLiveData.postValue(emptyList())
         selectedNFTIdList.clear()
     }
 
@@ -87,30 +82,7 @@ class SelectNFTViewModel : ViewModel() {
             )
         )
         selectedNFTIdList.clear()
-        loadNFTList(fromAddress, detailInfo.id)
     }
-
-    private fun loadNFTList(fromAddress: String, collectionId: String) {
-        viewModelIOScope(this) {
-            val isEvmAddress = EVMWalletManager.isEVMWalletAddress(fromAddress)
-
-            val nftListResponse = if (isEvmAddress) {
-                service.getEVMNFTListOfCollection(fromAddress, collectionId, "", 40)
-            } else {
-                service.getNFTListOfCollection(fromAddress, collectionId, 0, 40)
-            }
-
-            val list = nftListResponse.data?.nfts?.map {
-                NFTInfo(
-                    id = it.id,
-                    cover = it.cover() ?: ""
-                )
-            }?.toList() ?: emptyList()
-
-            nftListLiveData.postValue(list)
-            selectedNFTIdList.clear()
-        }
-}
 
     suspend fun moveSelectedNFT(toAddress: String, callback: (isSuccess: Boolean) -> Unit) {
 

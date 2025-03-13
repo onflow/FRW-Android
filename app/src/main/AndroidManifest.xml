@@ -101,6 +101,8 @@
         <activity
             android:name=".page.collection.CollectionActivity"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".page.nft.search.NFTSearchActivity"/>
 
         <activity
             android:name=".page.profile.subpage.accountsetting.AccountSettingActivity"
