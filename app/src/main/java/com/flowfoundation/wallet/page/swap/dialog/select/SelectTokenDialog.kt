@@ -38,6 +38,7 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
     private var result: Continuation<FlowCoin?>? = null
     private var currentSearchKeyword: String = ""
     private var moveFromAddress: String? = null
+    private var availableCoins: List<FlowCoin>? = null
 
     private lateinit var binding: DialogSelectTokenBinding
 
@@ -98,19 +99,22 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
 
     private fun loadCoins() {
         ioScope {
-            BalanceManager.refresh(moveFromAddress)
-            val allCoins = FlowCoinListManager.coinList()
-            val coinsWithBalance = allCoins
-                .distinctBy { it.contractId() }
-                .filter { coin ->
-                    val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                    balance > BigDecimal.ZERO
-                }
+            val coins = availableCoins ?: run {
+                BalanceManager.refresh(moveFromAddress)
+                val allCoins = FlowCoinListManager.coinList()
+                allCoins
+                    .distinctBy { it.contractId() }
+                    .filter { coin ->
+                        val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                        balance > BigDecimal.ZERO
+                    }
+            }
+            
             uiScope {
                 if (currentSearchKeyword.isBlank()) {
-                    adapter.setNewDiffData(coinsWithBalance)
+                    adapter.setNewDiffData(coins)
                 } else {
-                    adapter.setNewDiffData(coinsWithBalance.filter {
+                    adapter.setNewDiffData(coins.filter {
                         it.name.lowercase().contains(currentSearchKeyword.lowercase()) || 
                         it.symbol.lowercase().contains(currentSearchKeyword.lowercase())
                     })
@@ -131,18 +135,20 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
 
     fun search(keyword: String) {
         currentSearchKeyword = keyword
-        val allCoins = FlowCoinListManager.coinList()
-        val coinsWithBalance = allCoins
-            .distinctBy { it.contractId() }
-            .filter { coin ->
-                val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                balance > BigDecimal.ZERO
-            }
+        val coins = availableCoins ?: run {
+            val allCoins = FlowCoinListManager.coinList()
+            allCoins
+                .distinctBy { it.contractId() }
+                .filter { coin ->
+                    val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                    balance > BigDecimal.ZERO
+                }
+        }
 
         if (keyword.isBlank()) {
-            adapter.setNewDiffData(coinsWithBalance)
+            adapter.setNewDiffData(coins)
         } else {
-            adapter.setNewDiffData(coinsWithBalance.filter {
+            adapter.setNewDiffData(coins.filter {
                 it.name.lowercase().contains(keyword.lowercase()) || it.symbol.lowercase().contains(keyword.lowercase())
             })
         }
@@ -160,12 +166,14 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
         selectedCoin: String?,
         disableCoin: String?,
         fragmentManager: FragmentManager,
-        moveFromAddress: String?
+        moveFromAddress: String?,
+        availableCoins: List<FlowCoin>? = null
     ) = suspendCoroutine<FlowCoin?> { result ->
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
         this.result = result
         this.moveFromAddress = moveFromAddress
+        this.availableCoins = availableCoins
         adapter.updateSelectedCoin(selectedCoin)
         show(fragmentManager, "")
     }
