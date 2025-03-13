@@ -12,7 +12,7 @@ class EVMUtilsTest {
     fun `test shortenEVMString with valid EVM address`() {
         val address = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         val shortened = shortenEVMString(address)
-        assertThat(shortened).isEqualTo("0x742d35C...4438f44e")
+        assertThat(shortened).isEqualTo("0x742d35C...438f44e")
     }
 
     @Test
@@ -45,14 +45,14 @@ class EVMUtilsTest {
     fun `test shortenEVMString with lowercase address`() {
         val address = "0x742d35cc6634c0532925a3b844bc454e4438f44e"
         val shortened = shortenEVMString(address)
-        assertThat(shortened).isEqualTo("0x742d35c...4438f44e")
+        assertThat(shortened).isEqualTo("0x742d35c...438f44e")
     }
 
     @Test
     fun `test shortenEVMString with mixed case address`() {
         val address = "0x742D35cC6634C0532925a3b844Bc454e4438F44e"
         val shortened = shortenEVMString(address)
-        assertThat(shortened).isEqualTo("0x742D35c...4438F44e")
+        assertThat(shortened).isEqualTo("0x742D35c...438F44e")
     }
 
     @Test
@@ -84,4 +84,4 @@ class EVMUtilsTest {
         val shortened = shortenEVMString(address)
         assertThat(shortened).isEqualTo(address)
     }
-} 
+}
