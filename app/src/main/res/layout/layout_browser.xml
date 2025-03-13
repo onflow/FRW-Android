@@ -20,20 +20,12 @@
             tools:background="@color/red_1"
             tools:layout_height="30dp"/>
 
-        <com.google.android.material.card.MaterialCardView
+        <FrameLayout
+            android:id="@+id/webview_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:rippleColor="@color/transparent"
-            app:shapeAppearanceOverlay="@style/BottomRoundedCornersShapeAppearance"
             app:layout_constraintTop_toBottomOf="@id/status_bar_holder"
-            app:layout_constraintBottom_toTopOf="@id/cl_toolbar">
-            <FrameLayout
-                android:id="@+id/webview_container"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </com.google.android.material.card.MaterialCardView>
+            app:layout_constraintBottom_toTopOf="@id/cl_toolbar"/>
 
         <com.flowfoundation.wallet.page.browser.widgets.BrowserProgressView
             android:id="@+id/progress_bar"
@@ -102,11 +94,11 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_arrow_left_border"
                 android:tint="@color/text_1"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/text_wrapper"
                 app:layout_constraintEnd_toStartOf="@id/move_button"
                 app:layout_constraintHorizontal_chainStyle="spread"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="@id/text_wrapper"/>
 
             <androidx.constraintlayout.utils.widget.ImageFilterButton
                 android:id="@+id/move_button"
@@ -116,10 +108,10 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_move"
                 android:tint="@color/text_1"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/text_wrapper"
                 app:layout_constraintEnd_toStartOf="@id/text_wrapper"
                 app:layout_constraintStart_toEndOf="@id/back_button"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="@id/text_wrapper"/>
 
             <androidx.constraintlayout.utils.widget.ImageFilterButton
                 android:id="@+id/menu_button"
@@ -129,11 +121,11 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_webview_menu"
                 android:tint="@color/text_1"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/text_wrapper"
                 app:layout_constraintEnd_toStartOf="@id/float_button"
                 app:layout_constraintHorizontal_chainStyle="spread"
                 app:layout_constraintStart_toEndOf="@id/text_wrapper"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="@id/text_wrapper"/>
 
             <androidx.constraintlayout.utils.widget.ImageFilterButton
                 android:id="@+id/float_button"
@@ -143,10 +135,10 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_webview_float"
                 android:tint="@color/text_1"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/text_wrapper"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/menu_button"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="@id/text_wrapper"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
