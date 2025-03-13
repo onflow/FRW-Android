@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.flowjvm.parseBigDecimalMap
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -110,26 +109,16 @@ object BalanceManager {
         return getEVMBalanceByCoin(tokenAddress, address)
     }
 
-    suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
+    private suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
         val apiService = retrofitApi().create(ApiService::class.java)
         val balanceResponse = apiService.getEVMTokenBalance(evmAddress, chainNetWorkString())
         val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
-    suspend fun getFlowBalanceByContractId(contractId: String, flowAddress: String): BigDecimal {
-        val balanceMap = cadenceQueryTokenListBalanceWithAddress(flowAddress) ?: return BigDecimal.ZERO
-        return balanceMap[contractId]?: BigDecimal.ZERO
-    }
-
     fun getBalanceByCoin(coin: FlowCoin) {
         logd(TAG, "getBalanceByCoin:${coin.symbol}")
         fetch(coin)
-    }
-
-    fun getBalanceByCoin(coinContractId: String) {
-        val coin = FlowCoinListManager.getCoinById(coinContractId) ?: return
-        getBalanceByCoin(coin)
     }
 
     fun addListener(callback: OnBalanceUpdate) {
@@ -184,7 +173,7 @@ object BalanceManager {
         cache.clear()
     }
 
-    suspend fun cadenceQueryTokenListBalance(address: String): Map<String, BigDecimal>? {
+    private suspend fun cadenceQueryTokenListBalance(address: String): Map<String, BigDecimal>? {
         val walletAddress = address.toAddress()
         val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
             arg { Cadence.address(walletAddress) }
