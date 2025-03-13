@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.utils
 
-import android.text.format.DateUtils
 import org.junit.Assert.*
 import org.junit.Test
 import java.text.SimpleDateFormat
@@ -23,14 +22,13 @@ class DateTimeUtilsTest {
     @Test
     fun testFormatDate() {
         val timestamp = 1710151200000L // 2024-03-11 12:00:00 GMT
-        val expectedFormat = SimpleDateFormat("yyyy-MM-dd HH:mm").apply {
-            timeZone = TimeZone.getTimeZone("GMT")
-        }.format(timestamp)
-        
-        val formattedDate = timestamp.formatDate()
-        
+        val expectedFormat = SimpleDateFormat("yyyy-MM-dd HH:mm").format(Date(timestamp)) // Use system timezone
+
+        val formattedDate = timestamp.formatDate() // Uses system timezone
+
         assertEquals(expectedFormat, formattedDate)
     }
+
 
     @Test
     fun testFormatGMTToDate() {

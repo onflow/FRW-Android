@@ -13,7 +13,7 @@ fun String.gmtToTs(): Long {
 
 @SuppressLint("SimpleDateFormat")
 fun Long.formatDate(format: String = "yyyy-MM-dd HH:mm"): String {
-    return SimpleDateFormat(format).apply { timeZone = TimeZone.getTimeZone("GMT") }.format(this)
+    return SimpleDateFormat(format).format(this)
 }
 
 fun formatGMTToDate(inputDate: String): String {
