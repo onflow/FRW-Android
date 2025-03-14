@@ -13,13 +13,14 @@ import com.flowfoundation.wallet.page.nft.search.viewmodel.NFTItemListViewModel
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2dip
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.widgets.itemdecoration.GridLayoutItemDecoration
 
 class NFTSearchPresenter(
     private val activity: NFTSearchActivity,
     private val binding: ActivityNftSearchBinding
-): BasePresenter<List<NFTItemModel>?> {
+): BasePresenter<Pair<NFTListType, List<NFTItemModel>?>> {
 
     private val viewModel by lazy { ViewModelProvider(activity)[NFTItemListViewModel::class.java]}
     private val adapter by lazy {
@@ -28,6 +29,7 @@ class NFTSearchPresenter(
     private val dividerSize by lazy { R.dimen.nft_list_divider_size.res2dip().toDouble() }
     init {
         with(binding.rvNftList) {
+            itemAnimator = null
             adapter = this@NFTSearchPresenter.adapter
             layoutManager = GridLayoutManager(context, 2, GridLayoutManager.VERTICAL, false).apply {
                 spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -51,19 +53,25 @@ class NFTSearchPresenter(
         }
     }
 
-    override fun bind(model: List<NFTItemModel>?) {
+    override fun bind(model: Pair<NFTListType, List<NFTItemModel>?>) {
         with(binding) {
+            val list = model.second
             loadingLayout.gone()
-            if (model == null) {
+            tvListType.text = model.first.resId.res2String()
+            if (list == null) {
                 tvListCount.text = ""
                 errorLayout.visible()
+                tvEmpty.gone()
                 adapter.setNewDiffData(emptyList())
                 return
             }
-            tvListCount.text = activity.getString(R.string.nft_count, model.size)
-            adapter.setNewDiffData(model)
-            if (adapter.itemCount > 0) {
-                rvNftList.scrollToPosition(0)
+            tvListCount.text = activity.getString(R.string.nft_count, list.size)
+            adapter.setNewDiffData(list)
+            if (list.isNotEmpty()) {
+                tvEmpty.gone()
+                rvNftList.smoothScrollToPosition(0)
+            } else {
+                tvEmpty.setVisible(model.first == NFTListType.RESULTS)
             }
         }
     }
@@ -73,6 +81,7 @@ class NFTSearchPresenter(
             if (loading) {
                 adapter.setNewDiffData(emptyList())
                 errorLayout.gone()
+                tvEmpty.gone()
                 loadingLayout.visible()
             } else {
                 loadingLayout.gone()
@@ -85,6 +94,6 @@ class NFTSearchPresenter(
     }
 
     fun updateListType(type: NFTListType) {
-        binding.tvListType.text = type.resId.res2String()
+
     }
 }

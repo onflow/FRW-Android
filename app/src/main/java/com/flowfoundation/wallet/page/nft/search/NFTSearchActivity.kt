@@ -29,17 +29,14 @@ class NFTSearchActivity : BaseActivity() {
 
         presenter = NFTSearchPresenter(this, binding)
         viewModel = ViewModelProvider(this)[NFTItemListViewModel::class.java].apply {
-            nftListLiveData.observe(this@NFTSearchActivity) { list ->
-                presenter.bind(list)
+            nftListLiveData.observe(this@NFTSearchActivity) { pair ->
+                presenter.bind(pair)
             }
             isLoadingLiveData.observe(this@NFTSearchActivity) {
                 presenter.configureLoadingState(it)
             }
             loadingProgressLiveData.observe(this@NFTSearchActivity) { (current, total) ->
                 presenter.updateLoadingProgress(current, total)
-            }
-            listTypeLiveData.observe(this@NFTSearchActivity) {
-                presenter.updateListType(it)
             }
             loadAllNFTs(fromAddress = accountAddress, collectionId = collectionId)
         }

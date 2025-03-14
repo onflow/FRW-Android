@@ -271,10 +271,11 @@
         android:fontFamily="@font/inter"
         android:gravity="center"
         android:text="@string/select_nft_empty"
-        android:textColor="@color/text_3"
-        android:textSize="16sp"
+        android:textColor="@color/text_2"
+        android:textSize="14sp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/cl_collection_layout"/>
+        app:layout_constraintTop_toTopOf="@id/rv_nft_list"
+        app:layout_constraintBottom_toBottomOf="@id/rv_nft_list"/>
 
     <com.flowfoundation.wallet.page.storage.StorageInsufficientTip
         android:id="@+id/storage_tip"

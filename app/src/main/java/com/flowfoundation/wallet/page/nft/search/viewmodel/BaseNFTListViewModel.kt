@@ -21,13 +21,11 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
         const val NFT_PAGE_SIZE = 50
     }
 
-    val nftListLiveData = MutableLiveData<List<T>?>()
+    val nftListLiveData = MutableLiveData<Pair<NFTListType, List<T>?>>()
 
     val loadingProgressLiveData = MutableLiveData<Pair<Int, Int>>()
 
     val isLoadingLiveData = MutableLiveData<Boolean>()
-
-    val listTypeLiveData = MutableLiveData<NFTListType>()
 
     private val allNftList = mutableListOf<T>()
     protected val service: ApiService by lazy { retrofitApi().create(ApiService::class.java) }
@@ -56,6 +54,10 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
                 if (isEvmAddress) {
                     var offset = ""
                     var hasMore = true
+                    val collectionResponse = service.getEVMNFTCollections(fromAddress)
+                    val collection = collectionResponse.data?.firstOrNull {
+                        it.collection?.id == collectionId
+                    }
                     while (hasMore) {
                         val response = service.getEVMNFTListOfCollection(
                             fromAddress,
@@ -72,11 +74,11 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
                         } else {
                             allNftList.addAll(pageList)
 
-                            totalNftCount = response.data?.nftCount ?: totalNftCount
+                            totalNftCount = collection?.count ?: 0
 
                             loadingProgressLiveData.postValue(Pair(allNftList.size, totalNftCount))
 
-                            if (allNftList.size >= totalNftCount) {
+                            if (response.data?.offset == null) {
                                 hasMore = false
                             }
                             offset = response.data?.offset ?: ""
@@ -93,8 +95,7 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
                     loadingProgressLiveData.postValue(Pair(allNftList.size, totalNftCount))
 
                     if (totalNftCount <= NFT_PAGE_SIZE) {
-                        nftListLiveData.postValue(allNftList.toList())
-                        listTypeLiveData.postValue(NFTListType.ALL)
+                        nftListLiveData.postValue(Pair(NFTListType.ALL, allNftList.toList()))
                         isLoadingAll = false
                         isLoadingLiveData.postValue(false)
                         return@viewModelIOScope
@@ -136,13 +137,13 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
                     }
                 }
 
-                nftListLiveData.postValue(if (allNftList.isEmpty()) emptyList() else allNftList.toList())
-                listTypeLiveData.postValue(NFTListType.ALL)
+                nftListLiveData.postValue(
+                    Pair(NFTListType.ALL, if (allNftList.isEmpty()) emptyList() else allNftList.toList())
+                )
             } catch (e: Exception) {
                 logd(TAG, "Load all NFTs failed: ${e.message}")
                 e.printStackTrace()
-                nftListLiveData.postValue(null)
-                listTypeLiveData.postValue(NFTListType.ALL)
+                nftListLiveData.postValue(Pair(NFTListType.ALL, null))
             } finally {
                 isLoadingAll = false
                 isLoadingLiveData.postValue(false)
@@ -163,16 +164,12 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
             }
 
             if (keyword.isBlank()) {
-                nftListLiveData.postValue(allNftList.toList())
-                listTypeLiveData.postValue(NFTListType.ALL)
+                nftListLiveData.postValue(Pair(NFTListType.ALL, allNftList.toList()))
             } else {
                 val filteredList = allNftList.filter {
                     getSearchableText(it).contains(keyword, ignoreCase = true)
                 }
-                if (filteredList.isNotEmpty()) {
-                    nftListLiveData.postValue(filteredList)
-                    listTypeLiveData.postValue(NFTListType.RESULTS)
-                }
+                nftListLiveData.postValue(Pair(NFTListType.RESULTS, filteredList))
             }
         }
     }
