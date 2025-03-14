@@ -1,5 +1,9 @@
 package com.flowfoundation.wallet.page.nft.nftlist.presenter
 
+import NFTViewAdapter
+import android.view.View
+import android.widget.ListPopupWindow
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.zackratos.ultimatebarx.ultimatebarx.statusBarHeight
 import com.flowfoundation.wallet.R
@@ -16,6 +20,8 @@ import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.startShimmer
 import java.lang.Float.min
+import android.view.Gravity
+
 
 class NFTFragmentPresenter(
     private val fragment: NFTFragment,
@@ -37,6 +43,10 @@ class NFTFragmentPresenter(
                 setOnRefreshListener { viewModel.refresh() }
                 setColorSchemeColors(R.color.colorSecondary.res2color())
             }
+
+            binding.viewToggleButton.setOnClickListener { view ->
+                showCustomPopupMenu(view)
+            }
         }
 
         startShimmer(binding.shimmerLayout.shimmerLayout)
@@ -52,6 +62,47 @@ class NFTFragmentPresenter(
         model.listPageData?.let { binding.refreshLayout.isRefreshing = false }
     }
 
+    private fun showCustomPopupMenu(anchorView: View) {
+        val context = anchorView.context
+        val initialIndex = if (viewModel.isGridViewLiveData.value ?: false) 1 else 0
+        val adapter = NFTViewAdapter(context, initialIndex)
+
+        val verticalOffset = context.resources.getDimensionPixelSize(R.dimen.popup_vertical_margin)
+
+        val listPopupWindow = ListPopupWindow(context).apply {
+            this.anchorView = anchorView
+            setAdapter(adapter)
+            isModal = true
+            width = (ScreenUtils.getScreenWidth() * 0.3).toInt()
+            setBackgroundDrawable(ContextCompat.getDrawable(context, R.drawable.rounded_popup))
+            setVerticalOffset(verticalOffset)
+
+            setOnItemClickListener { _, _, position, _ ->
+                if (position == 0) {
+                    // Ignore header click
+                    return@setOnItemClickListener
+                }
+                // Adjust index because header occupies position 0
+                adapter.setSelectedIndex(position - 1)
+                when (position - 1) {
+                    0 -> {
+                        viewModel.toggleViewType(false)
+                        viewModel.toggleCollectionExpand()
+                    }
+                    1 -> {
+                        viewModel.toggleViewType(true)
+                        viewModel.toggleCollectionExpand()
+                    }
+                }
+                dismiss()
+            }
+        }
+        listPopupWindow.setDropDownGravity(Gravity.END)
+        listPopupWindow.setHorizontalOffset(-context.resources.getDimensionPixelSize(R.dimen.popup_horizontal_margin))
+        listPopupWindow.show()
+    }
+
+
     private fun listPageScrollProgress(scrollY: Int): Float {
         val scroll = if (scrollY < 0) viewModel.listScrollChangeLiveData.value ?: 0 else scrollY
         val maxScrollY = ScreenUtils.getScreenHeight() * 0.25f
@@ -59,11 +110,21 @@ class NFTFragmentPresenter(
     }
 
     private fun updateToolbarBackground(scrollY: Int = -1) {
-        if (!isTopSelectionExist) {
+        if (isGridTabSelected()) {
             binding.toolbar.background.alpha = 255
         } else {
+            if (!isTopSelectionExist) {
+                // no selection
+                binding.toolbar.background.alpha = 255
+            } else {
+                val progress = listPageScrollProgress(scrollY)
+                binding.toolbar.background.alpha = (255 * progress).toInt()
+            }
+
             val progress = listPageScrollProgress(scrollY)
             binding.toolbar.background.alpha = (255 * progress).toInt()
         }
     }
+
+    private fun isGridTabSelected() = true
 }

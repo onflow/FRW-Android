@@ -17,11 +17,16 @@ fun Float.formatPrice(
 ): String {
     var value = this
     if (convertCurrency) {
-        if (CurrencyManager.currencyPrice() < 0) {
-            return "-"
+        if (CurrencyManager.currencyPrice() <= 0) {
+            return ""
         }
         value *= CurrencyManager.currencyPrice()
     }
+
+    if (value < 0.01f) {
+        return formatTokenPrice(value.toDouble())
+    }
+
     val format = if (value < 1_000_000) {
         value.format(digits)
     } else if (isAbbreviation) {
@@ -41,11 +46,17 @@ fun BigDecimal.formatPrice(
 ): String {
     var value = this
     if (convertCurrency) {
-        if (CurrencyManager.currencyDecimalPrice() < BigDecimal.ZERO) {
-            return "-"
+        if (CurrencyManager.currencyDecimalPrice() <= BigDecimal.ZERO) {
+            return ""
         }
         value *= CurrencyManager.currencyDecimalPrice()
     }
+
+    // For token prices less than one cent, use token formatting.
+    if (value < BigDecimal("0.01")) {
+        return formatTokenPrice(value.toDouble())
+    }
+
     val format = if (value < BigDecimal("1000000")) {
         value.format(digits)
     } else if (isAbbreviation) {
@@ -57,8 +68,7 @@ fun BigDecimal.formatPrice(
 }
 
 fun BigDecimal.format(
-    digits: Int = 3,
-    roundingMode: RoundingMode = RoundingMode.DOWN
+    digits: Int = 3, roundingMode: RoundingMode = RoundingMode.DOWN
 ): String {
     return this.setScale(digits, roundingMode).stripTrailingZeros().toPlainString()
 }
@@ -90,7 +100,8 @@ fun BigDecimal.formatNumberWithCommas(): String {
 }
 
 fun Float.format(digits: Int = 3, roundingMode: RoundingMode = RoundingMode.DOWN): String {
-    return DecimalFormat("0.${"#".repeat(digits)}").apply { setRoundingMode(roundingMode) }.format(this)
+    return DecimalFormat("0.${"#".repeat(digits)}").apply { setRoundingMode(roundingMode) }
+        .format(this)
 }
 
 fun Float.formatNum(
@@ -134,17 +145,24 @@ fun Double.formatPrice(
 ): String {
     var value = this
     if (convertCurrency) {
-        if (CurrencyManager.currencyPrice() < 0) {
-            return "-"
+        if (CurrencyManager.currencyPrice() <= 0) {
+            return ""
         }
         value *= CurrencyManager.currencyPrice()
     }
+
+    // For token prices less than one cent, use token formatting.
+    if (value < 0.01) {
+        return formatTokenPrice(value)
+    }
+
     val format = value.format(digits)
     return if (includeSymbol) "${selectedCurrency().symbol}${if (includeSymbolSpace) " " else ""}$format" else format
 }
 
 fun Double.format(digits: Int = 3, roundingMode: RoundingMode = RoundingMode.DOWN): String {
-    return DecimalFormat("0.${"#".repeat(digits)}").apply { setRoundingMode(roundingMode) }.format(this)
+    return DecimalFormat("0.${"#".repeat(digits)}").apply { setRoundingMode(roundingMode) }
+        .format(this)
 }
 
 fun Double.formatNum(
@@ -152,4 +170,72 @@ fun Double.formatNum(
     roundingMode: RoundingMode = RoundingMode.DOWN,
 ): String {
     return format(digits, roundingMode)
+}
+
+private fun toSubscript(n: Int): String {
+    val subscripts = mapOf(
+        '0' to '₀',
+        '1' to '₁',
+        '2' to '₂',
+        '3' to '₃',
+        '4' to '₄',
+        '5' to '₅',
+        '6' to '₆',
+        '7' to '₇',
+        '8' to '₈',
+        '9' to '₉'
+    )
+    return n.toString().map { subscripts[it] ?: it }.joinToString("")
+}
+
+fun formatTokenPrice(price: Double): String {
+    if (price == 0.0) {
+        return ""
+    }
+
+    // For prices at least $0.0001, use normal formatting with min 2 and max 4 decimals.
+    if (price >= 0.0001) {
+        // Use BigDecimal for precise rounding. Scale to 4, rounding down.
+        val bd = BigDecimal(price).setScale(4, RoundingMode.DOWN)
+        var formatted = bd.toPlainString()
+        // Ensure a decimal point exists and we have at least 2 decimals.
+        if (!formatted.contains(".")) {
+            formatted += ".00"
+        } else {
+            val parts = formatted.split(".")
+            var decimals = parts[1]
+            // Pad with zeros if needed.
+            if (decimals.length < 2) {
+                decimals = decimals.padEnd(2, '0')
+            } else if (decimals.length > 2) {
+                // Remove trailing zeros—but do not drop below 2 decimals.
+                decimals = decimals.trimEnd('0')
+                if (decimals.length < 2) {
+                    decimals = decimals.padEnd(2, '0')
+                }
+            }
+            formatted = parts[0] + "." + decimals
+        }
+        return "$$formatted"
+    } else {
+        // For prices below $0.0001, apply subscript formatting.
+        val bd = BigDecimal(price).setScale(10, RoundingMode.DOWN)
+        val priceStr = bd.toPlainString()
+        val fraction = priceStr.substringAfter(".")
+
+        val leadingZerosCount = fraction.takeWhile { it == '0' }.length
+        val nonZeroPart = fraction.drop(leadingZerosCount)
+
+        val significant = if (nonZeroPart.length > 3) {
+            // Construct a BigDecimal from "0.<nonZeroPart>" and round to 3 decimals.
+            BigDecimal("0.$nonZeroPart").setScale(3, RoundingMode.DOWN).toPlainString()
+                .substringAfter(".")
+        } else {
+            nonZeroPart
+        }
+
+        val subscriptZeros = toSubscript(leadingZerosCount)
+        return "$0.0$subscriptZeros$significant"
+
+    }
 }

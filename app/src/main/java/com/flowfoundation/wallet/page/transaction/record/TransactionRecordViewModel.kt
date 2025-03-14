@@ -9,9 +9,9 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.TransferRecordList
 import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionViewMoreModel
 import com.flowfoundation.wallet.page.transaction.toTransactionRecord
-import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
 private const val LIMIT = 30
@@ -40,35 +40,44 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     private suspend fun loadTransfer() {
-        transferListLiveData.postValue(transferRecordCache(contractId.orEmpty()).read()?.list.orEmpty())
 //        transferCountLiveData.postValue(getAccountTransferCount())
-
+        if (WalletManager.isEVMAccountSelected()) {
+            val service = retrofitApi().create(ApiService::class.java)
+            val walletAddress = WalletManager.selectedWalletAddress()
+            val resp = service.getEVMTransferRecord(walletAddress)
+            val data = mutableListOf<Any>().apply {
+                addAll(resp.trxs.orEmpty())
+            }
+            if ((resp.trxs?.size ?: 0) > LIMIT) {
+                data.add(TransactionViewMoreModel(walletAddress))
+            }
+            transferListLiveData.postValue(data)
+            return
+        }
         val service = retrofit().create(ApiService::class.java)
         val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
         if (walletAddress.isEmpty()) {
             return
         }
-        val resp = if (isQueryByToken()) {
-            service.getTransferRecordByToken(walletAddress, contractId!!, limit = LIMIT)
+        if (isQueryByToken()) {
+            transferListLiveData.postValue(transferRecordCache(contractId.orEmpty()).read()?.list.orEmpty())
+            val resp = service.getTransferRecordByToken(walletAddress, contractId!!, limit = LIMIT)
+            val transfers = resp.data?.transactions.orEmpty()
+            transferRecordCache(contractId.orEmpty()).cache(TransferRecordList(transfers))
         } else {
-            service.getTransferRecord(walletAddress, limit = LIMIT)
+            val resp = service.getTransferRecord(walletAddress, limit = LIMIT)
+            val processing = TransactionStateManager.getProcessingTransaction().map { it.toTransactionRecord() }
+            val transfers = resp.data?.transactions.orEmpty()
+            val data = mutableListOf<Any>().apply {
+                addAll(processing)
+                addAll(transfers)
+            }
+            if ((resp.data?.total ?: 0) > LIMIT) {
+                data.add(TransactionViewMoreModel(walletAddress))
+            }
+            transferListLiveData.postValue(data)
         }
-        val processing = TransactionStateManager.getProcessingTransaction().map { it.toTransactionRecord() }
-
-        val transfers = resp.data?.transactions.orEmpty()
-        val data = mutableListOf<Any>().apply {
-            addAll(processing)
-            addAll(transfers)
-        }
-        if ((resp.data?.total ?: 0) > LIMIT) {
-            data.add(TransactionViewMoreModel(walletAddress))
-        }
-
-        transferListLiveData.postValue(data)
 //        transferCountLiveData.postValue((resp.data?.total ?: 0) + processing.size)
-
-        transferRecordCache(contractId.orEmpty()).cache(TransferRecordList(transfers))
-        updateAccountTransferCount(resp.data?.total ?: 0)
     }
 
     private fun isQueryByToken() = contractId != null

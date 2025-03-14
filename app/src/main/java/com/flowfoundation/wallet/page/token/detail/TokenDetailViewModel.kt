@@ -142,6 +142,9 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
     }
 
     private fun transactionQuery() {
+        if (WalletManager.isEVMAccountSelected()) {
+            return
+        }
         viewModelIOScope(this) {
             val cache = transferRecordCache(coin.contractId()).read()?.list
             if (!cache.isNullOrEmpty()) {

@@ -125,6 +125,16 @@
                             app:round="40dp"
                             app:tint="@color/text_1"/>
 
+                        <TextView
+                            android:id="@+id/tv_scan"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:paddingEnd="8dp"
+                            android:text="@string/scan"
+                            android:textColor="@color/text_1"
+                            android:textSize="14sp"/>
+
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </com.google.android.material.card.MaterialCardView>
@@ -157,6 +167,7 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_view"
+                    android:background="@color/home_page_background"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"

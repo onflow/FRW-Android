@@ -48,7 +48,6 @@ import com.flowfoundation.wallet.utils.shortenEVMString
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
@@ -219,7 +218,6 @@ private fun ViewGroup.setupWallet(
             BalanceManager.clear()
             StakingManager.clear()
             CryptoProviderManager.clear()
-            updateAccountTransferCount(0)
             delay(1000)
             uiScope {
                 MainActivity.relaunch(Env.getApp())
@@ -345,7 +343,6 @@ private fun View.setupWalletItem(
                 BalanceManager.clear()
                 StakingManager.clear()
                 CryptoProviderManager.clear()
-                updateAccountTransferCount(0)
                 delay(1000)
                 uiScope {
                     MainActivity.relaunch(Env.getApp())

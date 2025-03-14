@@ -110,7 +110,8 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 }
                 btnMove.setProgressVisible(true)
                 ioScope {
-                    viewModel.moveSelectedNFT(layoutToAccount.getAccountAddress()) { isSuccess ->
+                    viewModel.moveSelectedNFT(layoutFromAccount.getAccountAddress(), layoutToAccount.getAccountAddress()) {
+                        isSuccess ->
                         uiScope {
                             btnMove.setProgressVisible(false)
                             if (isSuccess) {

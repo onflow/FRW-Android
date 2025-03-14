@@ -6,12 +6,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="12dp"
-    app:cardBackgroundColor="@color/deep_bg"
+    android:layout_marginHorizontal="2dp"
     android:visibility="gone"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardElevation="2dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
     app:layout_constraintTop_toBottomOf="@id/banner_wrapper"
     tools:visibility="visible">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_card">
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
@@ -75,4 +81,5 @@
             android:layout_height="wrap_content"
             tools:layout_marginHorizontal="18dp"/>
     </androidx.appcompat.widget.LinearLayoutCompat>
+    </FrameLayout>
 </androidx.cardview.widget.CardView>

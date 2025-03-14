@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="next">下一步</string>
+    <string name="view_as">显示方式</string>
     <string name="secure_design">设计安全</string>
     <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
     <string name="username">用戶名</string>
@@ -33,8 +34,8 @@
     <string name="create_pin">創建 PIN 碼</string>
     <string name="pin">PIN 碼</string>
     <string name="check_pin">請再次輸入您的 PIN 碼</string>
-    <string name="reset_pin">Please type\nyour new PIN</string>
-    <string name="reset_check_pin">Please type\nyour new PIN again</string>
+    <string name="reset_pin">請輸入\n您的新 PIN 碼</string>
+    <string name="reset_check_pin">請再次輸入\n您的新 PIN 碼</string>
     <string name="check_pin_tip">請確保您能記住您的 PIN 碼。</string>
     <string name="create_pin_tip">只有您才能解鎖您的錢包。</string>
     <string name="backup_pin_tip">您的PIN碼將用於安全加密您的賬戶備份</string>
@@ -50,7 +51,7 @@
     <string name="backup_manually">手動備份</string>
     <string name="backup_to_google_drive">備份到Google Drive</string>
     <string name="recovery_phrase">恢復短語</string>
-    <string name="recovery_phrase_note">Write down these words in the right order and store them somewhere safe.</string>
+    <string name="recovery_phrase_note">按正確順序寫下這些單詞，並將它們存放在安全的地方。</string>
     <string name="recovery">恢復</string>
     <string name="phrase">短語</string>
     <string name="nft">NFTs</string>
@@ -143,7 +144,7 @@
     <string name="address_check_format_error">無效地址</string>
     <string name="address_check_chain_error">無法在鏈上找到地址</string>
     <string name="address_check_success">地址已驗證</string>
-    <string name="address_search_empty_tip">抱歉，未找到相關賬戶，請檢查您的輸入並重新搜索。</string>
+    <string name="address_search_empty_tip">沒有結果。請檢查您的輸入並重試。</string>
     <string name="search_the_id">搜尋 ID: %1$s</string>
     <string name="move_do_not_ask_me">不要再次詢問我。</string>
     <string name="move_to_desc_borwser">在 Flow 上搬移您的資產到您的 Cadence 地址，以便 %1$s 可以查看您的資產</string>
@@ -200,16 +201,17 @@
     <string name="market_binance">幣安</string>
     <string name="market_huobi">Huobi</string>
     <string name="market_kraken">Kraken</string>
-    <string name="data_from">數據來源</string>
+    <string name="data_from">数据源</string>
     <string name="add_collection">添加收藏</string>
     <string name="search_nft_collection">搜索 NFT 收藏</string>
     <string name="scan_qr_code">掃描 QR 碼</string>
+    <string name="scan">扫描</string>
     <string name="explore_search_hint">搜索名称或 URL</string>
     <string name="bookmark">書籤</string>
     <string name="drag_here_to_unpin">拖曳至此以取消釘選</string>
     <string name="recovery_purchase_tips">按正確順序寫下或複製這些單詞並保存在安全的地方。</string>
     <string name="open_in_browser">在瀏覽器中打開</string>
-    <string name="clear_cache">Clear Cache</string>
+    <string name="clear_cache">清除緩存</string>
     <string name="pending_transaction">交易待處理</string>
     <string name="welcome_to_wallet">歡迎使用 Flow Wallet！</string>
     <string name="profile_sign_tips"><![CDATA[加入我們，解鎖所有精彩且嶄新的體驗！]]></string>
@@ -235,7 +237,7 @@
     <string name="file_picker_title">選擇文件</string>
     <string name="transaction_fee">交易手續費</string>
     <string name="hold_to_confirm">按住確認</string>
-    <string name="hold_to_sign">Hold to sign</string>
+    <string name="hold_to_sign">按住以簽名</string>
     <string name="enable">啟用</string>
     <string name="sign_message">簽名訊息</string>
     <string name="transaction_history">交易歷史</string>
@@ -249,7 +251,7 @@
     <string name="start">開始</string>
     <string name="import_wallet">導入錢包</string>
     <string name="import_wallet_button">我已有账户</string>
-    <string name="import_str">Import</string>
+    <string name="import_str">導入</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="explore_new_nfts">探索新的 NFT</string>
     <string name="network_error">網絡錯誤</string>
@@ -264,7 +266,7 @@
     <string name="claim_domain_failed">申請域名失敗</string>
     <string name="nft_count">%1$d 個 NFT</string>
     <string name="mnemonic_incorrect">助記詞不正確</string>
-    <string name="address_incorrect">Incorrect address</string>
+    <string name="address_incorrect">地址不正確</string>
     <string name="copied_to_clipboard">已複製到剪貼簿</string>
     <string name="inbox">代幣收件箱</string>
     <string name="token">代幣</string>
@@ -306,11 +308,11 @@
     <string name="stake_guide_header1">當你</string>
     <string name="stake_guide_header2">質押你的Flow</string>
     <string name="lets_staking">開始質押</string>
-    <string name="stake_guide_desc_1">Earn up to <font color="#60C293"><strong>13%</strong></font>
-        per year.</string>
-    <string name="stake_guide_desc_2">When you stake <font color="#60C293"><strong>Flow</strong></font> you receive <font color="#60C293"><strong>Flow</strong></font>. You can <font color="#60C293"><strong>trade</strong></font> this liquid asset at any time.</string>
-    <string name="stake_guide_desc_3">You start earning <font color="#60C293"><strong>right away</strong></font>.</string>
-    <string name="stake_guide_desc_4">Rewards are automatically credited to your deposit <font color="#60C293"><strong>every few days</strong></font>.</string>
+    <string name="stake_guide_desc_1">每年可獲得高達<font color="#60C293"><strong>13%</strong></font>
+        的收益。</string>
+    <string name="stake_guide_desc_2">當您質押 <font color="#60C293"><strong>Flow</strong></font> 時，您會收到 <font color="#60C293"><strong>Flow</strong></font>。您可以在任何時候<font color="#60C293"><strong>交易</strong></font>這一流動性資產。</string>
+    <string name="stake_guide_desc_3">您<font color="#60C293"><strong>立即</strong></font>就能開始獲取收益。</string>
+    <string name="stake_guide_desc_4">獎勵會<font color="#60C293"><strong>每隔幾天</strong></font>自動存入您的存款中。</string>
     <string name="staking_provider">質押提供者</string>
     <string name="select_provider">選擇提供商</string>
     <string name="stake">質押</string>
@@ -364,7 +366,7 @@
     <string name="unstaking">取消質押中</string>
     <string name="request_to_unstake">申請解質押</string>
     <string name="will_be_processed_at_the_next_epoch">將在下一個周期處理</string>
-    <string name="backup_desc">備份恢復短語對保護您的獎品財產非常重要。</string>
+    <string name="backup_desc">立即備份您的帳戶以保護您的資產</string>
     <string name="not_now">稍後</string>
     <string name="not_now_tip">稍後再說</string>
     <string name="link_account">連接帳戶</string>
@@ -449,17 +451,17 @@
     <string name="or">或者</string>
     <string name="sync_page_title">打開您的Flow Wallet手機應用程序\n掃描二維碼來同步您的錢包。</string>
     <string name="sync_scan_qr_code">使用手機應用掃描二維碼</string>
-    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="sync_note">注意：您的助記詞永遠不會被 Flow Wallet 伺服器獲取。它經過端到端加密，我們永遠無法讀取。</string>
     <string name="wallet_confirm_desc">找到1個匹配的錢包</string>
     <string name="wallet_confirmation">錢包確認</string>
     <string name="loading">加載中</string>
     <string name="loading_desc">這可能需要一段時間，請勿退出...</string>
     <string name="create_device_backup">創建設備備份</string>
-    <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
+    <string name="google_backup_note">注意：您的備份密鑰是端到端的加密，不會發送到 Flow Wallet 伺服器。</string>
     <string name="create_multi_backup">創建多重備份</string>
-    <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
+    <string name="create_seed_phrase_backup">創建助記詞備份</string>
     <string name="multi_backup">多重備份</string>
-    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
+    <string name="full_weight_seed_phrase">完整權重助記詞</string>
     <string name="device_backup">設備備份</string>
     <string name="other_devices">其他設備</string>
     <string name="multi_backup_tip">請選擇兩個或更多備份選項</string>
@@ -471,27 +473,27 @@
     <string name="import_wallet_note">使用備份恢復您的錢包。</string>
     <string name="from_device_backup">從設備備份</string>
     <string name="from_device_backup_note">從其他手機或擴展錢包恢復</string>
-    <string name="from_key_store">From Keystore</string>
-    <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
+    <string name="from_key_store">從 Keystore</string>
+    <string name="from_key_store_note">導入密鑰存儲文件(Blocto Backup).</string>
     <string name="key_store">儲存庫</string>
     <string name="seed_phrase">助記詞</string>
-    <string name="restore_seed_phrase_advanced">Advanced</string>
-    <string name="restore_seed_derivation_path">Derivation Path</string>
-    <string name="restore_seed_passphrase">Passphrase</string>
-    <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
-    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
-    <string name="restore_private_key_hint">Enter your private key</string>
-    <string name="key_store_json_hint">You can import the json file from other wallet (eg. Blockto)</string>
-    <string name="key_store_password_hint">Enter password for json file</string>
+    <string name="restore_seed_phrase_advanced">高級</string>
+    <string name="restore_seed_derivation_path">派生路徑</string>
+    <string name="restore_seed_passphrase">密碼</string>
+    <string name="restore_seed_phrase_hint">12 個或 24 個以空白間隔分開的單詞</string>
+    <string name="restore_seed_phrase_derivation_path_hint">派生路徑(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_passphrase_hint">密碼 (可選)</string>
+    <string name="restore_private_key_hint">請輸入你的私鑰</string>
+    <string name="key_store_json_hint">您可以從其他錢包導入 JSON 文件(例如 Blockto)</string>
+    <string name="key_store_password_hint">輸入 JSON 文件的密碼</string>
     <string name="key_store_address_hint">輸入您的 Flow 地址（選填）</string>
     <string name="from_multi_backup">從多重備份</string>
     <string name="from_multi_backup_note">Google Drive／密鑰／恢復短語</string>
-    <string name="from_recovery_phrase">其他</string>
+    <string name="from_recovery_phrase">從助記詞恢復（傳統）</string>
     <string name="from_recovery_phrase_note">使用傳統恢復短語（非多重備份）恢復</string>
-    <string name="from_raw_key">其他</string>
-    <string name="from_raw_key_note">Support legacy Google Drive, Seed Phrase, Key Store and Private Key</string>
-    <string name="import_raw_key_note">From Flow Wallet legacy backup, Seed Phrase, Key Store and Private Key.</string>
+    <string name="from_raw_key">從助記詞恢復（傳統）</string>
+    <string name="from_raw_key_note">支援舊版Google Drive，種子短語，密鑰商店和私鑰</string>
+    <string name="import_raw_key_note">從 Flow Wallet 舊版備份、 種子、密鑰商店和私鑰。</string>
     <string name="multi_restore">多重恢復</string>
     <string name="multi_restore_title">來自多重備份</string>
     <string name="multi_restore_note">請選擇兩個或更多備份選項</string>
@@ -503,7 +505,7 @@
     <string name="device_backup_note">掃描 Flow Wallet 瀏覽器擴展程式顯示的二維碼，以同步您的錢包到其他裝置</string>
     <string name="create_device_backup_note">利用您的設備作為備用錢包，輕鬆保護和恢復您的數字資產</string>
     <string name="create_multi_backup_note">創建一個雲備份，使用 Google Drive、Passkey 和保護您的恢復短語等信任提供者</string>
-    <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
+    <string name="create_seed_phrase_backup_note">創建一個 12 個單詞的恢復密語</string>
     <string name="scan_desktop_device">掃描桌面設備</string>
     <string name="backup_detail">備份詳細資訊</string>
     <string name="backup_info">備份資訊</string>
@@ -516,8 +518,8 @@
     <string name="revoke_device">撤銷設備</string>
     <string name="wrong_network">切換網路</string>
     <string name="backup_on_mainnet">您只能在主網上創建備份。</string>
-    <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
-    <string name="switch_on_mainnet">You can only create backup on mainnet.</string>
+    <string name="restore_on_mainnet">您只能在主網上恢復錢包。</string>
+    <string name="switch_on_mainnet">您只能在主網上創建備份。</string>
     <string name="create_on_mainnet_or_testnet">您只能在主網或測試網上創建賬戶。</string>
     <string name="switch_to_mainnet">切換到主網</string>
     <string name="connect">連接</string>
@@ -530,7 +532,7 @@
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
     <string name="move">移動</string>
-    <string name="current_vm">Current VM</string>
+    <string name="current_vm">當前 VM</string>
     <string name="cadence">Cadence</string>
     <string name="share_qr_code">分享二維碼</string>
     <string name="move_token">移動代幣</string>
@@ -601,85 +603,80 @@
     <string name="backup_decryption_failed_desc">輸入的 PIN 碼無法解密備份。請檢查您的 PIN 並重試。</string>
     <string name="no_account_found">未找到備份帳戶</string>
     <string name="no_account_found_desc">您的備份選項未關聯任何多簽帳戶。請驗證後再試一次。</string>
-    <string name="restore_failed">Restore Failed</string>
+    <string name="restore_failed">恢復失敗</string>
     <string name="restore_failed_desc">請稍後再試。</string>
-    <string name="debug_view">Debug View</string>
-    <string name="export_log">Export Log</string>
+    <string name="debug_view">調試視圖</string>
+    <string name="export_log">導出日誌</string>
     <string name="view_recovery_phrase">檢視復原短語</string>
-    <string name="clear">Clear</string>
-    <string name="send_success">Send Success</string>
-    <string name="send_failed">Send Failed</string>
-    <string name="unsupported_chain_id">Unsupported ChainId: %1$d</string>
-    <string name="landing_tips">Please allow 1–2 mins</string>
-    <string name="update_avatar_success">Update Avatar Success</string>
-    <string name="update_avatar_failed">Update Avatar Failed</string>
-    <string name="backup_failed">Backup Failed</string>
-    <string name="backup_failed_desc">Your backup creation failed. Please try again later.</string>
-    <string name="backup_recovery_phrase_warning_note">You will be able to review your recovery phrase after you create the backup.</string>
-    <string name="backup_recovery_phrase_warning_1">I understand if I lose my recovery phrase, I may not be able to recover my account.</string>
-    <string name="backup_recovery_phrase_warning_2">I understand this is a partial-weight recovery phrase that on its own does not grant me full control of my account.</string>
-    <string name="backup_recovery_phrase_warning_3">I understand this partial-weight recovery phrase must be used together with my other multi-backups to recover access to my account.</string>
-    <string name="backup_recovery_phrase_about_title">About Your</string>
-    <string name="backup_recovery_phrase_about_note">You have selected to use a 15-word
-        partial-weight recovery phrase. \n \nYour partial-weight recovery will correspond to a
-        partial-weight recovery key on your Flow account. \n \nYour partial-weight recovery
-        phrase on its own does not secure full access to your account. It must be used together with your other multi-backups to recover access to your account.</string>
-    <string name="recommended">Recommended</string>
-    <string name="backup_start_about_title">What is a</string>
+    <string name="clear">清除</string>
+    <string name="send_success">發送成功</string>
+    <string name="send_failed">發送失敗</string>
+    <string name="unsupported_chain_id">不支援的鏈 ID: %1$d</string>
+    <string name="landing_tips">請等待 1–2 分鐘</string>
+    <string name="update_avatar_success">更新頭像成功</string>
+    <string name="update_avatar_failed">更新頭像失敗</string>
+    <string name="backup_failed">備份失敗</string>
+    <string name="backup_failed_desc">您的備份創建失敗，請稍後再試。</string>
+    <string name="backup_recovery_phrase_warning_note">您在創建備份後將能夠檢視您的復原短語。</string>
+    <string name="backup_recovery_phrase_warning_1">我明白如果我丟失了我的復原短語，我可能無法恢復我的賬戶。</string>
+    <string name="backup_recovery_phrase_warning_2">我明白這是一個部分權重的復原短語，單靠它本身並不能讓我完全控制我的賬戶</string>
+    <string name="backup_recovery_phrase_warning_3">我明白這個部分權重的復原短語必須與我的其他多重備份一起使用，才能恢復對我的賬戶的訪問權限。</string>
+    <string name="backup_recovery_phrase_about_title">關於您的</string>
+    <string name="backup_recovery_phrase_about_note">您已選擇使用一個 15 個單詞的部分權重復原短語。\n \n 您的部分權重復原將對應於您 Flow 賬戶上的一個部分權重復原密鑰。\n \n 您的部分權重復原短語單靠它本身並不能確保全權訪問您的賬戶。它必須與您的其他多重備份一起使用，才能恢復對您的賬戶的訪問權限。</string>
+    <string name="recommended">推薦</string>
+    <string name="backup_start_about_title">什麼是</string>
     <string name="backup_start_about_content">多重備份</string>
-    <string name="backup_start_about_note">A multi-backup stores multiple partial-weight keys across your accounts on trusted providers like Google Drive and iCloud, or a Recovery Phrase. \n \nTwo partial-weight keys must be used together to recover access to your account. Each key individually cannot be used. \n \nThis means, that to recover access to your account, Flow Wallet requires access to two of your backups. \n \nYour backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
-    <string name="what_is_multi_backup">What is Multi-Backup?</string>
-    <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
-    <string name="secured_by_key_store">Secured by KeyStore</string>
-    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
-        and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
-        using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
-    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="backup_start_about_note">多重備份是指在像 Google Drive 和 iCloud 這樣的可信供應商的賬戶上，或者在一個恢復短語中存儲多個部分權重密鑰。\n \n 必須同時使用兩個部分權重密鑰才能恢復對您賬戶的訪問權限。單獨的每個密鑰都無法使用。\n \n 這意味著，要恢復對您賬戶的訪問權限，Flow 錢包需要訪問您的兩個備份。\n \n 您的備份是使用您的錢包 PIN 碼進行加密的。您必須記住或寫下您的 PIN 碼，並將其存放在安全的地方。</string>
+    <string name="what_is_multi_backup">什麼是多重備份？</string>
+    <string name="backup_start_about_tip">多重備份是指 Flow 錢包創建多個部分權重密鑰（500 權重），並將它們存儲在您期望的平台上，如
+        Google Drive 或種子短語中。</string>
+    <string name="secured_by_key_store">由 KeyStore 存儲保護</string>
+    <string name="secured_note">Flow Wallet 使用您設備的密鑰存儲來保護您的賬戶和資產。這個私鑰無法被檢索。\n \n
+        密鑰存儲使用您設備的硬件級安全性來保護您的私鑰，從而無需使用種子短語。\n \n 請為您的錢包創建備份，以確保在您丟失設備的情況下，仍能訪問您的 Flow 賬戶和資產。</string>
+    <string name="backup_seed_phrase_warning">您已選擇使用一個 12 個單詞的恢復短語備份。\n \n 這個恢復短語備份將擁有對您賬戶的完全控制權。</string>
     <string name="keystore_select_account_tips">選擇您要導入的賬戶</string>
-    <string name="keystore_select_account_title">%1$d Accounts Found</string>
+    <string name="keystore_select_account_title">找到 %1$d 個賬戶</string>
     <string name="keystore_no_account_title">未找到賬戶</string>
-    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
-        key. \n \nPlease check your input and try again.</string>
-    <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
-    <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
-    <string name="raw_key_restore_keystore_note">Import keystore file (Blocto backup).</string>
-    <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
-    <string name="sign_type_message_from">Sign Type Message from</string>
-    <string name="message">Message</string>
-    <string name="current_account">Current Account</string>
-    <string name="other_accounts">Other Accounts</string>
-    <string name="local_account_keys">Local Account Keys</string>
-    <string name="reload_config">Reload Config</string>
-    <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">It appears when moving between VM accounts</string>
-    <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
-    <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
-    <string name="add_custom_token">Add Custom Token</string>
-    <string name="add_token_success">Add Token Success</string>
-    <string name="invalid_evm_address">Invalid ERC20 address</string>
-    <string name="token_contract_address">Token Contract Address</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
-    <string name="evm_token_contract_address_error">Please enter valid evm contract address</string>
-    <string name="contracts">Contracts</string>
-    <string name="token_name">Token Name</string>
-    <string name="token_icon">Token Icon</string>
-    <string name="token_symbol">Token Symbol</string>
-    <string name="token_decimal">Token Decimal</string>
-    <string name="token_identifier">Token Identifier</string>
-    <string name="add_suggested_token">Add Suggested Token</string>
-    <string name="would_you_like_to_import_this_token">Would you like to import this token？</string>
-    <string name="storage_limit_reached">Storage limit reached.</string>
-    <string name="storage_limit_reached_after_action">Storage limit reached after this action.</string>
-    <string name="flow_limit_reached">FLOW limit reached.</string>
-    <string name="storage_usage">Storage Usage</string>
-    <string name="total_balance">Total Balance </string>
-    <string name="storage_limit_error">Storage Limit Error</string>
-    <string name="storage_limit_warning">Storage Limit Warning</string>
-    <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
-    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
-    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
-    <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
-        your storage usage.</string>
+    <string name="keystore_no_account_desc">很抱歉，使用此密鑰我們無法在 Flow 上找到您的賬戶。\n \n 請檢查您的輸入，然後再試一次。</string>
+    <string name="raw_key_restore_google_drive_note">從 Google Drive 導入您的舊版備份。</string>
+    <string name="raw_key_restore_seed_phrase_note">支援 12 個單詞的種子短語。</string>
+    <string name="raw_key_restore_keystore_note">導入密鑰存儲文件（Blocto 備份）。</string>
+    <string name="raw_key_restore_private_key_note">使用原始十六進制密鑰導入。</string>
+    <string name="sign_type_message_from">簽名類型 來自的消息</string>
+    <string name="message">消息</string>
+    <string name="current_account">當前賬戶</string>
+    <string name="other_accounts">其他賬戶</string>
+    <string name="local_account_keys">本地賬戶密鑰</string>
+    <string name="reload_config">重新加載配置</string>
+    <string name="move_fee">轉移費用</string>
+    <string name="move_fee_tips">在虛擬機賬戶之間轉移時會顯示</string>
+    <string name="no_move_fee_tips">在您的 Flow 賬戶之間無費用🤟</string>
+    <string name="wait_website_fully_loaded">請等待網站完全加載。</string>
+    <string name="add_custom_token">添加自定義代幣</string>
+    <string name="add_token_success">添加代幣成功</string>
+    <string name="invalid_evm_address">無效的 ERC20 地址</string>
+    <string name="token_contract_address">代幣合約地址</string>
+    <string name="token_contract_address_hint">輸入代幣合約地址</string>
+    <string name="evm_token_contract_address_error">請輸入有效的 EVM 合約地址</string>
+    <string name="contracts">合約</string>
+    <string name="token_name">代幣名稱</string>
+    <string name="token_icon">代幣圖標</string>
+    <string name="token_symbol">代幣符號</string>
+    <string name="token_decimal">代幣小數位數</string>
+    <string name="token_identifier">代幣標識符</string>
+    <string name="add_suggested_token">添加推薦代幣</string>
+    <string name="would_you_like_to_import_this_token">您想要導入這個代幣嗎？</string>
+    <string name="storage_limit_reached">已達存儲限制。</string>
+    <string name="storage_limit_reached_after_action">執行此操作後已達存儲限制。</string>
+    <string name="flow_limit_reached">已達 FLOW 限額。</string>
+    <string name="storage_usage">存儲使用量</string>
+    <string name="total_balance">總餘額</string>
+    <string name="storage_limit_error">存儲限制錯誤</string>
+    <string name="storage_limit_warning">存儲限制警告</string>
+    <string name="storage_limit_reached_desc">您的賬戶餘額低於其存儲使用所需的最低 FLOW 餘額，這可能會導致後續交易失敗。</string>
+    <string name="storage_limit_after_action_desc">此操作可能會失敗，因為它可能會使您賬戶中的 FLOW 金額降至覆蓋其存儲使用所需的金額以下。</string>
+    <string name="storage_limit_error_desc">您的交易失敗，因為它導致您的賬戶餘額低於您賬戶存儲使用所需的最低 FLOW 餘額。</string>
+    <string name="storage_limit_error_tips">您的賬戶中必須至少有 %1$s 才能覆蓋您的存儲使用量。</string>
     <string name="deposit">存款</string>
     <string name="buy_flow">Buy FLOW</string>
     <string name="legal_message">"     <![CDATA[     通过使用流钱包，您同意 <a href="https://wallet.flow.com/terms-of-service"><u>服务条款</u></a> 和 <a href="https://wallet.flow.com/privacy-policy"><u>隐私政策</u></a>     ]]>     "</string>
