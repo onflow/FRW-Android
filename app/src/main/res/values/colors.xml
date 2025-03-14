@@ -299,4 +299,5 @@
     <color name="background_2">#FFFFFF</color>
     <color name="disable_button_text">#40000000</color>
     <color name="button_warning">#F29E0D</color>
+    <color name="button_bg_secondary">#1E1E1F</color>
 </resources>

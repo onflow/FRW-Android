@@ -6,6 +6,8 @@ import com.google.gson.annotations.SerializedName
 data class NFTInfo(
     @SerializedName("id")
     val id: String,
+    @SerializedName("title")
+    val title: String,
     @SerializedName("cover")
     val cover: String
 )

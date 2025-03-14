@@ -20,9 +20,11 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.widget.SelectNFTListAdapter
+import com.flowfoundation.wallet.page.nft.search.viewmodel.NFTInfoListViewModel
 import com.flowfoundation.wallet.utils.extensions.dp2px
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -43,6 +45,7 @@ enum class CollectionEmptyState {
 class SelectNFTDialog: BottomSheetDialogFragment() {
     private lateinit var binding: DialogSelectNftBinding
     private val viewModel by lazy { ViewModelProvider(this)[SelectNFTViewModel::class.java] }
+    private val loadNFTViewModel by lazy { ViewModelProvider(this)[NFTInfoListViewModel::class.java] }
     private val listAdapter by lazy {
         SelectNFTListAdapter(viewModel)
     }
@@ -138,8 +141,21 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
             addItemDecoration(GridSpaceItemDecoration(vertical = 4.0, horizontal = 4.0))
         }
-        with(viewModel) {
+        binding.searchLayout.setOnSearchListener {
+            loadNFTViewModel.searchNFT(it)
+        }
+        with(loadNFTViewModel) {
             nftListLiveData.observe(this@SelectNFTDialog) { list ->
+                if (list == null) {
+                    binding.errorLayout.visible()
+                    binding.errorLayout.setOnRefreshClickListener {
+                        retry()
+                    }
+                    binding.loadingLayout.gone()
+                    binding.searchLayout.gone()
+                    listAdapter.setNewDiffData(emptyList())
+                    return@observe
+                }
                 listAdapter.setNewDiffData(list)
                 if (list.isEmpty()) {
                     // Check whether a collection is defined.
@@ -148,12 +164,23 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     } else {
                         getString(R.string.select_nft_empty)
                     }
-                    binding.tvEmpty.setVisible(true)
+                    binding.tvEmpty.visible()
+                    binding.loadingLayout.gone()
+                    binding.searchLayout.gone()
                 } else {
-                    binding.tvEmpty.setVisible(false)
+                    binding.tvEmpty.gone()
+                    binding.loadingLayout.gone()
+                    binding.searchLayout.visible()
                 }
             }
-
+            isLoadingLiveData.observe(this@SelectNFTDialog) { isLoading ->
+                configureLoadingState(isLoading)
+            }
+            loadingProgressLiveData.observe(this@SelectNFTDialog) { (current, total) ->
+                binding.loadingLayout.setLoadingProgress(current, total)
+            }
+        }
+        with(viewModel) {
             collectionLiveData.observe(this@SelectNFTDialog) { collection ->
                 if (collection == null) {
                     showEmptyCollection(CollectionEmptyState.NO_COLLECTIONS)
@@ -175,6 +202,29 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             loadCollections(moveFromAddress)
         }
 
+    }
+
+    private fun configureLoadingState(loading: Boolean) {
+        with(binding) {
+            if (loading) {
+                errorLayout.gone()
+                tvEmpty.gone()
+                listAdapter.setNewDiffData(emptyList())
+                loadingLayout.visible()
+                searchLayout.gone()
+                ivArrow.isEnabled = false
+                clCollectionLayout.isEnabled = false
+                layoutFromAccount.isEnabled = false
+                layoutToAccount.isEnabled = false
+            } else {
+                loadingLayout.gone()
+                ivArrow.isEnabled = true
+                clCollectionLayout.isEnabled = true
+                layoutFromAccount.isEnabled = true
+                layoutToAccount.isEnabled = true
+            }
+
+        }
     }
 
     private fun swapAddresses() {
@@ -359,10 +409,12 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 CollectionEmptyState.NO_COLLECTIONS -> {
                     tvEmpty.text = getString(R.string.no_collections_available)
                     clCollectionLayout.visibility = View.GONE
+                    searchLayout.gone()
                 }
                 CollectionEmptyState.COLLECTION_EMPTY -> {
                     tvEmpty.text = getString(R.string.select_nft_empty)
                     clCollectionLayout.visibility = View.VISIBLE
+                    searchLayout.gone()
                 }
             }
             tvEmpty.visibility = View.VISIBLE
@@ -388,6 +440,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 .transform(CenterCrop(), RoundedCorners(8.dp2px().toInt()))
                 .into(ivCollectionLogo)
         }
+        loadNFTViewModel.loadAllNFTs(moveFromAddress, collection.id)
     }
 
 
