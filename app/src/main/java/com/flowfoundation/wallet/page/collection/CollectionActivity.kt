@@ -3,14 +3,16 @@ package com.flowfoundation.wallet.page.collection
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
+import com.crowdin.platform.util.inflateWithCrowdin
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityCollectionBinding
 import com.flowfoundation.wallet.page.collection.model.CollectionContentModel
 import com.flowfoundation.wallet.page.collection.presenter.CollectionContentPresenter
-import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.utils.isNightMode
 
 class CollectionActivity : BaseActivity() {
@@ -56,9 +58,15 @@ class CollectionActivity : BaseActivity() {
         viewModel.load(contractName, accountAddress, collectionSize)
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflateWithCrowdin(R.menu.nft_list_search, menu, resources)
+        return super.onCreateOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.search_action -> presenter.searchNFTList(accountAddress)
             else -> super.onOptionsItemSelected(item)
         }
         return true

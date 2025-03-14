@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.pre
 
 import android.view.View
 import com.bumptech.glide.Glide
-import com.walletconnect.sign.client.Sign
+import com.reown.sign.client.Sign
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemWalletConnectSessionBinding

@@ -2,17 +2,17 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import android.app.Application
 import com.flowfoundation.wallet.BuildConfig
-import com.walletconnect.android.Core
-import com.walletconnect.android.CoreClient
-import com.walletconnect.android.relay.ConnectionType
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
+import com.reown.android.Core
+import com.reown.android.CoreClient
+import com.reown.android.relay.ConnectionType
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.safeRun
-import com.walletconnect.android.internal.common.scope
-import com.walletconnect.android.relay.WSSConnectionState
+import com.reown.android.internal.common.scope
+import com.reown.android.relay.WSSConnectionState
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -150,6 +150,6 @@ private fun setup(application: Application) {
 //    RelayClient.connect { error -> logw(TAG, "connect error:$error") }
 }
 
-fun getWalletConnectPendingRequests(): List<Sign.Model.PendingRequest> {
-    return SignClient.getListOfSettledSessions().map { SignClient.getPendingRequests(it.topic) }.flatten()
+fun getWalletConnectPendingRequests(): List<Sign.Model.SessionRequest> {
+    return SignClient.getListOfActiveSessions().flatMap { SignClient.getPendingSessionRequests(it.topic) }
 }

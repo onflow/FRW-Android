@@ -3,8 +3,8 @@ package com.flowfoundation.wallet.manager.app
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
-import com.walletconnect.android.Core
-import com.walletconnect.android.CoreClient
+import com.reown.android.Core
+import com.reown.android.CoreClient
 import com.flowfoundation.wallet.page.profile.subpage.wallet.queryStorageInfo
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge

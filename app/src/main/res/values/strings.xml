@@ -720,6 +720,12 @@
     <string name="trado" translatable="false">Trado</string>
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="results">Results</string>
+    <string name="search_nft_name">Search NFT Name</string>
+    <string name="loading_nfts">Loading NFTs...</string>
+    <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
+    <string name="refresh">Refresh</string>
+    <string name="no_relevant_nft">No relevant NFT found.</string>
     <string name="json" translatable="false">JSON</string>
     <string name="required_asterisk" translatable="false">" *"</string>
     <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>

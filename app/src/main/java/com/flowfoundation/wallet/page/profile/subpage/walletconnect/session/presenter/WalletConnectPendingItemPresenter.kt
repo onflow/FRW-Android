@@ -25,7 +25,7 @@ class WalletConnectPendingItemPresenter(
             descView.text = meta.url.urlHost()
         }
         view.setOnClickListener {
-            ioScope { model.request.toWcRequest(model.metadata).dispatch() }
+            ioScope { model.request.toWcRequest().dispatch() }
         }
     }
 }

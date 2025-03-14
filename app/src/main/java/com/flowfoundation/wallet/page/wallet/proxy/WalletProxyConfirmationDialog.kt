@@ -22,8 +22,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 
 
 class WalletProxyConfirmationDialog: BottomSheetDialogFragment(), OnMapReadyCallback {

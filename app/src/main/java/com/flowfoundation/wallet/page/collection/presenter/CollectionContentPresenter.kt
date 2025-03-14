@@ -18,6 +18,8 @@ import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.page.collection.model.CollectionContentModel
 import com.flowfoundation.wallet.page.nft.nftlist.adapter.NFTListAdapter
+import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
+import com.flowfoundation.wallet.page.nft.search.NFTSearchActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -40,6 +42,8 @@ class CollectionContentPresenter(
     private val dividerSize by lazy { R.dimen.nft_list_divider_size.res2dip().toDouble() }
 
     private val screenHeight by lazy { ScreenUtils.getScreenHeight() }
+
+    private var currentCollectionWrapper: NftCollectionWrapper? = null
 
     init {
         with(binding.recyclerView) {
@@ -70,7 +74,20 @@ class CollectionContentPresenter(
             binding.progressBar.setVisible(it.isEmpty())
             adapter.setNewDiffData(it)
         }
-        model.collection?.let { bindHeader(it) }
+        model.collection?.let { collectionWrapper ->
+            currentCollectionWrapper = collectionWrapper
+            bindHeader(collectionWrapper)
+        }
+    }
+
+    fun searchNFTList(accountAddress: String?) {
+        val collectionId = currentCollectionWrapper?.collection?.id ?: return
+        val address = if (accountAddress.isNullOrEmpty()) {
+            nftWalletAddress()
+        } else {
+            accountAddress
+        }
+        NFTSearchActivity.launch(activity, collectionId = collectionId, accountAddress = address)
     }
 
     fun bindInfo(logo: String, name: String, size: Int) {
