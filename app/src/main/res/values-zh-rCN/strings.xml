@@ -2,6 +2,7 @@
 <resources>
     <string name="next">下一步</string>
     <string name="list">列表</string>
+    <string name="view_as">显示方式</string>
     <string name="creating_account">正在创建您的帐户…</string>
     <string name="secure_design">设计安全</string>
     <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
@@ -32,6 +33,7 @@
     <string name="protection">保护</string>
     <string name="to_your_wallet">致您的钱包</string>
     <string name="pin_code">PIN 码</string>
+    <string name="grid">网格</string>
     <string name="create_pin">创建 PIN 密码</string>
     <string name="pin">PIN</string>
     <string name="check_pin">请再次输入\n您的 PIN 码</string>
@@ -50,7 +52,7 @@
     <string name="create_wallet_warning2">如果我在任何地方泄露了我的助记词，我的资金可能会被盗。</string>
     <string name="create_wallet_warning3">保护我的助记词是我完整的责任。</string>
     <string name="backup_manually">手动备份</string>
-    <string name="backup_to_google_drive">备份到谷歌硬盘</string>
+    <string name="backup_to_google_drive">备份到 Google Drive</string>
     <string name="recovery_phrase">助记词</string>
     <string name="recovery_phrase_note">按正确的顺序写下这些单词，然后将它们存储在安全的地方。</string>
     <string name="recovery">恢复</string>
@@ -143,7 +145,7 @@
     <string name="address_check_format_error">无效地址</string>
     <string name="address_check_chain_error">在链上找不到地址</string>
     <string name="address_check_success">已验证地址</string>
-    <string name="address_search_empty_tip">没有结果。请检查您的输入并重试。</string>
+    <string name="address_search_empty_tip">抱歉，未找到相关账户，请检查您的输入并重试。</string>
     <string name="search_the_id">搜索 ID： %1$s</string>
     <string name="move_do_not_ask_me">不再提示</string>
     <string name="move_to_desc_borwser">在 Flow 上的 Cadence 地址之间转移您的资产，以便 %1$s 查看您的资产</string>
@@ -234,7 +236,7 @@
     <string name="free_gas_fee_desc">让 Flow Wallet 为我的所有交易支付加密货币手续费
 。</string>
     <string name="file_picker_title">选择文件</string>
-    <string name="transaction_fee">交易费</string>
+    <string name="transaction_fee">交易手续费</string>
     <string name="hold_to_confirm">按住确认</string>
     <string name="hold_to_sign">按住以签名</string>
     <string name="enable">启用</string>
@@ -698,6 +700,10 @@
     <string name="choose_swap_provider">选择交换提供商</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="scan">扫描</string>
-    <string name="grid">网格</string>
-    <string name="view_as">显示方式</string>
+    <string name="contact_address">通讯地址</string>
+    <string name="amount">数量</string>
+    <string name="contact">联系信息</string>
+    <string name="function">函数</string>
+    <string name="parameters">参数</string>
+    <string name="call_data">调用数据</string>
 </resources>

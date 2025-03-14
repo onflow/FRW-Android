@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Следующий</string>
     <string name="list">Список</string>
-    <string name="grid">Сетка</string>
     <string name="view_as">Показать как</string>
     <string name="creating_account">Создание аккаунта…</string>
     <string name="secure_design">Безопасно по дизайну</string>
@@ -34,6 +33,7 @@
     <string name="protection">Защита</string>
     <string name="to_your_wallet">В ваш кошелек</string>
     <string name="pin_code">PIN-код</string>
+    <string name="grid">Сетка</string>
     <string name="create_pin">Создайте PIN-код</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Пожалуйста, введите\nваш PIN-код еще раз.</string>
@@ -52,7 +52,7 @@
     <string name="create_wallet_warning2">Если я где-нибудь раскрою свои секретные фразы, мои средства могут быть украдены.</string>
     <string name="create_wallet_warning3">Я несу полную ответственность за сохранность своих секретных фраз.</string>
     <string name="backup_manually">Резервное копирование вручную</string>
-    <string name="backup_to_google_drive">Резервное копирование на google drive</string>
+    <string name="backup_to_google_drive">Резервное копирование на Google Drive</string>
     <string name="recovery_phrase">Фраза о восстановлении</string>
     <string name="recovery_phrase_note">Запишите эти слова в правильном порядке и сохраните их где-нибудь в безопасности.</string>
     <string name="recovery">Восстановление</string>
@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Неверный адрес</string>
     <string name="address_check_chain_error">Не могу найти адрес в цепочке</string>
     <string name="address_check_success">Подтвержденный адрес</string>
-    <string name="address_search_empty_tip">Нет результатов. Проверьте введенные данные и повторите попытку.</string>
+    <string name="address_search_empty_tip">Извините, мы не нашли ни одного связанного аккаунта, пожалуйста, проверьте свой ввод и выполните поиск снова.</string>
     <string name="search_the_id">Поиск по идентификатору: %1$s</string>
     <string name="move_do_not_ask_me">Не спрашивать в следующий раз.</string>
     <string name="move_to_desc_borwser">Перемещайте свои активы между адресом Cadence на Flow, чтобы
@@ -215,7 +215,7 @@
     <string name="open_in_browser">Открыть в браузере</string>
     <string name="clear_cache">Очистить кэш</string>
     <string name="pending_transaction">Отложенная сделка</string>
-    <string name="welcome_to_wallet">Добро пожаловать в Flow Wallet!</string>
+    <string name="welcome_to_wallet">Добро пожаловать в Flow Wallet !</string>
     <string name="profile_sign_tips"><![CDATA[Присоединяйтесь к нам и откройте для себя все блестящие и новые возможности!]]></string>
     <string name="favourite">Любимый</string>
     <string name="cancel_favourite">Отменить избранное</string>
@@ -255,7 +255,7 @@
     <string name="start">Начало</string>
     <string name="import_wallet">Импорт кошелька</string>
     <string name="import_wallet_button">Я уже зарегистрирован</string>
-    <string name="import_str">Импорт</string>
+    <string name="import_str">ИМПОРТ</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
     <string name="network_error">Ошибка сети</string>
     <string name="claim">Заявление</string>
@@ -698,4 +698,10 @@
     <string name="choose_swap_provider">Выберите поставщика обмена</string>
     <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
     <string name="scan">Сканировать</string>
+    <string name="contact_address">Контактный адрес</string>
+    <string name="amount">Сумма</string>
+    <string name="contact">Контакты</string>
+    <string name="function">Функция</string>
+    <string name="parameters">Параметры</string>
+    <string name="call_data">Данные звонка</string>
 </resources>
