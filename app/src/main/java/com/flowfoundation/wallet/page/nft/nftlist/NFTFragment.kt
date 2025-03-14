@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentNftBinding
-import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTFragmentModel
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.NFTFragmentPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.presenter.NftEmptyPresenter
@@ -33,15 +31,40 @@ class NFTFragment : Fragment() {
         emptyPresenter = NftEmptyPresenter(binding.emptyContainer)
 
         viewModel = ViewModelProvider(requireActivity())[NftViewModel::class.java].apply {
-            listNftLiveData.observe(viewLifecycleOwner) { presenter.bind(NFTFragmentModel(listPageData = it)) }
-            gridNftLiveData.observe(viewLifecycleOwner) { presenter.bind(NFTFragmentModel(listPageData = it)) }
+            listNftLiveData.observe(viewLifecycleOwner) {
+                presenter.bind(
+                    NFTFragmentModel(
+                        listPageData = it
+                    )
+                )
+            }
+            gridNftLiveData.observe(viewLifecycleOwner) {
+                presenter.bind(
+                    NFTFragmentModel(
+                        listPageData = it
+                    )
+                )
+            }
 
             emptyLiveData.observe(viewLifecycleOwner) { isEmpty ->
                 emptyPresenter.setVisible(isEmpty)
                 stopShimmer(binding.shimmerLayout.shimmerLayout)
             }
-            listScrollChangeLiveData.observe(viewLifecycleOwner) { presenter.bind(NFTFragmentModel(onListScrollChange = it)) }
+            listScrollChangeLiveData.observe(viewLifecycleOwner) {
+                presenter.bind(
+                    NFTFragmentModel(
+                        onListScrollChange = it
+                    )
+                )
+            }
             favoriteLiveData.observe(viewLifecycleOwner) { presenter.bind(NFTFragmentModel(favorite = it)) }
+
+            isGridViewLiveData.observe(viewLifecycleOwner) { isGridView ->
+                val nftListFragment =
+                    childFragmentManager.findFragmentByTag("NFT_LIST_FRAGMENT") as? NftListFragment
+                nftListFragment?.updateRecyclerViewLayout(isGridView)
+            }
+
         }
     }
 

@@ -11,7 +11,7 @@
         android:id="@+id/cl_info_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/home_page_card_background"
+        android:background="@color/home_page_background"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="17dp"
             android:layout_marginBottom="25dp"
-            android:fontFamily="@font/inter_semi_bold"
+            android:fontFamily="@font/inter"
             android:textColor="@color/text_2"
             android:textSize="14sp"
             app:layout_constrainedWidth="true"
@@ -66,7 +66,7 @@
             android:id="@+id/iv_copy"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:padding="13dp"
+            android:padding="10dp"
             android:scaleType="centerCrop"
             android:layout_marginEnd="16dp"
             android:src="@drawable/ic_address_copy_with_gap"
@@ -84,173 +84,184 @@
         android:paddingHorizontal="12dp"
         app:layout_constraintTop_toBottomOf="@id/cl_info_layout">
 
+        <!-- Send Icon -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_send"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
-            app:cardBackgroundColor="@color/home_page_card_background"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardElevation="0dp"
-            app:layout_constraintEnd_toStartOf="@id/cv_receive"
-            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintEnd_toStartOf="@id/cv_receive"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_weight="1">
 
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_send"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackground"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginHorizontal="5dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_transfer_send"
-                    app:tint="@color/text_2"/>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    app:cardCornerRadius="32dp"
+                    app:cardBackgroundColor="@color/accent_green"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_token_action_send"
+                        app:tint="@color/text_white_90"/>
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
+                    android:id="@+id/ll_send"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="4dp"
-                    android:fontFamily="@font/inter_semi_bold"
+                    android:layout_marginTop="8dp"
                     android:text="@string/send"
                     android:textColor="@color/text_2"
                     android:textSize="12sp"/>
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Receive Icon -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_receive"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
-            app:cardBackgroundColor="@color/home_page_card_background"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardElevation="0dp"
-            app:layout_constraintEnd_toStartOf="@id/cv_swap"
-            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/cv_send"
-            app:layout_constraintTop_toTopOf="@id/cv_send">
+            app:layout_constraintEnd_toStartOf="@id/cv_swap"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_weight="1">
 
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:id="@+id/ll_receive"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackground"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginHorizontal="5dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_token_action_receive"
-                    app:tint="@color/text_2"/>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    app:cardCornerRadius="32dp"
+                    app:cardBackgroundColor="@color/accent_green"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_token_action_receive"
+                        app:tint="@color/text_white_90"/>
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
+                    android:id="@+id/ll_receive"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="4dp"
-                    android:fontFamily="@font/inter_semi_bold"
+                    android:layout_marginTop="8dp"
                     android:text="@string/receive"
                     android:textColor="@color/text_2"
                     android:textSize="12sp"/>
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Swap Icon -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_swap"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
-            app:cardBackgroundColor="@color/home_page_card_background"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardElevation="0dp"
-            app:layout_constraintEnd_toStartOf="@id/cv_stake"
-            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/cv_receive"
-            app:layout_constraintTop_toTopOf="@id/cv_send">
+            app:layout_constraintEnd_toStartOf="@id/cv_stake"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_weight="1">
 
-            <androidx.appcompat.widget.LinearLayoutCompat
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackground"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginHorizontal="5dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_swap"
-                    app:tint="@color/text_2"/>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    app:cardCornerRadius="32dp"
+                    app:cardBackgroundColor="@color/accent_green"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_swap"
+                        app:tint="@color/text_white_90"/>
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
+                    android:id="@+id/tv_swap"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="4dp"
-                    android:fontFamily="@font/inter_semi_bold"
+                    android:layout_marginTop="8dp"
                     android:text="@string/swap"
                     android:textColor="@color/text_2"
                     android:textSize="12sp"/>
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-
+        <!-- Stake Icon -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cv_stake"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
-            app:cardBackgroundColor="@color/home_page_card_background"
-            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardElevation="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/cv_swap"
-            app:layout_constraintTop_toTopOf="@id/cv_send">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_weight="1">
 
-            <androidx.appcompat.widget.LinearLayoutCompat
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:background="?attr/selectableItemBackground"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginHorizontal="5dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_staking"
-                    app:tint="@color/text_2"/>
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    app:cardCornerRadius="32dp"
+                    app:cardBackgroundColor="@color/accent_green"
+                    app:cardElevation="0dp">
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_staking"
+                        app:tint="@color/text_white_90"/>
+                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
+                    android:id="@+id/tv_stake"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginVertical="4dp"
-                    android:fontFamily="@font/inter_semi_bold"
+                    android:layout_marginTop="8dp"
                     android:text="@string/stake"
                     android:textColor="@color/text_2"
                     android:textSize="12sp"/>
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-
-
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -283,7 +294,6 @@
             android:id="@+id/iv_add_token"
             android:layout_width="wrap_content"
             android:layout_height="24dp"
-            android:background="?attr/selectableItemBackground"
             android:paddingHorizontal="4dp"
             android:scaleType="centerInside"
             android:src="@drawable/ic_account_add"
@@ -308,7 +318,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="24dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/home_page_card_background"
+                android:backgroundTint="@color/buy_background"
                 android:drawablePadding="4dp"
                 android:fontFamily="@font/inter_semi_bold"
                 android:gravity="center_vertical"

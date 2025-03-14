@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.custom.model
 
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
@@ -59,7 +60,7 @@ data class CustomTokenItem(
         }
     }
 
-    fun toFlowCoin(): FlowCoin {
+    fun toFlowCoin(coinType: FlowCoinType? = FlowCoinType.EVM): FlowCoin {
         return FlowCoin(
             chainId = chainId,
             name = name,
@@ -71,7 +72,8 @@ data class CustomTokenItem(
             symbol = symbol,
             extensions = null,
             flowIdentifier = flowIdentifier,
-            evmAddress = evmAddress
+            evmAddress = evmAddress,
+            type = coinType
         )
     }
 }

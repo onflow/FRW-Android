@@ -17,26 +17,21 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.coin.TokenStateChangeListener
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
-import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.price.CurrencyUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingManager
-import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.network.flowscan.flowScanAccountTransferCountQuery
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.wallet.model.WalletCoinItemModel
 import com.flowfoundation.wallet.page.wallet.model.WalletHeaderModel
-import com.flowfoundation.wallet.utils.getAccountTransferCount
 import com.flowfoundation.wallet.utils.getCurrencyFlag
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isHideWalletBalance
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.utils.updateAccountTransferCount
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
@@ -94,7 +89,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
     override fun onTokenStateChange() {
         logd(TAG, "onTokenStateChange()")
         loadCoinList()
-        viewModelIOScope(this) { loadTransactionCount() }
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
@@ -156,9 +150,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                 TokenStateManager.fetchState()
             }
             ChildAccountCollectionManager.loadChildAccountTokenList()
-            ioScope {
-                loadTransactionCount()
-            }
         }
     }
 
@@ -209,18 +200,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         }
     }
 
-    private suspend fun loadTransactionCount() {
-        val count =
-            flowScanAccountTransferCountQuery() + TransactionStateManager.getProcessingTransaction().size
-        val localCount = getAccountTransferCount()
-        if (count < localCount) {
-            logd(TAG, "loadTransactionCount remote count < local count:$count < $localCount")
-            return
-        }
-        updateAccountTransferCount(count)
-        updateWalletHeader()
-    }
-
     private fun updateCoinBalance(balance: Balance) {
         logd(TAG, "updateCoinBalance :$balance")
         val oldItem = dataList.firstOrNull { balance.isSameCoin(it.coin) } ?: return
@@ -265,7 +244,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             headerLiveData.postValue(header.copy().apply {
                 balance = dataList.toList().map { it.balance * it.coinRate }.fold(BigDecimal.ZERO) { sum, value -> sum + value }
                 count?.let { coinCount = it }
-                transactionCount = getAccountTransferCount()
             })
         }
     }

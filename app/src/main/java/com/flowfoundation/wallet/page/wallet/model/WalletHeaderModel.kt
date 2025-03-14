@@ -10,7 +10,5 @@ data class WalletHeaderModel(
     @SerializedName("balance")
     var balance: BigDecimal,
     @SerializedName("coinCount")
-    var coinCount: Int = 0,
-    @SerializedName("transactionCount")
-    var transactionCount: Int? = 0,
+    var coinCount: Int = 0
 )

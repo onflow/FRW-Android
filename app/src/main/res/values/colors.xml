@@ -5,10 +5,12 @@
     <color name="colorSecondary">#41CC5D</color>
     <color name="text_sub">#565A69</color>
     <color name="text_light">#000000</color>
+    <color name="contrast_text">#4D000000</color>
 
     <color name="bg">#ffffff</color>
 
     <color name="card_bg">#f0f0f0</color>
+    <color name="explore_chip_bg">#F0F0F0</color>
 
     <color name="error">#E54040</color>
 
@@ -175,7 +177,7 @@
     <color name="salmon_primary_8">#1432E355</color>
     <color name="button">#1a1a1a</color>
     <color name="button_text">#ffffff</color>
-    <color name="deep_bg">#ffffff</color>
+    <color name="deep_bg">#fafafa</color>
     <color name="landing_bg">#f0f0f0</color>
 
     <color name="primary0">#00ffffff</color>
@@ -221,7 +223,7 @@
     <color name="accent_quote_up_opacity">#1441CC5D</color>
     <color name="accent_quote_down_opacity">#14E54040</color>
     <color name="profile_card_background">#FAFAFA</color>
-    <color name="profile_card_divider">#FFFFFF</color>
+    <color name="profile_card_divider">#F0F0F0</color>
     <color name="welcome_page_text">#000000</color>
     <color name="drawer_item_background">#F4F4F7</color>
     <color name="key_card_background">#ffffff</color>
@@ -243,6 +245,7 @@
     <color name="bg_3">#E5E5E5</color>
 
     <color name="text_white">#FFFFFF</color>
+    <color name="text_white_90">#E6FFFFFF</color>
     <color name="text_1">#000000</color>
     <color name="text_2">#CC000000</color>
     <color name="info_text_3">#99000000</color>
@@ -282,18 +285,22 @@
     <color name="landing_tab_dot_normal">#14000000</color>
 
     <color name="home_page_background">#FFF5F5F5</color>
-    <color name="home_page_card_background">#FFFFFF</color>
+    <color name="token_pricing_card_background">#FAFAFA</color>
+    <color name="home_page_card_background">#FAFAFA</color>
+    <color name="buy_background">#F0F0F0</color>
     <color name="wallet_notification_background">#CCF0F0F0</color>
     <color name="home_page_action_background">#A1FFFFFF</color>
 
     <color name="fill_1">#0F76767E</color>
     <color name="fill_3">#1476767E</color>
     <color name="info_success_green">#0AC26C</color>
+    <color name="info_success_green_transparent">#340AC26C</color>
     <color name="info_success_green_16">#290AC26C</color>
     <color name="info_notification_blue">#0F71F2</color>
     <color name="info_error_red">#E93C3C</color>
     <color name="info_warning_orange">#F9AD29</color>
     <color name="info_warning_orange_16">#29F9AD29</color>
+    <color name="border_line_stroke_token_pricing">#2A2A2A</color>
     <color name="border_line_stroke">#1A000000</color>
     <color name="border_line">#0A000000</color>
     <color name="background_2">#FFFFFF</color>

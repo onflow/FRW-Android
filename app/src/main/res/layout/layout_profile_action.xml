@@ -6,112 +6,120 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
-    app:cardBackgroundColor="@color/profile_card_background"
+    app:cardBackgroundColor="@color/transparent"
     app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
+    app:cardElevation="2dp"
+    android:layout_marginHorizontal="2dp"
     app:layout_constraintTop_toBottomOf="@id/profile_header_wrapper">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:background="@drawable/bg_card_settings">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/address_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:letterSpacing="0"
-            android:text="@string/address_book"
-            android:textAllCaps="false"
-            android:textColor="@color/note"
-            android:textSize="12sp"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_address"
-            app:iconGravity="textTop"
-            app:iconPadding="7dp"
-            app:iconSize="28dp"
-            app:iconTint="@color/transparent"
-            app:iconTintMode="add" />
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/wallet_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:letterSpacing="0"
-            android:text="@string/account_list"
-            android:textAllCaps="false"
-            android:textColor="@color/note"
-            android:textSize="12sp"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_settings_wallet"
-            app:iconGravity="textTop"
-            app:iconPadding="7dp"
-            app:iconSize="28dp"
-            app:iconTint="@color/transparent"
-            app:iconTintMode="add" />
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/inbox_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <androidx.constraintlayout.utils.widget.ImageFilterView
-                android:id="@+id/inbox_icon"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_settings_inbox"
-                android:translationY="4dp"
-                app:layout_constraintBottom_toTopOf="@id/inbox_text"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_chainStyle="packed" />
-
-            <TextView
-                android:id="@+id/inbox_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="7dp"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/address_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
                 android:letterSpacing="0"
-                android:text="@string/inbox"
+                android:text="@string/address_book"
                 android:textAllCaps="false"
                 android:textColor="@color/note"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/inbox_icon" />
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_address"
+                app:iconGravity="textTop"
+                app:iconPadding="7dp"
+                app:iconSize="28dp"
+                app:iconTint="@color/transparent"
+                app:iconTintMode="add" />
 
-            <TextView
-                android:id="@+id/inbox_unread_count"
-                android:layout_width="wrap_content"
-                android:layout_height="20dp"
-                android:layout_marginStart="14dp"
-                android:background="@drawable/bg_inbox_num_sign"
-                android:elevation="1dp"
-                android:fontFamily="@font/inter_medium"
-                android:gravity="center"
-                android:minWidth="20dp"
-                android:paddingHorizontal="5dp"
-                android:textColor="@color/white"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/wallet_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:letterSpacing="0"
+                android:text="@string/account_list"
+                android:textAllCaps="false"
+                android:textColor="@color/note"
                 android:textSize="12sp"
-                android:translationX="10dp"
-                android:translationY="-14dp"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="@id/inbox_icon"
-                app:layout_constraintEnd_toEndOf="@id/inbox_icon"
-                tools:text="5"
-                tools:visibility="visible" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_settings_wallet"
+                app:iconGravity="textTop"
+                app:iconPadding="7dp"
+                app:iconSize="28dp"
+                app:iconTint="@color/transparent"
+                app:iconTintMode="add" />
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/inbox_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="?attr/selectableItemBackground"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <androidx.constraintlayout.utils.widget.ImageFilterView
+                    android:id="@+id/inbox_icon"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_settings_inbox"
+                    android:translationY="4dp"
+                    app:layout_constraintBottom_toTopOf="@id/inbox_text"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_chainStyle="packed" />
+
+                <TextView
+                    android:id="@+id/inbox_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="7dp"
+                    android:letterSpacing="0"
+                    android:text="@string/inbox"
+                    android:textAllCaps="false"
+                    android:textColor="@color/note"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/inbox_icon" />
+
+                <TextView
+                    android:id="@+id/inbox_unread_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="14dp"
+                    android:background="@drawable/bg_inbox_num_sign"
+                    android:elevation="1dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:gravity="center"
+                    android:minWidth="20dp"
+                    android:paddingHorizontal="5dp"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:translationX="10dp"
+                    android:translationY="-14dp"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@id/inbox_icon"
+                    app:layout_constraintEnd_toEndOf="@id/inbox_icon"
+                    tools:text="5"
+                    tools:visibility="visible" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

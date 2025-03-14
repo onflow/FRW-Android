@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.network.model
 
 
+import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
 
 data class TransferRecordResponse(
@@ -22,6 +23,13 @@ data class TransferRecordResponse(
         val transactions: List<TransferRecord>?
     )
 }
+
+data class EVMTransferRecordResponse(
+    @SerializedName("trxs")
+    val trxs: List<TransferRecord>?,
+    @SerializedName("status")
+    val status: Int?
+)
 
 data class TransferCountResponse(
     @SerializedName("data")
@@ -78,11 +86,26 @@ data class TransferRecord(
     @SerializedName("txid")
     val txid: String?,
     @SerializedName("type")
-    val type: Int?
+    val type: Int?,
+    @SerializedName("method")
+    val method: String?,
+    @SerializedName("contractAddr")
+    val contractAddr: String?,
 ) {
     companion object {
         const val TRANSFER_TYPE_SEND = 1
         const val TRANSFER_TYPE_RECEIVE = 2
+    }
+
+    fun logo(): String {
+        if (image == null) {
+            return ""
+        }
+        return if (image.endsWith(".svg")) {
+            image.svgToPng()
+        } else {
+            image
+        }
     }
 }
 

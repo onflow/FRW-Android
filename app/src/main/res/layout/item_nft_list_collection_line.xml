@@ -5,93 +5,101 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:foreground="?attr/selectableItemBackground"
-    app:cardBackgroundColor="@color/front_color"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="16dp"
-    app:cardElevation="0dp">
+    app:cardElevation="2dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:background="@drawable/bg_card">
 
-        <ImageView
-            android:id="@+id/cover_view"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:background="#999"
-            tools:ignore="ContentDescription"/>
-
-        <TextView
-            android:id="@+id/name_view"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="10dp"
-            android:fontFamily="@font/montsettat"
-            android:textColor="@color/text"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@id/cover_view"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Claude Monet"/>
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="10dp">
 
-        <ImageView
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginStart="2dp"
-            android:src="@drawable/ic_coin_flow"
-            android:scaleType="centerInside"
-            app:layout_constraintBottom_toBottomOf="@id/name_view"
-            app:layout_constraintStart_toEndOf="@id/name_view"
-            app:layout_constraintTop_toTopOf="@id/name_view"/>
+            <ImageView
+                android:id="@+id/cover_view"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:background="#999"
+                tools:ignore="ContentDescription" />
 
-        <TextView
-            android:id="@+id/count_view"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="10dp"
-            android:textColor="@color/neutrals6"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/arrow_view"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@id/cover_view"
-            app:layout_constraintTop_toBottomOf="@id/name_view"
-            tools:text="0 Collections"/>
+            <TextView
+                android:id="@+id/name_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="10dp"
+                android:fontFamily="@font/montsettat"
+                android:lineHeight="18sp"
+                android:textColor="@color/text"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/cover_view"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Claude Monet" />
 
-        <TextView
-            android:id="@+id/tv_inaccessible_tag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/inter_semi_bold"
-            android:layout_marginStart="12dp"
-            android:paddingHorizontal="5dp"
-            android:paddingVertical="2dp"
-            android:textSize="10sp"
-            android:textColor="@color/accent_gray"
-            android:text="@string/inaccessible_tag"
-            android:visibility="gone"
-            android:background="@drawable/bg_round_4dp"
-            android:backgroundTint="@color/inaccessible_tag_background_gray"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toEndOf="@id/cover_view"
-            app:layout_constraintTop_toBottomOf="@id/name_view"/>
+            <ImageView
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_marginStart="5dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_coin_flow"
+                app:layout_constraintBottom_toBottomOf="@id/name_view"
+                app:layout_constraintStart_toEndOf="@id/name_view"
+                app:layout_constraintTop_toTopOf="@id/name_view" />
 
-        <ImageView
-            android:id="@+id/arrow_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="18dp"
-            android:src="@drawable/ic_arrow_right_1"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            <TextView
+                android:id="@+id/count_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="10dp"
+                android:textColor="@color/neutrals6"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/arrow_view"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/cover_view"
+                app:layout_constraintTop_toBottomOf="@id/name_view"
+                tools:text="0 Collections" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/tv_inaccessible_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_round_4dp"
+                android:backgroundTint="@color/inaccessible_tag_background_gray"
+                android:fontFamily="@font/inter_semi_bold"
+                android:paddingHorizontal="5dp"
+                android:paddingVertical="2dp"
+                android:text="@string/inaccessible_tag"
+                android:textColor="@color/accent_gray"
+                android:textSize="10sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/cover_view"
+                app:layout_constraintTop_toBottomOf="@id/name_view" />
+
+            <ImageView
+                android:id="@+id/arrow_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="18dp"
+                android:src="@drawable/ic_arrow_right_1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
 </androidx.cardview.widget.CardView>

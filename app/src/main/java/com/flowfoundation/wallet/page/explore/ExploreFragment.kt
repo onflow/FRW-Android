@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.journeyapps.barcodescanner.ScanOptions
 import com.flowfoundation.wallet.databinding.FragmentExploreBinding
 import com.flowfoundation.wallet.page.explore.model.ExploreModel
@@ -39,7 +38,9 @@ class ExploreFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        binding.scanButton.setOnClickListener { barcodeLauncher.launch() }
+        binding.searchBox.scanButton.setOnClickListener {
+            barcodeLauncher.launch()
+        }
         presenter = ExplorePresenter(this, binding)
         viewModel = ViewModelProvider(requireActivity())[ExploreViewModel::class.java].apply {
             bindActivity(requireActivity())
