@@ -20,10 +20,13 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.widget.SelectNFTListAdapter
+import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
+import com.flowfoundation.wallet.page.nft.search.model.NFTListType
 import com.flowfoundation.wallet.page.nft.search.viewmodel.NFTInfoListViewModel
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
@@ -51,11 +54,8 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     }
     private var selectedCollection: CollectionInfo? = null
     private var result: Continuation<Boolean>? = null
-    private val fromAddress by lazy {
-        WalletManager.selectedWalletAddress()
-    }
     private var needMoveFee = false
-    private var moveFromAddress: String = WalletManager.selectedWalletAddress()
+    private var moveFromAddress: String = nftWalletAddress()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -145,7 +145,8 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
             loadNFTViewModel.searchNFT(it)
         }
         with(loadNFTViewModel) {
-            nftListLiveData.observe(this@SelectNFTDialog) { list ->
+            nftListLiveData.observe(this@SelectNFTDialog) { pair ->
+                val list = pair.second
                 if (list == null) {
                     binding.errorLayout.visible()
                     binding.errorLayout.setOnRefreshClickListener {
@@ -159,14 +160,18 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 listAdapter.setNewDiffData(list)
                 if (list.isEmpty()) {
                     // Check whether a collection is defined.
-                    binding.tvEmpty.text = if (viewModel.collectionLiveData.value == null) {
-                        getString(R.string.no_collections_available)
+                    binding.tvEmpty.text = if (pair.first == NFTListType.RESULTS) {
+                        getString(R.string.no_relevant_nft)
                     } else {
-                        getString(R.string.select_nft_empty)
+                        if (viewModel.collectionLiveData.value == null) {
+                            getString(R.string.no_collections_available)
+                        } else {
+                            getString(R.string.select_nft_empty)
+                        }
                     }
                     binding.tvEmpty.visible()
                     binding.loadingLayout.gone()
-                    binding.searchLayout.gone()
+                    binding.searchLayout.setVisible(pair.first == NFTListType.RESULTS)
                 } else {
                     binding.tvEmpty.gone()
                     binding.loadingLayout.gone()
@@ -364,7 +369,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                             addressList,
                             childFragmentManager
                         )?.let { address ->
-                            needMoveFee = EVMWalletManager.isEVMWalletAddress(fromAddress) xor EVMWalletManager.isEVMWalletAddress(address)
+                            needMoveFee = EVMWalletManager.isEVMWalletAddress(moveFromAddress) xor EVMWalletManager.isEVMWalletAddress(address)
                             layoutToAccount.setAccountInfo(address)
                             // Update moveToAddress so the new To account is stored
                             moveToAddress = address

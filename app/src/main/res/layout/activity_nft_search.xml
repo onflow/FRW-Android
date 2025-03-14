@@ -73,6 +73,20 @@
         app:layout_constraintTop_toTopOf="@id/rv_nft_list"
         app:layout_constraintBottom_toBottomOf="@id/rv_nft_list"/>
 
+    <TextView
+        android:id="@+id/tv_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:fontFamily="@font/inter"
+        android:gravity="center"
+        android:text="@string/no_relevant_nft"
+        android:textColor="@color/text_2"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/rv_nft_list"
+        app:layout_constraintBottom_toBottomOf="@id/rv_nft_list"/>
+
     <com.flowfoundation.wallet.page.nft.search.widget.NFTListErrorLayout
         android:id="@+id/error_layout"
         android:layout_width="match_parent"
@@ -80,4 +94,5 @@
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/rv_nft_list"
         app:layout_constraintBottom_toBottomOf="@id/rv_nft_list"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

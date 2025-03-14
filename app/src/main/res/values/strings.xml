@@ -719,4 +719,5 @@
     <string name="loading_nfts">Loading NFTs...</string>
     <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
     <string name="refresh">Refresh</string>
+    <string name="no_relevant_nft">No relevant NFT found.</string>
 </resources>
