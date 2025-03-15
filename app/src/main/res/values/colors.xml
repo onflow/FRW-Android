@@ -6,6 +6,7 @@
     <color name="text_sub">#565A69</color>
     <color name="text_light">#000000</color>
     <color name="contrast_text">#4D000000</color>
+    <color name="select_tokens_dialog">#FAFAFA</color>
 
     <color name="bg">#ffffff</color>
 

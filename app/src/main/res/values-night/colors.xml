@@ -20,6 +20,7 @@
 
     <color name="landing_bg">#222222</color>
     <color name="background">#121212</color>
+    <color name="select_tokens_dialog">#1E1E1F</color>
     <color name="button">#FAFAFA</color>
     <color name="button_text">#333333</color>
     <color name="front_color">#111111</color>

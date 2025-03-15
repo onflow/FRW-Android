@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:backgroundTint="@color/select_tokens_dialog"
     android:paddingBottom="32dp">
 
     <TextView
@@ -22,11 +23,12 @@
         android:id="@+id/close_button"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginEnd="24dp"
-        android:src="@drawable/ic_close"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/ic_back_arrow"
         app:layout_constraintBottom_toBottomOf="@id/title"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/title" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:tint="@color/text_1" />
 
     <EditText
         android:id="@+id/search_input"
@@ -38,7 +40,7 @@
         android:backgroundTint="@color/bg_2"
         android:drawableStart="@drawable/ic_search"
         android:drawablePadding="8dp"
-        android:hint="Search tokens"
+        android:hint="@string/search_tokens"
         android:paddingHorizontal="16dp"
         android:singleLine="true"
         android:textColor="@color/text_1"
@@ -47,6 +49,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <TextView
+        android:id="@+id/token_list_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/token_list"
+        android:textColor="@color/text_1"
+        android:textSize="16sp"
+        android:fontFamily="@font/inter_semi_bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_input" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/token_list"
@@ -58,6 +73,6 @@
         android:paddingHorizontal="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_input" />
+        app:layout_constraintTop_toBottomOf="@id/token_list_label" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
