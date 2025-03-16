@@ -157,7 +157,6 @@ object BalanceManager {
                     cadenceQueryTokenBalance(coin, targetAddress)
                 }
             }
-            logd("fromAddress", "$balance")
             if (balance != null) {
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
