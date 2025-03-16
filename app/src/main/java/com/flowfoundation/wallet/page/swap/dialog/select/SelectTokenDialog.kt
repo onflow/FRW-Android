@@ -19,6 +19,8 @@ import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -43,7 +45,8 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
     private lateinit var binding: DialogSelectTokenBinding
 
     private val adapter by lazy {
-        TokenListAdapter(selectedCoin, disableCoin) {
+        val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
+        TokenListAdapter(selectedCoin, disableCoin, fromAddress) {
             result?.resume(it)
             dismiss()
         }
@@ -99,14 +102,32 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
 
     private fun loadCoins() {
         ioScope {
+            // First trigger a full balance refresh
+            val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
+            if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                BalanceManager.refresh(fromAddress)
+            }
+
             val coins = availableCoins ?: run {
-                BalanceManager.refresh(moveFromAddress)
                 val allCoins = FlowCoinListManager.coinList()
                 allCoins
                     .distinctBy { it.contractId() }
                     .filter { coin ->
-                        val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                        balance > BigDecimal.ZERO
+                        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                            if (coin.isFlowCoin()) {
+                                val balance = BalanceManager.getBalanceList()
+                                    .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                                balance > BigDecimal.ZERO
+                            } else {
+                                val balance = BalanceManager.getBalanceList()
+                                    .firstOrNull { it.isSameEVMCoin(coin.address) }?.balance ?: BigDecimal.ZERO
+                                balance > BigDecimal.ZERO
+                            }
+                        } else {
+                            val balance = BalanceManager.getBalanceList()
+                                .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                            balance > BigDecimal.ZERO
+                        }
                     }
             }
             
@@ -135,13 +156,27 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
 
     fun search(keyword: String) {
         currentSearchKeyword = keyword
+        val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
         val coins = availableCoins ?: run {
             val allCoins = FlowCoinListManager.coinList()
             allCoins
                 .distinctBy { it.contractId() }
                 .filter { coin ->
-                    val balance = BalanceManager.getBalanceList().firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                    balance > BigDecimal.ZERO
+                    if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                        if (coin.isFlowCoin()) {
+                            val balance = BalanceManager.getBalanceList()
+                                .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                            balance > BigDecimal.ZERO
+                        } else {
+                            val balance = BalanceManager.getBalanceList()
+                                .firstOrNull { it.isSameEVMCoin(coin.address) }?.balance ?: BigDecimal.ZERO
+                            balance > BigDecimal.ZERO
+                        }
+                    } else {
+                        val balance = BalanceManager.getBalanceList()
+                            .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
+                        balance > BigDecimal.ZERO
+                    }
                 }
         }
 

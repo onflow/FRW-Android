@@ -116,9 +116,9 @@ object BalanceManager {
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
-    fun getBalanceByCoin(coin: FlowCoin) {
+    fun getBalanceByCoin(coin: FlowCoin, address: String? = null) {
         logd(TAG, "getBalanceByCoin:${coin.symbol}")
-        fetch(coin)
+        fetch(coin, address)
     }
 
     fun addListener(callback: OnBalanceUpdate) {
@@ -138,23 +138,26 @@ object BalanceManager {
 
     fun getBalanceList() = balanceList.toList()
 
-    private fun fetch(coin: FlowCoin) {
+    private fun fetch(coin: FlowCoin, address: String? = null) {
         ioScope {
             balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = if (WalletManager.isEVMAccountSelected()) {
+            val targetAddress = address ?: WalletManager.selectedWalletAddress()
+
+            val balance = if (EVMWalletManager.isEVMWalletAddress(targetAddress)) {
                 if (coin.isFlowCoin()) {
                     cadenceQueryCOATokenBalance()
                 } else {
-                    getEVMBalanceByCoin(coin.address)
+                    getEVMBalanceByCoin(coin.address, targetAddress)
                 }
             } else {
                 if (coin.isFlowCoin()) {
-                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin)
+                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin, targetAddress)
                 } else {
-                    cadenceQueryTokenBalance(coin)
+                    cadenceQueryTokenBalance(coin, targetAddress)
                 }
             }
+            logd("fromAddress", "$balance")
             if (balance != null) {
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance

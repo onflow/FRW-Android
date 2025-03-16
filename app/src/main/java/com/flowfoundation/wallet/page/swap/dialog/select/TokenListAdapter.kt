@@ -1,19 +1,28 @@
 package com.flowfoundation.wallet.page.swap.dialog.select
 
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.recyclerview.BaseAdapter
+import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 
-internal class TokenListAdapter(
+class TokenListAdapter(
     private var selectedCoin: String? = null,
-    private var disableCoin: String? = null,
-    private val callback: (FlowCoin) -> Unit,
+    private val disableCoin: String? = null,
+    private val fromAddress: String,
+    private val callback: (FlowCoin) -> Unit
 ) : BaseAdapter<FlowCoin>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return TokenItemPresenter(parent.inflate(R.layout.item_token_list), selectedCoin, disableCoin, callback)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        return TokenItemPresenter(
+            LayoutInflater.from(parent.context).inflate(R.layout.item_token_list, parent, false),
+            selectedCoin,
+            disableCoin,
+            fromAddress,
+            callback
+        )
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -22,8 +31,8 @@ internal class TokenListAdapter(
         }
     }
 
-    fun updateSelectedCoin(newSelectedCoin: String?) {
-        selectedCoin = newSelectedCoin
+    fun updateSelectedCoin(selectedCoin: String?) {
+        this.selectedCoin = selectedCoin
         notifyDataSetChanged()
     }
 }

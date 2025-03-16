@@ -12,6 +12,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.swap.dialog.select.TokenListAdapter
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
@@ -24,11 +25,13 @@ class SelectMoveTokenDialog : BottomSheetDialogFragment() {
     private var selectedCoin: String? = null
     private var disableCoin: String? = null
     private var result: Continuation<FlowCoin?>? = null
+    private var moveFromAddress: String? = null
 
     private lateinit var binding: DialogSelectTokenBinding
 
     private val adapter by lazy {
-        TokenListAdapter(selectedCoin, disableCoin) {
+        val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
+        TokenListAdapter(selectedCoin, disableCoin, fromAddress) {
             result?.resume(it)
             dismiss()
         }
@@ -62,10 +65,12 @@ class SelectMoveTokenDialog : BottomSheetDialogFragment() {
         selectedCoin: String?,
         disableCoin: String?,
         fragmentManager: FragmentManager,
+        moveFromAddress: String? = null
     ) = suspendCoroutine { result ->
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
         this.result = result
+        this.moveFromAddress = moveFromAddress
         show(fragmentManager, "")
     }
 
