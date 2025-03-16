@@ -6,8 +6,7 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_token_list_item"
     android:paddingHorizontal="11dp"
-    android:paddingVertical="10dp"
-    tools:layout_marginHorizontal="18dp">
+    android:paddingVertical="10dp">
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/icon_view"

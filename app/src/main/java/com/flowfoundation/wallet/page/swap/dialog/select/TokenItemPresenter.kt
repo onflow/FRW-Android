@@ -26,16 +26,9 @@ class TokenItemPresenter(
             symbolView.text = model.symbol.uppercase()
             Glide.with(iconView).load(model.icon()).into(iconView)
             stateButton.setVisible(false)
-            selectedView.setVisible(model.isSameCoin(selectedCoin.orEmpty()))
+            view.isSelected = model.isSameCoin(selectedCoin.orEmpty())
         }
 
-        val backgroundColor = if (model.isSameCoin(disableCoin.orEmpty())) {
-            R.color.transparent.res2color()
-        } else {
-            R.color.background.res2color()
-        }
-
-        view.backgroundTintList = ColorStateList.valueOf(backgroundColor)
         view.setOnClickListener {
             if (model.isSameCoin(disableCoin.orEmpty()).not()) {
                 callback.invoke(model)
