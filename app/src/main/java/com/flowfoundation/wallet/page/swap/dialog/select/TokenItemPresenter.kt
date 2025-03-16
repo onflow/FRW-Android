@@ -5,8 +5,13 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemTokenListBinding
+import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
+import com.flowfoundation.wallet.utils.formatPrice
+import java.math.BigDecimal
 
 class TokenItemPresenter(
     private val view: View,
@@ -24,6 +29,14 @@ class TokenItemPresenter(
             Glide.with(iconView).load(model.icon()).into(iconView)
             stateButton.setVisible(false)
             view.isSelected = model.isSameCoin(selectedCoin.orEmpty())
+
+            // Get balance and rate
+            val balance = BalanceManager.getBalanceList()
+                .firstOrNull { it.isSameCoin(model) }?.balance ?: BigDecimal.ZERO
+            val rate = CoinRateManager.coinRate(model.contractId()) ?: BigDecimal.ZERO
+
+            tokenAmount.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.symbol.uppercase()}"
+            tokenPrice.text = (balance * rate).formatPrice(includeSymbol = true, isAbbreviation = true)
         }
 
         view.setOnClickListener {
