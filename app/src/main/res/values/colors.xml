@@ -287,6 +287,7 @@
 
     <color name="home_page_background">#FFF5F5F5</color>
     <color name="token_pricing_card_background">#FAFAFA</color>
+    <color name="token_list_item_background">#FFFFFF</color>
     <color name="home_page_card_background">#FAFAFA</color>
     <color name="buy_background">#F0F0F0</color>
     <color name="wallet_notification_background">#CCF0F0F0</color>

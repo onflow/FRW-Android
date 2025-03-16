@@ -1,14 +1,11 @@
 package com.flowfoundation.wallet.page.swap.dialog.select
 
-import android.content.res.ColorStateList
 import android.view.View
 import com.bumptech.glide.Glide
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemTokenListBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 
 class TokenItemPresenter(
