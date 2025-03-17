@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import java.math.BigDecimal
 
@@ -46,7 +45,6 @@ class TokenItemPresenter(
 
             currentCoin = model
             
-            // Get token balance using MoveTokenProvider
             ioScope {
                 val moveTokens = provider.getMoveTokenList(fromAddress)
                 val moveToken = moveTokens.find { it.tokenInfo.contractId() == model.contractId() }
