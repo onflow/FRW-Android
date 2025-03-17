@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.annotation.ColorInt
