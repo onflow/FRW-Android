@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Invalid address</string>
     <string name="address_check_chain_error">Can\'t find address in chain</string>
     <string name="address_check_success">Validated address</string>
-    <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
+    <string name="address_search_empty_tip">No results. Please check your input and try again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
     <string name="move_do_not_ask_me">Do not ask me again.</string>
     <string name="move_to_desc_borwser">Move your assets between your Cadence address on Flow, so
@@ -669,14 +669,14 @@
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
-    <string name="move_fee_tips">It appears when moving between VM accounts</string>
+    <string name="move_fee_tips">Charged when moving between accounts on Cadence and EVM on Flow.</string>
     <string name="no_move_fee_tips">No fee between your Flow accounts 🤟</string>
     <string name="wait_website_fully_loaded">Please wait until the website is fully loaded</string>
     <string name="add_custom_token">Add Custom Token</string>
     <string name="add_token_success">Add Token Success</string>
     <string name="invalid_evm_address">Invalid ERC20 address</string>
     <string name="token_contract_address">Token Contract Address</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Enter the token contract address</string>
     <string name="evm_token_contract_address_error">Please enter valid EVM contract address</string>
     <string name="contracts">Contracts</string>
     <string name="token_name">Token Name</string>

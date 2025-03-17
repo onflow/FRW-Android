@@ -146,7 +146,7 @@
     <string name="address_check_format_error">Invalid address</string>
     <string name="address_check_chain_error">Can\'t find address in chain</string>
     <string name="address_check_success">Validated address</string>
-    <string name="address_search_empty_tip">Sorry, We did not find any related account, please check your enter and search it again.</string>
+    <string name="address_search_empty_tip">No results. Please check your input and try again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
     <string name="move_do_not_ask_me">Do not ask me again.</string>
     <string name="move_to_desc_borwser">Move your assets between your cadence address on Flow, so
@@ -216,7 +216,7 @@
     <string name="clear_cache">Clear Cache</string>
     <string name="pending_transaction">Pending Transaction</string>
     <string name="welcome_to_wallet">Welcome to Flow Wallet !</string>
-    <string name="profile_sign_tips"><![CDATA[हमसे जुड़ें और सभी उत्कृष्ट और नए अनुभवों को अनलॉक करें!]]></string>
+    <string name="profile_sign_tips"><![CDATA[Join us and unlock all brilliant & new experiences!]]></string>
     <string name="favourite">Favourite</string>
     <string name="cancel_favourite">Cancel Favourite</string>
     <string name="contact_us">Contact us</string>
@@ -246,7 +246,7 @@
     <string name="transaction_history">Transaction history</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
-    <string name="reset_wallet">Reset Wallet</string>
+    <string name="reset_wallet">Reset Profile</string>
     <string name="reset_wallet_confirm_title">Are you sure you want to reset your wallet?</string>
     <string name="reset_wallet_tips">Removing the wallet from Flow Wallet does not remove the wallet
         from Flow blockchain. You can import your wallet again using your Recovery Phrase or Google Drive Backup.</string>
@@ -519,8 +519,8 @@
     <string name="revoke_device">Revoke Device</string>
     <string name="wrong_network">Switch Network</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
-    <string name="restore_on_mainnet">You can only restore wallet on mainnet.</string>
-    <string name="switch_on_mainnet">You can only create backup on mainnet.</string>
+    <string name="restore_on_mainnet">You can only restore wallet on Mainnet.</string>
+    <string name="switch_on_mainnet">You can only perform this operation on Mainnet.</string>
     <string name="create_on_mainnet_or_testnet">You can only create account on mainnet or testnet.</string>
     <string name="switch_to_mainnet">Switch to Mainnet</string>
     <string name="connect">Connect</string>
@@ -533,7 +533,7 @@
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
     <string name="move">Move</string>
-    <string name="current_vm">Current VM</string>
+    <string name="current_vm">Current Network</string>
     <string name="cadence">Cadence</string>
     <string name="share_qr_code">Share QR Code</string>
     <string name="move_token">Move Token</string>
@@ -565,7 +565,7 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-    <string name="landing_step_four_title">Your Flow account is ready, let\'s back it up!</string>
+    <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
@@ -592,10 +592,10 @@
     <string name="multi_sign">Multi-sign</string>
     <string name="can_not_revoke">Can not Revoke Current Device Key</string>
     <string name="login_failure">Login Failure</string>
-    <string name="move_nft_failed">NFT स्थानांतरण असफल</string>
-    <string name="move_nft_success">NFT स्थानांतरण सफल</string>
-    <string name="send_nft_success">NFT भेजना सफल</string>
-    <string name="send_nft_failed">NFT भेजना विफल</string>
+    <string name="move_nft_failed">Move NFT Failed</string>
+    <string name="move_nft_success">Move NFT Success</string>
+    <string name="send_nft_success">Send NFT Success</string>
+    <string name="send_nft_failed">Send NFT Failed</string>
     <string name="sync_account_info_failure">Sync Account Info Failure</string>
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
@@ -611,7 +611,7 @@
     <string name="restore_failed_desc">Please try again later.</string>
     <string name="debug_view">Debug View</string>
     <string name="export_log">Export Log</string>
-    <string name="view_recovery_phrase">रिकवरी वाक्यांश देखें</string>
+    <string name="view_recovery_phrase">View Recovery Phrase</string>
     <string name="clear">Clear</string>
     <string name="send_success">Send Success</string>
     <string name="send_failed">Send Failed</string>
@@ -664,7 +664,7 @@
     <string name="add_token_success">Add Token Success</string>
     <string name="invalid_evm_address">Invalid ERC20 address</string>
     <string name="token_contract_address">Token Contract Address</string>
-    <string name="token_contract_address_hint">Enter your flow token contract address</string>
+    <string name="token_contract_address_hint">Enter the token contract address</string>
     <string name="evm_token_contract_address_error">Please enter valid EVM contract address</string>
     <string name="contracts">Contracts</string>
     <string name="token_name">Token Name</string>
