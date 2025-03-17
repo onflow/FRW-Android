@@ -2,6 +2,7 @@
 <resources>
     <string name="next">下一步</string>
     <string name="list">列表</string>
+    <string name="view_as">显示方式</string>
     <string name="creating_account">正在创建您的帐户…</string>
     <string name="secure_design">设计安全</string>
     <string name="secure_design_2">使用硬件等级安全的设备密钥，流钱包是你可以信任的超安全硬件钱包</string>
@@ -32,6 +33,7 @@
     <string name="protection">保护</string>
     <string name="to_your_wallet">致您的钱包</string>
     <string name="pin_code">PIN 码</string>
+    <string name="grid">网格</string>
     <string name="create_pin">创建 PIN 密码</string>
     <string name="pin">PIN</string>
     <string name="check_pin">请再次输入\n您的 PIN 码</string>
@@ -55,7 +57,7 @@
     <string name="recovery_phrase_note">按正确的顺序写下这些单词，然后将它们存储在安全的地方。</string>
     <string name="recovery">恢复</string>
     <string name="phrase">短语</string>
-    <string name="nft">NFTs</string>
+    <string name="nft">NFT</string>
     <string name="activity">活动</string>
     <string name="restore_wallet">恢复钱包</string>
     <string name="restore_wallet_tip">用你的12 位助记词恢复你的钱包。</string>
@@ -225,7 +227,7 @@
     <string name="fcl_permission_read_balance">查看您的钱包余额和活动</string>
     <string name="fcl_permission_transaction">请求交易批准</string>
     <string name="script">脚本</string>
-    <string name="dapps">Apps</string>
+    <string name="dapps">应用程序</string>
     <string name="process_of_enabling_coin">启用代币</string>
     <string name="mnemonic_check_fail">选择错误</string>
     <string name="restore_with_recovery_phrase">用助记词恢复</string>
@@ -443,7 +445,7 @@
     <string name="device_ip_address">IP地址</string>
     <string name="device_location">位置</string>
     <string name="device_entry_date">入职日期</string>
-    <string name="login_with_registered_account">已注册账户</string>
+    <string name="login_with_registered_account">已注册账号</string>
     <string name="or">或者</string>
     <string name="sync_page_title">在手机应用 \n 上打开 Flow 钱包，扫描二维码同步钱包。</string>
     <string name="sync_scan_qr_code">使用手机应用扫描二维码</string>
@@ -486,9 +488,9 @@
     <string name="key_store_address_hint">输入您的流地址(可选)</string>
     <string name="from_multi_backup">从多重备份恢复</string>
     <string name="from_multi_backup_note">谷歌硬盘/密钥/助记词</string>
-    <string name="from_recovery_phrase">从助记词恢复（传统）</string>
+    <string name="from_recovery_phrase">其他</string>
     <string name="from_recovery_phrase_note">使用传统恢复短语恢复（不是多重备份）</string>
-    <string name="from_raw_key">从助记词恢复（传统）</string>
+    <string name="from_raw_key">其他</string>
     <string name="from_raw_key_note">支持旧版Google Drive，种子短语，密钥商店和私钥</string>
     <string name="import_raw_key_note">从 Flow Wallet 旧版备份、 种子、密钥商店和私钥。</string>
     <string name="multi_restore">多重还原</string>
@@ -698,6 +700,10 @@
     <string name="choose_swap_provider">选择交换提供商</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="scan">扫描</string>
-    <string name="grid">网格</string>
-    <string name="view_as">显示方式</string>
+    <string name="results">结果</string>
+    <string name="search_nft_name">搜索 NFT 名称</string>
+    <string name="loading_nfts">正在加载 NFT...</string>
+    <string name="nft_list_loading_error">错误，请检查您的网络或刷新。</string>
+    <string name="refresh">刷新</string>
+    <string name="no_relevant_nft">未找到相关的 NFT 。</string>
 </resources>
