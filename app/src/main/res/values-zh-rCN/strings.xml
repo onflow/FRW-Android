@@ -700,4 +700,6 @@
     <string name="scan">扫描</string>
     <string name="grid">网格</string>
     <string name="view_as">显示方式</string>
+    <string name="search_tokens">搜索代币</string>
+    <string name="token_list">代币列表</string>
 </resources>

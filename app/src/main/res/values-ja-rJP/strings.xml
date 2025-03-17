@@ -701,4 +701,6 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="choose_swap_provider">スワッププロバイダを選択</string>
     <string name="welcome_desc">Flow Walletへようこそ！アカウントを作成して始めましょう</string>
     <string name="scan">スキャン</string>
+    <string name="search_tokens">トークンを検索</string>
+    <string name="token_list">トークンリスト</string>
 </resources>

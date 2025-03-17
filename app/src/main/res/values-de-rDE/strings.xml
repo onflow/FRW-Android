@@ -701,4 +701,6 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Swap-Anbieter auswählen</string>
     <string name="welcome_desc">Willkommen bei Flow Wallet! Erstellen Sie ein Konto um loszulegen</string>
+    <string name="search_tokens">Token suchen</string>
+    <string name="token_list">Token-Listen</string>
 </resources>

@@ -683,4 +683,6 @@
     <string name="back">返回</string>
     <string name="exit_backup_warning_dialog_title">您确定不想进行备份吗？</string>
     <string name="exit_backup_warning_dialog">如果您丢失您的设备或删除您的钱包，您的资金将永远丢失。</string>
+    <string name="search_tokens">搜尋令牌</string>
+    <string name="token_list">代幣列表</string>
 </resources>

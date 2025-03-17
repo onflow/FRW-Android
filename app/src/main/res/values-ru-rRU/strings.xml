@@ -698,4 +698,6 @@
     <string name="choose_swap_provider">Выберите поставщика обмена</string>
     <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
     <string name="scan">Сканировать</string>
+    <string name="search_tokens">Поиск токенов</string>
+    <string name="token_list">Список Токенов</string>
 </resources>

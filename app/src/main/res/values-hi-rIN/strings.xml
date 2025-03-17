@@ -723,4 +723,6 @@
     <string name="json" translatable="false">JSON</string>
     <string name="required_asterisk" translatable="false">" *"</string>
     <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="search_tokens">Search tokens</string>
+    <string name="token_list">Token List</string>
 </resources>
