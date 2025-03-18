@@ -12,6 +12,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
@@ -48,8 +49,21 @@ class LilicoWebView : WebView {
             webChromeClient = WebChromeClient()
             domStorageEnabled = true
             javaScriptCanOpenWindowsAutomatically = true
+            setSupportMultipleWindows(true)
+            setDefaultTextEncodingName("utf-8")
+            setNeedInitialFocus(true)
+            builtInZoomControls = false
+            displayZoomControls = false
+            allowFileAccess = true
+            allowContentAccess = true
+            loadWithOverviewMode = true
+            useWideViewPort = true
+            layoutAlgorithm = android.webkit.WebSettings.LayoutAlgorithm.NORMAL
         }
         setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+
+        // Apply WebView styles
+        context.theme.applyStyle(R.style.WebViewStyle, true)
 
         addJavascriptInterface(JsInterface(this), "android")
         addJavascriptInterface(EvmInterface(this), "_tw_")
@@ -84,6 +98,32 @@ class LilicoWebView : WebView {
             if (newProgress == 100) {
                 logd(TAG, "load finish")
                 view.executeJs(JS_QUERY_WINDOW_COLOR)
+                // Inject CSS to style select elements
+                val css = """
+                    select {
+                        background-color: white;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
+                        padding: 8px;
+                        font-size: 16px;
+                        color: black;
+                    }
+                    select option {
+                        padding: 8px;
+                        font-size: 16px;
+                        background-color: white;
+                        color: black;
+                    }
+                """.trimIndent()
+                view.evaluateJavascript(
+                    "(function() { " +
+                    "   var style = document.createElement('style'); " +
+                    "   style.type = 'text/css'; " +
+                    "   style.innerHTML = '${css}'; " +
+                    "   document.head.appendChild(style); " +
+                    "})();",
+                    null
+                )
             }
         }
 
@@ -98,6 +138,43 @@ class LilicoWebView : WebView {
             fileChooserParams: FileChooserParams?
         ): Boolean {
             uiScope { showWebviewFilePicker(context, filePathCallback, fileChooserParams) }
+            return true
+        }
+
+        @SuppressLint("SetJavaScriptEnabled")
+        override fun onCreateWindow(
+            view: WebView?,
+            isDialog: Boolean,
+            isUserGesture: Boolean,
+            resultMsg: android.os.Message?
+        ): Boolean {
+            val newWebView = WebView(context)
+            with(newWebView.settings) {
+                javaScriptEnabled = true
+                javaScriptCanOpenWindowsAutomatically = true
+                domStorageEnabled = true
+                setSupportMultipleWindows(true)
+            }
+            
+            val transport = resultMsg?.obj as? android.webkit.WebView.WebViewTransport
+            transport?.webView = newWebView
+            resultMsg?.sendToTarget()
+            
+            newWebView.webViewClient = object : android.webkit.WebViewClient() {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView?,
+                    request: WebResourceRequest?
+                ): Boolean {
+                    request?.url?.let { uri ->
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                    return true
+                }
+            }
             return true
         }
     }
@@ -169,7 +246,7 @@ class LilicoWebView : WebView {
 }
 
 interface WebviewCallback {
-    fun onScrollChange(scrollY: Int, offset: Int)
+    fun onScrollChange(scrollX: Int, scrollY: Int)
     fun onProgressChange(progress: Float)
     fun onTitleChange(title: String)
     fun onPageUrlChange(url: String, isReload: Boolean)

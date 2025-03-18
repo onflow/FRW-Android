@@ -6,5 +6,6 @@
     <com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:theme="@style/WebViewStyle"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
