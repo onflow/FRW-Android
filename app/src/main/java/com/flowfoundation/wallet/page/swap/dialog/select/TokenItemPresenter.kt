@@ -7,60 +7,69 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemTokenListBinding
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.page.token.detail.provider.EVMAccountTokenProvider
-import com.flowfoundation.wallet.page.token.detail.provider.FlowAccountTokenProvider
+import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
+import com.flowfoundation.wallet.page.token.detail.model.MoveToken
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.formatPrice
-import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.logd
 import java.math.BigDecimal
 
 class TokenItemPresenter(
     private val view: View,
     private val selectedCoin: String? = null,
-    private var disableCoin: String? = null,
-    private val fromAddress: String,
-    private val callback: (FlowCoin) -> Unit
-) : BaseViewHolder(view), BasePresenter<FlowCoin> {
+    private val disableCoin: String? = null,
+    private val callback: (MoveToken) -> Unit
+) : BaseViewHolder(view), BasePresenter<MoveToken> {
 
     private val binding by lazy { ItemTokenListBinding.bind(view) }
-    private var currentCoin: FlowCoin? = null
-    private val provider by lazy {
-        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-            EVMAccountTokenProvider()
-        } else {
-            FlowAccountTokenProvider()
-        }
-    }
 
-    override fun bind(model: FlowCoin) {
+    override fun bind(model: MoveToken) {
         with(binding) {
-            nameView.text = model.name
-            symbolView.text = model.symbol.uppercase()
-            Glide.with(iconView).load(model.icon()).into(iconView)
+            nameView.text = model.tokenInfo.name
+            symbolView.text = model.tokenInfo.symbol.uppercase()
+            Glide.with(iconView).load(model.tokenInfo.icon()).into(iconView)
             stateButton.setVisible(false)
-            view.isSelected = model.isSameCoin(selectedCoin.orEmpty())
-
-            currentCoin = model
+            view.isSelected = model.tokenInfo.isSameCoin(selectedCoin.orEmpty())
             
-            ioScope {
-                val moveTokens = provider.getMoveTokenList(fromAddress)
-                val moveToken = moveTokens.find { it.tokenInfo.contractId() == model.contractId() }
-                
-                val balance = moveToken?.tokenBalance ?: BigDecimal.ZERO
-                val rate = CoinRateManager.coinRate(model.contractId()) ?: BigDecimal.ZERO
-                
-                uiScope {
-                    tokenAmount.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.symbol.uppercase()}"
-                    tokenPrice.text = (balance * rate).formatPrice(includeSymbol = true, isAbbreviation = true)
+            val balance = model.tokenBalance
+            val contractId = model.tokenInfo.contractId()
+            
+            // Set the balance text
+            tokenAmount.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.tokenInfo.symbol.uppercase()}"
+            
+            // Get current rate and update price if available
+            val rate = CoinRateManager.coinRate(contractId)
+            
+            if (rate != null && rate > BigDecimal.ZERO) {
+                val dollarValue = balance * rate
+                tokenPrice.text = dollarValue.formatPrice(includeSymbol = true, isAbbreviation = true)
+                tokenPrice.setVisible(true)
+            } else {
+                // If it's USDC or USDC.e, show 1:1 rate
+                if (model.tokenInfo.symbol.contains("USDC", ignoreCase = true)) {
+                    val dollarValue = balance
+                    tokenPrice.text = dollarValue.formatPrice(includeSymbol = true, isAbbreviation = true)
+                    tokenPrice.setVisible(true)
+                } else if (model.tokenInfo.symbol.equals("WFLOW", ignoreCase = true) || 
+                         model.tokenInfo.symbol.equals("stFlow", ignoreCase = true)) {
+                    // For WFLOW and stFlow, try to use FLOW rate
+                    val flowRate = CoinRateManager.coinRate("A.1654653399040a61.FlowToken")
+                    if (flowRate != null && flowRate > BigDecimal.ZERO) {
+                        val dollarValue = balance * flowRate
+                        tokenPrice.text = dollarValue.formatPrice(includeSymbol = true, isAbbreviation = true)
+                        tokenPrice.setVisible(true)
+                    } else {
+                        tokenPrice.setVisible(false)
+                    }
+                } else {
+                    tokenPrice.setVisible(false)
                 }
             }
         }
 
         view.setOnClickListener {
-            if (model.isSameCoin(disableCoin.orEmpty()).not()) {
+            if (model.tokenInfo.isSameCoin(disableCoin.orEmpty()).not()) {
                 callback.invoke(model)
             }
         }

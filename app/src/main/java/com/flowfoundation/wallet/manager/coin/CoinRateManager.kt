@@ -46,6 +46,12 @@ object CoinRateManager {
         uiScope { this.listeners.add(WeakReference(callback)) }
     }
 
+    fun removeListener(callback: OnCoinRateUpdate) {
+        uiScope { 
+            listeners.removeAll { it.get() == callback || it.get() == null }
+        }
+    }
+
     fun coinRate(contractId: String) = coinRateMap[contractId]?.price
 
     fun fetchCoinRate(coin: FlowCoin) {
@@ -90,12 +96,27 @@ object CoinRateManager {
 
     fun FlowCoin.isSameCoin(tokenPrice: TokenPrice): Boolean {
         return if (isFlowCoin()) {
-            isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
+            val result = isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
+            result
         } else {
-            if (WalletManager.isEVMAccountSelected()) {
-                address.equals(tokenPrice.evmAddress, true)
+            if (type == FlowCoinType.EVM) {
+                // Clean up addresses for comparison by removing all possible prefixes and converting to lowercase
+                val cleanAddress = address
+                    .removePrefix("A.")  // Remove A. prefix
+                    .removePrefix("0x")  // Remove 0x prefix if present
+                    .removeSuffix(".")   // Remove trailing dot
+                    .lowercase()         // Convert to lowercase
+                
+                val cleanEvmAddress = tokenPrice.evmAddress
+                    ?.removePrefix("0x") // Remove 0x prefix if present
+                    ?.lowercase()        // Convert to lowercase
+                    ?: return false      // If evmAddress is null, no match
+                    
+                val result = cleanAddress == cleanEvmAddress
+                result
             } else {
-                isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
+                val result = isSameCoin(tokenPrice.contractAddress, tokenPrice.contractName)
+                result
             }
         }
     }
@@ -105,13 +126,16 @@ object CoinRateManager {
             val apiService = retrofitApi().create(ApiService::class.java)
             val tokenPriceResponse = apiService.getTokenPrices()
             val tokenPriceList = tokenPriceResponse.data
+            
             list.forEach { coin ->
                 if (coin.isUSDStableCoin()) {
                     dispatchListeners(coin, BigDecimal.ONE, 0f)
                     return@forEach
                 }
                 val cacheRate = coinRateMap[coin.contractId()]
-                cacheRate?.let { dispatchListeners(coin, it.price, it.quoteChange) }
+                cacheRate?.let { 
+                    dispatchListeners(coin, it.price, it.quoteChange)
+                }
                 if (cacheRate.isExpire()) {
                     runCatching {
                         val market = QuoteMarket.fromMarketName(getQuoteMarket())
@@ -119,14 +143,17 @@ object CoinRateManager {
 
                         if (coinPair.isEmpty()) {
                             tokenPriceList?.find {
-                                coin.isSameCoin(it)
+                                val isSame = coin.isSameCoin(it)
+                                isSame
                             }?.let {
                                 val rate = it.rateToUSD
                                 updateCache(coin, rate, 0f)
                                 dispatchListeners(coin, rate, 0f)
+                            } ?: run {
                             }
                             return@forEach
                         }
+
                         val service = retrofit().create(ApiService::class.java)
                         val response = service.summary(market.value, coin.getPricePair(market))
                         val price = tokenPriceList?.find {
@@ -135,6 +162,8 @@ object CoinRateManager {
                         val quoteChange = response.data.result.price.change.percentage
                         updateCache(coin, price, quoteChange)
                         dispatchListeners(coin, price, quoteChange)
+                    }.onFailure { error ->
+                        logd(TAG, "Error fetching rate for ${coin.symbol}: ${error.message}")
                     }
                 }
             }
@@ -151,7 +180,6 @@ object CoinRateManager {
     }
 
     private fun dispatchListeners(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
-        logd(TAG, "dispatchListeners ${coin.contractId()}:${price}")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onCoinRateUpdate(coin, price, quoteChange) }

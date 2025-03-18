@@ -6,21 +6,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.recyclerview.BaseAdapter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.page.token.detail.model.MoveToken
 
 class TokenListAdapter(
     private var selectedCoin: String? = null,
     private val disableCoin: String? = null,
-    private val fromAddress: String,
-    private val callback: (FlowCoin) -> Unit
-) : BaseAdapter<FlowCoin>() {
+    private val callback: (MoveToken) -> Unit
+) : BaseAdapter<MoveToken>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         return TokenItemPresenter(
             LayoutInflater.from(parent.context).inflate(R.layout.item_token_list, parent, false),
             selectedCoin,
             disableCoin,
-            fromAddress,
             callback
         )
     }

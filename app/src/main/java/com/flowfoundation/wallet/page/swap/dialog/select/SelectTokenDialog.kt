@@ -3,10 +3,6 @@ package com.flowfoundation.wallet.page.swap.dialog.select
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
-import android.transition.Scene
-import android.transition.Slide
-import android.transition.TransitionManager
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,13 +13,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
 import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.page.token.detail.model.MoveToken
+import com.flowfoundation.wallet.page.token.detail.provider.EVMAccountTokenProvider
+import com.flowfoundation.wallet.page.token.detail.provider.FlowAccountTokenProvider
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
-import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
@@ -33,22 +32,38 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import java.math.BigDecimal
 
-class SelectTokenDialog : BottomSheetDialogFragment() {
+class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
 
     private var selectedCoin: String? = null
     private var disableCoin: String? = null
     private var result: Continuation<FlowCoin?>? = null
     private var currentSearchKeyword: String = ""
     private var moveFromAddress: String? = null
-    private var availableCoins: List<FlowCoin>? = null
+    private var availableTokens: List<MoveToken> = emptyList()
 
     private lateinit var binding: DialogSelectTokenBinding
 
     private val adapter by lazy {
-        val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
-        TokenListAdapter(selectedCoin, disableCoin, fromAddress) {
-            result?.resume(it)
+        TokenListAdapter(selectedCoin, disableCoin) { token ->
+            result?.resume(token.tokenInfo)
             dismiss()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        CoinRateManager.addListener(this)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        CoinRateManager.removeListener(this)
+    }
+
+    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
+        // Refresh the adapter when rates are updated
+        uiScope {
+            adapter.setNewDiffData(availableTokens)
         }
     }
 
@@ -91,102 +106,62 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             dismiss()
         }
 
-        loadCoins()
+        loadTokens()
+    }
+
+    private fun onSearchFocusChange(hasFocus: Boolean) {
+        binding.tokenListLabel.setVisible(!hasFocus)
     }
 
     fun refreshTokenList() {
         selectedCoin = null
         adapter.updateSelectedCoin(null)
-        loadCoins()
+        loadTokens()
     }
 
-    private fun loadCoins() {
+    private fun loadTokens() {
         ioScope {
-            // First trigger a full balance refresh
             val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
-            if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-                BalanceManager.refresh(fromAddress)
-            }
 
-            val coins = availableCoins ?: run {
-                val allCoins = FlowCoinListManager.coinList()
-                allCoins
-                    .distinctBy { it.contractId() }
-                    .filter { coin ->
-                        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-                            if (coin.isFlowCoin()) {
-                                val balance = BalanceManager.getBalanceList()
-                                    .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                                balance > BigDecimal.ZERO
-                            } else {
-                                val balance = BalanceManager.getBalanceList()
-                                    .firstOrNull { it.isSameEVMCoin(coin.address) }?.balance ?: BigDecimal.ZERO
-                                balance > BigDecimal.ZERO
-                            }
-                        } else {
-                            val balance = BalanceManager.getBalanceList()
-                                .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                            balance > BigDecimal.ZERO
-                        }
-                    }
+            // Get token list with balances
+            val provider = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                EVMAccountTokenProvider()
+            } else {
+                FlowAccountTokenProvider()
             }
             
-            uiScope {
-                if (currentSearchKeyword.isBlank()) {
-                    adapter.setNewDiffData(coins)
-                } else {
-                    adapter.setNewDiffData(coins.filter {
-                        it.name.lowercase().contains(currentSearchKeyword.lowercase()) || 
-                        it.symbol.lowercase().contains(currentSearchKeyword.lowercase())
-                    })
-                }
+            // Always refresh balances for the current from address
+            BalanceManager.refresh(fromAddress)
+            
+            // Get fresh token list with updated balances
+            availableTokens = provider.getMoveTokenList(fromAddress)
+                .filter { it.tokenBalance > BigDecimal.ZERO }
+                .sortedByDescending { it.tokenBalance }
+
+
+            // Fetch rates for all tokens
+            availableTokens.forEach { token ->
+                CoinRateManager.fetchCoinRate(token.tokenInfo)
+                CoinRateManager.coinRate(token.tokenInfo.contractId()) ?: BigDecimal.ZERO
             }
-        }
-    }
 
-    private fun onSearchFocusChange(hasFocus: Boolean) {
-        val isVisible = hasFocus || !binding.searchInput.text.isNullOrBlank()
-        val isVisibleChange = isVisible != binding.closeButton.isVisible()
-
-        if (isVisibleChange) {
-            TransitionManager.go(Scene(binding.root as ViewGroup), Slide(Gravity.END).apply { duration = 150 })
-            binding.closeButton.setVisible(isVisible)
+            uiScope {
+                adapter.setNewDiffData(availableTokens)
+            }
         }
     }
 
     fun search(keyword: String) {
         currentSearchKeyword = keyword
-        val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
-        val coins = availableCoins ?: run {
-            val allCoins = FlowCoinListManager.coinList()
-            allCoins
-                .distinctBy { it.contractId() }
-                .filter { coin ->
-                    if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-                        if (coin.isFlowCoin()) {
-                            val balance = BalanceManager.getBalanceList()
-                                .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                            balance > BigDecimal.ZERO
-                        } else {
-                            val balance = BalanceManager.getBalanceList()
-                                .firstOrNull { it.isSameEVMCoin(coin.address) }?.balance ?: BigDecimal.ZERO
-                            balance > BigDecimal.ZERO
-                        }
-                    } else {
-                        val balance = BalanceManager.getBalanceList()
-                            .firstOrNull { it.isSameCoin(coin) }?.balance ?: BigDecimal.ZERO
-                        balance > BigDecimal.ZERO
-                    }
-                }
-        }
-
-        if (keyword.isBlank()) {
-            adapter.setNewDiffData(coins)
+        val filteredTokens = if (keyword.isBlank()) {
+            availableTokens
         } else {
-            adapter.setNewDiffData(coins.filter {
-                it.name.lowercase().contains(keyword.lowercase()) || it.symbol.lowercase().contains(keyword.lowercase())
-            })
+            availableTokens.filter { token ->
+                token.tokenInfo.name.lowercase().contains(keyword.lowercase()) || 
+                token.tokenInfo.symbol.lowercase().contains(keyword.lowercase())
+            }
         }
+        adapter.setNewDiffData(filteredTokens)
     }
 
     fun clearSearch() {
@@ -203,12 +178,11 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
         fragmentManager: FragmentManager,
         moveFromAddress: String?,
         availableCoins: List<FlowCoin>? = null
-    ) = suspendCoroutine<FlowCoin?> { result ->
+    ) = suspendCoroutine { result ->
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
         this.result = result
         this.moveFromAddress = moveFromAddress
-        this.availableCoins = availableCoins
         adapter.updateSelectedCoin(selectedCoin)
         show(fragmentManager, "")
     }
