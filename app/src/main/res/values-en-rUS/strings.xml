@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Next</string>
     <string name="list">List</string>
-    <string name="grid">Grid</string>
     <string name="view_as">View as</string>
     <string name="creating_account">Creating Your Account…</string>
     <string name="secure_design">Secure by Design</string>
@@ -34,6 +33,7 @@
     <string name="protection">Protection</string>
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
+    <string name="grid">Grid</string>
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
@@ -243,7 +243,7 @@
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
-    <string name="transaction_history">Transaction history</string>
+    <string name="transaction_history">Transaction History</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Profile</string>
@@ -713,4 +713,10 @@
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="scan">Scan</string>
+    <string name="results">Results</string>
+    <string name="search_nft_name">Search NFT Name</string>
+    <string name="loading_nfts">Loading NFTs...</string>
+    <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
+    <string name="refresh">Refresh</string>
+    <string name="no_relevant_nft">No relevant NFT found.</string>
 </resources>

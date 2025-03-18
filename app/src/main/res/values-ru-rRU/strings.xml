@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Следующий</string>
     <string name="list">Список</string>
-    <string name="grid">Сетка</string>
     <string name="view_as">Показать как</string>
     <string name="creating_account">Создание аккаунта…</string>
     <string name="secure_design">Безопасно по дизайну</string>
@@ -34,6 +33,7 @@
     <string name="protection">Защита</string>
     <string name="to_your_wallet">В ваш кошелек</string>
     <string name="pin_code">PIN-код</string>
+    <string name="grid">Сетка</string>
     <string name="create_pin">Создайте PIN-код</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Пожалуйста, введите\nваш PIN-код еще раз.</string>
@@ -57,8 +57,8 @@
     <string name="recovery_phrase_note">Запишите эти слова в правильном порядке и сохраните их где-нибудь в безопасности.</string>
     <string name="recovery">Восстановление</string>
     <string name="phrase">Фраза</string>
-    <string name="nft">NFTs</string>
-    <string name="activity">Деятельность</string>
+    <string name="nft">NFT</string>
+    <string name="activity">Активность</string>
     <string name="restore_wallet">Восстановить кошелек</string>
     <string name="restore_wallet_tip">Восстановите свой кошелек с помощью записанной вами фразы из 12 слов о восстановлении.</string>
     <string name="choose_account">Выберите счет</string>
@@ -208,14 +208,14 @@
     <string name="add_collection">Добавить коллекцию</string>
     <string name="search_nft_collection">Поиск по коллекции NFT</string>
     <string name="scan_qr_code">Сканирование QR-кода</string>
-    <string name="explore_search_hint">Название поиска или URL-адрес</string>
+    <string name="explore_search_hint">Поиск по названию или URL</string>
     <string name="bookmark">Закладка</string>
     <string name="drag_here_to_unpin">Перетащите сюда, чтобы открепить</string>
     <string name="recovery_purchase_tips">Запишите или скопируйте эти слова в правильном порядке и сохраните их в надежном месте.</string>
     <string name="open_in_browser">Открыть в браузере</string>
     <string name="clear_cache">Очистить кэш</string>
     <string name="pending_transaction">Отложенная сделка</string>
-    <string name="welcome_to_wallet">Добро пожаловать в Flow Wallet!</string>
+    <string name="welcome_to_wallet">Добро пожаловать в Flow Wallet !</string>
     <string name="profile_sign_tips"><![CDATA[Присоединяйтесь к нам и откройте для себя все блестящие и новые возможности!]]></string>
     <string name="favourite">Любимый</string>
     <string name="cancel_favourite">Отменить избранное</string>
@@ -229,7 +229,7 @@
     <string name="fcl_permission_read_balance">Просматривайте баланс и активность вашего кошелька</string>
     <string name="fcl_permission_transaction">Запрос на одобрение операций</string>
     <string name="script">Скрипт</string>
-    <string name="dapps">Apps</string>
+    <string name="dapps">Приложения</string>
     <string name="process_of_enabling_coin">Процесс создания монеты</string>
     <string name="mnemonic_check_fail">Неправильный выбор</string>
     <string name="restore_with_recovery_phrase">Восстановление с помощью фразы восстановления</string>
@@ -255,7 +255,7 @@
     <string name="start">Начало</string>
     <string name="import_wallet">Импорт кошелька</string>
     <string name="import_wallet_button">Я уже зарегистрирован</string>
-    <string name="import_str">Импорт</string>
+    <string name="import_str">ИМПОРТ</string>
     <string name="explore_new_nfts">Изучите новые НФТ</string>
     <string name="network_error">Ошибка сети</string>
     <string name="claim">Заявление</string>
@@ -447,7 +447,7 @@
     <string name="device_ip_address">IP-адрес</string>
     <string name="device_location">Расположение</string>
     <string name="device_entry_date">Дата поступления</string>
-    <string name="login_with_registered_account">Зарегистрированные счета</string>
+    <string name="login_with_registered_account">Зарегестрированные аккаунты</string>
     <string name="or">Или</string>
     <string name="sync_page_title">Откройте кошелек Flow в мобильном приложении \n и отсканируйте QR-код для синхронизации кошелька.</string>
     <string name="sync_scan_qr_code">Сканирование QR-кода с помощью мобильного приложения</string>
@@ -490,9 +490,9 @@
     <string name="key_store_address_hint">Введите ваш адрес FLOW (необязательно)</string>
     <string name="from_multi_backup">Из Multi Backup</string>
     <string name="from_multi_backup_note">Google Диск / Ключ доступа / Фраза для восстановления</string>
-    <string name="from_recovery_phrase">Из фразы восстановления (наследие)</string>
+    <string name="from_recovery_phrase">Другой</string>
     <string name="from_recovery_phrase_note">Восстановление с помощью устаревшей фразы восстановления (не мультирезервное копирование)</string>
-    <string name="from_raw_key">Из фразы восстановления (наследие)</string>
+    <string name="from_raw_key">Другое</string>
     <string name="from_raw_key_note">Поддержка устаревших Google Drive, Seed Phrase, Хранилище ключей и закрытый ключ</string>
     <string name="import_raw_key_note">С Flow Wallet старая резервная копия, Seed Phrase, Key Store и приватный ключ.</string>
     <string name="multi_restore">Мультивосстановление</string>
@@ -697,5 +697,11 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Выберите поставщика обмена</string>
     <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
-    <string name="scan">Сканировать</string>
+    <string name="scan">Сканирование</string>
+    <string name="results">Результаты</string>
+    <string name="search_nft_name">Поиск NFT</string>
+    <string name="loading_nfts">Загрузка NFT...</string>
+    <string name="nft_list_loading_error">Ошибка, проверьте интернет или обновите страницу.</string>
+    <string name="refresh">Обновить</string>
+    <string name="no_relevant_nft">NFT не найден.</string>
 </resources>
