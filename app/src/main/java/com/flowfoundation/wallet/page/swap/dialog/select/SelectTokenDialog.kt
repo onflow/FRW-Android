@@ -12,7 +12,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
@@ -130,20 +129,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
                 FlowAccountTokenProvider()
             }
             
-            // Always refresh balances for the current from address
-            BalanceManager.refresh(fromAddress)
-            
-            // Get fresh token list with updated balances
+            // Get token list with balances in a single call
             availableTokens = provider.getMoveTokenList(fromAddress)
                 .filter { it.tokenBalance > BigDecimal.ZERO }
                 .sortedByDescending { it.tokenBalance }
 
-
-            // Fetch rates for all tokens
-            availableTokens.forEach { token ->
-                CoinRateManager.fetchCoinRate(token.tokenInfo)
-                CoinRateManager.coinRate(token.tokenInfo.contractId()) ?: BigDecimal.ZERO
-            }
+            // Fetch rates for all tokens at once
+            CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
 
             uiScope {
                 adapter.setNewDiffData(availableTokens)
