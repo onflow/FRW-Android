@@ -49,7 +49,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private var fromBalance = BigDecimal.ZERO
     private var result: Continuation<Boolean>? = null
     private var isFlowCoin = false
-
     private var moveFromAddress: String = WalletManager.selectedWalletAddress()
     private var moveToAddress: String = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
         WalletManager.wallet()?.walletAddress().orEmpty()
@@ -223,6 +222,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             layoutToAccount.invalidate()
         }
         initView()
+
     }
 
     private fun loadTokens() {

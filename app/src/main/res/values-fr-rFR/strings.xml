@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Suivant</string>
     <string name="list">Liste</string>
-    <string name="grid">Grille</string>
     <string name="view_as">Afficher en tant que</string>
     <string name="creating_account">Création de votre compte…</string>
     <string name="secure_design">Sécurisé de part sa conception</string>
@@ -34,6 +33,7 @@
     <string name="protection">Protection de l\'environnement</string>
     <string name="to_your_wallet">À votre porte-monnaie</string>
     <string name="pin_code">Code PIN</string>
+    <string name="grid">Grille</string>
     <string name="create_pin">Créer un code PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Veuillez taper à nouveau\nvotre code PIN</string>
@@ -67,7 +67,7 @@
     <string name="continue_str">Continuer</string>
     <string name="restore_with_google_drive">Restauration avec Google Drive</string>
     <string name="wrong_password">mot de passe erroné</string>
-    <string name="word_not_found">Opps, mot non trouvé.</string>
+    <string name="word_not_found">Oups, mot non trouvé.</string>
     <string name="restore_mnemonic_tip">Il s\'agit d\'une phrase de 12 mots qui vous a été attribuée lors de la création de votre portefeuille précédent.</string>
     <string name="multi_restore_mnemonic_tip">Il s\'agit d\'une phrase de 15 mots qui vous a été attribuée lorsque vous avez créé votre portefeuille précédent à l\'adresse
         .</string>
@@ -208,7 +208,6 @@
     <string name="add_collection">Ajouter une collection</string>
     <string name="search_nft_collection">Recherche dans la collection NFT</string>
     <string name="scan_qr_code">Scanner le code QR</string>
-    <string name="scan">Scanner</string>
     <string name="explore_search_hint">Rechercher le nom ou l\'URL</string>
     <string name="bookmark">Signet</string>
     <string name="drag_here_to_unpin">Glisser ici pour épingler</string>
@@ -256,7 +255,7 @@
     <string name="start">Démarrage</string>
     <string name="import_wallet">Portefeuille d\'importation</string>
     <string name="import_wallet_button">J\'ai déjà un compte</string>
-    <string name="import_str">Importation</string>
+    <string name="import_str">IMPORTER</string>
     <string name="explore_new_nfts">Explorer de nouveaux NFT</string>
     <string name="network_error">Erreur de réseau</string>
     <string name="claim">Réclamation</string>
@@ -573,7 +572,7 @@
     <string name="exit_backup_warning_dialog_title">Êtes-vous sûr de vouloir faire une sauvegarde ?</string>
     <string name="exit_backup_warning_dialog">Si vous perdez votre appareil ou si vous supprimez votre portefeuille, vos fonds seront perdus pour toujours.</string>
     <string name="back">Retour</string>
-    <string name="token_count">%1$d Tokens</string>
+    <string name="token_count">Tokens %1$d</string>
     <string name="wallpaper_static">Statique</string>
     <string name="wallpaper_dynamic">Dynamique</string>
     <string name="wallpaper">Fond d\'écran</string>
@@ -629,7 +628,6 @@
     <string name="backup_recovery_phrase_about_title">À propos de votre</string>
     <string name="backup_recovery_phrase_about_note">Vous avez sélectionné pour utiliser une phrase de récupération de 15 mots. Votre récupération de poids partiel correspondra à une clé de récupération de poids partiel sur votre compte FLOW. Votre phrase de récupération de poids partiel seul ne sécurise pas l\'accès complet à votre compte. Il doit être utilisé en même temps que vos autres sauvegardes pour récupérer l\'accès à votre compte.</string>
     <string name="recommended">Configuration recommandée</string>
-    <string name="backup_seed_phrase_warning">Vous avez sélectionné d\'utiliser une sauvegarde de phrase de récupération de 12 mots. \n \nCette sauvegarde de phrase de récupération aura le contrôle total de votre compte.</string>
     <string name="backup_start_about_title">Qu\'est-ce qu\'un</string>
     <string name="backup_start_about_content">Multi-sauvegarde</string>
     <string name="backup_start_about_note">Une sauvegarde multiple stocke plusieurs clés de poids partiel sur vos comptes sur des fournisseurs de confiance comme Google Drive et iCloud, ou une phrase de récupération. \n \nDeux clés de poids partiel doivent être utilisées ensemble pour récupérer l\'accès à votre compte. Chaque clé individuellement ne peut pas être utilisée. \n \nCela signifie que pour récupérer l\'accès à votre compte, Flow Wallet nécessite l\'accès à deux de vos sauvegardes. \n \nVos sauvegardes sont chiffrées à l\'aide du code PIN de votre portefeuille. Vous devez mémoriser ou noter votre code PIN et le stocker dans un endroit sûr.</string>
@@ -639,6 +637,7 @@
     <string name="secured_note">Flow Wallet utilise le KeyStore de votre appareil pour protéger votre compte
         et vos actifs. Cette clé privée ne peut pas être récupérée. \n \nKeyStore protège votre clé privée
         en utilisant la sécurité au niveau du matériel de votre appareil, éliminant le besoin d\'une phrase de graine. \n \nVeuillez créer des sauvegardes pour votre portefeuille afin de vous assurer de conserver l\'accès à votre compte Flow et à vos actifs en cas de perte de votre appareil.</string>
+    <string name="backup_seed_phrase_warning">Vous avez sélectionné d\'utiliser une sauvegarde de phrase de récupération de 12 mots. \n \nCette sauvegarde de phrase de récupération aura le contrôle total de votre compte.</string>
     <string name="keystore_select_account_tips">Choisissez un compte que vous souhaitez importer</string>
     <string name="keystore_select_account_title">Comptes %1$d trouvés</string>
     <string name="keystore_no_account_title">Aucun compte trouvé</string>
@@ -700,4 +699,11 @@
     <string name="welcome_desc">Bienvenue sur Flow Wallet ! Créez un compte pour commencer</string>
     <string name="search_tokens">Rechercher des tokens</string>
     <string name="token_list">Liste des tokens</string>
+    <string name="scan">Scanner</string>
+    <string name="results">Résultats</string>
+    <string name="search_nft_name">Rechercher un nom NFT</string>
+    <string name="loading_nfts">Chargement des NFT...</string>
+    <string name="nft_list_loading_error">Erreur, veuillez vérifier votre connexion Internet ou rafraîchir.</string>
+    <string name="refresh">Rafraîchir</string>
+    <string name="no_relevant_nft">Aucune NFT correspondante trouvée.</string>
 </resources>

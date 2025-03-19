@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.manager.walletconnect.model
 
-import com.walletconnect.android.Core
-import com.walletconnect.sign.client.Sign
+import com.reown.android.Core
+import com.reown.sign.client.Sign
 
 class WCRequest(
     val metaData: Core.Model.AppMetaData?,
@@ -11,17 +11,6 @@ class WCRequest(
     val params: String,
     val topic: String,
 )
-
-fun Sign.Model.PendingRequest.toWcRequest(metaData: Core.Model.AppMetaData?): WCRequest {
-    return WCRequest(
-        metaData = metaData,
-        requestId = requestId,
-        method = method,
-        params = params,
-        topic = topic,
-        chainId = chainId,
-    )
-}
 
 fun Sign.Model.SessionRequest.toWcRequest(): WCRequest {
     return WCRequest(

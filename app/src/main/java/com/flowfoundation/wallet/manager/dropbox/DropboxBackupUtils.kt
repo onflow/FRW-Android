@@ -20,7 +20,7 @@ import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.FlowAddress
-import com.walletconnect.android.internal.common.crypto.sha256
+import com.reown.android.internal.common.crypto.sha256
 
 
 private const val TAG = "DropboxBackupUtils"

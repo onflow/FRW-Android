@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Avanti</string>
     <string name="list">Elenco</string>
-    <string name="grid">Griglia</string>
     <string name="view_as">Mostra come</string>
     <string name="creating_account">Creazione Del Tuo Account…</string>
     <string name="secure_design">Progettato per essere sicuro</string>
@@ -34,6 +33,7 @@
     <string name="protection">Protezione</string>
     <string name="to_your_wallet">Al vostro portafoglio</string>
     <string name="pin_code">Codice PIN</string>
+    <string name="grid">Griglia</string>
     <string name="create_pin">Creare un PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Digitare nuovamente\nil PIN</string>
@@ -67,7 +67,7 @@
     <string name="continue_str">Continua</string>
     <string name="restore_with_google_drive">Ripristino con Google Drive</string>
     <string name="wrong_password">password errata</string>
-    <string name="word_not_found">Opps, parola non trovata.</string>
+    <string name="word_not_found">Oops, parola non trovata.</string>
     <string name="restore_mnemonic_tip">Si tratta di una frase di 12 parole che vi è stata data quando avete creato il vostro portafoglio precedente.</string>
     <string name="multi_restore_mnemonic_tip">Si tratta di una frase di 15 parole che vi è stata data quando avete creato il vostro portafoglio precedente su
         .</string>
@@ -208,14 +208,14 @@
     <string name="add_collection">Aggiungi collezione</string>
     <string name="search_nft_collection">Ricerca nella collezione NFT</string>
     <string name="scan_qr_code">Scansione del codice QR</string>
-    <string name="explore_search_hint">Nome o URL di ricerca</string>
+    <string name="explore_search_hint">Cerca il nome o URL</string>
     <string name="bookmark">Segnalibro</string>
     <string name="drag_here_to_unpin">Trascinare qui per staccare la spina</string>
     <string name="recovery_purchase_tips">Scrivete o copiate queste parole nell\'ordine giusto e salvatele in un posto sicuro.</string>
     <string name="open_in_browser">Aprire nel browser</string>
     <string name="clear_cache">Svuota cache</string>
     <string name="pending_transaction">Transazione in sospeso</string>
-    <string name="welcome_to_wallet">Benvenuti in Flow Wallet!</string>
+    <string name="welcome_to_wallet">Benvenuti in Flow Wallet !</string>
     <string name="profile_sign_tips"><![CDATA[Unisciti a noi e sblocca tutte le esperienze più brillanti e nuove!]]></string>
     <string name="favourite">Il preferito</string>
     <string name="cancel_favourite">Annullamento dei preferiti</string>
@@ -255,7 +255,7 @@
     <string name="start">Inizio</string>
     <string name="import_wallet">Portafoglio di importazione</string>
     <string name="import_wallet_button">Ho gia un account</string>
-    <string name="import_str">Importazione</string>
+    <string name="import_str">IMPORTAZIONE</string>
     <string name="explore_new_nfts">Esplorare nuovi NFT</string>
     <string name="network_error">Errore di rete</string>
     <string name="claim">Rivendicazione</string>
@@ -447,7 +447,7 @@
     <string name="device_ip_address">Indirizzo IP</string>
     <string name="device_location">Posizione</string>
     <string name="device_entry_date">Data di iscrizione</string>
-    <string name="login_with_registered_account">Conti registrati</string>
+    <string name="login_with_registered_account">Account registrati</string>
     <string name="or">Oppure</string>
     <string name="sync_page_title">Aprire il portafoglio Flow sull\'applicazione mobile \n e scansionare il codice QR per sincronizzare il portafoglio.</string>
     <string name="sync_scan_qr_code">Scansione del codice QR con l\'applicazione mobile</string>
@@ -490,9 +490,9 @@
     <string name="key_store_address_hint">Inserisci il tuo indirizzo FLOW (facoltativo)</string>
     <string name="from_multi_backup">Da Multi Backup</string>
     <string name="from_multi_backup_note">Google Drive/ Passkey/ Frase di recupero</string>
-    <string name="from_recovery_phrase">Da frase di recupero (eredità)</string>
+    <string name="from_recovery_phrase">Altro</string>
     <string name="from_recovery_phrase_note">Ripristino utilizzando una frase di recupero legacy (non multi-backup)</string>
-    <string name="from_raw_key">Da frase di recupero (eredità)</string>
+    <string name="from_raw_key">Altro</string>
     <string name="from_raw_key_note">Supporto eredità Google Drive, Seed Phrase, Key Store e chiave privata</string>
     <string name="import_raw_key_note">Da Flow Wallet legacy backup, Seed Phrase, Key Store e chiave privata.</string>
     <string name="multi_restore">Ripristino multiplo</string>
@@ -703,4 +703,10 @@
     <string name="scan">Scansione</string>
     <string name="search_tokens">Cerca token</string>
     <string name="token_list">Elenco dei Token</string>
+    <string name="results">Risultati</string>
+    <string name="search_nft_name">Cerca Nome NFT</string>
+    <string name="loading_nfts">Caricamento NFT...</string>
+    <string name="nft_list_loading_error">Errore, si prega di controllare internet o aggiornare.</string>
+    <string name="refresh">Aggiornare</string>
+    <string name="no_relevant_nft">Nessun NFT pertinente trovato.</string>
 </resources>

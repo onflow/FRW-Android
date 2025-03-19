@@ -2,11 +2,9 @@
 <resources>
     <string name="next">Weiter</string>
     <string name="list">Liste</string>
-    <string name="grid">Raster</string>
     <string name="view_as">Anzeigen als</string>
     <string name="creating_account">Erstellen Ihres Kontos…</string>
     <string name="secure_design">Sicher durch Design</string>
-    <string name="scan">Scannen</string>
     <string name="secure_design_2">Die Verwendung von Geräteschlüssen mit Hardware-Grade-Sicherheit, Flow Wallet ist eine extrem sichere Hardware-Wallet, der Sie vertrauen können</string>
     <string name="username">Benutzername</string>
     <string name="username_too_short">Zu kurz</string>
@@ -35,6 +33,7 @@
     <string name="protection">Schutz</string>
     <string name="to_your_wallet">Für Ihr Portemonnaie</string>
     <string name="pin_code">PIN-Code</string>
+    <string name="grid">Raster</string>
     <string name="create_pin">Eine PIN erstellen</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Bitte geben Sie\nIhre PIN erneut ein.</string>
@@ -68,7 +67,7 @@
     <string name="continue_str">Weiter</string>
     <string name="restore_with_google_drive">Wiederherstellung mit Google Drive</string>
     <string name="wrong_password">falsches Passwort</string>
-    <string name="word_not_found">Opps, Wort nicht gefunden.</string>
+    <string name="word_not_found">Hoppla, Wort nicht gefunden.</string>
     <string name="restore_mnemonic_tip">Dies ist eine 12-Wort-Phrase, die Sie bei der Erstellung Ihrer vorherigen Brieftasche erhalten haben.</string>
     <string name="multi_restore_mnemonic_tip">Dies ist ein Satz mit 15 Wörtern, den Sie bei der Erstellung Ihrer vorherigen Brieftasche
         erhalten haben.</string>
@@ -216,7 +215,7 @@
     <string name="open_in_browser">Im Browser öffnen</string>
     <string name="clear_cache">Cache löschen</string>
     <string name="pending_transaction">Anhängige Transaktion</string>
-    <string name="welcome_to_wallet">Willkommen bei Flow Wallet!</string>
+    <string name="welcome_to_wallet">Willkommen bei Flow Wallet !</string>
     <string name="profile_sign_tips"><![CDATA[Schließen Sie sich uns an und schalten Sie alle brillanten und neuen Erfahrungen frei!]]></string>
     <string name="favourite">Favorit</string>
     <string name="cancel_favourite">Favorit stornieren</string>
@@ -244,7 +243,7 @@
     <string name="hold_to_sign">Zum Link halten</string>
     <string name="enable">Aktivieren Sie</string>
     <string name="sign_message">Zeichen Nachricht</string>
-    <string name="transaction_history">Verlauf der Transaktionen</string>
+    <string name="transaction_history">Transaktionsverlauf</string>
     <string name="transaction_common_title">Exec-Transaktion</string>
     <string name="transactions">Transaktionen</string>
     <string name="reset_wallet">Brieftasche zurücksetzen</string>
@@ -256,7 +255,7 @@
     <string name="start">Start</string>
     <string name="import_wallet">Brieftasche importieren</string>
     <string name="import_wallet_button">Ich habe bereits ein Konto</string>
-    <string name="import_str">Importieren</string>
+    <string name="import_str">IMPORTIEREN</string>
     <string name="explore_new_nfts">Neue NFTs erforschen</string>
     <string name="network_error">Netzwerkfehler</string>
     <string name="claim">Anspruch</string>
@@ -484,7 +483,7 @@
     <string name="restore_seed_passphrase">Passphrase</string>
     <string name="restore_seed_phrase_hint">12 oder 24 Wörter geteilt mit Leerzeichen</string>
     <string name="restore_seed_phrase_derivation_path_hint">Derivationspfad (m/44\'/539\'/0\'/0/0)</string>
-    <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
+    <string name="restore_seed_phrase_passphrase_hint">Passphrase (optional)</string>
     <string name="restore_private_key_hint">Geben Sie Ihren Private Key ein</string>
     <string name="key_store_json_hint">Sie können die JSON-Datei von anderen Wallets importieren (z.B. Blockto)</string>
     <string name="key_store_password_hint">Passwort für JSON-Datei eingeben</string>
@@ -703,4 +702,11 @@
     <string name="welcome_desc">Willkommen bei Flow Wallet! Erstellen Sie ein Konto um loszulegen</string>
     <string name="search_tokens">Token suchen</string>
     <string name="token_list">Token-Listen</string>
+    <string name="scan">Scannen</string>
+    <string name="results">Ergebnisse</string>
+    <string name="search_nft_name">NFT-Name suchen</string>
+    <string name="loading_nfts">Lade NFTs...</string>
+    <string name="nft_list_loading_error">Fehler, bitte überprüfe dein Internet oder aktualisiere es.</string>
+    <string name="refresh">Aktualisieren</string>
+    <string name="no_relevant_nft">Keine relevante NFT gefunden.</string>
 </resources>

@@ -294,11 +294,11 @@ dependencies {
     }
     implementation 'com.github.onflow.flow-kmm:flow:0.0.1'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    implementation(platform("com.walletconnect:android-bom:1.35.1"))
-    implementation("com.walletconnect:android-core") {
+    implementation(platform("com.reown:android-bom:1.2.1"))
+    implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
     }
-    implementation("com.walletconnect:sign") {
+    implementation("com.reown:sign") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
     }
 

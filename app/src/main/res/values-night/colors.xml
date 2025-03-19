@@ -137,6 +137,6 @@
     <color name="border_line">#0FFFFFFF</color>
     <color name="background_2">#28282A</color>
     <color name="disable_button_text">#40FFFFFF</color>
-
+    <color name="button_bg_secondary">#E5E5E6</color>
 </resources>
 

@@ -2,7 +2,6 @@
 <resources>
     <string name="next">次のページ</string>
     <string name="list">リスト</string>
-    <string name="grid">グリッド</string>
     <string name="view_as">表示</string>
     <string name="creating_account">アカウントを作成しています…</string>
     <string name="secure_design">セキュア・バイ・デザイン</string>
@@ -34,6 +33,7 @@
     <string name="protection">保護</string>
     <string name="to_your_wallet">あなたの財布へ</string>
     <string name="pin_code">PINコード</string>
+    <string name="grid">グリッド</string>
     <string name="create_pin">PINの作成</string>
     <string name="pin">PIN</string>
     <string name="check_pin">\nPINをもう一度入力してください。</string>
@@ -57,7 +57,7 @@
     <string name="recovery_phrase_note">適切な順序でこれらの単語を書き留め、安全な場所に保管してください。</string>
     <string name="recovery">リカバリー</string>
     <string name="phrase">フレーズ</string>
-    <string name="nft">NFT</string>
+    <string name="nft">エヌエフティー</string>
     <string name="activity">アクティビティ</string>
     <string name="restore_wallet">財布の復元</string>
     <string name="restore_wallet_tip">書き留めた12語の回復フレーズで財布を回復させる。</string>
@@ -207,7 +207,7 @@
     <string name="add_collection">コレクションを追加</string>
     <string name="search_nft_collection">NFTコレクションを検索</string>
     <string name="scan_qr_code">QRコードをスキャン</string>
-    <string name="explore_search_hint">検索名またはURL</string>
+    <string name="explore_search_hint">検索名または URL</string>
     <string name="bookmark">ブックマーク</string>
     <string name="drag_here_to_unpin">ピンを外すにはここをドラッグ</string>
     <string name="recovery_purchase_tips">これらの単語を正しい順番で書き留めるかコピーして、安全な場所に保存しておく。</string>
@@ -228,7 +228,7 @@
     <string name="fcl_permission_read_balance">財布の残高とアクティビティを見る</string>
     <string name="fcl_permission_transaction">取引の承認を求める</string>
     <string name="script">スクリプト</string>
-    <string name="dapps">Apps</string>
+    <string name="dapps">アプリ</string>
     <string name="process_of_enabling_coin">コインを使用可能にするプロセス</string>
     <string name="mnemonic_check_fail">選択ミス</string>
     <string name="restore_with_recovery_phrase">リカバリーフレーズで復元</string>
@@ -254,7 +254,7 @@
     <string name="start">スタート</string>
     <string name="import_wallet">インポート・ウォレット</string>
     <string name="import_wallet_button">すでにアカウントを持っています</string>
-    <string name="import_str">輸入</string>
+    <string name="import_str">インポート</string>
     <string name="explore_new_nfts">新しいNFTの開拓</string>
     <string name="network_error">ネットワークエラー</string>
     <string name="claim">クレーム</string>
@@ -446,7 +446,7 @@
     <string name="device_ip_address">IPアドレス</string>
     <string name="device_location">所在地</string>
     <string name="device_entry_date">エントリー日</string>
-    <string name="login_with_registered_account">登録口座</string>
+    <string name="login_with_registered_account">登録済みアカウント</string>
     <string name="or">あるいは</string>
     <string name="sync_page_title">モバイルアプリ（ \n ）でFlowウォレットを開き、QRコードをスキャンしてウォレットを同期します。</string>
     <string name="sync_scan_qr_code">モバイルアプリでQRコードをスキャン</string>
@@ -489,9 +489,9 @@
     <string name="key_store_address_hint">フローアドレスを入力してください（オプション）</string>
     <string name="from_multi_backup">マルチバックアップより</string>
     <string name="from_multi_backup_note">グーグルドライブ／パスキー／リカバリーフレーズ</string>
-    <string name="from_recovery_phrase">リカバリーフレーズより（レガシー）</string>
+    <string name="from_recovery_phrase">その他</string>
     <string name="from_recovery_phrase_note">レガシーリカバリーフレーズを使用したリストア（マルチバックアップではない）</string>
-    <string name="from_raw_key">リカバリーフレーズより（レガシー）</string>
+    <string name="from_raw_key">その他</string>
     <string name="from_raw_key_note">従来のGoogleドライブ、シードフレーズ、キーストア、プライベートキーをサポート</string>
     <string name="import_raw_key_note">Flow Walletのレガシーバックアップ、シードフレーズ、キーストア、プライベートキーから。</string>
     <string name="multi_restore">マルチ復元</string>
@@ -703,4 +703,10 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="scan">スキャン</string>
     <string name="search_tokens">トークンを検索</string>
     <string name="token_list">トークンリスト</string>
+    <string name="results">検索結果</string>
+    <string name="search_nft_name">NFT の名前を検索</string>
+    <string name="loading_nfts">NFTを読み込み中...</string>
+    <string name="nft_list_loading_error">エラーが発生しました。インターネットを確認するか、更新してください。</string>
+    <string name="refresh">リフレッシュ</string>
+    <string name="no_relevant_nft">該当するNFTが見つかりません。</string>
 </resources>
