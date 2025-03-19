@@ -18,7 +18,7 @@ fun Float.formatPrice(
     var value = this
     if (convertCurrency) {
         if (CurrencyManager.currencyPrice() <= 0) {
-            return ""
+            return "0"
         }
         value *= CurrencyManager.currencyPrice()
     }
@@ -47,7 +47,7 @@ fun BigDecimal.formatPrice(
     var value = this
     if (convertCurrency) {
         if (CurrencyManager.currencyDecimalPrice() <= BigDecimal.ZERO) {
-            return ""
+            return "0"
         }
         value *= CurrencyManager.currencyDecimalPrice()
     }
@@ -146,7 +146,7 @@ fun Double.formatPrice(
     var value = this
     if (convertCurrency) {
         if (CurrencyManager.currencyPrice() <= 0) {
-            return ""
+            return "0"
         }
         value *= CurrencyManager.currencyPrice()
     }
@@ -190,7 +190,7 @@ private fun toSubscript(n: Int): String {
 
 fun formatTokenPrice(price: Double): String {
     if (price == 0.0) {
-        return ""
+        return "0"
     }
 
     // For prices at least $0.0001, use normal formatting with min 2 and max 4 decimals.

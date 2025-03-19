@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.token.detail.widget
 
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -122,12 +123,13 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         loadTokens()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupViews() {
         // Initialize addresses based on whether EVM is selected
-        if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-            moveToAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        moveToAddress = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
+            WalletManager.wallet()?.walletAddress().orEmpty()
         } else {
-            moveToAddress = EVMWalletManager.getEVMAddress().orEmpty()
+            EVMWalletManager.getEVMAddress().orEmpty()
         }
 
         with(binding) {
@@ -230,9 +232,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             // Force provider refresh by setting currentTokenProvider to null
             currentTokenProvider = null
             val provider = getProvider(moveFromAddress)
-
-            // Always refresh balances for the current from address
-            BalanceManager.refresh(moveFromAddress)
             
             // Get fresh token list with updated balances
             availableTokens = provider.getMoveTokenList(moveFromAddress)
@@ -273,9 +272,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             // Force provider refresh and use consistent balance refresh logic
             currentTokenProvider = null
             val provider = getProvider(moveFromAddress)
-
-            // Always refresh balances for the current from address
-            BalanceManager.refresh(moveFromAddress)
             
             // Get fresh token list with updated balances
             availableTokens = provider.getMoveTokenList(moveFromAddress)
@@ -305,6 +301,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateSelectedToken(token: MoveToken) {
         currentToken = token
         contractId = token.tokenInfo.contractId()
@@ -347,7 +344,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            BalanceManager.refresh(from)
+                            BalanceManager.refresh()
                             result?.resume(true)
                             dismiss()
                         } else {
@@ -360,7 +357,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            BalanceManager.refresh(from)
+                            BalanceManager.refresh()
                             result?.resume(true)
                             dismiss()
                         } else {
@@ -373,7 +370,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            BalanceManager.refresh(from)
+                            BalanceManager.refresh()
                             result?.resume(true)
                             dismiss()
                         } else {
