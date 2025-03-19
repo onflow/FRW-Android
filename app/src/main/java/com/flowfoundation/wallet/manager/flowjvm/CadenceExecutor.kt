@@ -95,8 +95,8 @@ suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
-suspend fun cadenceQueryTokenBalance(coin: FlowCoin): BigDecimal? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): BigDecimal? {
+    val walletAddress = (address ?: WalletManager.selectedWalletAddress()).toAddress()
     logd(TAG, "cadenceQueryTokenBalance()")
     val script = CadenceScript.CADENCE_GET_BALANCE
     val result = coin.formatCadence(script).executeCadence(script.scriptId) {

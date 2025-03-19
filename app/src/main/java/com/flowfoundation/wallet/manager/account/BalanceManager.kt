@@ -7,16 +7,19 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
+import com.flowfoundation.wallet.manager.flowjvm.executeCadence
+import com.flowfoundation.wallet.manager.flowjvm.parseBigDecimalMap
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.wallet.toAddress
+import org.onflow.flow.infrastructure.Cadence
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
@@ -37,21 +40,23 @@ object BalanceManager {
         }
     }
 
-    fun refresh() {
-        if (WalletManager.isEVMAccountSelected()) {
+    fun refresh(address: String? = null) {
+        val targetAddress = address ?: WalletManager.selectedWalletAddress()
+        if (EVMWalletManager.isEVMWalletAddress(targetAddress)) {
             FlowCoinListManager.getFlowCoin()?.let {
                 fetch(it)
             }
             getEVMTokenBalance()
         } else {
-            fetchTokenBalance()
+            fetchTokenBalance(address)
         }
     }
 
-    private fun fetchTokenBalance() {
+    private fun fetchTokenBalance(address: String? = null) {
         ioScope {
             val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
-            val balanceMap = cadenceQueryTokenListBalance() ?: return@ioScope
+            val targetAddress = address ?: WalletManager.selectedWalletAddress()
+            val balanceMap = cadenceQueryTokenListBalance(targetAddress) ?: return@ioScope
             coinList.forEach { coin ->
                 balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
@@ -104,26 +109,16 @@ object BalanceManager {
         return getEVMBalanceByCoin(tokenAddress, address)
     }
 
-    suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
+    private suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
         val apiService = retrofitApi().create(ApiService::class.java)
         val balanceResponse = apiService.getEVMTokenBalance(evmAddress, chainNetWorkString())
         val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
-    suspend fun getFlowBalanceByContractId(contractId: String, flowAddress: String): BigDecimal {
-        val balanceMap = cadenceQueryTokenListBalanceWithAddress(flowAddress) ?: return BigDecimal.ZERO
-        return balanceMap[contractId]?: BigDecimal.ZERO
-    }
-
-    fun getBalanceByCoin(coin: FlowCoin) {
+    fun getBalanceByCoin(coin: FlowCoin, address: String? = null) {
         logd(TAG, "getBalanceByCoin:${coin.symbol}")
-        fetch(coin)
-    }
-
-    fun getBalanceByCoin(coinContractId: String) {
-        val coin = FlowCoinListManager.getCoinById(coinContractId) ?: return
-        getBalanceByCoin(coin)
+        fetch(coin, address)
     }
 
     fun addListener(callback: OnBalanceUpdate) {
@@ -143,21 +138,23 @@ object BalanceManager {
 
     fun getBalanceList() = balanceList.toList()
 
-    private fun fetch(coin: FlowCoin) {
+    private fun fetch(coin: FlowCoin, address: String? = null) {
         ioScope {
             balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = if (WalletManager.isEVMAccountSelected()) {
+            val targetAddress = address ?: WalletManager.selectedWalletAddress()
+
+            val balance = if (EVMWalletManager.isEVMWalletAddress(targetAddress)) {
                 if (coin.isFlowCoin()) {
                     cadenceQueryCOATokenBalance()
                 } else {
-                    getEVMBalanceByCoin(coin.address)
+                    getEVMBalanceByCoin(coin.address, targetAddress)
                 }
             } else {
                 if (coin.isFlowCoin()) {
-                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin)
+                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin, targetAddress)
                 } else {
-                    cadenceQueryTokenBalance(coin)
+                    cadenceQueryTokenBalance(coin, targetAddress)
                 }
             }
             if (balance != null) {
@@ -176,6 +173,14 @@ object BalanceManager {
     fun clear() {
         balanceList.clear()
         cache.clear()
+    }
+
+    private suspend fun cadenceQueryTokenListBalance(address: String): Map<String, BigDecimal>? {
+        val walletAddress = address.toAddress()
+        val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
+            arg { Cadence.address(walletAddress) }
+        }
+        return result?.decode<Map<String, String>>().parseBigDecimalMap()
     }
 }
 
@@ -196,8 +201,8 @@ data class Balance(
                 && contractName.equals(coin.contractName(), ignoreCase = true)
     }
 
-    fun isSameEVMCoin(address: String): Boolean {
-        return address.equals(address, ignoreCase = true)
+    fun isSameEVMCoin(tokenAddress: String): Boolean {
+        return address.equals(tokenAddress, ignoreCase = true)
     }
 }
 

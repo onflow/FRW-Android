@@ -4,11 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_round_16dp"
-    android:backgroundTint="@color/background"
+    android:background="@drawable/bg_token_list_item"
     android:paddingHorizontal="11dp"
-    android:paddingVertical="10dp"
-    tools:layout_marginHorizontal="18dp">
+    android:paddingVertical="10dp">
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/icon_view"
@@ -22,14 +20,18 @@
 
     <TextView
         android:id="@+id/name_view"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="19dp"
+        android:layout_marginEnd="16dp"
         android:fontFamily="@font/inter_semi_bold"
         android:textColor="@color/text"
         android:textSize="14sp"
+        android:singleLine="true"
+        android:ellipsize="end"
         app:layout_constraintBottom_toTopOf="@id/symbol_view"
         app:layout_constraintStart_toEndOf="@id/icon_view"
+        app:layout_constraintEnd_toStartOf="@id/token_amount"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
         tools:text="ALT - Block Token"/>
@@ -46,6 +48,32 @@
         app:layout_constraintTop_toBottomOf="@id/name_view"
         tools:text="SPL"/>
 
+    <TextView
+        android:id="@+id/token_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_semi_bold"
+        android:textColor="@color/text"
+        android:textSize="14sp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintBottom_toTopOf="@id/token_price"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="123.45 FLOW"/>
+
+    <TextView
+        android:id="@+id/token_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_medium"
+        android:textColor="@color/note"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/token_amount"
+        app:layout_constraintTop_toBottomOf="@id/token_amount"
+        tools:text="$123.45"/>
+
     <androidx.constraintlayout.utils.widget.ImageFilterButton
         android:id="@+id/state_button"
         android:layout_width="24dp"
@@ -56,18 +84,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-    <androidx.constraintlayout.utils.widget.ImageFilterView
-        android:id="@+id/selected_view"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_marginEnd="16dp"
-        android:src="@drawable/ic_circle_right_green"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:roundPercent="1"/>
 
     <ProgressBar
         android:id="@+id/progress_bar"

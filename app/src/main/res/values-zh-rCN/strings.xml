@@ -33,7 +33,6 @@
     <string name="protection">保护</string>
     <string name="to_your_wallet">致您的钱包</string>
     <string name="pin_code">PIN 码</string>
-    <string name="grid">网格</string>
     <string name="create_pin">创建 PIN 密码</string>
     <string name="pin">PIN</string>
     <string name="check_pin">请再次输入\n您的 PIN 码</string>
@@ -700,6 +699,9 @@
     <string name="choose_swap_provider">选择交换提供商</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="scan">扫描</string>
+    <string name="grid">网格</string>
+    <string name="search_tokens">搜索代币</string>
+    <string name="token_list">代币列表</string>
     <string name="results">结果</string>
     <string name="search_nft_name">搜索 NFT 名称</string>
     <string name="loading_nfts">正在加载 NFT...</string>

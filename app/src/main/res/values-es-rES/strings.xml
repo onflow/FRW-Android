@@ -700,6 +700,8 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Elegir proveedor de intercambio</string>
     <string name="welcome_desc">¡Bienvenido a Flow Wallet! Crea una cuenta para empezar</string>
+    <string name="search_tokens">Buscar tokens</string>
+    <string name="token_list">Lista de tokens</string>
     <string name="scan">Escanear</string>
     <string name="results">Resultados</string>
     <string name="search_nft_name">Buscar nombre NFT</string>

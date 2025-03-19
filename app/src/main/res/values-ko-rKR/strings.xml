@@ -695,6 +695,8 @@
     <string name="choose_swap_provider">스왑 제공자 선택</string>
     <string name="welcome_desc">Flow Wallet에 오신 것을 환영합니다! 시작하려면 계정을 만드세요</string>
     <string name="scan">스캔</string>
+    <string name="search_tokens">토큰 검색</string>
+    <string name="token_list">토큰 목록</string>
     <string name="results">결과</string>
     <string name="search_nft_name">NFT 이름 검색</string>
     <string name="loading_nfts">NFT 로딩중</string>
