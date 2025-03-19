@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 import kotlin.coroutines.Continuation
@@ -112,33 +113,35 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         binding.tokenListLabel.setVisible(!hasFocus)
     }
 
-    fun refreshTokenList() {
-        selectedCoin = null
-        adapter.updateSelectedCoin(null)
-        loadTokens()
-    }
-
     private fun loadTokens() {
         ioScope {
             val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
 
-            // Get token list with balances
-            val provider = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-                EVMAccountTokenProvider()
-            } else {
-                FlowAccountTokenProvider()
-            }
-            
-            // Get token list with balances in a single call
-            availableTokens = provider.getMoveTokenList(fromAddress)
-                .filter { it.tokenBalance > BigDecimal.ZERO }
-                .sortedByDescending { it.tokenBalance }
+            try {
+                val provider = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                    EVMAccountTokenProvider()
+                } else {
+                    FlowAccountTokenProvider()
+                }
 
-            // Fetch rates for all tokens at once
-            CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
+                // Get token list with balances
+                val tokens = provider.getMoveTokenList(fromAddress)
+                    .filter { it.tokenBalance > BigDecimal.ZERO }
+                    .sortedByDescending { it.tokenBalance }
 
-            uiScope {
-                adapter.setNewDiffData(availableTokens)
+                if (tokens.isNotEmpty()) {
+                    availableTokens = tokens
+
+                    // Fetch rates for all tokens at once
+                    CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
+
+                    // Update UI with the new token list
+                    uiScope {
+                        adapter.setNewDiffData(availableTokens)
+                    }
+                }
+            } catch (e: Exception) {
+                logd("SelectTokenDialog", "Error loading token list: ${e.message}")
             }
         }
     }
