@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.cache.nftCollectionStateCache
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckNFTListEnabled
+import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNFTBalanceStorage
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -36,7 +37,7 @@ object NftCollectionStateManager {
     private suspend fun fetchStateSync(onFinish: (() -> Unit)? = null) {
         val collectionList = NftCollectionConfig.list()
 
-        val collectionMap = cadenceCheckNFTListEnabled()
+        val collectionMap = cadenceGetNFTBalanceStorage()
         logd(TAG, "enable nft list:: ${collectionMap.toString()}")
 
         if (collectionMap.isNullOrEmpty()) {
@@ -44,7 +45,7 @@ object NftCollectionStateManager {
             return
         }
         collectionList.forEach { collection ->
-            val isEnable = collectionMap.getOrDefault(collection.contractId(), false)
+            val isEnable = collectionMap.contains(collection.contractIdWithCollection())
             val oldState = tokenStateList.firstOrNull { it.contractId == collection.contractId() }
             tokenStateList.remove(oldState)
             tokenStateList.add(NftCollectionState(collection.name, collection.contractId(), isEnable))

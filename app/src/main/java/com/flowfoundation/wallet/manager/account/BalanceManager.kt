@@ -7,9 +7,9 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -50,11 +50,16 @@ object BalanceManager {
     private fun fetchTokenBalance() {
         ioScope {
             val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
-            val balanceMap = cadenceQueryTokenListBalance() ?: return@ioScope
+            val balanceMap = cadenceGetTokenBalanceStorage() ?: return@ioScope
             coinList.forEach { coin ->
                 balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-                val balance = balanceMap[coin.contractId()] ?: BigDecimal.ZERO
+                //todo available flow balance
+                val balance = if (coin.isFlowCoin()) {
+                    balanceMap["availableFlowToken"] ?: BigDecimal.ZERO
+                } else {
+                    balanceMap[coin.getFTIdentifier()] ?: BigDecimal.ZERO
+                }
 
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
