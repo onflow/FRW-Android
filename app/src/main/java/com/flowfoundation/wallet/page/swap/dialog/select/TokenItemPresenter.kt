@@ -32,39 +32,15 @@ class TokenItemPresenter(
             stateButton.setVisible(false)
             view.isSelected = model.tokenInfo.isSameCoin(selectedCoin.orEmpty())
             
-            val balance = model.tokenBalance
-            val contractId = model.tokenInfo.contractId()
+            // Display balance
+            tokenAmount.text = "${model.tokenBalance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.tokenInfo.symbol.uppercase()}"
             
-            // Set the balance text
-            tokenAmount.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.tokenInfo.symbol.uppercase()}"
-            
-            // Get current rate and update price if available
-            val rate = CoinRateManager.coinRate(contractId)
-            
-            if (rate != null && rate > BigDecimal.ZERO) {
-                val dollarValue = balance * rate
-                tokenPrice.text = dollarValue.formatPrice(includeSymbol = true, isAbbreviation = true)
+            // Display price if available
+            model.dollarValue?.let { value ->
+                tokenPrice.text = value.formatPrice(includeSymbol = true, isAbbreviation = true)
                 tokenPrice.setVisible(true)
-            } else {
-                // If it's USDC or USDC.e, show 1:1 rate
-                if (model.tokenInfo.symbol.contains("USDC", ignoreCase = true)) {
-                    val dollarValue = balance
-                    tokenPrice.text = dollarValue.formatPrice(includeSymbol = true, isAbbreviation = true)
-                    tokenPrice.setVisible(true)
-                } else if (model.tokenInfo.symbol.equals("WFLOW", ignoreCase = true) || 
-                         model.tokenInfo.symbol.equals("stFlow", ignoreCase = true)) {
-                    // For WFLOW and stFlow, try to use FLOW rate
-                    val flowRate = CoinRateManager.coinRate("A.1654653399040a61.FlowToken")
-                    if (flowRate != null && flowRate > BigDecimal.ZERO) {
-                        val dollarValue = balance * flowRate
-                        tokenPrice.text = dollarValue.formatPrice(includeSymbol = true, isAbbreviation = true)
-                        tokenPrice.setVisible(true)
-                    } else {
-                        tokenPrice.setVisible(false)
-                    }
-                } else {
-                    tokenPrice.setVisible(false)
-                }
+            } ?: run {
+                tokenPrice.setVisible(false)
             }
         }
 

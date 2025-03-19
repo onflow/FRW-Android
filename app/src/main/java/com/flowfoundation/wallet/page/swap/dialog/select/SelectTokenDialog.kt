@@ -60,10 +60,43 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         CoinRateManager.removeListener(this)
     }
 
+    private fun calculateDollarValue(token: MoveToken): BigDecimal? {
+        val rate = CoinRateManager.coinRate(token.tokenInfo.contractId())
+        return when {
+            // If we have a rate, use it
+            rate != null && rate > BigDecimal.ZERO -> {
+                token.tokenBalance * rate
+            }
+            // For USDC tokens, use 1:1 rate
+            token.tokenInfo.symbol.contains("USDC", ignoreCase = true) -> {
+                token.tokenBalance
+            }
+            // For WFLOW and stFlow, try to use FLOW rate
+            token.tokenInfo.symbol.equals("WFLOW", ignoreCase = true) || 
+            token.tokenInfo.symbol.equals("stFlow", ignoreCase = true) -> {
+                val flowRate = CoinRateManager.coinRate("A.1654653399040a61.FlowToken")
+                if (flowRate != null && flowRate > BigDecimal.ZERO) {
+                    token.tokenBalance * flowRate
+                } else null
+            }
+            // No rate available
+            else -> null
+        }
+    }
+
+    private fun updateTokensWithDollarValues(tokens: List<MoveToken>): List<MoveToken> {
+        return tokens.map { token ->
+            val dollarValue = calculateDollarValue(token)
+            token.copy(dollarValue = dollarValue)
+        }
+    }
+
     override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
-        // Refresh the adapter when rates are updated
+        // When rates update, recalculate dollar values and refresh the adapter
         uiScope {
-            adapter.setNewDiffData(availableTokens)
+            val updatedTokens = updateTokensWithDollarValues(availableTokens)
+            availableTokens = updatedTokens
+            adapter.setNewDiffData(updatedTokens)
         }
     }
 
@@ -130,10 +163,11 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
                     .sortedByDescending { it.tokenBalance }
 
                 if (tokens.isNotEmpty()) {
-                    availableTokens = tokens
-
                     // Fetch rates for all tokens at once
-                    CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
+                    CoinRateManager.fetchCoinListRate(tokens.map { it.tokenInfo })
+                    
+                    // Calculate dollar values and update the list
+                    availableTokens = updateTokensWithDollarValues(tokens)
 
                     // Update UI with the new token list
                     uiScope {
