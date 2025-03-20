@@ -19,7 +19,7 @@
         android:id="@+id/tv_value"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="60dp"
         android:text=""
         android:textColor="@color/text_2"
         android:textSize="14sp"
@@ -27,7 +27,7 @@
         android:lines="1"
         android:maxLines="1"
         android:ellipsize="end"
-        app:layout_constraintStart_toEndOf="@id/tv_function_title"
+        app:layout_constraintStart_toEndOf="@id/tv_key"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_function_title"/>
+        app:layout_constraintTop_toTopOf="@id/tv_key"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

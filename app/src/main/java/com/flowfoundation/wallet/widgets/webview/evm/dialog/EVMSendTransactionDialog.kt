@@ -98,34 +98,70 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
                     with(binding) {
                         tvContact.text = response.name
                         ivVerified.setVisible(response.isVerified)
-                        response.decodedData?.allPossibilities?.firstOrNull()?.let {
-                            tvFunction.text = it.function
-                            if (it.isStringListParams()) {
-                                val stringParams = it.getStringParams()
-                                llParameters.removeAllViews()
-                                stringParams?.forEach { value ->
-                                    llParameters.addView(
-                                        TransactionParameterView(requireContext()).apply {
-                                            setData(value)
+                        response.decodedData?.let { decodedData ->
+                            if (decodedData.isFunctionFormat()) {
+                                tvFunction.text = decodedData.name
+                                decodedData.params?.let { paramsList ->
+                                    llParameters.removeAllViews()
+                                    paramsList.forEach { param ->
+                                        val paramValue =
+                                            param.getStringListValue() ?: param.getStringValue()
+                                        if (paramValue is List<*>) {
+                                            llParameters.addView(
+                                                TransactionParameterView(requireContext()).apply {
+                                                    setData(
+                                                        param.name,
+                                                        paramValue.first().toString()
+                                                    )
+                                                }
+                                            )
+                                        } else {
+                                            llParameters.addView(
+                                                TransactionParameterView(requireContext()).apply {
+                                                    setData(param.name, paramValue.toString())
+                                                }
+                                            )
                                         }
-                                    )
+                                    }
+                                    clParameters.visible()
+                                    clPossibility.visible()
+                                } ?: run {
+                                    clParameters.gone()
+                                    clPossibility.visible()
                                 }
-                                clParameters.visible()
-                            } else if (it.isMapParams()) {
-                                val mapParams = it.getMapParams()
-                                llParameters.removeAllViews()
-                                mapParams?.forEach { (key, value) ->
-                                    llParameters.addView(
-                                        TransactionParameterView(requireContext()).apply {
-                                            setData(key, value)
-                                        }
-                                    )
-                                }
-                                clParameters.visible()
                             } else {
-                                clParameters.gone()
+                                decodedData.allPossibilities.firstOrNull()?.let {
+                                    tvFunction.text = it.function
+                                    if (it.isStringListParams()) {
+                                        val stringParams = it.getStringParams()
+                                        llParameters.removeAllViews()
+                                        stringParams?.forEach { value ->
+                                            llParameters.addView(
+                                                TransactionParameterView(requireContext()).apply {
+                                                    setData(value)
+                                                }
+                                            )
+                                        }
+                                        clParameters.visible()
+                                    } else if (it.isMapParams()) {
+                                        val mapParams = it.getMapParams()
+                                        llParameters.removeAllViews()
+                                        mapParams?.forEach { (key, value) ->
+                                            llParameters.addView(
+                                                TransactionParameterView(requireContext()).apply {
+                                                    setData(key, value)
+                                                }
+                                            )
+                                        }
+                                        clParameters.visible()
+                                    } else {
+                                        clParameters.gone()
+                                    }
+                                    clPossibility.visible()
+                                } ?: run {
+                                    clPossibility.gone()
+                                }
                             }
-                            clPossibility.visible()
                         } ?: run {
                             clPossibility.gone()
                         }

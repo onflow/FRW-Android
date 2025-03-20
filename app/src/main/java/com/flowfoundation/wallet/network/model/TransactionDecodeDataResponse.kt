@@ -13,8 +13,46 @@ data class TransactionDecodeDataResponse(
 )
 
 data class DecodedData(
-    val allPossibilities: List<Possibility> = emptyList()
-)
+    val allPossibilities: List<Possibility> = emptyList(),
+    val name: String? = null,
+    val params: List<ParamData>? = null
+) {
+    fun getFunctionName(): String? {
+        return when {
+            name != null -> name
+            allPossibilities.isNotEmpty() -> allPossibilities.first().function
+            else -> null
+        }
+    }
+
+    fun getParams(): Any? {
+        return when {
+            params != null -> params
+            allPossibilities.isNotEmpty() -> allPossibilities.first().params
+            else -> null
+        }
+    }
+
+    fun isFunctionFormat(): Boolean {
+        return name != null && params != null
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+data class ParamData(
+    val name: String = "",
+    val value: Any? = null,
+    val type: String = ""
+) {
+
+    fun getStringValue(): String? {
+        return value as? String
+    }
+
+    fun getStringListValue(): List<String>? {
+        return value as? List<String>
+    }
+}
 
 @Suppress("UNCHECKED_CAST")
 data class Possibility(
