@@ -17,6 +17,7 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_QUERY_FLOW_BALANCE("queryFlowBalance", CadenceScriptType.BASIC),
     CADENCE_REVOKE_ACCOUNT_KEY("revokeKey", CadenceScriptType.BASIC),
     CADENCE_GET_ACCOUNT_INFO("getAccountInfo", CadenceScriptType.BASIC),
+    CADENCE_GET_ALL_FLOW_BALANCE("getFlowBalanceForAnyAccounts", CadenceScriptType.BASIC),
 
     // FT
     CADENCE_TRANSFER_TOKEN("transferTokensV3", CadenceScriptType.FT),
@@ -24,6 +25,7 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_GET_TOKEN_LIST_BALANCE("getTokenListBalance", CadenceScriptType.FT),
     CADENCE_CHECK_TOKEN_LIST_ENABLED("isTokenListEnabled", CadenceScriptType.FT),
     CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED("isLinkedAccountTokenListEnabled", CadenceScriptType.FT),
+    CADENCE_GET_TOKEN_BALANCE_STORAGE("getTokenBalanceStorage", CadenceScriptType.FT),
 
     // NFT
     CADENCE_CHECK_NFT_LIST_ENABLED("checkNFTListEnabled", CadenceScriptType.NFT),
@@ -32,6 +34,7 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_NFT_ENABLE("enableNFTStorage", CadenceScriptType.COLLECTION),
     CADENCE_NFT_TRANSFER("sendNFTV3", CadenceScriptType.COLLECTION),
     CADENCE_NBA_NFT_TRANSFER("sendNbaNFTV3", CadenceScriptType.COLLECTION),
+    CADENCE_GET_NFT_BALANCE_STORAGE("getNFTBalanceStorage", CadenceScriptType.COLLECTION),
 
     // SWAP
     CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS("SwapExactTokensForTokens", CadenceScriptType.SWAP),

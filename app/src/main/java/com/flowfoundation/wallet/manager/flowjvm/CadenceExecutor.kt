@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.wallet.toAddress
 import com.nftco.flow.sdk.Flow
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
 
 private const val TAG = "CadenceExecutor"
@@ -64,6 +65,25 @@ suspend fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
     }
     logd(TAG, "cadenceCheckTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
     return result?.decode<Map<String, Boolean>>()
+}
+
+suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    logd(TAG, "cadenceGetTokenBalanceStorage()")
+    val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
+        arg { Cadence.address(walletAddress) }
+    }
+    logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
+    return result?.decode<Map<String, String>>().parseBigDecimalMap()
+}
+
+suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal>? {
+    logd(TAG, "cadenceGetAllFlowBalance()")
+    val result = CadenceScript.CADENCE_GET_ALL_FLOW_BALANCE.executeCadence {
+        arg { Cadence.array(list.map { string(it) }) }
+    }
+    logd(TAG, "cadenceGetAllFlowBalance response:${result?.encode()}")
+    return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
 suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
@@ -154,6 +174,16 @@ suspend fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
     }
     logd(TAG, "cadenceCheckNFTListEnabled response:${result?.encode()}")
     return result?.decode<Map<String, Boolean>>()
+}
+
+suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
+    logd(TAG, "cadenceGetNFTBalanceStorage()")
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val result = CadenceScript.CADENCE_GET_NFT_BALANCE_STORAGE.executeCadence {
+        arg { Cadence.address(walletAddress) }
+    }
+    logd(TAG, "cadenceGetNFTBalanceStorage response:${result?.encode()}")
+    return result?.decode<Map<String, Int>>()
 }
 
 suspend fun cadenceTransferNft(toAddress: String, nft: Nft): String? {
