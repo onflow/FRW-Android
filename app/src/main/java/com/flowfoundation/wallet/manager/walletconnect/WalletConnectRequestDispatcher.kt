@@ -47,6 +47,7 @@ import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
+import com.flowfoundation.wallet.widgets.webview.evm.model.EVMTransactionDialogModel
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.authz.FclAuthzDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
@@ -130,11 +131,13 @@ private suspend fun WCRequest.evmSendTransaction() {
     val json = Gson().fromJson<List<EvmTransaction>>(params, object : TypeToken<List<EvmTransaction>>() {}.type)
     val transaction = json.firstOrNull() ?: return
     uiScope {
-        val model = EVMDialogModel(
+        val model = EVMTransactionDialogModel(
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
             url = metaData?.url,
-            cadence = CadenceScript.CADENCE_CALL_EVM_CONTRACT_V2.getScript(),
+            toAddress = transaction.to,
+            value = transaction.value,
+            data = transaction.data
         )
         EVMSendTransactionDialog.show(
             activity.supportFragmentManager,

@@ -709,4 +709,10 @@
     <string name="nft_list_loading_error">Error, por favor comprueba tu internet o actualiza.</string>
     <string name="refresh">Actualizar</string>
     <string name="no_relevant_nft">No se encontró NFT relevante.</string>
+    <string name="contact_address">Dirección de contacto</string>
+    <string name="amount">Importe</string>
+    <string name="contact">Contacto</string>
+    <string name="function">Función</string>
+    <string name="parameters">Parámetros</string>
+    <string name="call_data">Datos de llamada</string>
 </resources>

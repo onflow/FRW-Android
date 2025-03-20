@@ -244,6 +244,7 @@
     <color name="bg_1">#FAFAFA</color>
     <color name="bg_2">#F0F0F0</color>
     <color name="bg_3">#E5E5E5</color>
+    <color name="bottom_sheet_bg">#FAFAFA</color>
 
     <color name="text_white">#FFFFFF</color>
     <color name="text_white_90">#E6FFFFFF</color>

@@ -709,4 +709,10 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="nft_list_loading_error">エラーが発生しました。インターネットを確認するか、更新してください。</string>
     <string name="refresh">リフレッシュ</string>
     <string name="no_relevant_nft">該当するNFTが見つかりません。</string>
+    <string name="contact_address">連絡先住所</string>
+    <string name="amount">金額</string>
+    <string name="contact">連絡先</string>
+    <string name="function">機能</string>
+    <string name="parameters">引数</string>
+    <string name="call_data">コールデータ</string>
 </resources>
