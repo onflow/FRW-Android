@@ -39,6 +39,7 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 
 class MoveNFTDialog : BottomSheetDialogFragment() {
     private val uniqueId by lazy { arguments?.getString(EXTRA_UNIQUE_ID) ?: "" }
+    private val contractId by lazy { arguments?.getString(EXTRA_COLLECTION_CONTRACT_ID) ?: "" }
     private val contractName by lazy { arguments?.getString(EXTRA_COLLECTION_CONTRACT) ?: "" }
     private val fromAddress by lazy {
         arguments?.getString(EXTRA_FROM_ADDRESS) ?: WalletManager.selectedWalletAddress()
@@ -65,7 +66,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractName)
+        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractId, contractName)
         with(binding) {
             btnMove.isEnabled = nft != null
             btnMove.setOnClickListener {
@@ -385,15 +386,17 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     companion object {
         private const val EXTRA_UNIQUE_ID = "extra_unique_id"
         private const val EXTRA_FROM_ADDRESS = "extra_from_address"
+        private const val EXTRA_COLLECTION_CONTRACT_ID = "extra_collection_contract_id"
         private const val EXTRA_COLLECTION_CONTRACT = "extra_collection_contract"
         fun show(
-            fragmentManager: FragmentManager, uniqueId: String, contractName: String,
-            fromAddress: String
+            fragmentManager: FragmentManager, uniqueId: String, contractId: String,
+            contractName: String, fromAddress: String
         ) {
             MoveNFTDialog().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_UNIQUE_ID, uniqueId)
                     putString(EXTRA_FROM_ADDRESS, fromAddress)
+                    putString(EXTRA_COLLECTION_CONTRACT_ID, contractId)
                     putString(EXTRA_COLLECTION_CONTRACT, contractName)
                 }
             }.show(fragmentManager, "")

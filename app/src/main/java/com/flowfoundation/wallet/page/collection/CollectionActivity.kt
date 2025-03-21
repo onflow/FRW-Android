@@ -21,6 +21,7 @@ class CollectionActivity : BaseActivity() {
     private lateinit var viewModel: CollectionViewModel
     private lateinit var binding: ActivityCollectionBinding
 
+    private val contractId by lazy { intent.getStringExtra(EXTRA_CONTRACT_ID).orEmpty() }
     private val contractName by lazy { intent.getStringExtra(EXTRA_CONTRACT_NAME).orEmpty() }
     private val collectionLogo by lazy { intent.getStringExtra(EXTRA_COLLECTION_LOGO).orEmpty() }
     private val collectionName by lazy { intent.getStringExtra(EXTRA_COLLECTION_NAME).orEmpty() }
@@ -55,7 +56,7 @@ class CollectionActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-        viewModel.load(contractName, accountAddress, collectionSize)
+        viewModel.load(contractId, contractName, accountAddress, collectionSize)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -73,6 +74,7 @@ class CollectionActivity : BaseActivity() {
     }
 
     companion object {
+        private const val EXTRA_CONTRACT_ID = "extra_contract_id"
         private const val EXTRA_CONTRACT_NAME = "extra_address"
         private const val EXTRA_COLLECTION_LOGO = "extra_collection_logo"
         private const val EXTRA_COLLECTION_NAME = "extra_collection_name"
@@ -81,6 +83,7 @@ class CollectionActivity : BaseActivity() {
 
         fun launch(
             context: Context,
+            contractId: String,
             contractName: String,
             logo: String? = "",
             name: String? = "",
@@ -88,6 +91,7 @@ class CollectionActivity : BaseActivity() {
             accountAddress: String? = "",
         ) {
             context.startActivity(Intent(context, CollectionActivity::class.java).apply {
+                putExtra(EXTRA_CONTRACT_ID, contractId)
                 putExtra(EXTRA_CONTRACT_NAME, contractName)
                 putExtra(EXTRA_ACCOUNT_ADDRESS, accountAddress)
                 putExtra(EXTRA_COLLECTION_LOGO, logo)
