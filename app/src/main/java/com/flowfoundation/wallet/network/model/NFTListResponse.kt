@@ -80,6 +80,10 @@ data class Nft(
         return flowIdentifier.isNullOrBlank().not()
     }
 
+    fun getCollectionContractId(): String {
+        return evmAddress ?: collectionAddress.orEmpty()
+    }
+
     fun getNFTIdentifier(): String {
         return flowIdentifier ?: "A.${collectionAddress?.removeAddressPrefix()}.${contractName()}.NFT"
     }

@@ -44,7 +44,7 @@ class SelectionItemPresenter(
             layoutParams.height = (ScreenUtils.getScreenWidth() * 0.7f + 32.dp2px()).toInt()
             setOnClickListener {
                 data?.getOrNull(currentIndex)?.let {
-                    NftDetailActivity.launch(activity, it.uniqueId(), it.contractName())
+                    NftDetailActivity.launch(activity, it.uniqueId(), it.getCollectionContractId(), it.contractName())
                 }
             }
 
