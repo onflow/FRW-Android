@@ -34,6 +34,10 @@ import java.math.BigDecimal
 
 class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
 
+    companion object {
+        private const val TAG = "SelectTokenDialog"
+    }
+
     private var selectedCoin: String? = null
     private var disableCoin: String? = null
     private var result: Continuation<FlowCoin?>? = null
@@ -208,12 +212,15 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         moveFromAddress: String?,
         availableCoins: List<FlowCoin>? = null
     ) = suspendCoroutine { result ->
+        // Dismiss any existing instance of the dialog
+        (fragmentManager.findFragmentByTag(TAG) as? SelectTokenDialog)?.dismiss()
+        
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
         this.result = result
         this.moveFromAddress = moveFromAddress
         adapter.updateSelectedCoin(selectedCoin)
-        show(fragmentManager, "")
+        show(fragmentManager, TAG)
     }
 
     override fun onResume() {
