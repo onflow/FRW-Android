@@ -723,7 +723,7 @@
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
     <string name="results">Results</string>
-    <string name="search_nft_name">Search NFT Name</string>
+    <string name="search_nft_name">Search NFT</string>
     <string name="loading_nfts">Loading NFTs...</string>
     <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
     <string name="refresh">Refresh</string>

@@ -703,7 +703,7 @@
     <string name="search_tokens">搜索代币</string>
     <string name="token_list">代币列表</string>
     <string name="results">结果</string>
-    <string name="search_nft_name">搜索 NFT 名称</string>
+    <string name="search_nft_name">搜索 NFT</string>
     <string name="loading_nfts">正在加载 NFT...</string>
     <string name="nft_list_loading_error">错误，请检查您的网络或刷新。</string>
     <string name="refresh">刷新</string>

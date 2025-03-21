@@ -704,7 +704,7 @@
     <string name="token_list">Token-Listen</string>
     <string name="scan">Scannen</string>
     <string name="results">Ergebnisse</string>
-    <string name="search_nft_name">NFT-Name suchen</string>
+    <string name="search_nft_name">Suche nach NFT</string>
     <string name="loading_nfts">Lade NFTs...</string>
     <string name="nft_list_loading_error">Fehler, bitte überprüfe dein Internet oder aktualisiere es.</string>
     <string name="refresh">Aktualisieren</string>
