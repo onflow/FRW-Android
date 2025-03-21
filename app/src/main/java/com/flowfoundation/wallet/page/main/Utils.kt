@@ -127,6 +127,11 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
                 addressList.add(it)
             }
         }
+
+        WalletManager.childAccountList(wallet.address())?.get()?.forEach { childAccount ->
+            addressList.add(childAccount.address)
+        }
+
         EVMWalletManager.getEVMAddress()?.let {
             addressList.add(it)
         }
@@ -308,8 +313,7 @@ private class WalletItemData(
 
 @SuppressLint("SetTextI18n")
 private fun View.setupWalletItem(
-    data: WalletItemData?, network: String? = null, isEVMAccount: Boolean = false,
-    refreshBalance: Boolean = false
+    data: WalletItemData?, network: String? = null, isEVMAccount: Boolean = false
 ) {
     data ?: return
     val itemView = findViewById<View>(R.id.wallet_item)
@@ -328,12 +332,10 @@ private fun View.setupWalletItem(
             ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
         nameView.text = emojiInfo.emojiName
         addressView.text = shortenEVMString(data.address.toAddress())
-        balanceView.visible()
     } else {
         nameView.text = data.name
         iconView.loadAvatar(data.icon)
         addressView.text = data.address.toAddress()
-        balanceView.gone()
     }
     balanceView.tag = data.address.toAddress()
     emojiIconView.setVisible(isEVMAccount)
