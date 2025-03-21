@@ -64,11 +64,6 @@ class CollectionActivity : BaseActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflateWithCrowdin(R.menu.nft_list_search, menu, resources)
-        return super.onCreateOptionsMenu(menu)
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
