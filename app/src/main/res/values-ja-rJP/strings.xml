@@ -704,7 +704,7 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="search_tokens">トークンを検索</string>
     <string name="token_list">トークンリスト</string>
     <string name="results">検索結果</string>
-    <string name="search_nft_name">NFT の名前を検索</string>
+    <string name="search_nft_name">検索NFT</string>
     <string name="loading_nfts">NFTを読み込み中...</string>
     <string name="nft_list_loading_error">エラーが発生しました。インターネットを確認するか、更新してください。</string>
     <string name="refresh">リフレッシュ</string>
