@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
@@ -71,6 +72,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private val mnemonicList = mutableListOf<String>()
     private var currentTxId: String? = null
     private var mnemonicData = ""
+    private var driveItems: List<DriveItem> = emptyList()
 
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
@@ -367,5 +369,13 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 syncAccountInfo()
             }
         }
+    }
+
+    fun setDriveItems(items: List<DriveItem>) {
+        driveItems = items
+    }
+
+    fun getDriveItems(): List<DriveItem> {
+        return driveItems
     }
 }

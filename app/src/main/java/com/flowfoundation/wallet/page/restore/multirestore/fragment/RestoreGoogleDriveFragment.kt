@@ -49,52 +49,31 @@ class RestoreGoogleDriveFragment: Fragment() {
                     onRestoreEmpty()
                 } else {
                     if (driveItems.size > 1) {
-                        val backupItems = driveItems.map { driveItem ->
-                            BackupItem(
-                                address = "", // This will be set later when decrypting
-                                userId = driveItem.uid ?: "",
-                                userAvatar = "", // This will be set later when decrypting
-                                userName = driveItem.username,
-                                publicKey = "", // This will be set later when decrypting
-                                signAlgo = 0, // This will be set later when decrypting
-                                hashAlgo = 0, // This will be set later when decrypting
-                                keyIndex = 0, // This will be set later when decrypting
-                                updateTime = System.currentTimeMillis(),
-                                data = driveItem.data
-                            )
-                        }
-                        showAccountList(backupItems)
+                        // Store the DriveItems in the ViewModel for later use
+                        restoreViewModel.setDriveItems(driveItems)
+                        // Show the list of usernames for selection
+                        showAccountList(driveItems.map { it.username })
                     } else {
                         val model = driveItems.firstOrNull()
                         if (model == null) {
                             onRestoreEmpty()
                             return
                         }
-                        val backupItem = BackupItem(
-                            address = "", // This will be set later when decrypting
-                            userId = model.uid ?: "",
-                            userAvatar = "", // This will be set later when decrypting
-                            userName = model.username,
-                            publicKey = "", // This will be set later when decrypting
-                            signAlgo = 0, // This will be set later when decrypting
-                            hashAlgo = 0, // This will be set later when decrypting
-                            keyIndex = 0, // This will be set later when decrypting
-                            updateTime = System.currentTimeMillis(),
-                            data = model.data
-                        )
-                        restoreViewModel.addWalletInfo(backupItem.userName, backupItem.address)
-                        restoreViewModel.toPinCode(backupItem.data)
+                        // Store the DriveItem in the ViewModel for later use
+                        restoreViewModel.setDriveItems(listOf(model))
+                        // Proceed to password entry
+                        restoreViewModel.toPinCode(model.data)
                     }
                 }
             }
         }
     }
 
-    private fun showAccountList(data: List<BackupItem>) {
+    private fun showAccountList(usernames: List<String>) {
         binding.btnNext.setVisible(false)
         with(binding.rvAccountList) {
             adapter = MultiAccountAdapter().apply {
-                setNewDiffData(data)
+                setNewDiffData(usernames)
             }
             layoutManager = LinearLayoutManager(requireContext())
             addItemDecoration(ColorDividerItemDecoration(Color.TRANSPARENT, 12.dp2px().toInt(), LinearLayout.VERTICAL))
@@ -139,7 +118,7 @@ class RestoreGoogleDriveFragment: Fragment() {
     }
 }
 
-private class MultiAccountAdapter : BaseAdapter<BackupItem>() {
+private class MultiAccountAdapter : BaseAdapter<String>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return MultiAccountPresenter(parent.getItemView(R.layout.item_wallet_restore_username))
     }
@@ -151,16 +130,18 @@ private class MultiAccountAdapter : BaseAdapter<BackupItem>() {
 }
 
 private class MultiAccountPresenter(private val view: View) : BaseViewHolder(view),
-    BasePresenter<BackupItem> {
+    BasePresenter<String> {
     private val restoreViewModel by lazy {
         ViewModelProvider(findActivity(view) as FragmentActivity)[MultiRestoreViewModel::class.java]
     }
 
-    override fun bind(model: BackupItem) {
-        view.findViewById<TextView>(R.id.username).text = model.userName
+    override fun bind(model: String) {
+        view.findViewById<TextView>(R.id.username).text = model
         view.setOnClickListener {
-            restoreViewModel.addWalletInfo(model.userName, model.address)
-            restoreViewModel.toPinCode(model.data)
+            // Find the corresponding DriveItem and proceed to password entry
+            restoreViewModel.getDriveItems().firstOrNull { it.username == model }?.let { driveItem ->
+                restoreViewModel.toPinCode(driveItem.data)
+            }
         }
     }
 }
