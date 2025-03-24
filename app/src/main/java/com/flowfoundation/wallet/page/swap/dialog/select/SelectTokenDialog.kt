@@ -181,23 +181,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
             dismiss()
         }
 
-        // Initialize with available coins if provided
-        initialAvailableCoins?.let { coins ->
-            val initialTokens = coins.map { coin ->
-                // Find matching token in availableTokens to get actual balance
-                val existingToken = availableTokens.find { it.tokenInfo.contractId() == coin.contractId() }
-                MoveToken(
-                    tokenInfo = coin,
-                    tokenBalance = existingToken?.tokenBalance ?: BigDecimal.ZERO,
-                    dollarValue = existingToken?.dollarValue
-                )
+        // Show initial data from availableTokens
+        val tokensToShow = initialAvailableCoins?.let { coins ->
+            availableTokens.filter { token ->
+                coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
             }
-            availableTokens = initialTokens
-            adapter.setNewDiffData(initialTokens)
-        }
-
-        // Load updated token list in background
-        loadTokens()
+        } ?: availableTokens
+        adapter.setNewDiffData(tokensToShow)
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {
@@ -245,7 +235,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
                         if (newAvailableTokens != availableTokens) {
                             availableTokens = newAvailableTokens
                             uiScope {
-                                scheduleUiUpdate(availableTokens)
+                                // If we have initialAvailableCoins, filter the tokens before showing
+                                val tokensToShow = initialAvailableCoins?.let { coins ->
+                                    newAvailableTokens.filter { token ->
+                                        coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
+                                    }
+                                } ?: newAvailableTokens
+                                scheduleUiUpdate(tokensToShow)
                             }
                         }
                     }
@@ -282,7 +278,8 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         disableCoin: String?,
         fragmentManager: FragmentManager,
         moveFromAddress: String?,
-        availableCoins: List<FlowCoin>? = null
+        availableCoins: List<FlowCoin>? = null,
+        initialTokens: List<MoveToken>? = null
     ) = suspendCoroutine { result ->
         // Check if dialog is already showing or if it's too soon after last show
         if (isShowing || fragmentManager.findFragmentByTag(TAG) != null) {
@@ -296,8 +293,33 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         this.result = result
         this.moveFromAddress = moveFromAddress
         this.initialAvailableCoins = availableCoins
+        this.availableTokens = initialTokens ?: emptyList()
         adapter.updateSelectedCoin(selectedCoin)
+
+        // Show dialog immediately
         show(fragmentManager, TAG)
+
+        // Update prices in background
+        ioScope {
+            // Fetch rates for all tokens at once
+            CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
+            
+            // Calculate dollar values and update the list
+            val tokensWithDollarValues = updateTokensWithDollarValues(availableTokens)
+            
+            // Update availableTokens with new values
+            availableTokens = tokensWithDollarValues
+            
+            // Update UI with new prices
+            uiScope {
+                val tokensToShow = initialAvailableCoins?.let { coins ->
+                    tokensWithDollarValues.filter { token ->
+                        coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
+                    }
+                } ?: tokensWithDollarValues
+                scheduleUiUpdate(tokensToShow)
+            }
+        }
     }
 
     override fun onResume() {
