@@ -179,7 +179,7 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
             val initialTokens = coins.map { coin ->
                 MoveToken(
                     tokenInfo = coin,
-                    tokenBalance = BigDecimal.ZERO, // We'll update this in the background
+                    tokenBalance = BigDecimal.ZERO,
                     dollarValue = null
                 )
             }
@@ -233,7 +233,6 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
                             availableTokens.none { it.tokenInfo.contractId() == newToken.tokenInfo.contractId() }
                         }
 
-                        // Only update if there are actual changes
                         if (newAvailableTokens != availableTokens) {
                             availableTokens = newAvailableTokens
                             uiScope {
