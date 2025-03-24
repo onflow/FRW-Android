@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.base.recyclerview.getItemView
 import com.flowfoundation.wallet.databinding.FragmentRestoreGoogleDriveBinding
 import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_RESTORE_FINISH
 import com.flowfoundation.wallet.manager.backup.BackupItem
+import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
 import com.flowfoundation.wallet.page.restore.multirestore.viewmodel.MultiRestoreViewModel
@@ -42,21 +43,47 @@ class RestoreGoogleDriveFragment: Fragment() {
 
     private val googleDriveRestoreReceiver by lazy {
         object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent?) {
-                val data = intent?.getParcelableArrayListExtra<BackupItem>(EXTRA_CONTENT) ?: return
-                if (data.isEmpty()) {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val driveItems = intent?.getParcelableArrayListExtra<DriveItem>(EXTRA_CONTENT) ?: return
+                if (driveItems.isEmpty()) {
                     onRestoreEmpty()
                 } else {
-                    if (data.size > 1) {
-                        showAccountList(data)
+                    if (driveItems.size > 1) {
+                        val backupItems = driveItems.map { driveItem ->
+                            BackupItem(
+                                address = "", // This will be set later when decrypting
+                                userId = driveItem.uid ?: "",
+                                userAvatar = "", // This will be set later when decrypting
+                                userName = driveItem.username,
+                                publicKey = "", // This will be set later when decrypting
+                                signAlgo = 0, // This will be set later when decrypting
+                                hashAlgo = 0, // This will be set later when decrypting
+                                keyIndex = 0, // This will be set later when decrypting
+                                updateTime = System.currentTimeMillis(),
+                                data = driveItem.data
+                            )
+                        }
+                        showAccountList(backupItems)
                     } else {
-                        val model = data.firstOrNull()
+                        val model = driveItems.firstOrNull()
                         if (model == null) {
                             onRestoreEmpty()
                             return
                         }
-                        restoreViewModel.addWalletInfo(model.userName, model.address)
-                        restoreViewModel.toPinCode(model.data)
+                        val backupItem = BackupItem(
+                            address = "", // This will be set later when decrypting
+                            userId = model.uid ?: "",
+                            userAvatar = "", // This will be set later when decrypting
+                            userName = model.username,
+                            publicKey = "", // This will be set later when decrypting
+                            signAlgo = 0, // This will be set later when decrypting
+                            hashAlgo = 0, // This will be set later when decrypting
+                            keyIndex = 0, // This will be set later when decrypting
+                            updateTime = System.currentTimeMillis(),
+                            data = model.data
+                        )
+                        restoreViewModel.addWalletInfo(backupItem.userName, backupItem.address)
+                        restoreViewModel.toPinCode(backupItem.data)
                     }
                 }
             }
