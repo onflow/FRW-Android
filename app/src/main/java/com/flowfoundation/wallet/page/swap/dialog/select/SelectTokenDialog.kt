@@ -196,58 +196,30 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
 
     private fun loadTokens() {
         ioScope {
-            val fromAddress = moveFromAddress ?: WalletManager.selectedWalletAddress()
-
             try {
-                val provider = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-                    EVMAccountTokenProvider()
-                } else {
-                    FlowAccountTokenProvider()
-                }
-
-                // Get token list with balances
-                val updatedTokens = provider.getMoveTokenList(fromAddress)
-                    .filter { it.tokenBalance > BigDecimal.ZERO }
-                    .sortedByDescending { it.tokenBalance }
-
-                if (updatedTokens.isNotEmpty()) {
+                // Only update prices for existing tokens
+                if (availableTokens.isNotEmpty()) {
                     // Fetch rates for all tokens at once
-                    CoinRateManager.fetchCoinListRate(updatedTokens.map { it.tokenInfo })
+                    CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
                     
                     // Calculate dollar values and update the list
-                    val tokensWithDollarValues = updateTokensWithDollarValues(updatedTokens)
+                    val tokensWithDollarValues = updateTokensWithDollarValues(availableTokens)
 
-                    // Only update tokens that have changed
-                    val changedTokens = tokensWithDollarValues.filter { newToken ->
-                        val existingToken = availableTokens.find { it.tokenInfo.contractId() == newToken.tokenInfo.contractId() }
-                        existingToken == null || existingToken.tokenBalance != newToken.tokenBalance
-                    }
-
-                    if (changedTokens.isNotEmpty()) {
-                        // Update availableTokens with new values
-                        val newAvailableTokens = availableTokens.map { existingToken ->
-                            changedTokens.find { it.tokenInfo.contractId() == existingToken.tokenInfo.contractId() }
-                                ?: existingToken
-                        } + changedTokens.filter { newToken ->
-                            availableTokens.none { it.tokenInfo.contractId() == newToken.tokenInfo.contractId() }
-                        }
-
-                        if (newAvailableTokens != availableTokens) {
-                            availableTokens = newAvailableTokens
-                            uiScope {
-                                // If we have initialAvailableCoins, filter the tokens before showing
-                                val tokensToShow = initialAvailableCoins?.let { coins ->
-                                    newAvailableTokens.filter { token ->
-                                        coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
-                                    }
-                                } ?: newAvailableTokens
-                                scheduleUiUpdate(tokensToShow)
+                    // Update availableTokens with new values
+                    availableTokens = tokensWithDollarValues
+                    
+                    uiScope {
+                        // If we have initialAvailableCoins, filter the tokens before showing
+                        val tokensToShow = initialAvailableCoins?.let { coins ->
+                            tokensWithDollarValues.filter { token ->
+                                coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
                             }
-                        }
+                        } ?: tokensWithDollarValues
+                        scheduleUiUpdate(tokensToShow)
                     }
                 }
             } catch (e: Exception) {
-                logd("SelectTokenDialog", "Error loading token list: ${e.message}")
+                logd("SelectTokenDialog", "Error updating token prices: ${e.message}")
             }
         }
     }
@@ -300,26 +272,7 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         show(fragmentManager, TAG)
 
         // Update prices in background
-        ioScope {
-            // Fetch rates for all tokens at once
-            CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
-            
-            // Calculate dollar values and update the list
-            val tokensWithDollarValues = updateTokensWithDollarValues(availableTokens)
-            
-            // Update availableTokens with new values
-            availableTokens = tokensWithDollarValues
-            
-            // Update UI with new prices
-            uiScope {
-                val tokensToShow = initialAvailableCoins?.let { coins ->
-                    tokensWithDollarValues.filter { token ->
-                        coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
-                    }
-                } ?: tokensWithDollarValues
-                scheduleUiUpdate(tokensToShow)
-            }
-        }
+        loadTokens()
     }
 
     override fun onResume() {
