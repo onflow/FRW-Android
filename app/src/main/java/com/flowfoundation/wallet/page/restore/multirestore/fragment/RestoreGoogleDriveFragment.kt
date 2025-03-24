@@ -24,7 +24,6 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.base.recyclerview.getItemView
 import com.flowfoundation.wallet.databinding.FragmentRestoreGoogleDriveBinding
 import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_RESTORE_FINISH
-import com.flowfoundation.wallet.manager.backup.BackupItem
 import com.flowfoundation.wallet.manager.drive.DriveItem
 import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
