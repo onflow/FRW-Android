@@ -13,25 +13,37 @@ import com.flowfoundation.wallet.utils.setProfileSwitchTipsShown
 
 class ProfileSwitchTipsBanner : FrameLayout {
 
-    constructor(context: Context) : super(context)
-    constructor(context: Context, attrs: AttributeSet? = null) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(context, attrs, defStyleAttr)
+    constructor(context: Context) : super(context) {
+        init(context)
+    }
+    
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+        init(context)
+    }
+    
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        init(context)
+    }
 
-    init {
+    private fun init(context: Context) {
         setVisible(false)
-        ioScope {
-            if (!isProfileSwitchTipsShown()) {
-                setup()
-            }
+        if (!isProfileSwitchTipsShown()) {
+            setup(context)
         }
     }
 
-    private fun setup() {
-        setVisible(true)
-        LayoutInflater.from(context).inflate(R.layout.view_profile_tips_banner, this)
+    private fun setup(context: Context) {
+        try {
+            setVisible(true)
+            LayoutInflater.from(context).inflate(R.layout.view_profile_tips_banner, this, true)
 
-        findViewById<View>(R.id.close_button).setOnClickListener {
-            ioScope { setProfileSwitchTipsShown() }
+            findViewById<View>(R.id.close_button)?.setOnClickListener {
+                ioScope { setProfileSwitchTipsShown() }
+                setVisible(false)
+            }
+        } catch (e: Exception) {
+            // Log the error but don't crash
+            e.printStackTrace()
             setVisible(false)
         }
     }
