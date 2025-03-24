@@ -36,6 +36,7 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
 
     companion object {
         private const val TAG = "SelectTokenDialog"
+        private var isShowing = false
     }
 
     private var selectedCoin: String? = null
@@ -69,6 +70,12 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
     override fun onDestroy() {
         super.onDestroy()
         CoinRateManager.removeListener(this)
+        isShowing = false
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        isShowing = false
     }
 
     private fun calculateDollarValue(token: MoveToken): BigDecimal? {
@@ -275,12 +282,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         moveFromAddress: String?,
         availableCoins: List<FlowCoin>? = null
     ) = suspendCoroutine { result ->
-        // Check if dialog is already showing
-        if (fragmentManager.findFragmentByTag(TAG) != null) {
+        // Check if dialog is already showing or if it's too soon after last show
+        if (isShowing || fragmentManager.findFragmentByTag(TAG) != null) {
             result.resume(null)
             return@suspendCoroutine
         }
         
+        isShowing = true
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
         this.result = result
