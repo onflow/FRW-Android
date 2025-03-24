@@ -184,10 +184,12 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         // Initialize with available coins if provided
         initialAvailableCoins?.let { coins ->
             val initialTokens = coins.map { coin ->
+                // Find matching token in availableTokens to get actual balance
+                val existingToken = availableTokens.find { it.tokenInfo.contractId() == coin.contractId() }
                 MoveToken(
                     tokenInfo = coin,
-                    tokenBalance = BigDecimal.ZERO,
-                    dollarValue = null
+                    tokenBalance = existingToken?.tokenBalance ?: BigDecimal.ZERO,
+                    dollarValue = existingToken?.dollarValue
                 )
             }
             availableTokens = initialTokens
