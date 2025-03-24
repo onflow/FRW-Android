@@ -7,10 +7,9 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -51,11 +50,16 @@ object BalanceManager {
     private fun fetchTokenBalance() {
         ioScope {
             val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
-            val balanceMap = cadenceQueryTokenListBalance() ?: return@ioScope
+            val balanceMap = cadenceGetTokenBalanceStorage() ?: return@ioScope
             coinList.forEach { coin ->
                 balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-                val balance = balanceMap[coin.contractId()] ?: BigDecimal.ZERO
+                //todo available flow balance
+                val balance = if (coin.isFlowCoin()) {
+                    balanceMap["availableFlowToken"] ?: BigDecimal.ZERO
+                } else {
+                    balanceMap[coin.getFTIdentifier()] ?: BigDecimal.ZERO
+                }
 
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
@@ -104,26 +108,16 @@ object BalanceManager {
         return getEVMBalanceByCoin(tokenAddress, address)
     }
 
-    suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
+    private suspend fun getEVMBalanceByCoin(tokenAddress: String, evmAddress: String): BigDecimal {
         val apiService = retrofitApi().create(ApiService::class.java)
         val balanceResponse = apiService.getEVMTokenBalance(evmAddress, chainNetWorkString())
         val evmBalance = balanceResponse.data?.firstOrNull { it.address.equals(tokenAddress, true) } ?: return BigDecimal.ZERO
         return evmBalance.balance.toBigDecimal().movePointLeft(evmBalance.decimal)
     }
 
-    suspend fun getFlowBalanceByContractId(contractId: String, flowAddress: String): BigDecimal {
-        val balanceMap = cadenceQueryTokenListBalanceWithAddress(flowAddress) ?: return BigDecimal.ZERO
-        return balanceMap[contractId]?: BigDecimal.ZERO
-    }
-
     fun getBalanceByCoin(coin: FlowCoin) {
         logd(TAG, "getBalanceByCoin:${coin.symbol}")
         fetch(coin)
-    }
-
-    fun getBalanceByCoin(coinContractId: String) {
-        val coin = FlowCoinListManager.getCoinById(coinContractId) ?: return
-        getBalanceByCoin(coin)
     }
 
     fun addListener(callback: OnBalanceUpdate) {
@@ -196,8 +190,8 @@ data class Balance(
                 && contractName.equals(coin.contractName(), ignoreCase = true)
     }
 
-    fun isSameEVMCoin(address: String): Boolean {
-        return address.equals(address, ignoreCase = true)
+    fun isSameEVMCoin(tokenAddress: String): Boolean {
+        return address.equals(tokenAddress, ignoreCase = true)
     }
 }
 

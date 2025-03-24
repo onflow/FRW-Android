@@ -9,5 +9,9 @@ data class NFTInfo(
     @SerializedName("title")
     val title: String,
     @SerializedName("cover")
-    val cover: String
+    val cover: String,
+    @SerializedName("description")
+    val description: String = "",
+    @SerializedName("traits")
+    val traits: List<String> = emptyList()
 )

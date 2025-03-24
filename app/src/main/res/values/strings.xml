@@ -185,6 +185,8 @@
     <string name="add_token">Add Token</string>
     <string name="add_token_failed">Add token failed</string>
     <string name="search_token">Search Token</string>
+    <string name="search_tokens">Search tokens</string>
+    <string name="token_list">Token List</string>
     <string name="confirmation">Confirmation</string>
     <string name="app_initializing">Initializing</string>
     <string name="developer_mode">Developer Mode</string>
@@ -239,7 +241,7 @@
     <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
         .</string>
     <string name="file_picker_title">Select File</string>
-    <string name="transaction_fee">Transaction fee</string>
+    <string name="transaction_fee">Transaction Fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
@@ -613,7 +615,7 @@
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
     <string name="collection_list">Collection List</string>
-    <string name="balance_value">Balance %1$s</string>
+    <string name="balance_value">Balance: %1$s</string>
     <string name="backup_not_found">Backup Not Found</string>
     <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
     <string name="backup_decryption_failed">Backup Decryption Failed</string>
@@ -721,7 +723,7 @@
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
     <string name="results">Results</string>
-    <string name="search_nft_name">Search NFT Name</string>
+    <string name="search_nft_name">Search NFT</string>
     <string name="loading_nfts">Loading NFTs...</string>
     <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
     <string name="refresh">Refresh</string>
@@ -729,4 +731,10 @@
     <string name="json" translatable="false">JSON</string>
     <string name="required_asterisk" translatable="false">" *"</string>
     <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="contact_address">Contact Address</string>
+    <string name="amount">Amount</string>
+    <string name="contact">Contact</string>
+    <string name="function">Function</string>
+    <string name="parameters">Parameters</string>
+    <string name="call_data">Call Data</string>
 </resources>

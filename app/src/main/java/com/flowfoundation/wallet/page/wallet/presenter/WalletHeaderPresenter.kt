@@ -70,7 +70,7 @@ class WalletHeaderPresenter(
                 tvBalance.diffSetText(
                     if (isHideBalance) "****" else model.balance.formatPrice(
                         includeSymbol = true
-                    )
+                    ).ifEmpty { "0" }
                 )
                 ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
