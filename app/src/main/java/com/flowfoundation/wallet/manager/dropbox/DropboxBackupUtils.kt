@@ -114,7 +114,7 @@ private fun existingData(dropboxHelper: DropboxServerHelper): List<BackupItem> {
                 emptyList<BackupItem>()
             }
         }
-        backupItems
+        backupItems.distinct()
     } catch (e: Exception) {
         loge(e)
         return emptyList()
