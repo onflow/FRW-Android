@@ -11,10 +11,10 @@ class NftDetailViewModel : ViewModel() {
 
     val nftLiveData = MutableLiveData<Nft>()
 
-    fun load(uniqueId: String, collectionContract: String?) {
+    fun load(uniqueId: String, collectionContractId: String?, collectionContract: String?) {
         viewModelIOScope(this) {
             val walletAddress = nftWalletAddress()
-            val nft = NftCache(walletAddress).findNFTByIdAndContractName(uniqueId, collectionContract)
+            val nft = NftCache(walletAddress).findNFTByIdAndContractName(uniqueId, collectionContractId.orEmpty(), collectionContract.orEmpty())
 
             nft?.let {
                 nftLiveData.postValue(it)

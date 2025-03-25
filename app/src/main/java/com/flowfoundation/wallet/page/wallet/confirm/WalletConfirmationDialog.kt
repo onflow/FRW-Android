@@ -16,8 +16,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
 import com.nftco.flow.sdk.FlowTransactionStatus
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogWalletConfirmationBinding
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript

@@ -228,6 +228,7 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/transparent"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/nft_list_search"
         app:titleCentered="true"
         app:titleTextAppearance="@style/ToolbarTextAppearance"
         app:titleTextColor="@color/transparent"/>

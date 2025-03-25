@@ -175,7 +175,7 @@
 -keep class com.flowfoundation.wallet.widgets.webview.JsInterface.** {*;}
 -keep class com.flowfoundation.wallet.widgets.webview.JavascriptKt.** {*;}
 
--keep class com.walletconnect.** {*;}
+-keep class com.reown.** {*;}
 -keep class net.sqlcipher.** {*;}
 -keep class org.trustwallet.core.** { *; }
 

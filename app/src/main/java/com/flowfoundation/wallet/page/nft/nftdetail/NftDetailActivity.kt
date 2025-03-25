@@ -29,6 +29,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
     private val uniqueId by lazy { intent.getStringExtra(EXTRA_NFT_UNIQUE_ID)!! }
+    private val collectionContractId by lazy { intent.getStringExtra(EXTRA_COLLECTION_CONTRACT_ID) }
     private val collectionContract by lazy { intent.getStringExtra(EXTRA_COLLECTION_CONTRACT) }
     private val fromAddress by lazy { intent.getStringExtra(EXTRA_FROM_ADDRESS) }
     private lateinit var binding: ActivityNftDetailBinding
@@ -45,7 +46,7 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         presenter = NftDetailPresenter(this, binding)
         viewModel = ViewModelProvider(this)[NftDetailViewModel::class.java].apply {
             nftLiveData.observe(this@NftDetailActivity) { presenter.bind(NftDetailModel(nft = it, fromAddress = fromAddress)) }
-            load(uniqueId, collectionContract)
+            load(uniqueId, collectionContractId, collectionContract)
         }
     }
 
@@ -102,13 +103,15 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
     companion object {
         private const val EXTRA_NFT_UNIQUE_ID = "extra_nft_unique_id"
         private const val EXTRA_FROM_ADDRESS = "extra_from_address"
+        private const val EXTRA_COLLECTION_CONTRACT_ID = "extra_collection_contract_id"
         private const val EXTRA_COLLECTION_CONTRACT = "extra_collection_contract"
 
-        fun launch(context: Context, uniqueId: String, collectionContract: String,
-                   fromAddress: String? = WalletManager.selectedWalletAddress()) {
+        fun launch(context: Context, uniqueId: String, collectionContractId: String,
+                   collectionContract: String, fromAddress: String? = WalletManager.selectedWalletAddress()) {
             val finalFromAddress = fromAddress?.takeIf { it.isNotEmpty() } ?: WalletManager.selectedWalletAddress()
             val intent = Intent(context, NftDetailActivity::class.java)
             intent.putExtra(EXTRA_NFT_UNIQUE_ID, uniqueId)
+            intent.putExtra(EXTRA_COLLECTION_CONTRACT_ID, collectionContractId)
             intent.putExtra(EXTRA_COLLECTION_CONTRACT, collectionContract)
             intent.putExtra(EXTRA_FROM_ADDRESS, finalFromAddress)
             context.startActivity(intent)

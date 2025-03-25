@@ -2,8 +2,8 @@ package com.flowfoundation.wallet.page.wallet.confirm.presenter
 
 import android.app.Activity
 import com.google.gson.Gson
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityWalletConfirmBinding
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager

@@ -45,6 +45,19 @@ fun Float.dp2px(): Float {
     return this * scale + 0.5f
 }
 
+fun Double.dp2px(): Int {
+    val scale = Resources.getSystem().displayMetrics.density
+    return (this * scale + 0.5f).toInt()
+}
+
+fun Int.toHexColorString(withAlpha: Boolean = false): String {
+    return if (withAlpha) {
+        String.format("#%08X", this)
+    } else {
+        String.format("#%06X", 0xFFFFFF and this)
+    }
+}
+
 @ColorInt
 fun Int.alpha(alpha: Float): Int {
     return Color.argb(

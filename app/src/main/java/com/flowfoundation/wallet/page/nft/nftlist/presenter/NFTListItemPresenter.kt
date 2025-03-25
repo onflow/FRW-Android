@@ -35,7 +35,7 @@ class NFTListItemPresenter(
             priceView.text = nft.postMedia?.description ?: ""
 
             coverViewWrapper.setOnClickListener {
-                NftDetailActivity.launch(context, nft.uniqueId(), nft.contractName(), fromAddress)
+                NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
             }
             coverViewWrapper.setOnLongClickListener {
                 NftItemPopupMenu(coverView, model.nft).show()
@@ -46,7 +46,7 @@ class NFTListItemPresenter(
             view.setPadding(0, 0, 0, 0)
         }
         view.setOnClickListener {
-            NftDetailActivity.launch(context, nft.uniqueId(), nft.contractName(), fromAddress)
+            NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
         }
         bindAccessible(model)
     }
