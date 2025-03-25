@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.profile.subpage.developer.model
 
 import com.google.gson.annotations.SerializedName
 
-
 data class LocalAccountKey(
     @SerializedName("userId")
     val userId: String,

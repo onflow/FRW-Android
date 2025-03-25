@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 
-
 enum class Currency(
     val title: String,
     val symbol: String,

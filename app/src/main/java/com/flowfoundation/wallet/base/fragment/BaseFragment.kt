@@ -19,6 +19,4 @@ open class BaseFragment : Fragment() {
     open fun onFirstVisible() {}
 
     open fun onRevisible() {}
-
-    fun isFirstVisible() = firstVisible
 }

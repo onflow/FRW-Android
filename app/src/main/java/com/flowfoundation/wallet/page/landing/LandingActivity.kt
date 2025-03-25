@@ -16,7 +16,6 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
-
 class LandingActivity: BaseActivity(), OnWalletDataUpdate {
     private lateinit var binding: ActivityLandingBinding
 
@@ -71,5 +70,4 @@ class LandingActivity: BaseActivity(), OnWalletDataUpdate {
             (context as? Activity)?.overridePendingTransition(0, 0)
         }
     }
-
 }

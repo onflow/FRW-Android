@@ -27,7 +27,6 @@ import com.flowfoundation.wallet.page.addressadd.AddressAddActivity
 import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewModel
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.utils.extensions.gone
-import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible

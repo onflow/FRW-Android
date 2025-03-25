@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ViewStorageInsufficientTipBinding
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.flowfoundation.wallet.manager.account.model.ValidateTransactionResult

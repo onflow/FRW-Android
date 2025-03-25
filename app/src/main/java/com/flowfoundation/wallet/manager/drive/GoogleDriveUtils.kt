@@ -120,7 +120,7 @@ private fun existingData(driveService: Drive): List<DriveItem> {
     }
 }
 
-private suspend fun addData(data: MutableList<DriveItem>, password: String) {
+private fun addData(data: MutableList<DriveItem>, password: String) {
     val username = username()
 
     if (username.isBlank()) {

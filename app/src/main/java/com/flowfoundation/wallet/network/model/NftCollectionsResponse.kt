@@ -28,7 +28,3 @@ data class NftCollectionWrapper(
     val ids: List<String>?,
 )
 
-data class NftSimpleCollection(
-    @SerializedName("contractAddress")
-    val address: String,
-)

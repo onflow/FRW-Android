@@ -4,7 +4,6 @@ import androidx.transition.Fade
 import androidx.transition.Transition
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupRecoveryPhraseWarningFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartAboutFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupStartWithAboutFragment

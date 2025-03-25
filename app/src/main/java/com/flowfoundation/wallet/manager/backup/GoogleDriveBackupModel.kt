@@ -10,8 +10,6 @@ class BackupItem(
     var address: String,
     @SerializedName("userId")
     var userId: String,
-    @SerializedName("userAvatar")
-    var userAvatar: String,
     @SerializedName("userName")
     var userName: String,
     @SerializedName("publicKey")

@@ -94,13 +94,6 @@ fun doNetworkChangeTask() {
     MixpanelManager.networkChange()
 }
 
-fun evmChainNetworkString(): String {
-    return when {
-        isTestnet() -> EVM_TESTNET
-        else -> EVM_MAINNET
-    }
-}
-
 fun flowChainNetworkString(evmNetwork: String): String {
     return when (evmNetwork) {
         EVM_TESTNET -> NETWORK_NAME_TESTNET

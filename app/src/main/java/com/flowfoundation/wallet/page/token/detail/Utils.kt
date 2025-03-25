@@ -22,7 +22,6 @@ enum class Period(val value: String) {
 }
 
 enum class PeriodFrequency(val value: Int) {
-    fiveMinute(300),
     halfHour(1800),
     oneHour(3600),
     oneDay(86400),

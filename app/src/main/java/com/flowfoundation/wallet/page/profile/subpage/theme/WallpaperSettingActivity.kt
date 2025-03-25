@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.isNightMode
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
-
 class WallpaperSettingActivity : BaseActivity(), OnWallpaperChange {
 
     private lateinit var binding: ActivityWallpaperSettingBinding

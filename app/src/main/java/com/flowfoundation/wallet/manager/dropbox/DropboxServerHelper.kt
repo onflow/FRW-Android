@@ -128,13 +128,4 @@ class DropboxServerHelper(private val dbxClient: DbxClientV2) {
         }
     }
 
-    @Throws(IOException::class)
-    fun deleteFile(filePath: String) {
-        try {
-            dbxClient.files().deleteV2(filePath)
-        } catch (e: Exception) {
-            loge(TAG, "Error deleting file: $e")
-            throw IOException("Error deleting file", e)
-        }
-    }
 }

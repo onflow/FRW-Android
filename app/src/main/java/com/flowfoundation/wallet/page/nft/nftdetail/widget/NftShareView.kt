@@ -17,7 +17,6 @@ import com.flowfoundation.wallet.databinding.WidgetShareNftBinding
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.UserInfoData
-import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.utils.extensions.dp2px

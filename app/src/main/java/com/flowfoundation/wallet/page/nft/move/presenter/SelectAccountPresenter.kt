@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
 
-
 class SelectAccountPresenter(
     private val view: View,
     private val selectedAddress: String,

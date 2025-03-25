@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -36,7 +35,6 @@ import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.page.wallet.model.WalletHeaderModel
 import com.flowfoundation.wallet.utils.*
-import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -137,13 +135,6 @@ class WalletHeaderPresenter(
             }
 
             bindPendingRequest()
-        }
-    }
-
-    private fun LinearLayoutCompat.changeLayoutParams(newOrientation: Int, newHeight: Float) {
-        orientation = newOrientation
-        layoutParams = layoutParams.apply {
-            height = newHeight.dp2px().toInt()
         }
     }
 

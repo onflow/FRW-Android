@@ -29,7 +29,7 @@ class SendProcessingDialog : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        presenter = SendProcessingPresenter(this, binding, state)
+        presenter = SendProcessingPresenter(binding, state)
         viewModel = ViewModelProvider(this)[SendProcessingViewModel::class.java].apply {
             bindTransactionState(this@SendProcessingDialog.state)
             userInfoLiveData.observe(this@SendProcessingDialog) { presenter.bind(SendProcessingDialogModel(userInfo = it)) }

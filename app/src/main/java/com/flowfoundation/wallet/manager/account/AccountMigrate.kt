@@ -42,12 +42,12 @@ fun migrateV1() {
     )
     AccountManager.add(account)
     userInfoCache().clear()
-    val mnemonic = WalletStoreMigrate().mnemonic()
+    WalletStoreMigrate().mnemonic()
 
     logd("xxx", "migrate end username:${account.userInfo.username}")
 }
 
-suspend fun isAccountV1DataExist() = userInfoCache().isCacheExist()
+fun isAccountV1DataExist() = userInfoCache().isCacheExist()
 
 
 private val TAG = WalletStore::class.java.simpleName
@@ -93,7 +93,7 @@ private fun readCurrentUserPassword(): String? {
 private fun passwordMap(): HashMap<String, String> {
     val pref = runCatching { readWalletPassword() }.getOrNull()
     return if (pref.isNullOrBlank()) {
-        HashMap<String, String>()
+        HashMap()
     } else {
         Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
     }

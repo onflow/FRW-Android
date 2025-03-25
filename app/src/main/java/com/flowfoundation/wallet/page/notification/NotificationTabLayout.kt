@@ -9,7 +9,6 @@ import androidx.core.view.setMargins
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.utils.extensions.dp2px
 
-
 class NotificationTabLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : LinearLayout(context, attrs) {

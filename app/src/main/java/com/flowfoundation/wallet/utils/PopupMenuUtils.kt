@@ -6,7 +6,6 @@ import com.lxj.xpopup.core.AttachPopupView
 import com.lxj.xpopup.interfaces.OnSelectListener
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.page.main.widget.NetworkPopupListView
-import com.flowfoundation.wallet.page.main.widget.NetworkPopupMenu
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.widgets.popup.PopupBuilder
 import com.flowfoundation.wallet.widgets.popup.PopupListView

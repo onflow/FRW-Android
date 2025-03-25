@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
 import androidx.core.graphics.withTranslation
-import androidx.core.view.ViewCompat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicatorSpec
 import com.google.android.material.progressindicator.IndeterminateDrawable
@@ -43,8 +42,8 @@ class LoadingMaterialButton : MaterialButton {
               - icon.intrinsicWidth
               - paint.measureText(text.toString())
               - iconPadding
-              - ViewCompat.getPaddingStart(this)
-              - ViewCompat.getPaddingEnd(this)) / 2f
+              - paddingStart
+              - paddingEnd) / 2f
         } else 0f
     }
 

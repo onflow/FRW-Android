@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.restore.keystore.fragment
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle

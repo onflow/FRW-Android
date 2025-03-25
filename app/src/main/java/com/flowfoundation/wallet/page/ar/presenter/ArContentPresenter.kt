@@ -69,10 +69,10 @@ class ArContentPresenter(
             .into(object : SimpleTarget<Bitmap>() {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
                     ioScope {
-                        val ratio = resource.width / resource.height;
+                        val ratio = resource.width / resource.height
                         if (ratio != 1) {
                             with(binding.mediaWrapper.layoutParams) {
-                                height = (150.dp2px() * resource.height * 1f / resource.width).toInt();
+                                height = (150.dp2px() * resource.height * 1f / resource.width).toInt()
                                 binding.mediaWrapper.layoutParams = this
                             }
                         }

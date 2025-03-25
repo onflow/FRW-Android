@@ -10,8 +10,7 @@ data class ClaimDomainPrepareResponse(
     val message: String?,
     @SerializedName("status")
     val status: Int?
-) {
-}
+)
 
 data class ClaimDomainPrepare(
     @SerializedName("cadence")

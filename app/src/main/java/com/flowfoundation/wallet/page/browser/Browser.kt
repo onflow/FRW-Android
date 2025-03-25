@@ -15,7 +15,6 @@ class Browser : FrameLayout {
     private var binding: LayoutBrowserBinding = LayoutBrowserBinding.inflate(LayoutInflater.from(context))
     private var presenter: BrowserPresenter
     private var inputPresenter: BrowserInputPresenter
-    private var browserParams = BrowserParams()
 
     private val viewModel by lazy { BrowserViewModel() }
 
@@ -26,7 +25,7 @@ class Browser : FrameLayout {
     init {
         addView(binding.root)
 
-        presenter = BrowserPresenter(this, binding, viewModel)
+        presenter = BrowserPresenter(binding, viewModel)
         inputPresenter = BrowserInputPresenter(binding, viewModel)
 
         with(viewModel) {

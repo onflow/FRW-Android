@@ -149,7 +149,7 @@ class SelectCollectionDialog: BottomSheetDialogFragment() {
         selectedCollectionId: String?,
         fromAddress: String,
         fragmentManager: FragmentManager
-    ) = suspendCoroutine<CollectionDetailInfo?> { cont ->
+    ) = suspendCoroutine { cont ->
         this.selectedCollectionId = selectedCollectionId
         this.fromAddress = fromAddress
         this.result = cont

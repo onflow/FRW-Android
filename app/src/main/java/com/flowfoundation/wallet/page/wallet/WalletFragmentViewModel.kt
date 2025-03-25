@@ -72,10 +72,6 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         }
     }
 
-    fun clearDataList() {
-        dataList.clear()
-    }
-
     override fun onWalletDataUpdate(wallet: WalletListData) {
         updateWalletHeader(wallet = wallet)
         loadCoinInfo(false)
@@ -123,7 +119,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
         }
     }
 
-    private suspend fun loadWallet(isRefresh: Boolean) {
+    private fun loadWallet(isRefresh: Boolean) {
         if (WalletManager.wallet() == null) {
             headerLiveData.postValue(null)
             dataList.clear()

@@ -5,7 +5,6 @@ import androidx.annotation.WorkerThread
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.dropbox.core.v2.DbxClientV2
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.backup.BackupItem
@@ -32,7 +31,6 @@ private val AES_PASSWORD by lazy {
 }
 
 const val ACTION_DROPBOX_UPLOAD_FINISH = "ACTION_DROPBOX_UPLOAD_FINISH"
-const val ACTION_DROPBOX_DELETE_FINISH = "ACTION_DROPBOX_DELETE_FINISH"
 const val ACTION_DROPBOX_RESTORE_FINISH = "ACTION_DROPBOX_RESTORE_FINISH"
 const val ACTION_DROPBOX_CHECK_FINISH = "ACTION_DROPBOX_CHECK_FINISH"
 const val ACTION_DROPBOX_VIEW_FINISH = "ACTION_DROPBOX_VIEW_FINISH"
@@ -137,7 +135,6 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 address = wallet.walletAddress() ?: "",
                 userId = wallet.id,
                 userName = account.userInfo.username,
-                userAvatar = account.userInfo.avatar,
                 publicKey = provider.getPublicKey(),
                 signAlgo = provider.getSignatureAlgorithm().index,
                 hashAlgo = provider.getHashAlgorithm().index,
@@ -191,38 +188,6 @@ fun viewFromDropbox(dropboxClient: DbxClientV2) {
     }
 }
 
-@WorkerThread
-fun deleteFromDropbox(dropboxClient: DbxClientV2) {
-    try {
-        logd(TAG, "deleteMnemonicFromDropbox")
-        val dropboxHelper = DropboxServerHelper(dropboxClient)
-        val data = existingData(dropboxHelper).toMutableList()
-        if (data.isNotEmpty()) {
-            data.removeIf { it.userId == firebaseUid() }
-
-            dropboxHelper.writeStringToFile(
-                FILE_NAME, "\"${
-                    aesEncrypt(
-                        key = AES_KEY,
-                        iv = AES_PASSWORD,
-                        message = Gson().toJson(data)
-                    )
-                }\""
-            )
-
-            if (BuildConfig.DEBUG) {
-                val readText = dropboxHelper.readFile(dropboxHelper.getReadFilePath(FILE_NAME))
-                logd(TAG, "readText:$readText")
-            }
-        }
-        sendDeleteCallback(true)
-    } catch (e: Exception) {
-        loge(e)
-        sendDeleteCallback(false)
-        throw e
-    }
-}
-
 private fun sendCallback(isSuccess: Boolean) {
     LocalBroadcastManager.getInstance(Env.getApp())
         .sendBroadcast(Intent(ACTION_DROPBOX_UPLOAD_FINISH).apply {
@@ -230,9 +195,3 @@ private fun sendCallback(isSuccess: Boolean) {
         })
 }
 
-private fun sendDeleteCallback(isSuccess: Boolean) {
-    LocalBroadcastManager.getInstance(Env.getApp())
-        .sendBroadcast(Intent(ACTION_DROPBOX_DELETE_FINISH).apply {
-            putExtra(EXTRA_SUCCESS, isSuccess)
-        })
-}

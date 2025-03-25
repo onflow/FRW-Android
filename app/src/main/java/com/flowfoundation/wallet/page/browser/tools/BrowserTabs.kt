@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.utils.extensions.removeFromParent
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import java.util.*
 
-
 private val tabs = mutableListOf<BrowserTab>()
 
 fun popBrowserTab(tabId: String) {
@@ -29,10 +28,6 @@ fun popBrowserTab(tabId: String) {
     if (tabs.isEmpty()) {
         releaseBrowser()
     }
-}
-
-fun popBrowserLastTab() {
-    browserTabLast()?.let { popBrowserTab(it.id) }
 }
 
 fun pushBrowserTab(tab: BrowserTab) {
@@ -84,14 +79,6 @@ fun removeTabAndHideBrowser(tabId: String) {
     popBrowserTab(tabId)
     WindowFrame.browserContainer()?.setVisible(false)
 }
-
-fun removeLastTabAndHideBrowser() {
-    val tab = browserTabLast() ?: return
-    popBrowserTab(tab.id)
-    WindowFrame.browserContainer()?.setVisible(false)
-}
-
-fun browserTabs() = tabs.toList()
 
 fun browserTabsCount() = tabs.size
 

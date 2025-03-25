@@ -3,20 +3,16 @@ package com.flowfoundation.wallet.page.backup.multibackup.presenter
 import androidx.lifecycle.ViewModelProvider
 import androidx.transition.Fade
 import androidx.transition.Transition
-import com.google.android.material.transition.MaterialSharedAxis
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupDropboxFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupDropboxPinCodeFragment
 import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupDropboxWithPinFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupGoogleDriveWithPinFragment
-import com.flowfoundation.wallet.page.backup.multibackup.fragment.BackupPinCodeFragment
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupCompletedItem
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupDropboxOption
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveOption
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
+import com.google.android.material.transition.MaterialSharedAxis
 
 
 class BackupDropboxWithPinPresenter(private val parentFragment: BackupDropboxWithPinFragment) :
