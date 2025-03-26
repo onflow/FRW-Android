@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import androidx.transition.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.databinding.DialogFclSignMessageBinding
 import com.flowfoundation.wallet.manager.evm.COALinkCheckManager
 import com.flowfoundation.wallet.page.browser.loadFavicon

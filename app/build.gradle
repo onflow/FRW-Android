@@ -291,9 +291,7 @@ dependencies {
 
     /** FLOW **/
     // implementation "com.nftco:flow-jvm-sdk:0.7.3"
-    implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.7") {
-        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
-    }
+    implementation('org.onflow:flow-jvm-sdk:2.1.1')
     implementation 'com.github.onflow.flow-kmm:flow:0.0.1'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
     implementation(platform("com.reown:android-bom:1.2.1"))

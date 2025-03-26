@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.FclMessageHandler
 import com.flowfoundation.wallet.widgets.webview.fcl.authzTransaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 
 class JsInterface(
     private val webView: LilicoWebView,

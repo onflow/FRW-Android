@@ -4,10 +4,10 @@ import android.os.Parcelable
 import androidx.annotation.MainThread
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.FlowId
+import org.onflow.flow.sdk.FlowTransactionResult
+import org.onflow.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.cache.CacheManager
@@ -30,7 +30,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
-import com.nftco.flow.sdk.parseErrorCode
+import org.onflow.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 import java.lang.ref.WeakReference

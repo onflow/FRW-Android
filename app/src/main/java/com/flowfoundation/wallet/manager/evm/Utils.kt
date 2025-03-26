@@ -21,11 +21,11 @@ import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.cadence.toJsonElement
-import com.nftco.flow.sdk.decodeToAny
+import org.onflow.flow.sdk.DomainTag
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.bytesToHex
+import org.onflow.flow.sdk.cadence.toJsonElement
+import org.onflow.flow.sdk.decodeToAny
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int

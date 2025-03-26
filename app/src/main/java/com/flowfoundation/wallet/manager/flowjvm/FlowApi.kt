@@ -1,10 +1,10 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.FlowAccessApi
-import com.nftco.flow.sdk.FlowChainId
-import com.nftco.flow.sdk.impl.FlowAccessApiImpl
+import org.onflow.flow.sdk.Flow
+import org.onflow.flow.sdk.FlowAccessApi
+import org.onflow.flow.sdk.FlowChainId
+import org.onflow.flow.sdk.impl.FlowAccessApiImpl
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.logd
 

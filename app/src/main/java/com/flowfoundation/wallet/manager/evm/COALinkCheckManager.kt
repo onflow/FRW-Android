@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.utils.getCOALinkCheckedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.setCOALinkCheckedAddresssSet
 import com.flowfoundation.wallet.utils.uiScope
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 
 
 object COALinkCheckManager {

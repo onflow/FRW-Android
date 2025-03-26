@@ -16,7 +16,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.wallet.toAddress
-import com.nftco.flow.sdk.Flow
+import org.onflow.flow.sdk.Flow
 import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal

@@ -1,8 +1,8 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
-import com.nftco.flow.sdk.AddressRegistry
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowChainId
+import org.onflow.flow.sdk.AddressRegistry
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowChainId
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
