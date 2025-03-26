@@ -31,7 +31,7 @@ fun instabugInitialize(application: Application) {
         Instabug.setWelcomeMessageState(WelcomeMessage.State.BETA)
     } else {
         Instabug.Builder(application, BuildConfig.INSTABUG_TOKEN_PROD)
-            .setTrackingUserStepsState(Feature.State.DISABLED)
+            .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
                 ReproConfigurations.Builder()
                     .setIssueMode(IssueType.All, ReproMode.Disable)
