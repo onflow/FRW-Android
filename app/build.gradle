@@ -6,10 +6,20 @@ plugins {
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id 'instabug-apm'
-    id 'com.google.devtools.ksp'
+    id 'com.google.devtools.ksp' version '2.1.10-1.0.31'
     id 'com.google.firebase.appdistribution'
     id 'org.jetbrains.kotlin.plugin.compose'
 //    id 'com.google.ar.sceneform.plugin'
+}
+
+// Force ASM 9 for all dependencies
+configurations.all {
+    resolutionStrategy {
+        force 'org.ow2.asm:asm:9.6'
+        force 'org.ow2.asm:asm-commons:9.6'
+        force 'org.ow2.asm:asm-util:9.6'
+        force 'org.ow2.asm:asm-tree:9.6'
+    }
 }
 
 def properties = new Properties()
@@ -149,6 +159,10 @@ android {
     packagingOptions {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/io.netty.versions.properties', 'META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'project.properties', 'META-INF/rxjava.properties', 'META-INF/ASL2.0', 'META-INF/atomicfu.kotlin_module']
+            excludes += [
+                'META-INF/versions/9/OSGI-INF/MANIFEST.MF',
+                'META-INF/versions/9/module-info.class'
+            ]
         }
     }
 
@@ -338,4 +352,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     /** TEST **/
+
+    // Update ASM version to support Java 9+ features
+    implementation 'org.ow2.asm:asm:9.6'
+    implementation 'org.ow2.asm:asm-commons:9.6'
+    implementation 'org.ow2.asm:asm-util:9.6'
+    implementation 'org.ow2.asm:asm-tree:9.6'
 }
