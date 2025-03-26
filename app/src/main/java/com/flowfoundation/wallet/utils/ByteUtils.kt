@@ -1,6 +1,6 @@
 package com.flowfoundation.wallet.utils
 
-import android.icu.text.DecimalFormat
+import java.text.DecimalFormat
 
 private const val BYTE = 1L
 private const val KB = BYTE * 1000
