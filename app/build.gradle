@@ -309,7 +309,9 @@ dependencies {
     implementation 'androidx.browser:browser:1.4.0'
 
     /** FLOW **/
-    implementation('org.onflow:flow-jvm-sdk:2.1.1')
+    implementation('org.onflow:flow-jvm-sdk:2.1.1') {
+        exclude group: 'org.bouncycastle', module: 'bcutil-jdk15on'
+    }
     implementation 'com.github.onflow.flow-kmm:flow:0.0.1'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
     implementation(platform("com.reown:android-bom:1.2.1"))
