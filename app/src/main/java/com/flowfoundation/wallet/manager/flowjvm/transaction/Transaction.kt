@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.getOrNull
+import com.flowfoundation.wallet.manager.flowjvm.getOrThrow
 import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
 import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -54,18 +55,16 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).getOrNull()?.bytes?.bytesToHex()
+        val txID = FlowApi.get().sendTransaction(tx).getOrThrow()
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
-        if (txID != null) {
             MixpanelManager.cadenceTransactionSigned(
-                cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it.formatted }.toList(),
+                cadence = voucher.cadence.orEmpty(), txId = txID.stringValue, authorizers = tx.authorizers.map { it.formatted }.toList(),
                 proposer = tx.proposalKey.address.formatted,
                 payer = tx.payerAddress.formatted,
                 isSuccess = true
             )
-        }
-        return txID
+        return txID.stringValue
     } catch (e: Exception) {
         loge(e)
         MixpanelManager.cadenceTransactionSigned(
@@ -165,7 +164,7 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
             keyId = currentKey.id,
             sequenceNum = currentKey.sequenceNumber,
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowApi.get().getLatestBlockHeader().getOrThrow().id.base16Value,
     )
 }
 
@@ -187,7 +186,7 @@ private suspend fun prepareWithMultiSignature(
             keyId = restoreProposalKey.id,
             sequenceNum = restoreProposalKey.sequenceNumber,
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowApi.get().getLatestBlockHeader().getOrThrow().id.base16Value,
     )
 }
 

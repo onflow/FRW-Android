@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.getOrNull
+import com.flowfoundation.wallet.manager.flowjvm.getOrThrow
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.ProposalKey
@@ -77,7 +78,7 @@ class ClaimDomainViewModel : ViewModel() {
             jsonObject.addProperty("value", usernameLiveData.value!!)
             arguments = mutableListOf(FlowArgument(jsonObject.toString().toByteArray()))
 
-            referenceBlockId = FlowApi.get().getLatestBlockHeader().id
+            referenceBlockId = FlowApi.get().getLatestBlockHeader().getOrThrow().id
 
             gasLimit = 9999
 
