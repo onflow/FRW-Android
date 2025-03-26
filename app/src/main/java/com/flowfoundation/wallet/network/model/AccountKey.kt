@@ -1,8 +1,8 @@
 package com.flowfoundation.wallet.network.model
 
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
+import org.onflow.flow.sdk.HashAlgorithm
+import org.onflow.flow.sdk.SignatureAlgorithm
 
 data class AccountKey(
     @SerializedName("hash_algo")

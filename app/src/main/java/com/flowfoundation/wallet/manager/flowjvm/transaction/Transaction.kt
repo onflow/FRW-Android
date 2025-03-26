@@ -2,15 +2,15 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowArgument
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowSignature
-import com.nftco.flow.sdk.FlowTransaction
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.flowTransaction
+import org.onflow.flow.sdk.DomainTag
+import org.onflow.flow.sdk.FlowAccountKey
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowArgument
+import org.onflow.flow.sdk.FlowId
+import org.onflow.flow.sdk.FlowSignature
+import org.onflow.flow.sdk.FlowTransaction
+import org.onflow.flow.sdk.bytesToHex
+import org.onflow.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
