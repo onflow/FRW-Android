@@ -30,7 +30,7 @@ import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupVi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.nftco.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowAddress
 import wallet.core.jni.HDWallet
 
 

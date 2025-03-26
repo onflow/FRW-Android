@@ -88,7 +88,7 @@ fun (CadenceArgumentsBuilder.() -> Unit).builder(): CadenceArgumentsBuilder {
 
 @WorkerThread
 fun FlowAddress.lastBlockAccount(): FlowAccount? {
-    return FlowApi.get().getAccountAtLatestBlock(this)
+    return FlowApi.get().getAccountAtLatestBlock(this).getOrNull()
 }
 
 @WorkerThread

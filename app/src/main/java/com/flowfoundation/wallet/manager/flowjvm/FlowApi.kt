@@ -1,6 +1,8 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.onflow.flow.sdk.Flow
 import org.onflow.flow.sdk.FlowAccessApi
 import org.onflow.flow.sdk.FlowChainId
@@ -13,9 +15,10 @@ internal object FlowApi {
     private const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
 
     private var api: FlowAccessApi? = null
-
-    init {
-        Flow.OBJECT_MAPPER.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
+    
+    private val jsonMapper = ObjectMapper().apply {
+        registerKotlinModule()
+        configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
     }
 
     fun refreshConfig() {
@@ -49,5 +52,23 @@ internal object FlowApi {
     private fun host() = when {
         isTestnet() -> HOST_TESTNET
         else -> HOST_MAINNET
+    }
+
+    fun toJson(value: Any): String = jsonMapper.writeValueAsString(value)
+    
+    fun fromJson(json: String, type: Class<*>): Any = jsonMapper.readValue(json, type)
+}
+
+fun <T> FlowAccessApi.AccessApiCallResponse<T>.getOrNull(): T? {
+    return when (this) {
+        is FlowAccessApi.AccessApiCallResponse.Success -> data
+        is FlowAccessApi.AccessApiCallResponse.Error -> null
+    }
+}
+
+fun <T> FlowAccessApi.AccessApiCallResponse<T>.getOrThrow(): T {
+    return when (this) {
+        is FlowAccessApi.AccessApiCallResponse.Success -> data
+        is FlowAccessApi.AccessApiCallResponse.Error -> throw throwable ?: RuntimeException(message)
     }
 }
