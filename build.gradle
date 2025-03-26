@@ -4,23 +4,24 @@ buildscript {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.3'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0-RC1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
 //        classpath 'com.google.ar.sceneform:plugin:1.17.1'
         classpath 'com.instabug.library:instabug-plugin:12.0.0'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-appdistribution-gradle:5.0.0'
-        classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.0.0-RC1-1.0.20'
+        classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.0.0-1.0.21'
     }
 }
 
 plugins {
-    id 'com.google.devtools.ksp' version '2.0.0-RC1-1.0.20' apply false
-    id 'org.jetbrains.kotlin.plugin.compose' version '2.0.0-RC1' apply false
+    id 'com.google.devtools.ksp' version '2.0.0-1.0.21' apply false
+    id 'org.jetbrains.compose' version '1.5.11' apply false
 }
 
 allprojects {
@@ -29,6 +30,7 @@ allprojects {
         mavenCentral()
         jcenter() // Warning: this repository is going to shut down soon
         maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
     }
 }
 
