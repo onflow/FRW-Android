@@ -2,12 +2,13 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("kotlin-parcelize")
-    id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
+    id "org.jetbrains.kotlin.plugin.serialization" version "2.0.0-RC1"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id("instabug-apm")
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
+    id 'org.jetbrains.kotlin.plugin.compose'
 //    id 'com.google.ar.sceneform.plugin'
 }
 
@@ -130,10 +131,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.0"
-    }
-
     kotlinOptions {
         jvmTarget = '17'
     }
@@ -168,6 +165,12 @@ android {
 
 dependencies {
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"])
+
+    configurations.all {
+        resolutionStrategy {
+            force "org.jetbrains.kotlin:kotlin-stdlib:2.0.0-RC1"
+        }
+    }
 
     implementation project(':wallet')
     /** Android Architecture **/
@@ -235,7 +238,7 @@ dependencies {
 
     /** Kotlin 相关 **/
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"
     /** Kotlin 相关 **/
 
     /** firebase **/
