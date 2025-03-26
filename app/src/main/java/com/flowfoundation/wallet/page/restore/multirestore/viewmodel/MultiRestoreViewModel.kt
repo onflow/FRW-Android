@@ -3,9 +3,9 @@ package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
+import org.onflow.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.HashAlgorithm
+import org.onflow.flow.sdk.SignatureAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.firebaseUid

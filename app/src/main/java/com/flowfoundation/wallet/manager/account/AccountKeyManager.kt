@@ -1,6 +1,6 @@
 package com.flowfoundation.wallet.manager.account
 
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionState

@@ -19,7 +19,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 
 class EnableEVMDialog : BottomSheetDialogFragment() {
     private lateinit var binding: DialogEnableEvmBinding

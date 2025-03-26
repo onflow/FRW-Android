@@ -4,10 +4,10 @@ import android.os.Parcelable
 import androidx.annotation.MainThread
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.FlowId
+import org.onflow.flow.sdk.FlowTransactionResult
+import org.onflow.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.cache.CacheManager
@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -30,7 +31,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
-import com.nftco.flow.sdk.parseErrorCode
+import org.onflow.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 import java.lang.ref.WeakReference
@@ -103,7 +104,7 @@ object TransactionStateManager {
                 safeRun {
                     for (state in stateQueue) {
                         ret = checkNotNull(
-                            FlowApi.get().getTransactionResultById(FlowId.of(state.transactionId.hexToBytes()))
+                            FlowApi.get().getTransactionResultById(FlowId.of(state.transactionId.hexToBytes())).getOrNull()
                         ) { "Transaction with that id not found" }
                         if (ret.status.num != state.state) {
                             state.state = ret.status.num

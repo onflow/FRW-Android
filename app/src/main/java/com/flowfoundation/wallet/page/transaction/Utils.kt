@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.transaction
 
 import com.flowfoundation.wallet.manager.transaction.TransactionState
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.network.flowscan.model.FlowScanTransaction
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionRecord
 import org.joda.time.format.ISODateTimeFormat

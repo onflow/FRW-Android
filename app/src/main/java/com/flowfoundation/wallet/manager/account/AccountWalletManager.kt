@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.manager.account
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.getWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.readWalletPassword

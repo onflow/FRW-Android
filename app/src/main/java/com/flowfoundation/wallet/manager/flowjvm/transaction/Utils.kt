@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.manager.flowjvm.transaction
 
-import com.nftco.flow.sdk.cadence.Field
-import com.nftco.flow.sdk.cadence.JsonCadenceBuilder
+import org.onflow.flow.sdk.cadence.Field
+import org.onflow.flow.sdk.cadence.JsonCadenceBuilder
 
 class TransactionBuilder {
 

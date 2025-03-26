@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
@@ -37,15 +38,15 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.DomainTag
+import org.onflow.flow.sdk.FlowAccount
+import org.onflow.flow.sdk.FlowAccountKey
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.HashAlgorithm
+import org.onflow.flow.sdk.SignatureAlgorithm
+import org.onflow.flow.sdk.bytesToHex
+import org.onflow.flow.sdk.crypto.Crypto
+import org.onflow.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import retrofit2.HttpException
@@ -212,7 +213,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String, p1PublicKey: String
     ) {
         try {
-            val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address))
+            val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address)).getOrNull()
             if (account == null) {
                 if (checkIsLogin(k1PrivateKey, k1PublicKey, SignatureAlgorithm.ECDSA_SECP256k1)) {
                     return

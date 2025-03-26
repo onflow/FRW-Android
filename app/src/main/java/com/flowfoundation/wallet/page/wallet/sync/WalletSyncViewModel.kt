@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.page.wallet.sync
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowChainId
+import org.onflow.flow.sdk.FlowChainId
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import com.reown.sign.client.Sign

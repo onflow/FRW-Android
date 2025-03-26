@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.page.staking.detail
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.Balance
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.account.OnBalanceUpdate

@@ -7,7 +7,8 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.nftco.flow.sdk.FlowException
+import org.onflow.flow.sdk.FlowException
+
 import retrofit2.HttpException
 import java.util.*
 

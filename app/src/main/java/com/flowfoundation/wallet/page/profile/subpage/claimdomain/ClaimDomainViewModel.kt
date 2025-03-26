@@ -3,15 +3,17 @@ package com.flowfoundation.wallet.page.profile.subpage.claimdomain
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.JsonObject
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowArgument
-import com.nftco.flow.sdk.FlowTransaction
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.cadence.TYPE_STRING
-import com.nftco.flow.sdk.flowTransaction
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowArgument
+import org.onflow.flow.sdk.FlowTransaction
+import org.onflow.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.cadence.TYPE_STRING
+import org.onflow.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
+import com.flowfoundation.wallet.manager.flowjvm.getOrThrow
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.ProposalKey
@@ -61,7 +63,7 @@ class ClaimDomainViewModel : ViewModel() {
     private fun buildPayerSignable(prepare: ClaimDomainPrepare): PayerSignable {
         updateSecurityProvider()
         val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty().toAddress()
-        val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress))
+        val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress)).getOrNull()
             ?: throw RuntimeException("get wallet account error")
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
             ?: throw RuntimeException("get account error")
@@ -76,7 +78,7 @@ class ClaimDomainViewModel : ViewModel() {
             jsonObject.addProperty("value", usernameLiveData.value!!)
             arguments = mutableListOf(FlowArgument(jsonObject.toString().toByteArray()))
 
-            referenceBlockId = FlowApi.get().getLatestBlockHeader().id
+            referenceBlockId = FlowApi.get().getLatestBlockHeader().getOrThrow().id
 
             gasLimit = 9999
 

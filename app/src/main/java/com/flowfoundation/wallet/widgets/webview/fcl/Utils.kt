@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
 import android.webkit.WebView
-import com.nftco.flow.sdk.DomainTag
+import org.onflow.flow.sdk.DomainTag
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel

@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.page.inbox
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.inboxCache
 import com.flowfoundation.wallet.manager.app.isTestnet

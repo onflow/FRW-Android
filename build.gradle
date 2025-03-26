@@ -3,22 +3,24 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.3'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
+        classpath 'com.android.tools.build:gradle:8.8.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.10'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
 //        classpath 'com.google.ar.sceneform:plugin:1.17.1'
         classpath 'com.instabug.library:instabug-plugin:12.0.0'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-appdistribution-gradle:5.0.0'
+        classpath 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.1.10-1.0.31'
     }
 }
 
 plugins {
-    id 'com.google.devtools.ksp' version '1.9.0-1.0.13' apply false
+    id 'com.google.devtools.ksp' version '2.1.10-1.0.31' apply false
+    id 'org.jetbrains.kotlin.plugin.compose' version '2.0.0' apply false
 }
 
 allprojects {
@@ -26,7 +28,22 @@ allprojects {
         google()
         mavenCentral()
         jcenter() // Warning: this repository is going to shut down soon
-        maven { url 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.bouncycastle') {
+            // If the module name ends with "jdk15on", replace it with the "jdk18on" variant.
+            if (details.requested.name.endsWith("jdk15on")) {
+                def newName = details.requested.name.replace("jdk15on", "jdk18on")
+                details.useTarget "org.bouncycastle:${newName}:1.78.1"
+            } else {
+                // For any other BouncyCastle modules, force the version 1.78.1.
+                details.useVersion "1.78.1"
+            }
+        }
     }
 }
 

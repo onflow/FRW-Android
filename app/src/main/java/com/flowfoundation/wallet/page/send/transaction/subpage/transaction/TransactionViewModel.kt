@@ -30,7 +30,7 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function

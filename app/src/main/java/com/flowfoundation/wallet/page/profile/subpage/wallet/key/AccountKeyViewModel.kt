@@ -2,8 +2,8 @@ package com.flowfoundation.wallet.page.profile.subpage.wallet.key
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowPublicKey
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowPublicKey
 import com.flowfoundation.wallet.manager.account.AccountKeyManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager

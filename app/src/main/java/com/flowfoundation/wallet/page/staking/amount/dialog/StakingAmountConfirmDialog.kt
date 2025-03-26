@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogStakingAmountConfirmBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString

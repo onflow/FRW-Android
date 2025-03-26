@@ -18,7 +18,7 @@ import com.flowfoundation.wallet.utils.secret.aesDecrypt
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowAddress
 import com.reown.android.internal.common.crypto.sha256
 
 

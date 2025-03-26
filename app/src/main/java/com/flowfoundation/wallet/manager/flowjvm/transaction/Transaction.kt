@@ -2,18 +2,20 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowArgument
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowSignature
-import com.nftco.flow.sdk.FlowTransaction
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.flowTransaction
+import org.onflow.flow.sdk.DomainTag
+import org.onflow.flow.sdk.FlowAccountKey
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowArgument
+import org.onflow.flow.sdk.FlowId
+import org.onflow.flow.sdk.FlowSignature
+import org.onflow.flow.sdk.FlowTransaction
+import org.onflow.flow.sdk.bytesToHex
+import org.onflow.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
+import com.flowfoundation.wallet.manager.flowjvm.getOrThrow
 import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
 import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -53,16 +55,16 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex()
+        val txID = FlowApi.get().sendTransaction(tx).getOrThrow()
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
-        MixpanelManager.cadenceTransactionSigned(
-            cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it.formatted }.toList(),
-            proposer = tx.proposalKey.address.formatted,
-            payer = tx.payerAddress.formatted,
-            isSuccess = true
-        )
-        return txID
+            MixpanelManager.cadenceTransactionSigned(
+                cadence = voucher.cadence.orEmpty(), txId = txID.stringValue, authorizers = tx.authorizers.map { it.formatted }.toList(),
+                proposer = tx.proposalKey.address.formatted,
+                payer = tx.payerAddress.formatted,
+                isSuccess = true
+            )
+        return txID.stringValue
     } catch (e: Exception) {
         loge(e)
         MixpanelManager.cadenceTransactionSigned(
@@ -83,7 +85,7 @@ suspend fun sendTransactionWithMultiSignature(
     updateSecurityProvider()
     logd(TAG, "sendTransaction prepare")
     val transBuilder = TransactionBuilder().apply { builder(this) }
-    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")
+    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())).getOrNull()?: throw RuntimeException("get wallet account error")
     val restoreProposalKey = account.keys.first { providers.first().getPublicKey() == it.publicKey.base16Value }
     val voucher = prepareWithMultiSignature(
         walletAddress = account.address.base16Value,
@@ -109,7 +111,7 @@ suspend fun sendTransactionWithMultiSignature(
 
 
     logd(TAG, "sendTransaction to flow chain")
-    val txID = FlowApi.get().sendTransaction(tx)
+    val txID = FlowApi.get().sendTransaction(tx).getOrNull() ?: throw RuntimeException("get wallet account error")
     logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
     vibrateTransaction()
     return txID.bytes.bytesToHex()
@@ -145,7 +147,7 @@ private suspend fun FlowTransaction.addFreeGasEnvelope(): FlowTransaction {
 
 private suspend fun prepare(builder: TransactionBuilder): Voucher {
     logd(TAG, "prepare builder:$builder")
-    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(builder.walletAddress?.toAddress().orEmpty()))
+    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(builder.walletAddress?.toAddress().orEmpty())).getOrNull()
         ?: throw RuntimeException("get wallet account error")
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
@@ -162,7 +164,7 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
             keyId = currentKey.id,
             sequenceNum = currentKey.sequenceNumber,
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowApi.get().getLatestBlockHeader().getOrThrow().id.base16Value,
     )
 }
 
@@ -184,12 +186,12 @@ private suspend fun prepareWithMultiSignature(
             keyId = restoreProposalKey.id,
             sequenceNum = restoreProposalKey.sequenceNumber,
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowApi.get().getLatestBlockHeader().getOrThrow().id.base16Value,
     )
 }
 
 fun FlowTransaction.buildPayerSignable(): PayerSignable? {
-    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payerAddress) ?: return null
+    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payerAddress).getOrNull() ?: return null
     val voucher = Voucher(
         cadence = script.stringValue,
         refBlock = referenceBlockId.base16Value,

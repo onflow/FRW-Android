@@ -3,13 +3,13 @@ package com.flowfoundation.wallet.manager.flowjvm
 import androidx.annotation.WorkerThread
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowArgument
-import com.nftco.flow.sdk.cadence.Field
-import com.nftco.flow.sdk.cadence.JsonCadenceBuilder
-import com.nftco.flow.sdk.cadence.UFix64NumberField
+import org.onflow.flow.sdk.Flow
+import org.onflow.flow.sdk.FlowAccount
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.FlowArgument
+import org.onflow.flow.sdk.cadence.Field
+import org.onflow.flow.sdk.cadence.JsonCadenceBuilder
+import org.onflow.flow.sdk.cadence.UFix64NumberField
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
@@ -88,7 +88,7 @@ fun (CadenceArgumentsBuilder.() -> Unit).builder(): CadenceArgumentsBuilder {
 
 @WorkerThread
 fun FlowAddress.lastBlockAccount(): FlowAccount? {
-    return FlowApi.get().getAccountAtLatestBlock(this)
+    return FlowApi.get().getAccountAtLatestBlock(this).getOrNull()
 }
 
 @WorkerThread
@@ -101,7 +101,7 @@ fun FlowAddress.currentKeyId(publicKey: String): Int {
     return lastBlockAccount()?.keys?.firstOrNull { publicKey == it.publicKey.base16Value }?.id ?: 0
 }
 
-fun Field<*>.valueString(): String = if (value is String) value as String else Flow.OBJECT_MAPPER.writeValueAsString(value)
+fun Field<*>.valueString(): String = if (value is String) value as String else FlowApi.toJson(value ?: "")
 
 fun FlowArgument.toAsArgument(): AsArgument {
     with(jsonCadence) {
@@ -127,14 +127,14 @@ fun ufix64Safe(number: Number): UFix64NumberField {
 private fun Field<*>.toObj(): Any {
     if (value is String) return mapOf("type" to type, "value" to value as String)
 
-    val json = Flow.OBJECT_MAPPER.writeValueAsString(value)
+    val json = FlowApi.toJson(value ?: "")
     return runCatching {
         Gson().fromJson<Map<String, Any>>(json, object : TypeToken<Map<String, Any>>() {}.type)
     }.getOrNull() ?: json
 }
 
 private fun Field<*>.valueToObj(): Any {
-    val json = Flow.OBJECT_MAPPER.writeValueAsString(value)
+    val json = FlowApi.toJson(value ?: "")
     return runCatching {
         Gson().fromJson<Map<String, Any>>(json, object : TypeToken<Map<String, Any>>() {}.type)
     }.getOrNull() ?: json

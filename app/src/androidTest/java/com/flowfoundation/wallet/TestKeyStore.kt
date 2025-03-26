@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet
 
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.bytesToHex
+import org.onflow.flow.sdk.hexToBytes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull

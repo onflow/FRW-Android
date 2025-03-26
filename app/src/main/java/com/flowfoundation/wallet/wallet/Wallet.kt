@@ -4,8 +4,8 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.bytesToHex
+import org.onflow.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.getWalletStoreNameAesKey

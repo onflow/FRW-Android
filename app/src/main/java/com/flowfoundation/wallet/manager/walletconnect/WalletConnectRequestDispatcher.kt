@@ -61,8 +61,8 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.sdk.FlowAddress
+import org.onflow.flow.sdk.hexToBytes
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
