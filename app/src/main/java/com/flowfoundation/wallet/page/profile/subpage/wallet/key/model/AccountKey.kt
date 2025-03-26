@@ -1,9 +1,9 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.key.model
 
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowPublicKey
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
+import org.onflow.flow.sdk.FlowPublicKey
+import org.onflow.flow.sdk.HashAlgorithm
+import org.onflow.flow.sdk.SignatureAlgorithm
 
 data class AccountKey(
     @SerializedName("id")

@@ -4,7 +4,7 @@ import android.graphics.BitmapFactory
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.storage.uploadAvatarToFirebase
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
