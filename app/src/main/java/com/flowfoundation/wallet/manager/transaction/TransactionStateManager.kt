@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -103,7 +104,7 @@ object TransactionStateManager {
                 safeRun {
                     for (state in stateQueue) {
                         ret = checkNotNull(
-                            FlowApi.get().getTransactionResultById(FlowId.of(state.transactionId.hexToBytes()))
+                            FlowApi.get().getTransactionResultById(FlowId.of(state.transactionId.hexToBytes())).getOrNull()
                         ) { "Transaction with that id not found" }
                         if (ret.status.num != state.state) {
                             state.state = ret.status.num

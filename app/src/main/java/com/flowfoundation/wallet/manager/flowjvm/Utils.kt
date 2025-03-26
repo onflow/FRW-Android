@@ -101,7 +101,7 @@ fun FlowAddress.currentKeyId(publicKey: String): Int {
     return lastBlockAccount()?.keys?.firstOrNull { publicKey == it.publicKey.base16Value }?.id ?: 0
 }
 
-fun Field<*>.valueString(): String = if (value is String) value as String else Flow.OBJECT_MAPPER.writeValueAsString(value)
+fun Field<*>.valueString(): String = if (value is String) value as String else FlowApi.toJson(value)
 
 fun FlowArgument.toAsArgument(): AsArgument {
     with(jsonCadence) {
@@ -127,14 +127,14 @@ fun ufix64Safe(number: Number): UFix64NumberField {
 private fun Field<*>.toObj(): Any {
     if (value is String) return mapOf("type" to type, "value" to value as String)
 
-    val json = Flow.OBJECT_MAPPER.writeValueAsString(value)
+    val json = FlowApi.toJson(value)
     return runCatching {
         Gson().fromJson<Map<String, Any>>(json, object : TypeToken<Map<String, Any>>() {}.type)
     }.getOrNull() ?: json
 }
 
 private fun Field<*>.valueToObj(): Any {
-    val json = Flow.OBJECT_MAPPER.writeValueAsString(value)
+    val json = FlowApi.toJson(value)
     return runCatching {
         Gson().fromJson<Map<String, Any>>(json, object : TypeToken<Map<String, Any>>() {}.type)
     }.getOrNull() ?: json

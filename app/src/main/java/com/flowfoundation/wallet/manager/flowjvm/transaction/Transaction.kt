@@ -14,6 +14,7 @@ import org.onflow.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
 import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
 import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -53,15 +54,17 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex()
+        val txID = FlowApi.get().sendTransaction(tx).getOrNull()?.bytes?.bytesToHex()
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
-        MixpanelManager.cadenceTransactionSigned(
-            cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it.formatted }.toList(),
-            proposer = tx.proposalKey.address.formatted,
-            payer = tx.payerAddress.formatted,
-            isSuccess = true
-        )
+        if (txID != null) {
+            MixpanelManager.cadenceTransactionSigned(
+                cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it.formatted }.toList(),
+                proposer = tx.proposalKey.address.formatted,
+                payer = tx.payerAddress.formatted,
+                isSuccess = true
+            )
+        }
         return txID
     } catch (e: Exception) {
         loge(e)
@@ -83,7 +86,7 @@ suspend fun sendTransactionWithMultiSignature(
     updateSecurityProvider()
     logd(TAG, "sendTransaction prepare")
     val transBuilder = TransactionBuilder().apply { builder(this) }
-    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")
+    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())).getOrNull()?: throw RuntimeException("get wallet account error")
     val restoreProposalKey = account.keys.first { providers.first().getPublicKey() == it.publicKey.base16Value }
     val voucher = prepareWithMultiSignature(
         walletAddress = account.address.base16Value,
@@ -109,7 +112,7 @@ suspend fun sendTransactionWithMultiSignature(
 
 
     logd(TAG, "sendTransaction to flow chain")
-    val txID = FlowApi.get().sendTransaction(tx)
+    val txID = FlowApi.get().sendTransaction(tx).getOrNull() ?: throw RuntimeException("get wallet account error")
     logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
     vibrateTransaction()
     return txID.bytes.bytesToHex()
@@ -145,7 +148,7 @@ private suspend fun FlowTransaction.addFreeGasEnvelope(): FlowTransaction {
 
 private suspend fun prepare(builder: TransactionBuilder): Voucher {
     logd(TAG, "prepare builder:$builder")
-    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(builder.walletAddress?.toAddress().orEmpty()))
+    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(builder.walletAddress?.toAddress().orEmpty())).getOrNull()
         ?: throw RuntimeException("get wallet account error")
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
@@ -189,7 +192,7 @@ private suspend fun prepareWithMultiSignature(
 }
 
 fun FlowTransaction.buildPayerSignable(): PayerSignable? {
-    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payerAddress) ?: return null
+    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payerAddress).getOrNull() ?: return null
     val voucher = Voucher(
         cadence = script.stringValue,
         refBlock = referenceBlockId.base16Value,

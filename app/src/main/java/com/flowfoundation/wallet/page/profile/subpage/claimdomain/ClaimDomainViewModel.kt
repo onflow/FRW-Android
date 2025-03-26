@@ -12,6 +12,7 @@ import org.onflow.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.ProposalKey
@@ -61,7 +62,7 @@ class ClaimDomainViewModel : ViewModel() {
     private fun buildPayerSignable(prepare: ClaimDomainPrepare): PayerSignable {
         updateSecurityProvider()
         val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty().toAddress()
-        val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress))
+        val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress)).getOrNull()
             ?: throw RuntimeException("get wallet account error")
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
             ?: throw RuntimeException("get account error")

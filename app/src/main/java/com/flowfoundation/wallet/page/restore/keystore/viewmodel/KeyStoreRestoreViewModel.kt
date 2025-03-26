@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flowjvm.getOrNull
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
@@ -212,7 +213,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String, p1PublicKey: String
     ) {
         try {
-            val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address))
+            val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address)).getOrNull()
             if (account == null) {
                 if (checkIsLogin(k1PrivateKey, k1PublicKey, SignatureAlgorithm.ECDSA_SECP256k1)) {
                     return
