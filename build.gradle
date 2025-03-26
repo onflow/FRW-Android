@@ -7,7 +7,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.8.1'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.10'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
 //        classpath 'com.google.ar.sceneform:plugin:1.17.1'
@@ -29,6 +29,21 @@ allprojects {
         mavenCentral()
         jcenter() // Warning: this repository is going to shut down soon
         maven { url = uri("https://jitpack.io") }
+    }
+}
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+        if (details.requested.group == 'org.bouncycastle') {
+            // If the module name ends with "jdk15on", replace it with the "jdk18on" variant.
+            if (details.requested.name.endsWith("jdk15on")) {
+                def newName = details.requested.name.replace("jdk15on", "jdk18on")
+                details.useTarget "org.bouncycastle:${newName}:1.78.1"
+            } else {
+                // For any other BouncyCastle modules, force the version 1.78.1.
+                details.useVersion "1.78.1"
+            }
+        }
     }
 }
 
