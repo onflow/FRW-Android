@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet
 
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.simpleFlowScript
+import org.onflow.flow.sdk.Flow
+import org.onflow.flow.sdk.simpleFlowScript
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
