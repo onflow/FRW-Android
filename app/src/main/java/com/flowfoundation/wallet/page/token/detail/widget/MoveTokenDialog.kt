@@ -280,14 +280,14 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             val coinsWithBalance = availableTokens
                 .filter { it.tokenBalance > BigDecimal.ZERO }
                 .map { it.tokenInfo }
-            
 
             val selectedToken = dialog.show(
                 selectedCoin = currentToken?.tokenInfo?.contractId(),
                 disableCoin = null,
                 fragmentManager = childFragmentManager,
                 moveFromAddress = moveFromAddress,
-                availableCoins = coinsWithBalance
+                availableCoins = coinsWithBalance,
+                initialTokens = availableTokens
             )
             if (selectedToken != null) {
                 uiScope {

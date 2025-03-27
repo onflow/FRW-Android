@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.widgets
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.SystemClock
 import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -23,7 +24,7 @@ class SendButton : TouchScaleCardView {
 
     private var binding = WidgetSendButtonBinding.inflate(LayoutInflater.from(context))
 
-    private var indicatorProgress = 0.0f
+    private var startTimeMillis = 0L
 
     private var progressTask = Runnable { updateProgress() }
 
@@ -63,6 +64,7 @@ class SendButton : TouchScaleCardView {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isPressedDown = true
+                startTimeMillis = SystemClock.elapsedRealtime()
                 postDelayed(progressTask, 16)
                 logd(TAG, "onTouchEvent down")
             }
@@ -103,7 +105,7 @@ class SendButton : TouchScaleCardView {
                     setScaleEnable(true)
                     progressBar.changeIndeterminate(false)
                     removeCallbacks(progressTask)
-                    indicatorProgress = 0f
+                    startTimeMillis = 0L
                     if (defaultTextId != 0) {
                         holdToSend.setText(defaultTextId)
                     }
@@ -122,24 +124,22 @@ class SendButton : TouchScaleCardView {
     }
 
     private fun updateProgress() {
-        if (indicatorProgress > duration || !isPressedDown) {
+        if (!isPressedDown) {
             return
         }
-        indicatorProgress += 16
+        val elapsedTime = SystemClock.elapsedRealtime() - startTimeMillis
 
-        val progress = min(100, ((indicatorProgress / duration) * 100).toInt())
-
-        binding.progressBar.progress = progress
-
-        if (progress >= 100) {
+        if (elapsedTime >= duration) {
+            binding.progressBar.progress = 100
             logd(TAG, "updateProgress() 100")
             changeState(ButtonState.VERIFICATION)
             return
         }
 
-        if (progress < 100) {
-            postDelayed(progressTask, 16)
-        }
+        val progress = min(100, ((elapsedTime / duration) * 100).toInt())
+        binding.progressBar.progress = progress
+
+        postDelayed(progressTask, 16)
     }
 
     private fun verification() {

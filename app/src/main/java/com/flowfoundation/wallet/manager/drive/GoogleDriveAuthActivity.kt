@@ -57,7 +57,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
 
 
-        val signInOptions = GoogleSignInOptions.Builder()
+        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))
             .build()
