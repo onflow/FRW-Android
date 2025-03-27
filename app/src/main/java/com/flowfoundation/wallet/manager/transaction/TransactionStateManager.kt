@@ -33,6 +33,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
 import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
+import org.onflow.flow.models.TransactionStatus
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -273,10 +274,10 @@ data class TransactionState(
 
     fun progress(): Float {
         return when (state) {
-            FlowTransactionStatus.UNKNOWN.num, FlowTransactionStatus.PENDING.num -> 0.25f
-            FlowTransactionStatus.FINALIZED.num -> 0.50f
-            FlowTransactionStatus.EXECUTED.num -> 0.75f
-            FlowTransactionStatus.SEALED.num-> 1.0f
+            FlowTransactionStatus.UNKNOWN.num, TransactionStatus.PENDING.ordinal -> 0.25f
+            TransactionStatus.FINALIZED.ordinal -> 0.50f
+            TransactionStatus.EXECUTED.ordinal -> 0.75f
+            TransactionStatus.SEALED.ordinal-> 1.0f
             else -> 0.0f
         }
     }

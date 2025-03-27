@@ -23,9 +23,9 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
-import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.onflow.flow.models.TransactionStatus
 import wallet.core.jni.HDWallet
 
 
@@ -86,7 +86,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )

@@ -7,7 +7,6 @@ import android.content.IntentFilter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_LOGIN_FINISH
@@ -31,6 +30,7 @@ import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
+import org.onflow.flow.models.TransactionStatus
 import wallet.core.jni.HDWallet
 
 
@@ -100,7 +100,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
