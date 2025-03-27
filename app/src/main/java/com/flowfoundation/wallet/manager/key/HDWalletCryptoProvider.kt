@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.manager.key
 
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.nftco.flow.sdk.DomainTag
+import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
@@ -30,7 +30,7 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     }
 
     override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+        return signData(DomainTag.User().bytes + jwt.encodeToByteArray())
     }
 
     override fun signData(data: ByteArray): String {

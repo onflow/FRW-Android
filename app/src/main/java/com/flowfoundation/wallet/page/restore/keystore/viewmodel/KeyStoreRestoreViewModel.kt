@@ -37,7 +37,7 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import com.nftco.flow.sdk.DomainTag
+import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.FlowAccount
 import com.nftco.flow.sdk.FlowAccountKey
 import com.nftco.flow.sdk.FlowAddress
@@ -725,6 +725,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 privateKey, signAlgo
             ),
             hashAlgo = hashAlgo
-        ).sign(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray()).bytesToHex()
+        ).sign(DomainTag.User().bytes + jwt.encodeToByteArray()).bytesToHex()
     }
 }
