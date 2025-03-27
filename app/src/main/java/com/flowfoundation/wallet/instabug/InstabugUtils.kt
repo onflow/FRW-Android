@@ -34,7 +34,7 @@ fun instabugInitialize(application: Application) {
             .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
                 ReproConfigurations.Builder()
-                    .setIssueMode(IssueType.All, ReproMode.Disable)
+                    .setIssueMode(IssueType.All, ReproMode.EnableWithNoScreenshots)
                     .build())
             .setAutoMaskScreenshotsTypes(MaskingType.MASK_NOTHING)
             .build()
