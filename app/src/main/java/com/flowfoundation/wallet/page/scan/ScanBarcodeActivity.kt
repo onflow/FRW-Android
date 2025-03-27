@@ -14,6 +14,11 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityScanBarcodeBinding
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.DecodeHintType
+import com.journeyapps.barcodescanner.DefaultDecoderFactory
+import com.journeyapps.barcodescanner.Size
+import java.util.EnumSet
 
 
 class ScanBarcodeActivity : BaseActivity(), DecoratedBarcodeView.TorchListener {
@@ -33,7 +38,24 @@ class ScanBarcodeActivity : BaseActivity(), DecoratedBarcodeView.TorchListener {
         UltimateBarX.with(this).fitWindow(false).light(false).applyStatusBar()
 
         with(binding) {
+            zxingBarcodeScanner.barcodeView.cameraSettings.isContinuousFocusEnabled = true
+            zxingBarcodeScanner.barcodeView.cameraSettings.isAutoFocusEnabled = true
+            val hints = mapOf(DecodeHintType.TRY_HARDER to true, DecodeHintType.POSSIBLE_FORMATS to EnumSet.of(BarcodeFormat.QR_CODE))
+            zxingBarcodeScanner.barcodeView.decoderFactory = DefaultDecoderFactory(
+                null,
+                hints,
+                null,
+                0
+            )
+            zxingBarcodeScanner.barcodeView.framingRectSize = Size(
+                resources.displayMetrics.widthPixels * 3 / 4,
+                resources.displayMetrics.widthPixels * 3 / 4
+            )
             zxingBarcodeScanner.setTorchListener(this@ScanBarcodeActivity)
+            zxingBarcodeScanner.setOnClickListener {
+                zxingBarcodeScanner.barcodeView.pause()
+                zxingBarcodeScanner.barcodeView.resume()
+            }
             actionWrapper.addStatusBarTopPadding()
             flashButton.setVisible(hasFlash())
             flashButton.setOnClickListener { switchFlashlight() }
