@@ -11,6 +11,7 @@ import com.nftco.flow.sdk.ScriptBuilder
 import org.onflow.flow.ChainId
 import org.onflow.flow.FlowApi
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.Account
 
 object FlowCadenceApi {
 
@@ -58,4 +59,7 @@ object FlowCadenceApi {
         }
     }
 
+    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: Boolean = true): Account {
+        return get().getAccount(address, blockHeight, sealed)
+    }
 }

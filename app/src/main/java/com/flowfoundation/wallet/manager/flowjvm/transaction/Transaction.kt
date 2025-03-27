@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.DomainTag
+import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.FlowAccountKey
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
@@ -220,13 +220,13 @@ fun FlowTransaction.buildPayerSignable(): PayerSignable? {
     return PayerSignable(
         transaction = voucher,
         message = PayerSignable.Message(
-            (DomainTag.TRANSACTION_DOMAIN_TAG + canonicalAuthorizationEnvelope).bytesToHex()
+            (DomainTag.Transaction().bytes + canonicalAuthorizationEnvelope).bytesToHex()
         )
     )
 }
 
 fun FlowTransaction.encodeTransactionPayload(): String {
-    return (DomainTag.TRANSACTION_DOMAIN_TAG + canonicalPayload).bytesToHex()
+    return (DomainTag.Transaction().bytes + canonicalPayload).bytesToHex()
 }
 
 fun Voucher.toFlowMultiTransaction(): FlowTransaction {
