@@ -33,32 +33,34 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
         viewModelIOScope(this) {
             val account =
                 FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-            if (account == null || account.keys.isEmpty()) {
+            if (account == null || account.keys?.isEmpty() == true) {
                 keyListLiveData.postValue(emptyList())
                 return@viewModelIOScope
             }
 
             uiScope {
-                keyList.addAll(account.keys.map {
-                    val publicKey = AccountPublicKey(
-                        it.id.toString(), it.publicKey.base16Value, it.signAlgo, it.hashAlgo,
-                        it.sequenceNumber.toString(), it.weight.toString(), it.revoked
-                    ) //to-do
-                    AccountKey(
-                        it.id,
-                        publicKey,
-                        it.signAlgo,
-                        it.hashAlgo,
-                        it.weight,
-                        it.sequenceNumber,
-                        it.revoked,
-                        isRevoking = false,
-                        isCurrentDevice = isCurrentDevice(publicKey),
-                        deviceName = "",
-                        backupType = -1,
-                        deviceType = -1,
-                    )
-                })
+                account.keys?.let { accountPublicKeys ->
+                    keyList.addAll(accountPublicKeys.map {
+                        val publicKey = AccountPublicKey(
+                            it.index, it.publicKey, it.signingAlgorithm, it.hashingAlgorithm,
+                            it.sequenceNumber, it.weight, it.revoked
+                        )
+                        AccountKey(
+                            it.index.toInt(),
+                            publicKey,
+                            it.signingAlgorithm,
+                            it.hashingAlgorithm,
+                            it.weight.toInt(),
+                            it.sequenceNumber.toInt(),
+                            it.revoked,
+                            isRevoking = false,
+                            isCurrentDevice = isCurrentDevice(publicKey),
+                            deviceName = "",
+                            backupType = -1,
+                            deviceType = -1,
+                        )
+                    })
+                }
                 keyListLiveData.postValue(keyList)
                 loadDeviceInfo()
             }
