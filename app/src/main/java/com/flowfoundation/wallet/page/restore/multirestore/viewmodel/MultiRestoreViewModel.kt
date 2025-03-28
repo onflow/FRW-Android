@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
 import com.flowfoundation.wallet.R
@@ -53,6 +52,7 @@ import io.outblock.wallet.KeyStoreCryptoProvider
 import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.TransactionStatus
 import wallet.core.jni.HDWallet
 
 
@@ -204,7 +204,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                     data = ""
                 )

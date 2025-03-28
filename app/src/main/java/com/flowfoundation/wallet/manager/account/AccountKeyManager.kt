@@ -1,11 +1,11 @@
 package com.flowfoundation.wallet.manager.account
 
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import org.onflow.flow.models.TransactionStatus
 
 
 object AccountKeyManager {
@@ -24,7 +24,7 @@ object AccountKeyManager {
             val transactionState = TransactionState(
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_REVOKE_KEY,
                 data = ""
             )

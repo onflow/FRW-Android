@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.backup.multibackup.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
@@ -28,6 +27,7 @@ import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.onflow.flow.models.TransactionStatus
 import wallet.core.jni.HDWallet
 
 
@@ -91,7 +91,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )

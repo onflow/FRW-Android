@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
@@ -32,12 +32,12 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAddress
+import org.onflow.flow.models.Account as FlowAccount
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.FlowAddress
 import retrofit2.HttpException
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
@@ -196,13 +196,7 @@ class KeyStoreRestoreViewModelV2 : ViewModel() {
         p1PrivateKey: String, p1PublicKey: String
     ) {
         try {
-            val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address))
-            if (account == null) {
-                queryAddressWithPublicKey(
-                    k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey
-                )
-                return
-            }
+            val account = FlowCadenceApi.getAccount(address)
             if (checkIsMatched(account, k1PrivateKey, k1PublicKey)) {
                 return
             } else if (checkIsMatched(account, p1PrivateKey, p1PublicKey)) {
@@ -221,17 +215,17 @@ class KeyStoreRestoreViewModelV2 : ViewModel() {
         privateKey: String,
         publicKey: String
     ): Boolean {
-        val accountKey = account.keys.lastOrNull { it.publicKey.base16Value == publicKey }
+        val accountKey = account.keys?.lastOrNull { it.publicKey == publicKey }
         return accountKey?.run {
             importKeyStoreAddress(
                 KeystoreAddress(
-                    address = account.address.base16Value,
+                    address = FlowAddress(account.address).base16Value,
                     publicKey = publicKey,
                     privateKey = privateKey,
-                    keyId = id,
-                    weight = weight,
-                    hashAlgo = hashAlgo.index,
-                    signAlgo = signAlgo.index
+                    keyId = index.toInt(),
+                    weight = weight.toInt(),
+                    hashAlgo = hashingAlgorithm.ordinal,
+                    signAlgo = signingAlgorithm.ordinal
                 )
             )
             true

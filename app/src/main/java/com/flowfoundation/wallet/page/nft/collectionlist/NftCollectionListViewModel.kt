@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.nft.collectionlist
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
@@ -18,6 +17,7 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import org.onflow.flow.models.TransactionStatus
 
 class NftCollectionListViewModel : ViewModel(), OnTransactionStateChange, NftCollectionStateChangeListener {
 
@@ -73,7 +73,7 @@ class NftCollectionListViewModel : ViewModel(), OnTransactionStateChange, NftCol
                 val transactionState = TransactionState(
                     transactionId = transactionId,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ENABLE_NFT,
                     data = Gson().toJson(collection)
                 )
