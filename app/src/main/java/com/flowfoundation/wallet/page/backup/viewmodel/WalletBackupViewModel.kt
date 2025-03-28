@@ -60,10 +60,10 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
             uiScope {
                 val keys = account?.keys ?: emptyList()
                 val keyList = backupKeyList.mapNotNull { info ->
-                    keys.lastOrNull { info.pubKey.publicKey == it.publicKey.base16Value && it.revoked.not() }
+                    keys.lastOrNull { info.pubKey.publicKey == it.publicKey && it.revoked.not() }
                         ?.let {
                             BackupKey(
-                                it.id,
+                                it.index.toInt(),
                                 info,
                                 isRevoking = false
                             )
@@ -102,16 +102,16 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
                 if (deviceKey != null) {
                     val unRevokedDevice = keys.firstOrNull {
-                        it.publicKey.base16Value ==
+                        it.publicKey ==
                                 deviceKey.pubKey.publicKey && it.revoked.not()
                     }
                     if (unRevokedDevice != null) {
                         val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
-                        val keyId = if (unRevokedDevice.publicKey.base16Value == currentKey) null else unRevokedDevice.id
+                        val keyId = if (unRevokedDevice.publicKey == currentKey) null else unRevokedDevice.index
                         deviceList.add(
                             DeviceKeyModel(
                                 deviceId = device.id,
-                                keyId = keyId,
+                                keyId = keyId?.toInt(),
                                 deviceModel = device
                             )
                         )

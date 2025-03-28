@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.manager.flowjvm.transaction
 
-
 import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize

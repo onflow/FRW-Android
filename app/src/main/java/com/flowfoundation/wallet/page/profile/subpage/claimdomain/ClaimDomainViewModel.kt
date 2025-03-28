@@ -10,6 +10,7 @@ import com.nftco.flow.sdk.cadence.TYPE_STRING
 import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
@@ -58,15 +59,14 @@ class ClaimDomainViewModel : ViewModel() {
         }
     }
 
-    private fun buildPayerSignable(prepare: ClaimDomainPrepare): PayerSignable {
+    private suspend fun buildPayerSignable(prepare: ClaimDomainPrepare): PayerSignable {
         updateSecurityProvider()
         val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty().toAddress()
-        val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(walletAddress))
-            ?: throw RuntimeException("get wallet account error")
+        val account = FlowCadenceApi.getAccount(walletAddress)
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
             ?: throw RuntimeException("get account error")
         val currentKey =
-            account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
+            account.keys?.findLast { it.publicKey == cryptoProvider.getPublicKey() }
                 ?: throw RuntimeException("get account key error")
         return flowTransaction {
             script { prepare.cadence!! }
@@ -83,7 +83,7 @@ class ClaimDomainViewModel : ViewModel() {
             proposalKey {
                 address = FlowAddress(walletAddress)
                 keyIndex = currentKey.id
-                sequenceNumber = currentKey.sequenceNumber
+                sequenceNumber = currentKey.sequenceNumber.toInt()
             }
 
             authorizers(listOf(walletAddress, prepare.lilicoServerAddress!!, prepare.flownsServerAddress!!).map { FlowAddress(it) }.toMutableList())
@@ -93,7 +93,7 @@ class ClaimDomainViewModel : ViewModel() {
             addPayloadSignatures {
                 signature(
                     FlowAddress(walletAddress),
-                    currentKey.id,
+                    currentKey.index,
                     cryptoProvider.getSigner(),
                 )
             }

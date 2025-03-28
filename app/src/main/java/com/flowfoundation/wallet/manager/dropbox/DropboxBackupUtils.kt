@@ -41,7 +41,7 @@ const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
 
 @WorkerThread
-fun uploadDropboxBackup(
+suspend fun uploadDropboxBackup(
     dropboxClient: DbxClientV2,
     backupCryptoProvider: BackupCryptoProvider
 ) {

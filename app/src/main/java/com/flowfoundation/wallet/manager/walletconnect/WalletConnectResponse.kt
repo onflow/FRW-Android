@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
 import org.onflow.flow.models.FlowAddress
 
 @WorkerThread
-fun walletConnectAuthnServiceResponse(
+suspend fun walletConnectAuthnServiceResponse(
     address: String,
     keyId: Int,
     nonce: String?,
@@ -99,7 +99,7 @@ private fun userSign(address: String, keyId: Int): String {
     """.trimIndent()
 }
 
-private fun preAuthz(): String {
+private suspend fun preAuthz(): String {
     return """
 {
     "f_type": "Service",
