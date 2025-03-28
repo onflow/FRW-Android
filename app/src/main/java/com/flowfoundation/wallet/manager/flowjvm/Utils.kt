@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.Flow
 import org.onflow.flow.models.Account
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowArgumentsBuilder
 import com.nftco.flow.sdk.cadence.Field
@@ -19,6 +18,7 @@ import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.FlowAddress
 import java.math.BigDecimal
 import java.util.Locale
 

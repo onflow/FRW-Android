@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.backup.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.account.AccountKeyManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
@@ -21,6 +20,7 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.Device
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import okhttp3.internal.filterList
+import org.onflow.flow.models.FlowAddress
 
 
 class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {

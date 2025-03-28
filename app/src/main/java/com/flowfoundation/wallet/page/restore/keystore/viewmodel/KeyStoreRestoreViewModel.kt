@@ -40,7 +40,6 @@ import com.google.gson.Gson
 import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.FlowAccount
 import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.bytesToHex
@@ -48,6 +47,7 @@ import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.FlowAddress
 import retrofit2.HttpException
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet

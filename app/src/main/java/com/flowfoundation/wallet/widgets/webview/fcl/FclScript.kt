@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.widgets.webview.fcl
 
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
@@ -10,6 +9,7 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
+import org.onflow.flow.models.FlowAddress
 
 private const val PRE_AUTHZ_REPLACEMENT = "#pre-authz"
 private const val ADDRESS_REPLACEMENT = "#address"

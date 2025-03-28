@@ -15,8 +15,8 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.key.model.AccountKe
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import com.nftco.flow.sdk.FlowAddress
 import org.onflow.flow.models.AccountPublicKey
+import org.onflow.flow.models.FlowAddress
 import java.util.concurrent.CopyOnWriteArrayList
 
 

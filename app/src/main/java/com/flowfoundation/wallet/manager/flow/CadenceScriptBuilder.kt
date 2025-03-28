@@ -1,9 +1,9 @@
 package com.flowfoundation.wallet.manager.flow
 
 import org.onflow.flow.AddressRegistry
-import com.nftco.flow.sdk.FlowAddress
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.FlowAddress
 
 
 class CadenceScriptBuilder {

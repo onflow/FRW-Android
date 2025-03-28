@@ -2,11 +2,12 @@ package com.flowfoundation.wallet.manager.flowjvm
 
 import org.onflow.flow.AddressRegistry
 import org.onflow.flow.ChainId
-import com.nftco.flow.sdk.FlowAddress
+
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.logw
+import org.onflow.flow.models.FlowAddress
 
 internal class FlowAddressRegistry {
 

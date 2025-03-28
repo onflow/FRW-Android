@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowId
 import com.nftco.flow.sdk.FlowSignature
@@ -26,6 +25,7 @@ import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.onflow.flow.models.FlowAddress
 import java.security.Provider
 import java.security.Security
 

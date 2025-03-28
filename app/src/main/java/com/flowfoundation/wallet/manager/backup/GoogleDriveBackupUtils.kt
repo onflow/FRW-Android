@@ -6,7 +6,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.api.services.drive.Drive
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowAddress
 import com.reown.android.internal.common.crypto.sha256
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -19,6 +18,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.secret.aesDecrypt
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
+import org.onflow.flow.models.FlowAddress
 
 private const val TAG = "GoogleDriveBackupUtils"
 private const val FILE_NAME = "outblock_multi_backup"

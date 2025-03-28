@@ -2,13 +2,13 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
+import org.onflow.flow.models.FlowAddress
 
 @WorkerThread
 fun walletConnectAuthnServiceResponse(

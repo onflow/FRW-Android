@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.profile.subpage.claimdomain
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.JsonObject
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.FlowTransactionStatus
@@ -30,6 +29,7 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.toAddress
+import org.onflow.flow.models.FlowAddress
 
 class ClaimDomainViewModel : ViewModel() {
 
