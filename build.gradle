@@ -22,7 +22,7 @@ plugins {
 }
 
 ext {
-    flowVersion = '0.0.1'
+    flowVersion = '0.0.2-gh-workflow'
 }
 
 allprojects {
