@@ -188,13 +188,13 @@ fun refreshBalance(value: Float) {
     }
 }
 
-fun signTypedData(data: ByteArray): String {
+suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
-    val signableData = DomainTag.User().bytes + data
+    val signableData = DomainTag.User.bytes + data
     val sign = cryptoProvider.getSigner().sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
@@ -207,14 +207,14 @@ fun signTypedData(data: ByteArray): String {
     return Numeric.toHexString(encoded)
 }
 
-fun signEthereumMessage(message: String): String {
+suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
     val hashedData = hashPersonalMessage(message.toByteArray())
-    val signableData = DomainTag.User().bytes + hashedData
+    val signableData = DomainTag.User.bytes + hashedData
     val sign = cryptoProvider.getSigner().sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)

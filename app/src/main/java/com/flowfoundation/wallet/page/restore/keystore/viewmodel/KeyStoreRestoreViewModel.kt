@@ -725,6 +725,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 privateKey, signAlgo
             ),
             hashAlgo = hashAlgo
-        ).sign(DomainTag.User().bytes + jwt.encodeToByteArray()).bytesToHex()
+        ).sign(DomainTag.User.bytes + jwt.encodeToByteArray()).bytesToHex()
     }
 }

@@ -28,7 +28,7 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     }
 
     override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.User().bytes + jwt.encodeToByteArray())
+        return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
     override fun signData(data: ByteArray): String {
