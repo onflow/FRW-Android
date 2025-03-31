@@ -79,7 +79,7 @@ class WalletProxyConfirmationDialog: BottomSheetDialogFragment(), OnMapReadyCall
                 requestId, walletConnectProxyAccountResponse(
                     cryptoProvider.getUserSignature(jwt),
                     cryptoProvider.getPublicKey(),
-                    cryptoProvider.getHashAlgorithm().index,
+                    cryptoProvider.getHashAlgorithm().cadenceIndex,
                     cryptoProvider.getSignatureAlgorithm().index,
                     cryptoProvider.getKeyWeight())
             )

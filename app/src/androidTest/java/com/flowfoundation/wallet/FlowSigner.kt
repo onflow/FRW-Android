@@ -1,9 +1,9 @@
 package com.flowfoundation.wallet
 
-import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.Hasher
 import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
+import org.onflow.flow.models.HashingAlgorithm
 import wallet.core.jni.Curve
 import wallet.core.jni.Hash
 import wallet.core.jni.PrivateKey
@@ -11,7 +11,7 @@ import wallet.core.jni.PrivateKey
 class WalletCoreSigner(
     private val privateKey: PrivateKey,
     private val signatureAlgo: SignatureAlgorithm,
-    private val hashAlgo: HashAlgorithm,
+    private val hashAlgo: HashingAlgorithm,
     override val hasher: Hasher = HasherImpl(hashAlgo)
 ) : Signer {
 
@@ -28,13 +28,13 @@ class WalletCoreSigner(
 }
 
 internal class HasherImpl(
-    private val hashAlgo: HashAlgorithm
+    private val hashAlgo: HashingAlgorithm
 ) : Hasher {
 
     override fun hash(bytes: ByteArray): ByteArray {
         return when (hashAlgo) {
-            HashAlgorithm.SHA2_256 -> Hash.sha256(bytes)
-            HashAlgorithm.SHA3_256 -> Hash.sha3256(bytes)
+            HashingAlgorithm.SHA2_256 -> Hash.sha256(bytes)
+            HashingAlgorithm.SHA3_256 -> Hash.sha3256(bytes)
             else -> ByteArray(0)
         }
     }

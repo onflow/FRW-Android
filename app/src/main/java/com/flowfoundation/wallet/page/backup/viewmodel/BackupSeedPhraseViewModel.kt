@@ -80,7 +80,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
                         arg { uint8(it.getSignatureAlgorithm().index) }
-                        arg { uint8(it.getHashAlgorithm().index) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
                         arg { ufix64Safe(1000) }
                     }
                     val transactionState = TransactionState(
@@ -111,7 +111,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                             AccountKey(
                                 publicKey = it.getPublicKey(),
                                 signAlgo = it.getSignatureAlgorithm().index,
-                                hashAlgo = it.getHashAlgorithm().index,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
                             ),
                             deviceInfo,

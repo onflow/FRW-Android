@@ -140,7 +140,7 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
                 userAvatar = account.userInfo.avatar,
                 publicKey = provider.getPublicKey(),
                 signAlgo = provider.getSignatureAlgorithm().index,
-                hashAlgo = provider.getHashAlgorithm().index,
+                hashAlgo = provider.getHashAlgorithm().cadenceIndex,
                 keyIndex = keyIndex?.toInt() ?: 0,
                 updateTime = System.currentTimeMillis(),
                 data = aesEncrypt(key = aesKey, iv = aesIv, message = provider.getMnemonic())
@@ -149,7 +149,7 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
     } else {
         exist.publicKey = provider.getPublicKey()
         exist.signAlgo = provider.getSignatureAlgorithm().index
-        exist.hashAlgo = provider.getHashAlgorithm().index
+        exist.hashAlgo = provider.getHashAlgorithm().cadenceIndex
         exist.keyIndex = keyIndex?.toInt() ?: 0
         exist.updateTime = System.currentTimeMillis()
         exist.data = aesEncrypt(key = aesKey, iv = aesIv, message = provider.getMnemonic())
