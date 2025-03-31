@@ -5,7 +5,7 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.analytics.reportErrorToDebugView
 import com.flowfoundation.wallet.firebase.analytics.reportException
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
-import com.nftco.flow.sdk.FlowException
+import org.onflow.flow.models.Error
 import retrofit2.HttpException
 
 fun logv(tag: String?, msg: Any?) {
@@ -54,7 +54,7 @@ fun reportCadenceErrorToDebugView(cadence: String, throwable: Throwable?) {
     val params = mutableMapOf(
         "cadence" to cadence,
         "message" to throwable?.message.orEmpty(),
-        "cause" to (throwable as? FlowException)?.cause.toString()
+        "cause" to (throwable as? Error)?.cause.toString()
     )
     DebugViewerDataSource.error(title, params.toString())
 }

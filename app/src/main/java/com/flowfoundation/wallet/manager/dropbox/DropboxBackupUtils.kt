@@ -19,8 +19,8 @@ import com.flowfoundation.wallet.utils.secret.aesDecrypt
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowAddress
 import com.reown.android.internal.common.crypto.sha256
+import org.onflow.flow.models.FlowAddress
 
 
 private const val TAG = "DropboxBackupUtils"
@@ -41,7 +41,7 @@ const val EXTRA_SUCCESS = "extra_success"
 const val EXTRA_CONTENT = "extra_content"
 
 @WorkerThread
-fun uploadDropboxBackup(
+suspend fun uploadDropboxBackup(
     dropboxClient: DbxClientV2,
     backupCryptoProvider: BackupCryptoProvider
 ) {
@@ -75,7 +75,7 @@ fun uploadDropboxBackup(
     }
 }
 
-fun checkDropboxBackup(
+suspend fun checkDropboxBackup(
     dropboxClient: DbxClientV2,
     provider: BackupCryptoProvider
 ) {
@@ -84,7 +84,7 @@ fun checkDropboxBackup(
     val wallet = AccountManager.get()?.wallet
     val exist = data.firstOrNull { it.userId == wallet?.id } != null
     val blockAccount = FlowAddress(wallet?.walletAddress().orEmpty()).lastBlockAccount()
-    val keyExist = blockAccount?.keys?.firstOrNull { provider.getPublicKey() == it.publicKey.base16Value } != null
+    val keyExist = blockAccount?.keys?.firstOrNull { provider.getPublicKey() == it.publicKey } != null
     LocalBroadcastManager.getInstance(Env.getApp())
         .sendBroadcast(Intent(ACTION_DROPBOX_CHECK_FINISH).apply {
             putExtra(EXTRA_SUCCESS, exist && keyExist)
@@ -121,13 +121,13 @@ private fun existingData(dropboxHelper: DropboxServerHelper): List<BackupItem> {
     }
 }
 
-private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvider) {
+private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvider) {
     val account = AccountManager.get() ?: throw RuntimeException("Account cannot be null")
     val wallet = account.wallet ?: throw RuntimeException("Wallet cannot be null")
     val exist = data.firstOrNull { it.userId == wallet.id }
     val blockAccount = FlowAddress(wallet.walletAddress().orEmpty()).lastBlockAccount()
     val keyIndex =
-        blockAccount?.keys?.findLast { provider.getPublicKey() == it.publicKey.base16Value }?.id
+        blockAccount?.keys?.findLast { provider.getPublicKey() == it.publicKey }?.index
     val aesKey = sha256(getPinCode().toByteArray())
     val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
     if (exist == null) {
@@ -140,8 +140,8 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
                 userAvatar = account.userInfo.avatar,
                 publicKey = provider.getPublicKey(),
                 signAlgo = provider.getSignatureAlgorithm().index,
-                hashAlgo = provider.getHashAlgorithm().index,
-                keyIndex = keyIndex ?: 0,
+                hashAlgo = provider.getHashAlgorithm().cadenceIndex,
+                keyIndex = keyIndex?.toInt() ?: 0,
                 updateTime = System.currentTimeMillis(),
                 data = aesEncrypt(key = aesKey, iv = aesIv, message = provider.getMnemonic())
             )
@@ -149,8 +149,8 @@ private fun addData(data: MutableList<BackupItem>, provider: BackupCryptoProvide
     } else {
         exist.publicKey = provider.getPublicKey()
         exist.signAlgo = provider.getSignatureAlgorithm().index
-        exist.hashAlgo = provider.getHashAlgorithm().index
-        exist.keyIndex = keyIndex ?: 0
+        exist.hashAlgo = provider.getHashAlgorithm().cadenceIndex
+        exist.keyIndex = keyIndex?.toInt() ?: 0
         exist.updateTime = System.currentTimeMillis()
         exist.data = aesEncrypt(key = aesKey, iv = aesIv, message = provider.getMnemonic())
     }

@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.transaction
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
@@ -14,6 +13,7 @@ import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
+import org.onflow.flow.models.TransactionResult
 
 private val TAG = TransactionStateWatcher::class.java.simpleName
 
@@ -21,13 +21,13 @@ class TransactionStateWatcher(
     val transactionId: String,
 ) {
 
-    suspend fun watch(callback: (state: FlowTransactionResult) -> Unit) {
-        var ret: FlowTransactionResult? = null
+    suspend fun watch(callback: (state: TransactionResult) -> Unit) {
+        var ret: TransactionResult? = null
         var statusCode = -1
         while (true) {
             safeRun {
                 val result = checkNotNull(
-                    FlowApi.get().getTransactionResultById(FlowId.of(transactionId.hexToBytes()))
+                    FlowApi.get().getTransactionResultById(FlowId.of(transactionId.hexToBytes())) //to-do: switch apis
                 ) { "Transaction with that id not found" }
                 logd(TAG, "statusCode:${result.status.num}")
                 if (result.status.num != statusCode) {

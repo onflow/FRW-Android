@@ -1,11 +1,11 @@
 package com.flowfoundation.wallet.wallet
 
-import com.nftco.flow.sdk.DomainTag.normalize
 import com.nftco.flow.sdk.bytesToHex
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import org.onflow.flow.models.DomainTag
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
 import wallet.core.jni.Hash
@@ -37,7 +37,7 @@ fun hdWallet(): HDWallet {
     return Wallet.store().wallet()
 }
 
-fun HDWallet.sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
+fun HDWallet.sign(text: String, domainTag: ByteArray = DomainTag.User.bytes): String {
     return signData(domainTag + text.encodeToByteArray())
 }
 

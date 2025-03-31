@@ -1,13 +1,13 @@
 package com.flowfoundation.wallet.manager.backup
 
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
+import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import io.outblock.wallet.CryptoProvider
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
+import org.onflow.flow.models.SigningAlgorithm
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
 
@@ -27,11 +27,11 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
         return publicKey.removePrefix("04")
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override suspend fun getUserSignature(jwt: String): String {
+        return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
+    override suspend fun signData(data: ByteArray): String {
         return getSigner().sign(data).bytesToHex()
     }
 
@@ -46,12 +46,12 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
         )
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.SHA2_256
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_P256
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.ECDSA_P256
     }
 
     companion object {

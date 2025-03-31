@@ -23,9 +23,9 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
-import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.onflow.flow.models.TransactionStatus
 import wallet.core.jni.HDWallet
 
 
@@ -80,13 +80,13 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
                         arg { uint8(it.getSignatureAlgorithm().index) }
-                        arg { uint8(it.getHashAlgorithm().index) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
                         arg { ufix64Safe(1000) }
                     }
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
@@ -111,7 +111,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                             AccountKey(
                                 publicKey = it.getPublicKey(),
                                 signAlgo = it.getSignatureAlgorithm().index,
-                                hashAlgo = it.getHashAlgorithm().index,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
                             ),
                             deviceInfo,

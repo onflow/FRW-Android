@@ -4,7 +4,6 @@ import android.graphics.BitmapFactory
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.storage.uploadAvatarToFirebase
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
@@ -18,6 +17,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.TransactionStatus
 import java.io.File
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -63,7 +63,7 @@ class ChildAccountEditViewModel : ViewModel() {
                 val transactionState = TransactionState(
                     transactionId = txId,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                     data = Gson().toJson(childAccount),
                 )

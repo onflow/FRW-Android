@@ -3,9 +3,6 @@ package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -53,6 +50,9 @@ import io.outblock.wallet.KeyStoreCryptoProvider
 import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.TransactionStatus
 import wallet.core.jni.HDWallet
 
 
@@ -197,14 +197,14 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
                     arg { string(keyPair.public.toFormatString()) }
-                    arg { uint8(SignatureAlgorithm.ECDSA_P256.index) }
-                    arg { uint8(HashAlgorithm.SHA2_256.index) }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.ordinal) }
                     arg { ufix64Safe(1000) }
                 }
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                     data = ""
                 )
@@ -245,7 +245,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 signMessage = jwt,
                                 signature = it.getUserSignature(jwt),
                                 weight = it.getKeyWeight(),
-                                hashAlgo = it.getHashAlgorithm().index,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 signAlgo = it.getSignatureAlgorithm().index
                             )
                         }.toList()
@@ -290,7 +290,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                                     signAlgo = cryptoProvider.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest

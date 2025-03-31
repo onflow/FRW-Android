@@ -191,7 +191,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                                     signAlgo = cryptoProvider.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest

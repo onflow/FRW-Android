@@ -5,7 +5,6 @@ import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
-import com.nftco.flow.sdk.HashAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -39,9 +38,11 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
+import com.nftco.flow.sdk.HashAlgorithm
 import io.outblock.wallet.KeyManager
 import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
+import org.onflow.flow.models.HashingAlgorithm
 import java.security.MessageDigest
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -73,8 +74,8 @@ suspend fun registerOutblock(
                     MixpanelManager.accountCreated(
                         cryptoProvider?.getPublicKey().orEmpty(),
                         AccountCreateKeyType.KEY_STORE,
-                        cryptoProvider?.getSignatureAlgorithm()?.id.orEmpty(),
-                        cryptoProvider?.getHashAlgorithm()?.algorithm.orEmpty()
+                        cryptoProvider?.getSignatureAlgorithm()?.value.orEmpty(), // to-do: check this is correct
+                        cryptoProvider?.getHashAlgorithm()?.value.orEmpty() // to-do: check this is correct
                     )
                     clearUserCache()
                     continuation.resume(true)
@@ -144,7 +145,7 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
 fun generatePrefix(text: String): String {
     val timestamp = System.currentTimeMillis().toString()
     val combinedInput = "${text}_$timestamp"
-    val bytes = MessageDigest.getInstance(HashAlgorithm.SHA2_256.algorithm)
+    val bytes = MessageDigest.getInstance(HashingAlgorithm.SHA2_256.value)
         .digest(combinedInput.toByteArray())
     return bytes.joinToString("") { "%02x".format(it) }
 }
@@ -175,7 +176,7 @@ private suspend fun resumeAccount() {
             signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
             accountKey = AccountKey(
                 publicKey = cryptoProvider.getPublicKey(),
-                hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                 signAlgo = cryptoProvider.getSignatureAlgorithm().index
             ),
             deviceInfo = deviceInfoRequest

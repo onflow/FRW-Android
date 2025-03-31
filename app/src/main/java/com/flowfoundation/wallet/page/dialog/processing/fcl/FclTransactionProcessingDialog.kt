@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.transition.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.DialogFclAuthzBinding

@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
@@ -37,17 +37,17 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.Account as FlowAccount
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.AccountPublicKey
+import org.onflow.flow.models.FlowAddress
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
@@ -212,17 +212,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String, p1PublicKey: String
     ) {
         try {
-            val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(address))
-            if (account == null) {
-                if (checkIsLogin(k1PrivateKey, k1PublicKey, SignatureAlgorithm.ECDSA_SECP256k1)) {
-                    return
-                } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SignatureAlgorithm.ECDSA_P256)) {
-                    return
-                } else {
-                    checkIsQueryAddress(k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey)
-                }
-                return
-            }
+            val account = FlowCadenceApi.getAccount(address)
             if (checkIsMatched(account, k1PrivateKey, k1PublicKey)) {
                 return
             } else if (checkIsMatched(account, p1PrivateKey, p1PublicKey)) {
@@ -242,9 +232,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String,
         p1PublicKey: String
     ) {
-        if (checkIsLogin(k1PrivateKey, k1PublicKey, SignatureAlgorithm.ECDSA_SECP256k1)) {
+        if (checkIsLogin(k1PrivateKey, k1PublicKey, SigningAlgorithm.ECDSA_secp256k1)) {
             return
-        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SignatureAlgorithm.ECDSA_P256)) {
+        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SigningAlgorithm.ECDSA_P256)) {
             return
         } else {
             queryAddressWithPublicKey(
@@ -258,18 +248,18 @@ class KeyStoreRestoreViewModel : ViewModel() {
         privateKey: String,
         publicKey: String
     ): Boolean {
-        val accountKey = account.keys.lastOrNull { it.publicKey.base16Value == publicKey }
+        val accountKey = account.keys?.lastOrNull { it.publicKey == publicKey }
         return accountKey?.run {
             checkAndImportKeyStoreAddress(
                 this,
                 KeystoreAddress(
-                    address = account.address.base16Value,
+                    address = FlowAddress(account.address).base16Value,
                     publicKey = publicKey,
                     privateKey = privateKey,
-                    keyId = id,
-                    weight = weight,
-                    hashAlgo = hashAlgo.index,
-                    signAlgo = signAlgo.index
+                    keyId = index.toInt(),
+                    weight = weight.toInt(),
+                    hashAlgo = hashingAlgorithm.ordinal,
+                    signAlgo = signingAlgorithm.ordinal
                 )
             )
             true
@@ -316,7 +306,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private suspend fun checkIsLogin(
         privateKey: String,
         publicKey: String,
-        signAlgo: SignatureAlgorithm
+        signAlgo: SigningAlgorithm
     ): Boolean {
         try {
             val response = apiService.checkKeystorePublicKeyImport(publicKey)
@@ -337,7 +327,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun checkAndImportKeyStoreAddress(accountKey: FlowAccountKey, keystoreAddress: KeystoreAddress) {
+    private fun checkAndImportKeyStoreAddress(accountKey: AccountPublicKey, keystoreAddress: KeystoreAddress) {
         currentKeyStoreAddress = keystoreAddress
         loadingLiveData.postValue(true)
         ioScope {
@@ -392,13 +382,13 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
             val currentKey = currentKeyStoreAddress?.run {
-                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey.base16Value == publicKey }
+                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey == publicKey }
             } ?: run {
                 toast(msgRes = R.string.login_failure)
                 activity.finish()
                 return@ioScope
             }
-            if (currentKey.weight < 1000) {
+            if (currentKey.weight.toInt() < 1000) {
                 toast(msgRes = R.string.restore_failure_insufficient_weight)
                 activity.finish()
                 return@ioScope
@@ -444,7 +434,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                 username = username,
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                                     signAlgo = cryptoProvider.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest
@@ -486,7 +476,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun loginWithPrivateKey(
         privateKey: String,
         publicKey: String,
-        signAlgo: SignatureAlgorithm
+        signAlgo: SigningAlgorithm
     ) {
         ioScope {
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
@@ -505,7 +495,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun loginWithKeyStoreAddress(flowAccountKey: FlowAccountKey, keystoreAddress: KeystoreAddress) {
+    private fun loginWithKeyStoreAddress(flowAccountKey: AccountPublicKey, keystoreAddress: KeystoreAddress) {
         if (WalletManager.wallet()?.walletAddress() == keystoreAddress.address) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
@@ -521,7 +511,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         ioScope {
             val cryptoProvider = PrivateKeyStoreCryptoProvider(Gson().toJson(keystoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-            if (flowAccountKey.weight < 1000) {
+            if (flowAccountKey.weight.toInt() < 1000) {
                 toast(msgRes = R.string.restore_failure_insufficient_weight)
                 activity.finish()
                 return@ioScope
@@ -568,7 +558,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                                     signAlgo = cryptoProvider.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest
@@ -612,18 +602,18 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     private fun loginAndFetchWallet(
-        privateKey: String, publicKey: String, signAlgo: SignatureAlgorithm,
+        privateKey: String, publicKey: String, signAlgo: SigningAlgorithm,
         callback: (isSuccess: Boolean, errorMsg: Int) -> Unit
     ) {
         ioScope {
             val addressResponse = queryService.queryAddress(publicKey)
             val currentKey = addressResponse.accounts.firstOrNull()?.run {
-                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey.base16Value == publicKey }
+                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey == publicKey }
             } ?: run {
                 callback.invoke(false, R.string.login_failure)
                 return@ioScope
             }
-            if (currentKey.weight < 1000) {
+            if (currentKey.weight.toInt() < 1000) {
                 callback.invoke(false, R.string.restore_failure_insufficient_weight)
                 return@ioScope
             }
@@ -643,12 +633,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         val resp = service.login(
                             LoginRequest(
                                 signature = getSignature(
-                                    getFirebaseJwt(), privateKey, currentKey.hashAlgo, signAlgo
+                                    getFirebaseJwt(), privateKey, currentKey.hashingAlgorithm, signAlgo
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = publicKey,
-                                    hashAlgo = currentKey.hashAlgo.index,
-                                    signAlgo = currentKey.signAlgo.index
+                                    hashAlgo = currentKey.hashingAlgorithm.ordinal,
+                                    signAlgo = currentKey.signingAlgorithm.ordinal
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -715,8 +705,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun getSignature(
         jwt: String,
         privateKey: String,
-        hashAlgo: HashAlgorithm,
-        signAlgo: SignatureAlgorithm
+        hashAlgo: HashingAlgorithm,
+        signAlgo: SigningAlgorithm
     ): String {
         checkSecurityProvider()
         updateSecurityProvider()
@@ -725,6 +715,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 privateKey, signAlgo
             ),
             hashAlgo = hashAlgo
-        ).sign(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray()).bytesToHex()
+        ).sign(DomainTag.User.bytes + jwt.encodeToByteArray()).bytesToHex()
     }
 }

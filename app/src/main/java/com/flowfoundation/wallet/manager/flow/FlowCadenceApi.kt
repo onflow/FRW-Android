@@ -3,21 +3,19 @@ package com.flowfoundation.wallet.manager.flow
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.FlowAddressRegistry
 import com.flowfoundation.wallet.utils.logd
-import com.google.protobuf.UnsafeByteOperations
-import com.nftco.flow.sdk.AddressRegistry
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.FlowException
-import com.nftco.flow.sdk.ScriptBuilder
 import org.onflow.flow.ChainId
 import org.onflow.flow.FlowApi
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.Account
+import org.onflow.flow.AddressRegistry
+import org.onflow.flow.models.BlockHeader
 
 object FlowCadenceApi {
 
     private const val TAG = "FlowCadenceApi"
     private var api: FlowApi? = null
     var DEFAULT_CHAIN_ID: ChainId = ChainId.Mainnet
-    var DEFAULT_ADDRESS_REGISTRY: AddressRegistry = Flow.DEFAULT_ADDRESS_REGISTRY
+    var DEFAULT_ADDRESS_REGISTRY: AddressRegistry = AddressRegistry()
 
     fun refreshConfig() {
         logd(TAG, "refreshConfig start")
@@ -54,8 +52,15 @@ object FlowCadenceApi {
                 arguments = builder.arguments
             )
         } catch (t: Throwable) {
-            throw FlowException("Error while running script", t)
+            throw Error("Error while running script", t)
         }
     }
 
+    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: Boolean = true): Account {
+        return get().getAccount(address, blockHeight, sealed)
+    }
+
+    suspend fun getBlockHeader(id: String?, blockHeight: String? = null, sealed: Boolean = true): BlockHeader {
+        return get().getBlockHeader(id, blockHeight, sealed)
+    }
 }

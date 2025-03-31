@@ -21,8 +21,7 @@ import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
+import org.onflow.flow.models.DomainTag
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.cadence.toJsonElement
 import com.nftco.flow.sdk.decodeToAny
@@ -30,6 +29,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.onflow.flow.models.FlowAddress
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
@@ -188,13 +188,13 @@ fun refreshBalance(value: Float) {
     }
 }
 
-fun signTypedData(data: ByteArray): String {
+suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
-    val signableData = DomainTag.USER_DOMAIN_TAG + data
+    val signableData = DomainTag.User.bytes + data
     val sign = cryptoProvider.getSigner().sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
@@ -207,14 +207,14 @@ fun signTypedData(data: ByteArray): String {
     return Numeric.toHexString(encoded)
 }
 
-fun signEthereumMessage(message: String): String {
+suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
     val hashedData = hashPersonalMessage(message.toByteArray())
-    val signableData = DomainTag.USER_DOMAIN_TAG + hashedData
+    val signableData = DomainTag.User.bytes + hashedData
     val sign = cryptoProvider.getSigner().sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
