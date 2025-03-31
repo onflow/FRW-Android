@@ -29,11 +29,11 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
         return wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH).data().bytesToHex()
     }
 
-    override fun getUserSignature(jwt: String): String {
+    override suspend fun getUserSignature(jwt: String): String {
         return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
+    override suspend fun signData(data: ByteArray): String {
         val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
         val hashedData = Hash.sha256(data)
         val signature = privateKey.sign(hashedData, Curve.SECP256K1).dropLast(1).toByteArray()

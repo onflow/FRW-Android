@@ -29,11 +29,11 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
         return keyStoreAddress.publicKey
     }
 
-    override fun getUserSignature(jwt: String): String {
+    override suspend fun getUserSignature(jwt: String): String {
         return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
+    override suspend fun signData(data: ByteArray): String {
         return getSigner().sign(data).bytesToHex()
     }
 
