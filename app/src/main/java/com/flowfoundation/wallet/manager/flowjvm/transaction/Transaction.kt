@@ -27,6 +27,7 @@ import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.AccountPublicKey
 import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.Transaction
+import org.onflow.flow.models.TransactionSignature
 import java.security.Provider
 import java.security.Security
 
@@ -137,6 +138,8 @@ private suspend fun Transaction.addFreeGasEnvelope(): Transaction {
     logd(TAG, "response:$response")
 
     val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
+
+    val signature = TransactionSignature(sign.address, sign.keyId, sign.sig) // to-do utilize this class in new addEnvelopeSignature method
 
     return addEnvelopeSignature(
         FlowAddress(sign.address),

@@ -36,7 +36,6 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowTransactionStatus
 import kotlinx.serialization.Serializable
 import org.onflow.flow.models.TransactionStatus
 import org.web3j.crypto.Keys

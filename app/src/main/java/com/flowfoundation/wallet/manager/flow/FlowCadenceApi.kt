@@ -8,6 +8,7 @@ import org.onflow.flow.FlowApi
 import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.Account
 import org.onflow.flow.AddressRegistry
+import org.onflow.flow.models.BlockHeader
 
 object FlowCadenceApi {
 
@@ -57,5 +58,9 @@ object FlowCadenceApi {
 
     suspend fun getAccount(address: String, blockHeight: String? = null, sealed: Boolean = true): Account {
         return get().getAccount(address, blockHeight, sealed)
+    }
+
+    suspend fun getBlockHeader(id: String?, blockHeight: String? = null, sealed: Boolean = true): BlockHeader {
+        return get().getBlockHeader(id, blockHeight, sealed)
     }
 }
