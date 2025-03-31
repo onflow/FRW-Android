@@ -5,11 +5,11 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvi
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.google.gson.Gson
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import io.outblock.wallet.CryptoProvider
 import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 
 

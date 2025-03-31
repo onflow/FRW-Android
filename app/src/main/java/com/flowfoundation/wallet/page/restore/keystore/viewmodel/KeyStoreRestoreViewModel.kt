@@ -39,8 +39,6 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.Account as FlowAccount
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import com.nftco.flow.sdk.hexToBytes
@@ -234,9 +232,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String,
         p1PublicKey: String
     ) {
-        if (checkIsLogin(k1PrivateKey, k1PublicKey, SignatureAlgorithm.ECDSA_SECP256k1)) {
+        if (checkIsLogin(k1PrivateKey, k1PublicKey, SigningAlgorithm.ECDSA_secp256k1)) {
             return
-        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SignatureAlgorithm.ECDSA_P256)) {
+        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SigningAlgorithm.ECDSA_P256)) {
             return
         } else {
             queryAddressWithPublicKey(
@@ -308,7 +306,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private suspend fun checkIsLogin(
         privateKey: String,
         publicKey: String,
-        signAlgo: SignatureAlgorithm
+        signAlgo: SigningAlgorithm
     ): Boolean {
         try {
             val response = apiService.checkKeystorePublicKeyImport(publicKey)
@@ -436,7 +434,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                 username = username,
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                                     signAlgo = cryptoProvider.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest
@@ -478,7 +476,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun loginWithPrivateKey(
         privateKey: String,
         publicKey: String,
-        signAlgo: SignatureAlgorithm
+        signAlgo: SigningAlgorithm
     ) {
         ioScope {
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
@@ -560,7 +558,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
                                     signAlgo = cryptoProvider.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest
@@ -604,7 +602,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     private fun loginAndFetchWallet(
-        privateKey: String, publicKey: String, signAlgo: SignatureAlgorithm,
+        privateKey: String, publicKey: String, signAlgo: SigningAlgorithm,
         callback: (isSuccess: Boolean, errorMsg: Int) -> Unit
     ) {
         ioScope {

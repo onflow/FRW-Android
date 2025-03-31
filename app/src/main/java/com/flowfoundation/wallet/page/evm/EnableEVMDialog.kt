@@ -19,7 +19,7 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 
 
 class EnableEVMDialog : BottomSheetDialogFragment() {
@@ -63,7 +63,7 @@ class EnableEVMDialog : BottomSheetDialogFragment() {
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.UNKNOWN.num,
+                    state = TransactionStatus.UNKNOWN.ordinal,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                     data = ""
                 )

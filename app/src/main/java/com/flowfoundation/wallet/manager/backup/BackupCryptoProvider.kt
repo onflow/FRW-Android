@@ -1,12 +1,12 @@
 package com.flowfoundation.wallet.manager.backup
 
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import io.outblock.wallet.CryptoProvider
 import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
