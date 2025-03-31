@@ -86,6 +86,7 @@ suspend fun sendTransactionWithMultiSignature(
     val transBuilder = TransactionBuilder().apply { builder(this) }
     val account = FlowCadenceApi.getAccount(transBuilder.walletAddress?.toAddress().orEmpty())
     val restoreProposalKey = account.keys?.first { providers.first().getPublicKey() == it.publicKey }
+        ?: throw IllegalArgumentException("No matching restoreProposalKey found")
     val voucher = prepareWithMultiSignature(
         walletAddress = FlowAddress(account.address).base16Value,
         restoreProposalKey = restoreProposalKey,

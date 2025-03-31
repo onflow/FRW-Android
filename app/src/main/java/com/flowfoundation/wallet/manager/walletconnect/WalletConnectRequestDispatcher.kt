@@ -241,7 +241,7 @@ private fun WCRequest.respondAccountInfo() {
     }) { error -> loge(error.throwable) }
 }
 
-private fun WCRequest.respondAuthn() {
+private suspend fun WCRequest.respondAuthn() {
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val json = Gson().fromJson<List<SignableParams>>(params, object : TypeToken<List<SignableParams>>() {}.type)
     val signable = json.firstOrNull() ?: return
@@ -299,7 +299,7 @@ private suspend fun WCRequest.respondAuthz() {
 }
 
 
-private fun WCRequest.respondPreAuthz() {
+private suspend fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return

@@ -48,6 +48,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.AccountPublicKey
 import org.onflow.flow.models.FlowAddress
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
@@ -705,8 +707,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun getSignature(
         jwt: String,
         privateKey: String,
-        hashAlgo: HashAlgorithm,
-        signAlgo: SignatureAlgorithm
+        hashAlgo: HashingAlgorithm,
+        signAlgo: SigningAlgorithm
     ): String {
         checkSecurityProvider()
         updateSecurityProvider()

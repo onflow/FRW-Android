@@ -2,13 +2,13 @@ package com.flowfoundation.wallet.manager.key
 
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import io.outblock.wallet.CryptoProvider
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
 import wallet.core.jni.Hash
@@ -43,7 +43,7 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     override fun getSigner(): Signer {
         checkSecurityProvider()
         updateSecurityProvider()
-        return Crypto.getSigner(
+        return Crypto.getSigner( // to-do swap out this call to kmm
             privateKey = Crypto.decodePrivateKey(
                 getPrivateKey(),
                 getSignatureAlgorithm()
@@ -52,12 +52,12 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
         )
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.SHA2_256
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_SECP256k1
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.ECDSA_secp256k1
     }
 
     override fun getKeyWeight(): Int {

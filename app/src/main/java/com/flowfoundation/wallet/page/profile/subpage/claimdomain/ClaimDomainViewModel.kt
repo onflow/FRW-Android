@@ -82,7 +82,7 @@ class ClaimDomainViewModel : ViewModel() {
 
             proposalKey {
                 address = FlowAddress(walletAddress)
-                keyIndex = currentKey.id
+                keyIndex = currentKey.index.toInt()
                 sequenceNumber = currentKey.sequenceNumber.toInt()
             }
 

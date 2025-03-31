@@ -74,11 +74,11 @@ object WalletFetcher {
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
         val mainnetAccounts = queryMainnetService.queryAddress(cryptoProvider.getPublicKey())
         val mainnetAccount = mainnetAccounts.accounts.firstOrNull {
-            it.hashAlgo == cryptoProvider.getHashAlgorithm().index && it.signAlgo == cryptoProvider.getSignatureAlgorithm().index
+            it.hashAlgo == cryptoProvider.getHashAlgorithm().cadenceIndex && it.signAlgo == cryptoProvider.getSignatureAlgorithm().index //to-do add field
         }
         val testnetAccounts = queryTestnetService.queryAddress(cryptoProvider.getPublicKey())
         val testnetAccount = testnetAccounts.accounts.firstOrNull {
-            it.hashAlgo == cryptoProvider.getHashAlgorithm().index && it.signAlgo == cryptoProvider.getSignatureAlgorithm().index
+            it.hashAlgo == cryptoProvider.getHashAlgorithm().cadenceIndex && it.signAlgo == cryptoProvider.getSignatureAlgorithm().index //to-do add field
         }
         val data = WalletListData(
             id = Firebase.auth.currentUser?.uid.orEmpty(),
