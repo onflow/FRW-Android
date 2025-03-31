@@ -1,14 +1,13 @@
 package com.flowfoundation.wallet.firebase.analytics
 
 import android.os.Bundle
-import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.nftco.flow.sdk.FlowException
+import org.onflow.flow.models.Error
 import retrofit2.HttpException
 import java.util.*
 
@@ -43,7 +42,7 @@ fun reportException(event: String, ex: Throwable?, params: Map<String, String>? 
         params?.forEach { put(it.key, it.value) }
         when (ex) {
             is HttpException -> put("response", ex.response().toString())
-            is FlowException -> put("cause", ex.cause.toString())
+            is Error -> put("cause", ex.cause.toString()) //to-do: extend throwable in Error class
         }
     })
 }

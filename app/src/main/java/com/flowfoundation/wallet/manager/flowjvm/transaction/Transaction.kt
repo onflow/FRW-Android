@@ -3,10 +3,7 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowSignature
-import com.nftco.flow.sdk.FlowTransaction
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
@@ -23,10 +20,13 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
+import com.nftco.flow.sdk.FlowSignature
 import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.AccountPublicKey
 import org.onflow.flow.models.FlowAddress
+import org.onflow.flow.models.Transaction
 import java.security.Provider
 import java.security.Security
 
@@ -117,7 +117,7 @@ suspend fun sendTransactionWithMultiSignature(
     return txID.bytes.bytesToHex()
 }
 
-private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
+private fun Transaction.addLocalSignatures(): Transaction {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw Exception("Crypto Provider is null")
     try {
         // if user pay the gas, payer.address == proposal.address, payer.keyIndex == proposalKeyIndex
@@ -132,7 +132,7 @@ private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
     }
 }
 
-private suspend fun FlowTransaction.addFreeGasEnvelope(): FlowTransaction {
+private suspend fun Transaction.addFreeGasEnvelope(): Transaction {
     val response = executeHttpFunction(FUNCTION_SIGN_AS_PAYER, buildPayerSignable())
     logd(TAG, "response:$response")
 
@@ -189,7 +189,7 @@ private suspend fun prepareWithMultiSignature(
     )
 }
 
-fun FlowTransaction.buildPayerSignable(): PayerSignable? {
+fun Transaction.buildPayerSignable(): PayerSignable? {
     val payerAccount = FlowApi.get().getAccountAtLatestBlock(payerAddress) ?: return null
     val voucher = Voucher(
         cadence = script.stringValue,
@@ -226,16 +226,16 @@ fun FlowTransaction.buildPayerSignable(): PayerSignable? {
     )
 }
 
-fun FlowTransaction.encodeTransactionPayload(): String {
+fun Transaction.encodeTransactionPayload(): String {
     return (DomainTag.Transaction.bytes + canonicalPayload).bytesToHex()
 }
 
-fun Voucher.toFlowMultiTransaction(): FlowTransaction {
+fun Voucher.toFlowMultiTransaction(): Transaction {
     val transaction = this
     return flowTransaction {
         script { transaction.cadence.orEmpty() }
 
-        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { FlowArgument(it) }.toMutableList()
+        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { Cadence.Value(it) }.toMutableList()
 
         referenceBlockId = FlowId(transaction.refBlock.orEmpty())
 
@@ -257,12 +257,12 @@ fun Voucher.toFlowMultiTransaction(): FlowTransaction {
     }
 }
 
-fun Voucher.toFlowTransaction(): FlowTransaction {
+fun Voucher.toFlowTransaction(): Transaction {
     val transaction = this
     var tx = flowTransaction {
         script { transaction.cadence.orEmpty() }
 
-        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { FlowArgument(it) }.toMutableList()
+        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { Cadence.Value(it) }.toMutableList()
 
         referenceBlockId = FlowId(transaction.refBlock.orEmpty())
 

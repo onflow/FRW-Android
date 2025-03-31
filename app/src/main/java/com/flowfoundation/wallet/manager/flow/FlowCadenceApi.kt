@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.flow
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.FlowAddressRegistry
 import com.flowfoundation.wallet.utils.logd
-import com.nftco.flow.sdk.FlowException
 import org.onflow.flow.ChainId
 import org.onflow.flow.FlowApi
 import org.onflow.flow.infrastructure.Cadence
@@ -52,7 +51,7 @@ object FlowCadenceApi {
                 arguments = builder.arguments
             )
         } catch (t: Throwable) {
-            throw FlowException("Error while running script", t)
+            throw Error("Error while running script", t)
         }
     }
 
