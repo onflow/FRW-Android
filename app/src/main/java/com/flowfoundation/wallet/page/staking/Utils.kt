@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.page.staking.list.StakingListActivity
 import com.flowfoundation.wallet.page.staking.providers.StakingProviderActivity
 import com.flowfoundation.wallet.utils.isStakingGuideDisplayed
 
-
 fun openStakingPage(context: Context) {
     if (!isStakingGuideDisplayed() && !StakingManager.isStaked()) {
         StakeGuideActivity.launch(context)

@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentRestoreDropboxWithPinBinding
-import com.flowfoundation.wallet.databinding.FragmentRestoreGoogleDriveWithPinBinding
 import com.flowfoundation.wallet.page.restore.multirestore.presenter.RestoreDropboxWithPinPresenter
-import com.flowfoundation.wallet.page.restore.multirestore.presenter.RestoreGoogleDriveWithPinPresenter
 import com.flowfoundation.wallet.page.restore.multirestore.viewmodel.MultiRestoreViewModel
 
 

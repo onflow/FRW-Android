@@ -55,8 +55,8 @@ object LaunchManager {
             safeRun { instabugInitialize(application) }
             safeRun { crowdinInitialize(application) }
             safeRun { setNightMode() }
-            safeRun { runWorker(application) }
-            safeRun { readCache(application) }
+            safeRun { runWorker() }
+            safeRun { readCache() }
             safeRun { runCompatibleScript() }
         }
         AppLifecycleObserver.observe()
@@ -68,7 +68,7 @@ object LaunchManager {
         }
     }
 
-    private fun readCache(application: Application) {
+    private fun readCache() {
         safeRun { WalletManager.init() }
         safeRun { CustomTokenManager.init() }
         safeRun { NftCollectionConfig.sync() }
@@ -85,7 +85,7 @@ object LaunchManager {
         uiScope { AppCompatDelegate.setDefaultNightMode(getThemeMode()) }
     }
 
-    private fun runWorker(application: Application) {
+    private fun runWorker() {
         CadenceApiManager.init()
         MixpanelManager.identifyUserProfile()
     }

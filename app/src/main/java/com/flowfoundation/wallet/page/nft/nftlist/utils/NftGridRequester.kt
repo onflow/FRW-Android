@@ -91,12 +91,6 @@ class NftGridRequester {
         return NftList(list = response.data.nfts.orEmpty(), count = response.data.nftCount)
     }
 
-    fun cacheEVMNFTList(list: List<Nft>) {
-        count = list.size
-        dataList.addAll(list)
-        cache().grid().cacheSync(NftList(dataList.toList(), count = count))
-    }
-
     fun count() = count
 
     fun dataList(): List<Nft> {

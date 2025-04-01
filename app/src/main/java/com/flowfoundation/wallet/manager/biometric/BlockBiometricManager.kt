@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import java.util.concurrent.Executor
-import javax.crypto.Cipher
 
 
 object BlockBiometricManager {
@@ -60,17 +59,4 @@ object BlockBiometricManager {
         return biometricPrompt.apply { authenticate(promptInfo) }
     }
 
-    private fun encrypt(cipher: Cipher?, text: String): String = cipher?.let {
-        CryptographyManager().encryptData(text, it)
-    } ?: kotlin.run {
-        loge(TAG, "cipher is null!")
-        text
-    }
-
-    private fun decrypt(cipher: Cipher?, text: String): String = cipher?.let {
-        CryptographyManager().decryptData(text, it)
-    } ?: kotlin.run {
-        loge(TAG, "cipher is null!")
-        text
-    }
 }

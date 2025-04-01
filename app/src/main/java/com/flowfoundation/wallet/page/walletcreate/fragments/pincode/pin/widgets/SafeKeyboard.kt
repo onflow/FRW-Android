@@ -71,14 +71,12 @@ class PinKeyboard : FrameLayout {
 
     private fun createKeyboardLayout(): KeyboardLayout {
         val containerView = findViewById<LinearLayout>(R.id.container_view)
-        return T9Keyboard(containerView, keys, onKeyboardActionListener);
+        return T9Keyboard(containerView, keys, onKeyboardActionListener)
     }
 }
 
 abstract class KeyboardLayout(
     containerView: LinearLayout,
-    keys: List<List<KeyboardItem>>,
-    onKeyboardActionListener: ((key: KeyboardItem) -> Unit)? = null,
 ) {
     val context: Context = containerView.context
 
@@ -87,5 +85,4 @@ abstract class KeyboardLayout(
 
 enum class KeyboardType {
     T9,
-    TRADITIONAL,
 }

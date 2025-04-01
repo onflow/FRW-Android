@@ -11,8 +11,6 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.ForegroundColorSpan
 import android.view.View
-import android.widget.LinearLayout
-import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.core.graphics.ColorUtils
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
@@ -29,7 +27,6 @@ import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isDeveloperMode
-import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountUpdateListenerCallback
@@ -47,7 +44,6 @@ import com.flowfoundation.wallet.page.main.widget.NetworkPopupMenu
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
-import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -55,13 +51,9 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.parseAvatarUrl
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.widgets.DialogType
-import com.flowfoundation.wallet.widgets.ProgressDialog
-import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 
 class DrawerLayoutPresenter(
     private val drawer: DrawerLayout,
@@ -69,9 +61,7 @@ class DrawerLayoutPresenter(
 ) : BasePresenter<MainDrawerLayoutModel>, ChildAccountUpdateListenerCallback, OnWalletDataUpdate,
     OnEmojiUpdate {
 
-
     private val activity by lazy { findActivity(drawer) as FragmentActivity }
-    private val progressDialog by lazy { ProgressDialog(activity) }
 
     init {
         drawer.addDrawerListener(DrawerListener())
@@ -131,33 +121,6 @@ class DrawerLayoutPresenter(
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
-        }
-    }
-
-    private fun bindAccountData() {
-        binding.llAccountLayout.removeAllViews()
-        val list = AccountManager.list().filter { it.isActive.not() }
-        list.take(2).forEach { account ->
-            binding.llAccountLayout.addView(ImageFilterView(activity).apply {
-                layoutParams = LinearLayout.LayoutParams(
-                    44.dp2px().toInt(),
-                    28.dp2px().toInt()
-                )
-                setPadding(8.dp2px().toInt(), 0, 8.dp2px().toInt(), 0)
-                setOnClickListener {
-                    if (isTestnet()) {
-                        SwitchNetworkDialog(activity, DialogType.SWITCH).show()
-                    } else {
-                        progressDialog.show()
-                        AccountManager.switch(account) {
-                            uiScope {
-                                progressDialog.dismiss()
-                            }
-                        }
-                    }
-                }
-                loadAvatar(account.userInfo.avatar)
-            })
         }
     }
 
@@ -238,11 +201,6 @@ class DrawerLayoutPresenter(
         } else {
             binding.clEvmLayout.gone()
         }
-    }
-
-    private fun launchClick(unit: () -> Unit) {
-        unit.invoke()
-        drawer.close()
     }
 
     private inner class DrawerListener : DrawerLayout.SimpleDrawerListener() {

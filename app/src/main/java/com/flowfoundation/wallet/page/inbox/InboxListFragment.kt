@@ -43,7 +43,6 @@ class InboxListFragment : BaseFragment() {
         private const val EXTRA_TYPE = "type"
 
         const val TYPE_TOKEN = 0
-        const val TYPE_NFT = 1
         fun newInstance(type: Int): InboxListFragment {
             return InboxListFragment().apply {
                 arguments = Bundle().apply { putInt(EXTRA_TYPE, type) }

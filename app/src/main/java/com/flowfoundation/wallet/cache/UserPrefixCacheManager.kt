@@ -30,23 +30,11 @@ object UserPrefixCacheManager{
         return null
     }
 
-    fun cacheUserPrefix(userPrefix: UserPrefix) {
-        ioScope {
-            val userPrefixList = read()?.toMutableList() ?: mutableListOf()
-            userPrefixList.find { it.userId == userPrefix.userId }?.let {
-                it.prefix = userPrefix.prefix
-            } ?: run {
-                userPrefixList.add(userPrefix)
-            }
-            cacheSync(userPrefixList)
-        }
-    }
-
     fun cache(data: List<UserPrefix>) {
         ioScope { cacheSync(data) }
     }
 
-    fun cacheSync(data: List<UserPrefix>) {
+    private fun cacheSync(data: List<UserPrefix>) {
         val str = Json.encodeToString(ListSerializer(UserPrefix.serializer()), data)
         str.saveToFile(file)
     }
@@ -54,13 +42,4 @@ object UserPrefixCacheManager{
     fun clear() {
         ioScope { file.delete() }
     }
-
-    fun isCacheExist(): Boolean = file.exists() && file.length() > 0
-
-    fun modifyTime() = file.lastModified()
-
-    fun isExpired(duration: Long): Boolean {
-        return System.currentTimeMillis() - modifyTime() > duration
-    }
-
 }

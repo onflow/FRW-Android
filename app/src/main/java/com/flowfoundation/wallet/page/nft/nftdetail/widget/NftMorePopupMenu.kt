@@ -1,13 +1,10 @@
 package com.flowfoundation.wallet.page.nft.nftdetail.widget
 
 import android.view.View
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.browser.openBrowser
-import com.flowfoundation.wallet.page.nft.nftdetail.NftDetailViewModel
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.nft.nftlist.websiteUrl
@@ -19,13 +16,11 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.popup.PopupListView
 
 class NftMorePopupMenu(
-    private val activity: FragmentActivity,
     private val nft: Nft,
     private val view: View,
     private val color: Int,
     private val onDownloadRequest: (String) -> Unit,
 ) {
-    private val viewModel by lazy { ViewModelProvider(findActivity(view) as FragmentActivity)[NftDetailViewModel::class.java] }
 
     fun show() {
         uiScope {

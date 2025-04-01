@@ -27,11 +27,6 @@ enum class Emoji(val id: Int, val emoji: String, val defaultName: String, val co
         }
 
         @JvmStatic
-        fun getEmojiDefaultName(id: Int): String {
-            return Emoji.values().firstOrNull { it.id == id }?.defaultName ?: ""
-        }
-
-        @JvmStatic
         fun getEmojiColorRes(id: Int): Int {
             return Emoji.values().firstOrNull { it.id == id }?.colorRes?.res2color() ?: R.color.transparent.res2color()
         }

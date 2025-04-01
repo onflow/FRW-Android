@@ -37,8 +37,6 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     val onEstimateLoading = MutableLiveData<Boolean>()
     val estimateLiveData = MutableLiveData<SwapEstimateResponse.Data>()
 
-    val onSwapTransactionSent = MutableLiveData<Boolean>()
-
     val swapTransactionStateLiveData = MutableLiveData<Boolean>()
 
     private val balanceMap: MutableMap<String, Balance> = mutableMapOf()
@@ -61,7 +59,6 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
     fun fromCoinBalance(): BigDecimal = if (fromCoin() == null) BigDecimal.ZERO else balanceMap[fromCoin()?.contractId()]?.balance ?: BigDecimal.ZERO
-    fun toCoinBalance(): BigDecimal = if (toCoin() == null) BigDecimal.ZERO else balanceMap[toCoin()?.contractId()]?.balance ?: BigDecimal.ZERO
 
     fun fromCoin() = fromCoinLiveData.value
     fun toCoin() = toCoinLiveData.value

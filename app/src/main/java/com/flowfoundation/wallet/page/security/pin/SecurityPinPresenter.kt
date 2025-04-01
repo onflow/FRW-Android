@@ -63,7 +63,7 @@ class SecurityPinPresenter(
 
             verifyCheckType(pinCode)
             verifyResetType(pinCode)
-            verifyCreateType(pinCode)
+            verifyCreateType()
         }
     }
 
@@ -94,7 +94,7 @@ class SecurityPinPresenter(
         }
     }
 
-    private fun verifyCreateType(pinCode: String) {
+    private fun verifyCreateType() {
         if (type != TYPE_CREATE) return
         with(binding.pinInput) {
             if (!isChecking()) {

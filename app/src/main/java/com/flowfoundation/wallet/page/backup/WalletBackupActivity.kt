@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.page.backup.viewmodel.WalletBackupViewModel
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.isNightMode
 
-
 class WalletBackupActivity: BaseActivity() {
 
     private lateinit var binding: ActivityWalletBackupBinding

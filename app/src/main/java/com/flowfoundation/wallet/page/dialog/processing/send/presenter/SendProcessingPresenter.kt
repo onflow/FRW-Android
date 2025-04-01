@@ -11,21 +11,18 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_NFT
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_TRANSFER_COIN
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_TRANSFER_NFT
-import com.flowfoundation.wallet.page.dialog.processing.send.SendProcessingDialog
 import com.flowfoundation.wallet.page.dialog.processing.send.model.SendProcessingDialogModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindNft
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.format
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import java.math.BigDecimal
 
 class SendProcessingPresenter(
-    private val fragment: SendProcessingDialog,
     private val binding: DialogSendConfirmBinding,
     private val transactionState: TransactionState,
 ) : BasePresenter<SendProcessingDialogModel> {

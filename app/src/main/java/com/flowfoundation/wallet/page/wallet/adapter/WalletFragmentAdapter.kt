@@ -37,7 +37,6 @@ class WalletFragmentAdapter : BaseAdapter<Any>(walletListDiffCallback) {
     }
 
     companion object {
-        private const val TYPE_WALLET_HEADER = 1
         private const val TYPE_WALLET_COIN_ITEM = 2
     }
 }

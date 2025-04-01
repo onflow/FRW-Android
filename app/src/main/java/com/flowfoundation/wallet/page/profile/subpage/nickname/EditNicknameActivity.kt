@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.widgets.ProgressDialog
 
-
 class EditNicknameActivity : BaseActivity() {
 
     private lateinit var binding: ActivityEditNicknameBinding
@@ -83,7 +82,6 @@ class EditNicknameActivity : BaseActivity() {
     }
 
     companion object {
-        private const val EXTRA_TYPE = "EXTRA_TYPE"
 
         fun launch(context: Context) {
             context.startActivity(Intent(context, EditNicknameActivity::class.java))

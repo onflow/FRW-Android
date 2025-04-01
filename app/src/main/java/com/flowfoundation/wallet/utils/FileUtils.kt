@@ -68,11 +68,6 @@ fun Bitmap.saveToFile(file: File, fileType: Bitmap.CompressFormat = Bitmap.Compr
     return file
 }
 
-fun Bitmap.saveToCache(fileName: String, fileType: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): File {
-    val file = File(CACHE_PATH, fileName)
-    return saveToFile(file, fileType)
-}
-
 @WorkerThread
 fun String?.saveToFile(file: File) {
     if (this.isNullOrBlank()) {
