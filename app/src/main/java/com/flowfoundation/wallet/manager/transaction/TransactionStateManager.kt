@@ -5,8 +5,6 @@ import androidx.annotation.MainThread
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
@@ -33,6 +31,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
 import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
+import org.onflow.flow.models.TransactionResult
 import org.onflow.flow.models.TransactionStatus
 import java.lang.ref.WeakReference
 import kotlin.math.abs
@@ -93,7 +92,7 @@ object TransactionStateManager {
 
     private fun loopState() {
         ioScope {
-            var ret: FlowTransactionResult
+            var ret: TransactionResult
             while (true) {
                 val stateQueue = stateData.unsealedState()
 
@@ -170,9 +169,9 @@ object TransactionStateManager {
         return data.toList().filter { it.state.isProcessing() }
     }
 
-    private fun Int.isProcessing() = this < FlowTransactionStatus.SEALED.num && this >= FlowTransactionStatus.UNKNOWN.num
+    private fun Int.isProcessing() = this < TransactionStatus.SEALED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 
-    private fun Int.isUnknown() = this == FlowTransactionStatus.UNKNOWN.num || this == FlowTransactionStatus.EXPIRED.num
+    private fun Int.isUnknown() = this == TransactionStatus.UNKNOWN.ordinal || this == TransactionStatus.EXPIRED.ordinal
 }
 
 interface OnTransactionStateChange {
@@ -248,7 +247,7 @@ data class TransactionState(
 
     fun contact() = if (type == TYPE_TRANSFER_COIN) coinData().target else nftData().target
 
-    fun isSuccess() = state == FlowTransactionStatus.SEALED.num && errorMsg.isNullOrBlank()
+    fun isSuccess() = state == TransactionStatus.SEALED.ordinal && errorMsg.isNullOrBlank()
 
     fun isFailed(): Boolean {
         if (isProcessing()) {
@@ -260,9 +259,9 @@ data class TransactionState(
         return !errorMsg.isNullOrBlank()
     }
 
-    fun isProcessing() = state < FlowTransactionStatus.SEALED.num
+    fun isProcessing() = state < TransactionStatus.SEALED.ordinal
 
-    private fun isExpired() = state == FlowTransactionStatus.EXPIRED.num
+    private fun isExpired() = state == TransactionStatus.EXPIRED.ordinal
 
     fun stateStr() = if (isSuccess()) {
         R.string.success.res2String()
@@ -274,7 +273,7 @@ data class TransactionState(
 
     fun progress(): Float {
         return when (state) {
-            FlowTransactionStatus.UNKNOWN.num, TransactionStatus.PENDING.ordinal -> 0.25f
+            TransactionStatus.UNKNOWN.ordinal, TransactionStatus.PENDING.ordinal -> 0.25f
             TransactionStatus.FINALIZED.ordinal -> 0.50f
             TransactionStatus.EXECUTED.ordinal -> 0.75f
             TransactionStatus.SEALED.ordinal-> 1.0f

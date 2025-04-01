@@ -38,7 +38,6 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
-import com.nftco.flow.sdk.HashAlgorithm
 import io.outblock.wallet.KeyManager
 import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
