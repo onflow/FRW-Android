@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckLinkedAccountTokenListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
+import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -86,13 +87,13 @@ object TokenStateManager {
 
     private suspend fun fetchLinkedAccountStateSync() {
         val coinList = FlowCoinListManager.coinList()
-        val enabledToken = cadenceCheckLinkedAccountTokenListEnabled()
+        val enabledToken = cadenceGetTokenBalanceStorage()
         if (enabledToken == null) {
             logw(TAG, "fetch error")
             return
         }
         coinList.forEach { coin ->
-            val isEnable = enabledToken[coin.contractId()] ?: false
+            val isEnable = enabledToken.containsKey(coin.contractId())
             val oldState = tokenStateList.firstOrNull {
                 it.isSameCoin(coin.contractId())
             }
@@ -105,13 +106,13 @@ object TokenStateManager {
 
     private suspend fun fetchStateSync() {
         val coinList = FlowCoinListManager.coinList()
-        val enabledToken = cadenceCheckTokenListEnabled()
+        val enabledToken = cadenceGetTokenBalanceStorage()
         if (enabledToken == null) {
             logw(TAG, "fetch error")
             return
         }
         coinList.forEach { coin ->
-            val isEnable = enabledToken[coin.contractId()] ?: false
+            val isEnable = enabledToken.containsKey(coin.getFTIdentifier())
             val oldState = tokenStateList.firstOrNull {
                 it.isSameCoin(coin.contractId())
             }

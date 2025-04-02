@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name" translatable="false">Flow Wallet</string>
     <string name="next">Next</string>
     <string name="list">List</string>
-    <string name="creating_account">Creating Your Account…</string>
-    <string name="grid">Grid</string>
     <string name="view_as">View as</string>
+    <string name="creating_account">Creating Your Account…</string>
     <string name="secure_design">Secure by Design</string>
     <string name="secure_design_2">Using Device Keys with Hardware-Grade Security, Flow Wallet is an ultra-secure hardware wallet you can trust</string>
     <string name="username">Username</string>
@@ -34,6 +34,7 @@
     <string name="protection">Protection</string>
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
+    <string name="grid">Grid</string>
     <string name="create_pin">Create a PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
@@ -243,7 +244,7 @@
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
     <string name="sign_message">Sign Message</string>
-    <string name="transaction_history">Transaction history</string>
+    <string name="transaction_history">Transaction History</string>
     <string name="transaction_common_title">Exec Transaction</string>
     <string name="transactions">Transactions</string>
     <string name="reset_wallet">Reset Profile</string>
@@ -612,7 +613,7 @@
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
     <string name="collection_list">Collection List</string>
-    <string name="balance_value">Balance %1$s</string>
+    <string name="balance_value">Balance: %1$s</string>
     <string name="backup_not_found">Backup Not Found</string>
     <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
     <string name="backup_decryption_failed">Backup Decryption Failed</string>
@@ -713,4 +714,15 @@
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
     <string name="scan">Scan</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="search_tokens">Search tokens</string>
+    <string name="token_list">Token List</string>
 </resources>

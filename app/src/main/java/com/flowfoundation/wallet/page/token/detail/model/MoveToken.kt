@@ -7,6 +7,7 @@ import java.math.BigDecimal
 data class MoveToken(
     val tokenBalance: BigDecimal,
     val tokenInfo: FlowCoin,
+    val dollarValue: BigDecimal? = null,
 ) {
 
     fun getTokenId(fromAddress: String): String {

@@ -10,8 +10,8 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.google.gson.annotations.SerializedName
-import com.walletconnect.sign.client.Sign
-import com.walletconnect.sign.client.SignClient
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 
 private const val TAG = "WalletConnectUtils"
 private const val ETHEREUM_NETWORK = "eip155"

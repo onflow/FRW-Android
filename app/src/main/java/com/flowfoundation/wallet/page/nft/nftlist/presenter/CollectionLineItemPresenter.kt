@@ -29,7 +29,7 @@ class CollectionLineItemPresenter(
             Glide.with(coverView).load(config.logo()).transform(CenterCrop(), RoundedCorners(corner)).into(coverView)
         }
         bindAccessible(model)
-        view.setOnClickListener { CollectionActivity.launch(view.context, model.collection.contractName()) }
+        view.setOnClickListener { CollectionActivity.launch(view.context, model.collection.id, model.collection.contractName()) }
     }
 
     private fun bindAccessible(model: CollectionItemModel) {

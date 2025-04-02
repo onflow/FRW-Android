@@ -53,7 +53,7 @@ private class TabsViewHolder(
 
     init {
         view.setOnClickListener {
-            model?.collection?.contractName()?.let { viewModel.selectCollection(it) }
+            model?.collection?.let { viewModel.selectCollection(it.id, it.contractName()) }
         }
     }
 

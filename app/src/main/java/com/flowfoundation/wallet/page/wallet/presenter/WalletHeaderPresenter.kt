@@ -68,7 +68,7 @@ class WalletHeaderPresenter(
                 tvBalance.diffSetText(
                     if (isHideBalance) "****" else model.balance.formatPrice(
                         includeSymbol = true
-                    )
+                    ).ifEmpty { "0" }
                 )
                 ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
@@ -157,12 +157,12 @@ class WalletHeaderPresenter(
             }.filter { it.metadata != null }
             requests.firstOrNull()?.let {
                 logd("notification", "pendingRequest::$it")
-                if (WalletNotificationManager.alreadyExist(it.request.requestId.toString())) {
+                if (WalletNotificationManager.alreadyExist(it.request.request.id.toString())) {
                     return@ioScope
                 }
                 WalletNotificationManager.addNotification(
                     WalletNotification(
-                        id = it.request.requestId.toString(),
+                        id = it.request.request.id.toString(),
                         icon = it.metadata?.icons?.firstOrNull(),
                         title = it.metadata?.name.orEmpty(),
                         body = "View More",

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.View
 import androidx.recyclerview.widget.DiffUtil
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.flowfoundation.wallet.BuildConfig
 import com.google.android.material.appbar.AppBarLayout
 import com.flowfoundation.wallet.cache.NftSelections
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig

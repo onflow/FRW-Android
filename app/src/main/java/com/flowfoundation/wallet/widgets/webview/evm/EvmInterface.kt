@@ -28,6 +28,7 @@ import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
+import com.flowfoundation.wallet.widgets.webview.evm.model.EVMTransactionDialogModel
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.google.gson.Gson
@@ -159,12 +160,13 @@ class EvmInterface(
     }
 
     private fun handleTransaction(transaction: EvmTransaction, id: Long, network: String) {
-        val model = EVMDialogModel(
+        val model = EVMTransactionDialogModel(
             url = webView.url,
             title = webView.title,
             logo = webView.url?.toFavIcon(),
-            network = network,
-            cadence = CadenceScript.CADENCE_CALL_EVM_CONTRACT_V2.getScript()
+            toAddress = transaction.to,
+            value = transaction.value,
+            data = transaction.data
         )
         EVMSendTransactionDialog.show(
             activity().supportFragmentManager,

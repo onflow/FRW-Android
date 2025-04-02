@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.wallet.toAddress
 import com.nftco.flow.sdk.Flow
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
 
 private const val TAG = "CadenceExecutor"
@@ -66,6 +67,25 @@ suspend fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
     return result?.decode<Map<String, Boolean>>()
 }
 
+suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    logd(TAG, "cadenceGetTokenBalanceStorage()")
+    val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
+        arg { Cadence.address(walletAddress) }
+    }
+    logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
+    return result?.decode<Map<String, String>>().parseBigDecimalMap()
+}
+
+suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal>? {
+    logd(TAG, "cadenceGetAllFlowBalance()")
+    val result = CadenceScript.CADENCE_GET_ALL_FLOW_BALANCE.executeCadence {
+        arg { Cadence.array(list.map { string(it) }) }
+    }
+    logd(TAG, "cadenceGetAllFlowBalance response:${result?.encode()}")
+    return result?.decode<Map<String, String>>().parseBigDecimalMap()
+}
+
 suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
     val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled()")
@@ -95,8 +115,8 @@ suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
-suspend fun cadenceQueryTokenBalance(coin: FlowCoin): BigDecimal? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): BigDecimal? {
+    val walletAddress = (address ?: WalletManager.selectedWalletAddress()).toAddress()
     logd(TAG, "cadenceQueryTokenBalance()")
     val script = CadenceScript.CADENCE_GET_BALANCE
     val result = coin.formatCadence(script).executeCadence(script.scriptId) {
@@ -154,6 +174,16 @@ suspend fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
     }
     logd(TAG, "cadenceCheckNFTListEnabled response:${result?.encode()}")
     return result?.decode<Map<String, Boolean>>()
+}
+
+suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
+    logd(TAG, "cadenceGetNFTBalanceStorage()")
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val result = CadenceScript.CADENCE_GET_NFT_BALANCE_STORAGE.executeCadence {
+        arg { Cadence.address(walletAddress) }
+    }
+    logd(TAG, "cadenceGetNFTBalanceStorage response:${result?.encode()}")
+    return result?.decode<Map<String, Int>>()
 }
 
 suspend fun cadenceTransferNft(toAddress: String, nft: Nft): String? {

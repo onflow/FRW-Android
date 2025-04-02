@@ -37,7 +37,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     val collectionsLiveData = MutableLiveData<List<CollectionItemModel>>()
     val collectionTitleLiveData = MutableLiveData<CollectionTitleModel>()
     val listNftLiveData = MutableLiveData<List<Any>>()
-    val collectionTabChangeLiveData = MutableLiveData<String>()
+    val collectionTabChangeLiveData = MutableLiveData<Pair<String, String>>()
     val favoriteLiveData = MutableLiveData<List<Nft>>()
     val favoriteIndexLiveData = MutableLiveData<Int>()
 
@@ -139,8 +139,10 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
     private fun updateDefaultSelectCollection() {
         val cacheCollections = listRequester.cacheCollections()
         selectedCollection = selectedCollection ?: cacheCollections?.firstOrNull()?.collection
-        if (selectedCollection != null && cacheCollections?.firstOrNull { it.collection?.contractName() == selectedCollection?.contractName() } == null) {
-            cacheCollections?.firstOrNull()?.collection?.contractName()?.let { selectCollection(it) }
+        if (selectedCollection != null && cacheCollections?.firstOrNull {
+            it.collection?.id == selectedCollection?.id && it.collection?.contractName() == selectedCollection?.contractName()
+        } == null) {
+            cacheCollections?.firstOrNull()?.collection?.let { selectCollection(it.id, it.contractName()) }
         }
     }
 
@@ -172,12 +174,14 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
         favoriteIndexLiveData.value = position
     }
 
-    fun selectCollection(contractName: String) {
-        if (selectedCollection?.contractName() == contractName) {
+    fun selectCollection(contractId: String, contractName: String) {
+        if (selectedCollection?.id == contractId && selectedCollection?.contractName() == contractName) {
             return
         }
-        val collection = listRequester.cacheCollections()?.firstOrNull { it.collection?.contractName() == contractName } ?: return
-        collectionTabChangeLiveData.postValue(contractName)
+        val collection = listRequester.cacheCollections()?.firstOrNull {
+            it.collection?.id == contractId && it.collection.contractName() == contractName
+        } ?: return
+        collectionTabChangeLiveData.postValue(Pair(contractId, contractName))
         selectedCollection = collection.collection
         viewModelIOScope(this) {
             val tmpCollection = selectedCollection ?: return@viewModelIOScope

@@ -20,6 +20,7 @@
 
     <color name="landing_bg">#222222</color>
     <color name="background">#121212</color>
+    <color name="select_tokens_dialog">#1E1E1F</color>
     <color name="button">#FAFAFA</color>
     <color name="button_text">#333333</color>
     <color name="front_color">#111111</color>
@@ -78,6 +79,7 @@
     <color name="bg_2">#222222</color>
     <color name="bg_3">#2C2C2C</color>
     <color name="explore_chip_bg">#2A2A2A</color>
+    <color name="bottom_sheet_bg">#1E1E1F</color>
 
     <color name="text_white">#000000</color>
     <color name="text_light">#FFFFFF</color>
@@ -98,6 +100,7 @@
     <color name="bg_skip">#4DFFFFFF</color>
 
     <color name="token_pricing_card_background">#121212</color>
+    <color name="token_list_item_background">#28282A</color>
     <color name="home_page_background">#000000</color>
     <color name="home_page_card_background">#28282A</color>
     <color name="wallet_notification_background">#CC2C2C2C</color>
@@ -111,6 +114,6 @@
     <color name="border_line">#0FFFFFFF</color>
     <color name="background_2">#28282A</color>
     <color name="disable_button_text">#40FFFFFF</color>
-
+    <color name="button_bg_secondary">#E5E5E6</color>
 </resources>
 
