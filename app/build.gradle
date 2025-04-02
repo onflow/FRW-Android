@@ -283,6 +283,8 @@ dependencies {
 
     implementation 'com.github.li-xiaojun:XPopup:2.9.4'
     implementation 'com.google.android.exoplayer:exoplayer:2.19.1'
+    implementation 'com.google.zxing:core:3.5.1'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'com.github.Justson.AgentWeb:agentweb-core:v5.0.0-alpha.1-androidx'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'joda-time:joda-time:2.10.3'
@@ -297,11 +299,11 @@ dependencies {
     }
     implementation 'com.github.onflow.flow-kmm:flow:0.0.1'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    implementation(platform("com.walletconnect:android-bom:1.35.1"))
-    implementation("com.walletconnect:android-core") {
+    implementation(platform("com.reown:android-bom:1.2.1"))
+    implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
     }
-    implementation("com.walletconnect:sign") {
+    implementation("com.reown:sign") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
     }
 
