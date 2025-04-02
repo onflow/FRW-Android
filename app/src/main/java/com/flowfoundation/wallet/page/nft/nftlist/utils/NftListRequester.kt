@@ -52,7 +52,7 @@ class NftListRequester {
         return collections.sort()
     }
 
-    private fun cachedNfts(collection: NftCollection) = cache().list(collection.contractName()).read()?.list
+    private fun cachedNfts(collection: NftCollection) = cache().list(collection.id, collection.contractName()).read()?.list
 
     suspend fun request(collection: NftCollection, accountAddress: String = nftWalletAddress()): List<Nft> {
         resetOffset()
@@ -80,7 +80,7 @@ class NftListRequester {
 
         dataList.addAll(response.data.nfts.orEmpty())
 
-        cache().list(collection.contractName()).cacheSync(NftList(dataList.toList()))
+        cache().list(collection.id, collection.contractName()).cacheSync(NftList(dataList.toList()))
 
         return response.data.nfts.orEmpty()
     }
@@ -101,7 +101,7 @@ class NftListRequester {
 
         dataList.addAll(response.data.nfts.orEmpty())
 
-        cache().list(collection.contractName()).cacheSync(NftList(dataList.toList()))
+        cache().list(collection.id, collection.contractName()).cacheSync(NftList(dataList.toList()))
 
         isLoadMoreRequesting = false
 

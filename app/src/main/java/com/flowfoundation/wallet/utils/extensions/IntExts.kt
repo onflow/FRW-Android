@@ -32,7 +32,7 @@ fun Int.res2String(): String {
 @ColorInt
 fun Int.res2color(context: Context? = null): Int {
     val ctx = context ?: (BaseActivity.getCurrentActivity() ?: Env.getApp())
-    return ContextCompat.getColor(ctx, this)
+    return ctx.getColor(this)
 }
 
 fun Int.colorStateList(context: Context? = null): ColorStateList? {
@@ -43,6 +43,19 @@ fun Int.colorStateList(context: Context? = null): ColorStateList? {
 fun Float.dp2px(): Float {
     val scale = Resources.getSystem().displayMetrics.density
     return this * scale + 0.5f
+}
+
+fun Double.dp2px(): Int {
+    val scale = Resources.getSystem().displayMetrics.density
+    return (this * scale + 0.5f).toInt()
+}
+
+fun Int.toHexColorString(withAlpha: Boolean = false): String {
+    return if (withAlpha) {
+        String.format("#%08X", this)
+    } else {
+        String.format("#%06X", 0xFFFFFF and this)
+    }
 }
 
 @ColorInt
