@@ -47,7 +47,7 @@ class BarcodeUtilsTest {
         fragment.registerBarcodeLauncher(callback)
 
         // Then
-        verify(fragment).registerForActivityResult<ScanOptions, ScanIntentResult>(any<ScanContract>(), any())
+        verify(fragment).registerForActivityResult(any<ScanContract>(), any())
     }
 
     @Test
@@ -64,7 +64,7 @@ class BarcodeUtilsTest {
         fragmentActivity.registerBarcodeLauncher(callback)
 
         // Then
-        verify(fragmentActivity).registerForActivityResult<ScanOptions, ScanIntentResult>(any<ScanContract>(), any())
+        verify(fragmentActivity).registerForActivityResult(any<ScanContract>(), any())
     }
 
     @Test

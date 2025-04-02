@@ -12,7 +12,7 @@ private val accountProofTag = DomainTag.normalize("FCL-ACCOUNT-PROOF-V0.0")
 // encode flow jvm account proof
 fun FclAuthnResponse.encodeAccountProof(address: String, includeDomainTag: Boolean = true): ByteArray {
     val nonce = body.nonce ?: return byteArrayOf()
-    val appIdentifier = body.appIdentifier ?: throw IllegalStateException("Encode Message For Provable Authn Error: appIdentifier must be defined")
+    body.appIdentifier ?: throw IllegalStateException("Encode Message For Provable Authn Error: appIdentifier must be defined")
     return encodeAccountProof(address, nonce, includeDomainTag)
 }
 

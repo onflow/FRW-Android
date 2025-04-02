@@ -78,7 +78,7 @@ class ResourceUtilsTest {
         val result = bitmapDrawable.toBitmap()
 
         assertNotNull(result)
-        result?.let {
+        result.let {
             assertEquals(100, it.width)
             assertEquals(100, it.height)
             assertEquals(Bitmap.Config.ARGB_8888, it.config)
@@ -93,7 +93,7 @@ class ResourceUtilsTest {
         val result = colorDrawable.toBitmap()
 
         assertNotNull(result)
-        result?.let {
+        result.let {
             assertEquals(100, it.width)
             assertEquals(100, it.height)
             assertEquals(Bitmap.Config.ARGB_8888, it.config)

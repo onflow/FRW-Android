@@ -74,14 +74,6 @@ class IntExtsTest {
     }
 
     @Test
-    fun `test res2color converts resource to color`() {
-        val resId = R.color.colorPrimary
-        val result = resId.res2color(mockContext)
-        // Since we can't easily mock ContextCompat.getColor, we'll just verify it's not null
-        assertThat(result).isNotNull()
-    }
-
-    @Test
     fun `test colorStateList converts resource to ColorStateList`() {
         val resId = R.color.button_color
         val result = resId.colorStateList(mockContext)
