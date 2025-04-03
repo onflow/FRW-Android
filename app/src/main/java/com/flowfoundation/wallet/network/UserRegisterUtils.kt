@@ -176,7 +176,7 @@ private suspend fun resumeAccount() {
             accountKey = AccountKey(
                 publicKey = cryptoProvider.getPublicKey(),
                 hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
             ),
             deviceInfo = deviceInfoRequest
         )

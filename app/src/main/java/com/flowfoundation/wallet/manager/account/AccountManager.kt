@@ -409,7 +409,7 @@ object AccountManager {
                 accountKey = AccountKey(
                     publicKey = cryptoProvider.getPublicKey(),
                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().index //to-do add field
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                 ),
                 deviceInfo = deviceInfoRequest
             )
@@ -459,7 +459,7 @@ object AccountManager {
                 accountKey = AccountKey(
                     publicKey = cryptoProvider.getPublicKey(),
                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().index //to-do add field
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                 ),
                 deviceInfo = deviceInfoRequest
             )

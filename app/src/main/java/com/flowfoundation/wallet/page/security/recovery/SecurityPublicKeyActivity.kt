@@ -44,8 +44,8 @@ class SecurityPublicKeyActivity : BaseActivity() {
             publicKeyCopyButton.setOnClickListener { copyToClipboard(cryptoProvider.getPublicKey()) }
             tvLearnMore.setOnClickListener { openBrowser(this@SecurityPublicKeyActivity, "https://frw.gitbook.io/doc/faq/faq#where-is-my-seed-phrase-i-cant-find-it-on-flow-wallet-ios-or-android") }
 
-            hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
-            signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().id)
+            hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm) //to-do
+            signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().id) // to-do
             Instabug.addPrivateViews(privateKeyView)
         }
     }

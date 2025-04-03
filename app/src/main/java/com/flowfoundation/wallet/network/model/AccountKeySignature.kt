@@ -7,10 +7,10 @@ import org.onflow.flow.models.SigningAlgorithm
 
 data class AccountKeySignature(
     @SerializedName("hash_algo")
-    val hashAlgo: Int = HashingAlgorithm.SHA2_256.index, //to-do: check index value
+    val hashAlgo: Int = HashingAlgorithm.SHA2_256.cadenceIndex,
 
     @SerializedName("sign_algo")
-    val signAlgo: Int = SigningAlgorithm.ECDSA_P256.index,
+    val signAlgo: Int = SigningAlgorithm.ECDSA_P256.cadenceIndex,
 
     @SerializedName("weight")
     val weight: Int = 500,

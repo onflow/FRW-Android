@@ -2,8 +2,6 @@ package com.flowfoundation.wallet.manager.key
 
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import io.outblock.wallet.CryptoProvider
 import org.onflow.flow.models.HashingAlgorithm
@@ -43,8 +41,8 @@ class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     override fun getSigner(): Signer {
         checkSecurityProvider()
         updateSecurityProvider()
-        return Crypto.getSigner( // to-do swap out this call to kmm
-            privateKey = Crypto.decodePrivateKey(
+        return Crypto.getSigner( // implemented
+            privateKey = Crypto.decodePrivateKey(  // implemented
                 getPrivateKey(),
                 getSignatureAlgorithm()
             ),

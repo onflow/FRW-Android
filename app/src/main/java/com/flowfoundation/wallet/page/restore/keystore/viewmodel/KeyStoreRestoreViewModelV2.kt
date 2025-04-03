@@ -351,7 +351,7 @@ class KeyStoreRestoreViewModelV2 : ViewModel() {
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
                                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -446,7 +446,7 @@ class KeyStoreRestoreViewModelV2 : ViewModel() {
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
                                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )

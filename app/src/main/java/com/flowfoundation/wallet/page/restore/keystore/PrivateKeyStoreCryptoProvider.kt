@@ -5,8 +5,6 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvi
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.google.gson.Gson
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
 import io.outblock.wallet.CryptoProvider
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.Signer
@@ -34,14 +32,14 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
     }
 
     override suspend fun signData(data: ByteArray): String {
-        return getSigner().sign(data).bytesToHex()
+        return getSigner().sign(data).bytesToHex() // implemented
     }
 
     override fun getSigner(): Signer {
         checkSecurityProvider()
         updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
+        return Crypto.getSigner( // implemented
+            privateKey = Crypto.decodePrivateKey( // implemented
                 keyStoreAddress.privateKey, getSignatureAlgorithm()
             ),
             hashAlgo = getHashAlgorithm()

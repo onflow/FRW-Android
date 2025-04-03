@@ -8,7 +8,6 @@ import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.ProposalKey
@@ -32,7 +31,7 @@ import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.Transaction
 import org.onflow.flow.models.TransactionStatus
 
-class ClaimDomainViewModel : ViewModel() {
+class ClaimDomainViewModel : ViewModel() { // is this still needed as we do not currently support claiming domain?
 
     val usernameLiveData = MutableLiveData<String>()
     val claimTransactionIdLiveData = MutableLiveData<String?>()

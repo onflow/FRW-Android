@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.manager.backup
 
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import io.outblock.wallet.CryptoProvider
 import org.onflow.flow.models.HashingAlgorithm
@@ -37,8 +35,8 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
 
     override fun getSigner(): Signer {
         checkSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
+        return Crypto.getSigner( // implemented
+            privateKey = Crypto.decodePrivateKey( // implemented
                 wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH).data().bytesToHex(),
                 getSignatureAlgorithm()
             ),

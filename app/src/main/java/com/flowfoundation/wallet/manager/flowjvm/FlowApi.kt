@@ -22,7 +22,7 @@ internal object FlowApi {
         logd("FlowApi", "refreshConfig start")
         logd("FlowApi", "chainId:${chainId()}")
         (api as? FlowAccessApiImpl)?.close()
-        Flow.configureDefaults(
+        Flow.configureDefaults( // to-do
             chainId = chainId(),
             addressRegistry = FlowAddressRegistry().addressRegistry()
         )

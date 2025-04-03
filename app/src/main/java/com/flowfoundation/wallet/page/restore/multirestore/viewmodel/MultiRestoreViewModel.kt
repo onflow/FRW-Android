@@ -246,7 +246,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 signature = it.getUserSignature(jwt),
                                 weight = it.getKeyWeight(),
                                 hashAlgo = it.getHashAlgorithm().cadenceIndex,
-                                signAlgo = it.getSignatureAlgorithm().index
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex
                             )
                         }.toList()
                     )
@@ -291,7 +291,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
                                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )

@@ -55,13 +55,13 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex()
+        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex() // to-do
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
         MixpanelManager.cadenceTransactionSigned(
-            cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it.formatted }.toList(),
-            proposer = tx.proposalKey.address.formatted,
-            payer = tx.payerAddress.formatted,
+            cadence = voucher.cadence.orEmpty(), txId = txID, authorizers = tx.authorizers.map { it }.toList(),
+            proposer = tx.proposalKey.address,
+            payer = tx.payer,
             isSuccess = true
         )
         return txID
@@ -98,7 +98,7 @@ suspend fun sendTransactionWithMultiSignature(
     var tx = voucher.toFlowMultiTransaction()
 
     providers.forEach { cryptoProvider ->
-        tx = tx.addPayloadSignature(
+        tx = tx.addPayloadSignature( // to-do: implement
             tx.proposalKey.address,
             keyIndex = account.keys?.first { cryptoProvider.getPublicKey() == it.publicKey }?.index,
             cryptoProvider.getSigner()
@@ -112,7 +112,7 @@ suspend fun sendTransactionWithMultiSignature(
 
 
     logd(TAG, "sendTransaction to flow chain")
-    val txID = FlowApi.get().sendTransaction(tx)
+    val txID = FlowApi.get().sendTransaction(tx) // to-do
     logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
     vibrateTransaction()
     return txID.bytes.bytesToHex()
@@ -122,8 +122,8 @@ private fun Transaction.addLocalSignatures(): Transaction {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw Exception("Crypto Provider is null")
     try {
         // if user pay the gas, payer.address == proposal.address, payer.keyIndex == proposalKeyIndex
-        return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
-            payerAddress,
+        return copy(payloadSignatures = emptyList()).addEnvelopeSignature( // to-do: implement
+            payer,
             keyIndex = proposalKey.keyIndex,
             cryptoProvider.getSigner()
         )
@@ -141,10 +141,10 @@ private suspend fun Transaction.addFreeGasEnvelope(): Transaction {
 
     val signature = TransactionSignature(sign.address, sign.keyId, sign.sig) // to-do utilize this class in new addEnvelopeSignature method
 
-    return addEnvelopeSignature(
+    return addEnvelopeSignature( // to-do
         FlowAddress(sign.address),
         keyIndex = sign.keyId,
-        signature = FlowSignature(sign.sig)
+        signature = signature
     )
 }
 
@@ -192,31 +192,31 @@ private suspend fun prepareWithMultiSignature(
     )
 }
 
-fun Transaction.buildPayerSignable(): PayerSignable? {
-    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payerAddress) ?: return null
+suspend fun Transaction.buildPayerSignable(): PayerSignable {
+    val payerAccount = FlowCadenceApi.getAccount(payer)
     val voucher = Voucher(
-        cadence = script.stringValue,
+        cadence = script,
         refBlock = referenceBlockId.base16Value,
         computeLimit = gasLimit.toInt(),
         arguments = arguments.map { it.toAsArgument() },
         proposalKey = ProposalKey(
-            address = proposalKey.address.base16Value.toAddress(),
+            address = proposalKey.address,
             keyId = proposalKey.keyIndex,
             sequenceNum = proposalKey.sequenceNumber.toInt(),
         ),
-        payer = payerAddress.base16Value.toAddress(),
-        authorizers = authorizers.map { it.base16Value.toAddress() },
+        payer = payer,
+        authorizers = authorizers.map { it },
         payloadSigs = payloadSignatures.map {
             Singature(
-                address = it.address.base16Value.toAddress(),
+                address = it.address,
                 keyId = it.keyIndex,
-                sig = it.signature.base16Value,
+                sig = it.signature.base16Value, // check signature return format
             )
         },
         envelopeSigs = listOf(
             Singature(
                 address = AppConfig.payer().address.toAddress(),
-                keyId = payerAccount.keys.first().id,
+                keyId = payerAccount.keys?.first()?.index?.toInt(),
             )
         ),
     )
@@ -235,7 +235,7 @@ fun Transaction.encodeTransactionPayload(): String {
 
 fun Voucher.toFlowMultiTransaction(): Transaction {
     val transaction = this
-    return flowTransaction {
+    return flowTransaction { // to-do
         script { transaction.cadence.orEmpty() }
 
         arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { Cadence.Value(it) }.toMutableList()

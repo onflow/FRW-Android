@@ -77,8 +77,8 @@ object TransactionStateManager {
 
     fun getLastVisibleTransaction(): TransactionState? {
         return stateData.data.toList().firstOrNull {
-            (it.state < FlowTransactionStatus.SEALED.num && it.state > FlowTransactionStatus.UNKNOWN.num)
-                    || (it.state == FlowTransactionStatus.SEALED.num && abs(it.updateTime - System.currentTimeMillis()) < 5000)
+            (it.state < TransactionStatus.SEALED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
+                    || (it.state == TransactionStatus.SEALED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)
         }
     }
 

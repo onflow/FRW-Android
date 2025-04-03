@@ -127,7 +127,7 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
                 userName = account.userInfo.username,
                 userAvatar = account.userInfo.avatar,
                 publicKey = provider.getPublicKey(),
-                signAlgo = provider.getSignatureAlgorithm().index,
+                signAlgo = provider.getSignatureAlgorithm().cadenceIndex,
                 hashAlgo = provider.getHashAlgorithm().cadenceIndex,
                 keyIndex = keyIndex?.toInt() ?: 0,
                 updateTime = System.currentTimeMillis(),
@@ -136,7 +136,7 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
         )
     } else {
         exist.publicKey = provider.getPublicKey()
-        exist.signAlgo = provider.getSignatureAlgorithm().index
+        exist.signAlgo = provider.getSignatureAlgorithm().cadenceIndex
         exist.hashAlgo = provider.getHashAlgorithm().cadenceIndex
         exist.keyIndex = keyIndex?.toInt() ?: 0
         exist.updateTime = System.currentTimeMillis()

@@ -39,9 +39,6 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.Account as FlowAccount
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import com.nftco.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.AccountPublicKey
@@ -132,7 +129,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         restoreType = RestoreType.PRIVATE_KEY
         try {
             ioScope {
-                val privateKey = PrivateKey(privateKeyInput.hexToBytes())
+                val privateKey = PrivateKey(privateKeyInput.hexToBytes()) // implemented
 
                 val p1PublicKey =
                     privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
@@ -178,24 +175,24 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val hdWallet = HDWallet(mnemonic, passphrase)
                 val k1PrivateKey = hdWallet.getCurveKey(Curve.SECP256K1, derivationPath)
                 val k1PublicKey =
-                    k1PrivateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+                    k1PrivateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04") // implemented
                 val p1PrivateKey = hdWallet.getCurveKey(Curve.NIST256P1, derivationPath)
                 val p1PublicKey =
-                    p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
+                    p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex() // implemented
                         .removePrefix("04")
                 if (address.isEmpty()) {
                     checkIsQueryAddress(
-                        k1PrivateKey.data().bytesToHex(),
+                        k1PrivateKey.data().bytesToHex(), // implemented
                         k1PublicKey,
-                        p1PrivateKey.data().bytesToHex(),
+                        p1PrivateKey.data().bytesToHex(), // implemented
                         p1PublicKey
                     )
                 } else {
                     queryAddressPublicKey(
                         address,
-                        k1PrivateKey.data().bytesToHex(),
+                        k1PrivateKey.data().bytesToHex(), // implemented
                         k1PublicKey,
-                        p1PrivateKey.data().bytesToHex(),
+                        p1PrivateKey.data().bytesToHex(), // implemented
                         p1PublicKey
                     )
                 }
@@ -435,7 +432,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
                                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -559,7 +556,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                 accountKey = AccountKey(
                                     publicKey = cryptoProvider.getPublicKey(),
                                     hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -710,8 +707,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
     ): String {
         checkSecurityProvider()
         updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
+        return Crypto.getSigner( // implemented
+            privateKey = Crypto.decodePrivateKey( // implemented
                 privateKey, signAlgo
             ),
             hashAlgo = hashAlgo
