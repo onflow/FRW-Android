@@ -42,9 +42,6 @@ interface ApiService {
     @POST("/v3/signed")
     suspend fun signAccount(@Body params: AccountSignRequest): CommonResponse
 
-    @GET("/v1/account/info")
-    suspend fun getAddressInfo(@Query("address") address: String): AddressInfoResponse
-
     @GET("/api/v2/nft/list")
     suspend fun getNFTList(
         @Query("address") address: String,
@@ -85,13 +82,6 @@ interface ApiService {
         @Query("address") address: String,
     ): NftCollectionsResponse
 
-    @GET("/v2/nft/detail")
-    suspend fun nftMeta(
-        @Query("address") address: String,
-        @Query("nftCollection") contractName: String,
-        @Query("nftID") tokenId: String,
-    ): CommonResponse
-
     @GET("/api/v2/nft/collections")
     suspend fun getNFTCollections(): NftCollectionListResponse
 
@@ -129,15 +119,8 @@ interface ApiService {
     @DELETE("/v1/addressbook/contact")
     suspend fun deleteAddressBook(@Query("id") contactId: String): CommonResponse
 
-    @POST("/v1/addressbook/contact")
-    @JvmSuppressWildcards
-    suspend fun editAddressBook(@Body params: Map<String, Any>): CommonResponse
-
     @GET("/v1/coin/rate")
     suspend fun coinRate(@Query("coinId") coinId: Int): CoinRateResponse
-
-    @GET("/v1/coin/map")
-    suspend fun coinMap(): CoinMapResponse
 
     // @doc https://docs.cryptowat.ch/rest-api/
     // @example https://api.cryptowat.ch/markets/binance/btcusdt/price
@@ -165,13 +148,6 @@ interface ApiService {
         @Query("provider") market: String,
         @Query("pair") coinPair: String
     ): CryptowatchSummaryResponse
-
-    @GET("/v2/account/query")
-    suspend fun flowScanQuery(
-        @Query("address") walletAddress: String,
-        @Query("limit") limit: Int = 25,
-        @Query("after") after: String = "",
-    ): TransferCountResponse
 
     @GET("/v1/flowns/prepare")
     suspend fun claimDomainPrepare(): ClaimDomainPrepareResponse
@@ -217,9 +193,6 @@ interface ApiService {
     suspend fun currency(
         @Query("to") to: String,
     ): CurrencyResponse
-
-    @POST("/v1/user/address/network")
-    suspend fun enableNetwork(@Body param: NetworkEnableParams): NetworkEnableResponse
 
     @GET("/v1/user/location")
     suspend fun getDeviceLocation(): LocationInfoResponse

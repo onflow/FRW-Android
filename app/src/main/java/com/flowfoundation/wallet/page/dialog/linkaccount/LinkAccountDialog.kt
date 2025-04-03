@@ -74,8 +74,6 @@ class LinkAccountDialog : BottomSheetDialogFragment() {
             this.approveCallback = callback
         }
 
-        fun isShowing() = (instance?.dialog?.isShowing ?: false) && !(instance?.isRemoving ?: true)
-
         fun dismiss() {
             instance?.dismiss()
         }

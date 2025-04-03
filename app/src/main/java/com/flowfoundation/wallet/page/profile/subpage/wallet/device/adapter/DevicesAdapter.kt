@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.Device
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.presenter.DeviceTitlePresenter
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.presenter.DeviceInfoPresenter
 
-
 class DevicesAdapter : BaseAdapter<Any>(devicesDiffCallback) {
 
     override fun getItemViewType(position: Int): Int {

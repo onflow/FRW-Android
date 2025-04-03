@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.page.profile.subpage.developer.model.LocalAccou
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 
-
 class LocalAccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view),
     BasePresenter<LocalAccountKey> {
     private val binding by lazy { LayoutLocalKeyItemBinding.bind(view) }

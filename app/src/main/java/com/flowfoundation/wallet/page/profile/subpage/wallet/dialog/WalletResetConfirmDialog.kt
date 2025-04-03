@@ -17,7 +17,7 @@ class WalletResetConfirmDialog : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogResetWalletConfirmBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogResetWalletConfirmBinding.inflate(inflater)
         return binding.root
     }

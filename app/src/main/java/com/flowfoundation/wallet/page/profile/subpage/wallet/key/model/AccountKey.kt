@@ -5,7 +5,6 @@ import com.nftco.flow.sdk.FlowPublicKey
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
 
-
 data class AccountKey(
     @SerializedName("id")
     val id: Int = -1,

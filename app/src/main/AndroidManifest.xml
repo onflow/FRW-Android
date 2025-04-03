@@ -343,6 +343,7 @@
                 <data android:host="link.lilico.app"/>
                 <data android:host="frw-link.lilico.app"/>
                 <data android:host="fcw-link.lilico.app"/>
+                <data android:host="link.wallet.flow.com"/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true"

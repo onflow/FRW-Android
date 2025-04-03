@@ -58,7 +58,7 @@ class StakingDetailPresenter(
     override fun bind(model: StakingDetailModel) {
         setupHeader(model)
         setupState(model)
-        setupEpoch(model)
+        setupEpoch()
         setupRewards(model)
         setupItems(model)
     }
@@ -110,7 +110,7 @@ class StakingDetailPresenter(
         }
     }
 
-    private fun setupEpoch(model: StakingDetailModel) {
+    private fun setupEpoch() {
         with(binding.epochWrapper) {
             val startTime = stakingEpochStartTime()
             epochStartView.text = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(startTime)

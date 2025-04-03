@@ -80,7 +80,7 @@ class MultiBackupViewModel : ViewModel() {
         }
     }
 
-    fun addCompleteOption() {
+    private fun addCompleteOption() {
         if (optionList.lastOrNull() != BackupOption.BACKUP_COMPLETED) {
             optionList.remove(BackupOption.BACKUP_COMPLETED)
             optionList.add(BackupOption.BACKUP_COMPLETED)

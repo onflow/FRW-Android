@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogStakingSetupBinding
-import com.flowfoundation.wallet.manager.flowjvm.*
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.page.staking.providers.StakingProviderActivity
 import com.flowfoundation.wallet.utils.*
@@ -18,7 +17,7 @@ class StakingSetupDialog : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogStakingSetupBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogStakingSetupBinding.inflate(inflater)
         return binding.rootView
     }

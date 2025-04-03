@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.backup.multibackup.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupDropboxOption
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveOption
 
 
 class BackupDropboxWithPinViewModel : ViewModel() {
@@ -14,10 +13,6 @@ class BackupDropboxWithPinViewModel : ViewModel() {
 
     fun setCurrentIndex(index: Int) {
         currentIndex = index
-    }
-
-    fun getCurrentIndex(): Int {
-        return currentIndex
     }
 
     fun changeOption(option: BackupDropboxOption) {

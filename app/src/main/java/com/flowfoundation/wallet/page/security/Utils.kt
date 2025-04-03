@@ -41,7 +41,7 @@ fun FragmentActivity.securityOpen(action: Intent) {
 }
 
 // check security
-suspend fun securityVerification(activity: FragmentActivity) = suspendCoroutine<Boolean> { cont ->
+suspend fun securityVerification(activity: FragmentActivity) = suspendCoroutine { cont ->
     uiScope {
         if (isBiometricEnable()) {
             cont.resume(securityBiometricVerification(activity))
@@ -51,7 +51,7 @@ suspend fun securityVerification(activity: FragmentActivity) = suspendCoroutine<
     }
 }
 
-private suspend fun securityBiometricVerification(activity: FragmentActivity) = suspendCoroutine<Boolean> { cont ->
+private suspend fun securityBiometricVerification(activity: FragmentActivity) = suspendCoroutine { cont ->
     uiScope {
         LocalBroadcastManager.getInstance(activity).registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -63,7 +63,7 @@ private suspend fun securityBiometricVerification(activity: FragmentActivity) = 
     }
 }
 
-private suspend fun securityPinCodeVerification(activity: FragmentActivity) = suspendCoroutine<Boolean> { cont ->
+private suspend fun securityPinCodeVerification(activity: FragmentActivity) = suspendCoroutine { cont ->
     uiScope {
         if (getPinCode().isBlank()) {
             cont.resume(true)

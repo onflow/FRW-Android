@@ -146,7 +146,7 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
         val rlpList = RlpList(listOf<RlpType>(
             RlpString.create(nonce.toBigInteger()),
             RlpString.create(BigInteger.ZERO),
-            RlpString.create(EVM_GAS_LIMIT.toBigInteger()),
+            RlpString.create(gasValue.toBigInteger()),
             RlpString.create(Numeric.hexStringToByteArray(toAddress.toAddress())),
             RlpString.create(amountValue),
             RlpString.create(data),

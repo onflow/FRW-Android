@@ -7,7 +7,6 @@ import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.FlowAccount
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
-import com.nftco.flow.sdk.FlowArgumentsBuilder
 import com.nftco.flow.sdk.cadence.Field
 import com.nftco.flow.sdk.cadence.JsonCadenceBuilder
 import com.nftco.flow.sdk.cadence.UFix64NumberField
@@ -79,12 +78,6 @@ class CadenceArgumentsBuilder {
     fun arg(builder: JsonCadenceBuilder.() -> Field<*>) = arg(builder(JsonCadenceBuilder()))
 
     fun build(): MutableList<Field<*>> = _values
-
-    fun toFlowArguments(): FlowArgumentsBuilder.() -> Unit {
-        return {
-            _values.forEach { arg(it) }
-        }
-    }
 }
 
 fun (CadenceArgumentsBuilder.() -> Unit).builder(): CadenceArgumentsBuilder {
@@ -123,7 +116,7 @@ fun FlowArgument.toAsArgument(): AsArgument {
     }
 }
 
-fun JsonCadenceBuilder.ufix64Safe(number: Number): UFix64NumberField {
+fun ufix64Safe(number: Number): UFix64NumberField {
     logd("xxx", "number:$number")
     val value = if (number is Long || number is Int) {
         number.toFloat()

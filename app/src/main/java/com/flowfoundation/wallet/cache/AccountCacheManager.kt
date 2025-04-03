@@ -34,17 +34,8 @@ object AccountCacheManager{
         ioScope { cacheSync(data) }
     }
 
-    fun cacheSync(data: List<Account>) {
+    private fun cacheSync(data: List<Account>) {
         val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
         str.saveToFile(file)
     }
-
-    fun isCacheExist(): Boolean = file.exists() && file.length() > 0
-
-    fun modifyTime() = file.lastModified()
-
-    fun isExpired(duration: Long): Boolean {
-        return System.currentTimeMillis() - modifyTime() > duration
-    }
-
 }

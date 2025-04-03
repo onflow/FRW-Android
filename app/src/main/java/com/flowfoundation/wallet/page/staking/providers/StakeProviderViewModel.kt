@@ -17,11 +17,6 @@ class StakeProviderViewModel : ViewModel() {
             val providers = StakingManager.providers()
             val lilico = providers.firstOrNull { it.name == "Lilico" }
             val list = mutableListOf<Any>().apply {
-//                todo hide stake entrance for rebranding
-//                if (lilico != null) {
-//                    add(ProviderTitleModel(R.string.recommend.res2String()))
-//                    add(lilico)
-//                }
                 add(ProviderTitleModel(R.string.staking_provider.res2String()))
                 addAll(providers.filter { it != lilico })
             }

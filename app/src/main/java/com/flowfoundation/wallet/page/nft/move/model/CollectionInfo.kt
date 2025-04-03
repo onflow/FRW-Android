@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.nft.move.model
 
 import com.google.gson.annotations.SerializedName
 
-
 data class CollectionInfo (
     @SerializedName("id")
     val id: String,

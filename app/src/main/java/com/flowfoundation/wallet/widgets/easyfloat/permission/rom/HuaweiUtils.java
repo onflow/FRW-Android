@@ -63,9 +63,6 @@ public class HuaweiUtils {
             fragment.startActivityForResult(intent, PermissionUtils.requestCode);
             Log.e(TAG, Log.getStackTraceString(e));
         } catch (ActivityNotFoundException e) {
-            /**
-             * 手机管家版本较低 HUAWEI SC-UL10
-             */
             Intent intent = new Intent();
             //权限管理页面 android4.4
             ComponentName comp = new ComponentName("com.Android.settings", "com.android.settings.permission.TabItem");

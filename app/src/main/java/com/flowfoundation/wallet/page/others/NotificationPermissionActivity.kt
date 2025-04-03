@@ -20,7 +20,7 @@ class NotificationPermissionActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notification_permission)
         findViewById<View>(R.id.start_button).setOnClickListener {
-            PermissionX.init(this).permissions(Manifest.permission.POST_NOTIFICATIONS).request { allGranted, _, _ ->
+            PermissionX.init(this).permissions(Manifest.permission.POST_NOTIFICATIONS).request { _, _, _ ->
                 MainActivity.launch(this)
             }
         }
@@ -36,6 +36,7 @@ class NotificationPermissionActivity : BaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
     }
 
     companion object {

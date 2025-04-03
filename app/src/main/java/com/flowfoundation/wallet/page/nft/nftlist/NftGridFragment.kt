@@ -9,8 +9,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.FragmentNftGridBinding
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.nftlist.adapter.NFTListAdapter
 import com.flowfoundation.wallet.utils.extensions.res2dip
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration

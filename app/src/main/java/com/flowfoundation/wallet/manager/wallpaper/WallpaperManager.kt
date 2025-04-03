@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.manager.wallpaper
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.wallpaper.model.Wallpaper
-import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.getWallpaperId
 import com.flowfoundation.wallet.utils.setWallpaperId
 import com.flowfoundation.wallet.utils.uiScope

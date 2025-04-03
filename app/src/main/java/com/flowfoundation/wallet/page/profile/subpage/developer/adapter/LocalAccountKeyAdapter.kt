@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.page.profile.subpage.developer.model.LocalAccou
 import com.flowfoundation.wallet.page.profile.subpage.developer.presenter.LocalAccountKeyListItemPresenter
 import com.flowfoundation.wallet.page.profile.subpage.developer.presenter.LocalAccountKeyListTitlePresenter
 
-
 class LocalAccountKeyAdapter : BaseAdapter<Any>() {
 
     override fun getItemViewType(position: Int): Int {

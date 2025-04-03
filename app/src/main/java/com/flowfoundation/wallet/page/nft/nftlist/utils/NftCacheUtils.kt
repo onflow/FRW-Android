@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.cache.cacheFile
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollections
 
-
 class NftCache(
     private val address: String
 ) {

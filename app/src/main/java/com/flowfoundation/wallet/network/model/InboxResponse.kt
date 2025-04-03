@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.network.model
 
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.google.gson.annotations.SerializedName
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
 

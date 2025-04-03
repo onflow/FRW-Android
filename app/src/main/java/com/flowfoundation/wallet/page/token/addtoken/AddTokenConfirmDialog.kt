@@ -20,7 +20,7 @@ class AddTokenConfirmDialog : BottomSheetDialogFragment() {
 
     private lateinit var viewModel: AddTokenViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogAddTokenConfirmBinding.inflate(inflater)
         return binding.root
     }

@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.page.backup.viewmodel.BackupViewMnemonicViewMod
 import com.flowfoundation.wallet.utils.isNightMode
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
-
 class BackupViewMnemonicActivity: BaseActivity() {
     private lateinit var binding: ActivityBackupViewMnemonicBinding
     private lateinit var presenter: BackupViewMnemonicPresenter

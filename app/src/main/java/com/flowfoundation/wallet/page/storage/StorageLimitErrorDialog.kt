@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.DialogStorageLimitErrorBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
-import com.flowfoundation.wallet.manager.account.model.ValidateTransactionResult
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog

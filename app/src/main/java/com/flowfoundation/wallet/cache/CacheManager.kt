@@ -8,9 +8,10 @@ import java.io.File
 class CacheManager<T>(
     private val fileName: String,
     private val type: Class<T>,
+    private val cacheDir: File = CACHE_PATH
 ) {
 
-    private val file by lazy { File(CACHE_PATH, fileName) }
+    private val file by lazy { File(cacheDir, fileName) }
 
     @WorkerThread
     fun read(): T? {
@@ -42,7 +43,7 @@ class CacheManager<T>(
 
     fun isCacheExist(): Boolean = file.exists() && file.length() > 0
 
-    fun modifyTime() = file.lastModified()
+    private fun modifyTime() = file.lastModified()
 
     fun isExpired(duration: Long): Boolean {
         return System.currentTimeMillis() - modifyTime() > duration

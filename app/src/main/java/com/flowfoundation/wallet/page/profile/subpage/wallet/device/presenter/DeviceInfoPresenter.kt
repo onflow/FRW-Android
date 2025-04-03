@@ -9,8 +9,6 @@ import com.flowfoundation.wallet.databinding.LayoutDeviceInfoItemBinding
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.detail.DeviceInfoActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceKeyModel
-import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceModel
-import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.formatGMTToDate
 
 

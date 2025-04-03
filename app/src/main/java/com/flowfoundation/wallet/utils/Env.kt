@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.utils
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
 
 @SuppressLint("StaticFieldLeak")
 object Env {
@@ -18,9 +17,5 @@ object Env {
     @JvmStatic
     fun getApp(): Context {
         return context
-    }
-
-    fun updateContextConfig(config: Configuration) {
-        context = originContext.createConfigurationContext(config)
     }
 }

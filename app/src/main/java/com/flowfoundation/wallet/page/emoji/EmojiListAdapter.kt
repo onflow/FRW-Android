@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 
-
 class EmojiListAdapter(
     private var selectedPosition: Int,
     private val callback: (Int) -> Unit

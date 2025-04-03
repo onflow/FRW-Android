@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.firebase.analytics
 
 import android.os.Bundle
-import android.util.Log
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.utils.Env

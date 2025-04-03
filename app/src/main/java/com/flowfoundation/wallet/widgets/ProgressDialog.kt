@@ -15,7 +15,7 @@ class ProgressDialog(
     private var dialog: Dialog? = null
     fun show(): Dialog {
         with(AlertDialog.Builder(context)) {
-            setView(DialogView(context) { dialog?.cancel() })
+            setView(DialogView(context))
             setCancelable(cancelable)
             with(create()) {
                 dialog = this
@@ -35,7 +35,6 @@ class ProgressDialog(
 @SuppressLint("ViewConstructor")
 private class DialogView(
     context: Context,
-    private val onCancel: () -> Unit,
 ) : FrameLayout(context) {
 
     init {

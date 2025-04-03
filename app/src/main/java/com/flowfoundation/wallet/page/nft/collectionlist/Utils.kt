@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.recyclerview.widget.DiffUtil
 import com.flowfoundation.wallet.page.address.model.AddressBookPersonModel
 
-
 val nftCollectionListDiffCallback = object : DiffUtil.ItemCallback<Any>() {
     override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
         if (oldItem is AddressBookPersonModel && newItem is AddressBookPersonModel) {

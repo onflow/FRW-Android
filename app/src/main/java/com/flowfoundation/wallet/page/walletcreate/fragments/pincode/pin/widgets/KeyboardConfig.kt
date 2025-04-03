@@ -26,29 +26,3 @@ val keyboardT9Normal = listOf(
     ),
 )
 
-fun onKeyActionChange(keyList: MutableList<KeyboardItem>, key: KeyboardItem) {
-    when (key.type) {
-        KeyboardItem.TYPE_DELETE_KEY -> {
-            keyList.removeLastOrNull()
-        }
-        KeyboardItem.TYPE_CLEAR_KEY -> {
-            keyList.clear()
-        }
-        else -> {
-            keyList.add(key)
-        }
-    }
-}
-
-fun getInputStringByKeys(keyList: List<KeyboardItem>): String = keyList.map { it.number ?: it.charText }.joinToString("") { it.toString() }
-
-fun List<KeyboardItem>.toFilter(): List<List<String>> {
-    val list = mutableListOf<List<String>>()
-    forEach { item ->
-        val chars = mutableListOf<String>()
-        item.number?.let { chars.add("$it") }
-        item.charText?.let { chars.addAll(it.split("")) }
-        list.add(chars.filter { it.isNotBlank() }.map { it.uppercase() })
-    }
-    return list
-}

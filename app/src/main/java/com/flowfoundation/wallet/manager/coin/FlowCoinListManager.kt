@@ -187,13 +187,7 @@ data class FlowCoin(
 
     companion object {
         const val SYMBOL_FLOW = "flow"
-        const val SYMBOL_FUSD = "fusd"
-        const val SYMBOL_STFLOW = "stFlow"
-        const val SYMBOL_BLT = "blt"
         const val SYMBOL_USDC = "usdc"
-        const val SYMBOL_MY = "my"
-        const val SYMBOL_THUL = "thul"
-        const val SYMBOL_STARLY = "STARLY"
     }
 }
 
@@ -205,18 +199,8 @@ enum class FlowCoinType : Parcelable {
 
 @Parcelize
 class FlowCoinExtensions(
-    @SerializedName("twitter")
-    val twitter: String?,
-    @SerializedName("coingeckoId")
-    val coingeckoId: String?,
-    @SerializedName("documentation")
-    val documentation: String?,
     @SerializedName("website")
     val website: String?,
-    @SerializedName("displaySource")
-    val displaySource: String?,
-    @SerializedName("pathSource")
-    val pathSource: String?,
 ) : Parcelable
 
 @Parcelize

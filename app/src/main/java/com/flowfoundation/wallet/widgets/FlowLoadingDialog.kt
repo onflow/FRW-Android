@@ -15,7 +15,7 @@ class FlowLoadingDialog(
     private var dialog: Dialog? = null
     fun show(): Dialog {
         with(AlertDialog.Builder(context)) {
-            setView(FlowLoadingView(context) { dialog?.cancel() })
+            setView(FlowLoadingView(context))
             setCancelable(cancelable)
             with(create()) {
                 dialog = this
@@ -35,7 +35,6 @@ class FlowLoadingDialog(
 @SuppressLint("ViewConstructor")
 private class FlowLoadingView(
     context: Context,
-    private val onCancel: () -> Unit,
 ) : FrameLayout(context) {
 
     init {

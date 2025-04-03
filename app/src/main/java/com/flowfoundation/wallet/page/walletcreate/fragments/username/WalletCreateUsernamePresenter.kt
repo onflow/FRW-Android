@@ -10,12 +10,9 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentWalletCreateUsernameBinding
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.landing.LandingActivity
-import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.res2color
-import com.flowfoundation.wallet.utils.extensions.res2pix
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 
@@ -26,13 +23,9 @@ class WalletCreateUsernamePresenter(
 
     private val viewModel by lazy { ViewModelProvider(fragment)[WalletCreateUsernameViewModel::class.java] }
 
-    private val pageViewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletCreateViewModel::class.java] }
-
     private val rootView by lazy { fragment.requireActivity().findViewById<View>(R.id.rootView) }
 
     private val keyboardObserver by lazy { keyboardObserver() }
-
-    private val buttonMargin by lazy { R.dimen.wallet_create_button_margin.res2pix() }
 
     init {
         binding.editText.addTextChangedListener(object : SimpleTextWatcher() {

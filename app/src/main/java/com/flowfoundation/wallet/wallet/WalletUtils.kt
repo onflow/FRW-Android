@@ -16,16 +16,6 @@ fun getPublicKey(removePrefix: Boolean = true): String {
     return hdWallet().getPublicKey(removePrefix)
 }
 
-fun getPrivateKey(): String {
-    return hdWallet().getPrivateKey()
-}
-
-fun HDWallet.getPrivateKey(): String {
-    return getCurveKey(Curve.SECP256K1, DERIVATION_PATH).data().bytesToHex()
-}
-
-fun getWalletCore() = hdWallet()
-
 fun HDWallet.getPublicKey(removePrefix: Boolean = true): String {
     val privateKey = getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
     val publicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex()

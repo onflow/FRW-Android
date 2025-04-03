@@ -92,10 +92,6 @@ class LilicoWebView : WebView {
         this.callback = callback
     }
 
-    fun onWindowColorChange(@ColorInt color: Int) {
-        callback?.onWindowColorChange(color)
-    }
-
     private inner class WebChromeClient : android.webkit.WebChromeClient() {
         override fun onProgressChanged(view: WebView, newProgress: Int) {
             super.onProgressChanged(view, newProgress)
@@ -186,7 +182,8 @@ class LilicoWebView : WebView {
                         e.printStackTrace()
                         false
                     }
-                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it.host == "fcw-link.lilico.app") {
+                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
+                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com") {
                     safeRun {
                         WalletConnect.get().pair(getWalletConnectUri(it).toString())
                     }
@@ -201,8 +198,6 @@ class LilicoWebView : WebView {
 
     companion object {
         private val TAG = LilicoWebView::class.java.simpleName
-        const val USER_AGENT =
-            "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/43.0.2357.65 Mobile Safari/537.36"
     }
 }
 

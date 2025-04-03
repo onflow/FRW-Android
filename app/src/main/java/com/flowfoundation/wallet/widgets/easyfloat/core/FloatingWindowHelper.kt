@@ -12,7 +12,6 @@ import android.os.IBinder
 import android.view.*
 import android.view.WindowManager.LayoutParams.*
 import android.widget.EditText
-import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.widgets.easyfloat.anim.AnimatorManager
@@ -259,8 +258,6 @@ internal class FloatingWindowHelper(val context: Context, var config: FloatConfi
         }
     }
 
-    fun isHided(): Boolean = !(frameLayout?.isVisible() ?: true)
-
     /**
      * 入场动画
      */
@@ -340,34 +337,4 @@ internal class FloatingWindowHelper(val context: Context, var config: FloatConfi
         Logger.e("浮窗关闭出现异常：$e")
     }
 
-    fun offsetWindow(x: Int, y: Int) {
-        params.x += x
-        params.y += y
-        windowManager.updateViewLayout(frameLayout, params)
-    }
-
-    fun getWindowHeight(): Int {
-        val layout = frameLayout ?: return 0
-        val height = layout.layoutParams.height
-        if (height <= 0) {
-            return layout.height
-        }
-        return height
-    }
-
-    fun updateHeight(offset: Int) {
-        frameLayout?.let {
-            val layoutParams = it.layoutParams
-            if (layoutParams.height <= 0) {
-                layoutParams.height = it.height
-            }
-            layoutParams.height += offset
-
-            windowManager.updateViewLayout(it, layoutParams)
-        }
-    }
-
-    fun updateLayout(view: View) {
-        windowManager.updateViewLayout(view, view.layoutParams)
-    }
 }

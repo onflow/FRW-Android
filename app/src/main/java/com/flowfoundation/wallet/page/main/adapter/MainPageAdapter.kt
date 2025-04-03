@@ -10,7 +10,7 @@ import com.flowfoundation.wallet.page.transaction.record.TransactionRecordFragme
 import com.flowfoundation.wallet.page.wallet.WalletFragment
 
 class MainPageAdapter(
-    private val activity: MainActivity
+    activity: MainActivity
 ) : FragmentStatePagerAdapter(activity.supportFragmentManager) {
     override fun getCount(): Int = 5
 

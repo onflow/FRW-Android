@@ -15,13 +15,10 @@ import com.flowfoundation.wallet.network.model.TransferRecord.Companion.TRANSFER
 import com.flowfoundation.wallet.page.browser.openInFlowEVMScan
 import com.flowfoundation.wallet.page.browser.openInFlowScan
 import com.flowfoundation.wallet.utils.extensions.res2color
-import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.findActivity
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.shortenEVMString
 import com.flowfoundation.wallet.utils.svgToPng
 import org.joda.time.format.ISODateTimeFormat
-import java.math.RoundingMode
 
 class TransferRecordItemPresenter(
     private val view: View,

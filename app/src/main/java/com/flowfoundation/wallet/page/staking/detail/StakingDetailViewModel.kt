@@ -37,7 +37,6 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         CoinRateManager.addListener(this)
     }
 
-
     fun load(provider: StakingProvider) {
         ioScope {
             detailModel = detailModel.copy(

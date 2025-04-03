@@ -7,13 +7,9 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentBackupDropboxWithPinBinding
-import com.flowfoundation.wallet.databinding.FragmentBackupGoogleDriveWithPinBinding
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupDropboxOption
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDriveOption
 import com.flowfoundation.wallet.page.backup.multibackup.presenter.BackupDropboxWithPinPresenter
-import com.flowfoundation.wallet.page.backup.multibackup.presenter.BackupGoogleDriveWithPinPresenter
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupDropboxWithPinViewModel
-import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.BackupGoogleDriveWithPinViewModel
 import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupViewModel
 
 

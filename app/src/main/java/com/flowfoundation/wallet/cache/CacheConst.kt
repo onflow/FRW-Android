@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.coin.TokenStateCache
-import com.flowfoundation.wallet.manager.coin.UserPropertyCache
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateCache
 import com.flowfoundation.wallet.manager.price.CurrencyCache
 import com.flowfoundation.wallet.manager.staking.StakingCache

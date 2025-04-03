@@ -68,8 +68,6 @@ fun cleanMnemonicPreferenceV0() {
     preference.edit().putString(KEY_MNEMONIC, "").apply()
 }
 
-fun getBackupMnemonicFromPreference(): String = preference.getString(KEY_BACKUP_MNEMONIC, "").orEmpty()
-
 fun saveBackupMnemonicToPreference(mnemonic: String) {
     preference.edit().putString(KEY_BACKUP_MNEMONIC, mnemonic).apply()
 }

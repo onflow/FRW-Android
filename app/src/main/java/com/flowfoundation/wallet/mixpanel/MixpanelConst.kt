@@ -31,7 +31,6 @@ enum class TransferAccountType(val value: String) {
 }
 
 enum class AccountCreateKeyType(val value: String) {
-    SEED_PHRASE("seed_phrase"),
     KEY_STORE("secure_enclave")
 }
 

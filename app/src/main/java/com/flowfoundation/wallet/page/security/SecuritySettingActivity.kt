@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import android.widget.Toast
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
@@ -82,8 +81,6 @@ class SecuritySettingActivity : BaseActivity() {
     }
 
     companion object {
-        private const val EXTRA_USER_INFO = "extra_user_info"
-
         fun launch(context: Context) {
             context.startActivity(Intent(context, SecuritySettingActivity::class.java))
         }

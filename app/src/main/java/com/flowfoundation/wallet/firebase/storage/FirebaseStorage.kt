@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.utils.loge
 import java.io.ByteArrayOutputStream
 
 
-suspend fun uploadAvatarToFirebase(image: Bitmap, callback: (url: String?) -> Unit) {
+fun uploadAvatarToFirebase(image: Bitmap, callback: (url: String?) -> Unit) {
     val baos = ByteArrayOutputStream()
     image.compress(Bitmap.CompressFormat.JPEG, 100, baos)
     val data = baos.toByteArray()
