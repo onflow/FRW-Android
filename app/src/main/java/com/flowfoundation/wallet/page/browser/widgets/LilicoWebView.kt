@@ -182,7 +182,8 @@ class LilicoWebView : WebView {
                         e.printStackTrace()
                         false
                     }
-                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it.host == "fcw-link.lilico.app") {
+                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
+                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com") {
                     safeRun {
                         WalletConnect.get().pair(getWalletConnectUri(it).toString())
                     }
