@@ -1,7 +1,6 @@
 name: Android Build Check
 
 on:
-  push:
   pull_request:
 
 jobs:
@@ -78,6 +77,9 @@ jobs:
           else
             echo "$DEBUG_GOOGLE_SERVICES" > "$FILE_PATH"
           fi
+
+      - name: Run Unit Tests
+        run: cd ./frw && ./gradlew testDebugUnitTest
 
       - name: Build APK (No Upload)
         run: cd ./frw && ./gradlew assembleDebug --stacktrace
