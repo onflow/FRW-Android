@@ -46,11 +46,11 @@ fun retrofit(
 }
 
 fun retrofitApi(): Retrofit {
-    return retrofitWithHost(if (isDev()) "https://test.lilico.app" else "https://lilico.app", ignoreAuthorization = false)
+    return retrofitWithHost(if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://lilico.app", ignoreAuthorization = false)
 }
 
 fun cadenceScriptApi(): Retrofit {
-    val host = if (isDev()) "https://test.lilico.app" else "https://lilico.app"
+    val host = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://lilico.app"
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(false))
         addInterceptor(InstabugAPMOkhttpInterceptor())
