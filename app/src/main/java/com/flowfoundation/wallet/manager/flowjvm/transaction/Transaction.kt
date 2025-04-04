@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
+import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.nftco.flow.sdk.FlowSignature
 import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -29,6 +30,7 @@ import org.onflow.flow.models.Transaction
 import org.onflow.flow.models.TransactionSignature
 import java.security.Provider
 import java.security.Security
+import java.util.Base64
 
 private const val TAG = "FlowTransaction"
 
@@ -97,7 +99,7 @@ suspend fun sendTransactionWithMultiSignature(
     var tx = voucher.toFlowMultiTransaction()
 
     providers.forEach { cryptoProvider ->
-        tx = tx.addPayloadSignature( // to-do: implement
+        tx = tx.addPayloadSignature(
             tx.proposalKey.address,
             keyIndex = account.keys?.first { cryptoProvider.getPublicKey() == it.publicKey }?.index,
             cryptoProvider.getSigner()
@@ -121,7 +123,7 @@ private fun Transaction.addLocalSignatures(): Transaction {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw Exception("Crypto Provider is null")
     try {
         // if user pay the gas, payer.address == proposal.address, payer.keyIndex == proposalKeyIndex
-        return copy(payloadSignatures = emptyList()).addEnvelopeSignature( // to-do: implement
+        return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
             payer,
             keyIndex = proposalKey.keyIndex,
             cryptoProvider.getSigner()
@@ -140,9 +142,7 @@ private suspend fun Transaction.addFreeGasEnvelope(): Transaction {
 
     val signature = TransactionSignature(sign.address, sign.keyId, sign.sig) // to-do utilize this class in new addEnvelopeSignature method
 
-    return addEnvelopeSignature( // to-do
-        FlowAddress(sign.address),
-        keyIndex = sign.keyId,
+    return addEnvelopeSignature(
         signature = signature
     )
 }
@@ -196,12 +196,12 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
     val voucher = Voucher(
         cadence = script,
         refBlock = referenceBlockId,
-        computeLimit = gasLimit.toInt(),
+        computeLimit = gasLimit.intValue(),
         arguments = arguments.map { it.toAsArgument() },
         proposalKey = ProposalKey(
             address = proposalKey.address,
             keyId = proposalKey.keyIndex,
-            sequenceNum = proposalKey.sequenceNumber.toInt(),
+            sequenceNum = proposalKey.sequenceNumber.intValue(),
         ),
         payer = payer,
         authorizers = authorizers.map { it },
@@ -233,93 +233,81 @@ fun Transaction.encodeTransactionPayload(): String {
 }
 
 fun Voucher.toFlowMultiTransaction(): Transaction {
-    val transaction = this
-    return flowTransaction { // to-do
-        script { transaction.cadence.orEmpty() }
-
-        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { Cadence.Value(it) }.toMutableList()
-
-        referenceBlockId = FlowId(transaction.refBlock.orEmpty())
-
-        gasLimit = computeLimit ?: 9999
-
-        proposalKey {
-            address = FlowAddress(transaction.proposalKey.address.orEmpty())
-            keyIndex = transaction.proposalKey.keyId ?: 0
-            sequenceNumber = transaction.proposalKey.sequenceNum ?: 0
-        }
-
-        if (transaction.authorizers.isNullOrEmpty()) {
-            authorizers(mutableListOf(FlowAddress(transaction.proposalKey.address.orEmpty())))
+    return Transaction(
+        // The script field should be Base64 encoded.
+        script = if (!this.cadence.isNullOrEmpty())
+            Base64.getEncoder().encodeToString(this.cadence.toByteArray())
+        else "",
+        // Convert voucher arguments (assumed to be convertible to bytes) into Cadence values.
+        arguments = this.arguments.orEmpty().map { arg ->
+            Cadence.Value(arg.toBytes())
+        },
+        referenceBlockId = this.refBlock.orEmpty(),
+        // Convert the compute limit to a BigInteger, defaulting to 9999.
+        gasLimit = this.computeLimit?.let { BigInteger.fromLong(it.toLong()) }
+            ?: BigInteger.fromInt(9999),
+        // Use the voucher's payer address.
+        payer = this.payer.orEmpty(),
+        // Build the proposal key from the voucher.
+        proposalKey = org.onflow.flow.models.ProposalKey(
+            address = this.proposalKey?.address.orEmpty(),
+            keyIndex = this.proposalKey?.keyId ?: 0,
+            sequenceNumber = this.proposalKey?.sequenceNum ?: 0
+        ),
+        // Use the provided authorizers, or default to the proposal key address if none are provided.
+        authorizers = if (this.authorizers.isNullOrEmpty()) {
+            listOf(this.proposalKey?.address.orEmpty())
         } else {
-            authorizers(transaction.authorizers.map { FlowAddress(it) }.toMutableList())
-        }
-
-        payerAddress = FlowAddress(transaction.payer.orEmpty())
-    }
+            this.authorizers
+        },
+        // Multi-transaction may not have signatures initially.
+        payloadSignatures = emptyList(),
+        envelopeSignatures = emptyList(),
+    )
 }
 
 fun Voucher.toFlowTransaction(): Transaction {
-    val transaction = this
-    var tx = flowTransaction {
-        script { transaction.cadence.orEmpty() }
-
-        arguments = transaction.arguments.orEmpty().map { it.toBytes() }.map { Cadence.Value(it) }.toMutableList()
-
-        referenceBlockId = FlowId(transaction.refBlock.orEmpty())
-
-        gasLimit = computeLimit ?: 9999
-
-        proposalKey {
-            address = FlowAddress(transaction.proposalKey.address.orEmpty())
-            keyIndex = transaction.proposalKey.keyId ?: 0
-            sequenceNumber = transaction.proposalKey.sequenceNum ?: 0
+    return Transaction(
+        // The script is expected to be Base64 encoded.
+        script = if (!this.cadence.isNullOrEmpty())
+            Base64.getEncoder().encodeToString(this.cadence.toByteArray())
+        else ""
+        ,
+        arguments = this.arguments,
+        referenceBlockId = this.refBlock.orEmpty(),
+        gasLimit = this.computeLimit?.let { BigInteger.fromLong(it.toLong()) }
+            ?: BigInteger.fromInt(9999),
+        payer = this.payer.orEmpty(),
+        proposalKey = org.onflow.flow.models.ProposalKey(
+            address = this.proposalKey.address.orEmpty(),
+            keyIndex = this.proposalKey.keyId ?: 0,
+            sequenceNumber = BigInteger.fromInt(this.proposalKey.sequenceNum)
+        ),
+        authorizers = if (this.authorizers.isNullOrEmpty())
+            listOf(this.proposalKey?.address.orEmpty())
+        else
+            this.authorizers,
+        // Map payload signatures if available.
+        payloadSignatures = this.payloadSigs.orEmpty().mapNotNull { sig ->
+            if (!sig.sig.isNullOrBlank()) {
+                TransactionSignature(
+                    address = sig.address,
+                    keyIndex = sig.keyId ?: 0,
+                    signature = sig.sig,
+                )
+            } else null
+        },
+        // Map envelope signatures if available.
+        envelopeSignatures = this.envelopeSigs.orEmpty().mapNotNull { sig ->
+            if (!sig.sig.isNullOrBlank()) {
+                TransactionSignature(
+                    address = sig.address,
+                    keyIndex = sig.keyId ?: 0,
+                    signature = sig.sig,
+                )
+            } else null
         }
-
-        if (transaction.authorizers.isNullOrEmpty()) {
-            authorizers(mutableListOf(FlowAddress(transaction.proposalKey.address.orEmpty())))
-        } else {
-            authorizers(transaction.authorizers.map { FlowAddress(it) }.toMutableList())
-        }
-
-        payerAddress = FlowAddress(transaction.payer.orEmpty())
-
-        addPayloadSignatures {
-            payloadSigs?.forEach { sig ->
-                if (!sig.sig.isNullOrBlank()) {
-                    signature(
-                        FlowAddress(sig.address),
-                        sig.keyId ?: 0,
-                        FlowSignature(sig.sig)
-                    )
-                }
-            }
-        }
-
-        addEnvelopeSignatures {
-            envelopeSigs?.forEach { sig ->
-                if (!sig.sig.isNullOrBlank()) {
-                    signature(
-                        FlowAddress(sig.address),
-                        sig.keyId ?: 0,
-                        FlowSignature(sig.sig)
-                    )
-                }
-            }
-        }
-    }
-
-    if (tx.payloadSignatures.isEmpty()) {
-        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return tx
-
-        tx = tx.addPayloadSignature(
-            FlowAddress(proposalKey.address.orEmpty()),
-            keyIndex = proposalKey.keyId ?: 0,
-            cryptoProvider.getSigner(),
-        )
-    }
-
-    return tx
+    )
 }
 
 /**

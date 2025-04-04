@@ -286,6 +286,8 @@ dependencies {
     implementation 'commons-validator:commons-validator:1.7'
     implementation 'com.airbnb.android:lottie:5.2.0'
     implementation 'androidx.browser:browser:1.4.0'
+    implementation 'com.ionspin.kotlin:bignum:0.3.10'
+
 
     /** FLOW **/
     // implementation "com.nftco:flow-jvm-sdk:0.7.3"
