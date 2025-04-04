@@ -18,6 +18,7 @@ fun logd(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.DEBUG, InstabugLo
 fun logi(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.INFO, InstabugLog::i)
 fun logw(tag: String?, msg: Any?) = logWithLevel(tag, msg, Log.WARN, InstabugLog::w)
 
+
 fun loge(tag: String?, msg: Any?) {
     logWithLevel(tag, msg, Log.ERROR, InstabugLog::e)
     reportErrorToDebugView(tag, mapOf("errorInfo" to (msg?.toString() ?: "")))

@@ -108,10 +108,6 @@ class GridSpaceItemDecoration(
 //        canvas.restore()
     }
 
-    fun setDividerVisibleCheck(dividerVisibleCheck: DividerVisibleCheck) {
-        this.dividerVisibleCheck = dividerVisibleCheck
-    }
-
     @Dimension(unit = Dimension.DP)
     private fun calculateBottomOffsets(
         nMinusOne: Int,

@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.page.explore.model.DAppModel
 import com.flowfoundation.wallet.page.explore.presenter.ExploreDAppItemPresenter
 
 class ExploreDAppAdapter : BaseAdapter<DAppModel>(diffCallback) {
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return ExploreDAppItemPresenter(parent.inflate(R.layout.item_explore_dapp))
     }

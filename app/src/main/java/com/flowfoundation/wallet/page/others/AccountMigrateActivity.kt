@@ -37,5 +37,6 @@ open class NewFeatureActivity : BaseActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        super.onBackPressed()
     }
 }

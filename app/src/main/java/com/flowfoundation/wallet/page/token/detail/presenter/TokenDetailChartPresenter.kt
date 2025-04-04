@@ -23,7 +23,6 @@ import com.flowfoundation.wallet.page.token.detail.widget.ChartMarker
 import com.flowfoundation.wallet.page.token.detail.widget.TokenDetailMarketPopupMenu
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.toHexColorString
 import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.getQuoteMarket
@@ -36,8 +35,6 @@ class TokenDetailChartPresenter(
     private val binding: LayoutTokenDetailChartBinding,
 ) : BasePresenter<TokenDetailChartModel> {
     private val viewModel by lazy { ViewModelProvider(activity)[TokenDetailViewModel::class.java] }
-    private val chartColor by lazy { R.color.salmon_primary.res2color().toHexColorString(false) }
-    private val transparentColor by lazy { R.color.background.res2color().toHexColorString(false) }
 
     private val chartView by lazy { binding.chartView.chartView }
 

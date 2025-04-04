@@ -3,12 +3,9 @@ package com.flowfoundation.wallet.page.token.custom
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
-import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAssociatedFlowIdentifier
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
@@ -39,7 +36,6 @@ class CustomTokenViewModel : ViewModel() {
     val loadingLiveData = MutableLiveData<Boolean>()
     val importSuccessLiveData = MutableLiveData<Boolean>()
     private var currentToken: CustomTokenItem? = null
-    val customTokenListLiveData = MutableLiveData<List<CustomTokenItem>>()
     private var isLoading = false
 
     fun changeOption(option: CustomTokenOption) {

@@ -17,7 +17,6 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 
-
 class NetworkPopupMenu (
     private val view: View,
 ) {

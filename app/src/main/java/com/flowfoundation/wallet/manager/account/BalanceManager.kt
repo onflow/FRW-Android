@@ -135,8 +135,6 @@ object BalanceManager {
         }
     }
 
-    fun getBalanceList() = balanceList.toList()
-
     private fun fetch(coin: FlowCoin) {
         ioScope {
             balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }

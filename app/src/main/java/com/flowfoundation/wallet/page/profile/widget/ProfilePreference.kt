@@ -26,7 +26,6 @@ open class ProfilePreference : FrameLayout {
     internal var descId: Int
     private var desc: String
 
-
     @ColorInt
     internal var descColor: Int
 
@@ -79,16 +78,6 @@ open class ProfilePreference : FrameLayout {
         this.descId = descId
         if (descId != 0) {
             descView.setText(descId)
-        }
-    }
-
-    fun setSubtitle(subtitleId: Int) {
-        this.subtitleId = subtitleId
-        if (subtitleId != 0) {
-            subtitleView.visible()
-            subtitleView.setText(subtitleId)
-        } else {
-            subtitleView.gone()
         }
     }
 

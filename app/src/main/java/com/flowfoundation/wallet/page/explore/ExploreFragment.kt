@@ -33,10 +33,6 @@ class ExploreFragment : Fragment() {
         return binding.root
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.searchBox.scanButton.setOnClickListener {
             barcodeLauncher.launch()
@@ -44,8 +40,8 @@ class ExploreFragment : Fragment() {
         presenter = ExplorePresenter(this, binding)
         viewModel = ViewModelProvider(requireActivity())[ExploreViewModel::class.java].apply {
             bindActivity(requireActivity())
-            recentLiveData.observe(viewLifecycleOwner) { presenter.bind(ExploreModel(recentList = it)) }
-            bookmarkLiveData.observe(viewLifecycleOwner) { presenter.bind(ExploreModel(bookmarkList = it)) }
+            recentLiveData.observe(viewLifecycleOwner) { presenter.bind(ExploreModel()) }
+            bookmarkLiveData.observe(viewLifecycleOwner) { presenter.bind(ExploreModel()) }
             dAppsLiveData.observe(viewLifecycleOwner) { presenter.bind(ExploreModel(dAppList = it)) }
             dAppTagsLiveData.observe(viewLifecycleOwner) { presenter.bind(ExploreModel(dAppTagList = it)) }
             load()

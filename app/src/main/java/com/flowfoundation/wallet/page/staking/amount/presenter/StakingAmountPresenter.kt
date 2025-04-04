@@ -20,8 +20,6 @@ import com.flowfoundation.wallet.page.staking.amount.model.StakingAmountModel
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.*
 import java.math.BigDecimal
-import java.text.NumberFormat
-import java.util.Locale
 
 @SuppressLint("SetTextI18n")
 class StakingAmountPresenter(

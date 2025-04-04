@@ -12,6 +12,7 @@ import android.util.Property;
 import android.view.View;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 
 /**
  * Created by Miroslaw Stanek on 21.12.2015.
@@ -22,10 +23,10 @@ public class CircleView extends View {
     private int START_COLOR = 0xFFFF5722;
     private int END_COLOR = 0xFFFFC107;
 
-    private ArgbEvaluator argbEvaluator = new ArgbEvaluator();
+    private final ArgbEvaluator argbEvaluator = new ArgbEvaluator();
 
-    private Paint circlePaint = new Paint();
-    private Paint maskPaint = new Paint();
+    private final Paint circlePaint = new Paint();
+    private final Paint maskPaint = new Paint();
 
     private Bitmap tempBitmap;
     private Canvas tempCanvas;
@@ -84,11 +85,11 @@ public class CircleView extends View {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
         tempCanvas.drawColor(0xffffff, PorterDuff.Mode.CLEAR);
-        tempCanvas.drawCircle(getWidth() / 2, getHeight() / 2, outerCircleRadiusProgress * maxCircleSize, circlePaint);
-        tempCanvas.drawCircle(getWidth() / 2, getHeight() / 2, innerCircleRadiusProgress * maxCircleSize, maskPaint);
+        tempCanvas.drawCircle((float) getWidth() / 2, (float) getHeight() / 2, outerCircleRadiusProgress * maxCircleSize, circlePaint);
+        tempCanvas.drawCircle((float) getWidth() / 2, (float) getHeight() / 2, innerCircleRadiusProgress * maxCircleSize, maskPaint);
         canvas.drawBitmap(tempBitmap, 0, 0, null);
     }
 
@@ -118,7 +119,7 @@ public class CircleView extends View {
     }
 
     public static final Property<CircleView, Float> INNER_CIRCLE_RADIUS_PROGRESS =
-            new Property<CircleView, Float>(Float.class, "innerCircleRadiusProgress") {
+            new Property<>(Float.class, "innerCircleRadiusProgress") {
                 @Override
                 public Float get(CircleView object) {
                     return object.getInnerCircleRadiusProgress();
@@ -131,7 +132,7 @@ public class CircleView extends View {
             };
 
     public static final Property<CircleView, Float> OUTER_CIRCLE_RADIUS_PROGRESS =
-            new Property<CircleView, Float>(Float.class, "outerCircleRadiusProgress") {
+            new Property<>(Float.class, "outerCircleRadiusProgress") {
                 @Override
                 public Float get(CircleView object) {
                     return object.getOuterCircleRadiusProgress();

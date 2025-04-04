@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.page.explore.model
 
-
 import com.google.gson.annotations.SerializedName
 
 data class DAppModel(

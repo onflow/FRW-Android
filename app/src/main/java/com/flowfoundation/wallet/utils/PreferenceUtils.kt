@@ -1,22 +1,18 @@
 package com.flowfoundation.wallet.utils
 
 import android.content.Context
-import android.graphics.Point
-import android.view.Gravity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
 import com.flowfoundation.wallet.page.token.detail.QuoteMarket
-import com.flowfoundation.wallet.utils.extensions.toSafeInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -25,26 +21,19 @@ import kotlinx.coroutines.launch
 
 private const val PREFERENCE_TRADITIONAL = "PREFERENCE_TRADITIONAL"
 
-private const val KEY_LAUNCH_TIMES = "KEY_LAUNCH_TIMES"
-
-private val KEY_JWT_REFRESH_TIME = longPreferencesKey("KEY_JWT_REFRESH_TIME")
-private val KEY_USERNAME = stringPreferencesKey("KEY_USERNAME")
 private val KEY_REGISTERED = booleanPreferencesKey("KEY_REGISTERED")
-private val KEY_NFT_SELECTIONS = stringPreferencesKey("KEY_NFT_SELECTIONS")
 private val KEY_NFT_COLLECTION_EXPANDED = booleanPreferencesKey("KEY_NFT_COLLECTION_EXPANDED")
 private val KEY_BIOMETRIC_ENABLE = booleanPreferencesKey("KEY_BIOMETRIC_ENABLE")
 
 private val KEY_BACKUP_MANUALLY = booleanPreferencesKey("KEY_BACKUP_MANUALLY")
 private val KEY_BACKUP_GOOGLE_DRIVE = booleanPreferencesKey("KEY_BACKUP_GOOGLE_DRIVE")
 private val KEY_BACKUP_MULTI = booleanPreferencesKey("KEY_BACKUP_MULTI")
-private val KEY_SEND_STATE_BUBBLE_POSITION = stringPreferencesKey("KEY_SEND_STATE_BUBBLE_POSITION")
 private val KEY_DEVELOPER_MODE_ENABLE = booleanPreferencesKey("KEY_DEVELOPER_MODE_ENABLE")
 private val KEY_CHAIN_NETWORK = intPreferencesKey("KEY_CHAIN_NETWORK")
 private val KEY_THEME_MODE = intPreferencesKey("KEY_THEME_MODE")
 private val KEY_WALLPAPER_ID = intPreferencesKey("KEY_WALLPAPER_ID")
 private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
-private val KEY_BOOKMARK_PREPOPULATE_FILLED = booleanPreferencesKey("KEY_BOOKMARK_PREPOPULATE_FILLED")
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
 private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
@@ -62,7 +51,6 @@ private const val KEY_SELECTED_WALLET_ADDRESS = "KEY_SELECTED_WALLET_ADDRESS"
 private val KEY_VERSION_CODE = intPreferencesKey("KEY_VERSION_CODE")
 private const val KEY_IS_NOTIFICATION_PERMISSION_CHECKED = "KEY_IS_NOTIFICATION_PERMISSION_CHECKED"
 private const val KEY_TOKEN_UPLOADED_ADDRESS_SET = "KEY_TOKEN_UPLOADED_ADDRESS_SET"
-private const val KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET = "KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET"
 private const val KEY_COA_LINK_CHECKED_ADDRESS_SET = "KEY_COA_LINK_CHECKED_ADDRESS_SET"
 private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -70,12 +58,6 @@ private val sharedPreferencesTraditional by lazy { Env.getApp().getSharedPrefere
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "main_preference")
 private val dataStore = Env.getApp().dataStore
-
-suspend fun getUsername(): String = dataStore.data.map { it[KEY_USERNAME].orEmpty() }.first()
-
-fun updateUsername(username: String) {
-    edit { dataStore.edit { it[KEY_USERNAME] = username } }
-}
 
 suspend fun isRegistered(): Boolean = dataStore.data.map { it[KEY_REGISTERED] ?: false }.first()
 
@@ -142,17 +124,6 @@ fun updateChainNetworkPreference(network: Int, callback: (() -> Unit)? = null) {
     }
 }
 
-suspend fun getSendStateBubblePosition(): Point {
-    val list = dataStore.data
-        .map { it[KEY_SEND_STATE_BUBBLE_POSITION] ?: "${Gravity.END},${(ScreenUtils.getScreenHeight() * 0.5f).toInt()}" }
-        .first().split(",").map { it.toSafeInt() }
-    return Point(list[0], list[1])
-}
-
-fun updateSendStateBubblePosition(point: Point) {
-    edit { dataStore.edit { it[KEY_SEND_STATE_BUBBLE_POSITION] = "${point.x},${point.y}" } }
-}
-
 suspend fun getThemeMode(): Int = dataStore.data.map { it[KEY_THEME_MODE] ?: AppCompatDelegate.MODE_NIGHT_YES }.first()
 
 fun updateThemeMode(themeMode: Int) {
@@ -177,12 +148,6 @@ suspend fun setHideWalletBalance(isHide: Boolean) {
     dataStore.edit { it[KEY_HIDE_WALLET_BALANCE] = isHide }
 }
 
-suspend fun isBookmarkPrepopulateFilled(): Boolean = dataStore.data.map { it[KEY_BOOKMARK_PREPOPULATE_FILLED] ?: false }.first()
-
-suspend fun setBookmarkPrepopulateFilled(isFilled: Boolean) {
-    dataStore.edit { it[KEY_BOOKMARK_PREPOPULATE_FILLED] = isFilled }
-}
-
 suspend fun isFreeGasPreferenceEnable(): Boolean = dataStore.data.map { it[KEY_FREE_GAS_ENABLE] ?: AppConfig.isFreeGas() }.first()
 
 suspend fun setFreeGasPreferenceEnable(isEnable: Boolean) {
@@ -205,13 +170,9 @@ fun setNotificationPermissionChecked() {
     sharedPreferencesTraditional.edit().putBoolean(KEY_IS_NOTIFICATION_PERMISSION_CHECKED, true).apply()
 }
 
-suspend fun isMeowDomainClaimed(): Boolean = dataStore.data.map { it[KEY_IS_MEOW_DOMAIN_CLAIMED] ?: false }.first()
-
 suspend fun setMeowDomainClaimed(isClaimed: Boolean) {
     dataStore.edit { it[KEY_IS_MEOW_DOMAIN_CLAIMED] = isClaimed }
 }
-
-suspend fun getInboxReadList(): String = dataStore.data.map { it[KEY_INBOX_READ_LIST] ?: "" }.first()
 
 suspend fun updateInboxReadListPref(list: String) {
     dataStore.edit { it[KEY_INBOX_READ_LIST] = list }
@@ -279,14 +240,6 @@ fun setUploadedAddressSet(addressSet: Set<String>) {
 
 fun getUploadedAddressSet(): Set<String> {
     return sharedPreferencesTraditional.getStringSet(KEY_TOKEN_UPLOADED_ADDRESS_SET, setOf()) ?: setOf()
-}
-
-fun setDoNotTipBackupAddressSet(addressSet: Set<String>) {
-    sharedPreferencesTraditional.edit().putStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, addressSet).apply()
-}
-
-fun getDoNotTipBackupAddressSet(): Set<String> {
-    return sharedPreferencesTraditional.getStringSet(KEY_DO_NOT_TIP_BACKUP_ADDRESS_SET, setOf()) ?: setOf()
 }
 
 fun getCOALinkCheckedAddressSet(): Set<String> {

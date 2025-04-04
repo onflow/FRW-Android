@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.page.explore.presenter.ExploreBookmarkManageIte
 import com.flowfoundation.wallet.page.explore.presenter.ExploreBookmarkTitleItemPresenter
 
 class ExploreBookmarkManageAdapter : BaseAdapter<Any>(bookmarkDiffCallback) {
-
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is BookmarkTitleModel -> 0

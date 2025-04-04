@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
-import com.google.gson.Gson
 import org.json.JSONObject
 
 

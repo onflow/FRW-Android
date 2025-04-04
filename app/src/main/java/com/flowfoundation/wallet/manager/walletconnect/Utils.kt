@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import com.flowfoundation.wallet.manager.app.EVM_MAINNET
 import com.flowfoundation.wallet.manager.app.EVM_TESTNET
-import com.flowfoundation.wallet.manager.app.evmChainNetworkString
 import com.flowfoundation.wallet.manager.app.flowChainNetworkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager

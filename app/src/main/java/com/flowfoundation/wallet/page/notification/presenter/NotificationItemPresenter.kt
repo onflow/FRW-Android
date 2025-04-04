@@ -22,8 +22,6 @@ import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.Wall
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.flowfoundation.wallet.utils.findActivity
-import jp.wasabeef.glide.transformations.BlurTransformation
 
 
 class NotificationItemPresenter(

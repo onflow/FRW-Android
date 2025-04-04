@@ -7,7 +7,6 @@ import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
 import com.google.api.services.drive.model.FileList
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.loge
 import java.io.IOException
 import java.util.*
 
@@ -102,12 +101,6 @@ class DriveServerHelper(private val driveService: Drive) {
             logd("DriveServerHelper", "writeStringToFile create fileId：$fileId")
         }
         saveFile(fileId!!, fileName, content)
-    }
-
-    @Throws(IOException::class)
-    @WorkerThread
-    fun deleteFile(fileId: String) {
-        driveService.files().delete(fileId).execute()
     }
 
     private fun metadata(fileName: String) = File()

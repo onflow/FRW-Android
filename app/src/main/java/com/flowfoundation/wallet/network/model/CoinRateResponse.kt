@@ -59,7 +59,6 @@ data class CoinRate(
 ) {
     fun updateTime() = lastUpdated.gmtToTs()
 
-    fun usdRate() = quote["USD"]
 }
 
 data class CoinRateQuote(

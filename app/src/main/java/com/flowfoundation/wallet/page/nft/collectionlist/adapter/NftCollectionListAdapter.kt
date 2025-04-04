@@ -31,6 +31,5 @@ class NftCollectionListAdapter : BaseAdapter<Any>(nftCollectionListDiffCallback)
 
     companion object {
         private const val TYPE_TOKEN = 1
-        private const val TYPE_LETTER = 2
     }
 }

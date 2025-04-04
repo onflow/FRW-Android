@@ -82,7 +82,7 @@ internal class SwapViewModel : ViewModel() {
 
     fun load() {
         viewModelIOScope(this) {
-            address = WalletManager.selectedWalletAddress()!!
+            address = WalletManager.selectedWalletAddress()
             val response = executeHttpFunction(FUNCTION_MOON_PAY_SIGN, """{"url":"${buildMoonPayUrl()}"}""")
             logd(TAG, "moon pay response:$response")
             moonPayUrl = Gson().fromJson(response, MoonPaySignResponse::class.java).data?.url

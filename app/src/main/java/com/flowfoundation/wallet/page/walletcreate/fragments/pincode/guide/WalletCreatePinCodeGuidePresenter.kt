@@ -16,7 +16,7 @@ import com.flowfoundation.wallet.utils.toast
 
 class WalletCreatePinCodeGuidePresenter(
     private val fragment: Fragment,
-    private val binding: FragmentWalletCreatePinGuideBinding,
+    binding: FragmentWalletCreatePinGuideBinding,
 ) {
     private val pageViewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletCreateViewModel::class.java] }
 

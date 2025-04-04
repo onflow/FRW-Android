@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.wallpaper.model.Wallpaper
 import com.flowfoundation.wallet.page.profile.subpage.theme.presenter.WallpaperImagePresenter
 import com.flowfoundation.wallet.page.profile.subpage.theme.presenter.WallpaperTitlePresenter
 
-
 class WallpaperAdapter: BaseAdapter<Any>() {
 
     override fun getItemViewType(position: Int): Int {

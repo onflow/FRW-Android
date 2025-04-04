@@ -4,8 +4,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityDevicesBinding
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.adapter.DevicesAdapter
-import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceModel
-
 
 class DevicesPresenter(
     binding: ActivityDevicesBinding,

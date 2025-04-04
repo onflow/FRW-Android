@@ -16,7 +16,6 @@ class WalletCreateWarningPresenter(
 ) : BasePresenter<WalletCreateWarningModel> {
 
     private val pageViewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletCreateViewModel::class.java] }
-    private val viewModel by lazy { ViewModelProvider(fragment)[WalletCreateWarningViewModel::class.java] }
 
     private var isRequesting = false
 

@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
 
-
 suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
     val binding = swapPageBinding() ?: return ""
     val viewModel = binding.viewModel()
