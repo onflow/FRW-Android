@@ -255,6 +255,7 @@ dependencies {
     
     /** Instabug **/
     implementation 'com.instabug.library:instabug-with-okhttp-interceptor:11.5.4'
+    implementation 'com.instabug.library:instabug-logger:11.5.4'
     /** firebase **/
 
     implementation "dev.chrisbanes:insetter-ktx:0.3.1"
