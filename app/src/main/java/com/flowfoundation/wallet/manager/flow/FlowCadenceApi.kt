@@ -9,6 +9,8 @@ import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.Account
 import org.onflow.flow.AddressRegistry
 import org.onflow.flow.models.BlockHeader
+import org.onflow.flow.models.Transaction
+import org.onflow.flow.models.TransactionResult
 
 object FlowCadenceApi {
 
@@ -62,5 +64,13 @@ object FlowCadenceApi {
 
     suspend fun getBlockHeader(id: String?, blockHeight: String? = null, sealed: Boolean = true): BlockHeader {
         return get().getBlockHeader(id, blockHeight, sealed)
+    }
+
+    suspend fun getTransactionResultById(transactionId: String): TransactionResult {
+        return get().getTransactionResult(transactionId)
+    }
+
+    suspend fun sendTransaction(transaction: Transaction): Transaction {
+        return get().sendTransaction(transaction)
     }
 }

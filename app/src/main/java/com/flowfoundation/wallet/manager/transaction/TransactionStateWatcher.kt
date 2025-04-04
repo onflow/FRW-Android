@@ -2,9 +2,7 @@ package com.flowfoundation.wallet.manager.transaction
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.hexToBytes
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.utils.logd
@@ -27,11 +25,11 @@ class TransactionStateWatcher(
         while (true) {
             safeRun {
                 val result = checkNotNull(
-                    FlowApi.get().getTransactionResultById(FlowId.of(transactionId.hexToBytes())) //to-do: switch apis
+                    FlowCadenceApi.getTransactionResultById(transactionId)
                 ) { "Transaction with that id not found" }
-                logd(TAG, "statusCode:${result.status.num}")
-                if (result.status.num != statusCode) {
-                    statusCode = result.status.num
+                logd(TAG, "statusCode:${result.status.ordinal}")
+                if (result.status.ordinal != statusCode) {
+                    statusCode = result.status.ordinal
                     callback.invoke(result)
                 }
                 ret = result

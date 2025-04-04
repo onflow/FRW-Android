@@ -9,7 +9,6 @@ import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
 import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -55,7 +54,7 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex() // to-do
+        val txID = FlowCadenceApi.sendTransaction(tx).id ?: throw Exception("TX ID not found")
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
         MixpanelManager.cadenceTransactionSigned(
@@ -112,10 +111,10 @@ suspend fun sendTransactionWithMultiSignature(
 
 
     logd(TAG, "sendTransaction to flow chain")
-    val txID = FlowApi.get().sendTransaction(tx) // to-do
-    logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
+    val txID = FlowCadenceApi.sendTransaction(tx).id ?: throw Exception("TX ID not found")
+    logd(TAG, "transaction id:$${txID}")
     vibrateTransaction()
-    return txID.bytes.bytesToHex()
+    return txID
 }
 
 private fun Transaction.addLocalSignatures(): Transaction {
@@ -166,7 +165,7 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
             keyId = currentKey.index.toInt(),
             sequenceNum = currentKey.sequenceNumber.toInt(),
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowCadenceApi.getBlockHeader(null).id,
     )
 }
 
@@ -188,7 +187,7 @@ private suspend fun prepareWithMultiSignature(
             keyId = restoreProposalKey.index.toInt(),
             sequenceNum = restoreProposalKey.sequenceNumber.toInt(),
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowCadenceApi.getBlockHeader(null).id,
     )
 }
 
@@ -196,7 +195,7 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
     val payerAccount = FlowCadenceApi.getAccount(payer)
     val voucher = Voucher(
         cadence = script,
-        refBlock = referenceBlockId.base16Value,
+        refBlock = referenceBlockId,
         computeLimit = gasLimit.toInt(),
         arguments = arguments.map { it.toAsArgument() },
         proposalKey = ProposalKey(
@@ -210,7 +209,7 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
             Singature(
                 address = it.address,
                 keyId = it.keyIndex,
-                sig = it.signature.base16Value, // check signature return format
+                sig = it.signature // check signature return format
             )
         },
         envelopeSigs = listOf(

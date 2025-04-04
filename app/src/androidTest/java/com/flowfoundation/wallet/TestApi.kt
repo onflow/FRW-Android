@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet
 
-import android.util.Base64
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nftco.flow.sdk.bytesToHex
