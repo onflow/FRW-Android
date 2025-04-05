@@ -204,7 +204,7 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
         computeLimit = gasLimit.intValue(),
         arguments = arguments.map {
             AsArgument(
-                type = it.type, //to-do
+                type = it.getTypeName(),
                 value = it.value ?: ""
             )
         },
@@ -248,12 +248,7 @@ fun Voucher.toFlowMultiTransaction(): Transaction {
         script = if (!this.cadence.isNullOrEmpty())
             Base64.getEncoder().encodeToString(this.cadence.toByteArray())
         else "",
-        arguments = this.arguments.map {
-            AsArgument(
-                type = it.type, //to-do
-                value = it.value ?: ""
-            )
-        },
+        arguments = this.arguments?.map { it.toCadenceValue() } ?: emptyList(),
         referenceBlockId = this.refBlock.orEmpty(),
         // Convert the compute limit to a BigInteger, defaulting to 9999.
         gasLimit = this.computeLimit?.let { BigInteger.fromLong(it.toLong()) }
@@ -264,7 +259,7 @@ fun Voucher.toFlowMultiTransaction(): Transaction {
         proposalKey = org.onflow.flow.models.ProposalKey(
             address = this.proposalKey?.address.orEmpty(),
             keyIndex = this.proposalKey?.keyId ?: 0,
-            sequenceNumber = this.proposalKey?.sequenceNum ?: 0
+            sequenceNumber = BigInteger.fromInt(this.proposalKey.sequenceNum ?: 0)
         ),
         // Use the provided authorizers, or default to the proposal key address if none are provided.
         authorizers = if (this.authorizers.isNullOrEmpty()) {
@@ -283,14 +278,8 @@ fun Voucher.toFlowTransaction(): Transaction {
         // The script is expected to be Base64 encoded.
         script = if (!this.cadence.isNullOrEmpty())
             Base64.getEncoder().encodeToString(this.cadence.toByteArray())
-        else ""
-        ,
-        arguments = arguments.map {
-            AsArgument(
-                type = it.type, //to-do
-                value = it.value ?: ""
-            )
-        },
+        else "",
+        arguments = this.arguments?.map { it.toCadenceValue() } ?: emptyList(),
         referenceBlockId = this.refBlock.orEmpty(),
         gasLimit = this.computeLimit?.let { BigInteger.fromLong(it.toLong()) }
             ?: BigInteger.fromInt(9999),
