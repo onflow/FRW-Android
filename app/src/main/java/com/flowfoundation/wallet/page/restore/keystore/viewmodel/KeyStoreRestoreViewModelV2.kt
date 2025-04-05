@@ -33,8 +33,6 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import org.onflow.flow.models.Account as FlowAccount
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.FlowAddress

@@ -2,7 +2,6 @@ package com.flowfoundation.wallet
 
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.nftco.flow.sdk.bytesToHex
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey

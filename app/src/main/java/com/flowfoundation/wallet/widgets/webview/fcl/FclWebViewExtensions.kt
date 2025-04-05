@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
 import android.webkit.WebView
-import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager

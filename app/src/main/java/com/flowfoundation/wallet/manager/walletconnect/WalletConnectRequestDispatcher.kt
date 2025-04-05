@@ -42,7 +42,6 @@ import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
-import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
@@ -60,7 +59,6 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.hexToBytes
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay

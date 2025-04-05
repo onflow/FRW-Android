@@ -3,8 +3,6 @@ package com.flowfoundation.wallet.page.profile.subpage.claimdomain
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.JsonObject
-import com.nftco.flow.sdk.cadence.TYPE_STRING
-import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi

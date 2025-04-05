@@ -22,9 +22,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.cadence.toJsonElement
-import com.nftco.flow.sdk.decodeToAny
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int

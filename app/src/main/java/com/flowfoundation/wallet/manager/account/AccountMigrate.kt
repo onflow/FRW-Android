@@ -4,7 +4,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.cache.userInfoCache
 import com.flowfoundation.wallet.cache.walletCache
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn

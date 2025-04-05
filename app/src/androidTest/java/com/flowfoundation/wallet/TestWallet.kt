@@ -3,8 +3,6 @@ package com.flowfoundation.wallet
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
 import com.nftco.flow.sdk.simpleFlowScript
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals

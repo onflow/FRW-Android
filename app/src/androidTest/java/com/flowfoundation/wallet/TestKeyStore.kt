@@ -1,8 +1,5 @@
 package com.flowfoundation.wallet
 
-import android.util.Log
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
 import org.junit.Assert.*
 import org.junit.Test
 import wallet.core.jni.CoinType

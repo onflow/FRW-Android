@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.wallet
 
-import com.nftco.flow.sdk.bytesToHex
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope

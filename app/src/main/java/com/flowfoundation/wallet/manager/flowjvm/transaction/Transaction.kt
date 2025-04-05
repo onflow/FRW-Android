@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.bytesToHex
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi

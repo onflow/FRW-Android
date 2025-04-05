@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.widgets.webview.fcl
 
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
