@@ -26,7 +26,6 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
-import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
 import org.onflow.flow.models.TransactionResult
@@ -130,7 +129,7 @@ object TransactionStateManager {
                 delay(3000)
                 popBubbleStack(state)
                 if (state.isFailed()) {
-                    when (parseErrorCode(state.errorMsg.orEmpty())) {
+                    when (parseErrorCode(state.errorMsg.orEmpty())) { // moved error codes to flow-kmm
                         ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                             BaseActivity.getCurrentActivity()?.let {
                                 StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()
