@@ -3,14 +3,10 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.onflow.flow.models.DomainTag
-import com.nftco.flow.sdk.FlowId
 import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
-import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
@@ -20,7 +16,6 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import com.ionspin.kotlin.bignum.integer.BigInteger
-import com.nftco.flow.sdk.FlowSignature
 import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.onflow.flow.infrastructure.Cadence
@@ -140,7 +135,7 @@ private suspend fun Transaction.addFreeGasEnvelope(): Transaction {
 
     val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
 
-    val signature = TransactionSignature(sign.address, sign.keyId, sign.sig) // to-do utilize this class in new addEnvelopeSignature method
+    val signature = TransactionSignature(sign.address, sign.keyId, sign.sig)
 
     return addEnvelopeSignature(
         signature = signature
@@ -156,7 +151,12 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
         ?: throw RuntimeException("get account key error")
 
     return Voucher(
-        arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },
+        arguments = builder.arguments.map {
+            AsArgument(
+                type = it.type,
+                value = it.value ?: ""
+            )
+        },
         cadence = builder.script,
         computeLimit = builder.limit ?: 9999,
         payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress),
@@ -177,7 +177,12 @@ private suspend fun prepareWithMultiSignature(
     logd(TAG, "prepare builder:$builder")
 
     return Voucher(
-        arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },
+        arguments = builder.arguments.map {
+            AsArgument(
+                type = it.type,
+                value = it.value ?: ""
+            )
+        },
         cadence = builder.script,
         computeLimit = builder.limit ?: 9999,
         payer = builder.payer
@@ -197,7 +202,12 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
         cadence = script,
         refBlock = referenceBlockId,
         computeLimit = gasLimit.intValue(),
-        arguments = arguments.map { it.toAsArgument() },
+        arguments = arguments.map {
+            AsArgument(
+                type = it.type, //to-do
+                value = it.value ?: ""
+            )
+        },
         proposalKey = ProposalKey(
             address = proposalKey.address,
             keyId = proposalKey.keyIndex,
@@ -206,14 +216,14 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
         payer = payer,
         authorizers = authorizers.map { it },
         payloadSigs = payloadSignatures.map {
-            Singature(
+            Signature(
                 address = it.address,
                 keyId = it.keyIndex,
                 sig = it.signature // check signature return format
             )
         },
         envelopeSigs = listOf(
-            Singature(
+            Signature(
                 address = AppConfig.payer().address.toAddress(),
                 keyId = payerAccount.keys?.first()?.index?.toInt(),
             )
@@ -238,9 +248,11 @@ fun Voucher.toFlowMultiTransaction(): Transaction {
         script = if (!this.cadence.isNullOrEmpty())
             Base64.getEncoder().encodeToString(this.cadence.toByteArray())
         else "",
-        // Convert voucher arguments (assumed to be convertible to bytes) into Cadence values.
-        arguments = this.arguments.orEmpty().map { arg ->
-            Cadence.Value(arg.toBytes())
+        arguments = this.arguments.map {
+            AsArgument(
+                type = it.type, //to-do
+                value = it.value ?: ""
+            )
         },
         referenceBlockId = this.refBlock.orEmpty(),
         // Convert the compute limit to a BigInteger, defaulting to 9999.
@@ -273,7 +285,12 @@ fun Voucher.toFlowTransaction(): Transaction {
             Base64.getEncoder().encodeToString(this.cadence.toByteArray())
         else ""
         ,
-        arguments = this.arguments,
+        arguments = arguments.map {
+            AsArgument(
+                type = it.type, //to-do
+                value = it.value ?: ""
+            )
+        },
         referenceBlockId = this.refBlock.orEmpty(),
         gasLimit = this.computeLimit?.let { BigInteger.fromLong(it.toLong()) }
             ?: BigInteger.fromInt(9999),
@@ -281,7 +298,7 @@ fun Voucher.toFlowTransaction(): Transaction {
         proposalKey = org.onflow.flow.models.ProposalKey(
             address = this.proposalKey.address.orEmpty(),
             keyIndex = this.proposalKey.keyId ?: 0,
-            sequenceNumber = BigInteger.fromInt(this.proposalKey.sequenceNum)
+            sequenceNumber = this.proposalKey.sequenceNum?.let { BigInteger.fromInt(it) } ?: throw Exception("No sequence number")
         ),
         authorizers = if (this.authorizers.isNullOrEmpty())
             listOf(this.proposalKey?.address.orEmpty())

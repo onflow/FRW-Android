@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.ProposalKey
-import com.flowfoundation.wallet.manager.flowjvm.transaction.Singature
+import com.flowfoundation.wallet.manager.flowjvm.transaction.Signature
 import com.flowfoundation.wallet.manager.flowjvm.transaction.Voucher
 import com.flowfoundation.wallet.manager.flowjvm.transaction.encodeTransactionPayload
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
@@ -113,7 +113,7 @@ class ClaimDomainViewModel : ViewModel() { // is this still needed as we do not 
             payer = payerAddress.base16Value.toAddress(),
             authorizers = authorizers.map { it.base16Value.toAddress() },
             payloadSigs = payloadSignatures.map {
-                Singature(
+                Signature(
                     address = it.address.base16Value.toAddress(),
                     keyId = it.keyIndex,
                     sig = it.signature.base16Value,

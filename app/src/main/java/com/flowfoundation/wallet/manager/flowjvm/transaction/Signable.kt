@@ -38,9 +38,9 @@ data class Voucher(
     @SerializedName("payer")
     val payer: String?,
     @SerializedName("payloadSigs")
-    var payloadSigs: List<Singature>? = null,
+    var payloadSigs: List<Signature>? = null,
     @SerializedName("envelopeSigs")
-    val envelopeSigs: List<Singature>? = null,
+    val envelopeSigs: List<Signature>? = null,
     @SerializedName("proposalKey")
     val proposalKey: ProposalKey,
     @SerializedName("refBlock")
@@ -48,7 +48,7 @@ data class Voucher(
 )
 
 @Parcelize
-data class Singature(
+data class Signature(
     @SerializedName("address")
     val address: String,
     @SerializedName("keyId")
