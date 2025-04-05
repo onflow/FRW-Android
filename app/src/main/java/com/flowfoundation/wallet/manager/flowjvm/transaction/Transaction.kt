@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.AccountPublicKey
 import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.Transaction
@@ -250,20 +249,17 @@ fun Voucher.toFlowMultiTransaction(): Transaction {
         else "",
         arguments = this.arguments?.map { it.toCadenceValue() } ?: emptyList(),
         referenceBlockId = this.refBlock.orEmpty(),
-        // Convert the compute limit to a BigInteger, defaulting to 9999.
         gasLimit = this.computeLimit?.let { BigInteger.fromLong(it.toLong()) }
             ?: BigInteger.fromInt(9999),
-        // Use the voucher's payer address.
         payer = this.payer.orEmpty(),
-        // Build the proposal key from the voucher.
         proposalKey = org.onflow.flow.models.ProposalKey(
-            address = this.proposalKey?.address.orEmpty(),
-            keyIndex = this.proposalKey?.keyId ?: 0,
+            address = this.proposalKey.address.orEmpty(),
+            keyIndex = this.proposalKey.keyId ?: 0,
             sequenceNumber = BigInteger.fromInt(this.proposalKey.sequenceNum ?: 0)
         ),
         // Use the provided authorizers, or default to the proposal key address if none are provided.
         authorizers = if (this.authorizers.isNullOrEmpty()) {
-            listOf(this.proposalKey?.address.orEmpty())
+            listOf(this.proposalKey.address.orEmpty())
         } else {
             this.authorizers
         },
