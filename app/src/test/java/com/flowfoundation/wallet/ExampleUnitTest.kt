@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet
 
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.simpleFlowScript
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -17,25 +17,18 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun testScript() {
+    fun testScript() = runBlocking {
         println("===========> method: testScript()")
-        val accessApi = Flow.newAccessApi(HOST_TESTNET, 9000)
-        println("===========> start ping")
-        accessApi.ping()
-        println("===========> end ping")
-        val response = accessApi.simpleFlowScript {
+        val response = FlowCadenceApi.executeCadenceScript {
             script {
                 """
-                    pub fun main(): String {
-                        return "Hello World"
-                    }
-                """
+                pub fun main(): String {
+                    return "Hello World"
+                }
+            """
             }
         }
-        println("===========> response:${response}")
+        println("===========> response: $response")
     }
 
-    companion object{
-        const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
-    }
 }

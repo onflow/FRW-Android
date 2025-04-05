@@ -2,8 +2,7 @@ package com.flowfoundation.wallet
 
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.simpleFlowScript
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
@@ -142,13 +141,9 @@ class TestWallet {
     }
 
     @Test
-    fun testScript() {
+    suspend fun testScript() {
         println("===========> method: testScript()")
-        val accessApi = Flow.newAccessApi(HOST_TESTNET, 9000)
-        println("===========> start ping")
-        accessApi.ping()
-        println("===========> end ping")
-        val response = accessApi.simpleFlowScript {
+        val response = FlowCadenceApi.executeCadenceScript {
             script {
                 """
                     pub fun main(): String {
@@ -170,12 +165,6 @@ class TestWallet {
             "0cd37adf53dc353eeb07321c765d81aedd11f34a6393de31bb15e2c5a07793c96ac54369d71a7e769dced55fc941d2f723538e1b31bf587e7f435e911222068b01"
         const val P256_SHA3_256_SIGNATURE =
             "74bae2badfff9e8193292978b07acb703ffafee2b81b551ab6dffa1135a144fd68e352ec7057eca55f5deac2307b8919797d0a7417cc4da983c5608a861afe9500"
-
-        const val TEST_ADDRESS = "0xcfe03e16d57ad8ad"
-
-        const val HOST_MAINNET = "access.mainnet.nodes.onflow.org"
-        const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
-        const val HOST_CANARYNET = "access.canary.nodes.onflow.org"
 
         const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
     }
