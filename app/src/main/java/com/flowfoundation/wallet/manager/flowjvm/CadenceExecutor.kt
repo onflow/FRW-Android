@@ -16,7 +16,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.wallet.toAddress
-import com.nftco.flow.sdk.Flow
+import org.onflow.flow.AddressRegistry
 import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
@@ -27,8 +27,8 @@ const val EVM_GAS_LIMIT = 30000000
 suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn"): String? {
     logd(TAG, "cadenceQueryAddressByDomainFlowns(): domain=$domain, root=$root")
     val result = CadenceScript.CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS.executeCadence {
-        arg { Cadence.string(domain) }
-        arg { Cadence.string(root) }
+        arg { string(domain) }
+        arg { string(root) }
     }
     logd(
         TAG,
@@ -40,7 +40,7 @@ suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn
 suspend fun cadenceQueryAddressByDomainFind(domain: String): String? {
     logd(TAG, "cadenceQueryAddressByDomainFind()")
     val result = CadenceScript.CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND.executeCadence {
-        arg { Cadence.string(domain) }
+        arg { string(domain) }
     }
     logd(TAG, "cadenceQueryAddressByDomainFind response:${result?.encode()}")
     return result?.decode<String>()
@@ -502,7 +502,7 @@ suspend fun cadenceSendEVMV2Transaction(
 suspend fun cadenceGetNonce(address: String): BigDecimal? {
     logd(TAG, "cadenceGetNonce()")
     val result = CadenceScript.CADENCE_GET_NONCE.executeCadence {
-        arg { Cadence.string(address) }
+        arg { string(address) }
     }
     logd(TAG, "cadenceGetNonce response:${result?.encode()}")
     return result?.parseBigDecimal()
@@ -511,7 +511,7 @@ suspend fun cadenceGetNonce(address: String): BigDecimal? {
 suspend fun cadenceGetAssociatedFlowIdentifier(evmContractAddress: String): String? {
     logd(TAG, "cadenceGetAssociatedFlowIdentifier()")
     val result = CadenceScript.CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER.executeCadence {
-        arg { Cadence.string(evmContractAddress) }
+        arg { string(evmContractAddress) }
     }
     logd(TAG, "cadenceGetAssociatedFlowIdentifier response:${result?.encode()}")
     return result?.decode<String>()
@@ -748,9 +748,9 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
     logv(
         TAG,
         "executeScript:\n${
-            Flow.DEFAULT_ADDRESS_REGISTRY.processScript( //to-do : swap
+            AddressRegistry().processScript(
                 this,
-                chainId = Flow.DEFAULT_CHAIN_ID
+                chainId = AddressRegistry().defaultChainId
             )
         }"
     )

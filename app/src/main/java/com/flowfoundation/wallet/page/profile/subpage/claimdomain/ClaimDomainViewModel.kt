@@ -73,7 +73,7 @@ class ClaimDomainViewModel : ViewModel() { // is this still needed as we do not 
             jsonObject.addProperty("value", usernameLiveData.value!!)
             arguments = mutableListOf(Cadence.Value(jsonObject.toString().toByteArray()))
 
-            referenceBlockId = FlowCadenceApi.getBlockHeader().id // to-do: handle cast
+            referenceBlockId = FlowCadenceApi.getBlockHeader().id
 
             gasLimit = 9999
 
