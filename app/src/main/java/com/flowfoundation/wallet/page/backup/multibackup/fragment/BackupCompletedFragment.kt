@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.databinding.FragmentBackupCompletedBinding
 import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_CHECK_FINISH
@@ -30,6 +31,7 @@ import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupVi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
+import kotlinx.coroutines.launch
 import org.onflow.flow.models.FlowAddress
 import wallet.core.jni.HDWallet
 
@@ -98,7 +100,9 @@ class BackupCompletedFragment : Fragment() {
         )
         backupViewModel = ViewModelProvider(this.requireActivity())[MultiBackupViewModel::class.java].apply {
             locationInfoLiveData.observe(viewLifecycleOwner) { info ->
-                setCompletedItemList(info)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    setCompletedItemList(info)
+                }
             }
             getLocationInfo()
         }

@@ -42,7 +42,7 @@ fun reportException(event: String, ex: Throwable?, params: Map<String, String>? 
         params?.forEach { put(it.key, it.value) }
         when (ex) {
             is HttpException -> put("response", ex.response().toString())
-            is Error -> put("cause", ex.cause.toString()) //to-do: extend throwable in Error class
+            is Error -> put("cause", ex.cause.toString()) //implemented: extend throwable in Error class
         }
     })
 }

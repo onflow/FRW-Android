@@ -23,7 +23,7 @@ import com.flowfoundation.wallet.page.window.bubble.tools.updateBubbleStack
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
 import kotlinx.coroutines.delay
@@ -97,7 +97,7 @@ object TransactionStateManager {
                     break
                 }
 
-                safeRun {
+                safeRunSuspend {
                     for (state in stateQueue) {
                         ret = checkNotNull(
                             FlowCadenceApi.getTransactionResultById(state.transactionId)

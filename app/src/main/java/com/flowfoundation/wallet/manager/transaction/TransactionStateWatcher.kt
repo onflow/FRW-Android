@@ -6,9 +6,9 @@ import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
-import com.nftco.flow.sdk.parseErrorCode
+import org.onflow.flow.infrastructure.parseErrorCode
 import kotlinx.coroutines.delay
 import org.onflow.flow.models.TransactionResult
 import org.onflow.flow.models.TransactionStatus
@@ -23,7 +23,7 @@ class TransactionStateWatcher(
         var ret: TransactionResult? = null
         var statusCode = -1
         while (true) {
-            safeRun {
+            safeRunSuspend {
                 val result = checkNotNull(
                     FlowCadenceApi.getTransactionResultById(transactionId)
                 ) { "Transaction with that id not found" }

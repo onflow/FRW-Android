@@ -61,7 +61,10 @@ import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okio.ByteString.Companion.decodeBase64
 import org.onflow.flow.models.FlowAddress
 import org.web3j.crypto.StructuredDataEncoder
@@ -106,7 +109,7 @@ suspend fun WCRequest.evmSignTypedData() {
     val dataEncoder = StructuredDataEncoder(message)
     val hashData = dataEncoder.hashStructuredData()
     logd(TAG, "hashData::$hashData")
-    uiScope {
+    withContext(Dispatchers.Main) {
         val model = FclDialogModel(
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
@@ -118,7 +121,13 @@ suspend fun WCRequest.evmSignTypedData() {
             model
         )
         EVMSignTypedDataDialog.observe { isApprove ->
-            if (isApprove) approve(signTypedData(hashData)) else reject()
+            launch {
+                if (isApprove) {
+                    approve(signTypedData(hashData))
+                } else {
+                    reject()
+                }
+            }
         }
     }
 }
@@ -127,7 +136,7 @@ private suspend fun WCRequest.evmSendTransaction() {
     val activity = topActivity() ?: return
     val json = Gson().fromJson<List<EvmTransaction>>(params, object : TypeToken<List<EvmTransaction>>() {}.type)
     val transaction = json.firstOrNull() ?: return
-    uiScope {
+    withContext(Dispatchers.Main) {
         val model = EVMTransactionDialogModel(
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
@@ -141,15 +150,17 @@ private suspend fun WCRequest.evmSendTransaction() {
             model
         )
         EVMSendTransactionDialog.observe { isApprove ->
-            if (isApprove) {
-                sendEthereumTransaction(transaction) { txHash ->
-                    if (txHash.isEmpty()) {
-                        reject()
-                    } else {
-                        approve(txHash)
+            launch {
+                if (isApprove) {
+                    sendEthereumTransaction(transaction) { txHash ->
+                        if (txHash.isEmpty()) {
+                            reject()
+                        } else {
+                            approve(txHash)
+                        }
                     }
-                }
-            } else reject()
+                } else reject()
+            }
         }
     }
 }
@@ -180,7 +191,7 @@ private suspend fun WCRequest.evmSignMessage() {
     val json = Gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
     val hexMessage = json.firstOrNull() ?: return
     val message = String(hexMessage.hexToBytes(), Charsets.UTF_8)
-    uiScope {
+    withContext(Dispatchers.Main) {
         val model = FclDialogModel(
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
@@ -192,7 +203,9 @@ private suspend fun WCRequest.evmSignMessage() {
             model
         )
         EVMSignMessageDialog.observe { isApprove ->
-            if (isApprove) approve(signEthereumMessage(message)) else reject()
+            launch {
+                if (isApprove) approve(signEthereumMessage(message)) else reject()
+            }
         }
     }
 }
@@ -349,7 +362,7 @@ private suspend fun WCRequest.respondUserSign() {
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val param = gson().fromJson<List<SignableMessage>>(params, object : TypeToken<List<SignableMessage>>() {}.type)?.firstOrNull()
     val message = param?.message ?: return
-    uiScope {
+    withContext(Dispatchers.Main) {
         val data = FclDialogModel(
             title = metaData?.name,
             logo = metaData?.icons?.firstOrNull(),
@@ -360,7 +373,7 @@ private suspend fun WCRequest.respondUserSign() {
 
         if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             reject()
-            return@uiScope
+            return@withContext
         }
 
         FclSignMessageDialog.show(
@@ -369,8 +382,10 @@ private suspend fun WCRequest.respondUserSign() {
         )
 
         FclSignMessageDialog.observe { isApprove ->
-            if (isApprove) approve(fclSignMessageResponse(message, address)) else reject()
-            FclAuthzDialog.dismiss()
+            launch {
+                if (isApprove) approve(fclSignMessageResponse(message, address)) else reject()
+                FclAuthzDialog.dismiss()
+            }
         }
     }
 }

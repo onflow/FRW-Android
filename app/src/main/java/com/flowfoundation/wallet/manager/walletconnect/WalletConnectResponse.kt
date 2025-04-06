@@ -116,7 +116,7 @@ private suspend fun preAuthz(): String {
     """.trimIndent()
 }
 
-private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
+private suspend fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
     if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) return ""
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val accountProofSign = cryptoProvider.signData(encodeAccountProof(address, nonce, appIdentifier,

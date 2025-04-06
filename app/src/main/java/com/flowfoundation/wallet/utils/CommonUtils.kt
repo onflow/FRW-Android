@@ -19,6 +19,16 @@ fun safeRun(printLog: Boolean = true, block: () -> Unit) {
     }
 }
 
+suspend fun safeRunSuspend(printLog: Boolean = true, block: suspend () -> Unit) {
+    try {
+        block()
+    } catch (e: Throwable) {
+        if (printLog && BuildConfig.DEBUG) {
+            loge(e)
+        }
+    }
+}
+
 fun sendEmail(
     context: Context,
     email: String,
