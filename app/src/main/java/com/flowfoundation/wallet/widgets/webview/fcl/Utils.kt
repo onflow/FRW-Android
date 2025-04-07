@@ -9,7 +9,7 @@ import org.onflow.flow.models.DomainTag
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
 
-private val accountProofTag = DomainTag.normalize("FCL-ACCOUNT-PROOF-V0.0") // to-do: check this domain tag, does not exist in flow-kmm
+private val accountProofTag = DomainTag.AccountProof
 
 // encode flow jvm account proof
 fun FclAuthnResponse.encodeAccountProof(address: String, includeDomainTag: Boolean = true): ByteArray {

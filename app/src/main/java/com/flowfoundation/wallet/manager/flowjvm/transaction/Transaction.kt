@@ -236,10 +236,6 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable {
     )
 }
 
-fun Transaction.encodeTransactionPayload(): String {
-    return (DomainTag.Transaction.bytes + canonicalPayload).bytesToHex()
-}
-
 fun Voucher.toFlowMultiTransaction(): Transaction {
     return Transaction(
         // The script field should be Base64 encoded.
