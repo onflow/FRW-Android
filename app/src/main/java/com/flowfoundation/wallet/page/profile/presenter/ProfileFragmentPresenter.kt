@@ -108,7 +108,6 @@ class ProfileFragmentPresenter(
         }
 
         updatePreferenceState()
-//        updateClaimDomainState()
         observeMeowDomainClaimedStateChange(this)
     }
 
@@ -120,7 +119,7 @@ class ProfileFragmentPresenter(
     }
 
     override fun onDomainClaimedStateChange(isClaimed: Boolean) {
-//        updateClaimDomainState()
+        // No need to update claim domain state
     }
 
     private fun bindUserInfo(userInfo: UserInfoData) {

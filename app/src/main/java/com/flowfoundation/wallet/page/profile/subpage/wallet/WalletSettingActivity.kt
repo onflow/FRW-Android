@@ -87,12 +87,9 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
 
             resetButton.setOnClickListener { WalletResetConfirmDialog.show(supportFragmentManager) }
 
-            claimButton.setOnClickListener { ClaimDomainActivity.launch(this@WalletSettingActivity) }
-
             uiScope {
                 claimDomainWrapper.gone()
 //                todo hide domain entrance for rebranding
-//                claimDomainWrapper.setVisible(!isMeowDomainClaimed())
             }
 
 

@@ -10,7 +10,7 @@
     <string name="username">Username</string>
     <string name="username_too_short">Too short</string>
     <string name="username_too_long">Too long</string>
-    <string name="username_exist">It’s taken</string>
+    <string name="username_exist">It's taken</string>
     <string name="username_success">Sounds good</string>
     <string name="register_error">Register error</string>
     <string name="confirm">Confirm</string>
@@ -145,7 +145,7 @@
     <string name="add_address">Add address</string>
     <string name="checking">Checking</string>
     <string name="address_check_format_error">Invalid address</string>
-    <string name="address_check_chain_error">Can\'t find address in chain</string>
+    <string name="address_check_chain_error">Can't find address in chain</string>
     <string name="address_check_success">Validated address</string>
     <string name="address_search_empty_tip">No results. Please check your input and try again.</string>
     <string name="search_the_id">Search the ID: %1$s</string>
@@ -262,14 +262,6 @@
     <string name="explore_new_nfts">Explore new NFTs</string>
     <string name="network_error">Network error</string>
     <string name="claim">Claim</string>
-    <string name="claim_free_domain">Claim for your <font color="#32E355">FREE</font> Lilico domain!</string>
-    <string name="claim_free_domain_at_lilico">Claim <font color="#32E355">Free</font> Domain\nAt Lilico</string>
-    <string name="free_domain">Free Domain</string>
-    <string name="things_you_should_know">Things You Should Know</string>
-    <string name="claim_domain_desc_1">Free lilico domain help you find each other easier on chain.</string>
-    <string name="claim_domain_desc_2">An Inbox system will help you send tokens and NFT to your friend without enable vault.</string>
-    <string name="claim_domain_desc_3">Anonymous mode will be affected, others can find your address by your domain.</string>
-    <string name="claim_domain_failed">Claim domain failed</string>
     <string name="nft_count">%1$d NFTs</string>
     <string name="mnemonic_incorrect">Incorrect mnemonic</string>
     <string name="address_incorrect">Incorrect address</string>
@@ -311,7 +303,7 @@
     <string name="stake_flow">Stake Flow</string>
     <string name="stake_guide_header1">Earn Rewards When You</string>
     <string name="stake_guide_header2">Stake Your Flow</string>
-    <string name="lets_staking">Let\'s Staking</string>
+    <string name="lets_staking">Let's Staking</string>
     <string name="stake_guide_desc_1">Earn up to <font color="#60C293">
   <strong>13%</strong>
 </font>
@@ -412,7 +404,7 @@
     <string name="link_account_tips_1">Delegate account to your Flow Wallet</string>
     <string name="link_account_tips_2">Flow Wallet will manage linked account</string>
     <string name="root_detected">Root Detected</string>
-    <string name="root_detected_desc">Your keychain is exposing in threats.\nPlease make sure it’s your movement and improve the safety of your account.</string>
+    <string name="root_detected_desc">Your keychain is exposing in threats.\nPlease make sure it's your movement and improve the safety of your account.</string>
     <string name="things_you_need_to_know">Things you need to know</string>
     <string name="root_detect_warning1">Your keychain is exposing in threats.</string>
     <string name="root_detect_warning2">Your keychain will exposing in threats.</string>
@@ -445,7 +437,7 @@
     <string name="no_linked_account">No Linked Accounts</string>
     <string name="view_empty_collection">View Empty</string>
     <string name="inaccessible_tag">Inaccessible</string>
-    <string name="inaccessible_token_tip">Flow Wallet doesn’t have access to %1$s in %2$s Account, please check your linked account settings.</string>
+    <string name="inaccessible_token_tip">Flow Wallet doesn't have access to %1$s in %2$s Account, please check your linked account settings.</string>
     <string name="account_keys">Account Keys</string>
     <string name="key_revoke">Revoke</string>
     <string name="curve">Curve</string>
@@ -466,7 +458,7 @@
     <string name="or">Or</string>
     <string name="sync_page_title">Open your Flow Wallet on Mobile App \n and Scan the QR Code to Sync your Wallet.</string>
     <string name="sync_scan_qr_code">Scan QR Code with Mobile App</string>
-    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
+    <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet's server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">Find 1 Matching Wallet</string>
     <string name="wallet_confirmation">Wallet Confirmation</string>
     <string name="loading">Loading</string>
@@ -497,7 +489,7 @@
     <string name="restore_seed_derivation_path">Derivation Path</string>
     <string name="restore_seed_passphrase">Passphrase</string>
     <string name="restore_seed_phrase_hint">12 or 24 words split with whitespace</string>
-    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
+    <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44'/539'/0'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
     <string name="restore_private_key_hint">Enter your private key</string>
     <string name="key_store_json_hint">You can import the JSON file from other wallet (eg. Blockto)</string>
@@ -580,11 +572,11 @@
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import Profile</string>
     <string name="notification">Notification</string>
-    <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
+    <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet's back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
     <string name="landing_step_done">Create Backup</string>
-    <string name="exit_backup_warning_dialog_title">Are you sure you don\'t want to make a backup?</string>
+    <string name="exit_backup_warning_dialog_title">Are you sure you don't want to make a backup?</string>
     <string name="exit_backup_warning_dialog">If you lose your device or delete your wallet, your funds will be lost forever.</string>
     <string name="back">Back</string>
     <string name="token_count">%1$d Tokens</string>
@@ -652,14 +644,14 @@
     <string name="what_is_multi_backup">What is Multi-Backup?</string>
     <string name="backup_start_about_tip">Multi-backup is where Flow Wallet creates multiple partial-weight keys (500 weight) and stores them across your desired platforms, iCloud, Google Drive or Seed Phrase</string>
     <string name="secured_by_key_store">Secured by KeyStore</string>
-    <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
+    <string name="secured_note">Flow Wallet uses your device's KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
     <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
     <string name="keystore_select_account_tips">Choose an account you want to import</string>
     <string name="keystore_select_account_title">%1$d Accounts Found</string>
     <string name="keystore_no_account_title">No Account Found</string>
-    <string name="keystore_no_account_desc">Sorry, we can’t find your account \non Flow with this
+    <string name="keystore_no_account_desc">Sorry, we can't find your account \non Flow with this
         key. \n \nPlease check your input and try again.</string>
     <string name="raw_key_restore_google_drive_note">Import your legacy backup from Google Drive.</string>
     <string name="raw_key_restore_seed_phrase_note">Support 12 word seed phrase.</string>
@@ -697,8 +689,8 @@
     <string name="storage_limit_error">Storage Limit Error</string>
     <string name="storage_limit_warning">Storage Limit Warning</string>
     <string name="storage_limit_reached_desc">Your account is below the minimum FLOW balance required for its storage usage, which may cause subsequent transactions to fail.</string>
-    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it’s storage usage. </string>
-    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account’s storage usage.</string>
+    <string name="storage_limit_after_action_desc">This action may fail because it may reduce the amount of FLOW in your account below what is required to cover it's storage usage. </string>
+    <string name="storage_limit_error_desc">Your transaction failed because it caused your account to fall below the minimum balance of FLOW for your account's storage usage.</string>
     <string name="storage_limit_error_tips">You must have at least %1$s in your account to cover
         your storage usage.</string>
     <string name="deposit">Deposit</string>
@@ -711,7 +703,7 @@
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
     <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
-    <string name="get_started">Let\'s get started</string>
+    <string name="get_started">Let's get started</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Choose Swap Provider</string>
     <string name="welcome_desc">Welcome to Flow Wallet! Create an account to get started</string>
