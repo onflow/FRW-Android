@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit
 
 
 val API_HOST = if (isDev()) "https://dev.lilico.app" else "https://api.lilico.app"
+val BASE_HOST = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://lilico.app"
 
 fun retrofit(
     disableConverter: Boolean = false,
@@ -46,11 +47,10 @@ fun retrofit(
 }
 
 fun retrofitApi(): Retrofit {
-    return retrofitWithHost(if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://lilico.app", ignoreAuthorization = false)
+    return retrofitWithHost(BASE_HOST, ignoreAuthorization = false)
 }
 
 fun cadenceScriptApi(): Retrofit {
-    val host = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://lilico.app"
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(false))
         addInterceptor(InstabugAPMOkhttpInterceptor())
@@ -69,7 +69,7 @@ fun cadenceScriptApi(): Retrofit {
 
     val builder = Retrofit.Builder()
     builder.addConverterFactory(GsonConverterFactory.create())
-    return builder.baseUrl(host).client(client).build()
+    return builder.baseUrl(BASE_HOST).client(client).build()
 }
 
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
