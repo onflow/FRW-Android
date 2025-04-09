@@ -18,7 +18,7 @@ jobs:
         with:
           path: ./frw
       
-      - name: Checkout tools repo
+      - name: Checkout tools repo to latest stable release
         uses: actions/checkout@v4
         with:
           repository: Outblock/Flow-Wallet-Kit
