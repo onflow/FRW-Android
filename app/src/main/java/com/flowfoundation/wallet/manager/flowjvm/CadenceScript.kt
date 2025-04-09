@@ -80,11 +80,17 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_BRIDGE_FT_FROM_EVM("bridgeTokensFromEvmV2", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW("bridgeTokensFromEvmToFlowV3", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_TO_EVM("bridgeNFTToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_TO_EVM_WITH_PAYER("bridgeNFTToEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_FROM_EVM("bridgeNFTFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_EVM_WITH_PAYER("bridgeNFTFromEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_LIST_TO_EVM("batchBridgeNFTToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_LIST_TO_EVM_WITH_PAYER("batchBridgeNFTToEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_LIST_FROM_EVM("batchBridgeNFTFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_LIST_FROM_EVM_WITH_PAYER("batchBridgeNFTFromEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM("bridgeNFTToEvmAddressV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM_WITH_PAYER("bridgeNFTToEvmAddressWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW("bridgeNFTFromEvmToFlowV3", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW_WITH_PAYER("bridgeNFTFromEvmToFlowWithPayer", CadenceScriptType.BRIDGE),
 
     // EVM
     CADENCE_CREATE_COA_ACCOUNT("createCoaEmpty", CadenceScriptType.EVM),

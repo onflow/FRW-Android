@@ -18,6 +18,7 @@ import kotlin.coroutines.resume
 private const val TAG = "FirebaseFunctions"
 
 const val FUNCTION_SIGN_AS_PAYER = "signAsPayer"
+const val FUNCTION_SIGN_AS_BRIDGE_PAYER = "/api/signAsBridgeFeePayer"
 
 // https://us-central1-lilico-dev.cloudfunctions.net/moonPaySignature?url=https://buy-sandbox.moonpay.com?apiKey=pk_test_F0Y1SznEgbvGOWxFYJqStfjLeZ7XT&defaultCurrencyCode=FLOW&colorCode=%23FC814A&walletAddress=0x7d2b880d506db7cc
 const val FUNCTION_MOON_PAY_SIGN = "moonPaySignature"
@@ -28,13 +29,13 @@ private val HOST = if (isDev()) "https://us-central1-lilico-dev.cloudfunctions.n
 /**
  * execute firebase function
  */
-suspend fun executeHttpFunction(functionName: String, data: Any? = null): String? {
+suspend fun executeHttpFunction(functionName: String, data: Any? = null, host: String? = HOST): String? {
     logd(TAG, "executeFunction:$functionName")
-    return executeHttp(functionName, data)
+    return executeHttp(host ?: HOST, functionName, data)
 }
 
 
-private suspend fun executeHttp(functionName: String, data: Any? = null) = suspendCancellableCoroutine { continuation ->
+private suspend fun executeHttp(host: String, functionName: String, data: Any? = null) = suspendCancellableCoroutine { continuation ->
     val client = OkHttpClient.Builder().apply {
 
         callTimeout(10, TimeUnit.SECONDS)
@@ -51,7 +52,7 @@ private suspend fun executeHttp(functionName: String, data: Any? = null) = suspe
     }.build()
     val body = if (data == null) data else (if (data is String) data else GsonBuilder().serializeNulls().create().toJson(data))
 
-    val request = Request.Builder().url("$HOST$functionName")
+    val request = Request.Builder().url("$host$functionName")
         .post(body.orEmpty().toRequestBody("application/json; charset=utf-8".toMediaType()))
         .build()
     val response = client.newCall(request).execute()

@@ -12,6 +12,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveNftBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTFromChildToParent
@@ -30,6 +31,7 @@ import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -192,6 +194,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             } + " FLOW"
             tvMoveFeeTips.text =
                 (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
+            clMoveFee.setVisible(AppConfig.coverBridgeFee().not())
         }
     }
 
