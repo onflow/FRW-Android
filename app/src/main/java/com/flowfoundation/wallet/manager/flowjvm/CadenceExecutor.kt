@@ -3,9 +3,11 @@ package com.flowfoundation.wallet.manager.flowjvm
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.formatCadence
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flow.CadenceScriptBuilder
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import com.flowfoundation.wallet.manager.flowjvm.transaction.sendBridgeTransaction
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -492,9 +494,16 @@ suspend fun cadenceBridgeNFTToEvm(
     nftId: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTToEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_TO_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint64(nftId) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_TO_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTToEvm transactionId:$transactionId")
     return transactionId
@@ -505,9 +514,16 @@ suspend fun cadenceBridgeNFTListToEvm(
     nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceBridgeNFTListToEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_LIST_TO_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { array(nftIdList.map { uint64(it) }) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint64(it) }) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_TO_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint64(it) }) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTListToEvm transactionId:$transactionId")
     return transactionId
@@ -518,9 +534,16 @@ suspend fun cadenceBridgeNFTListFromEvm(
     nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceBridgeNFTListFromEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_LIST_FROM_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { array(nftIdList.map { uint256(it) }) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_FROM_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint256(it) }) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_FROM_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint256(it) }) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTListFromEvm transactionId:$transactionId")
     return transactionId
@@ -531,9 +554,16 @@ suspend fun cadenceBridgeNFTFromEvm(
     nftId: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTFromEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint256(nftId) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTFromEvm transactionId:$transactionId")
     return transactionId
@@ -634,10 +664,18 @@ suspend fun cadenceBridgeNFTFromFlowToEVM(
     nftId: String, recipient: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTFromFlowToEVM")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint64(nftId) }
-        arg { string(recipient) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+            arg { address(recipient) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+            arg { string(recipient) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTFromFlowToEVM transactionId:$transactionId")
     return transactionId
@@ -648,10 +686,18 @@ suspend fun cadenceBridgeNFTFromEVMToFlow(
     nftId: String, recipient: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTFromEVMToFlow")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint256(nftId) }
-        arg { address(recipient) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+            arg { address(recipient) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+            arg { address(recipient) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTFromEVMToFlow transactionId:$transactionId")
     return transactionId
@@ -755,6 +801,23 @@ suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.()
             args.build().forEach { arg(it) }
             walletAddress(walletAddress)
             script(this@transactionByMainWallet.addPlatformInfo())
+        }
+    } catch (e: Exception) {
+        loge(e)
+        null
+    }
+}
+
+suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+    val walletAddress = WalletManager.wallet()?.walletAddress()?: return null
+    logd(TAG, "transactionBridge() walletAddress:$walletAddress")
+    val args = CadenceArgumentsBuilder().apply { arguments(this) }
+    return try {
+        sendBridgeTransaction {
+            args.build().forEach { arg(it) }
+            walletAddress(walletAddress)
+            script(this@transactionWithBridgePayer.getScript().addPlatformInfo())
+            payer(AppConfig.bridgeFeePayer().address)
         }
     } catch (e: Exception) {
         loge(e)
