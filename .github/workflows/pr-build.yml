@@ -13,11 +13,12 @@ jobs:
         with:
           path: ./frw
 
-      - name: Checkout tools repo
+      - name: Checkout tools repo to latest stable release
         uses: actions/checkout@v4
         with:
           repository: Outblock/Flow-Wallet-Kit
           path: ./Flow-Wallet-Kit
+          ref: 0c00c994c93f18d9558ba7a953177a3f4a6f5d76
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
