@@ -2,13 +2,14 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("kotlin-parcelize")
-    id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
+    id "org.jetbrains.kotlin.plugin.serialization" version "2.1.20"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id("instabug-apm")
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
     id 'jacoco'
+    id 'com.github.triplet.play' version '3.12.1'
 //    id 'com.google.ar.sceneform.plugin'
 }
 
@@ -150,7 +151,6 @@ android {
         }
     }
 
-
     namespace 'com.flowfoundation.wallet'
     lintOptions {
         checkAllWarnings true
@@ -159,6 +159,9 @@ android {
     }
 }
 
+play {
+    serviceAccountCredentials.set(file("service-account.json"))
+}
 //configurations.configureEach {
 //    resolutionStrategy.eachDependency {
 //        if (requested.group == "org.bouncycastle" && requested.name == "bcprov-jdk15on") {
