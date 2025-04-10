@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.widgets.webview.evm.dialog
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogEvmSignTypedDataBinding
+import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.manager.evm.COALinkCheckManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
@@ -19,9 +21,12 @@ import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.shortenEVMString
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMTypedMessage
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -160,6 +165,16 @@ class EVMSignTypedDataDialog : BottomSheetDialogFragment() {
                         }
                     }
                 }
+            }
+            uiScope {
+                if (data.url.isNullOrEmpty()) {
+                    return@uiScope
+                }
+                val isBlockedUrl = BlockManager.isBlocked(data.url)
+                flBlockedTip.setVisible(isBlockedUrl)
+                actionButton.setCardBackgroundColor(
+                    if (isBlockedUrl) R.color.info_error_red.res2color() else R.color.button_color.res2color()
+                )
             }
         }
     }

@@ -8,9 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogFclAuthnBinding
+import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -42,6 +45,20 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
             approveButton.setOnClickListener {
                 result?.resume(true)
                 dismiss()
+            }
+
+            uiScope {
+                if (data.url.isNullOrEmpty()) {
+                    return@uiScope
+                }
+                val isBlockedUrl = BlockManager.isBlocked(data.url)
+                flBlockedTip.setVisible(isBlockedUrl)
+                approveButton.setVisible(isBlockedUrl.not())
+                flBlockedConnect.setVisible(isBlockedUrl)
+                flBlockedConnect.setOnClickListener {
+                    result?.resume(true)
+                    dismiss()
+                }
             }
         }
     }

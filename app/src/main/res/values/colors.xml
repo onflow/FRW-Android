@@ -199,6 +199,8 @@
     <color name="info_success_green_16">#290AC26C</color>
     <color name="info_notification_blue">#0F71F2</color>
     <color name="info_error_red">#E93C3C</color>
+    <color name="info_error_red_10">#1AE93C3C</color>
+    <color name="info_error_red_12">#1CE93C3C</color>
     <color name="info_warning_orange">#F9AD29</color>
     <color name="info_warning_orange_16">#29F9AD29</color>
     <color name="border_line_stroke_token_pricing">#2A2A2A</color>
@@ -208,4 +210,5 @@
     <color name="disable_button_text">#40000000</color>
     <color name="button_warning">#F29E0D</color>
     <color name="button_bg_secondary">#1E1E1F</color>
+    <color name="bg_navi">#F0F0F0</color>
 </resources>

@@ -184,6 +184,8 @@
     <string name="add_token">Token hinzufügen</string>
     <string name="add_token_failed">Token hinzufügen fehlgeschlagen</string>
     <string name="search_token">Token suchen</string>
+    <string name="search_tokens">Suche Tokens</string>
+    <string name="token_list">Token List</string>
     <string name="confirmation">Konfirmation</string>
     <string name="app_initializing">Initialisierung</string>
     <string name="developer_mode">Entwickler-Modus</string>
@@ -700,8 +702,6 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Swap-Anbieter auswählen</string>
     <string name="welcome_desc">Willkommen bei Flow Wallet! Erstellen Sie ein Konto um loszulegen</string>
-    <string name="search_tokens">Token suchen</string>
-    <string name="token_list">Token-Listen</string>
     <string name="scan">Scannen</string>
     <string name="results">Ergebnisse</string>
     <string name="search_nft_name">Suche nach NFT</string>
@@ -715,4 +715,9 @@
     <string name="function">Funktion</string>
     <string name="parameters">Parameter</string>
     <string name="call_data">Anrufdaten</string>
+    <string name="blocked_info">"<![CDATA[Diese Website ist als Teil einer von der Community gepflegten Liste bösartiger Websites blockiert. Wenn Sie glauben, dass die Website irrtümlich blockiert wurde, <u>reichen Sie bitte ein Problem ein.</u>]]>"</string>
+    <string name="blocked_url">%1$s ist gesperrt!</string>
+    <string name="ignore_warning">Warnung ignorieren, trotzdem anzeigen</string>
+    <string name="connect_warning">Warnung ignorieren, trotzdem verbinden</string>
+    <string name="blocked_tip">Diese dApp wurde als bösartig markiert.</string>
 </resources>

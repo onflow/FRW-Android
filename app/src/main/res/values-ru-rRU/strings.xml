@@ -184,6 +184,8 @@
     <string name="add_token">Добавить токен</string>
     <string name="add_token_failed">Добавить маркер не удалось</string>
     <string name="search_token">Токен поиска</string>
+    <string name="search_tokens">Поиск токенов</string>
+    <string name="token_list">Список Токенов</string>
     <string name="confirmation">Подтверждение</string>
     <string name="app_initializing">Инициализация</string>
     <string name="developer_mode">Режим разработчика</string>
@@ -697,9 +699,7 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Выберите поставщика обмена</string>
     <string name="welcome_desc">Добро пожаловать в Flow Wallet! Создайте аккаунт, чтобы начать</string>
-    <string name="scan">Сканировать</string>
-    <string name="search_tokens">Поиск токенов</string>
-    <string name="token_list">Список Токенов</string>
+    <string name="scan">Сканирование</string>
     <string name="results">Результаты</string>
     <string name="search_nft_name">Поиск NFT</string>
     <string name="loading_nfts">Загрузка NFT...</string>
@@ -712,4 +712,9 @@
     <string name="function">Функция</string>
     <string name="parameters">Параметры</string>
     <string name="call_data">Данные звонка</string>
+    <string name="blocked_info">"<![CDATA[Этот веб-сайт заблокирован как часть поддерживаемого сообществом списка вредоносных веб-сайтов. Если вы считаете, что веб-сайт был заблокирован по ошибке, <u>пожалуйста, сообщите о проблеме.</u>]]>"</string>
+    <string name="blocked_url">%1$s заблокирован!</string>
+    <string name="ignore_warning">Игнорировать предупреждение, все равно показывать</string>
+    <string name="connect_warning">Игнорировать предупреждение, все равно подключаться</string>
+    <string name="blocked_tip">Этот dApp отмечен как злонамеренный.</string>
 </resources>

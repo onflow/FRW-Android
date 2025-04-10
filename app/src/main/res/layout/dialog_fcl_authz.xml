@@ -81,6 +81,17 @@
                 tools:visibility="visible"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <FrameLayout
+            android:id="@+id/fl_blocked_tip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:visibility="gone">
+
+            <include layout="@layout/layout_blocked_tip"/>
+
+        </FrameLayout>
+
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/auditors_wrapper"
             android:layout_width="match_parent"

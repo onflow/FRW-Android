@@ -184,6 +184,8 @@
     <string name="add_token">Añadir ficha</string>
     <string name="add_token_failed">Error al añadir token</string>
     <string name="search_token">Fichero de búsqueda</string>
+    <string name="search_tokens">Buscar fichas</string>
+    <string name="token_list">Lista de tokens</string>
     <string name="confirmation">Confirmación</string>
     <string name="app_initializing">Inicialización de</string>
     <string name="developer_mode">Modo Desarrollador</string>
@@ -238,7 +240,7 @@
     <string name="free_gas_fee_desc">Permitir que Flow Wallet pague la tasa de gas para todas mis transacciones
             .</string>
     <string name="file_picker_title">Seleccionar archivo</string>
-    <string name="transaction_fee">Tasa de transacción</string>
+    <string name="transaction_fee">Gastos de Transacción</string>
     <string name="hold_to_confirm">Mantener pulsado para confirmar</string>
     <string name="hold_to_sign">Mantén para firmar</string>
     <string name="enable">Activar</string>
@@ -700,8 +702,6 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Elegir proveedor de intercambio</string>
     <string name="welcome_desc">¡Bienvenido a Flow Wallet! Crea una cuenta para empezar</string>
-    <string name="search_tokens">Buscar tokens</string>
-    <string name="token_list">Lista de tokens</string>
     <string name="scan">Escanear</string>
     <string name="results">Resultados</string>
     <string name="search_nft_name">Buscar NFT</string>
@@ -715,4 +715,9 @@
     <string name="function">Función</string>
     <string name="parameters">Parámetros</string>
     <string name="call_data">Datos de llamada</string>
+    <string name="blocked_info">"<![CDATA[Este sitio web está bloqueado como parte de una lista de sitios web maliciosos mantenida por la comunidad. Si cree que el sitio web ha sido bloqueado por error, <u>por favor reporte el problema.</u>]]>"</string>
+    <string name="blocked_url">%1$s está bloqueado!</string>
+    <string name="ignore_warning">Ignorar advertencia, mostrar de todos modos</string>
+    <string name="connect_warning">Ignorar advertencia, conectar de todos modos</string>
+    <string name="blocked_tip">Esta dApp está marcada como maliciosa.</string>
 </resources>
