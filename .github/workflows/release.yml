@@ -5,12 +5,13 @@ on:
     branches:
       - master
       - develop
+      - nialexsan/prod-android
 
 jobs:
   dev:
     runs-on: ubuntu-latest
     environment: dev
-    if: github.ref == 'refs/heads/develop'
+    # if: github.ref == 'refs/heads/develop'
 
     steps:
       - name: Checkout code
@@ -82,7 +83,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: production
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout code
