@@ -20,7 +20,7 @@ import java.math.BigDecimal
 object AccountInfoManager {
 
     private val TAG = AccountInfoManager::class.java.simpleName
-    private val FIXED_MOVE_FEE = BigDecimal("0.001")
+    private val FIXED_MOVE_FEE = BigDecimal("0.0001")
     private val MIN_FLOW_BALANCE = BigDecimal("0.001")
     private val AVERAGE_TX_FEE = BigDecimal("0.0005")
     private const val MINIMUM_STORAGE_THRESHOLD: Long = 10000

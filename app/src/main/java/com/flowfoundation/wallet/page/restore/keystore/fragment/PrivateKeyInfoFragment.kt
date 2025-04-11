@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.instabug.library.Instabug
 
 
 class PrivateKeyInfoFragment: Fragment() {
@@ -50,6 +51,7 @@ class PrivateKeyInfoFragment: Fragment() {
                 )
             }
             btnImport.isEnabled = false
+            Instabug.addPrivateViews(etPrivateKey)
         }
     }
 

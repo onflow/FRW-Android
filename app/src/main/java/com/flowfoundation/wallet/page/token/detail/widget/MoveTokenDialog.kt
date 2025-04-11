@@ -148,7 +148,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 showTokenSelection()
             }
 
-            tvMoveFee.text = "0.001 FLOW"
+            tvMoveFee.text = "0.0001 FLOW"
             tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
             ivArrow.setOnClickListener {
                 val temp = moveFromAddress
