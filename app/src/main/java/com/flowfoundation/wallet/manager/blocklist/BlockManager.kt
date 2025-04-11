@@ -34,17 +34,9 @@ object BlockManager {
             val host = uri.host ?: return false
 
             return mutex.withLock {
-                if (blockList.contains(host)) {
-                    return@withLock true
+                blockList.any { blockedDomain ->
+                    host == blockedDomain || host.matches(Regex("^[\\w.-]+\\.$blockedDomain$"))
                 }
-
-                for (blockedDomain in blockList) {
-                    if (host.endsWith(".$blockedDomain")) {
-                        return@withLock true
-                    }
-                }
-
-                false
             }
         } catch (e: Exception) {
             loge(e)
@@ -67,7 +59,10 @@ object BlockManager {
     private fun fetchBlockList() {
         ioScope {
             try {
-                val text = URL(BLOCKLIST_URL).readText()
+                val connection = URL(BLOCKLIST_URL).openConnection()
+                connection.connectTimeout = 10000
+                connection.readTimeout = 15000
+                val text = connection.getInputStream().bufferedReader().use { it.readText() }
                 val response = Gson().fromJson(text, BlockListResponse::class.java)
                 val mergedList = mutableSetOf<String>()
                 
