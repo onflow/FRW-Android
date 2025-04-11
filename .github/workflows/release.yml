@@ -108,30 +108,10 @@ jobs:
         with:
           log-accepted-android-sdk-licenses: false
 
-
-      - name: Generate Keystore
+      - name: Decode keystore file
         run: |
-          KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"
-          KEYSTORE_PASSWORD="password"
-          KEY_ALIAS="alias_name"
-          KEY_PASSWORD="password"
-
-          # Export variables for use in later steps
-          echo "KEYSTORE_PATH=$KEYSTORE_PATH" >> $GITHUB_ENV
-          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
-          echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
-
-          # Generate the keystore
-          keytool -genkeypair -v \
-            -keystore "$KEYSTORE_PATH" \
-            -storepass "$KEYSTORE_PASSWORD" \
-            -alias "$KEY_ALIAS" \
-            -keypass "$KEY_PASSWORD" \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/frw/app/keystore.jks
+        shell: bash
 
       - name: Write Key Properties to File
         run: |
