@@ -3,21 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout_blocked_connect"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp"
+    android:layout_height="48dp"
     android:background="@drawable/bg_blocked_layout">
 
     <TextView
         android:id="@+id/tv_blocked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_semi_bold"
         android:textSize="16sp"
-        android:layout_marginStart="8dp"
         android:textColor="@color/info_error_red"
         android:text="@string/connect_warning"
         android:gravity="center"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

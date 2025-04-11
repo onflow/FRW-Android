@@ -719,5 +719,5 @@
     <string name="blocked_url">%1$s ist gesperrt!</string>
     <string name="ignore_warning">Warnung ignorieren, trotzdem anzeigen</string>
     <string name="connect_warning">Warnung ignorieren, trotzdem verbinden</string>
-    <string name="blocked_tip">Diese dApp wurde als bösartig markiert.</string>
+    <string name="blocked_tip">Diese App wurde als gefährlich gekennzeichnet.</string>
 </resources>

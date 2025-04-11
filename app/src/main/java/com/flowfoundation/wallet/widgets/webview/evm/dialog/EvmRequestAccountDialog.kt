@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogEvmAccountBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
@@ -17,7 +16,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
 import com.flowfoundation.wallet.utils.uiScope

@@ -59,9 +59,7 @@ class FclSignMessageDialog : BottomSheetDialogFragment() {
                 }
                 val isBlockedUrl = BlockManager.isBlocked(data.url)
                 flBlockedTip.setVisible(isBlockedUrl)
-                actionButton.setCardBackgroundColor(
-                    if (isBlockedUrl) R.color.info_error_red.res2color() else R.color.button_color.res2color()
-                )
+                actionButton.setWarningButton(isBlockedUrl)
             }
         }
     }

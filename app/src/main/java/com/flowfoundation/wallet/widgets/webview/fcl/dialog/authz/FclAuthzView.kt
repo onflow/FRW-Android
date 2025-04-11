@@ -51,6 +51,14 @@ class FclAuthzView : FrameLayout {
             scriptTextView.text = data.cadence?.trimIndent()
             actionButton.setOnProcessing { approveCallback.invoke(true) }
             scriptHeaderWrapper.setOnClickListener { toggleScriptVisible() }
+            uiScope {
+                if (data.url.isNullOrEmpty()) {
+                    return@uiScope
+                }
+                val isBlockedUrl = BlockManager.isBlocked(data.url)
+                binding.flBlockedTip.setVisible(isBlockedUrl)
+                binding.actionButton.setWarningButton(isBlockedUrl)
+            }
         }
 
         ioScope {
@@ -71,15 +79,6 @@ class FclAuthzView : FrameLayout {
 
                     binding.securityCheckWrapper.setVisible(template != null)
                     binding.auditorsWrapper.setVisible(auditor != null)
-
-                    if (data.url.isNullOrEmpty()) {
-                        return@uiScope
-                    }
-                    val isBlockedUrl = BlockManager.isBlocked(data.url)
-                    binding.flBlockedTip.setVisible(isBlockedUrl)
-                    binding.actionButton.setCardBackgroundColor(
-                        if (isBlockedUrl) R.color.info_error_red.res2color() else R.color.button_color.res2color()
-                    )
                 }
             }
         }

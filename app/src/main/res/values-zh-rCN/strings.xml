@@ -718,5 +718,5 @@
     <string name="blocked_url">%1$s 已被封禁！</string>
     <string name="ignore_warning">忽略警告，继续显示</string>
     <string name="connect_warning">忽略警告，继续连接</string>
-    <string name="blocked_tip">此应用已被标记为恶意应用。</string>
+    <string name="blocked_tip">此应用已被标记为危险。</string>
 </resources>

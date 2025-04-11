@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.widgets.webview.fcl.dialog
 
 import android.content.DialogInterface
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,9 +9,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogFclAuthnBinding
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.emoji.model.Emoji
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
+import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
 import com.flowfoundation.wallet.utils.uiScope
@@ -34,10 +41,16 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
         val data = data ?: return
+        val address = WalletManager.selectedWalletAddress()
+        val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
         with(binding) {
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
             nameView.text = data.title
             urlView.text = data.url?.urlHost()
+            tvWalletAddress.text = address
+            tvWalletIcon.text = Emoji.getEmojiById(emojiInfo.emojiId)
+            tvWalletIcon.backgroundTintList = ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))
+            tvNetwork.text = chainNetWorkString().capitalizeV2()
             cancelButton.setOnClickListener {
                 result?.resume(false)
                 dismiss()
