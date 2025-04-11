@@ -737,4 +737,10 @@
     <string name="function">Function</string>
     <string name="parameters">Parameters</string>
     <string name="call_data">Call Data</string>
+    <string name="blocked_info">"<![CDATA[This website is blocked as part of a community-maintained list of
+        malicious websites, if you believe the website has been blocked in error, <u>please file an issue.</u>]]>"</string>
+    <string name="blocked_url">%1$s is blocked!</string>
+    <string name="ignore_warning">Ignore warning, show anyway</string>
+    <string name="connect_warning">Ignore warning, connect anyway</string>
+    <string name="blocked_tip">This app has been flagged as dangerous.</string>
 </resources>

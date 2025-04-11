@@ -115,5 +115,6 @@
     <color name="background_2">#28282A</color>
     <color name="disable_button_text">#40FFFFFF</color>
     <color name="button_bg_secondary">#E5E5E6</color>
+    <color name="bg_navi">#0A0A0B</color>
 </resources>
 
