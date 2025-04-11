@@ -392,7 +392,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     private fun configureMoveFeeLayout() {
         with(binding) {
             tvMoveFee.text = if (needMoveFee) {
-                "0.001"
+                "0.0001"
             } else {
                 "0.00"
             } + " FLOW"

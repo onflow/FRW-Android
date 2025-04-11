@@ -34,6 +34,7 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
+import com.instabug.library.Instabug
 import wallet.core.jni.HDWallet
 
 
@@ -127,6 +128,7 @@ class SeedPhraseInfoFragment: Fragment() {
                 )
             }
             btnImport.isEnabled = false
+            Instabug.addPrivateViews(etSeedPhrase)
         }
     }
 

@@ -127,7 +127,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:text="0.001 FLOW" />
+            tools:text="0.0001 FLOW" />
 
         <TextView
             android:id="@+id/tv_move_fee_tips"

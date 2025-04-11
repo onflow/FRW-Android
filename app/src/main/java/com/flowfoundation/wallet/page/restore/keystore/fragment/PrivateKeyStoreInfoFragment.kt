@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.databinding.FragmentPrivateKeyStoreInfoBinding
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.instabug.library.Instabug
 import org.json.JSONObject
 
 
@@ -62,6 +63,8 @@ class PrivateKeyStoreInfoFragment: Fragment() {
                 )
             }
             btnImport.isEnabled = false
+            Instabug.addPrivateViews(etJson)
+            Instabug.addPrivateViews(etPassword)
         }
     }
 

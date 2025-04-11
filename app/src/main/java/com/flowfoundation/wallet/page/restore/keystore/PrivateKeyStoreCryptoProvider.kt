@@ -21,6 +21,10 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
         return keyStoreInfo
     }
 
+    fun getPrivateKey(): String {
+        return keyStoreAddress.privateKey
+    }
+
     fun getAddress(): String {
         return keyStoreAddress.address
     }
