@@ -120,6 +120,12 @@ android {
             debuggable false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = "Automatic build from CI/CD pipeline."
+                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
+                testers = properties.getProperty("testers", "")
+            }
             firebaseCrashlytics {
                 mappingFileUploadEnabled true
             }
