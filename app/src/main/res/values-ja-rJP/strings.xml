@@ -183,6 +183,8 @@
     <string name="add_token">トークンの追加</string>
     <string name="add_token_failed">トークンの追加に失敗</string>
     <string name="search_token">検索トークン</string>
+    <string name="search_tokens">トークンを検索</string>
+    <string name="token_list">トークンリスト</string>
     <string name="confirmation">確認</string>
     <string name="app_initializing">初期化</string>
     <string name="developer_mode">開発者モード</string>
@@ -237,7 +239,7 @@
     <string name="free_gas_fee_desc">Flow Walletが私のすべての取引のガス料金を支払うことを許可する
 。</string>
     <string name="file_picker_title">ファイルを選択</string>
-    <string name="transaction_fee">取引手数料</string>
+    <string name="transaction_fee">トランザクション料金</string>
     <string name="hold_to_confirm">ホールドして確認</string>
     <string name="hold_to_sign">長押しで署名</string>
     <string name="enable">有効にする</string>
@@ -701,8 +703,6 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="choose_swap_provider">スワッププロバイダを選択</string>
     <string name="welcome_desc">Flow Walletへようこそ！アカウントを作成して始めましょう</string>
     <string name="scan">スキャン</string>
-    <string name="search_tokens">トークンを検索</string>
-    <string name="token_list">トークンリスト</string>
     <string name="results">検索結果</string>
     <string name="search_nft_name">検索NFT</string>
     <string name="loading_nfts">NFTを読み込み中...</string>
@@ -715,4 +715,9 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="function">機能</string>
     <string name="parameters">引数</string>
     <string name="call_data">コールデータ</string>
+    <string name="blocked_info">"<![CDATA[このウェブサイトは、コミュニティによって維持されている悪意のあるウェブサイトのリストの一部としてブロックされています。ウェブサイトが誤ってブロックされたと思われる場合は、<u>問題を報告してください。</u>]]>"</string>
+    <string name="blocked_url">%1$s はブロックされています！</string>
+    <string name="ignore_warning">警告を無視して、とにかく表示</string>
+    <string name="connect_warning">警告を無視して、とにかく接続してください</string>
+    <string name="blocked_tip">このアプリは危険としてフラグ付けられています。</string>
 </resources>

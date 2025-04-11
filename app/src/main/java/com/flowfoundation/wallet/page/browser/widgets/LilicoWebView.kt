@@ -5,7 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.text.Html
+import android.text.SpannableString
+import android.text.method.LinkMovementMethod
+import android.text.style.UnderlineSpan
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.View
 import android.webkit.CookieManager
@@ -13,8 +18,12 @@ import android.webkit.ValueCallback
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
@@ -38,6 +47,13 @@ class LilicoWebView : WebView {
     private var callback: WebviewCallback? = null
     var isLoading = false
 
+    private lateinit var blockedViewLayout: View
+    private lateinit var tvBlockedUrl: TextView
+    private lateinit var tvBlockedInfo: TextView
+    private lateinit var tvIgnoreWarning: TextView
+
+    private var blockedUrl: String? = null
+
     constructor(context: Context) : super(context) {
         initWebView()
     }
@@ -57,6 +73,7 @@ class LilicoWebView : WebView {
         
         // Disable hardware acceleration for this WebView to prevent some layout issues
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        initBlockedViewLayout()
 
         with(settings) {
             loadsImagesAutomatically = true
@@ -86,6 +103,77 @@ class LilicoWebView : WebView {
                 setAcceptCookie(true)
             }
         }
+    }
+
+    private fun initBlockedViewLayout() {
+        post {
+            if (parent is ViewGroup) {
+                val parent = parent as ViewGroup
+
+                for (i in 0 until parent.childCount) {
+                    val child = parent.getChildAt(i)
+                    if (child.id == R.id.cl_blocked_view) {
+                        blockedViewLayout = child
+                        setupBlockedViewLayout()
+                        return@post
+                    }
+                }
+
+                blockedViewLayout = LayoutInflater.from(context).inflate(R.layout.layout_blocked_view, parent, false)
+
+                val layoutParams = FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                blockedViewLayout.layoutParams = layoutParams
+
+                blockedViewLayout.visibility = View.GONE
+
+                parent.addView(blockedViewLayout)
+
+                setupBlockedViewLayout()
+            }
+        }
+    }
+
+    private fun setupBlockedViewLayout() {
+        tvBlockedUrl = blockedViewLayout.findViewById(R.id.tv_blocked_url)
+        tvBlockedInfo = blockedViewLayout.findViewById(R.id.tv_blocked_info)
+        tvIgnoreWarning = blockedViewLayout.findViewById(R.id.tv_ignore_warning)
+
+        tvBlockedInfo.text = Html.fromHtml(context.getString(R.string.blocked_info), Html.FROM_HTML_MODE_LEGACY)
+        tvBlockedInfo.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Outblock/flow-blocklist"))
+            context.startActivity(intent)
+        }
+
+        val content = SpannableString(context.getString(R.string.ignore_warning) )
+        content.setSpan(UnderlineSpan(), 0, content.length, 0)
+        tvIgnoreWarning.text = content
+
+        tvIgnoreWarning.setOnClickListener {
+            hideBlockedViewLayout()
+            blockedUrl?.let { url ->
+                blockedUrl = null
+                loadUrl(url)
+            }
+        }
+    }
+
+    private fun showBlockedViewLayout(url: String) {
+        blockedUrl = url
+
+        val uri = Uri.parse(url)
+        val host = uri.host ?: url
+
+        val blockedUrlText = context.getString(R.string.blocked_url, host)
+        tvBlockedUrl.text = blockedUrlText
+
+        blockedViewLayout.visibility = View.VISIBLE
+    }
+
+    private fun hideBlockedViewLayout() {
+        blockedViewLayout.visibility = View.GONE
     }
 
     fun setWebViewCallback(callback: WebviewCallback?) {
@@ -190,6 +278,15 @@ class LilicoWebView : WebView {
                     return true
                 } else if (it.toString() == "about:blank#blocked") {
                     return true
+                }
+                uiScope {
+                    if (BlockManager.isBlocked(it.toString())) {
+                        logd(TAG, "URL blocked: $url")
+                        showBlockedViewLayout(it.toString())
+                        loadUrl("about:blank#blocked")
+                        isLoading = false
+                        return@uiScope
+                    }
                 }
             }
             return super.shouldOverrideUrlLoading(view, request)

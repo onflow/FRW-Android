@@ -54,10 +54,21 @@
             tools:text="NBA Top Shot Marketplace"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <FrameLayout
+        android:id="@+id/fl_blocked_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:visibility="gone">
+
+        <include layout="@layout/layout_blocked_tip"/>
+
+    </FrameLayout>
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_round_12dp"
         android:backgroundTint="@color/neutrals10"
         android:orientation="horizontal"
@@ -83,13 +94,12 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_round_12dp"
         android:backgroundTint="@color/neutrals10"
         android:orientation="vertical"
         android:paddingHorizontal="18dp"
-        android:paddingTop="18dp"
-        android:paddingBottom="50dp">
+        android:paddingVertical="16dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -143,11 +153,134 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_wallet_address"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_round_12dp"
+            android:backgroundTint="@color/neutrals10"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="10dp"
+            app:layout_constraintEnd_toStartOf="@id/cl_network"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tv_wallet_icon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:background="@drawable/bg_round_24dp"
+                android:backgroundTint="@color/emoji_peach"
+                android:gravity="center"
+                android:text="🍑"
+                android:textSize="10sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_wallet_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:fontFamily="@font/inter"
+                android:text="@string/wallet"
+                android:textColor="@color/text_3"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@id/tv_wallet_icon"
+                app:layout_constraintStart_toEndOf="@id/tv_wallet_icon"
+                app:layout_constraintTop_toTopOf="@id/tv_wallet_icon"/>
+
+            <TextView
+                android:id="@+id/tv_wallet_address"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="11dp"
+                android:ellipsize="middle"
+                android:fontFamily="@font/inter"
+                android:gravity="start"
+                android:lines="1"
+                android:text=""
+                android:textColor="@color/text"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_wallet_icon"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_network"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_round_12dp"
+            android:backgroundTint="@color/neutrals10"
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="10dp"
+            app:layout_constraintBottom_toBottomOf="@id/cl_wallet_address"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/cl_wallet_address"
+            app:layout_constraintTop_toTopOf="@id/cl_wallet_address">
+
+            <ImageView
+                android:id="@+id/iv_network_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_network"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tv_network_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:fontFamily="@font/inter"
+                android:text="@string/network"
+                android:textColor="@color/text_3"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@id/iv_network_icon"
+                app:layout_constraintStart_toEndOf="@id/iv_network_icon"
+                app:layout_constraintTop_toTopOf="@id/iv_network_icon"/>
+
+            <TextView
+                android:id="@+id/tv_network"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="11dp"
+                android:ellipsize="middle"
+                android:fontFamily="@font/inter"
+                android:gravity="start"
+                android:lines="1"
+                android:text="Mainnet"
+                android:textColor="@color/text"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/iv_network_icon"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <FrameLayout
+        android:id="@+id/fl_blocked_connect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:visibility="gone">
+        <include layout="@layout/layout_blocked_connect"/>
+    </FrameLayout>
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/content_wrapper">
@@ -157,21 +290,24 @@
             android:layout_width="0dp"
             android:layout_height="58dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/neutrals10"
+            android:fontFamily="@font/inter_semi_bold"
+            android:backgroundTint="@color/button_bg_secondary"
             android:text="@string/cancel"
             android:textAllCaps="false"
-            android:textColor="@color/text"
+            android:textColor="@color/button_text"
             app:cornerRadius="16dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/approve_button"
             android:layout_width="0dp"
             android:layout_height="58dp"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="12dp"
             android:layout_weight="1"
+            android:fontFamily="@font/inter_semi_bold"
             android:backgroundTint="@color/salmon_primary"
             android:text="@string/approve"
             android:textAllCaps="false"
+            android:visibility="visible"
             android:textColor="@color/white"
             app:cornerRadius="16dp"/>
     </androidx.appcompat.widget.LinearLayoutCompat>

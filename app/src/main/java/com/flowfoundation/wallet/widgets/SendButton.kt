@@ -12,6 +12,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.WidgetSendButtonBinding
 import com.flowfoundation.wallet.page.security.securityVerification
+import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.logd
@@ -72,6 +73,14 @@ class SendButton : TouchScaleCardView {
         }
 
         return true
+    }
+
+    fun setWarningButton(isWarning: Boolean) {
+        with(binding) {
+            setCardBackgroundColor(if (isWarning) R.color.info_error_red.res2color() else R.color.button_color.res2color())
+            holdToSend.setTextColor(if (isWarning) R.color.white.res2color() else R.color.brightest_text.res2color())
+            progressBar.setIndicatorColor(if (isWarning) R.color.white_80.res2color() else R.color.primary80.res2color())
+        }
     }
 
     fun updateDefaultText(textId: Int) {
