@@ -39,6 +39,10 @@ object AppConfig {
 
     fun showTXWarning() = isDev() || isTesting() || (config().getFeatures().txWarning ?: false)
 
+    fun coverBridgeFee() = config().getFeatures().coverBridgeFee ?: false
+
+    fun bridgeFeePayer() = if (isTestnet()) config().getBridgeFeePayer().testnet else config().getBridgeFeePayer().mainnet
+
     fun addressRegistry(network: Int): Map<String, String> {
         return when (network) {
             NETWORK_TESTNET -> flowAddressRegistry().testnet
@@ -145,20 +149,32 @@ private data class Config(
             prod.payer
         }
     }
+
+    fun getBridgeFeePayer(): Payer {
+        return if (isStagingVersion()) {
+            staging.bridgeFeePayer
+        } else {
+            prod.bridgeFeePayer
+        }
+    }
 }
 
 private data class Prod(
     @SerializedName("features")
     val features: Features,
     @SerializedName("payer")
-    val payer: Payer
+    val payer: Payer,
+    @SerializedName("bridgeFeePayer")
+    val bridgeFeePayer: Payer
 )
 
 private data class Staging(
     @SerializedName("features")
     val features: Features,
     @SerializedName("payer")
-    val payer: Payer
+    val payer: Payer,
+    @SerializedName("bridgeFeePayer")
+    val bridgeFeePayer: Payer
 )
 
 private data class Features(
@@ -177,7 +193,9 @@ private data class Features(
     @SerializedName("nft_transfer")
     val nftTransfer: Boolean?,
     @SerializedName("tx_warning_prediction")
-    val txWarning: Boolean?
+    val txWarning: Boolean?,
+    @SerializedName("cover_bridge_fee")
+    val coverBridgeFee: Boolean?,
 )
 
 private data class Payer(

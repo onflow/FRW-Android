@@ -7,7 +7,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.TextView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
 
@@ -37,7 +36,6 @@ private class DialogView(
     private val onAction: () -> Unit,
 ) : FrameLayout(context) {
 
-    private val descView by lazy { findViewById<TextView>(R.id.desc_view) }
     private val createButton by lazy { findViewById<View>(R.id.create_button) }
     private val cancelButton by lazy { findViewById<View>(R.id.cancel_button) }
 

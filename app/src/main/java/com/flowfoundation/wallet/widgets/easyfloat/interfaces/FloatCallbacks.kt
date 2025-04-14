@@ -12,11 +12,6 @@ class FloatCallbacks {
 
     lateinit var builder: Builder
 
-    // 带Builder返回值的lambda
-    fun registerListener(builder: Builder.() -> Unit) {
-        this.builder = Builder().also(builder)
-    }
-
     inner class Builder {
         internal var createdResult: ((Boolean, String?, View?) -> Unit)? = null
         internal var show: ((View) -> Unit)? = null
@@ -26,10 +21,6 @@ class FloatCallbacks {
         internal var drag: ((View, MotionEvent) -> Unit)? = null
         internal var dragEnd: ((View) -> Unit)? = null
         internal var backKeyPressed: (() -> Unit)? = null
-
-        fun createResult(action: (Boolean, String?, View?) -> Unit) {
-            createdResult = action
-        }
 
         fun show(action: (View) -> Unit) {
             show = action
@@ -43,21 +34,6 @@ class FloatCallbacks {
             dismiss = action
         }
 
-        fun touchEvent(action: (View, MotionEvent) -> Unit) {
-            touchEvent = action
-        }
-
-        fun drag(action: (View, MotionEvent) -> Unit) {
-            drag = action
-        }
-
-        fun dragEnd(action: (View) -> Unit) {
-            dragEnd = action
-        }
-
-        fun backKeyPressed(action: () -> Unit) {
-            backKeyPressed = action
-        }
     }
 
 }

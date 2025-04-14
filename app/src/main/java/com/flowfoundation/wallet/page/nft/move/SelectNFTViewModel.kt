@@ -17,6 +17,9 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.move.model.CollectionDetailInfo
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 
@@ -89,6 +92,7 @@ class SelectNFTViewModel : ViewModel() {
         logd(TAG, "moveSelectedNFT called with: fromAddress = ${fromAddress}, toAddress = $toAddress, nftIdentifier = $nftIdentifier, selectedNFTs = $selectedNFTIdList")
 
         if (nftIdentifier == null) {
+            ErrorReporter.reportWithMixpanel(MoveError.INVALIDATE_IDENTIFIER, getCurrentCodeLocation())
             callback.invoke(false)
             return
         }
@@ -242,6 +246,7 @@ class SelectNFTViewModel : ViewModel() {
             val txId = action()
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
+                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation(operationName))
                 callback(false)
                 return
             }

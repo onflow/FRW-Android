@@ -8,7 +8,6 @@ import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogRootDetectedBinding
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isRootDetectedDialogShown
 import com.flowfoundation.wallet.utils.isRooted

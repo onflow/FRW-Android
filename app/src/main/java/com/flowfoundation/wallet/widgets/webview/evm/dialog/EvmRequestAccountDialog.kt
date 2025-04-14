@@ -9,13 +9,16 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.databinding.DialogEvmAccountBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
+import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
@@ -60,6 +63,20 @@ class EvmRequestAccountDialog : BottomSheetDialogFragment() {
             btnConnect.setOnClickListener {
                 result?.resume(true)
                 dismiss()
+            }
+
+            uiScope {
+                if (data.url.isNullOrEmpty()) {
+                    return@uiScope
+                }
+                val isBlockedUrl = BlockManager.isBlocked(data.url)
+                flBlockedTip.setVisible(isBlockedUrl)
+                btnConnect.setVisible(isBlockedUrl.not())
+                flBlockedConnect.setVisible(isBlockedUrl)
+                flBlockedConnect.setOnClickListener {
+                    result?.resume(true)
+                    dismiss()
+                }
             }
         }
     }

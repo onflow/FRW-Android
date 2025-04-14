@@ -24,7 +24,7 @@ class NftSendConfirmDialog : BottomSheetDialogFragment() {
     private lateinit var presenter: NftSendConfirmPresenter
     private lateinit var viewModel: NftSendConfirmViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         reportEvent("page_nft_send_confirm_dialog")
         binding = DialogSendConfirmBinding.inflate(inflater)
         return binding.root
@@ -36,7 +36,9 @@ class NftSendConfirmDialog : BottomSheetDialogFragment() {
             Gson().fromJson(this@NftSendConfirmDialog.nft, NftSendModel::class.java)?.let {
                 bindSendModel(it)
             }
-            userInfoLiveData.observe(this@NftSendConfirmDialog) { presenter.bind(NftSendConfirmDialogModel(userInfo = it)) }
+            userInfoLiveData.observe(this@NftSendConfirmDialog) { presenter.bind(NftSendConfirmDialogModel(
+                userInfo = it
+            )) }
             resultLiveData.observe(this@NftSendConfirmDialog) { isSuccess ->
                 presenter.bind(NftSendConfirmDialogModel(isSendSuccess = isSuccess))
                 if (!isSuccess) {

@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.nft.move.SelectNFTDialog

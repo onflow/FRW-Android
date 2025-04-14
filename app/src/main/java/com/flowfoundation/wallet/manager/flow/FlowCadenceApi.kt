@@ -3,11 +3,9 @@ package com.flowfoundation.wallet.manager.flow
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.FlowAddressRegistry
 import com.flowfoundation.wallet.utils.logd
-import com.google.protobuf.UnsafeByteOperations
 import com.nftco.flow.sdk.AddressRegistry
 import com.nftco.flow.sdk.Flow
 import com.nftco.flow.sdk.FlowException
-import com.nftco.flow.sdk.ScriptBuilder
 import org.onflow.flow.ChainId
 import org.onflow.flow.FlowApi
 import org.onflow.flow.infrastructure.Cadence

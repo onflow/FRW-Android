@@ -5,7 +5,6 @@ import androidx.transition.Transition
 import com.google.android.material.transition.MaterialSharedAxis
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
-import com.flowfoundation.wallet.databinding.ActivityCreateWalletBinding
 import com.flowfoundation.wallet.page.walletcreate.*
 import com.flowfoundation.wallet.page.walletcreate.fragments.cloudpwd.WalletCreateCloudPwdFragment
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.WalletCreateMnemonicFragment
@@ -19,7 +18,6 @@ import com.flowfoundation.wallet.page.walletcreate.model.WalletCreateContentMode
 
 class WalletCreateContentPresenter(
     private val activity: WalletCreateActivity,
-    private val binding: ActivityCreateWalletBinding,
 ) : BasePresenter<WalletCreateContentModel> {
 
     private var currentStep = -1

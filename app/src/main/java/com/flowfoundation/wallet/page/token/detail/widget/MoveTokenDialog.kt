@@ -28,12 +28,15 @@ import com.flowfoundation.wallet.page.token.detail.provider.EVMAccountTokenProvi
 import com.flowfoundation.wallet.page.token.detail.provider.FlowAccountTokenProvider
 import com.flowfoundation.wallet.page.token.detail.provider.MoveTokenProvider
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setDecimalDigitsFilter
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -148,7 +151,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 showTokenSelection()
             }
 
-            tvMoveFee.text = "0.001 FLOW"
+            tvMoveFee.text = "0.0001 FLOW"
             tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
             ivArrow.setOnClickListener {
                 val temp = moveFromAddress
@@ -280,14 +283,14 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             val coinsWithBalance = availableTokens
                 .filter { it.tokenBalance > BigDecimal.ZERO }
                 .map { it.tokenInfo }
-            
 
             val selectedToken = dialog.show(
                 selectedCoin = currentToken?.tokenInfo?.contractId(),
                 disableCoin = null,
                 fragmentManager = childFragmentManager,
                 moveFromAddress = moveFromAddress,
-                availableCoins = coinsWithBalance
+                availableCoins = coinsWithBalance,
+                initialTokens = availableTokens
             )
             if (selectedToken != null) {
                 uiScope {
@@ -326,7 +329,11 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         binding.btnMove.setProgressVisible(true)
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
-            val coin = currentToken?.tokenInfo ?: return@ioScope
+            val coin = currentToken?.tokenInfo
+            if (coin == null) {
+                ErrorReporter.reportWithMixpanel(MoveError.LOAD_TOKEN_INFO_FAILED, getCurrentCodeLocation())
+                return@ioScope
+            }
 
             val from = moveFromAddress
             val to = moveToAddress

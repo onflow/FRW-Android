@@ -1,10 +1,5 @@
 package com.flowfoundation.wallet.manager.wallet
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.flowfoundation.wallet.cache.CACHE_WALLET
-import com.flowfoundation.wallet.cache.CacheManager
-import com.flowfoundation.wallet.cache.cacheFile
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
@@ -112,13 +107,6 @@ object WalletManager {
                 updateSelectedWalletAddress(this)
             }
         }
-    }
-
-    private fun cache(): CacheManager<WalletListData> {
-        return CacheManager(
-            "$CACHE_WALLET-${chainNetWorkString()}-${Firebase.auth.currentUser?.uid}".cacheFile(),
-            WalletListData::class.java,
-        )
     }
 
     fun clear() {

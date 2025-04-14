@@ -30,7 +30,7 @@ class CurrencyListActivity : BaseActivity() {
 
         setupToolbar()
 
-        presenter = CurrencyPresenter(this, binding)
+        presenter = CurrencyPresenter(binding)
 
         viewModel = ViewModelProvider(this)[CurrencyViewModel::class.java].apply {
             dataLiveData.observe(this@CurrencyListActivity) { presenter.bind(CurrencyModel(data = it)) }

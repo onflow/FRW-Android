@@ -13,17 +13,4 @@ class NestedRecyclerView : RecyclerView {
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet? = null) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : super(context, attrs, defStyleAttr)
-
-    init {
-//        isNestedScrollingEnabled = false
-    }
-
-//    override fun onAttachedToWindow() {
-//        super.onAttachedToWindow()
-//        with(layoutParams) {
-//            height = ScreenUtils.getScreenHeight()
-//            layoutParams = this
-//        }
-//    }
-
 }

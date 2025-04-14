@@ -4,7 +4,6 @@ import android.view.View
 import android.widget.TextView
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
-import com.flowfoundation.wallet.page.address.model.AddressBookCharModel
 import com.flowfoundation.wallet.page.address.model.AddressBookTitleModel
 
 class AddressBookTitlePresenter(

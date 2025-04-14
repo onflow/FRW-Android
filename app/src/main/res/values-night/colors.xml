@@ -24,21 +24,13 @@
     <color name="button">#FAFAFA</color>
     <color name="button_text">#333333</color>
     <color name="front_color">#111111</color>
-    <color name="mango_nft">#FAC832</color>
     <color name="mango1">#FAD157</color>
-    <color name="mango3">#C79F28</color>
-    <color name="mango4">#94761E</color>
-    <color name="mango5">#614E13</color>
     <color name="navy_wallet">#277FF2</color>
-    <color name="navy1">#579AF2</color>
-    <color name="navy3">#0B59BF</color>
-    <color name="navy4">#08418C</color>
     <color name="navy5">#052A59</color>
     <color name="neutrals1">#F2F2F2</color>
     <color name="neutrals1_a8">#14F2F2F2</color>
     <color name="neutrals2">#E6E6E6</color>
     <color name="neutrals3">#D9D9D9</color>
-    <color name="neutrals3_25">#40D9D9D9</color>
     <color name="neutrals4">#CCCCCC</color>
     <color name="neutrals5">#BFBFBF</color>
     <color name="neutrals6">#B2B2B2</color>
@@ -52,26 +44,15 @@
     <color name="note">#C4C4C4</color>
     <color name="outline">#4C4C4C</color>
     <color name="salmon_primary">#41CC5D</color>
-    <color name="salmon1">#FCA47C</color>
-    <color name="salmon3">#E37542</color>
-    <color name="salmon4">#B05B33</color>
     <color name="salmon5">#7D4024</color>
-    <color name="shades2">#000000</color>
-    <color name="success1">#40C900</color>
     <color name="success2">#38B000</color>
     <color name="success3">#309600</color>
-    <color name="success4">#287D00</color>
     <color name="success5">#206300</color>
     <color name="text">#E8E8E8</color>
-    <color name="violet_discover">#7D7AFF</color>
     <color name="violet1">#9694FF</color>
-    <color name="violet3">#504ECC</color>
     <color name="violet4">#3C3A99</color>
     <color name="violet5">#323080</color>
-    <color name="warning1">#5E211A</color>
     <color name="warning2">#C44536</color>
-    <color name="warning3">#DE6354</color>
-    <color name="warning4">#4C3735</color>
     <color name="warning5">#261C1B</color>
     <color name="deep_bg">#000000</color>
 
@@ -85,13 +66,10 @@
     <color name="background90">#E6121212</color>
     <color name="background60">#99121212</color>
     <color name="brightest_text">#000000</color>
-    <color name="blur">#26ffffff</color>
     <color name="image_bg">@color/neutrals10</color>
     <color name="stake">#60C293</color>
     <color name="stake_12">#1c60C293</color>
-    <color name="deep_bg_0">#00000000</color>
 
-    <color name="profile_card_background">#1AFFFFFF</color>
     <color name="profile_card_divider">#14FFFFFF</color>
     <color name="welcome_page_text">#FFFFFF</color>
     <color name="drawer_item_background">#292929</color>
@@ -121,8 +99,6 @@
 
     <color name="bg_skip">#4DFFFFFF</color>
 
-    <color name="landing_tab_dot_normal">#29FFFFFF</color>
-
     <color name="token_pricing_card_background">#121212</color>
     <color name="token_list_item_background">#28282A</color>
     <color name="home_page_background">#000000</color>
@@ -139,5 +115,6 @@
     <color name="background_2">#28282A</color>
     <color name="disable_button_text">#40FFFFFF</color>
     <color name="button_bg_secondary">#E5E5E6</color>
+    <color name="bg_navi">#0A0A0B</color>
 </resources>
 

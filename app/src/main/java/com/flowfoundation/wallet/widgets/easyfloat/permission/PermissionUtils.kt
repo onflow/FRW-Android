@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.widgets.easyfloat.permission
 
-import android.app.Activity
 import android.app.Fragment
 import android.content.Context
 import android.content.Intent
@@ -8,7 +7,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import com.flowfoundation.wallet.widgets.easyfloat.interfaces.OnPermissionResult
 import com.flowfoundation.wallet.widgets.easyfloat.permission.rom.*
 import com.flowfoundation.wallet.widgets.easyfloat.utils.Logger
 
@@ -36,13 +34,6 @@ object PermissionUtils {
             RomUtils.checkIs360Rom() -> qikuPermissionCheck(context)
             else -> true
         } else commonROMPermissionCheck(context)
-
-    /**
-     * 申请悬浮窗权限
-     */
-    @JvmStatic
-    fun requestPermission(activity: Activity, onPermissionResult: OnPermissionResult) =
-        PermissionFragment.requestPermission(activity, onPermissionResult)
 
     internal fun requestPermission(fragment: Fragment) =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) when {

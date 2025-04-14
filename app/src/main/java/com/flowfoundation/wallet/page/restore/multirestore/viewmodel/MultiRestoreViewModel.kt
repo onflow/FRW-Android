@@ -80,10 +80,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         return optionList
     }
 
-    fun getCurrentIndex(): Int {
-        return currentIndex
-    }
-
     fun changeOption(option: RestoreOption, index: Int) {
         this.currentOption = option
         this.currentIndex = index

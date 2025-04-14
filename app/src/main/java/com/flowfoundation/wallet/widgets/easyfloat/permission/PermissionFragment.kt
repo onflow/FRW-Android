@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.widgets.easyfloat.permission
 
-import android.app.Activity
 import android.app.Fragment
 import android.content.Intent
 import android.os.Bundle
@@ -19,13 +18,6 @@ internal class PermissionFragment : Fragment() {
     companion object {
         private var onPermissionResult: OnPermissionResult? = null
 
-        fun requestPermission(activity: Activity, onPermissionResult: OnPermissionResult) {
-            this.onPermissionResult = onPermissionResult
-            activity.fragmentManager
-                .beginTransaction()
-                .add(PermissionFragment(), activity.localClassName)
-                .commitAllowingStateLoss()
-        }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

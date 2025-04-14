@@ -31,7 +31,6 @@ enum class TransferAccountType(val value: String) {
 }
 
 enum class AccountCreateKeyType(val value: String) {
-    SEED_PHRASE("seed_phrase"),
     KEY_STORE("secure_enclave")
 }
 
@@ -64,6 +63,7 @@ const val EVENT_TRANSACTION_RESULT = "transaction_result"
 const val EVENT_ACCOUNT_CREATED = "account_created"
 const val EVENT_ACCOUNT_CREATION_TIME = "account_creation_time"
 const val EVENT_ACCOUNT_RECOVERED = "account_recovered"
+const val EVENT_ERROR = "error"
 
 const val KEY_ERROR = "error"
 const val KEY_SCRIPT_ID = "script_id"
@@ -96,3 +96,8 @@ const val KEY_SIGN_ALGO = "sign_algo"
 const val KEY_HASH_ALGO = "hash_algo"
 const val KEY_RESTORE_MECHANISM = "mechanism"
 const val KEY_RESTORE_MULTI_METHODS = "methods"
+const val KEY_CODE = "code"
+const val KEY_CATEGORY = "category"
+const val KEY_MESSAGE = "message"
+const val KEY_EXTRA = "extra"
+const val KEY_VALUE = "value"

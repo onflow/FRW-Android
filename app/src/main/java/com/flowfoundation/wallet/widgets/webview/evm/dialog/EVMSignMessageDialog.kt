@@ -11,13 +11,17 @@ import androidx.transition.*
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.databinding.DialogFclSignMessageBinding
+import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.evm.COALinkCheckManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 
 
@@ -27,7 +31,7 @@ class EVMSignMessageDialog : BottomSheetDialogFragment() {
 
     private lateinit var binding: DialogFclSignMessageBinding
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogFclSignMessageBinding.inflate(inflater)
         return binding.root
     }
@@ -62,6 +66,15 @@ class EVMSignMessageDialog : BottomSheetDialogFragment() {
                 }
             }
             scriptHeaderWrapper.setOnClickListener { toggleScriptVisible() }
+
+            uiScope {
+                if (data.url.isNullOrEmpty()) {
+                    return@uiScope
+                }
+                val isBlockedUrl = BlockManager.isBlocked(data.url)
+                flBlockedTip.setVisible(isBlockedUrl)
+                actionButton.setWarningButton(isBlockedUrl)
+            }
         }
     }
 

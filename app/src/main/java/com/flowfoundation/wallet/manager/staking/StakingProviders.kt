@@ -44,7 +44,7 @@ internal class StakingProviders {
         }
     }
 
-    fun fetchCache(): List<StakingProvider> {
+    private fun fetchCache(): List<StakingProvider> {
         val cache = stakingProviderCache().read()?.data
         return cache ?: loadFromAssets()
     }

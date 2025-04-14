@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.WindowBubbleBinding
 import com.flowfoundation.wallet.manager.transaction.TransactionState
-import com.flowfoundation.wallet.page.window.bubble.BubbleViewModel
 import com.flowfoundation.wallet.page.window.bubble.model.BubbleModel
 import com.flowfoundation.wallet.page.window.bubble.model.icon
 import com.flowfoundation.wallet.page.window.bubble.onBubbleClick
@@ -19,7 +18,6 @@ import com.flowfoundation.wallet.widgets.floatwindow.widgets.WindowRemoveLayout
 
 class BubblePresenter(
     private val binding: WindowBubbleBinding,
-    private val viewModel: BubbleViewModel,
 ) : BasePresenter<BubbleModel> {
 
     private val removeLayout by lazy { WindowRemoveLayout(binding.root, binding.floatBubble) { clearBubbleTabs() } }

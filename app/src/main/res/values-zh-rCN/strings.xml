@@ -33,6 +33,7 @@
     <string name="protection">保护</string>
     <string name="to_your_wallet">致您的钱包</string>
     <string name="pin_code">PIN 码</string>
+    <string name="grid">网格</string>
     <string name="create_pin">创建 PIN 密码</string>
     <string name="pin">PIN</string>
     <string name="check_pin">请再次输入\n您的 PIN 码</string>
@@ -181,6 +182,8 @@
     <string name="add_token">添加代币</string>
     <string name="add_token_failed">添加代币失败</string>
     <string name="search_token">搜索代币</string>
+    <string name="search_tokens">搜索代币</string>
+    <string name="token_list">代币列表</string>
     <string name="confirmation">确认</string>
     <string name="app_initializing">初始化</string>
     <string name="developer_mode">开发者模式</string>
@@ -235,7 +238,7 @@
     <string name="free_gas_fee_desc">让 Flow Wallet 为我的所有交易支付加密货币手续费
 。</string>
     <string name="file_picker_title">选择文件</string>
-    <string name="transaction_fee">交易费</string>
+    <string name="transaction_fee">交易手续费</string>
     <string name="hold_to_confirm">按住确认</string>
     <string name="hold_to_sign">按住以签名</string>
     <string name="enable">启用</string>
@@ -699,9 +702,6 @@
     <string name="choose_swap_provider">选择交换提供商</string>
     <string name="welcome_desc">欢迎使用 Flow Wallet ！创建一个帐户以开始</string>
     <string name="scan">扫描</string>
-    <string name="grid">网格</string>
-    <string name="search_tokens">搜索代币</string>
-    <string name="token_list">代币列表</string>
     <string name="results">结果</string>
     <string name="search_nft_name">搜索 NFT</string>
     <string name="loading_nfts">正在加载 NFT...</string>
@@ -714,4 +714,9 @@
     <string name="function">函数</string>
     <string name="parameters">参数</string>
     <string name="call_data">调用数据</string>
+    <string name="blocked_info">"<![CDATA[此网站被列入社区维护的恶意网站列表而被屏蔽，如果您认为该网站被错误屏蔽，<u>请提交问题。</u>]]>"</string>
+    <string name="blocked_url">%1$s 已被封禁！</string>
+    <string name="ignore_warning">忽略警告，继续显示</string>
+    <string name="connect_warning">忽略警告，继续连接</string>
+    <string name="blocked_tip">此应用已被标记为危险。</string>
 </resources>

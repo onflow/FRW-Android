@@ -31,35 +31,6 @@ data class EVMTransferRecordResponse(
     val status: Int?
 )
 
-data class TransferCountResponse(
-    @SerializedName("data")
-    val data: Data?,
-    @SerializedName("message")
-    val message: String?,
-    @SerializedName("status")
-    val status: Int?
-) {
-    data class Data(
-        @SerializedName("data")
-        val data: ParticipationData?,
-    ) {
-        data class ParticipationData(
-            @SerializedName("participations_aggregate")
-            val participationAggregate: ParticipationAggregate?
-        ) {
-            data class ParticipationAggregate(
-                @SerializedName("aggregate")
-                val aggregate: Aggregate?
-            ) {
-                data class Aggregate(
-                    @SerializedName("count")
-                    val count: Int
-                )
-            }
-        }
-    }
-}
-
 data class TransferRecord(
     @SerializedName("additional_message")
     val additionalMessage: String?,
@@ -94,7 +65,6 @@ data class TransferRecord(
 ) {
     companion object {
         const val TRANSFER_TYPE_SEND = 1
-        const val TRANSFER_TYPE_RECEIVE = 2
     }
 
     fun logo(): String {

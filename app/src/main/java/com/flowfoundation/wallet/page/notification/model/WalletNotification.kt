@@ -68,9 +68,6 @@ data class Condition(
 
 
 enum class Type {
-    @SerializedName("message")
-    MESSAGE,
-
     @SerializedName("image")
     IMAGE,
 
@@ -81,13 +78,6 @@ enum class Type {
 enum class Priority {
     @SerializedName("urgent")
     URGENT,
-
-    @SerializedName("high")
-    HIGH,
-
-    @SerializedName("medium")
-    MEDIUM,
-
     @SerializedName("low")
     LOW
 }

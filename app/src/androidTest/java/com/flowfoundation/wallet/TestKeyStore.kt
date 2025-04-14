@@ -1,15 +1,14 @@
 package com.flowfoundation.wallet
 
-import android.util.Log
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.hexToBytes
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Test
 import wallet.core.jni.CoinType
 import wallet.core.jni.PrivateKey
 import wallet.core.jni.StoredKey
-
-private const val TAG = "TestKeyStore.kt"
 
 class TestKeyStore {
 

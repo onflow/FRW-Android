@@ -50,14 +50,6 @@ object NftCollectionConfig {
         return config.toList().firstOrNull { it.contractIdWithCollection() == contractId }
     }
 
-    fun getByStoragePath(storagePath: String): NftCollection? {
-        if (config.isEmpty()) {
-            reloadConfig()
-        }
-        val list = config.toList()
-        return list.firstOrNull { it.path?.storagePath == storagePath }
-    }
-
     fun list() = config.toList()
 
     private fun reloadConfig() {

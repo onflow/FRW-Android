@@ -10,18 +10,20 @@ import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader
 
-val CACHE_PATH: File = Env.getApp().cacheDir.apply { if (!exists()) mkdirs() }
+private fun getApp() = Env.getApp()
 
-val DATA_PATH: File = File(Env.getApp().dataDir, "data").apply { if (!exists()) mkdirs() }
+val CACHE_PATH: File = getApp().cacheDir.apply { if (!exists()) mkdirs() }
 
-val ACCOUNT_PATH: File = File(Env.getApp().filesDir, "account").apply { if (!exists()) mkdirs() }
-val USER_PREFIX_PATH: File = File(Env.getApp().filesDir, "prefix").apply { if (!exists()) mkdirs() }
-val CUSTOM_TOKEN_PATH: File = File(Env.getApp().filesDir, "token").apply { if (!exists()) mkdirs() }
+val DATA_PATH: File = File(getApp().dataDir, "data").apply { if (!exists()) mkdirs() }
+
+val ACCOUNT_PATH: File = File(getApp().filesDir, "account").apply { if (!exists()) mkdirs() }
+val USER_PREFIX_PATH: File = File(getApp().filesDir, "prefix").apply { if (!exists()) mkdirs() }
+val CUSTOM_TOKEN_PATH: File = File(getApp().filesDir, "token").apply { if (!exists()) mkdirs() }
 
 val CACHE_VIDEO_PATH: File = File(CACHE_PATH, "video").apply { if (!exists()) mkdirs() }
 
 fun File.toContentUri(authority: String): Uri {
-    return FileProvider.getUriForFile(Env.getApp(), authority, this)
+    return FileProvider.getUriForFile(getApp(), authority, this)
 }
 
 @WorkerThread
@@ -29,13 +31,12 @@ fun Uri?.toFile(path: String): File? {
     if (this == null) return null
     val file = File(path)
     return try {
-        Env.getApp().contentResolver.openInputStream(this)?.use { it.toFile(file) }
+        getApp().contentResolver.openInputStream(this)?.use { it.toFile(file) }
         file
     } catch (e: Exception) {
         loge(e)
         return null
     }
-
 }
 
 // delete all file in cache folder
@@ -68,11 +69,6 @@ fun Bitmap.saveToFile(file: File, fileType: Bitmap.CompressFormat = Bitmap.Compr
     return file
 }
 
-fun Bitmap.saveToCache(fileName: String, fileType: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): File {
-    val file = File(CACHE_PATH, fileName)
-    return saveToFile(file, fileType)
-}
-
 @WorkerThread
 fun String?.saveToFile(file: File) {
     if (this.isNullOrBlank()) {
@@ -96,7 +92,7 @@ fun File?.read(): String {
 
 fun readTextFromAssets(path: String): String? {
     try {
-        BufferedReader(InputStreamReader(Env.getApp().assets.open(path))).use { reader ->
+        BufferedReader(InputStreamReader(getApp().assets.open(path))).use { reader ->
             return reader.readText()
         }
     } catch (e: Exception) {

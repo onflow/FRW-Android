@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.widgets
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.SystemClock
 import android.text.format.DateUtils
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.WidgetSendButtonBinding
 import com.flowfoundation.wallet.page.security.securityVerification
+import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.logd
@@ -23,7 +25,7 @@ class SendButton : TouchScaleCardView {
 
     private var binding = WidgetSendButtonBinding.inflate(LayoutInflater.from(context))
 
-    private var indicatorProgress = 0.0f
+    private var startTimeMillis = 0L
 
     private var progressTask = Runnable { updateProgress() }
 
@@ -63,6 +65,7 @@ class SendButton : TouchScaleCardView {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 isPressedDown = true
+                startTimeMillis = SystemClock.elapsedRealtime()
                 postDelayed(progressTask, 16)
                 logd(TAG, "onTouchEvent down")
             }
@@ -70,6 +73,14 @@ class SendButton : TouchScaleCardView {
         }
 
         return true
+    }
+
+    fun setWarningButton(isWarning: Boolean) {
+        with(binding) {
+            setCardBackgroundColor(if (isWarning) R.color.info_error_red.res2color() else R.color.button_color.res2color())
+            holdToSend.setTextColor(if (isWarning) R.color.white.res2color() else R.color.brightest_text.res2color())
+            progressBar.setIndicatorColor(if (isWarning) R.color.white_80.res2color() else R.color.primary80.res2color())
+        }
     }
 
     fun updateDefaultText(textId: Int) {
@@ -103,7 +114,7 @@ class SendButton : TouchScaleCardView {
                     setScaleEnable(true)
                     progressBar.changeIndeterminate(false)
                     removeCallbacks(progressTask)
-                    indicatorProgress = 0f
+                    startTimeMillis = 0L
                     if (defaultTextId != 0) {
                         holdToSend.setText(defaultTextId)
                     }
@@ -122,24 +133,22 @@ class SendButton : TouchScaleCardView {
     }
 
     private fun updateProgress() {
-        if (indicatorProgress > duration || !isPressedDown) {
+        if (!isPressedDown) {
             return
         }
-        indicatorProgress += 16
+        val elapsedTime = SystemClock.elapsedRealtime() - startTimeMillis
 
-        val progress = min(100, ((indicatorProgress / duration) * 100).toInt())
-
-        binding.progressBar.progress = progress
-
-        if (progress >= 100) {
+        if (elapsedTime >= duration) {
+            binding.progressBar.progress = 100
             logd(TAG, "updateProgress() 100")
             changeState(ButtonState.VERIFICATION)
             return
         }
 
-        if (progress < 100) {
-            postDelayed(progressTask, 16)
-        }
+        val progress = min(100, ((elapsedTime / duration) * 100).toInt())
+        binding.progressBar.progress = progress
+
+        postDelayed(progressTask, 16)
     }
 
     private fun verification() {
