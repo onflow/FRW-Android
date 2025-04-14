@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.profile.presenter
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
 import com.instabug.library.Instabug
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -166,6 +167,7 @@ class ProfileFragmentPresenter(
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateInboxCount(count: Int) {
         binding.actionGroup.inboxUnreadCount.setVisible(count != 0)
         binding.actionGroup.inboxUnreadCount.text = count.toString()

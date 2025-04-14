@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.error.BaseError
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.loge
@@ -73,6 +74,17 @@ object MixpanelManager {
             put(KEY_ERROR, errorMsg)
         }
         trackEvent(EVENT_SCRIPT_ERROR, properties)
+    }
+
+    fun error(error: BaseError, locationInfo: String, errorMsg: String? = null) {
+        val properties = JSONObject().apply {
+            put(KEY_CODE, error.errorCode)
+            put(KEY_CATEGORY, error.errorCategory)
+            put(KEY_MESSAGE, errorMsg ?: error.errorMessage)
+            put(KEY_EXTRA, locationInfo)
+            put(KEY_VALUE, error.rawValue)
+        }
+        trackEvent(EVENT_ERROR, properties)
     }
 
     fun delegationCreated(address: String, nodeId: String, amount: String) {

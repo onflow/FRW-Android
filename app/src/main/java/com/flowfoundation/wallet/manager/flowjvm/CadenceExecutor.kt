@@ -668,7 +668,7 @@ suspend fun cadenceBridgeNFTFromFlowToEVM(
         CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
             arg { string(nftIdentifier) }
             arg { uint64(nftId) }
-            arg { address(recipient) }
+            arg { string(recipient) }
         }
     } else {
         CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM.transactionByMainWallet {

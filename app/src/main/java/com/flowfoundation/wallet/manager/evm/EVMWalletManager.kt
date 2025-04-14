@@ -31,7 +31,10 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
@@ -219,6 +222,11 @@ object EVMWalletManager {
                 if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.FLOW,
                 true
             )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -244,6 +252,11 @@ object EVMWalletManager {
                 if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.CHILD,
                 true
             )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -379,6 +392,7 @@ object EVMWalletManager {
             val txId = action()
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
+                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation(operationName))
                 callback(false)
                 return
             }
@@ -401,11 +415,8 @@ object EVMWalletManager {
         }
     }
 
-    private fun postTransaction(nft: Nft, txId: String?, callback: (isSuccess: Boolean) -> Unit) {
-        callback.invoke(txId != null)
-        if (txId.isNullOrBlank()) {
-            return
-        }
+    private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
+        callback.invoke(true)
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),

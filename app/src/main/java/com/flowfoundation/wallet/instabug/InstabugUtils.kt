@@ -2,6 +2,11 @@ package com.flowfoundation.wallet.instabug
 
 import android.app.Application
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.instabug.library.Feature
 import com.instabug.library.Instabug
 import com.instabug.library.IssueType
@@ -40,4 +45,21 @@ fun instabugInitialize(application: Application) {
             .build()
         Instabug.setWelcomeMessageState(WelcomeMessage.State.DISABLED)
     }
+    Instabug.onReportSubmitHandler { report ->
+        firebaseUid()?.let {
+            report.setUserAttribute("uid", it)
+        }
+        report.setUserAttribute("username", AccountManager.userInfo()?.username.orEmpty())
+        report.setUserAttribute("FlowAccount", WalletManager.wallet()?.walletAddress().orEmpty())
+        report.setUserAttribute("SelectedAccount", WalletManager.selectedWalletAddress())
+        val childAccounts = WalletManager.childAccountList()?.get()?.map { it.address } ?: emptyList()
+        if (childAccounts.isNotEmpty())
+            report.setUserAttribute(
+                "ChildAccounts",
+                childAccounts.toString()
+            )
+        report.setUserAttribute("COA", EVMWalletManager.getEVMAddress().orEmpty())
+        report.setUserAttribute("Network", chainNetWorkString())
+    }
+
 }
