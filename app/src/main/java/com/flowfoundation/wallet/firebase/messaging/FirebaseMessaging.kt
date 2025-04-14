@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.updatePushToken
+import com.instabug.chat.Replies
 
 private const val TAG = "FirebaseMessaging"
 
@@ -47,6 +48,7 @@ fun uploadPushToken(isNewToken: Boolean = false) {
         if (isNewToken.not() && AccountManager.isAddressUploaded(address)) {
             return@ioScope
         }
+        Replies.setPushNotificationRegistrationToken(token)
         val retrofit =
             retrofitWithHost(if (isDev()) "https://dev-scanner.lilico.app" else "https://scanner.lilico.app", ignoreAuthorization = false)
         val service = retrofit.create(ApiService::class.java)
@@ -57,7 +59,6 @@ fun uploadPushToken(isNewToken: Boolean = false) {
         logd(TAG, "uploadPushToken => params:$params")
 
         val resp = service.uploadPushToken(params)
-
         logd(TAG, resp)
         if (resp.status == 200) {
             AccountManager.addressUploaded(address)

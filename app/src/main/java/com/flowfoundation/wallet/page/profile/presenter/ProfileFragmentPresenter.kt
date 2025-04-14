@@ -38,6 +38,7 @@ import com.flowfoundation.wallet.page.security.SecuritySettingActivity
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.getNotificationSettingIntent
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode

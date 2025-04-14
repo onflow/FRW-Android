@@ -58,12 +58,12 @@ private suspend fun swapSendInternal(
     // want use how many token to swap other token
     val isExactFrom = viewModel.exactToken == ExactToken.FROM
 
-    val cadenceScript = (if (isExactFrom) CadenceScript.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else CadenceScript.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS).getScript()
+    val cadenceScript = (if (isExactFrom) CadenceScript.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else CadenceScript.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS)
 
     val tokenName = swapPaths.last().split(".").last()
     val tokenAddress = swapPaths.last().split(".")[1].toAddress()
-    return cadenceScript.replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
-        .transactionByMainWallet {
+    return cadenceScript.getScript().replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
+        .transactionByMainWallet(cadenceScript.scriptId) {
             arg { array { swapPaths.map { string(it) } } }
 
             if (isExactFrom) {
