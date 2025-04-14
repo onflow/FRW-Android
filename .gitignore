@@ -20,6 +20,6 @@ fabric.properties
 /app/src/main/assets/env
 google-services.json
 */google-services.json
-*/keystore.jks
+*/**.jks
 /crowdin.yml
 service-account.json
