@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.Tran
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.page.window.bubble.tools.popBubbleStack
 import com.flowfoundation.wallet.page.window.bubble.tools.updateBubbleStack
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -45,6 +46,8 @@ object TransactionStateManager {
 
     private val onStateChangeCallbacks = mutableListOf<WeakReference<OnTransactionStateChange>>()
 
+    private val txScriptMap = mutableMapOf<String, String>()
+
     fun reload() {
         ioScope {
             stateData = cache.read() ?: TransactionStateData(
@@ -52,6 +55,14 @@ object TransactionStateManager {
             )
             loopState()
         }
+    }
+
+    fun recordTransactionScript(txId: String, script: String) {
+        txScriptMap[txId] = script
+    }
+
+    fun getScriptId(txId: String): String {
+        return txScriptMap[txId] ?: ""
     }
 
     fun getTransactionStateList() = stateData.data.toList()
@@ -132,7 +143,9 @@ object TransactionStateManager {
                 delay(3000)
                 popBubbleStack(state)
                 if (state.isFailed()) {
-                    when (parseErrorCode(state.errorMsg.orEmpty())) {
+                    val errorCode = parseErrorCode(state.errorMsg.orEmpty())
+                    ErrorReporter.reportTransactionError(state.transactionId, errorCode ?: -1)
+                    when (errorCode) {
                         ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                             BaseActivity.getCurrentActivity()?.let {
                                 StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()

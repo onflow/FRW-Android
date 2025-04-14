@@ -17,6 +17,8 @@ import com.instabug.library.invocation.InstabugInvocationEvent
 import com.instabug.library.ui.onboarding.WelcomeMessage
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
+import com.instabug.bug.BugReporting
+import com.instabug.bug.ProactiveReportingConfigs
 
 
 fun instabugInitialize(application: Application) {
@@ -39,7 +41,7 @@ fun instabugInitialize(application: Application) {
             .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
                 ReproConfigurations.Builder()
-                    .setIssueMode(IssueType.All, ReproMode.EnableWithNoScreenshots)
+                    .setIssueMode(IssueType.All, ReproMode.EnableWithScreenshots)
                     .build())
             .setAutoMaskScreenshotsTypes(MaskingType.MASK_NOTHING)
             .build()
@@ -61,5 +63,10 @@ fun instabugInitialize(application: Application) {
         report.setUserAttribute("COA", EVMWalletManager.getEVMAddress().orEmpty())
         report.setUserAttribute("Network", chainNetWorkString())
     }
-
+    val configuration = ProactiveReportingConfigs.Builder()
+        .isEnabled(true) //Enable/disable
+        .setGapBetweenModals(20) // Time in seconds
+        .setModalDelayAfterDetection(5) // Time in seconds
+        .build()
+    BugReporting.setProactiveReportingConfigurations(configuration)
 }

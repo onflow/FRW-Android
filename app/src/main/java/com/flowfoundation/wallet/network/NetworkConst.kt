@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 
 
 val API_HOST = if (isDev()) "https://dev.lilico.app" else "https://api.lilico.app"
-val BASE_HOST = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://lilico.app"
+val BASE_HOST = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://web.api.wallet.flow.com"
 
 fun retrofit(
     disableConverter: Boolean = false,

@@ -259,7 +259,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-appcheck-debug'
     
     /** Instabug **/
-    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:11.5.4'
+    implementation 'com.instabug.library:instabug:14.3.0'
+    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:14.3.0'
     /** firebase **/
 
     implementation "dev.chrisbanes:insetter-ktx:0.3.1"
@@ -320,8 +321,6 @@ dependencies {
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     implementation 'com.guolindev.permissionx:permissionx:1.7.1'
-
-    implementation 'com.instabug.library:instabug:14.2.0'
 
     implementation 'com.github.alexzhirkevich:custom-qr-generator:2.0.0-alpha01'
 

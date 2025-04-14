@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.loge
 import com.mixpanel.android.mpmetrics.MixpanelAPI
+import com.nftco.flow.sdk.FlowError
 import com.reown.android.internal.common.crypto.sha256
 import org.json.JSONArray
 import org.json.JSONObject
@@ -83,6 +84,17 @@ object MixpanelManager {
             put(KEY_MESSAGE, errorMsg ?: error.errorMessage)
             put(KEY_EXTRA, locationInfo)
             put(KEY_VALUE, error.rawValue)
+        }
+        trackEvent(EVENT_ERROR, properties)
+    }
+
+    fun error(error: FlowError, locationInfo: String, errorMsg: String? = null) {
+        val properties = JSONObject().apply {
+            put(KEY_CODE, error.code)
+            put(KEY_CATEGORY, error.javaClass.simpleName)
+            put(KEY_MESSAGE, errorMsg ?: error.name)
+            put(KEY_EXTRA, locationInfo)
+            put(KEY_VALUE, error.name)
         }
         trackEvent(EVENT_ERROR, properties)
     }
