@@ -4,8 +4,7 @@ import com.google.gson.GsonBuilder
 import com.flowfoundation.wallet.firebase.analytics.reportEvent
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.utils.*
-import com.instabug.library.apm_okhttp_event_listener.InstabugApmOkHttpEventListener
-import com.instabug.library.apmokhttplogger.InstabugAPMOkhttpInterceptor
+import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -44,11 +43,10 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
         writeTimeout(10, TimeUnit.SECONDS)
 
         addInterceptor(HeaderInterceptor())
-        addInterceptor(InstabugAPMOkhttpInterceptor())
+        addInterceptor(InstabugOkhttpInterceptor())
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
-        eventListener(InstabugApmOkHttpEventListener())
     }.build()
     val body = if (data == null) data else (if (data is String) data else GsonBuilder().serializeNulls().create().toJson(data))
 

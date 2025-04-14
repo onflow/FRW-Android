@@ -24,6 +24,9 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.addressPattern
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.google.gson.Gson
@@ -66,12 +69,22 @@ class NftSendConfirmViewModel : ViewModel() {
                             if (WalletManager.isChildAccount(toAddress)) {
                                 // COA -> Child
                                 val txId = cadenceBridgeChildNFTFromEvm(nft.getNFTIdentifier(), nft.id, toAddress)
+                                if (txId.isNullOrBlank()) {
+                                    resultLiveData.postValue(false)
+                                    ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                    return@viewModelIOScope
+                                }
                                 postTransaction(txId)
                                 trackTransferNFT(nft.getNFTIdentifier(), txId, TransferAccountType.COA, TransferAccountType.CHILD)
                             } else {
                                 // COA -> Flow
                                 if (WalletManager.isSelfFlowAddress(toAddress)) {
                                     val txId = cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), nft.id)
+                                    if (txId.isNullOrBlank()) {
+                                        resultLiveData.postValue(false)
+                                        ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                        return@viewModelIOScope
+                                    }
                                     postTransaction(txId)
                                 } else {
                                     bridgeNFTFromEVMToFlow(nft.getNFTIdentifier(), nft.id, toAddress)
@@ -87,6 +100,11 @@ class NftSendConfirmViewModel : ViewModel() {
                             )
                             val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
                             val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
+                            if (txId.isNullOrBlank()) {
+                                resultLiveData.postValue(false)
+                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                return@viewModelIOScope
+                            }
                             postTransaction(txId)
                             trackTransferNFT(nft.getNFTIdentifier(), txId, TransferAccountType.COA, TransferAccountType.EVM)
                         }
@@ -100,6 +118,11 @@ class NftSendConfirmViewModel : ViewModel() {
                         } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                             // Child -> COA
                             val txId = cadenceBridgeChildNFTToEvm(nft.getNFTIdentifier(), nft.id, sendModel.fromAddress)
+                            if (txId.isNullOrBlank()) {
+                                resultLiveData.postValue(false)
+                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                return@viewModelIOScope
+                            }
                             postTransaction(txId)
                             trackTransferNFT(nft.getNFTIdentifier(), txId, TransferAccountType.CHILD,
                                 TransferAccountType.COA)
@@ -120,6 +143,11 @@ class NftSendConfirmViewModel : ViewModel() {
                                 nft.id,
                                 toAddress.removeAddressPrefix()
                             )
+                            if (txId.isNullOrBlank()) {
+                                resultLiveData.postValue(false)
+                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                return@viewModelIOScope
+                            }
                             postTransaction(txId)
                             trackTransferNFT(nft.getNFTIdentifier(), txId, TransferAccountType.FLOW, TransferAccountType.EVM)
                         }
@@ -141,6 +169,11 @@ class NftSendConfirmViewModel : ViewModel() {
                         val data =
                             Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
                         val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
+                        if (txId.isNullOrBlank()) {
+                            resultLiveData.postValue(false)
+                            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                            return@viewModelIOScope
+                        }
                         postTransaction(txId)
                         trackTransferNFT(nft.getNFTIdentifier(), txId, TransferAccountType.COA, TransferAccountType.EVM)
                     } else if (WalletManager.isChildAccount(sendModel.fromAddress)) {
@@ -195,6 +228,11 @@ class NftSendConfirmViewModel : ViewModel() {
             identifier,
             sendModel.nft
         )
+        if (txId.isNullOrBlank()) {
+            resultLiveData.postValue(false)
+            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            return
+        }
         postTransaction(txId)
         trackTransferNFT(sendModel.nft.getNFTIdentifier(), txId, TransferAccountType.CHILD,
             TransferAccountType.CHILD)
@@ -210,6 +248,11 @@ class NftSendConfirmViewModel : ViewModel() {
             identifier,
             sendModel.nft
         )
+        if (txId.isNullOrBlank()) {
+            resultLiveData.postValue(false)
+            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            return
+        }
         postTransaction(txId)
         trackTransferNFT(sendModel.nft.getNFTIdentifier(), txId, TransferAccountType.CHILD,
             TransferAccountType.FLOW)
@@ -224,6 +267,11 @@ class NftSendConfirmViewModel : ViewModel() {
             identifier,
             sendModel.nft
         )
+        if (txId.isNullOrBlank()) {
+            resultLiveData.postValue(false)
+            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            return
+        }
         postTransaction(txId)
         trackTransferNFT(sendModel.nft.getNFTIdentifier(), txId, TransferAccountType.FLOW,
             TransferAccountType.CHILD)
@@ -231,22 +279,29 @@ class NftSendConfirmViewModel : ViewModel() {
 
     private suspend fun bridgeNFTFromEVMToFlow(nftIdentifier: String, nftId: String, recipient: String) {
         val txId = cadenceBridgeNFTFromEVMToFlow(nftIdentifier, nftId, recipient)
+        if (txId.isNullOrBlank()) {
+            resultLiveData.postValue(false)
+            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            return
+        }
         postTransaction(txId)
         trackTransferNFT(nftIdentifier, txId, TransferAccountType.COA, TransferAccountType.FLOW)
     }
 
     private suspend fun sendNFTFromFlowToFlow() {
         val txId = cadenceTransferNft(sendModel.target.address!!, sendModel.nft)
+        if (txId.isNullOrBlank()) {
+            resultLiveData.postValue(false)
+            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            return
+        }
         postTransaction(txId)
         trackTransferNFT(sendModel.nft.getNFTIdentifier(), txId, TransferAccountType.FLOW,
             TransferAccountType.FLOW)
     }
 
-    private fun postTransaction(txId: String?) {
-        resultLiveData.postValue(txId != null)
-        if (txId.isNullOrBlank()) {
-            return
-        }
+    private fun postTransaction(txId: String) {
+        resultLiveData.postValue(true)
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
