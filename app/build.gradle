@@ -232,13 +232,13 @@ dependencies {
     implementation 'androidx.compose.ui:ui-tooling:1.7.8'
 
     /** Google Drive **/
-    implementation('com.google.api-client:google-api-client:1.43.3') {
+    implementation('com.google.api-client:google-api-client:1.35.2') {
         exclude group: 'com.google.guava'
     }
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
     implementation 'com.google.android.gms:play-services-auth:21.3.0'
     implementation 'com.google.http-client:google-http-client:1.43.3'
-    implementation 'com.google.api-client:google-api-client-android:1.43.3'
+    implementation 'com.google.api-client:google-api-client-android:1.35.2'
     implementation('com.google.oauth-client:google-oauth-client-jetty:1.31.0') {
         exclude group: 'com.google.guava'
     }
