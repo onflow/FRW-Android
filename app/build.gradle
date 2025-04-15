@@ -166,7 +166,7 @@ android {
 }
 
 play {
-    serviceAccountCredentials.set(file("service-account.json"))
+    serviceAccountCredentials.set(file("../service-account.json"))
 }
 //configurations.configureEach {
 //    resolutionStrategy.eachDependency {
