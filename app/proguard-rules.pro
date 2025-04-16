@@ -174,6 +174,7 @@
 
 -keep class com.flowfoundation.wallet.widgets.webview.JsInterface.** {*;}
 -keep class com.flowfoundation.wallet.widgets.webview.JavascriptKt.** {*;}
+-keep class com.flowfoundation.wallet.widgets.easyfloat.core.FloatingWindowHelper { *; }
 
 -keep class com.reown.** {*;}
 -keep class net.sqlcipher.** {*;}
