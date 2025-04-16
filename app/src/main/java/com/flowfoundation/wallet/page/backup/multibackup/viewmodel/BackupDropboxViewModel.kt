@@ -30,6 +30,8 @@ import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupDropboxState
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.BackupError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
 import wallet.core.jni.HDWallet
 
@@ -108,6 +110,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                     TransactionStateManager.newTransaction(transactionState)
                     pushBubbleStack(transactionState)
                 } catch (e: Exception) {
+                    ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED, e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.DROPBOX)
                     throw e
                 }
@@ -153,6 +156,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                         backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                     }
                 } catch (e: Exception) {
+                    ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.DROPBOX)
                     backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                 }

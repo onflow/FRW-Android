@@ -24,12 +24,16 @@ import com.flowfoundation.wallet.network.model.ImportRequest
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitWithHost
+import com.flowfoundation.wallet.page.backup.model.BackupKey
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.page.restore.keystore.model.KeyStoreOption
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
+import com.flowfoundation.wallet.utils.error.BackupError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setBackupManually
@@ -121,6 +125,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            ErrorReporter.reportWithMixpanel(BackupError.KEYSTORE_RESTORE_FAILED, e)
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.restore_failed)
         }
@@ -160,6 +165,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            ErrorReporter.reportWithMixpanel(BackupError.PRIVATE_KEY_RESTORE_FAILED, e)
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.restore_failed)
         }
@@ -202,6 +208,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            ErrorReporter.reportWithMixpanel(BackupError.SEED_PHRASE_RESTORE_FAILED, e)
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.restore_failed)
         }
@@ -232,6 +239,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            ErrorReporter.reportWithMixpanel(WalletError.QUERY_PUBLIC_KEY_FAILED, e)
             checkIsQueryAddress(k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey)
         }
     }
@@ -475,6 +483,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     }
 
                     if (catching.isFailure) {
+                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_IMPORT_FAILED, catching.exceptionOrNull())
                         loge(catching.exceptionOrNull())
                         callback.invoke(false)
                     }
@@ -603,6 +612,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     }
 
                     if (catching.isFailure) {
+                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, catching.exceptionOrNull())
                         loge(catching.exceptionOrNull())
                         callback.invoke(false)
                     }
@@ -704,6 +714,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     }
 
                     if (catching.isFailure) {
+                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, catching.exceptionOrNull())
                         loge(catching.exceptionOrNull())
                         callback.invoke(false, R.string.login_failure)
                     }

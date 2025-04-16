@@ -4,6 +4,8 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -50,6 +52,8 @@ object WalletFetcher {
                         }
                         firstAttempt = false
                     }
+                }.onFailure {
+                    ErrorReporter.reportWithMixpanel(WalletError.FETCH_FAILED, it)
                 }
             }
         }
