@@ -6,6 +6,8 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.cadenceScriptApi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
+import com.flowfoundation.wallet.utils.error.CadenceError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.extensions.toSafeFloat
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -44,6 +46,7 @@ object CadenceApiManager {
             fetchCadenceFromNetwork()
         } catch (e: Exception) {
             e.printStackTrace()
+            ErrorReporter.reportWithMixpanel(CadenceError.LOAD_SCRIPT_FAILED, e)
             fetchCadenceFromNetwork()
         }
     }
@@ -68,6 +71,7 @@ object CadenceApiManager {
                 }
                 MixpanelManager.cadenceScriptVersion(getCadenceScriptVersion(), getCadenceVersion())
             } catch (e: Exception) {
+                ErrorReporter.reportWithMixpanel(CadenceError.FETCH_SCRIPT_FAILED, e)
                 e.printStackTrace()
             }
         }

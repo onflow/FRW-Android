@@ -14,6 +14,8 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.address.FlowDomainServer
+import com.flowfoundation.wallet.utils.error.CadenceError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -765,7 +767,9 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
             block()
         }
     } catch (e: Throwable) {
-        loge(ScriptExecutionException(scriptId, e))
+        val exception = ScriptExecutionException(scriptId, e)
+        loge(exception)
+        ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
         MixpanelManager.scriptError(scriptId, e.cause?.message.orEmpty())
 //        reportCadenceErrorToDebugView()
         return null
