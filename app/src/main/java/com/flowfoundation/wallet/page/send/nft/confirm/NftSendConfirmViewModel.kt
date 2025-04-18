@@ -25,7 +25,6 @@ import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.addressPattern
 import com.flowfoundation.wallet.utils.error.ErrorReporter
-import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
@@ -71,7 +70,7 @@ class NftSendConfirmViewModel : ViewModel() {
                                 val txId = cadenceBridgeChildNFTFromEvm(nft.getNFTIdentifier(), nft.id, toAddress)
                                 if (txId.isNullOrBlank()) {
                                     resultLiveData.postValue(false)
-                                    ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                    ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                     return@viewModelIOScope
                                 }
                                 postTransaction(txId)
@@ -82,7 +81,7 @@ class NftSendConfirmViewModel : ViewModel() {
                                     val txId = cadenceBridgeNFTFromEvm(nft.getNFTIdentifier(), nft.id)
                                     if (txId.isNullOrBlank()) {
                                         resultLiveData.postValue(false)
-                                        ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                        ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                         return@viewModelIOScope
                                     }
                                     postTransaction(txId)
@@ -102,7 +101,7 @@ class NftSendConfirmViewModel : ViewModel() {
                             val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
                             if (txId.isNullOrBlank()) {
                                 resultLiveData.postValue(false)
-                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                 return@viewModelIOScope
                             }
                             postTransaction(txId)
@@ -120,7 +119,7 @@ class NftSendConfirmViewModel : ViewModel() {
                             val txId = cadenceBridgeChildNFTToEvm(nft.getNFTIdentifier(), nft.id, sendModel.fromAddress)
                             if (txId.isNullOrBlank()) {
                                 resultLiveData.postValue(false)
-                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                 return@viewModelIOScope
                             }
                             postTransaction(txId)
@@ -145,7 +144,7 @@ class NftSendConfirmViewModel : ViewModel() {
                             )
                             if (txId.isNullOrBlank()) {
                                 resultLiveData.postValue(false)
-                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                 return@viewModelIOScope
                             }
                             postTransaction(txId)
@@ -171,7 +170,7 @@ class NftSendConfirmViewModel : ViewModel() {
                         val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
                         if (txId.isNullOrBlank()) {
                             resultLiveData.postValue(false)
-                            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                             return@viewModelIOScope
                         }
                         postTransaction(txId)
@@ -230,7 +229,7 @@ class NftSendConfirmViewModel : ViewModel() {
         )
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -250,7 +249,7 @@ class NftSendConfirmViewModel : ViewModel() {
         )
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -269,7 +268,7 @@ class NftSendConfirmViewModel : ViewModel() {
         )
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -281,7 +280,7 @@ class NftSendConfirmViewModel : ViewModel() {
         val txId = cadenceBridgeNFTFromEVMToFlow(nftIdentifier, nftId, recipient)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -292,7 +291,7 @@ class NftSendConfirmViewModel : ViewModel() {
         val txId = cadenceTransferNft(sendModel.target.address!!, sendModel.nft)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)

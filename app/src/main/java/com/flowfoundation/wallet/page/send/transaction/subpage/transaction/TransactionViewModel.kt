@@ -27,7 +27,6 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.ErrorReporter
-import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
@@ -126,7 +125,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                                 val txId = cadenceBridgeFTFromCOA(coin.getFTIdentifier(), amount)
                                 if (txId.isNullOrBlank()) {
                                     resultLiveData.postValue(false)
-                                    ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                    ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                     return@viewModelIOScope
                                 }
                                 postTransaction(txId)
@@ -145,7 +144,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         val txId = cadenceSendEVMTransaction(coin.address.removeAddressPrefix(), 0f.toBigDecimal(), data)
                         if (txId.isNullOrBlank()) {
                             resultLiveData.postValue(false)
-                            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                             return@viewModelIOScope
                         }
                         postTransaction(txId)
@@ -166,7 +165,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                             )
                             if (txId.isNullOrBlank()) {
                                 resultLiveData.postValue(false)
-                                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                                 return@viewModelIOScope
                             }
                             postTransaction(txId)
@@ -180,7 +179,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                         )
                         if (txId.isNullOrBlank()) {
                             resultLiveData.postValue(false)
-                            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                             return@viewModelIOScope
                         }
                         postTransaction(txId)
@@ -197,7 +196,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
                     val txId = cadenceSendEVMTransaction(coin.address.removeAddressPrefix(), 0f.toBigDecimal(), data)
                     if (txId.isNullOrBlank()) {
                         resultLiveData.postValue(false)
-                        ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                        ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                         return@viewModelIOScope
                     }
                     postTransaction(txId)
@@ -216,7 +215,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceTransferToken(coin, transaction.target.address.orEmpty().toAddress(), transaction.amount.toDouble())
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -226,7 +225,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceSendEVMTransaction(to.removeAddressPrefix(), amount, byteArrayOf())
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -236,7 +235,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceWithdrawTokenFromCOAAccount(amount, toAddress)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -246,7 +245,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceFundFlowToCOAAccount(amount)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -256,7 +255,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceTransferFlowToEvmAddress(to.removeAddressPrefix(), amount)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -268,7 +267,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceBridgeFTFromEVMToFlow(flowIdentifier, amount, recipient)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -282,7 +281,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceBridgeChildFTToCOA(flowIdentifier, childAddress, amount)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)
@@ -296,7 +295,7 @@ class TransactionViewModel : ViewModel(), OnCoinRateUpdate {
         val txId = cadenceBridgeChildFTFromCOA(flowIdentifier, childAddress, amount)
         if (txId.isNullOrBlank()) {
             resultLiveData.postValue(false)
-            ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+            ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
             return
         }
         postTransaction(txId)

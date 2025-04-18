@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
+import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
 import com.nftco.flow.sdk.Flow
 import org.onflow.flow.infrastructure.Cadence
@@ -771,7 +772,7 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
         loge(exception)
         ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
         MixpanelManager.scriptError(scriptId, e.cause?.message.orEmpty())
-//        reportCadenceErrorToDebugView()
+        reportCadenceErrorToDebugView(scriptId, e)
         return null
     }
 }
@@ -794,6 +795,7 @@ suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceA
             args.build().forEach { arg(it) }
             walletAddress(walletAddress)
             script(this@transactionByMainWallet.addPlatformInfo())
+            scriptId(scriptId)
         }
     } catch (e: Exception) {
         loge(e)
@@ -814,6 +816,7 @@ suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArguments
             walletAddress(walletAddress)
             script(this@transactionWithBridgePayer.getScript().addPlatformInfo())
             payer(AppConfig.bridgeFeePayer().address)
+            scriptId(this@transactionWithBridgePayer.scriptId)
         }
     } catch (e: Exception) {
         loge(e)

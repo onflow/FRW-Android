@@ -34,7 +34,8 @@ enum class WalletError(
 ) : BaseError {
     FETCH_FAILED("fetchFailed"),
     QUERY_PUBLIC_KEY_FAILED("queryPublicKeyFailed"),
-    KEY_STORE_FAILED("keyStoreFailed");
+    KEY_STORE_FAILED("keyStoreFailed"),
+    QUERY_ACCOUNT_KEY_FAILED("queryAccountKeyFailed");
 }
 
 enum class BackupError(
