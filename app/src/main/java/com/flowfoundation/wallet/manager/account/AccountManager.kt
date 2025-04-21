@@ -45,8 +45,8 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.KeyManager
+import com.flow.wallet.toFormatString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

@@ -8,7 +8,7 @@ import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
-import io.outblock.wallet.CryptoProvider
+import com.flow.wallet.CryptoProvider
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
 import wallet.core.jni.Hash

@@ -42,7 +42,6 @@ import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOptionMo
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.WalletError
@@ -52,11 +51,10 @@ import com.flowfoundation.wallet.utils.setMultiBackupCreated
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.nftco.flow.sdk.parseErrorCode
-import io.outblock.wallet.KeyManager
+import com.flow.wallet.KeyManager
 import io.outblock.wallet.KeyStoreCryptoProvider
-import io.outblock.wallet.WalletCoreException
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.WalletCoreException
+import com.flow.wallet.toFormatString
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import wallet.core.jni.HDWallet

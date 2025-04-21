@@ -42,9 +42,9 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.WalletCoreException
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.KeyManager
+import com.flow.wallet.WalletCoreException
+import com.flow.wallet.toFormatString
 import kotlinx.coroutines.delay
 import java.security.MessageDigest
 import kotlin.coroutines.resume

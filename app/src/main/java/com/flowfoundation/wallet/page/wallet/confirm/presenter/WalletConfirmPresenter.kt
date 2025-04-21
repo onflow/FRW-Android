@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WCAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.page.wallet.confirm.model.ConfirmUserInfo
-import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.WalletError
@@ -23,9 +22,9 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.WalletCoreException
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.KeyManager
+import com.flow.wallet.WalletCoreException
+import com.flow.wallet.toFormatString
 
 
 class WalletConfirmPresenter(

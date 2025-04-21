@@ -10,7 +10,7 @@ import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
-import io.outblock.wallet.CryptoProvider
+import com.flow.wallet.CryptoProvider
 
 
 class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoProvider {

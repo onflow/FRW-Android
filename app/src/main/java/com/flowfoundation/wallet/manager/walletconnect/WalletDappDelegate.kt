@@ -33,7 +33,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import io.outblock.wallet.KeyManager
+import com.flow.wallet.KeyManager
 import io.outblock.wallet.KeyStoreCryptoProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking

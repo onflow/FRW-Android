@@ -6,7 +6,7 @@ import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.wallet.Wallet
-import io.outblock.wallet.CryptoProvider
+import com.flow.wallet.CryptoProvider
 import io.outblock.wallet.KeyStoreCryptoProvider
 
 
