@@ -21,12 +21,16 @@ import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
+import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.isNewVersion
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
+import com.instabug.bug.BugReporting
+import com.instabug.library.Instabug
+import com.instabug.library.OnSdkDismissCallback
 
 class MainActivity : BaseActivity() {
 
@@ -71,6 +75,19 @@ class MainActivity : BaseActivity() {
         if (!isNotificationPermissionChecked() && !isNotificationPermissionGrand(this)) {
             NotificationPermissionActivity.launch(this)
         }
+        configurationInstabugBugReport()
+    }
+
+    private fun configurationInstabugBugReport() {
+        BugReporting.setOnInvokeCallback {
+            DebugViewerDataSource.generateDebugMessageFile(this)?.let {
+                Instabug.addFileAttachment(it, "log.txt")
+            }
+            BugReporting.setOnDismissCallback { _, _ ->
+                Instabug.clearFileAttachment()
+                BugReporting.setOnDismissCallback(null)
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -100,6 +117,7 @@ class MainActivity : BaseActivity() {
         if (INSTANCE == this) {
             INSTANCE = null
         }
+        BugReporting.setOnInvokeCallback(null)
         WindowFrame.release()
         super.onDestroy()
     }

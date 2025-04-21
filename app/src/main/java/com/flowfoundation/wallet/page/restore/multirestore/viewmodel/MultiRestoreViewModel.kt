@@ -45,13 +45,16 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.InvalidKeyException
 import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.utils.setMultiBackupCreated
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.instabug.library.Instabug
 import com.nftco.flow.sdk.parseErrorCode
 import io.outblock.wallet.KeyManager
 import io.outblock.wallet.KeyStoreCryptoProvider
@@ -362,6 +365,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             })
         } catch (e: Exception) {
             loge(e)
+            reportCadenceErrorToDebugView(scriptId, e)
+            if (e is InvalidKeyException) {
+                ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
+                Instabug.show()
+            }
             null
         }
     }
