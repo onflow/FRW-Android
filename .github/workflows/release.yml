@@ -147,7 +147,7 @@ jobs:
       #   run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
       
       - name: Upload to Play Store
-        run: cd ./frw && fastlane deploy
+        run: cd ./frw && fastlane internal
       
       - name: Cleanup
         if: always()
