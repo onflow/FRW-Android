@@ -132,7 +132,7 @@ jobs:
 
       - name: Write Service Account Key to File
         run: |
-          printf '%s'  '${{ secrets.FASTLANE_SA }}' > ${{ github.workspace }}/fastlane/service-account.json
+          printf '%s'  '${{ secrets.FASTLANE_SA }}' > ${{ github.workspace }}/frw/fastlane/service-account.json
     
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
