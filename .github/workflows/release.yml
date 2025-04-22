@@ -80,6 +80,15 @@ jobs:
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
 
+      - name: Cleanup
+        if: always()
+        run: |
+          rm ${{ github.workspace }}/frw/app/keystore.jks
+          rm ${{ github.workspace }}/frw/key.properties
+          rm ${{ github.workspace }}/frw/local.properties
+          rm ${{ github.workspace }}/frw/app/src/release/google-services.json
+          rm ${{ github.workspace }}/frw/service-account.json
+
   release:
     runs-on: ubuntu-latest
     environment: production
@@ -138,4 +147,14 @@ jobs:
       #   run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
       
       - name: Upload to Play Store
-        run: cd ./frw && ./gradlew bundleRelease && fastlane supply --aab ./app/build/outputs/bundle/release/app-release.aab
+        run: cd ./frw && ./gradlew bundleRelease && fastlane supply --aab ./app/build/outputs/bundle/release/app-release.aab --track internal --skip_upload_changelogs
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          rm ${{ github.workspace }}/frw/app/keystore.jks
+          rm ${{ github.workspace }}/frw/key.properties
+          rm ${{ github.workspace }}/frw/local.properties
+          rm ${{ github.workspace }}/frw/app/src/release/google-services.json
+          rm ${{ github.workspace }}/frw/service-account.json
+          rm ${{ github.workspace }}/frw/fastlane/service-account.json
