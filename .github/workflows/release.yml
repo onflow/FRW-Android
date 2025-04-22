@@ -77,6 +77,10 @@ jobs:
         run: |
           printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
 
+      - name: Write Service Account Key to File
+        run: |
+          printf '%s'  '${{ secrets.FASTLANE_SA }}' > ${{ github.workspace }}/fastlane/service-account.json
+  
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
 
@@ -131,4 +135,7 @@ jobs:
           printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
 
       - name: Build Signed APK
-        run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease publishReleaseBundle
+        run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
+      
+      - name: Upload to Play Store
+        run: cd ./frw && fastlane supply --aab ./app/build/outputs/bundle/release/app-release.aab

@@ -1,0 +1,15 @@
+Flow Wallet is built from the ground up for Flow Blockchain! Take complete self-custody of your crypto and NFTs, and use them across Flow's wide network of applications.
+
+Flow Wallet turns your device into a hardware wallet by leveraging your device's Secure Enclave to derive and use the cryptographic keys which secure your accounts and assets on Flow; giving you hardware-level security that you can trust. With Flow Wallet, no one can take your assets without your permission.
+
+Enjoy gas-free transactions on Flow! Flow Wallet covers the gas fee associated with your transactions on Flow, allowing you to explore Flow's ecosystem of applications with ease.
+
+Manage your crypto and NFTs directly in the app! View your crypto balances at a glance, and browse your NFT collections with ease. 
+
+Browse Flow's wide selection of apps and games with Flow Wallet's in-app browser. Instantly connect to apps to collect NFTs, and use your crypto.
+
+Flow Wallet lets you manage your accounts and keys, giving you total control over the access to your crypto and NFTs. Flow Wallet let's you store backup keys using iCloud, Google Drive or Passkey to store recovery keys in the event you lose access to your device.
+
+With Flow Wallet, your can device-link with the Flow Wallet chrome extension to share access to your Flow account between your desktop and mobile device, giving you access to your Flow account across the devices you use.
+
+Find Flow Blockchain on x/twitter @flow_blockchain
