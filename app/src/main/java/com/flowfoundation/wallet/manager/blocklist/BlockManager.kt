@@ -4,6 +4,7 @@ import android.net.Uri
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
 import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.net.URL
@@ -86,6 +87,8 @@ object BlockManager {
 }
 
 data class BlockListResponse(
+    @SerializedName("flow")
     val flow: List<String>?,
+    @SerializedName("evm")
     val evm: List<String>?
 )

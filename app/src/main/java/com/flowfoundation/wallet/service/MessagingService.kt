@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.updatePushToken
+import com.instabug.chat.Replies
 
 class MessagingService : FirebaseMessagingService() {
 
@@ -28,6 +29,9 @@ class MessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         logd(TAG, "receive new firebase message:$message")
         parseFirebaseMessaging(message)
+        if (Replies.isInstabugNotification(message.getData())) {
+            Replies.showNotification(message.getData());
+        }
     }
 
     /**

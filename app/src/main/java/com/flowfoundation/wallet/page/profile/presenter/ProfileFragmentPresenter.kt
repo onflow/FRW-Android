@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.profile.presenter
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
 import com.instabug.library.Instabug
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -37,6 +38,7 @@ import com.flowfoundation.wallet.page.security.SecuritySettingActivity
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.getNotificationSettingIntent
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
@@ -166,6 +168,7 @@ class ProfileFragmentPresenter(
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateInboxCount(count: Int) {
         binding.actionGroup.inboxUnreadCount.setVisible(count != 0)
         binding.actionGroup.inboxUnreadCount.text = count.toString()

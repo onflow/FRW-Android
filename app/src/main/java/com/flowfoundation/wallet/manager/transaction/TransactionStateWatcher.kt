@@ -9,9 +9,11 @@ import com.nftco.flow.sdk.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
+import com.nftco.flow.sdk.FlowError
 import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 
@@ -36,16 +38,19 @@ class TransactionStateWatcher(
                 }
                 ret = result
             }
+            val errorMsg = ret?.errorMessage
 
-            if (!statusCode.isProcessing() || !ret?.errorMessage.isNullOrBlank()) {
+            if (!statusCode.isProcessing() || !errorMsg.isNullOrBlank()) {
                 MixpanelManager.transactionResult(
                     transactionId,
-                    statusCode.isProcessing().not() && ret?.errorMessage.isNullOrBlank(),
+                    statusCode.isProcessing().not() && errorMsg.isNullOrBlank(),
                     ret?.errorMessage
                 )
                 uiScope {
-                    if (!ret?.errorMessage.isNullOrBlank()) {
-                        when (parseErrorCode(ret?.errorMessage.orEmpty())) {
+                    if (!errorMsg.isNullOrBlank()) {
+                        val errorCode = parseErrorCode(errorMsg)
+                        ErrorReporter.reportTransactionError(transactionId, errorCode ?: -1)
+                        when (errorCode) {
                             ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                                 BaseActivity.getCurrentActivity()?.let {
                                     StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()
