@@ -43,7 +43,10 @@ platform :android do
       release_status: 'draft',
       aab: './app/build/outputs/bundle/release/app-release.aab',
       skip_upload_changelogs: true,
-      skip_upload_apk: true
+      skip_upload_apk: true,
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
     )
   end
 end
