@@ -18,7 +18,7 @@ object PendingActionHelper {
         getPrefs(context).edit().apply {
             putString(KEY_PENDING_DEEPLINK, deepLink.toString())
             putBoolean(KEY_HAS_PENDING_DEEPLINK, true)
-            apply()
+            commit()
         }
     }
 
@@ -35,7 +35,7 @@ object PendingActionHelper {
         getPrefs(context).edit().apply {
             remove(KEY_PENDING_DEEPLINK)
             putBoolean(KEY_HAS_PENDING_DEEPLINK, false)
-            apply()
+            commit()
         }
     }
 }

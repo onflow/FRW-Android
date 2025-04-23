@@ -18,10 +18,26 @@ import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
+import java.math.BigDecimal
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 private const val TAG = "DeepLinkingDispatch"
+
+enum class DeepLinkPath(val path: String) {
+    DAPP("/dapp"),
+    SEND("/send"),
+    BUY("/buy");
+
+    companion object {
+        fun fromPath(path: String?): DeepLinkPath? {
+            return entries.firstOrNull { it.path == path }
+        }
+    }
+}
+
 
 fun dispatchDeepLinking(uri: Uri) {
     ioScope {
@@ -31,14 +47,15 @@ fun dispatchDeepLinking(uri: Uri) {
             return@ioScope
         }
         if (uri.host == "link.wallet.flow.com") {
-            when (uri.path) {
-                "/dapp" -> {
+            when (DeepLinkPath.fromPath(uri.path)) {
+                DeepLinkPath.DAPP -> {
                     val dappUrl = uri.getQueryParameter("url")
                     if (dappUrl != null) {
+                        delay(1000)
                         dispatchDapp(dappUrl)
                     }
                 }
-                "/send" -> {
+                DeepLinkPath.SEND -> {
                     val recipient = uri.getQueryParameter("recipient")
                     val network = uri.getQueryParameter("network")
                     val value = uri.getQueryParameter("value")
@@ -46,8 +63,12 @@ fun dispatchDeepLinking(uri: Uri) {
                         dispatchSend(uri, recipient, network, parseValue(value))
                     }
                 }
-                "/buy" -> {
+                DeepLinkPath.BUY -> {
+                    delay(1000)
                     dispatchBuy()
+                }
+                else -> {
+                    logd(TAG, "dispatchDeepLinking: unknown path=${uri.path}")
                 }
             }
         }
@@ -95,15 +116,15 @@ fun getWalletConnectUri(uri: Uri): String? {
     }.getOrNull()
 }
 
-private fun parseValue(value: String?): Double? {
+private fun parseValue(value: String?): BigDecimal? {
     if (value == null) return null
 
     return try {
         if (value.startsWith("0x", ignoreCase = true)) {
-            val hexValue = value.substring(2)
-            hexValue.toLong(16).toDouble()
+            val amountValue = Numeric.decodeQuantity(value)
+            Convert.fromWei(amountValue.toString(), Convert.Unit.ETHER)
         } else {
-            value.toDouble()
+            BigDecimal(value)
         }
     } catch (e: Exception) {
         logd(TAG, "Failed to parse value: $value, ${e.message}")
@@ -120,16 +141,18 @@ private fun dispatchDapp(dappUrl: String) {
     }
 }
 
-private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: Double?) {
+private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: BigDecimal?) {
     logd(TAG, "dispatchSend: recipient=$recipient, network=$network, value=$value")
     BaseActivity.getCurrentActivity()?.let {
         if (network != null && network != chainNetWorkString()) {
-            PendingActionHelper.savePendingDeepLink(it, uri)
-            SwitchNetworkDialog(
-                context = it,
-                dialogType = DialogType.DEEPLINK,
-                targetNetwork = networkId(network)
-            ).show()
+//            PendingActionHelper.savePendingDeepLink(it, uri)
+            uiScope {
+                SwitchNetworkDialog(
+                    context = it,
+                    dialogType = DialogType.DEEPLINK,
+                    targetNetwork = networkId(network)
+                ).show()
+            }
         } else {
             SendAmountActivity.launch(
                 it,
@@ -143,6 +166,8 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: D
 
 private fun dispatchBuy() {
     BaseActivity.getCurrentActivity()?.let {
-        SwapDialog.show(it.supportFragmentManager)
+        uiScope {
+            SwapDialog.show(it.supportFragmentManager)
+        }
     }
 }
