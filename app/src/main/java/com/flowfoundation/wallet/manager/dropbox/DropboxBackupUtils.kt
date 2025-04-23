@@ -10,6 +10,8 @@ import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.backup.BackupItem
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.DropboxBackupError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.getPinCode
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -68,6 +70,7 @@ fun uploadDropboxBackup(
         sendCallback(true)
     } catch (e: Exception) {
         loge(e)
+        ErrorReporter.reportWithMixpanel(DropboxBackupError.UPLOAD_BACKUP_ERROR, e)
         sendCallback(false)
         throw e
     }
@@ -114,6 +117,7 @@ private fun existingData(dropboxHelper: DropboxServerHelper): List<BackupItem> {
         }
         backupItems.distinct()
     } catch (e: Exception) {
+        ErrorReporter.reportWithMixpanel(DropboxBackupError.READ_FILE_ERROR, e)
         loge(e)
         return emptyList()
     }

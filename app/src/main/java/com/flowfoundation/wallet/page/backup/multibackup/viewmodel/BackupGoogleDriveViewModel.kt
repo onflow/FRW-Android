@@ -11,8 +11,8 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_LOGIN_FINISH
-import com.flowfoundation.wallet.manager.drive.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
-import com.flowfoundation.wallet.manager.drive.EXTRA_SUCCESS
+import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_UPLOAD_FINISH
+import com.flowfoundation.wallet.manager.backup.EXTRA_SUCCESS
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
@@ -30,6 +30,8 @@ import com.flowfoundation.wallet.page.backup.multibackup.model.BackupGoogleDrive
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.BackupError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
 import wallet.core.jni.HDWallet
 
@@ -108,6 +110,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
                     TransactionStateManager.newTransaction(transactionState)
                     pushBubbleStack(transactionState)
                 } catch (e: Exception) {
+                    ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED, e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.GOOGLE_DRIVE)
                     throw e
                 }
@@ -153,6 +156,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
                         backupStateLiveData.postValue(BackupGoogleDriveState.NETWORK_ERROR)
                     }
                 } catch (e: Exception) {
+                    ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.GOOGLE_DRIVE)
                     backupStateLiveData.postValue(BackupGoogleDriveState.NETWORK_ERROR)
                 }

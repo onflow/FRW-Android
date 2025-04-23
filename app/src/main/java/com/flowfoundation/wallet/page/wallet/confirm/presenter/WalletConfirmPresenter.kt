@@ -15,11 +15,16 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WCAccountRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.page.wallet.confirm.model.ConfirmUserInfo
+import com.flowfoundation.wallet.utils.error.AccountError
+import com.flowfoundation.wallet.utils.error.BackupError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import io.outblock.wallet.KeyManager
+import io.outblock.wallet.WalletCoreException
 import io.outblock.wallet.toFormatString
 
 
@@ -44,25 +49,33 @@ class WalletConfirmPresenter(
     private fun addDeviceKey(username: String) {
         loadingDialog.show()
         ioScope {
-            val deviceInfoRequest = DeviceInfoManager.getWCDeviceInfo()
-            val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(username))
-            val currentSession = currentWcSession() ?: return@ioScope
-            val params = WCAccountRequest(
-                method = WalletConnectMethod.ADD_DEVICE_KEY.value,
-                data = WCAccountInfo(
-                    WCAccountKey(publicKey = keyPair.public.toFormatString()),
-                    deviceInfoRequest
-                )
-            )
-
-            SignClient.request(
-                Sign.Params.Request(
-                    sessionTopic = currentSession.topic,
+            try {
+                val deviceInfoRequest = DeviceInfoManager.getWCDeviceInfo()
+                val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(username))
+                val currentSession = currentWcSession() ?: return@ioScope
+                val params = WCAccountRequest(
                     method = WalletConnectMethod.ADD_DEVICE_KEY.value,
-                    params = Gson().toJson(params),
-                    chainId = currentSession.chainId(),
+                    data = WCAccountInfo(
+                        WCAccountKey(publicKey = keyPair.public.toFormatString()),
+                        deviceInfoRequest
+                    )
                 )
-            ) { error -> loge(error.throwable) }
+
+                SignClient.request(
+                    Sign.Params.Request(
+                        sessionTopic = currentSession.topic,
+                        method = WalletConnectMethod.ADD_DEVICE_KEY.value,
+                        params = Gson().toJson(params),
+                        chainId = currentSession.chainId(),
+                    )
+                ) { error -> loge(error.throwable) }
+            } catch (e: Exception) {
+                if (e is WalletCoreException) {
+                    ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
+                } else {
+                    ErrorReporter.reportWithMixpanel(BackupError.ADD_DEVICE_KEY_FAILED, e)
+                }
+            }
         }
     }
 
