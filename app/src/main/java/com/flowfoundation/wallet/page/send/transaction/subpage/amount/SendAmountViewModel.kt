@@ -19,6 +19,7 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     private lateinit var contact: AddressBookContact
 
     val balanceLiveData = MutableLiveData<SendBalanceModel>()
+    private var initialAmount: String? = null
 
     val onCoinSwap = MutableLiveData<Boolean>()
 
@@ -38,6 +39,12 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     }
 
     fun contact() = contact
+
+    fun setInitialAmount(amount: String?) {
+        this.initialAmount = amount
+    }
+
+    fun getInitialAmount() = initialAmount
 
     fun load() {
         viewModelIOScope(this) {
