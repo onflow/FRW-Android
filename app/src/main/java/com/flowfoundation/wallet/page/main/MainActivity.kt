@@ -14,8 +14,8 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
 import com.flowfoundation.wallet.firebase.firebaseInformationCheck
-import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkingActivity
 import com.flowfoundation.wallet.page.component.deeplinking.PendingActionHelper
+import com.flowfoundation.wallet.page.component.deeplinking.executePendingDeepLink
 import com.flowfoundation.wallet.page.dialog.common.RootDetectedDialog
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
@@ -32,7 +32,6 @@ import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.bug.BugReporting
 import com.instabug.library.Instabug
-import com.instabug.library.OnSdkDismissCallback
 
 class MainActivity : BaseActivity() {
 
@@ -121,7 +120,7 @@ class MainActivity : BaseActivity() {
             val pendingDeeplink = PendingActionHelper.getPendingDeepLink(this)
             PendingActionHelper.clearPendingDeepLink(this)
             if (pendingDeeplink != null) {
-                DeepLinkingActivity.openPendingAction(this, pendingDeeplink)
+                executePendingDeepLink(pendingDeeplink)
             }
         }
     }

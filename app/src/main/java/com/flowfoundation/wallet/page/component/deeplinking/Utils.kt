@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.component.deeplinking
 
+import android.content.Context
 import android.net.Uri
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -39,37 +40,39 @@ enum class DeepLinkPath(val path: String) {
 }
 
 
-fun dispatchDeepLinking(uri: Uri) {
+fun dispatchDeepLinking(context: Context, uri: Uri) {
     ioScope {
         val wcUri = getWalletConnectUri(uri)
         if (wcUri?.startsWith("wc:") == true) {
             dispatchWalletConnect(uri)
             return@ioScope
         }
-        if (uri.host == "link.wallet.flow.com") {
-            when (DeepLinkPath.fromPath(uri.path)) {
-                DeepLinkPath.DAPP -> {
-                    val dappUrl = uri.getQueryParameter("url")
-                    if (dappUrl != null) {
-                        delay(1000)
-                        dispatchDapp(dappUrl)
-                    }
+        PendingActionHelper.savePendingDeepLink(context, uri)
+    }
+}
+
+fun executePendingDeepLink(uri: Uri) {
+    if (uri.host == "link.wallet.flow.com") {
+        when (DeepLinkPath.fromPath(uri.path)) {
+            DeepLinkPath.DAPP -> {
+                val dappUrl = uri.getQueryParameter("url")
+                if (dappUrl != null) {
+                    dispatchDapp(dappUrl)
                 }
-                DeepLinkPath.SEND -> {
-                    val recipient = uri.getQueryParameter("recipient")
-                    val network = uri.getQueryParameter("network")
-                    val value = uri.getQueryParameter("value")
-                    if (recipient != null) {
-                        dispatchSend(uri, recipient, network, parseValue(value))
-                    }
+            }
+            DeepLinkPath.SEND -> {
+                val recipient = uri.getQueryParameter("recipient")
+                val network = uri.getQueryParameter("network")
+                val value = uri.getQueryParameter("value")
+                if (recipient != null) {
+                    dispatchSend(uri, recipient, network, parseValue(value))
                 }
-                DeepLinkPath.BUY -> {
-                    delay(1000)
-                    dispatchBuy()
-                }
-                else -> {
-                    logd(TAG, "dispatchDeepLinking: unknown path=${uri.path}")
-                }
+            }
+            DeepLinkPath.BUY -> {
+                dispatchBuy()
+            }
+            else -> {
+                logd(TAG, "executeDeepLinking: unknown path=${uri.path}")
             }
         }
     }
@@ -145,7 +148,7 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
     logd(TAG, "dispatchSend: recipient=$recipient, network=$network, value=$value")
     BaseActivity.getCurrentActivity()?.let {
         if (network != null && network != chainNetWorkString()) {
-//            PendingActionHelper.savePendingDeepLink(it, uri)
+            PendingActionHelper.savePendingDeepLink(it, uri)
             uiScope {
                 SwitchNetworkDialog(
                     context = it,
