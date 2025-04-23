@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ./frw
-      
+
       - name: Checkout tools repo to latest stable release
         uses: actions/checkout@v4
         with:
@@ -31,7 +31,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-    
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -99,7 +99,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ./frw
-      
+
       - name: Checkout tools repo
         uses: actions/checkout@v4
         with:
@@ -112,7 +112,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-    
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -139,16 +139,16 @@ jobs:
         run: |
           printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
 
-      - name: Write Service Account Key to File
+      - name: Write Fastlane Service Account Key to File
         run: |
           printf '%s'  '${{ secrets.FASTLANE_SA }}' > ${{ github.workspace }}/frw/fastlane/service-account.json
-    
-      # - name: Build Signed APK
-      #   run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
-      
+
+      - name: Build Signed APK
+        run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
+
       - name: Upload to Play Store
         run: cd ./frw && fastlane internal
-      
+
       - name: Cleanup
         if: always()
         run: |
