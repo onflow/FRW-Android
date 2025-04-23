@@ -103,6 +103,9 @@ android {
             matchingFallbacks = ['debug', 'qa', 'release']
 
             firebaseAppDistribution {
+                if (!properties.containsKey('serviceCredentialsFile') || !properties.containsKey('testers')) {
+                    throw new GradleException('Required Firebase App Distribution properties are missing')
+                }
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
@@ -120,6 +123,9 @@ android {
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
+                if (!properties.containsKey('serviceCredentialsFile') || !properties.containsKey('testers')) {
+                    throw new GradleException('Required Firebase App Distribution properties are missing')
+                }
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
