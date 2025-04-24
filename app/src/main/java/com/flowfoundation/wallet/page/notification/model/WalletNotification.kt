@@ -25,7 +25,7 @@ data class WalletNotification(
     @SerializedName("url")
     val url: String? = null,
     @SerializedName("expiry_time")
-    val expiryTime: Date,
+    val expiryTime: Date?,
     @SerializedName("display_type")
     val displayType: DisplayType,
     @SerializedName("conditions")
@@ -42,7 +42,7 @@ data class WalletNotification(
     fun isExpired(): Boolean {
         if (displayType == DisplayType.EXPIRY) {
             val currentTime = Date()
-            return currentTime.after(expiryTime)
+            return expiryTime?.let { currentTime.after(it) } ?: false
         } else {
             return false
         }
