@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ./frw
-      
+
       - name: Checkout tools repo to latest stable release
         uses: actions/checkout@v4
         with:
@@ -30,7 +30,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-    
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -79,6 +79,15 @@ jobs:
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
 
+      - name: Cleanup
+        if: always()
+        run: |
+          rm ${{ github.workspace }}/frw/app/keystore.jks
+          rm ${{ github.workspace }}/frw/key.properties
+          rm ${{ github.workspace }}/frw/local.properties
+          rm ${{ github.workspace }}/frw/app/src/dev/google-services.json
+          rm ${{ github.workspace }}/frw/service-account.json
+
   release:
     runs-on: ubuntu-latest
     environment: production
@@ -89,48 +98,29 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: ./frw
-      
+
       - name: Checkout tools repo
         uses: actions/checkout@v4
         with:
           repository: Outblock/Flow-Wallet-Kit
           path: ./Flow-Wallet-Kit
+          ref: 0c00c994c93f18d9558ba7a953177a3f4a6f5d76
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
-    
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           log-accepted-android-sdk-licenses: false
 
-
-      - name: Generate Keystore
+      - name: Decode keystore file
         run: |
-          KEYSTORE_PATH="${{ github.workspace }}/frw/app/keystore.jks"
-          KEYSTORE_PASSWORD="password"
-          KEY_ALIAS="alias_name"
-          KEY_PASSWORD="password"
-
-          # Export variables for use in later steps
-          echo "KEYSTORE_PATH=$KEYSTORE_PATH" >> $GITHUB_ENV
-          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
-          echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
-
-          # Generate the keystore
-          keytool -genkeypair -v \
-            -keystore "$KEYSTORE_PATH" \
-            -storepass "$KEYSTORE_PASSWORD" \
-            -alias "$KEY_ALIAS" \
-            -keypass "$KEY_PASSWORD" \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Github Action, OU=DevEx, O=Flow Foundation, L=Ottawa, S=Ontario, C=CA"
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ github.workspace }}/frw/app/keystore.jks
+        shell: bash
 
       - name: Write Key Properties to File
         run: |
@@ -148,5 +138,22 @@ jobs:
         run: |
           printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
 
+      - name: Write Fastlane Service Account Key to File
+        run: |
+          printf '%s'  '${{ secrets.FASTLANE_SA }}' > ${{ github.workspace }}/frw/fastlane/service-account.json
+
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
+
+      - name: Upload to Play Store
+        run: cd ./frw && fastlane internal
+
+      - name: Cleanup
+        if: always()
+        run: |
+          rm ${{ github.workspace }}/frw/app/keystore.jks
+          rm ${{ github.workspace }}/frw/key.properties
+          rm ${{ github.workspace }}/frw/local.properties
+          rm ${{ github.workspace }}/frw/app/src/release/google-services.json
+          rm ${{ github.workspace }}/frw/service-account.json
+          rm ${{ github.workspace }}/frw/fastlane/service-account.json
