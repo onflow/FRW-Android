@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.tools.BrowserTab
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
+import com.flowfoundation.wallet.utils.extensions.res2String
 
 class BubbleItem(
     val data: Any,
@@ -28,7 +29,7 @@ fun BubbleItem.icon(): Any? {
 fun BubbleItem.title(): String {
     return when (data) {
         is BrowserTab -> data.title().orEmpty()
-        is TransactionState -> title()
+        is TransactionState -> data.title()
         else -> ""
     }
 }
@@ -45,3 +46,6 @@ private fun TransactionState.icon(): Any {
     }
 }
 
+private fun TransactionState.title(): String {
+    return R.string.pending_transaction.res2String()
+}
