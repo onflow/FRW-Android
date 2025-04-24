@@ -720,4 +720,6 @@
     <string name="ignore_warning">Ignora avviso, mostra comunque</string>
     <string name="connect_warning">Ignora avviso, connetti comunque</string>
     <string name="blocked_tip">Questa app è stata contrassegnata come pericolosa.</string>
+    <string name="switch_to">Passa a %1$s</string>
+    <string name="deeplink_login_failed">Impossibile aprire, prima si prega di creare un portafoglio.</string>
 </resources>
