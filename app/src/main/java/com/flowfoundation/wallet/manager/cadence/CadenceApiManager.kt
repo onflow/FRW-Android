@@ -82,7 +82,11 @@ object CadenceApiManager {
                     return@ioScope
                 }
                 logd(TAG, "Signature: $signature")
-                val responseBody = rawResponse.body()?.string() ?: ""
+                val responseBody = rawResponse.body()?.let { body ->
+                    body.string().also {
+                        body.close()
+                    }
+                } ?: ""
                 logd(TAG, "Response: $responseBody")
                 val isSignatureValid = try {
                     verifySignature(signature, responseBody.toByteArray())
