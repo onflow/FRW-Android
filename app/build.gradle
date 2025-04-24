@@ -48,6 +48,7 @@ android {
         buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
+        buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
         manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
