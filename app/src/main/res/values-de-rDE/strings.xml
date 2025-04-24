@@ -720,4 +720,6 @@
     <string name="ignore_warning">Warnung ignorieren, trotzdem anzeigen</string>
     <string name="connect_warning">Warnung ignorieren, trotzdem verbinden</string>
     <string name="blocked_tip">Diese App wurde als gefährlich gekennzeichnet.</string>
+    <string name="switch_to">Wechseln zu %1$s</string>
+    <string name="deeplink_login_failed">Öffnen fehlgeschlagen, bitte zuerst eine Brieftasche erstellen.</string>
 </resources>

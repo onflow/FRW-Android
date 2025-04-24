@@ -2,7 +2,9 @@ package com.flowfoundation.wallet.page.component.deeplinking
 
 import android.content.Context
 import android.net.Uri
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -12,7 +14,9 @@ import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
@@ -51,31 +55,39 @@ fun dispatchDeepLinking(context: Context, uri: Uri) {
     }
 }
 
-fun executePendingDeepLink(uri: Uri) {
-    if (uri.host == "link.wallet.flow.com") {
-        when (DeepLinkPath.fromPath(uri.path)) {
-            DeepLinkPath.DAPP -> {
-                val dappUrl = uri.getQueryParameter("url")
-                if (dappUrl != null) {
-                    dispatchDapp(dappUrl)
+suspend fun executePendingDeepLink(uri: Uri) {
+    if (isRegistered() && isUserSignIn()) {
+        if (uri.host == "link.wallet.flow.com") {
+            when (DeepLinkPath.fromPath(uri.path)) {
+                DeepLinkPath.DAPP -> {
+                    val dappUrl = uri.getQueryParameter("url")
+                    if (dappUrl != null) {
+                        dispatchDapp(dappUrl)
+                    }
                 }
-            }
-            DeepLinkPath.SEND -> {
-                val recipient = uri.getQueryParameter("recipient")
-                val network = uri.getQueryParameter("network")
-                val value = uri.getQueryParameter("value")
-                if (recipient != null) {
-                    dispatchSend(uri, recipient, network, parseValue(value))
+
+                DeepLinkPath.SEND -> {
+                    val recipient = uri.getQueryParameter("recipient")
+                    val network = uri.getQueryParameter("network")
+                    val value = uri.getQueryParameter("value")
+                    if (recipient != null) {
+                        dispatchSend(uri, recipient, network, parseValue(value))
+                    }
                 }
-            }
-            DeepLinkPath.BUY -> {
-                dispatchBuy()
-            }
-            else -> {
-                logd(TAG, "executeDeepLinking: unknown path=${uri.path}")
+
+                DeepLinkPath.BUY -> {
+                    dispatchBuy()
+                }
+
+                else -> {
+                    logd(TAG, "executeDeepLinking: unknown path=${uri.path}")
+                }
             }
         }
+    } else {
+        toast(R.string.deeplink_login_failed)
     }
+
 }
 
 // https://lilico.app/?uri=wc%3A83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c%402%3Frelay-protocol%3Diridium%26symKey%3D618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90

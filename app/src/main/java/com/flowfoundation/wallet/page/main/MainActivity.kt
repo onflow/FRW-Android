@@ -120,7 +120,9 @@ class MainActivity : BaseActivity() {
             val pendingDeeplink = PendingActionHelper.getPendingDeepLink(this)
             PendingActionHelper.clearPendingDeepLink(this)
             if (pendingDeeplink != null) {
-                executePendingDeepLink(pendingDeeplink)
+                uiScope {
+                    executePendingDeepLink(pendingDeeplink)
+                }
             }
         }
     }

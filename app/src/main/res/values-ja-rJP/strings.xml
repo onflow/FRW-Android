@@ -720,4 +720,6 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="ignore_warning">警告を無視して、とにかく表示</string>
     <string name="connect_warning">警告を無視して、とにかく接続してください</string>
     <string name="blocked_tip">このアプリは危険としてフラグ付けられています。</string>
+    <string name="switch_to">%1$s に切り替え</string>
+    <string name="deeplink_login_failed">開けませんでした。最初にウォレットを作成してください。</string>
 </resources>
