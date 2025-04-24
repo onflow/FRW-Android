@@ -97,7 +97,11 @@ enum class CadenceError(
     EMPTY("empty"),
     LOAD_SCRIPT_FAILED("loadScriptFailed"),
     FETCH_SCRIPT_FAILED("fetchScriptFailed"),
-    EXECUTE_FAILED("cadenceExecuteFailed");
+    EXECUTE_FAILED("cadenceExecuteFailed"),
+    EMPTY_SCRIPT_SIGNATURE("emptyScriptSignature"),
+    INVALID_SCRIPT_SIGNATURE("invalidScriptSignature"),
+    SIGNATURE_VERIFICATION_ERROR("signatureVerificationError"),
+    DECODE_SCRIPT_FAILED("decodeScriptFailed");
 }
 
 enum class MoveError(
