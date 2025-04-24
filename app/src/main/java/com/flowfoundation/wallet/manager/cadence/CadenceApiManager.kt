@@ -19,17 +19,10 @@ import com.flowfoundation.wallet.utils.saveToFile
 import com.google.gson.Gson
 import okio.ByteString.Companion.decodeBase64
 import okio.ByteString.Companion.decodeHex
-import org.bouncycastle.asn1.ASN1InputStream
-import org.bouncycastle.asn1.ASN1Integer
-import org.bouncycastle.asn1.DERSequence
-import org.bouncycastle.crypto.params.ECDomainParameters
-import org.bouncycastle.crypto.params.ECPublicKeyParameters
-import org.bouncycastle.crypto.signers.ECDSASigner
-import org.bouncycastle.jce.ECNamedCurveTable
-import java.io.ByteArrayInputStream
+import wallet.core.jni.Hash
+import wallet.core.jni.PublicKey
+import wallet.core.jni.PublicKeyType
 import java.io.File
-import java.math.BigInteger
-import java.security.MessageDigest
 
 
 object CadenceApiManager {
@@ -124,39 +117,10 @@ object CadenceApiManager {
 
     private fun verifySignature(signature: String, data: ByteArray): Boolean {
         try {
-            val messageDigest = MessageDigest.getInstance("SHA-256")
-            val hashedData = messageDigest.digest(data)
-
+            val hashedData = Hash.sha256(data)
             val pubKeyBytes = BuildConfig.X_SIGNATURE_KEY.decodeHex().toByteArray()
-
-            val ecSpec = ECNamedCurveTable.getParameterSpec("secp256r1")
-
-            val pubKeyPoint = ecSpec.curve.decodePoint(pubKeyBytes)
-
-            val pubKeyParams = ECPublicKeyParameters(pubKeyPoint,
-                ECDomainParameters(ecSpec.curve, ecSpec.g, ecSpec.n, ecSpec.h)
-            )
-
-            val rawSignatureBytes = signature.decodeHex().toByteArray()
-
-            val r: BigInteger
-            val s: BigInteger
-
-            if (rawSignatureBytes.size == 64) {
-                r = BigInteger(1, rawSignatureBytes.copyOfRange(0, 32))
-                s = BigInteger(1, rawSignatureBytes.copyOfRange(32, 64))
-            } else {
-                val asn1InputStream = ASN1InputStream(ByteArrayInputStream(rawSignatureBytes))
-                val sequence = asn1InputStream.readObject() as DERSequence
-                r = (sequence.getObjectAt(0) as ASN1Integer).value
-                s = (sequence.getObjectAt(1) as ASN1Integer).value
-                asn1InputStream.close()
-            }
-
-            val signer = ECDSASigner()
-            signer.init(false, pubKeyParams)
-
-            return signer.verifySignature(hashedData, r, s)
+            val public = PublicKey(pubKeyBytes, PublicKeyType.NIST256P1EXTENDED)
+            return public.verify(signature.decodeHex().toByteArray(), hashedData)
         } catch (e: Exception) {
             loge(TAG, "Error verifying signature: ${e.message}")
             e.printStackTrace()
