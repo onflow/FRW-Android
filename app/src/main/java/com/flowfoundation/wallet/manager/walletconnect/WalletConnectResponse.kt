@@ -122,6 +122,7 @@ private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentif
     val accountProofSign = cryptoProvider.signData(encodeAccountProof(
         address,
         nonce,
+        appIdentifier,
         includeDomainTag = true
     ))
     return """
