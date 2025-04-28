@@ -47,7 +47,10 @@ class WalletSyncViewModel : ViewModel() {
             )
         )
         fun resumeContinuation(result: Result<String>) {
-            atomicReference.getAndSet(null)?.resumeWith(result)
+            val cont = atomicReference.get()
+            if(cont != null && atomicReference.compareAndSet(cont, null)){
+                cont.resumeWith(result)
+            }
         }
 
         val pairing: Core.Model.Pairing = CoreClient.Pairing.create { error ->
