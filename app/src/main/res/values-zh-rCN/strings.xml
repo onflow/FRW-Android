@@ -719,4 +719,6 @@
     <string name="ignore_warning">忽略警告，继续显示</string>
     <string name="connect_warning">忽略警告，继续连接</string>
     <string name="blocked_tip">此应用已被标记为危险。</string>
+    <string name="switch_to">切换到 %1$s</string>
+    <string name="deeplink_login_failed">无法打开，请先创建一个钱包。</string>
 </resources>

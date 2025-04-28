@@ -31,8 +31,9 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.error.CadenceError
+import com.flowfoundation.wallet.utils.error.EVMError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
-import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
@@ -76,13 +77,14 @@ object EVMWalletManager {
         }
     }
 
-    fun toChecksumEVMAddress(evmAddress: String): String {
+    private fun toChecksumEVMAddress(evmAddress: String): String {
         return Keys.toChecksumAddress(evmAddress)
     }
 
     // todo get evm address for each network
     fun fetchEVMAddress(callback: ((isSuccess: Boolean) -> Unit)? = null) {
         if (canFetchEVMAddress().not()) {
+            ErrorReporter.reportWithMixpanel(CadenceError.EMPTY, getCurrentCodeLocation())
             callback?.invoke(false)
             return
         }
@@ -91,6 +93,7 @@ object EVMWalletManager {
             val address = cadenceQueryEVMAddress()
             logd(TAG, "fetchEVMAddress address::$address")
             if (address.isNullOrEmpty()) {
+                ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                 callback?.invoke(false)
             } else {
                 val networkAddress = getNetworkAddress()
@@ -99,6 +102,7 @@ object EVMWalletManager {
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
                     callback?.invoke(true)
                 } else {
+                    ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
                     callback?.invoke(false)
                 }
             }
@@ -131,6 +135,7 @@ object EVMWalletManager {
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
         val address = evmAddressMap[getNetworkAddress(network)]
         return if (address.isNullOrBlank() || address == "0x") {
+            ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
             return null
         } else {
             toChecksumEVMAddress(address)
@@ -224,7 +229,7 @@ object EVMWalletManager {
             )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)
@@ -254,7 +259,7 @@ object EVMWalletManager {
             )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)
@@ -392,7 +397,7 @@ object EVMWalletManager {
             val txId = action()
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation(operationName))
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation(operationName))
                 callback(false)
                 return
             }

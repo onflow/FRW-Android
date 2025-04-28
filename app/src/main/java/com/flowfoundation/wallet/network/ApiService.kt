@@ -5,6 +5,8 @@ import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
 import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
+import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -210,7 +212,7 @@ interface ApiService {
     suspend fun getTokenPrices(): TokenPriceResponse
 
     @GET("/api/v2/scripts")
-    suspend fun getCadenceScript(): CadenceScriptResponse
+    suspend fun getCadenceScriptWithHeaders(): Response<ResponseBody>
 
     @GET("/api/v3/evm/{evmAddress}/fts")
     suspend fun getEVMTokenBalance(

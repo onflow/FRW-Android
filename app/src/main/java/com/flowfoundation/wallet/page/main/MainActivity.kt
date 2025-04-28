@@ -14,6 +14,8 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
 import com.flowfoundation.wallet.firebase.firebaseInformationCheck
+import com.flowfoundation.wallet.page.component.deeplinking.PendingActionHelper
+import com.flowfoundation.wallet.page.component.deeplinking.executePendingDeepLink
 import com.flowfoundation.wallet.page.dialog.common.RootDetectedDialog
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
@@ -21,12 +23,15 @@ import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
+import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.isNewVersion
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
+import com.instabug.bug.BugReporting
+import com.instabug.library.Instabug
 
 class MainActivity : BaseActivity() {
 
@@ -71,6 +76,19 @@ class MainActivity : BaseActivity() {
         if (!isNotificationPermissionChecked() && !isNotificationPermissionGrand(this)) {
             NotificationPermissionActivity.launch(this)
         }
+        configurationInstabugBugReport()
+    }
+
+    private fun configurationInstabugBugReport() {
+        BugReporting.setOnInvokeCallback {
+            DebugViewerDataSource.generateDebugMessageFile(this)?.let {
+                Instabug.addFileAttachment(it, "log.txt")
+            }
+            BugReporting.setOnDismissCallback { _, _ ->
+                Instabug.clearFileAttachment()
+                BugReporting.setOnDismissCallback(null)
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -94,12 +112,26 @@ class MainActivity : BaseActivity() {
     override fun onResume() {
         RootDetectedDialog.show(supportFragmentManager)
         super.onResume()
+        checkPendingAction()
+    }
+
+    private fun checkPendingAction() {
+        if (PendingActionHelper.hasPendingDeepLink(this)) {
+            val pendingDeeplink = PendingActionHelper.getPendingDeepLink(this)
+            PendingActionHelper.clearPendingDeepLink(this)
+            if (pendingDeeplink != null) {
+                uiScope {
+                    executePendingDeepLink(pendingDeeplink)
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
         if (INSTANCE == this) {
             INSTANCE = null
         }
+        BugReporting.setOnInvokeCallback(null)
         WindowFrame.release()
         super.onDestroy()
     }

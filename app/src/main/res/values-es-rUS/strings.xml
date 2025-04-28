@@ -720,4 +720,6 @@
     <string name="ignore_warning">Ignorar advertencia, mostrar de todos modos</string>
     <string name="connect_warning">Ignorar advertencia, conectar de todos modos</string>
     <string name="blocked_tip">Esta app ha sido marcada como peligrosa.</string>
+    <string name="switch_to">Cambiar a %1$s</string>
+    <string name="deeplink_login_failed">Error al abrir, por favor cree una cartera primero.</string>
 </resources>

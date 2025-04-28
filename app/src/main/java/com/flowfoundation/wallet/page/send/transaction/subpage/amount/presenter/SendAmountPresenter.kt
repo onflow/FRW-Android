@@ -45,6 +45,7 @@ class SendAmountPresenter(
     private val viewModel by lazy { ViewModelProvider(activity)[SendAmountViewModel::class.java] }
 
     private var minFlowBalance = BigDecimal.ZERO
+    private var initialAmountSet = false
 
     private fun balance() = viewModel.balanceLiveData.value
 
@@ -78,8 +79,25 @@ class SendAmountPresenter(
     }
 
     override fun bind(model: SendAmountModel) {
-        model.balance?.let { updateBalance(it) }
+        model.balance?.let {
+            updateBalance(it)
+            if (!initialAmountSet) {
+                setInitialAmount()
+                initialAmountSet = true
+            }
+        }
         model.onCoinSwap?.let { updateCoinState() }
+    }
+
+    private fun setInitialAmount() {
+        viewModel.getInitialAmount()?.let { amount ->
+            if (amount.isNotBlank()) {
+                with(binding) {
+                    transferAmountInput.setText(amount)
+                    transferAmountInput.setSelection(transferAmountInput.text.length)
+                }
+            }
+        }
     }
 
     private fun getMinFlowBalance() {

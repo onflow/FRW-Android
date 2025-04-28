@@ -13,6 +13,8 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.drive.DriveServerHelper
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.GoogleBackupError
 import com.flowfoundation.wallet.utils.getPinCode
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -64,6 +66,7 @@ fun uploadGoogleDriveBackup(
         sendCallback(true)
     } catch (e: Exception) {
         loge(e)
+        ErrorReporter.reportWithMixpanel(GoogleBackupError.UPLOAD_BACKUP_ERROR, e)
         sendCallback(false)
         throw e
     }
@@ -102,6 +105,7 @@ private fun existingData(driveService: Drive): List<BackupItem> {
         logd(TAG, "existingData:$json")
         Gson().fromJson(json, object : TypeToken<List<BackupItem>>() {}.type)
     } catch (e: Exception) {
+        ErrorReporter.reportWithMixpanel(GoogleBackupError.READ_FILE_ERROR, e)
         loge(e)
         throw e
     }

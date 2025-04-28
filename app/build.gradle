@@ -48,6 +48,7 @@ android {
         buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_DEV", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_DEV')}\"")
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
+        buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
         manifestPlaceholders = [dropboxKey: dropboxKeyProd]
     }
@@ -119,6 +120,12 @@ android {
             debuggable false
             signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            firebaseAppDistribution {
+                artifactType = "APK"
+                releaseNotes = "Automatic build from CI/CD pipeline."
+                serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
+                testers = properties.getProperty("testers", "")
+            }
             firebaseCrashlytics {
                 mappingFileUploadEnabled true
             }
@@ -149,7 +156,6 @@ android {
             excludes += ['META-INF/LICENSE', 'META-INF/io.netty.versions.properties', 'META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'project.properties', 'META-INF/rxjava.properties', 'META-INF/ASL2.0', 'META-INF/atomicfu.kotlin_module']
         }
     }
-
 
     namespace 'com.flowfoundation.wallet'
     lintOptions {
@@ -227,6 +233,7 @@ dependencies {
         exclude group: 'com.google.guava'
     }
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
+
     /** Google Drive **/
 
     /** ARCore **/

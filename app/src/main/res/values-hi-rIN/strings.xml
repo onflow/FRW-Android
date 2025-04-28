@@ -721,4 +721,6 @@
     <string name="ignore_warning">Ignore warning, show anyway</string>
     <string name="connect_warning">Ignore warning, connect anyway</string>
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
+    <string name="switch_to">Switch to %1$s</string>
+    <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
 </resources>

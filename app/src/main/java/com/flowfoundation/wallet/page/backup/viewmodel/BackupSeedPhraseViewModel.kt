@@ -20,6 +20,8 @@ import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupSeedPhraseOption
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.error.BackupError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
@@ -94,6 +96,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     TransactionStateManager.newTransaction(transactionState)
                     pushBubbleStack(transactionState)
                 } catch (e: Exception) {
+                    ErrorReporter.reportWithMixpanel(BackupError.ADD_PUBLIC_KEY_FAILED, e)
                     throw e
                 }
             }
@@ -123,6 +126,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     )
                     createBackupCallbackLiveData.postValue(resp.status == 200)
                 } catch (e: Exception) {
+                    ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
                     createBackupCallbackLiveData.postValue(false)
                 }
             }

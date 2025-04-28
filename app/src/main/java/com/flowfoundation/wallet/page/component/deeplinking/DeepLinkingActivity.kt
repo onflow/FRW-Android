@@ -24,9 +24,8 @@ class DeepLinkingActivity : BaseActivity() {
         }
 
         logd(TAG, "uri:$uri")
-
         MainActivity.launch(this)
-        dispatchDeepLinking(uri)
+        dispatchDeepLinking(this, uri)
         finish()
     }
 

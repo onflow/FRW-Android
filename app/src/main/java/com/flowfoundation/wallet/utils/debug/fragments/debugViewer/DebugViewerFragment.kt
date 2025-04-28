@@ -284,30 +284,39 @@ object DebugViewerDataSource {
         )
     }
 
+    fun generateDebugMessageFile(context: Context): Uri? {
+        try {
+            val debugMessage = list.value ?: return null
+            val stringBuilder = StringBuilder()
+            debugMessage.forEach { (category, messages) ->
+                stringBuilder.append("Category: ${category.name}\n")
+                messages.forEach { message ->
+                    stringBuilder.append("Title: ${message.title}\n")
+                    stringBuilder.append("Body: ${message.body}\n")
+                }
+            }
+
+            val fileName = "debug_messages.txt"
+            val file = File(context.cacheDir, fileName)
+            FileOutputStream(file).use { fos ->
+                OutputStreamWriter(fos).use { writer ->
+                    writer.write(stringBuilder.toString())
+                }
+            }
+
+            return FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                file
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
     fun exportDebugMessagesAndShare(context: Context) {
-        val debugMessage = list.value ?: return
-        val stringBuilder = StringBuilder()
-        debugMessage.forEach { (category, messages) ->
-            stringBuilder.append("Category: ${category.name}\n")
-            messages.forEach { message ->
-                stringBuilder.append("Title: ${message.title}\n")
-                stringBuilder.append("Body: ${message.body}\n")
-            }
-        }
-
-        val fileName = "debug_messages.txt"
-        val file = File(context.cacheDir, fileName)
-        FileOutputStream(file).use { fos ->
-            OutputStreamWriter(fos).use { writer ->
-                writer.write(stringBuilder.toString())
-            }
-        }
-
-        val fileUri: Uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.provider",
-            file
-        )
+        val fileUri: Uri = generateDebugMessageFile(context) ?: return
 
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"

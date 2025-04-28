@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.cache
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.account.UserPrefix
 import com.flowfoundation.wallet.utils.*
+import com.flowfoundation.wallet.utils.error.AccountError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -25,6 +27,7 @@ object UserPrefixCacheManager{
             }
             return json.decodeFromString(ListSerializer(UserPrefix.serializer()), str)
         } catch (e: Exception) {
+            ErrorReporter.reportWithMixpanel(AccountError.DESERIALIZE_PREFIX_FAILED, e)
             loge(TAG, e)
         }
         return null
