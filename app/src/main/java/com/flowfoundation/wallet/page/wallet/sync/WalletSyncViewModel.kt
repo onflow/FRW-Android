@@ -56,9 +56,11 @@ class WalletSyncViewModel : ViewModel() {
         val pairing: Core.Model.Pairing = CoreClient.Pairing.create { error ->
             loge(WalletSyncViewModel::class.java.simpleName, "Creating Pairing failed: ${error.throwable.stackTraceToString()}")
             resumeContinuation(Result.failure(error.throwable))
+            atomicReference.set(null)
             return@create
         } ?: run {
             resumeContinuation(Result.failure(IllegalStateException("Failed to create pairing")))
+            atomicReference.set(null)
             return@suspendCoroutine
         }
 
