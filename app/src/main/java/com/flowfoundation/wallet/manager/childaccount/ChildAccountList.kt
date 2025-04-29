@@ -34,8 +34,7 @@ class ChildAccountList(
         } else {
             localAccount.pinTime = System.currentTimeMillis()
         }
-
-        cache().cache(ChildAccountCache().apply { addAll(accountList) })
+        cache().cache(ArrayList(accountList))
     }
 
     fun refresh() {
@@ -45,7 +44,7 @@ class ChildAccountList(
             accounts.forEach { account -> account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0) }
             accountList.clear()
             accountList.addAll(accounts)
-            cache().cache(ChildAccountCache().apply { addAll(accountList) })
+            cache().cache(ArrayList(accountList))
             dispatchAccountUpdateListener(address, accountList.toList())
 
             logd(TAG, "refresh: $address, ${accountList.size}")
@@ -62,10 +61,11 @@ class ChildAccountList(
         return result?.encode()?.parseAccountMetas()
     }
 
-    private fun cache(): CacheManager<ChildAccountCache> {
+    private fun cache(): CacheManager<List<ChildAccount>> {
+        @Suppress("UNCHECKED_CAST")
         return CacheManager(
             "${address}.child_account_list".cacheFile(),
-            ChildAccountCache::class.java,
+            ArrayList::class.java as Class<List<ChildAccount>>,
         )
     }
 
@@ -101,5 +101,3 @@ data class ChildAccount(
     @SerializedName("description")
     val description: String? = null,
 ) : Parcelable
-
-private class ChildAccountCache : ArrayList<ChildAccount>()
