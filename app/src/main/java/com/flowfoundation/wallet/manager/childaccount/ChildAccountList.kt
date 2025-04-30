@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.ref.WeakReference
@@ -21,7 +22,7 @@ class ChildAccountList(
     private val accountList = mutableListOf<ChildAccount>()
 
     init {
-        ioScope { accountList.addAll(cache().read().orEmpty()) }
+        ioScope { accountList.addAll(cache().read()?.accountList.orEmpty()) }
         refresh()
     }
 
@@ -34,7 +35,7 @@ class ChildAccountList(
         } else {
             localAccount.pinTime = System.currentTimeMillis()
         }
-        cache().cache(ArrayList(accountList))
+        cache().cache(ChildAccountCache(accountList.toList()))
     }
 
     fun refresh() {
@@ -44,7 +45,7 @@ class ChildAccountList(
             accounts.forEach { account -> account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0) }
             accountList.clear()
             accountList.addAll(accounts)
-            cache().cache(ArrayList(accountList))
+            cache().cache(ChildAccountCache(accountList.toList()))
             dispatchAccountUpdateListener(address, accountList.toList())
 
             logd(TAG, "refresh: $address, ${accountList.size}")
@@ -61,11 +62,10 @@ class ChildAccountList(
         return result?.encode()?.parseAccountMetas()
     }
 
-    private fun cache(): CacheManager<List<ChildAccount>> {
-        @Suppress("UNCHECKED_CAST")
+    private fun cache(): CacheManager<ChildAccountCache> {
         return CacheManager(
             "${address}.child_account_list".cacheFile(),
-            ArrayList::class.java as Class<List<ChildAccount>>,
+            ChildAccountCache::class.java,
         )
     }
 
@@ -101,3 +101,8 @@ data class ChildAccount(
     @SerializedName("description")
     val description: String? = null,
 ) : Parcelable
+
+data class ChildAccountCache(
+    @SerializedName("accountList")
+    val accountList: List<ChildAccount> = emptyList(),
+)
