@@ -58,6 +58,14 @@ android {
     def storePasswordProperty = properties.getProperty("storePassword", "android")
     def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath)
 
+    def localTesters = properties.getProperty("testers", "")
+    def envTesters = System.getenv("FIREBASE_TESTERS") ?: ""
+    def mergedTesters = ([localTesters, envTesters]
+        .findAll { it?.trim() }
+        .collectMany { it.split(",")*.trim() }
+        .toSet() // remove duplicates
+        .join(","))
+
     signingConfigs {
         release {
             storeFile = file(storeFilePath)
@@ -107,7 +115,7 @@ android {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
-                testers = properties.getProperty("testers", "")
+                testers = mergedTesters
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
@@ -124,7 +132,7 @@ android {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
-                testers = properties.getProperty("testers", "")
+                testers = mergedTesters
             }
             firebaseCrashlytics {
                 mappingFileUploadEnabled true
