@@ -1,9 +1,7 @@
 package com.flowfoundation.wallet.manager.account
 
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.WalletListData
-import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
@@ -16,13 +14,11 @@ import kotlinx.coroutines.flow.first
 import java.lang.ref.WeakReference
 import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
-import kotlin.concurrent.scheduleAtFixedRate
 
 object WalletFetcher {
     private val TAG = WalletFetcher::class.java.simpleName
 
     private val listeners = CopyOnWriteArrayList<WeakReference<OnWalletDataUpdate>>()
-    private val apiService by lazy { retrofit().create(ApiService::class.java) }
 
     // New Flow Wallet Kit SDK instances
     private val wallet = Wallet()
@@ -35,8 +31,8 @@ object WalletFetcher {
             var timer: Timer? = null
             
             while (!dataReceived) {
-                delay(5000)
-                runCatching {
+                try {
+                    delay(5000)
                     val accounts = accountManager.accounts.first()
                     val currentAccount = accounts.values.flatten().firstOrNull()
                     
@@ -59,31 +55,34 @@ object WalletFetcher {
                         timer?.cancel()
                         timer = null
                     } else if (firstAttempt) {
-                        timer = Timer()
-                        timer!!.scheduleAtFixedRate(0, 20000) {
-                            ioScope {
-                                apiService.manualAddress()
-                            }
-                        }
+                        // Only log on first attempt
+                        logd(TAG, "No current account found, retrying...")
                         firstAttempt = false
                     }
-                }.onFailure {
-                    ErrorReporter.reportWithMixpanel(WalletError.FETCH_FAILED, it)
+                } catch (e: Exception) {
+                    ErrorReporter.report(WalletError.FETCH_WALLET_ERROR, e)
+                    logd(TAG, "Error fetching wallet data: ${e.message}")
                 }
             }
         }
     }
 
     fun addListener(callback: OnWalletDataUpdate) {
-        uiScope { this.listeners.add(WeakReference(callback)) }
+        if (listeners.firstOrNull { it.get() == callback } != null) {
+            return
+        }
+        uiScope { listeners.add(WeakReference(callback)) }
     }
 
     private fun dispatchListeners(wallet: WalletListData) {
-        logd(TAG, "dispatchListeners:$wallet")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onWalletDataUpdate(wallet) }
         }
+    }
+
+    fun clear() {
+        listeners.clear()
     }
 }
 

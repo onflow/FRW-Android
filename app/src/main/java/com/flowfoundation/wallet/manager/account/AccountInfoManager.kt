@@ -11,7 +11,11 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.AccountManager as FlowAccountManager
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.math.BigDecimal
 
 object AccountInfoManager {
@@ -22,6 +26,7 @@ object AccountInfoManager {
     private const val MINIMUM_STORAGE_THRESHOLD: Long = 10000
 
     private val _accountResultFlow = MutableStateFlow<AccountInfo?>(null)
+    val accountResultFlow: StateFlow<AccountInfo?> = _accountResultFlow.asStateFlow()
 
     // New Flow Wallet Kit SDK instances
     private val wallet = Wallet()
@@ -35,14 +40,15 @@ object AccountInfoManager {
 
                 val result = AccountInfo(
                     address = currentAccount.address,
-                    balance = currentAccount.balance.toString(),
-                    availableBalance = currentAccount.balance.toString(),
+                    balance = currentAccount.balance.toDouble(),
+                    availableBalance = currentAccount.balance.toDouble(),
                     storageUsed = currentAccount.storageUsed,
                     storageCapacity = currentAccount.storageCapacity,
-                    storageFlow = currentAccount.storageFlow.toString()
+                    storageFlow = currentAccount.storageFlow.toDouble()
                 )
 
                 _accountResultFlow.value = result
+                logd(TAG, "Refreshed account info for address: ${currentAccount.address}")
             } catch (e: Exception) {
                 loge(TAG, "Error refreshing account info: ${e.message}")
                 _accountResultFlow.value = null
@@ -54,44 +60,61 @@ object AccountInfoManager {
         amount: BigDecimal,
         isMoveToken: Boolean
     ): ValidateTransactionResult {
-        return validateTransaction(amount, isMoveToken)
+        return withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val currentAccount = accounts.values.flatten().firstOrNull() ?: return@withContext ValidateTransactionResult.FAILURE
+
+                val balance = currentAccount.balance
+                val requiredBalance = if (isMoveToken) {
+                    amount + FIXED_MOVE_FEE
+                } else {
+                    amount + AVERAGE_TX_FEE
+                }
+
+                if (balance < requiredBalance) {
+                    ValidateTransactionResult.BALANCE_INSUFFICIENT
+                } else if (isShowWarning()) {
+                    ValidateTransactionResult.STORAGE_INSUFFICIENT
+                } else {
+                    ValidateTransactionResult.SUCCESS
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error validating flow token transaction: ${e.message}")
+                ValidateTransactionResult.FAILURE
+            }
+        }
     }
 
     suspend fun validateOtherTransaction(isMove: Boolean): ValidateTransactionResult {
-        return validateTransaction(BigDecimal.ZERO, isMove)
+        return withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val currentAccount = accounts.values.flatten().firstOrNull() ?: return@withContext ValidateTransactionResult.FAILURE
+
+                val balance = currentAccount.balance
+                val requiredBalance = if (isMove) {
+                    FIXED_MOVE_FEE
+                } else {
+                    AVERAGE_TX_FEE
+                }
+
+                if (balance < requiredBalance) {
+                    ValidateTransactionResult.BALANCE_INSUFFICIENT
+                } else if (isShowWarning()) {
+                    ValidateTransactionResult.STORAGE_INSUFFICIENT
+                } else {
+                    ValidateTransactionResult.SUCCESS
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error validating other transaction: ${e.message}")
+                ValidateTransactionResult.FAILURE
+            }
+        }
     }
 
     private fun isShowWarning(): Boolean {
         return !AppConfig.isChildAccount() && !AppConfig.isEVMAccount() && AppConfig.showTXWarning()
-    }
-
-    private suspend fun validateTransaction(amount: BigDecimal, isMove: Boolean): ValidateTransactionResult {
-        if (!isShowWarning()) {
-            return ValidateTransactionResult.FAILURE
-        }
-
-        val currentAccount = _accountResultFlow.value ?: return ValidateTransactionResult.FAILURE
-
-        if (isStorageInsufficient()) {
-            return ValidateTransactionResult.STORAGE_INSUFFICIENT
-        }
-
-        if (isBalanceInsufficient()) {
-            return ValidateTransactionResult.BALANCE_INSUFFICIENT
-        }
-
-        var transferAmount = amount
-        if (isMove) {
-            transferAmount += FIXED_MOVE_FEE
-        }
-
-        val noStorageAfterAction = currentAccount.availableBalance.toBigDecimal() - transferAmount < getAverageTXFee()
-
-        if (noStorageAfterAction) {
-            return ValidateTransactionResult.STORAGE_INSUFFICIENT
-        }
-
-        return ValidateTransactionResult.SUCCESS
     }
 
     fun getLeastFlowBalance(): String {

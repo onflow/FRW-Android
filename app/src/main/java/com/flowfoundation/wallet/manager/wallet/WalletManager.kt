@@ -140,7 +140,7 @@ object WalletManager {
         }
     }
 
-    fun addNetwork(network: ChainId) {
+    suspend fun addNetwork(network: ChainId) {
         try {
             logd(TAG, "Adding network: $network")
             wallet.addNetwork(network)
@@ -150,7 +150,7 @@ object WalletManager {
         }
     }
 
-    fun removeNetwork(network: ChainId) {
+    suspend fun removeNetwork(network: ChainId) {
         try {
             logd(TAG, "Removing network: $network")
             wallet.removeNetwork(network)
@@ -168,7 +168,7 @@ object WalletManager {
         }
     }
 
-    fun createWallet(mnemonic: String) {
+    suspend fun createWallet(mnemonic: String) {
         try {
             logd(TAG, "Creating new wallet")
             wallet.createWallet(mnemonic)

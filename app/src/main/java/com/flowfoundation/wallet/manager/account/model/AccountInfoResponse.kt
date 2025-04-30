@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.account.model
 
 import kotlinx.serialization.Serializable
+import java.math.BigDecimal
 
 enum class ValidateTransactionResult {
     SUCCESS,
@@ -19,9 +20,10 @@ enum class StorageLimitDialogType {
 @Serializable
 data class AccountInfo(
     val address: String,
-    val balance: Double,
-    val availableBalance: Double,
+    val balance: BigDecimal,
+    val availableBalance: BigDecimal,
     val storageUsed: Long,
     val storageCapacity: Long,
-    val storageFlow: Double
+    val storageFlow: BigDecimal,
+    val network: String
 )

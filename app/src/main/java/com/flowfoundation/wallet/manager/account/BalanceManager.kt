@@ -7,17 +7,24 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.AccountManager as FlowAccountManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 object BalanceManager {
     private val TAG = BalanceManager::class.java.simpleName
@@ -29,6 +36,9 @@ object BalanceManager {
     // New Flow Wallet Kit SDK instances
     private val wallet = Wallet()
     private val accountManager = FlowAccountManager(wallet)
+
+    private val _balance = MutableStateFlow<BigDecimal>(BigDecimal.ZERO)
+    val balance: StateFlow<BigDecimal> = _balance.asStateFlow()
 
     fun reload() {
         ioScope {
@@ -180,6 +190,58 @@ object BalanceManager {
     fun clear() {
         balanceList.clear()
         cache.clear()
+    }
+
+    suspend fun fetchBalance(): BigDecimal {
+        return withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val currentAccount = accounts.values.flatten().firstOrNull()
+                
+                if (currentAccount != null) {
+                    val balance = currentAccount.balance
+                    _balance.value = balance
+                    logd(TAG, "Fetched balance: $balance")
+                    balance
+                } else {
+                    loge(TAG, "No current account found")
+                    BigDecimal.ZERO
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error fetching balance: ${e.message}")
+                BigDecimal.ZERO
+            }
+        }
+    }
+
+    suspend fun getBalanceForAddress(address: String): BigDecimal {
+        return withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val account = accounts.values.flatten().find { it.address == address }
+                account?.balance ?: BigDecimal.ZERO
+            } catch (e: Exception) {
+                loge(TAG, "Error getting balance for address $address: ${e.message}")
+                BigDecimal.ZERO
+            }
+        }
+    }
+
+    suspend fun getBalanceForNetwork(network: String): BigDecimal {
+        return withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val networkAccounts = accounts.values.flatten().filter { it.network == network }
+                networkAccounts.sumOf { it.balance }
+            } catch (e: Exception) {
+                loge(TAG, "Error getting balance for network $network: ${e.message}")
+                BigDecimal.ZERO
+            }
+        }
+    }
+
+    suspend fun refreshBalance() {
+        fetchBalance()
     }
 }
 
