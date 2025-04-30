@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - develop
+      - nialexsan/firebase-testers-env-var
 
 jobs:
   dev:
@@ -91,7 +92,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     environment: production
-    if: github.ref == 'refs/heads/master'
+    # if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout code
