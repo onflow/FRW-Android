@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.math.max
 
 private val TAG = WalletConnect::class.java.simpleName
 
@@ -44,6 +45,8 @@ class WalletConnect {
         if (!isConnectionAvailable.value) {
             var job: kotlinx.coroutines.Job? = null
             job = ioScope {
+                var attempts = 0
+                val maxAttempts = 10
                 isConnectionAvailable.collect { isConnected ->
                     if (isConnected) {
                         delay(1000)
@@ -51,14 +54,24 @@ class WalletConnect {
                         paring(uri)
                         job?.cancel()
                     } else {
+                        attempts++
+                        if (attempts >= maxAttempts) {
+                            logd(TAG, "Pair on max attempts")
+                            try {
+                                paring(uri)
+                            } catch (e: Exception) {
+                                loge(e)
+                            } finally {
+                                job?.cancel()
+                            }
+                            return@collect
+                        }
                         safeRun {
                             CoreClient.Relay.connect { error: Core.Model.Error ->
                                 loge(TAG, "CoreClient.Relay connect error: $error")
                             }
                         }
                         delay(1000)
-                        paring(uri)
-                        job?.cancel()
                     }
                 }
             }
@@ -68,10 +81,13 @@ class WalletConnect {
     }
 
     private fun paring(uri: String) {
-        val pairingParams = Core.Params.Pair(uri)
-        CoreClient.Pairing.pair(pairingParams) { error ->
-//            toast(msgRes = R.string.wallet_connect_error)
-            loge(error.throwable)
+        try {
+            val pairingParams = Core.Params.Pair(uri)
+            CoreClient.Pairing.pair(pairingParams) { error ->
+                loge(error.throwable)
+            }
+        } catch (e: Exception) {
+            loge(e)
         }
     }
 

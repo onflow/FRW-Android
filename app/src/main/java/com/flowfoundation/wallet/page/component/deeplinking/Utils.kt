@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.component.deeplinking
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
@@ -16,13 +17,18 @@ import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.time.withTimeoutOrNull
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
@@ -96,19 +102,51 @@ private fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = getWalletConnectUri(uri)
         logd(TAG, "dispatchWalletConnect: $data")
-        assert(data?.startsWith("wc:") ?: false)
+        if (data.isNullOrBlank() || !data.startsWith("wc:")) {
+            logd(TAG, "invalidWalletConnect uri format: $data")
+            return@runCatching false
+        }
 
         if (!WalletConnect.isInitialized()) {
-            runBlocking {
-                while (!WalletConnect.isInitialized()) {
-                    delay(200)
+            logd(TAG, "WalletConnect is not initialized, initializing...")
+            ioScope {
+                val initResult = withTimeoutOrNull(3000) {
+                    var waitTime = 50L
+                    var attempts = 0
+                    val maxAttempts = 15
+
+                    while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
+                        delay(waitTime)
+                        attempts++
+                        waitTime = minOf(waitTime * 2, 500)
+                    }
+
+                    WalletConnect.isInitialized()
                 }
-                WalletConnect.get().pair(data.toString())
+                if (initResult == null) {
+                    logd(TAG, "WalletConnect initialization timeout")
+                    uiScope {
+                        toast(R.string.wallet_connect_error)
+                    }
+                    return@ioScope
+                }
+                try {
+                    WalletConnect.get().pair(data.toString())
+                } catch (e: Exception) {
+                    loge(e)
+                }
             }
+            return@runCatching true
         } else {
-            WalletConnect.get().pair(data.toString())
+            try {
+                WalletConnect.get().pair(data.toString())
+                true
+            } catch (e: Exception) {
+                loge(e)
+                false
+            }
         }
-    }.getOrNull() != null
+    }.getOrDefault(false)
 }
 
 fun getWalletConnectUri(uri: Uri): String? {

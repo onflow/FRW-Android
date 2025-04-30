@@ -258,8 +258,9 @@ class SendAmountPresenter(
     private fun getAmountConvert(): String {
         val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
         val rate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
-        val convert =
-            if (viewModel.convertCoin() == selectedCurrency().flag) amount * rate else amount / rate
+        val convert = if (viewModel.convertCoin() == selectedCurrency().flag) amount * rate else {
+            if (rate <= BigDecimal.ZERO) BigDecimal.ZERO else amount / rate
+        }
         return convert.format()
     }
 
