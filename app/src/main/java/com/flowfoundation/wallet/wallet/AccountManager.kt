@@ -1,11 +1,10 @@
 package com.flowfoundation.wallet.wallet
 
-import com.flow.wallet.account.Account
-import com.flow.wallet.wallet.Wallet
 import com.flowfoundation.wallet.utils.logd
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.onflow.flow.ChainId
+import org.onflow.flow.models.Account
 
 /**
  * Manages account operations using the Flow Wallet Kit SDK
