@@ -77,6 +77,9 @@ jobs:
         run: |
           printf '%s'  '${{ secrets.SERVICE_ACCOUNT_JSON }}' > ${{ github.workspace }}/frw/service-account.json
 
+      - name: Set Firebase testers from secret
+        run: echo "FIREBASE_TESTERS=${{ vars.FIREBASE_TESTERS }}" >> $GITHUB_ENV
+
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleDev appDistributionUploadDev
 
@@ -143,6 +146,9 @@ jobs:
         run: |
           printf '%s'  '${{ secrets.FASTLANE_SA }}' > ${{ github.workspace }}/frw/fastlane/service-account.json
 
+      - name: Set Firebase testers from secret
+        run: echo "FIREBASE_TESTERS=${{ vars.FIREBASE_TESTERS }}" >> $GITHUB_ENV
+  
       - name: Build Signed APK
         run: cd ./frw && ./gradlew assembleRelease appDistributionUploadRelease
 
