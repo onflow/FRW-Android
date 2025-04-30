@@ -69,40 +69,51 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
         val activity = BaseActivity.getCurrentActivity() ?: return
         processedRequestIds.clear()
-        uiScope {
-            with(sessionProposal) {
-                val approve = if (WalletManager.isEVMAccountSelected()) {
-                    if (isShowMoveDialog()) {
-                        MoveDialog().showMove(activity.supportFragmentManager, description)
-                    }
-                    EvmRequestAccountDialog().show(
-                        activity.supportFragmentManager,
-                        EVMDialogModel(
+        try {
+            uiScope {
+                with(sessionProposal) {
+                    val approve = if (WalletManager.isEVMAccountSelected()) {
+                        if (isShowMoveDialog()) {
+                            MoveDialog().showMove(activity.supportFragmentManager, description)
+                        }
+                        EvmRequestAccountDialog().show(
+                            activity.supportFragmentManager,
+                            EVMDialogModel(
+                                title = name,
+                                url = url,
+                                network = chainNetWorkString()
+                            )
+                        )
+                    } else {
+                        val data = FclDialogModel(
                             title = name,
                             url = url,
-                            network = chainNetWorkString()
+                            logo = icons.firstOrNull()?.toString(),
+                            network = network()
                         )
-                    )
-                } else {
-                    val data = FclDialogModel(
-                        title = name,
-                        url = url,
-                        logo = icons.firstOrNull()?.toString(),
-                        network = network()
-                    )
-                    FclAuthnDialog().show(
-                        activity.supportFragmentManager,
-                        data
-                    )
-                }
-                if (approve) {
-                    approveSession()
-                } else {
-                    reject()
-                }
+                        FclAuthnDialog().show(
+                            activity.supportFragmentManager,
+                            data
+                        )
+                    }
+                    if (approve) {
+                        approveSession()
+                    } else {
+                        reject()
+                    }
 
+                }
+            }
+
+        } catch (e: Exception) {
+            loge(e)
+            try {
+                sessionProposal.reject()
+            } catch (e: Exception) {
+                loge(e)
             }
         }
+
     }
 
     /**
