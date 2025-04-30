@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.wallet
 
 import com.flow.wallet.wallet.KeyWallet
-import com.flow.wallet.wallet.Wallet as FlowWallet
+import com.flow.wallet.wallet.BaseWallet
 import com.flow.wallet.storage.FileSystemStorage
 import com.flow.wallet.storage.StorageProtocol
 import com.flowfoundation.wallet.utils.DATA_PATH
@@ -19,8 +19,8 @@ class Wallet {
         File(DATA_PATH, "wallet_storage")
     )
     
-    private val _activeWallet = MutableStateFlow<FlowWallet?>(null)
-    val activeWallet: StateFlow<FlowWallet?> = _activeWallet
+    private val _activeWallet = MutableStateFlow<BaseWallet?>(null)
+    val activeWallet: StateFlow<BaseWallet?> = _activeWallet
     
     /**
      * Creates a new wallet with a seed phrase
