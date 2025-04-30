@@ -246,7 +246,7 @@ class SelectNFTViewModel : ViewModel() {
             val txId = action()
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation(operationName))
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation(operationName))
                 callback(false)
                 return
             }

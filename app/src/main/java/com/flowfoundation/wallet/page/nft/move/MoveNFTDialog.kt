@@ -123,11 +123,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         addressList.add(0, evmAddress)
                         needMoveFee = true
                         layoutToAccount.setAccountInfo(evmAddress)
-
-                    } else {
-                        val childAccount = WalletManager.childAccount(addressList[0]) ?: return@with
-                        needMoveFee = false
-                        layoutToAccount.setAccountInfo(childAccount.address)
+                    } else if (addressList.isNotEmpty()) {
+                        WalletManager.childAccount(addressList[0])?.let { child ->
+                            needMoveFee = false
+                            layoutToAccount.setAccountInfo(child.address)
+                        }
                     }
                     configureToLayoutAction(addressList)
                 }
@@ -325,7 +325,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             trackMoveNFT(childAddress, toAddress, nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.CHILD)
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)
@@ -356,7 +356,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             trackMoveNFT(childAddress, WalletManager.wallet()?.walletAddress().orEmpty(), nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.FLOW)
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)
@@ -383,7 +383,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 .getNFTIdentifier(), txId.orEmpty(), TransferAccountType.FLOW, TransferAccountType.CHILD)
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)

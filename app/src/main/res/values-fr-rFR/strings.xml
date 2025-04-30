@@ -717,4 +717,6 @@
     <string name="ignore_warning">Ignorer l\'avertissement, montrer quand même</string>
     <string name="connect_warning">Ignorer l\'avertissement, se connecter quand même</string>
     <string name="blocked_tip">Cette application a été signalée comme dangereuse.</string>
+    <string name="switch_to">Basculer vers %1$s</string>
+    <string name="deeplink_login_failed">Impossible d\'ouvrir, veuillez d\'abord créer un portefeuille.</string>
 </resources>

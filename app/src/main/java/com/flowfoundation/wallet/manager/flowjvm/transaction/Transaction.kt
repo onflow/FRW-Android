@@ -22,11 +22,16 @@ import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_BRIDGE_PAYER
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.InvalidKeyException
+import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
-import com.flow.wallet.CryptoProvider
+import com.instabug.library.Instabug
+import io.outblock.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.Provider
 import java.security.Security
@@ -74,6 +79,13 @@ suspend fun sendTransaction(
             payer = transactionBuilder.payer ?: (if (isGasFree()) AppConfig.payer().address else transactionBuilder.walletAddress).orEmpty(),
             isSuccess = false
         )
+        transactionBuilder.scriptId?.let {
+            reportCadenceErrorToDebugView(it, e)
+        }
+        if (e is InvalidKeyException) {
+            ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
+            Instabug.show()
+        }
         return null
     }
 }
@@ -112,6 +124,13 @@ suspend fun sendBridgeTransaction(
             payer = transactionBuilder.payer ?: (if (isGasFree()) AppConfig.payer().address else transactionBuilder.walletAddress).orEmpty(),
             isSuccess = false
         )
+        transactionBuilder.scriptId?.let {
+            reportCadenceErrorToDebugView(it, e)
+        }
+        if (e is InvalidKeyException) {
+            ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
+            Instabug.show()
+        }
         return null
     }
 }
@@ -124,7 +143,7 @@ suspend fun sendTransactionWithMultiSignature(
     logd(TAG, "sendTransaction prepare")
     val transBuilder = TransactionBuilder().apply { builder(this) }
     val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")
-    val restoreProposalKey = account.keys.first { providers.first().getPublicKey() == it.publicKey.base16Value }
+    val restoreProposalKey = account.keys.firstOrNull { providers.first().getPublicKey() == it.publicKey.base16Value } ?: throw InvalidKeyException("get account key error")
     val voucher = prepareWithMultiSignature(
         walletAddress = account.address.base16Value,
         restoreProposalKey = restoreProposalKey,
@@ -203,7 +222,7 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
     val currentKey = account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
-        ?: throw RuntimeException("get account key error")
+        ?: throw InvalidKeyException("get account key error")
 
     return Voucher(
         arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },

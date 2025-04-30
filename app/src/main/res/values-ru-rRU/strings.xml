@@ -717,4 +717,6 @@
     <string name="ignore_warning">Игнорировать предупреждение, все равно показывать</string>
     <string name="connect_warning">Игнорировать предупреждение, все равно подключаться</string>
     <string name="blocked_tip">Это приложение было помечено как опасное.</string>
+    <string name="switch_to">Переключиться на %1$s</string>
+    <string name="deeplink_login_failed">Не удалось открыть, пожалуйста, сначала создайте кошелек.</string>
 </resources>

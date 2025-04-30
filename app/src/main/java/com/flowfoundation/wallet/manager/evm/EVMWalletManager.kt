@@ -34,7 +34,6 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.CadenceError
 import com.flowfoundation.wallet.utils.error.EVMError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
-import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
@@ -230,7 +229,7 @@ object EVMWalletManager {
             )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)
@@ -260,7 +259,7 @@ object EVMWalletManager {
             )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation())
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
                 return
             }
             postTransaction(nft, txId, callback)
@@ -398,7 +397,7 @@ object EVMWalletManager {
             val txId = action()
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
-                ErrorReporter.reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, getCurrentCodeLocation(operationName))
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation(operationName))
                 callback(false)
                 return
             }

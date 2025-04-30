@@ -27,7 +27,10 @@ fun instabugInitialize(application: Application) {
     }
     if (isDev()) {
         Instabug.Builder(application, BuildConfig.INSTABUG_TOKEN_DEV)
-            .setInvocationEvents(InstabugInvocationEvent.SHAKE, InstabugInvocationEvent.FLOATING_BUTTON)
+            .setInvocationEvents(
+                InstabugInvocationEvent.SCREENSHOT,
+                InstabugInvocationEvent.SHAKE,
+                InstabugInvocationEvent.FLOATING_BUTTON)
             .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
                 ReproConfigurations.Builder()
@@ -38,6 +41,10 @@ fun instabugInitialize(application: Application) {
         Instabug.setWelcomeMessageState(WelcomeMessage.State.BETA)
     } else {
         Instabug.Builder(application, BuildConfig.INSTABUG_TOKEN_PROD)
+            .setInvocationEvents(
+                InstabugInvocationEvent.SCREENSHOT,
+                InstabugInvocationEvent.SHAKE
+            )
             .setTrackingUserStepsState(Feature.State.ENABLED)
             .setReproConfigurations(
                 ReproConfigurations.Builder()

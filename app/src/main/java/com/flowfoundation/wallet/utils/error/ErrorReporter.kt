@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.getLocationInfo
 import com.instabug.crash.CrashReporting
 import com.instabug.crash.models.IBGNonFatalException
+import com.instabug.library.Instabug
 import com.nftco.flow.sdk.FlowError
 
 
@@ -15,6 +16,11 @@ object ErrorReporter {
             .setLevel(IBGNonFatalException.Level.ERROR)
             .build()
             .let { exception ->  CrashReporting.report(exception)}
+    }
+
+    fun reportMoveAssetsError(locationInfo: String) {
+        reportWithMixpanel(MoveError.FAILED_TO_SUBMIT_TRANSACTION, locationInfo)
+        Instabug.show()
     }
 
     fun reportWithMixpanel(error: BaseError, locationInfo: String) {
@@ -31,7 +37,6 @@ object ErrorReporter {
         MixpanelManager.error(error, cause.getLocationInfo(), cause.message)
     }
 
-    // private key and signature error
     fun reportCriticalWithMixpanel(error: BaseError, cause: Throwable? = null) {
         val throwable = cause ?: CustomException(error)
         IBGNonFatalException.Builder(throwable)
@@ -65,3 +70,7 @@ class CustomTransactionException(
     val error: FlowError,
     errorMessage: String
 ) : Throwable("${error.name}($errorMessage)")
+
+class InvalidKeyException(
+    errorMessage: String
+) : Exception(errorMessage)

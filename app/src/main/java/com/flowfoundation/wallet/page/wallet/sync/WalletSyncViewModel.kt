@@ -13,8 +13,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.suspendCoroutine
 
 
@@ -37,6 +36,7 @@ class WalletSyncViewModel : ViewModel() {
     }
 
     private suspend fun wcFetchPairUriInternal() = suspendCoroutine { continuation ->
+        val atomicReference = AtomicReference(continuation)
         val namespaces = mapOf(
             "flow" to Sign.Model.Namespace.Proposal(
                 chains = listOf("flow:${
@@ -46,13 +46,21 @@ class WalletSyncViewModel : ViewModel() {
                 events = listOf("chainChanged", "accountsChanged"),
             )
         )
+        fun resumeContinuation(result: Result<String>) {
+            val cont = atomicReference.get()
+            if(cont != null && atomicReference.compareAndSet(cont, null)){
+                cont.resumeWith(result)
+            }
+        }
 
         val pairing: Core.Model.Pairing = CoreClient.Pairing.create { error ->
             loge(WalletSyncViewModel::class.java.simpleName, "Creating Pairing failed: ${error.throwable.stackTraceToString()}")
-            continuation.resumeWithException(error.throwable)
+            resumeContinuation(Result.failure(error.throwable))
+            atomicReference.set(null)
             return@create
         } ?: run {
-            continuation.resumeWithException(IllegalStateException("Failed to create pairing"))
+            resumeContinuation(Result.failure(IllegalStateException("Failed to create pairing")))
+            atomicReference.set(null)
             return@suspendCoroutine
         }
 
@@ -64,14 +72,14 @@ class WalletSyncViewModel : ViewModel() {
 
             SignClient.connect(
                 connectParams,
-                onSuccess = { _ -> continuation.resume(pairing.uri) },
+                onSuccess = { _ -> resumeContinuation(Result.success(pairing.uri)) },
                 onError = { error ->
                     loge(error.throwable)
-                    continuation.resumeWithException(error.throwable)
+                    resumeContinuation(Result.failure(error.throwable))
                 }
             )
         } catch (e: Exception) {
-            continuation.resumeWithException(e)
+            resumeContinuation(Result.failure(e))
         }
     }
 }
