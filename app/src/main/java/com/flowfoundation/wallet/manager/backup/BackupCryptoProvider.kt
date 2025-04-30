@@ -1,60 +1,77 @@
 package com.flowfoundation.wallet.manager.backup
 
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
+import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.wallet.KeyManager
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.HashingAlgorithm
 import com.flow.wallet.CryptoProvider
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
+import org.onflow.flow.models.bytesToHex
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
+class BackupCryptoProvider(private val mnemonic: String) : CryptoProvider {
+    private val TAG = BackupCryptoProvider::class.java.simpleName
+    private val keyManager = KeyManager()
+    private val key = keyManager.createSeedPhraseKey(mnemonic)
+
+    override fun getPublicKey(): String {
+        return keyManager.getPublicKey(key, SigningAlgorithm.ECDSA_P256) ?: ""
+    }
+
+    override suspend fun getUserSignature(message: String): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val signature = keyManager.sign(key, message.toByteArray(), SigningAlgorithm.ECDSA_P256)
+                signature?.toHexString() ?: ""
+            } catch (e: Exception) {
+                loge(TAG, "Error signing message: ${e.message}")
+                ""
+            }
+        }
+    }
+
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.SHA3_256
+    }
+
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.ECDSA_P256
+    }
 
     fun getMnemonic(): String {
-        return wallet.mnemonic()
+        return mnemonic
     }
 
     override fun getKeyWeight(): Int {
         return 500
     }
 
-    override fun getPublicKey(): String {
-        val privateKey = wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH)
-        val publicKey = privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
-        return publicKey.removePrefix("04")
+    override suspend fun signData(data: ByteArray): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val signature = keyManager.sign(key, data, SigningAlgorithm.ECDSA_P256)
+                signature?.toHexString() ?: ""
+            } catch (e: Exception) {
+                loge(TAG, "Error signing data: ${e.message}")
+                ""
+            }
+        }
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override fun getSigner(): org.onflow.flow.models.Signer {
+        return object : org.onflow.flow.models.Signer {
+            override fun sign(data: ByteArray): ByteArray {
+                return try {
+                    keyManager.sign(key, data, SigningAlgorithm.ECDSA_P256)
+                } catch (e: Exception) {
+                    loge(TAG, "Error in signer: ${e.message}")
+                    ByteArray(0)
+                }
+            }
+        }
     }
 
-    override fun signData(data: ByteArray): String {
-        return getSigner().sign(data).bytesToHex()
-    }
-
-    override fun getSigner(): Signer {
-        checkSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH).data().bytesToHex(),
-                getSignatureAlgorithm()
-            ),
-            hashAlgo = getHashAlgorithm()
-        )
-    }
-
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
-    }
-
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_P256
-    }
-
-    companion object {
-        private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
+    private fun ByteArray.toHexString(): String {
+        return joinToString("") { "%02x".format(it) }
     }
 }

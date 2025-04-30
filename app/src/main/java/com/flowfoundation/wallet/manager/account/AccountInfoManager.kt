@@ -4,21 +4,17 @@ import com.flowfoundation.wallet.manager.account.model.AccountInfo
 import com.flowfoundation.wallet.manager.account.model.ValidateTransactionResult
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
-import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
-import com.flowfoundation.wallet.manager.flowjvm.executeCadence
-import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.wallet.AccountManager as FlowAccountManager
 import kotlinx.coroutines.flow.MutableStateFlow
-import org.onflow.flow.infrastructure.Cadence
+import kotlinx.coroutines.flow.first
 import java.math.BigDecimal
 
-
 object AccountInfoManager {
-
     private val TAG = AccountInfoManager::class.java.simpleName
     private val FIXED_MOVE_FEE = BigDecimal("0.0001")
     private val MIN_FLOW_BALANCE = BigDecimal("0.001")
@@ -27,19 +23,30 @@ object AccountInfoManager {
 
     private val _accountResultFlow = MutableStateFlow<AccountInfo?>(null)
 
+    // New Flow Wallet Kit SDK instances
+    private val wallet = Wallet()
+    private val accountManager = FlowAccountManager(wallet)
+
     fun refreshAccountInfo() {
         ioScope {
             try {
-                val walletAddress = WalletManager.wallet()?.walletAddress() ?: return@ioScope
+                val accounts = accountManager.accounts.first()
+                val currentAccount = accounts.values.flatten().firstOrNull() ?: return@ioScope
 
-                val result = fetchOnChainAccountInfo(walletAddress)
+                val result = AccountInfo(
+                    address = currentAccount.address,
+                    balance = currentAccount.balance.toString(),
+                    availableBalance = currentAccount.balance.toString(),
+                    storageUsed = currentAccount.storageUsed,
+                    storageCapacity = currentAccount.storageCapacity,
+                    storageFlow = currentAccount.storageFlow.toString()
+                )
 
                 _accountResultFlow.value = result
-
             } catch (e: Exception) {
+                loge(TAG, "Error refreshing account info: ${e.message}")
                 _accountResultFlow.value = null
             }
-            WalletNotificationManager.onWalletUpdate()
         }
     }
 
@@ -55,16 +62,14 @@ object AccountInfoManager {
     }
 
     private fun isShowWarning(): Boolean {
-        return WalletManager.isChildAccountSelected().not()
-                && WalletManager.isEVMAccountSelected().not()
-                && AppConfig.showTXWarning()
+        return !AppConfig.isChildAccount() && !AppConfig.isEVMAccount() && AppConfig.showTXWarning()
     }
 
     private suspend fun validateTransaction(amount: BigDecimal, isMove: Boolean): ValidateTransactionResult {
-        if (isShowWarning().not()) {
+        if (!isShowWarning()) {
             return ValidateTransactionResult.FAILURE
         }
-        var transferAmount = amount
+
         val currentAccount = _accountResultFlow.value ?: return ValidateTransactionResult.FAILURE
 
         if (isStorageInsufficient()) {
@@ -75,6 +80,7 @@ object AccountInfoManager {
             return ValidateTransactionResult.BALANCE_INSUFFICIENT
         }
 
+        var transferAmount = amount
         if (isMove) {
             transferAmount += FIXED_MOVE_FEE
         }
@@ -84,12 +90,6 @@ object AccountInfoManager {
         if (noStorageAfterAction) {
             return ValidateTransactionResult.STORAGE_INSUFFICIENT
         }
-
-//        val insufficientFlowAfter = currentAccount.balance - transferAmount < MIN_FLOW_BALANCE
-//
-//        if (insufficientFlowAfter) {
-//            return ValidateTransactionResult.STORAGE_INSUFFICIENT_AFTER_ACTION
-//        }
 
         return ValidateTransactionResult.SUCCESS
     }
@@ -147,18 +147,5 @@ object AccountInfoManager {
     fun getStorageCapacity(): Long {
         val currentAccount = _accountResultFlow.value ?: return 0
         return currentAccount.storageCapacity
-    }
-
-    private suspend fun fetchOnChainAccountInfo(address: String): AccountInfo? {
-        try {
-            val response = CadenceScript.CADENCE_GET_ACCOUNT_INFO.executeCadence {
-                arg { Cadence.address(address) }
-            }
-            logd(TAG, "getAccountInfo response:${response?.encode()}")
-            return response?.decode<AccountInfo>()
-        } catch (e: Throwable) {
-            loge(e)
-            return null
-        }
     }
 }

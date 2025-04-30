@@ -1,45 +1,52 @@
 package com.flowfoundation.wallet.wallet
 
 import com.flow.wallet.wallet.KeyWallet
-import com.flow.wallet.wallet.Wallet as FlowWallet
+import com.flow.wallet.wallet.ProxyWallet
+import com.flow.wallet.wallet.Wallet
 import com.flow.wallet.storage.FileSystemStorage
 import com.flow.wallet.storage.StorageProtocol
 import com.flowfoundation.wallet.utils.DATA_PATH
-import com.flowfoundation.wallet.utils.logd
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.onflow.flow.ChainId
 import java.io.File
 
 /**
- * Main wallet class that manages Flow accounts using the Flow Wallet Kit SDK
+ * Manages wallet operations using the Flow Wallet Kit SDK
  */
-class Wallet {
+class WalletManager {
     private val storage: StorageProtocol = FileSystemStorage(
         File(DATA_PATH, "wallet_storage")
     )
     
-    private val _activeWallet = MutableStateFlow<FlowWallet?>(null)
-    val activeWallet: StateFlow<FlowWallet?> = _activeWallet
+    private val _activeWallet = MutableStateFlow<Wallet?>(null)
+    val activeWallet: StateFlow<Wallet?> = _activeWallet
     
     /**
-     * Creates a new wallet with a seed phrase
-     * @param mnemonic The mnemonic phrase to use
+     * Creates a new key-based wallet using the existing WalletStore
      * @param networks Set of networks to support (defaults to mainnet and testnet)
      */
-    fun createWallet(mnemonic: String, networks: Set<ChainId> = setOf(ChainId.Mainnet, ChainId.Testnet)) {
-        logd(TAG, "Creating new wallet with mnemonic")
+    fun createKeyWallet(networks: Set<ChainId> = setOf(ChainId.Mainnet, ChainId.Testnet)): Wallet {
+        // Get the mnemonic from the existing WalletStore
+        val mnemonic = Wallet.store().mnemonic()
+        
+        // Create a key using the existing mnemonic
         val key = KeyManager().createSeedPhraseKey(mnemonic)
-        _activeWallet.value = KeyWallet(key, networks, storage)
+        
+        // Create and return the wallet
+        return KeyWallet(key, networks, storage).also {
+            _activeWallet.value = it
+        }
     }
     
     /**
-     * Gets the mnemonic phrase for the current wallet
-     * @return The mnemonic phrase if available, null otherwise
+     * Creates a new proxy wallet for hardware devices
+     * @param networks Set of networks to support (defaults to mainnet and testnet)
      */
-    fun getMnemonic(): String? {
-        val wallet = _activeWallet.value as? KeyWallet ?: return null
-        return wallet.getKeyForAccount().mnemonic
+    fun createProxyWallet(networks: Set<ChainId> = setOf(ChainId.Mainnet, ChainId.Testnet)): Wallet {
+        return ProxyWallet(networks, storage).also {
+            _activeWallet.value = it
+        }
     }
     
     /**
@@ -72,8 +79,4 @@ class Wallet {
     suspend fun removeNetwork(network: ChainId) {
         _activeWallet.value?.removeNetwork(network)
     }
-    
-    companion object {
-        private const val TAG = "Wallet"
-    }
-}
+} 

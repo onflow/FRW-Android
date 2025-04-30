@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
+import kotlinx.coroutines.flow.first
 
 class LocalAccountKeyActivity: BaseActivity()  {
     private lateinit var binding: ActivityLocalAccountKeyBinding
@@ -49,7 +50,7 @@ class LocalAccountKeyActivity: BaseActivity()  {
                 publicKey = currentCryptoProvider.getPublicKey()
             ))
             val otherAccounts = AccountManager.list().mapNotNull {
-                val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(it)
+                val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(it)
                 if (it.isActive || cryptoProvider == null) {
                     null
                 } else {

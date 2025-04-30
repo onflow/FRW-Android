@@ -7,10 +7,8 @@ import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
-import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.wallet.AccountManager as FlowAccountManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
@@ -19,15 +17,18 @@ import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlinx.coroutines.flow.first
 
 object BalanceManager {
     private val TAG = BalanceManager::class.java.simpleName
 
     private val listeners = CopyOnWriteArrayList<WeakReference<OnBalanceUpdate>>()
-
     private val balanceList = CopyOnWriteArrayList<Balance>()
-
     private val cache by lazy { CacheManager("BALANCE_CACHE_v1.0", BalanceCache::class.java) }
+
+    // New Flow Wallet Kit SDK instances
+    private val wallet = Wallet()
+    private val accountManager = FlowAccountManager(wallet)
 
     fun reload() {
         ioScope {
@@ -49,26 +50,31 @@ object BalanceManager {
 
     private fun fetchTokenBalance() {
         ioScope {
-            val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
-            val balanceMap = cadenceGetTokenBalanceStorage() ?: return@ioScope
-            coinList.forEach { coin ->
-                balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
+            try {
+                val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
+                val accounts = accountManager.accounts.first()
+                val currentAccount = accounts.values.flatten().firstOrNull() ?: return@ioScope
 
-                //todo available flow balance
-                val balance = if (coin.isFlowCoin()) {
-                    balanceMap["availableFlowToken"] ?: BigDecimal.ZERO
-                } else {
-                    balanceMap[coin.getFTIdentifier()] ?: BigDecimal.ZERO
-                }
+                coinList.forEach { coin ->
+                    balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-                val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
-                val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
-                if (isDiff) {
-                    dispatchListeners(coin, balance)
-                    balanceList.removeAll { it.isSameCoin(coin) }
-                    balanceList.add(Balance(balance, coin.address, coin.contractName()))
-                    ioScope { cache.cache(BalanceCache(balanceList.toList())) }
+                    val balance = if (coin.isFlowCoin()) {
+                        currentAccount.balance
+                    } else {
+                        wallet.getTokenBalance(currentAccount, coin.address)
+                    }
+
+                    val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
+                    val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
+                    if (isDiff) {
+                        dispatchListeners(coin, balance)
+                        balanceList.removeAll { it.isSameCoin(coin) }
+                        balanceList.add(Balance(balance, coin.address, coin.contractName()))
+                        ioScope { cache.cache(BalanceCache(balanceList.toList())) }
+                    }
                 }
+            } catch (e: Exception) {
+                logd(TAG, "Error fetching token balance: ${e.message}")
             }
         }
     }
@@ -137,22 +143,26 @@ object BalanceManager {
 
     private fun fetch(coin: FlowCoin) {
         ioScope {
-            balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
+            try {
+                balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
-            val balance = if (WalletManager.isEVMAccountSelected()) {
-                if (coin.isFlowCoin()) {
-                    cadenceQueryCOATokenBalance()
+                val accounts = accountManager.accounts.first()
+                val currentAccount = accounts.values.flatten().firstOrNull() ?: return@ioScope
+
+                val balance = if (WalletManager.isEVMAccountSelected()) {
+                    if (coin.isFlowCoin()) {
+                        currentAccount.balance
+                    } else {
+                        getEVMBalanceByCoin(coin.address)
+                    }
                 } else {
-                    getEVMBalanceByCoin(coin.address)
+                    if (coin.isFlowCoin()) {
+                        currentAccount.balance
+                    } else {
+                        wallet.getTokenBalance(currentAccount, coin.address)
+                    }
                 }
-            } else {
-                if (coin.isFlowCoin()) {
-                    AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin)
-                } else {
-                    cadenceQueryTokenBalance(coin)
-                }
-            }
-            if (balance != null) {
+
                 val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
                 val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
                 if (isDiff) {
@@ -161,6 +171,8 @@ object BalanceManager {
                     balanceList.add(Balance(balance, coin.address, coin.contractName()))
                     ioScope { cache.cache(BalanceCache(balanceList.toList())) }
                 }
+            } catch (e: Exception) {
+                logd(TAG, "Error fetching balance: ${e.message}")
             }
         }
     }

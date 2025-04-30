@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.account
 
 import android.widget.Toast
+import com.flow.wallet.KeyManager
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
@@ -16,7 +17,6 @@ import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
 import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
@@ -36,25 +36,31 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.setUploadedAddressSet
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.wallet.AccountManager as FlowAccountManager
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import com.flow.wallet.KeyManager
-import com.flow.wallet.toFormatString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.TransactionStatus
 
 object AccountManager {
 
@@ -69,6 +75,17 @@ object AccountManager {
     private val userPrefixes = mutableListOf<UserPrefix>()
     private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
+    // New Flow Wallet Kit SDK instances
+    private val wallet = Wallet()
+    private val accountManager = FlowAccountManager(wallet)
+    private val keyManager = KeyManager()
+
+    private val _accounts = MutableStateFlow<List<Account>>(emptyList())
+    val accounts: StateFlow<List<Account>> = _accounts.asStateFlow()
+
+    private val _currentAccount = MutableStateFlow<Account?>(null)
+    val currentAccount: StateFlow<Account?> = _currentAccount.asStateFlow()
+
     fun init() {
         accounts.clear()
         userPrefixes.clear()
@@ -78,6 +95,8 @@ object AccountManager {
                 accounts.addAll(it)
             }
             initEmojiAndEVMInfo()
+            // Initialize accounts with the new SDK
+            accountManager.fetchAccounts()
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
     }
@@ -143,35 +162,32 @@ object AccountManager {
 
     fun getSwitchAccountList(): List<Any> {
         val list = mutableListOf<Any>()
-        list.addAll(accounts)
-        val addressSet = accounts.mapNotNull { it.wallet?.walletAddress() }.toSet()
+        list.addAll(accounts.value)
+        val addressSet = accounts.value.mapNotNull { it.wallet?.walletAddress() }.toSet()
         list.addAll(switchAccounts.filter { it.address !in addressSet })
         return list
     }
 
     private suspend fun getLocalStoredKey(accountList: List<Account>?): List<LocalSwitchAccount> = withContext(Dispatchers.IO) {
         val list = mutableListOf<LocalSwitchAccount>()
-        val uidPublicKeyMap = AccountWalletManager.getUIDPublicKeyMap()
-        val jobs = uidPublicKeyMap.map { (uid, publicKey) ->
-            async {
-                val response = queryService.queryAddress(publicKey)
-                response.accounts.firstOrNull()?.let { account ->
-                    if (switchAccounts.any { it.address == account.address }) {
-                        return@let
-                    }
-                    if (accountList != null && accountList.any { it.wallet?.mainnetWallet()?.address() == account.address }) {
-                        return@let
-                    }
-                    var count = switchAccounts.size
-                    switchAccounts.add(LocalSwitchAccount(
-                        username = "Profile ${++count}",
-                        address = account.address,
-                        userId = uid
-                    ))
+        val accounts = accountManager.accounts.first()
+        
+        accounts.forEach { (network, accountList) ->
+            accountList.forEach { account ->
+                if (switchAccounts.any { it.address == account.address }) {
+                    return@forEach
                 }
+                if (accountList != null && accountList.any { it.address == account.address }) {
+                    return@forEach
+                }
+                var count = switchAccounts.size
+                switchAccounts.add(LocalSwitchAccount(
+                    username = "Profile ${++count}",
+                    address = account.address,
+                    userId = account.id
+                ))
             }
         }
-        jobs.awaitAll()
         return@withContext list
     }
 
@@ -211,12 +227,12 @@ object AccountManager {
     }
 
     fun add(account: Account, userId: String? = null) {
-        accounts.removeAll { it.userInfo.username == account.userInfo.username }
-        accounts.add(account)
-        accounts.forEach {
+        accounts.value.removeAll { it.userInfo.username == account.userInfo.username }
+        accounts.value.add(account)
+        accounts.value.forEach {
             it.isActive = it == account
         }
-        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+        AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
         val prefix = account.prefix
         if (!prefix.isNullOrEmpty() && userId != null) {
             userPrefixes.removeAll { it.userId == userId}
@@ -227,7 +243,7 @@ object AccountManager {
     }
 
     fun get(): Account? {
-        return accounts.toList().firstOrNull { it.isActive }
+        return accounts.value.toList().firstOrNull { it.isActive }
     }
 
     fun userInfo() = get()?.userInfo
@@ -248,10 +264,14 @@ object AccountManager {
                 return@ioScope
             }
             setToAnonymous()
-            val account = accounts.removeAt(index)
-            userPrefixes.removeAll { it.userId == account.wallet?.id}
+            // Remove account from the new SDK
+            get()?.wallet?.mainnetWallet()?.address()?.let { address ->
+                accountManager.removeAccount(address)
+            }
+            accounts.value.removeAt(index)
+            userPrefixes.removeAll { it.userId == get()?.wallet?.id}
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
-            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
             uiScope {
                 clearUserCache()
                 MainActivity.relaunch(Env.getApp(), true)
@@ -261,7 +281,7 @@ object AccountManager {
 
     fun updateUserInfo(userInfo: UserInfoData) {
         list().firstOrNull { it.userInfo.username == userInfo.username }?.userInfo = userInfo
-        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+        AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
     }
 
     fun updateWalletInfo(wallet: WalletListData) {
@@ -270,7 +290,7 @@ object AccountManager {
             addAccountWithWallet(wallet)
         } else {
             account.wallet = wallet
-            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
             WalletManager.walletUpdate()
             uploadPushToken()
         }
@@ -279,13 +299,13 @@ object AccountManager {
     fun updateEVMAddressInfo(evmAddressMap: Map<String, String>) {
         get()?.let {
             it.evmAddressData = EVMAddressData(evmAddressMap)
-            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
         }
     }
 
     fun updateWalletEmojiInfo(username: String, emojiInfoList: List<WalletEmojiInfo>) {
         list().firstOrNull { it.userInfo.username == username }?.walletEmojiList = emojiInfoList
-        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+        AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
     }
 
     private fun addAccountWithWallet(wallet: WalletListData) {
@@ -331,7 +351,7 @@ object AccountManager {
         setUploadedAddressSet(uploadedAddressSet)
     }
 
-    fun list() = accounts.toList()
+    fun list() = accounts.value.toList()
 
     private var isSwitching = false
 
@@ -344,10 +364,10 @@ object AccountManager {
             switchAccount(account) { isSuccess ->
                 if (isSuccess) {
                     isSwitching = false
-                    accounts.forEach {
+                    accounts.value.forEach {
                         it.isActive = it.userInfo.username == account.userInfo.username
                     }
-                    AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+                    AccountCacheManager.cache(Accounts().apply { addAll(accounts.value) })
                     initEmojiAndEVMInfo()
                     uiScope {
                         clearUserCache()
@@ -491,6 +511,208 @@ object AccountManager {
             return signInAnonymously()
         }
         return true
+    }
+
+    suspend fun fetchAccounts() {
+        withContext(Dispatchers.IO) {
+            try {
+                val flowAccounts = accountManager.accounts.first()
+                val accountList = flowAccounts.values.flatten().map { flowAccount ->
+                    Account(
+                        id = flowAccount.id,
+                        address = flowAccount.address,
+                        balance = flowAccount.balance,
+                        keys = flowAccount.keys.map { key ->
+                            Account.Key(
+                                index = key.index,
+                                publicKey = key.publicKey,
+                                weight = key.weight,
+                                signatureAlgorithm = key.signatureAlgorithm
+                            )
+                        }
+                    )
+                }
+                _accounts.value = accountList
+                _currentAccount.value = accountList.firstOrNull()
+                logd(TAG, "Fetched ${accountList.size} accounts")
+            } catch (e: Exception) {
+                loge(TAG, "Error fetching accounts: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun addAccount(mnemonic: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val key = keyManager.createSeedPhraseKey(mnemonic)
+                val transaction = wallet.createTransaction {
+                    script = """
+                        transaction(publicKey: String, weight: Int) {
+                            prepare(signer: AuthAccount) {
+                                let account = AuthAccount(payer: signer)
+                                account.addPublicKey(publicKey.decodeHex(), weight: weight)
+                            }
+                        }
+                    """.trimIndent()
+                    addArgument { string(keyManager.getPublicKey(key, SigningAlgorithm.ECDSA_P256)) }
+                    addArgument { int(1000) }
+                    addAuthorizer { accountManager.accounts.first().values.flatten().first() }
+                }
+
+                val result = wallet.sendTransaction(transaction)
+                logd(TAG, "Account creation transaction sent: ${result.id}")
+
+                var status = result.status
+                while (status == TransactionStatus.PENDING) {
+                    status = wallet.getTransactionStatus(result.id)
+                }
+
+                if (status == TransactionStatus.SEALED) {
+                    fetchAccounts()
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error adding account: ${e.message}")
+                false
+            }
+        }
+    }
+
+    suspend fun removeAccount(address: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val transaction = wallet.createTransaction {
+                    script = """
+                        transaction(address: Address) {
+                            prepare(signer: AuthAccount) {
+                                signer.removeAccount(address)
+                            }
+                        }
+                    """.trimIndent()
+                    addArgument { address(address) }
+                    addAuthorizer { accountManager.accounts.first().values.flatten().first() }
+                }
+
+                val result = wallet.sendTransaction(transaction)
+                logd(TAG, "Account removal transaction sent: ${result.id}")
+
+                var status = result.status
+                while (status == TransactionStatus.PENDING) {
+                    status = wallet.getTransactionStatus(result.id)
+                }
+
+                if (status == TransactionStatus.SEALED) {
+                    fetchAccounts()
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error removing account: ${e.message}")
+                false
+            }
+        }
+    }
+
+    suspend fun switchAccount(account: Account): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val targetAccount = accounts.values.flatten()
+                    .find { it.address == account.wallet?.mainnetWallet()?.address() }
+                
+                if (targetAccount != null) {
+                    _currentAccount.value = account
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error switching account: ${e.message}")
+                false
+            }
+        }
+    }
+
+    suspend fun updateAccountInfo(account: Account) {
+        withContext(Dispatchers.IO) {
+            try {
+                val accounts = accountManager.accounts.first()
+                val flowAccount = accounts.values.flatten()
+                    .find { it.address == account.wallet?.mainnetWallet()?.address() }
+                
+                if (flowAccount != null) {
+                    val updatedAccount = account.copy(
+                        balance = flowAccount.balance,
+                        keys = flowAccount.keys.map { key ->
+                            Account.Key(
+                                index = key.index,
+                                publicKey = key.publicKey,
+                                weight = key.weight,
+                                signatureAlgorithm = key.signatureAlgorithm
+                            )
+                        }
+                    )
+                    
+                    val currentList = _accounts.value.toMutableList()
+                    val index = currentList.indexOfFirst { it.id == account.id }
+                    if (index != -1) {
+                        currentList[index] = updatedAccount
+                        _accounts.value = currentList
+                        
+                        if (_currentAccount.value?.id == account.id) {
+                            _currentAccount.value = updatedAccount
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error updating account info: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun fetchAccountsForNetwork(network: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                val flowAccounts = accountManager.accounts.first()
+                val accountList = flowAccounts.values.flatten()
+                    .filter { it.network == network }
+                    .map { flowAccount ->
+                        Account(
+                            id = flowAccount.id,
+                            address = flowAccount.address,
+                            balance = flowAccount.balance,
+                            keys = flowAccount.keys.map { key ->
+                                Account.Key(
+                                    index = key.index,
+                                    publicKey = key.publicKey,
+                                    weight = key.weight,
+                                    signatureAlgorithm = key.signatureAlgorithm
+                                )
+                            }
+                        )
+                    }
+                _accounts.value = accountList
+                logd(TAG, "Fetched ${accountList.size} accounts for network $network")
+            } catch (e: Exception) {
+                loge(TAG, "Error fetching accounts for network: ${e.message}")
+            }
+        }
+    }
+
+    fun getCurrentAccount(): Account? {
+        return _currentAccount.value
+    }
+
+    fun getAccounts(): List<Account> {
+        return _accounts.value
+    }
+
+    fun clearAccounts() {
+        _accounts.value = emptyList()
+        _currentAccount.value = null
     }
 }
 

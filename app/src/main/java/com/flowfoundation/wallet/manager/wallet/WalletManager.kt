@@ -9,13 +9,24 @@ import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.utils.getSelectedWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
-import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.wallet.AccountManager as FlowAccountManager
+import com.flowfoundation.wallet.wallet.KeyManager
+import org.onflow.flow.ChainId
+import org.onflow.flow.models.SigningAlgorithm
 
 object WalletManager {
+    private val TAG = WalletManager::class.java.simpleName
 
     private var childAccountMap = mutableMapOf<String, ChildAccountList>()
-
     private var selectedWalletAddress: String = ""
+
+    // New Flow Wallet Kit SDK instances
+    private val wallet = Wallet()
+    private val accountManager = FlowAccountManager(wallet)
+    private val keyManager = KeyManager()
 
     fun init() {
         ioScope {
@@ -24,13 +35,18 @@ object WalletManager {
     }
 
     fun walletUpdate() {
-        wallet()?.let { refreshChildAccount(it) }
+        try {
+            logd(TAG, "Updating wallet")
+            accountManager.fetchAccounts()
+        } catch (e: Exception) {
+            loge(TAG, "Error updating wallet: ${e.message}")
+        }
     }
 
     fun wallet() = AccountManager.get()?.wallet
 
     fun isEVMAccountSelected(): Boolean {
-        return selectedWalletAddress.toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
+        return selectedWalletAddress.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {
@@ -95,7 +111,7 @@ object WalletManager {
     }
 
     fun selectedWalletAddress(): String {
-        val pref = selectedWalletAddress.toAddress()
+        val pref = selectedWalletAddress
         val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null || EVMWalletManager.isEVMWalletAddress(pref)
         if (isExist) {
             return pref
@@ -115,19 +131,50 @@ object WalletManager {
     }
 
     private fun refreshChildAccount(wallet: WalletListData) {
-//        To be optimized getAllWalletChildAccount with each chain id
-//        childAccountMap = wallet.wallets?.associate {
-//            it.address().orEmpty() to ChildAccountList(it.address().orEmpty())
-//        }.orEmpty().filter {
-//            it.key.isNotBlank()
-//        }
-        // get current wallet child account
         wallet.walletAddress()?.let {
             if (childAccountMap.contains(it)) {
                 childAccountMap[it]?.refresh()
             } else {
                 childAccountMap[it] = ChildAccountList(it)
             }
+        }
+    }
+
+    fun addNetwork(network: ChainId) {
+        try {
+            logd(TAG, "Adding network: $network")
+            wallet.addNetwork(network)
+            accountManager.fetchAccountsForNetwork(network)
+        } catch (e: Exception) {
+            loge(TAG, "Error adding network: ${e.message}")
+        }
+    }
+
+    fun removeNetwork(network: ChainId) {
+        try {
+            logd(TAG, "Removing network: $network")
+            wallet.removeNetwork(network)
+        } catch (e: Exception) {
+            loge(TAG, "Error removing network: ${e.message}")
+        }
+    }
+
+    fun getMnemonic(): String? {
+        return try {
+            wallet.getMnemonic()
+        } catch (e: Exception) {
+            loge(TAG, "Error getting mnemonic: ${e.message}")
+            null
+        }
+    }
+
+    fun createWallet(mnemonic: String) {
+        try {
+            logd(TAG, "Creating new wallet")
+            wallet.createWallet(mnemonic)
+            accountManager.fetchAccounts()
+        } catch (e: Exception) {
+            loge(TAG, "Error creating wallet: ${e.message}")
         }
     }
 }
