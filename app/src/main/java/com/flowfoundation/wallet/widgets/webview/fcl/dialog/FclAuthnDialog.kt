@@ -72,12 +72,6 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
                 flBlockedConnect.setOnClickListener {
                     result?.resume(true)
                     dismiss()
-                    // Redirect to external browser after approval
-                    data.url?.let { url ->
-                        uiScope {
-                            url.openInSystemBrowser(requireContext(), true)
-                        }
-                    }
                 }
             }
         }
