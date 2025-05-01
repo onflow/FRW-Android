@@ -49,16 +49,23 @@ enum class DeepLinkPath(val path: String) {
     }
 }
 
-
-fun dispatchDeepLinking(context: Context, uri: Uri) {
-    ioScope {
-        val wcUri = getWalletConnectUri(uri)
-        if (wcUri?.startsWith("wc:") == true) {
-            dispatchWalletConnect(uri)
-            return@ioScope
+suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
+    logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
+    val wcUri = getWalletConnectUri(uri)
+    if (wcUri?.startsWith("wc:") == true) {
+        logd(TAG, "Found WalletConnect URI: $wcUri")
+        val success = dispatchWalletConnect(uri)
+        if (success) {
+            logd(TAG, "WalletConnect dispatch completed successfully")
+        } else {
+            loge(TAG, "WalletConnect dispatch failed")
+            // Save as pending action if WalletConnect fails
+            PendingActionHelper.savePendingDeepLink(context, uri)
         }
-        PendingActionHelper.savePendingDeepLink(context, uri)
+        return
     }
+    logd(TAG, "No WalletConnect URI found, saving as pending action")
+    PendingActionHelper.savePendingDeepLink(context, uri)
 }
 
 suspend fun executePendingDeepLink(uri: Uri) {
@@ -98,17 +105,21 @@ suspend fun executePendingDeepLink(uri: Uri) {
 
 // https://lilico.app/?uri=wc%3A83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c%402%3Frelay-protocol%3Diridium%26symKey%3D618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
 // wc:83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c@2?relay-protocol=iridium&symKey=618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
-private fun dispatchWalletConnect(uri: Uri): Boolean {
+private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = getWalletConnectUri(uri)
-        logd(TAG, "dispatchWalletConnect: $data")
+        logd(TAG, "dispatchWalletConnect: Processing URI: $uri")
+        logd(TAG, "Extracted WalletConnect URI: $data")
+        
         if (data.isNullOrBlank() || !data.startsWith("wc:")) {
-            logd(TAG, "invalidWalletConnect uri format: $data")
+            loge(TAG, "Invalid WalletConnect URI format: $data")
             return@runCatching false
         }
-
+        
+        logd(TAG, "Starting WalletConnect initialization check")
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, initializing...")
+            var result = false
             ioScope {
                 val initResult = withTimeoutOrNull(3000) {
                     var waitTime = 50L
@@ -116,6 +127,7 @@ private fun dispatchWalletConnect(uri: Uri): Boolean {
                     val maxAttempts = 15
 
                     while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
+                        logd(TAG, "Waiting for WalletConnect initialization (attempt $attempts)")
                         delay(waitTime)
                         attempts++
                         waitTime = minOf(waitTime * 2, 500)
@@ -124,24 +136,37 @@ private fun dispatchWalletConnect(uri: Uri): Boolean {
                     WalletConnect.isInitialized()
                 }
                 if (initResult == null) {
-                    logd(TAG, "WalletConnect initialization timeout")
+                    loge(TAG, "WalletConnect initialization timeout")
                     uiScope {
                         toast(R.string.wallet_connect_error)
                     }
-                    return@ioScope
-                }
-                try {
-                    WalletConnect.get().pair(data.toString())
-                } catch (e: Exception) {
-                    loge(e)
+                    result = false
+                } else {
+                    try {
+                        logd(TAG, "WalletConnect initialized, attempting to pair")
+                        WalletConnect.get().pair(data.toString())
+                        logd(TAG, "WalletConnect pairing successful")
+                        // Wait for session proposal to be handled
+                        delay(2000) // Increased delay to ensure proposal is processed
+                        result = true
+                    } catch (e: Exception) {
+                        loge(TAG, "WalletConnect pairing failed: ${e.message}")
+                        loge(e)
+                        result = false
+                    }
                 }
             }
-            return@runCatching true
+            result
         } else {
+            logd(TAG, "WalletConnect already initialized, attempting to pair")
             try {
                 WalletConnect.get().pair(data.toString())
+                logd(TAG, "WalletConnect pairing successful")
+                // Wait for session proposal to be handled
+                delay(2000) // Increased delay to ensure proposal is processed
                 true
             } catch (e: Exception) {
+                loge(TAG, "WalletConnect pairing failed: ${e.message}")
                 loge(e)
                 false
             }
@@ -152,6 +177,7 @@ private fun dispatchWalletConnect(uri: Uri): Boolean {
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
         val uriString = uri.toString()
+        logd(TAG, "getWalletConnectUri: Processing URI string: $uriString")
 
         val uriParamStart = uriString.indexOf("uri=")
         val wcUriEncoded = if (uriParamStart != -1) {
@@ -159,13 +185,22 @@ fun getWalletConnectUri(uri: Uri): String? {
         } else {
             uri.getQueryParameter("uri")
         }
+        
+        logd(TAG, "Extracted encoded URI: $wcUriEncoded")
+        
         wcUriEncoded?.let {
             if (it.contains("%")) {
-                URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                logd(TAG, "Decoded URI: $decoded")
+                decoded
             } else {
+                logd(TAG, "URI not encoded, using as is")
                 it
             }
         }
+    }.onFailure { e ->
+        loge(TAG, "Error processing WalletConnect URI: ${e.message}")
+        loge(e)
     }.getOrNull()
 }
 

@@ -51,15 +51,36 @@ class WalletConnect {
                     if (isConnected) {
                         delay(1000)
                         logd(TAG, "Pair on connected")
-                        paring(uri)
-                        job?.cancel()
+                        try {
+                            val pairingParams = Core.Params.Pair(uri)
+                            logd(TAG, "Attempting to pair with params: $pairingParams")
+                            CoreClient.Pairing.pair(pairingParams) { error ->
+                                loge(TAG, "Pairing error: ${error.throwable}")
+                            }
+                            logd(TAG, "Pairing completed, checking for active sessions")
+                            val sessions = SignClient.getListOfActiveSessions()
+                            logd(TAG, "Active sessions: ${sessions.size}")
+                        } catch (e: Exception) {
+                            loge(TAG, "Pairing exception: ${e.message}")
+                            loge(e)
+                        } finally {
+                            job?.cancel()
+                        }
                     } else {
                         attempts++
                         if (attempts >= maxAttempts) {
                             logd(TAG, "Pair on max attempts")
                             try {
-                                paring(uri)
+                                val pairingParams = Core.Params.Pair(uri)
+                                logd(TAG, "Attempting to pair with params: $pairingParams")
+                                CoreClient.Pairing.pair(pairingParams) { error ->
+                                    loge(TAG, "Pairing error: ${error.throwable}")
+                                }
+                                logd(TAG, "Pairing completed, checking for active sessions")
+                                val sessions = SignClient.getListOfActiveSessions()
+                                logd(TAG, "Active sessions: ${sessions.size}")
                             } catch (e: Exception) {
+                                loge(TAG, "Pairing exception: ${e.message}")
                                 loge(e)
                             } finally {
                                 job?.cancel()
@@ -76,18 +97,19 @@ class WalletConnect {
                 }
             }
         } else {
-            paring(uri)
-        }
-    }
-
-    private fun paring(uri: String) {
-        try {
-            val pairingParams = Core.Params.Pair(uri)
-            CoreClient.Pairing.pair(pairingParams) { error ->
-                loge(error.throwable)
+            try {
+                val pairingParams = Core.Params.Pair(uri)
+                logd(TAG, "Attempting to pair with params: $pairingParams")
+                CoreClient.Pairing.pair(pairingParams) { error ->
+                    loge(TAG, "Pairing error: ${error.throwable}")
+                }
+                logd(TAG, "Pairing completed, checking for active sessions")
+                val sessions = SignClient.getListOfActiveSessions()
+                logd(TAG, "Active sessions: ${sessions.size}")
+            } catch (e: Exception) {
+                loge(TAG, "Pairing exception: ${e.message}")
+                loge(e)
             }
-        } catch (e: Exception) {
-            loge(e)
         }
     }
 
@@ -138,7 +160,7 @@ private fun setup(application: Application) {
         description = "Digital wallet created for everyone.",
         url = "https://core.flow.com/",
         icons = listOf("https://lilico.app/fcw-logo.png"),
-        redirect = null,
+        redirect = "flowwallet://wc",
     )
     CoreClient.initialize(
         application = application,

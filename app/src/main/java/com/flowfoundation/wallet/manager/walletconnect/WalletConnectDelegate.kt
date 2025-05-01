@@ -8,6 +8,7 @@ import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
@@ -17,6 +18,10 @@ import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDia
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclAuthnDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
+import com.reown.android.Core
+import com.reown.android.CoreClient
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.async
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -24,6 +29,10 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
 
     private var isConnected = false
     private val processedRequestIds = mutableSetOf<Long>()
+    private var pendingRedirectUrl: String? = null
+    private var isRedirecting = false
+    private var isSessionSettled = false
+    private var isAuthnComplete = false
 
     /**
      * Triggered whenever the connection state is changed
@@ -31,6 +40,42 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     override fun onConnectionStateChange(state: Sign.Model.ConnectionState) {
         logd(TAG, "onConnectionStateChange() state:${state.isAvailable}")
         isConnected = state.isAvailable
+        if (!state.isAvailable) {
+            logd(TAG, "Connection lost, attempting to reconnect")
+            ioScope {
+                delay(1000) // Wait before reconnecting
+                try {
+                    CoreClient.Relay.connect { error: Core.Model.Error ->
+                        loge(TAG, "CoreClient.Relay connect error: $error")
+                    }
+                } catch (e: Exception) {
+                    loge(TAG, "Error reconnecting: ${e.message}")
+                    loge(e)
+                }
+            }
+        } else if (isRedirecting) {
+            // If we were trying to redirect and connection is restored, try again
+            performRedirect()
+        }
+    }
+
+    private fun performRedirect() {
+        val redirectUrl = pendingRedirectUrl ?: return
+        val activity = BaseActivity.getCurrentActivity() ?: run {
+            loge(TAG, "No current activity found for redirection")
+            return
+        }
+        
+        logd(TAG, "Attempting to redirect to: $redirectUrl")
+        try {
+            redirectUrl.openInSystemBrowser(activity, true)
+            logd(TAG, "Successfully opened URL in system browser")
+            pendingRedirectUrl = null
+            isRedirecting = false
+        } catch (e: Exception) {
+            loge(TAG, "Failed to open URL in system browser: ${e.message}")
+            loge(e)
+        }
     }
 
     override fun onError(error: Sign.Model.Error) {
@@ -67,53 +112,93 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     ) {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
         logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
-        val activity = BaseActivity.getCurrentActivity() ?: return
+        
         processedRequestIds.clear()
-        try {
-            uiScope {
-                with(sessionProposal) {
-                    val approve = if (WalletManager.isEVMAccountSelected()) {
-                        if (isShowMoveDialog()) {
-                            MoveDialog().showMove(activity.supportFragmentManager, description)
-                        }
-                        EvmRequestAccountDialog().show(
-                            activity.supportFragmentManager,
-                            EVMDialogModel(
-                                title = name,
-                                url = url,
-                                network = chainNetWorkString()
-                            )
-                        )
-                    } else {
-                        val data = FclDialogModel(
-                            title = name,
-                            url = url,
-                            logo = icons.firstOrNull()?.toString(),
-                            network = network()
-                        )
-                        FclAuthnDialog().show(
-                            activity.supportFragmentManager,
-                            data
-                        )
-                    }
-                    if (approve) {
-                        approveSession()
-                    } else {
-                        reject()
-                    }
-
+        isSessionSettled = false
+        isAuthnComplete = false
+        
+        // Set the redirect URL synchronously before showing the dialog
+        pendingRedirectUrl = if (sessionProposal.redirect.isNotEmpty()) {
+            logd(TAG, "Using provided redirect URL: ${sessionProposal.redirect}")
+            sessionProposal.redirect
+        } else {
+            logd(TAG, "No redirect provided, using DApp URL: ${sessionProposal.url}")
+            sessionProposal.url
+        }
+        
+        // Try to get the activity with a small delay to allow it to be ready
+        ioScope {
+            var attempts = 0
+            val maxAttempts = 5
+            var activity: BaseActivity? = null
+            
+            while (attempts < maxAttempts && activity == null) {
+                activity = BaseActivity.getCurrentActivity()
+                if (activity == null) {
+                    logd(TAG, "Activity not found, attempt ${attempts + 1} of $maxAttempts")
+                    delay(500)
+                    attempts++
                 }
             }
-
-        } catch (e: Exception) {
-            loge(e)
+            
+            if (activity == null) {
+                loge(TAG, "No current activity found after $maxAttempts attempts")
+                try {
+                    sessionProposal.reject()
+                } catch (e: Exception) {
+                    loge(TAG, "Error rejecting session: ${e.message}")
+                    loge(e)
+                }
+                return@ioScope
+            }
+            
             try {
-                sessionProposal.reject()
+                uiScope {
+                    with(sessionProposal) {
+                        val approve = if (WalletManager.isEVMAccountSelected()) {
+                            if (isShowMoveDialog()) {
+                                MoveDialog().showMove(activity.supportFragmentManager, description)
+                            }
+                            EvmRequestAccountDialog().show(
+                                activity.supportFragmentManager,
+                                EVMDialogModel(
+                                    title = name,
+                                    url = url,
+                                    network = chainNetWorkString()
+                                )
+                            )
+                        } else {
+                            val data = FclDialogModel(
+                                title = name,
+                                url = url,
+                                logo = icons.firstOrNull()?.toString(),
+                                network = network()
+                            )
+                            FclAuthnDialog().show(
+                                activity.supportFragmentManager,
+                                data
+                            )
+                        }
+                        if (approve) {
+                            logd(TAG, "Session approved, waiting for settlement and authn")
+                            approveSession()
+                        } else {
+                            logd(TAG, "Session rejected")
+                            reject()
+                        }
+                    }
+                }
             } catch (e: Exception) {
+                loge(TAG, "Error in session proposal handling: ${e.message}")
                 loge(e)
+                try {
+                    sessionProposal.reject()
+                } catch (e: Exception) {
+                    loge(TAG, "Error rejecting session: ${e.message}")
+                    loge(e)
+                }
             }
         }
-
     }
 
     /**
@@ -130,7 +215,16 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         processedRequestIds.add(sessionRequest.request.id)
         logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
         logd(TAG, "onSessionRequest() sessionRequest:$sessionRequest")
-        ioScope { sessionRequest.toWcRequest().dispatch() }
+
+        if (sessionRequest.request.method == "flow_authn") {
+            ioScope {
+                sessionRequest.toWcRequest().dispatch()
+                isAuthnComplete = true
+                tryRedirect()
+            }
+        } else {
+            ioScope { sessionRequest.toWcRequest().dispatch() }
+        }
     }
 
     /**
@@ -141,6 +235,16 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             TAG,
             "onSessionSettleResponse() settleSessionResponse:${Gson().toJson(settleSessionResponse)}"
         )
+        
+        when (settleSessionResponse) {
+            is Sign.Model.SettledSessionResponse.Result -> {
+                isSessionSettled = true
+                tryRedirect()
+            }
+            is Sign.Model.SettledSessionResponse.Error -> {
+                loge(TAG, "Session settlement error: ${settleSessionResponse.errorMessage}")
+            }
+        }
     }
 
     /**
@@ -151,5 +255,29 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             TAG,
             "onSessionUpdateResponse() sessionUpdateResponse:${Gson().toJson(sessionUpdateResponse)}"
         )
+    }
+
+    private fun tryRedirect() {
+        if (isSessionSettled && isAuthnComplete && pendingRedirectUrl != null) {
+            val activity = BaseActivity.getCurrentActivity() ?: run {
+                loge(TAG, "No current activity found for redirection")
+                return
+            }
+
+            logd(TAG, "Attempting to redirect to: $pendingRedirectUrl")
+            try {
+                // Since authentication happens in the system browser, we should always use the system browser
+                // for redirection to maintain the session context
+                pendingRedirectUrl?.openInSystemBrowser(activity, true)
+                logd(TAG, "Successfully opened URL in system browser")
+                pendingRedirectUrl = null
+                isRedirecting = false
+                isSessionSettled = false
+                isAuthnComplete = false
+            } catch (e: Exception) {
+                loge(TAG, "Failed to open URL in system browser: ${e.message}")
+                loge(e)
+            }
+        }
     }
 }
