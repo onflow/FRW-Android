@@ -226,6 +226,7 @@
     <string name="made_by_outblock">Made by <a href="https://flow.com/">Flow</a></string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="connecting">Connecting...</string>
     <string name="transaction_to">Transaction Request from</string>
     <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
@@ -745,4 +746,5 @@
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
+    <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
 </resources>

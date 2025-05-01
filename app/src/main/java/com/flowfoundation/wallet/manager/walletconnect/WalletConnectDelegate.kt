@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
+import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -8,11 +9,13 @@ import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.utils.debug.toast
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDialog
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
@@ -21,7 +24,8 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.async
+import android.widget.Toast
+import android.view.Gravity
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -31,8 +35,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     private val processedRequestIds = mutableSetOf<Long>()
     private var pendingRedirectUrl: String? = null
     private var isRedirecting = false
-    private var isSessionSettled = false
-    private var isAuthnComplete = false
+    private var isSessionApproved = false
 
     /**
      * Triggered whenever the connection state is changed
@@ -65,7 +68,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             loge(TAG, "No current activity found for redirection")
             return
         }
-        
+
         logd(TAG, "Attempting to redirect to: $redirectUrl")
         try {
             redirectUrl.openInSystemBrowser(activity, true)
@@ -112,26 +115,25 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     ) {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
         logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
-        
+
         processedRequestIds.clear()
-        isSessionSettled = false
-        isAuthnComplete = false
-        
+        isSessionApproved = false  // Reset approval state for new session
+
         // Set the redirect URL synchronously before showing the dialog
-        pendingRedirectUrl = if (sessionProposal.redirect.isNotEmpty()) {
+        if (!sessionProposal.redirect.isNullOrEmpty()) {
             logd(TAG, "Using provided redirect URL: ${sessionProposal.redirect}")
             sessionProposal.redirect
         } else {
             logd(TAG, "No redirect provided, using DApp URL: ${sessionProposal.url}")
             sessionProposal.url
         }
-        
+
         // Try to get the activity with a small delay to allow it to be ready
         ioScope {
             var attempts = 0
-            val maxAttempts = 5
+            val maxAttempts = 3
             var activity: BaseActivity? = null
-            
+
             while (attempts < maxAttempts && activity == null) {
                 activity = BaseActivity.getCurrentActivity()
                 if (activity == null) {
@@ -140,7 +142,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                     attempts++
                 }
             }
-            
+
             if (activity == null) {
                 loge(TAG, "No current activity found after $maxAttempts attempts")
                 try {
@@ -151,7 +153,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                 }
                 return@ioScope
             }
-            
+
             try {
                 uiScope {
                     with(sessionProposal) {
@@ -180,10 +182,22 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             )
                         }
                         if (approve) {
-                            logd(TAG, "Session approved, waiting for settlement and authn")
+                            isSessionApproved = true
+                            logd(TAG, "Session approved by user")
                             approveSession()
+                            
+                            // Show toast immediately after approval if no redirect URL
+                            if (sessionProposal.redirect.isNullOrEmpty()) {
+                                logd(TAG, "No redirect URL, showing toast after approval")
+                                val activity = BaseActivity.getCurrentActivity()
+                                if (activity != null) {
+                                    uiScope {
+                                        toast(R.string.return_to_browser_to_continue)
+                                    }
+                                }
+                            }
                         } else {
-                            logd(TAG, "Session rejected")
+                            logd(TAG, "Session rejected by user")
                             reject()
                         }
                     }
@@ -216,15 +230,23 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
         logd(TAG, "onSessionRequest() sessionRequest:$sessionRequest")
 
-        if (sessionRequest.request.method == "flow_authn") {
-            ioScope {
-                sessionRequest.toWcRequest().dispatch()
-                isAuthnComplete = true
-                tryRedirect()
+        // Show connecting toast when app is brought to foreground
+        val activity = BaseActivity.getCurrentActivity()
+        if (activity != null) {
+            uiScope {
+                val toast = Toast.makeText(activity, R.string.connecting_to, Toast.LENGTH_SHORT)
+                toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
+                toast.show()
             }
-        } else {
-            ioScope { sessionRequest.toWcRequest().dispatch() }
         }
+
+        // Get the redirect from the active session
+        val redirect = SignClient.getActiveSessionByTopic(sessionRequest.topic)?.redirect
+        if (!redirect.isNullOrEmpty()) {
+            logd(TAG, "Found redirect URL for session: $redirect")
+        }
+
+        ioScope { sessionRequest.toWcRequest().dispatch() }
     }
 
     /**
@@ -235,11 +257,42 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             TAG,
             "onSessionSettleResponse() settleSessionResponse:${Gson().toJson(settleSessionResponse)}"
         )
-        
+
         when (settleSessionResponse) {
             is Sign.Model.SettledSessionResponse.Result -> {
-                isSessionSettled = true
-                tryRedirect()
+                // Get the redirect URL from either pendingRedirectUrl or the settled session metadata
+                val redirectUrl = pendingRedirectUrl ?: run {
+                    val metadata = settleSessionResponse.session.metaData
+                    if (!metadata?.redirect.isNullOrEmpty()) {
+                        logd(TAG, "Using metadata redirect URL: ${metadata?.redirect}")
+                        metadata?.redirect
+                    } else {
+                        logd(TAG, "No redirect URL found in session metadata")
+                        null
+                    }
+                }
+
+                logd(TAG, "Final redirect URL: $redirectUrl")
+
+                if (redirectUrl != null) {
+                    val activity = BaseActivity.getCurrentActivity() ?: run {
+                        loge(TAG, "No current activity found for redirection")
+                        return
+                    }
+
+                    logd(TAG, "Attempting to redirect to: $redirectUrl")
+                    try {
+                        redirectUrl.openInSystemBrowser(activity, true)
+                        logd(TAG, "Successfully opened URL in system browser")
+                        pendingRedirectUrl = null
+                        isRedirecting = false
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to open URL in system browser: ${e.message}")
+                        loge(e)
+                    }
+                } else {
+                    logd(TAG, "No redirect URL found in pendingRedirectUrl or session metadata")
+                }
             }
             is Sign.Model.SettledSessionResponse.Error -> {
                 loge(TAG, "Session settlement error: ${settleSessionResponse.errorMessage}")
@@ -255,29 +308,5 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             TAG,
             "onSessionUpdateResponse() sessionUpdateResponse:${Gson().toJson(sessionUpdateResponse)}"
         )
-    }
-
-    private fun tryRedirect() {
-        if (isSessionSettled && isAuthnComplete && pendingRedirectUrl != null) {
-            val activity = BaseActivity.getCurrentActivity() ?: run {
-                loge(TAG, "No current activity found for redirection")
-                return
-            }
-
-            logd(TAG, "Attempting to redirect to: $pendingRedirectUrl")
-            try {
-                // Since authentication happens in the system browser, we should always use the system browser
-                // for redirection to maintain the session context
-                pendingRedirectUrl?.openInSystemBrowser(activity, true)
-                logd(TAG, "Successfully opened URL in system browser")
-                pendingRedirectUrl = null
-                isRedirecting = false
-                isSessionSettled = false
-                isAuthnComplete = false
-            } catch (e: Exception) {
-                loge(TAG, "Failed to open URL in system browser: ${e.message}")
-                loge(e)
-            }
-        }
     }
 }
