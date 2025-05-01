@@ -9,7 +9,6 @@ import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
-import com.flowfoundation.wallet.utils.debug.toast
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isShowMoveDialog

@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.component.deeplinking
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
@@ -23,11 +22,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.time.withTimeoutOrNull
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
