@@ -23,8 +23,8 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import kotlinx.coroutines.delay
-import android.widget.Toast
-import android.view.Gravity
+import com.flowfoundation.wallet.page.window.WindowFrame
+import android.view.View
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -118,15 +118,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         processedRequestIds.clear()
         isSessionApproved = false  // Reset approval state for new session
 
-        // Set the redirect URL synchronously before showing the dialog
-        if (!sessionProposal.redirect.isNullOrEmpty()) {
-            logd(TAG, "Using provided redirect URL: ${sessionProposal.redirect}")
-            sessionProposal.redirect
-        } else {
-            logd(TAG, "No redirect provided, using DApp URL: ${sessionProposal.url}")
-            sessionProposal.url
-        }
-
         // Try to get the activity with a small delay to allow it to be ready
         ioScope {
             var attempts = 0
@@ -185,14 +176,17 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             logd(TAG, "Session approved by user")
                             approveSession()
                             
-                            // Show toast immediately after approval if no redirect URL
+                            // Show toast only if LilicoWebView is closed and no redirect URL
                             if (sessionProposal.redirect.isNullOrEmpty()) {
-                                logd(TAG, "No redirect URL, showing toast after approval")
-                                val activity = BaseActivity.getCurrentActivity()
-                                if (activity != null) {
+                                logd(TAG, "No redirect URL, checking if WebView is closed")
+                                val browserContainer = WindowFrame.browserContainer()
+                                if (browserContainer?.visibility != View.VISIBLE) {
+                                    logd(TAG, "Browser is closed, showing toast")
                                     uiScope {
                                         toast(R.string.return_to_browser_to_continue)
                                     }
+                                } else {
+                                    logd(TAG, "Browser is open, skipping toast")
                                 }
                             }
                         } else {
@@ -228,16 +222,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         processedRequestIds.add(sessionRequest.request.id)
         logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
         logd(TAG, "onSessionRequest() sessionRequest:$sessionRequest")
-
-        // Show connecting toast when app is brought to foreground
-        val activity = BaseActivity.getCurrentActivity()
-        if (activity != null) {
-            uiScope {
-                val toast = Toast.makeText(activity, R.string.connecting_to, Toast.LENGTH_SHORT)
-                toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
-                toast.show()
-            }
-        }
 
         // Get the redirect from the active session
         val redirect = SignClient.getActiveSessionByTopic(sessionRequest.topic)?.redirect
