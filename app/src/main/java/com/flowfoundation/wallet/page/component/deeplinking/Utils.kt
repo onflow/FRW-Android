@@ -147,7 +147,6 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
                         WalletConnect.get().pair(data.toString())
                         logd(TAG, "WalletConnect pairing successful")
                         // Wait for session proposal to be handled
-                        delay(2000) // Increased delay to ensure proposal is processed
                         result = true
                     } catch (e: Exception) {
                         loge(TAG, "WalletConnect pairing failed: ${e.message}")
@@ -163,7 +162,6 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
                 WalletConnect.get().pair(data.toString())
                 logd(TAG, "WalletConnect pairing successful")
                 // Wait for session proposal to be handled
-                delay(2000) // Increased delay to ensure proposal is processed
                 true
             } catch (e: Exception) {
                 loge(TAG, "WalletConnect pairing failed: ${e.message}")
