@@ -53,7 +53,6 @@ suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
     logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
     val wcUri = getWalletConnectUri(uri)
     if (wcUri?.startsWith("wc:") == true) {
-        logd(TAG, "Found WalletConnect URI: $wcUri")
         val success = dispatchWalletConnect(uri)
         if (success) {
             logd(TAG, "WalletConnect dispatch completed successfully")
@@ -105,18 +104,15 @@ suspend fun executePendingDeepLink(uri: Uri) {
 
 // https://lilico.app/?uri=wc%3A83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c%402%3Frelay-protocol%3Diridium%26symKey%3D618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
 // wc:83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c@2?relay-protocol=iridium&symKey=618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
-private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
+private fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = getWalletConnectUri(uri)
-        logd(TAG, "dispatchWalletConnect: Processing URI: $uri")
-        logd(TAG, "Extracted WalletConnect URI: $data")
-        
+
         if (data.isNullOrBlank() || !data.startsWith("wc:")) {
             loge(TAG, "Invalid WalletConnect URI format: $data")
             return@runCatching false
         }
         
-        logd(TAG, "Starting WalletConnect initialization check")
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, initializing...")
             var result = false
@@ -124,10 +120,9 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
                 val initResult = withTimeoutOrNull(3000) {
                     var waitTime = 50L
                     var attempts = 0
-                    val maxAttempts = 15
+                    val maxAttempts = 5
 
                     while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
-                        logd(TAG, "Waiting for WalletConnect initialization (attempt $attempts)")
                         delay(waitTime)
                         attempts++
                         waitTime = minOf(waitTime * 2, 500)
@@ -143,9 +138,7 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
                     result = false
                 } else {
                     try {
-                        logd(TAG, "WalletConnect initialized, attempting to pair")
                         WalletConnect.get().pair(data.toString())
-                        logd(TAG, "WalletConnect pairing successful")
                         // Wait for session proposal to be handled
                         result = true
                     } catch (e: Exception) {
@@ -157,10 +150,8 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
             }
             result
         } else {
-            logd(TAG, "WalletConnect already initialized, attempting to pair")
             try {
                 WalletConnect.get().pair(data.toString())
-                logd(TAG, "WalletConnect pairing successful")
                 // Wait for session proposal to be handled
                 true
             } catch (e: Exception) {
@@ -175,8 +166,6 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
         val uriString = uri.toString()
-        logd(TAG, "getWalletConnectUri: Processing URI string: $uriString")
-
         val uriParamStart = uriString.indexOf("uri=")
         val wcUriEncoded = if (uriParamStart != -1) {
             uriString.substring(uriParamStart + 4)
@@ -184,15 +173,11 @@ fun getWalletConnectUri(uri: Uri): String? {
             uri.getQueryParameter("uri")
         }
         
-        logd(TAG, "Extracted encoded URI: $wcUriEncoded")
-        
         wcUriEncoded?.let {
             if (it.contains("%")) {
                 val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
-                logd(TAG, "Decoded URI: $decoded")
                 decoded
             } else {
-                logd(TAG, "URI not encoded, using as is")
                 it
             }
         }
