@@ -176,17 +176,17 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             logd(TAG, "Session approved by user")
                             approveSession()
                             
-                            // Show toast only if LilicoWebView is closed and no redirect URL
+                            // Show toast only if no redirect URL and browser is not visible
                             if (sessionProposal.redirect.isNullOrEmpty()) {
-                                logd(TAG, "No redirect URL, checking if WebView is closed")
+                                logd(TAG, "No redirect URL, checking if WebView is visible")
                                 val browserContainer = WindowFrame.browserContainer()
                                 if (browserContainer?.visibility != View.VISIBLE) {
-                                    logd(TAG, "Browser is closed, showing toast")
+                                    logd(TAG, "Browser is not visible, showing toast")
                                     uiScope {
                                         toast(R.string.return_to_browser_to_continue)
                                     }
                                 } else {
-                                    logd(TAG, "Browser is open, skipping toast")
+                                    logd(TAG, "Browser is visible, skipping toast")
                                 }
                             }
                         } else {
