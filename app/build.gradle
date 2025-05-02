@@ -63,7 +63,7 @@ android {
     def envTesters = System.getenv("FIREBASE_TESTERS") ?: ""
     def mergedTesters = ([localTesters, envTesters]
         .findAll { it?.trim() } // Filter out null/empty sources
-        .collectMany { it.split(",") } // Split comma-separated strings
+         .collectMany { it.split(",") as List<String> } // Split comma-separated strings
         .collect { it.trim() } // Trim each entry
         .findAll { it } // Filter out blanks
         .toSet() // Remove duplicates
