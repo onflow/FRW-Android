@@ -50,7 +50,8 @@ android {
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
         buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
-        manifestPlaceholders = [dropboxKey: dropboxKeyProd]
+        manifestPlaceholders = new HashMap<String, String>()
+        manifestPlaceholders.put("dropboxKey", dropboxKeyProd)
     }
 
     def keyAliasProperty = properties.getProperty("keyAlias", "androiddebugkey")
