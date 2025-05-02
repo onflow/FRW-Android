@@ -99,7 +99,7 @@ android {
             multiDexEnabled true
             debuggable true
             signingConfig signingConfigs.release
-            matchingFallbacks = ['release']
+            matchingFallbacks = ['debug', 'qa', 'release'] as List<String>
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
