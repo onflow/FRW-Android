@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.component.deeplinking
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
+import com.flowfoundation.wallet.utils.logd
 
 
 object PendingActionHelper {
@@ -15,6 +16,7 @@ object PendingActionHelper {
     }
 
     fun savePendingDeepLink(context: Context, deepLink: Uri) {
+        logd("DeepLinkingDispatch", "executeDeepLinking: savePendingDeepLink")
         getPrefs(context).edit().apply {
             putString(KEY_PENDING_DEEPLINK, deepLink.toString())
             putBoolean(KEY_HAS_PENDING_DEEPLINK, true)

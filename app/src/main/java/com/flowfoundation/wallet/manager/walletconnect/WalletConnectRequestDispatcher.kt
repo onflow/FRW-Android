@@ -241,23 +241,54 @@ private fun WCRequest.respondAccountInfo() {
 }
 
 private fun WCRequest.respondAuthn() {
-    val address = WalletManager.wallet()?.walletAddress() ?: return
-    val json = Gson().fromJson<List<SignableParams>>(params, object : TypeToken<List<SignableParams>>() {}.type)
-    val signable = json.firstOrNull() ?: return
-    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-    val keyId = cryptoProvider?.let {
+    logd(TAG, "Starting respondAuthn with params: $params")
+    val address = WalletManager.wallet()?.walletAddress() ?: run {
+        loge(TAG, "No wallet address found")
+        return
+    }
+    logd(TAG, "Using wallet address: $address")
+    
+    val json = try {
+        Gson().fromJson<List<SignableParams>>(params, object : TypeToken<List<SignableParams>>() {}.type)
+    } catch (e: Exception) {
+        loge(TAG, "Failed to parse params: ${e.message}")
+        loge(e)
+        return
+    }
+    val signable = json.firstOrNull() ?: run {
+        loge(TAG, "No signable params found")
+        return
+    }
+    logd(TAG, "Signable params: $signable")
+    
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: run {
+        loge(TAG, "No crypto provider found")
+        return
+    }
+    val keyId = cryptoProvider.let {
         FlowAddress(address).currentKeyId(it.getPublicKey())
     } ?: 0
+    logd(TAG, "Using keyId: $keyId")
+    
     val services = walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
+    logd(TAG, "Generated authn response: $services")
+    
     val response = Sign.Params.Response(
         sessionTopic = topic,
         jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
     )
-    logd(TAG, "respondAuthn:\n${services}")
+    logd(TAG, "Sending response: $response")
 
     SignClient.respond(response, onSuccess = { success ->
-        logd(TAG, "success:${success}")
-    }) { error -> loge(error.throwable) }
+        logd(TAG, "Response sent successfully: $success")
+        ioScope {
+            delay(1000)
+            logd(TAG, "Authn response sent, proceeding with session settlement")
+        }
+    }) { error -> 
+        loge(TAG, "Failed to send response: ${error.throwable.message}")
+        loge(error.throwable)
+    }
 }
 
 private suspend fun WCRequest.respondAuthz() {

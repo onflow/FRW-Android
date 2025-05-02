@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.component.deeplinking
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
@@ -23,11 +22,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.time.withTimeoutOrNull
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -49,16 +44,22 @@ enum class DeepLinkPath(val path: String) {
     }
 }
 
-
-fun dispatchDeepLinking(context: Context, uri: Uri) {
-    ioScope {
-        val wcUri = getWalletConnectUri(uri)
-        if (wcUri?.startsWith("wc:") == true) {
-            dispatchWalletConnect(uri)
-            return@ioScope
+suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
+    logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
+    val wcUri = getWalletConnectUri(uri)
+    if (wcUri?.startsWith("wc:") == true) {
+        val success = dispatchWalletConnect(uri)
+        if (success) {
+            logd(TAG, "WalletConnect dispatch completed successfully")
+        } else {
+            loge(TAG, "WalletConnect dispatch failed")
+            // Save as pending action if WalletConnect fails
+            PendingActionHelper.savePendingDeepLink(context, uri)
         }
-        PendingActionHelper.savePendingDeepLink(context, uri)
+        return
     }
+    logd(TAG, "No WalletConnect URI found, saving as pending action")
+    PendingActionHelper.savePendingDeepLink(context, uri)
 }
 
 suspend fun executePendingDeepLink(uri: Uri) {
@@ -101,19 +102,20 @@ suspend fun executePendingDeepLink(uri: Uri) {
 private fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = getWalletConnectUri(uri)
-        logd(TAG, "dispatchWalletConnect: $data")
+
         if (data.isNullOrBlank() || !data.startsWith("wc:")) {
-            logd(TAG, "invalidWalletConnect uri format: $data")
+            loge(TAG, "Invalid WalletConnect URI format: $data")
             return@runCatching false
         }
-
+        
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, initializing...")
+            var result = false
             ioScope {
                 val initResult = withTimeoutOrNull(3000) {
                     var waitTime = 50L
                     var attempts = 0
-                    val maxAttempts = 15
+                    val maxAttempts = 5
 
                     while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
                         delay(waitTime)
@@ -124,24 +126,31 @@ private fun dispatchWalletConnect(uri: Uri): Boolean {
                     WalletConnect.isInitialized()
                 }
                 if (initResult == null) {
-                    logd(TAG, "WalletConnect initialization timeout")
+                    loge(TAG, "WalletConnect initialization timeout")
                     uiScope {
                         toast(R.string.wallet_connect_error)
                     }
-                    return@ioScope
-                }
-                try {
-                    WalletConnect.get().pair(data.toString())
-                } catch (e: Exception) {
-                    loge(e)
+                    result = false
+                } else {
+                    try {
+                        WalletConnect.get().pair(data.toString())
+                        // Wait for session proposal to be handled
+                        result = true
+                    } catch (e: Exception) {
+                        loge(TAG, "WalletConnect pairing failed: ${e.message}")
+                        loge(e)
+                        result = false
+                    }
                 }
             }
-            return@runCatching true
+            result
         } else {
             try {
                 WalletConnect.get().pair(data.toString())
+                // Wait for session proposal to be handled
                 true
             } catch (e: Exception) {
+                loge(TAG, "WalletConnect pairing failed: ${e.message}")
                 loge(e)
                 false
             }
@@ -152,20 +161,24 @@ private fun dispatchWalletConnect(uri: Uri): Boolean {
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
         val uriString = uri.toString()
-
         val uriParamStart = uriString.indexOf("uri=")
         val wcUriEncoded = if (uriParamStart != -1) {
             uriString.substring(uriParamStart + 4)
         } else {
             uri.getQueryParameter("uri")
         }
+        
         wcUriEncoded?.let {
             if (it.contains("%")) {
-                URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                decoded
             } else {
                 it
             }
         }
+    }.onFailure { e ->
+        loge(TAG, "Error processing WalletConnect URI: ${e.message}")
+        loge(e)
     }.getOrNull()
 }
 
