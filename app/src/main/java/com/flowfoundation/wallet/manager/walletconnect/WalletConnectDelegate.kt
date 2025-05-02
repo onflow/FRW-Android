@@ -25,6 +25,7 @@ import com.reown.android.CoreClient
 import kotlinx.coroutines.delay
 import com.flowfoundation.wallet.page.window.WindowFrame
 import android.view.View
+import com.flowfoundation.wallet.page.browser.browserInstance
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -176,17 +177,18 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             logd(TAG, "Session approved by user")
                             approveSession()
                             
-                            // Show toast only if no redirect URL and browser is not visible
+                            // Show toast only if no redirect URL and browser is not active
                             if (sessionProposal.redirect.isNullOrEmpty()) {
-                                logd(TAG, "No redirect URL, checking if WebView is visible")
+                                logd(TAG, "No redirect URL, checking if browser is active")
                                 val browserContainer = WindowFrame.browserContainer()
-                                if (browserContainer?.visibility != View.VISIBLE) {
-                                    logd(TAG, "Browser is not visible, showing toast")
+                                val browserInstance = browserInstance()
+                                if (browserContainer?.visibility != View.VISIBLE || browserInstance == null) {
+                                    logd(TAG, "Browser is not active, showing toast")
                                     uiScope {
                                         toast(R.string.return_to_browser_to_continue)
                                     }
                                 } else {
-                                    logd(TAG, "Browser is visible, skipping toast")
+                                    logd(TAG, "Browser is active, skipping toast")
                                 }
                             }
                         } else {
