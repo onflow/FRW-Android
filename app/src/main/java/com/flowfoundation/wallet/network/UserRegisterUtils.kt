@@ -5,7 +5,6 @@ import android.widget.Toast
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
-import com.nftco.flow.sdk.HashAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -42,14 +41,12 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.WalletCoreException
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.storage.FileSystemStorage
 import kotlinx.coroutines.delay
 import java.security.MessageDigest
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-
 
 private const val TAG = "UserRegisterUtils"
 
@@ -114,7 +111,7 @@ private suspend fun registerOutblockUserInternal(
             callback.invoke(isSuccess, prefix)
         }
     } catch (e: Exception) {
-        if (e is WalletCoreException) {
+        if (e is IllegalStateException) {
             ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
         } else {
             ErrorReporter.reportWithMixpanel(AccountError.REGISTER_USER_FAILED, e)
@@ -141,11 +138,11 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
-    val keyPair = KeyManager.generateKeyWithPrefix(prefix)
+    val privateKey = PrivateKey.create(FileSystemStorage())
     val user = service.register(
         RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = keyPair.public.toFormatString()),
+            accountKey = AccountKey(publicKey = privateKey.getPublicKey()),
             deviceInfo = deviceInfoRequest
         )
     )
@@ -156,7 +153,7 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
 fun generatePrefix(text: String): String {
     val timestamp = System.currentTimeMillis().toString()
     val combinedInput = "${text}_$timestamp"
-    val bytes = MessageDigest.getInstance(HashAlgorithm.SHA2_256.algorithm)
+    val bytes = MessageDigest.getInstance("SHA-256")
         .digest(combinedInput.toByteArray())
     return bytes.joinToString("") { "%02x".format(it) }
 }

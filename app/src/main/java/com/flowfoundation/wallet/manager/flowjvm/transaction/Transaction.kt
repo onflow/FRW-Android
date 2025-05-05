@@ -2,15 +2,6 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAccountKey
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowArgument
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowSignature
-import com.nftco.flow.sdk.FlowTransaction
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.flowTransaction
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
@@ -31,8 +22,9 @@ import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
-import io.outblock.wallet.CryptoProvider
+import com.flow.wallet.CryptoProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.onflow.flow.models.*
 import java.security.Provider
 import java.security.Security
 
@@ -41,7 +33,6 @@ private const val TAG = "FlowTransaction"
 suspend fun sendTransaction(
     builder: TransactionBuilder.() -> Unit,
 ): String? {
-//    updateSecurityProvider()
     val transactionBuilder = TransactionBuilder().apply { builder(this) }
 
     try {
@@ -60,7 +51,7 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex()
+        val txID = FlowApi.get().sendTransaction(tx).bytes.toHexString()
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
         MixpanelManager.cadenceTransactionSigned(
@@ -93,7 +84,6 @@ suspend fun sendTransaction(
 suspend fun sendBridgeTransaction(
     builder: TransactionBuilder.() -> Unit,
 ): String? {
-//    updateSecurityProvider()
     val transactionBuilder = TransactionBuilder().apply { builder(this) }
 
     try {
@@ -105,7 +95,7 @@ suspend fun sendBridgeTransaction(
         tx = tx.addFreeBridgeFeeEnvelope()
 
         logd(TAG, "sendBridgeTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).bytes.bytesToHex()
+        val txID = FlowApi.get().sendTransaction(tx).bytes.toHexString()
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
         MixpanelManager.cadenceTransactionSigned(
@@ -139,7 +129,6 @@ suspend fun sendTransactionWithMultiSignature(
     builder: TransactionBuilder.() -> Unit,
     providers: List<CryptoProvider>
 ): String {
-    updateSecurityProvider()
     logd(TAG, "sendTransaction prepare")
     val transBuilder = TransactionBuilder().apply { builder(this) }
     val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")
@@ -166,12 +155,11 @@ suspend fun sendTransactionWithMultiSignature(
         tx = tx.addFreeGasEnvelope()
     }
 
-
     logd(TAG, "sendTransaction to flow chain")
     val txID = FlowApi.get().sendTransaction(tx)
-    logd(TAG, "transaction id:$${txID.bytes.bytesToHex()}")
+    logd(TAG, "transaction id:$${txID.bytes.toHexString()}")
     vibrateTransaction()
-    return txID.bytes.bytesToHex()
+    return txID.bytes.toHexString()
 }
 
 private fun FlowTransaction.addLocalSignatures(): FlowTransaction {
@@ -249,8 +237,7 @@ private suspend fun prepareWithMultiSignature(
         arguments = builder.arguments.map { AsArgument(it.type, it.valueString()) },
         cadence = builder.script,
         computeLimit = builder.limit ?: 9999,
-        payer = builder.payer
-            ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress),
+        payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress),
         proposalKey = ProposalKey(
             address = walletAddress,
             keyId = restoreProposalKey.id,

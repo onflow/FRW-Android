@@ -1,70 +1,46 @@
 package com.flowfoundation.wallet.manager.key
 
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
-import io.outblock.wallet.CryptoProvider
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
-import wallet.core.jni.Hash
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
+import org.onflow.flow.models.SigningAlgorithm
 
-class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
+class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
 
     fun getMnemonic(): String {
-        return wallet.mnemonic()
+        return seedPhraseKey.mnemonic
     }
 
     override fun getPublicKey(): String {
-        val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-        val publicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex()
-        return publicKey.removePrefix("04")
+        return seedPhraseKey.getPublicKey()
     }
 
     fun getPrivateKey(): String {
-        return wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH).data().bytesToHex()
+        return seedPhraseKey.privateKey
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override suspend fun getUserSignature(jwt: String): String {
+        return seedPhraseKey.getUserSignature(jwt)
     }
 
-    override fun signData(data: ByteArray): String {
-        val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-        val hashedData = Hash.sha256(data)
-        val signature = privateKey.sign(hashedData, Curve.SECP256K1).dropLast(1).toByteArray()
-        return signature.bytesToHex()
+    override suspend fun signData(data: ByteArray): String {
+        return seedPhraseKey.signData(data)
     }
 
     override fun getSigner(): Signer {
-        checkSecurityProvider()
-        updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                getPrivateKey(),
-                getSignatureAlgorithm()
-            ),
-            hashAlgo = getHashAlgorithm()
-        )
+        return seedPhraseKey.getSigner()
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return seedPhraseKey.getHashAlgorithm()
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_SECP256k1
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return seedPhraseKey.getSignatureAlgorithm()
     }
 
     override fun getKeyWeight(): Int {
-        return 1000
-    }
-
-    companion object {
-        private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
+        return seedPhraseKey.getKeyWeight()
     }
 }

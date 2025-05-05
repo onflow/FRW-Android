@@ -3,9 +3,6 @@ package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -28,7 +25,6 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
-import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.AccountKeySignature
 import com.flowfoundation.wallet.network.model.AccountSignRequest
@@ -42,7 +38,6 @@ import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOptionMo
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.InvalidKeyException
@@ -55,15 +50,14 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.library.Instabug
-import com.nftco.flow.sdk.parseErrorCode
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.KeyStoreCryptoProvider
-import io.outblock.wallet.WalletCoreException
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.storage.FileSystemStorage
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.TransactionStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import wallet.core.jni.HDWallet
-
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -199,17 +193,17 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
         ioScope {
             try {
-                val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
+                val privateKey = PrivateKey.create(FileSystemStorage())
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
-                    arg { string(keyPair.public.toFormatString()) }
-                    arg { uint8(SignatureAlgorithm.ECDSA_P256.index) }
-                    arg { uint8(HashAlgorithm.SHA2_256.index) }
+                    arg { string(privateKey.getPublicKey()) }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.index) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.index) }
                     arg { ufix64Safe(1000) }
                 }
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.num,
                     type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                     data = ""
                 )
@@ -218,7 +212,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 pushBubbleStack(transactionState)
             } catch (e: Exception) {
                 loge(e)
-                if (e is WalletCoreException) {
+                if (e is IllegalStateException) {
                     ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
                 } else {
                     ErrorReporter.reportWithMixpanel(BackupError.MULTI_RESTORE_FAILED, e)
@@ -235,7 +229,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private fun syncAccountInfo() {
         ioScope {
             try {
-                val cryptoProvider = KeyStoreCryptoProvider(KeyManager.getCurrentPrefix())
+                val privateKey = PrivateKey.create(FileSystemStorage())
                 val service = retrofit().create(ApiService::class.java)
                 val providers = mnemonicList.map {
                     val words = it.split(" ")
@@ -247,7 +241,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 }
                 val resp = service.signAccount(
                     AccountSignRequest(
-                        AccountKey(publicKey = cryptoProvider.getPublicKey()),
+                        AccountKey(publicKey = privateKey.getPublicKey()),
                         providers.map {
                             val jwt = getFirebaseJwt()
                             AccountKeySignature(
@@ -263,7 +257,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 )
                 if (resp.status == 200) {
                     val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-                    login(cryptoProvider) { isSuccess ->
+                    login(privateKey) { isSuccess ->
                         uiScope {
                             if (isSuccess) {
                                 MixpanelManager.accountRestore(restoreAddress, RestoreType.MULTI_BACKUP)
@@ -283,7 +277,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
-    private fun login(cryptoProvider: KeyStoreCryptoProvider, callback: (isSuccess: Boolean) -> Unit) {
+    private fun login(privateKey: PrivateKey, callback: (isSuccess: Boolean) -> Unit) {
         ioScope {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
@@ -296,13 +290,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         val service = retrofit().create(ApiService::class.java)
                         val resp = service.login(
                             LoginRequest(
-                                signature = cryptoProvider.getUserSignature(
-                                    getFirebaseJwt()
-                                ),
+                                signature = privateKey.getUserSignature(getFirebaseJwt()),
                                 accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    publicKey = privateKey.getPublicKey(),
+                                    hashAlgo = privateKey.getHashAlgorithm().index,
+                                    signAlgo = privateKey.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -318,7 +310,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                         AccountManager.add(
                                             Account(
                                                 userInfo = service.userInfo().data,
-                                                prefix = KeyManager.getCurrentPrefix()
+                                                prefix = privateKey.prefix
                                             ),
                                             firebaseUid()
                                         )

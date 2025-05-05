@@ -6,9 +6,10 @@ import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.wallet.Wallet
-import io.outblock.wallet.CryptoProvider
-import io.outblock.wallet.KeyStoreCryptoProvider
-
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
 
 object CryptoProviderManager {
 
@@ -28,7 +29,7 @@ object CryptoProviderManager {
         if (account.keyStoreInfo.isNullOrBlank().not()) {
             return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
         } else if (account.prefix.isNullOrBlank().not()) {
-            return KeyStoreCryptoProvider(account.prefix!!)
+            return PrivateKey.create(FileSystemStorage())
         } else {
             val wallet = if (account.isActive) {
                 Wallet.store().wallet()
@@ -38,7 +39,13 @@ object CryptoProviderManager {
             if (wallet == null) {
                 return null
             }
-            return HDWalletCryptoProvider(wallet)
+            return SeedPhraseKey(
+                mnemonicString = wallet.mnemonic(),
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = FileSystemStorage()
+            )
         }
     }
 
@@ -46,25 +53,37 @@ object CryptoProviderManager {
         if (account.keyStoreInfo.isNullOrBlank().not()) {
             return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
         } else if (account.prefix.isNullOrBlank().not()) {
-            return KeyStoreCryptoProvider(account.prefix!!)
+            return PrivateKey.create(FileSystemStorage())
         } else {
             val wallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
             if (wallet == null) {
                 return null
             }
-            return HDWalletCryptoProvider(wallet)
+            return SeedPhraseKey(
+                mnemonicString = wallet.mnemonic(),
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = FileSystemStorage()
+            )
         }
     }
 
     fun getSwitchAccountCryptoProvider(switchAccount: LocalSwitchAccount): CryptoProvider? {
         if (switchAccount.prefix.isNullOrBlank().not()) {
-            return KeyStoreCryptoProvider(switchAccount.prefix!!)
+            return PrivateKey.create(FileSystemStorage())
         } else {
             val wallet = AccountWalletManager.getHDWalletByUID(switchAccount.userId ?: "")
             if (wallet == null) {
                 return null
             }
-            return HDWalletCryptoProvider(wallet)
+            return SeedPhraseKey(
+                mnemonicString = wallet.mnemonic(),
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = FileSystemStorage()
+            )
         }
     }
 

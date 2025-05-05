@@ -24,7 +24,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class WalletProxyConfirmationDialog: BottomSheetDialogFragment(), OnMapReadyCallback {
 
@@ -73,25 +75,33 @@ class WalletProxyConfirmationDialog: BottomSheetDialogFragment(), OnMapReadyCall
 
     private fun sendKeyInfo() {
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-        val response = Sign.Params.Response(
-            sessionTopic = topic,
-            jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(
-                requestId, walletConnectProxyAccountResponse(
-                    cryptoProvider.getUserSignature(jwt),
-                    cryptoProvider.getPublicKey(),
-                    cryptoProvider.getHashAlgorithm().index,
-                    cryptoProvider.getSignatureAlgorithm().index,
-                    cryptoProvider.getKeyWeight())
-            )
-        )
-        logd(TAG, "respondAccountInfo:\n$response")
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val signature = cryptoProvider.getUserSignature(jwt)
+                val response = Sign.Params.Response(
+                    sessionTopic = topic,
+                    jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(
+                        requestId, walletConnectProxyAccountResponse(
+                            signature,
+                            cryptoProvider.getPublicKey(),
+                            cryptoProvider.getHashAlgorithm().index,
+                            cryptoProvider.getSignatureAlgorithm().index,
+                            cryptoProvider.getKeyWeight())
+                    )
+                )
+                logd(TAG, "respondAccountInfo:\n$response")
 
-        SignClient.respond(response, onSuccess = { success ->
-            logd(TAG, "success:${success}")
-            dismiss()
-        }) { error ->
-            loge(error.throwable)
-            toast(msgRes = R.string.send_response_failure)
+                SignClient.respond(response, onSuccess = { success ->
+                    logd(TAG, "success:${success}")
+                    dismiss()
+                }) { error ->
+                    loge(error.throwable)
+                    toast(msgRes = R.string.send_response_failure)
+                }
+            } catch (e: Exception) {
+                loge(e)
+                toast(msgRes = R.string.send_response_failure)
+            }
         }
     }
 

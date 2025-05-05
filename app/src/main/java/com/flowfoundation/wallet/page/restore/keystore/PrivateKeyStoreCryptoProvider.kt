@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.restore.keystore
 
+import com.flow.wallet.CryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
@@ -10,7 +11,6 @@ import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
-import io.outblock.wallet.CryptoProvider
 
 
 class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoProvider {
