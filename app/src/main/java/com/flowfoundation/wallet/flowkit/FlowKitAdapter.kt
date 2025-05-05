@@ -8,6 +8,8 @@ import com.flow.wallet.storage.StorageProtocol
 import com.flow.wallet.wallet.Wallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.wallet.WalletType
+import com.flowfoundation.wallet.cache.AccountCacheManager
+import com.flowfoundation.wallet.cache.UserPrefixCacheManager
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager

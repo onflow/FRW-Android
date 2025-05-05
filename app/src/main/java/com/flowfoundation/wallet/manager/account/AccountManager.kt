@@ -407,8 +407,8 @@ object AccountManager {
                 signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
                 accountKey = AccountKey(
                     publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                 ),
                 deviceInfo = deviceInfoRequest
             )
@@ -459,8 +459,8 @@ object AccountManager {
                 signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
                 accountKey = AccountKey(
                     publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                 ),
                 deviceInfo = deviceInfoRequest
             )

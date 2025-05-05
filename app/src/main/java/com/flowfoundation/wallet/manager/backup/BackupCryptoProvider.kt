@@ -27,10 +27,12 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
         return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
         return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256).toHexString()
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun getSigner(): Signer {
         checkSecurityProvider()
         return Crypto.getSigner(

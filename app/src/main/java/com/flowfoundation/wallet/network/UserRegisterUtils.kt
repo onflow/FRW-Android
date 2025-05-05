@@ -74,7 +74,7 @@ suspend fun registerOutblock(
                     MixpanelManager.accountCreated(
                         cryptoProvider?.getPublicKey().orEmpty(),
                         AccountCreateKeyType.KEY_STORE,
-                        cryptoProvider?.getSignatureAlgorithm()?.id.orEmpty(),
+                        cryptoProvider?.getSignatureAlgorithm()?.value.orEmpty(),
                         cryptoProvider?.getHashAlgorithm()?.algorithm.orEmpty()
                     )
                     clearUserCache()
@@ -184,8 +184,8 @@ private suspend fun resumeAccount() {
             signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
             accountKey = AccountKey(
                 publicKey = cryptoProvider.getPublicKey(),
-                hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
             ),
             deviceInfo = deviceInfoRequest
         )

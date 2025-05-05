@@ -1,9 +1,11 @@
 package com.flowfoundation.wallet.flowkit
 
+import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.KeyProtocol
 import com.flow.wallet.keys.KeyType
 import com.flow.wallet.storage.StorageProtocol
-import com.flowfoundation.wallet.manager.key.CryptoProvider
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 
@@ -60,7 +62,7 @@ class FlowKitKeyAdapter(
         signAlgo: SigningAlgorithm,
         hashAlgo: HashingAlgorithm
     ): ByteArray {
-        return cryptoProvider.sign(data, signAlgo.index, hashAlgo.index)
+        return cryptoProvider.sign(data, signAlgo.cadenceIndex, hashAlgo.cadenceIndex)
     }
 
     override fun isValidSignature(

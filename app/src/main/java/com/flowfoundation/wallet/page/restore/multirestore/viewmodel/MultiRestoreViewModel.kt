@@ -249,8 +249,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 signMessage = jwt,
                                 signature = it.getUserSignature(jwt),
                                 weight = it.getKeyWeight(),
-                                hashAlgo = it.getHashAlgorithm().index,
-                                signAlgo = it.getSignatureAlgorithm().index
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex
                             )
                         }.toList()
                     )

@@ -84,8 +84,8 @@ class WalletProxyConfirmationDialog: BottomSheetDialogFragment(), OnMapReadyCall
                         requestId, walletConnectProxyAccountResponse(
                             signature,
                             cryptoProvider.getPublicKey(),
-                            cryptoProvider.getHashAlgorithm().index,
-                            cryptoProvider.getSignatureAlgorithm().index,
+                            cryptoProvider.getHashAlgorithm().cadenceIndex,
+                            cryptoProvider.getSignatureAlgorithm().cadenceIndex,
                             cryptoProvider.getKeyWeight())
                     )
                 )
