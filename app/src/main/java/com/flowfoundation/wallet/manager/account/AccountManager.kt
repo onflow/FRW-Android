@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.manager.account
 
 import android.widget.Toast
+import com.flow.wallet.KeyManager
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
@@ -45,8 +46,6 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -197,7 +196,7 @@ object AccountManager {
         }
         val jobs = prefixes.map { prefix ->
             async {
-                val publicKey = KeyManager.getPublicKeyByPrefix(prefix).toFormatString()
+                val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
                 if (publicKey.isNotEmpty()) {
                     val response = queryService.queryAddress(publicKey)
                     response.accounts.forEach {

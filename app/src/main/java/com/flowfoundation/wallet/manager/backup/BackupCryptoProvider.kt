@@ -1,20 +1,18 @@
 package com.flowfoundation.wallet.manager.backup
 
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
 import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import io.outblock.wallet.CryptoProvider
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.crypto.Crypto
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
+import org.onflow.flow.models.SigningAlgorithm
 
-class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
+class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
 
     fun getMnemonic(): String {
-        return wallet.mnemonic()
+        return seedPhraseKey.mnemonic.joinToString(" ")
     }
 
     override fun getKeyWeight(): Int {
@@ -22,39 +20,33 @@ class BackupCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
     }
 
     override fun getPublicKey(): String {
-        val privateKey = wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH)
-        val publicKey = privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
-        return publicKey.removePrefix("04")
+        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04") ?: ""
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override suspend fun getUserSignature(jwt: String): String {
+        return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
-        return getSigner().sign(data).bytesToHex()
+    override suspend fun signData(data: ByteArray): String {
+        return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256).toHexString()
     }
 
     override fun getSigner(): Signer {
         checkSecurityProvider()
         return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(
-                wallet.getCurveKey(Curve.NIST256P1, DERIVATION_PATH).data().bytesToHex(),
+                seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
                 getSignatureAlgorithm()
             ),
             hashAlgo = getHashAlgorithm()
         )
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.SHA2_256
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_P256
-    }
-
-    companion object {
-        private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.ECDSA_P256
     }
 }
