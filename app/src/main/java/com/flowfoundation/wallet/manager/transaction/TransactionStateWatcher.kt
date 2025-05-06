@@ -4,8 +4,8 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.nftco.flow.sdk.FlowId
 import com.nftco.flow.sdk.FlowTransactionResult
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.TransactionStatus
+import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
@@ -66,6 +66,6 @@ class TransactionStateWatcher(
         }
     }
 
-    private fun Int.isProcessing() = this < FlowTransactionStatus.SEALED.num && this >= FlowTransactionStatus.UNKNOWN.num
+    private fun Int.isProcessing() = this < TransactionStatus.SEALED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 
 }

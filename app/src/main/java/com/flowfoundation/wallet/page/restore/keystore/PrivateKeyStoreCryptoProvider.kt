@@ -9,7 +9,7 @@ import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
+import org.onflow.flow.models.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 
 

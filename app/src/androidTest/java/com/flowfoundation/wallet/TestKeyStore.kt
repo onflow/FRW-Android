@@ -1,11 +1,11 @@
 package com.flowfoundation.wallet
 
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import org.onflow.flow.models.bytesToHex
+import org.onflow.flow.models.hexToBytes
 import wallet.core.jni.CoinType
 import wallet.core.jni.PrivateKey
 import wallet.core.jni.StoredKey

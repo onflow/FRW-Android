@@ -40,7 +40,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import kotlinx.serialization.Serializable
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
@@ -425,7 +425,7 @@ object EVMWalletManager {
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_MOVE_NFT,
             data = nft.uniqueId(),
         )

@@ -32,8 +32,8 @@ import com.flowfoundation.wallet.widgets.webview.evm.model.EVMTransactionDialogM
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.checkAndShowNetworkWrongDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.bytesToHex
 import org.json.JSONObject
+import org.onflow.flow.models.bytesToHex
 import org.web3j.utils.Numeric
 
 

@@ -47,9 +47,9 @@ import com.nftco.flow.sdk.FlowAccountKey
 import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.bytesToHex
+import org.onflow.flow.models.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import retrofit2.HttpException

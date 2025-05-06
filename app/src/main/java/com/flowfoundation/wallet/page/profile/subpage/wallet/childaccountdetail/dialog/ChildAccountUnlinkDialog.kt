@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogUnlinkChildAccountBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -76,7 +76,7 @@ class ChildAccountUnlinkDialog : BottomSheetDialogFragment() {
             val transactionState = TransactionState(
                 transactionId = transactionId,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                 data = Gson().toJson(account),
             )
