@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
 
 @WorkerThread
-fun walletConnectAuthnServiceResponse(
+suspend fun walletConnectAuthnServiceResponse(
     address: String,
     keyId: Int,
     nonce: String?,
@@ -116,7 +116,7 @@ private fun preAuthz(): String {
     """.trimIndent()
 }
 
-private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
+private suspend fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
     if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) return ""
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val accountProofSign = cryptoProvider.signData(encodeAccountProof(

@@ -1,18 +1,14 @@
 package com.flowfoundation.wallet.manager.account
 
-import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.hexToBytes
-import com.flowfoundation.wallet.utils.DATA_PATH
-import com.flowfoundation.wallet.utils.getWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.readWalletPassword
-import com.flowfoundation.wallet.utils.saveWalletStoreNameAesKey
-import com.flowfoundation.wallet.utils.secret.aesEncrypt
-import wallet.core.jni.HDWallet
-import wallet.core.jni.StoredKey
+import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.utils.Env
 import java.io.File
-import java.util.UUID
 
 /**
  * Created by Mengxy on 8/30/23.
@@ -28,7 +24,7 @@ object AccountWalletManager {
         }
     }
 
-    fun getHDWalletByUID(uid: String): HDWallet? {
+    fun getHDWalletByUID(uid: String): CryptoProvider? {
         val password = passwordMap()[uid]
         if (password.isNullOrBlank()) {
             return null
@@ -40,7 +36,7 @@ object AccountWalletManager {
         return passwordMap().mapNotNull { (uid, _) ->
             val wallet = getHDWalletByUID(uid)
             if (wallet != null) {
-                uid to HDWalletCryptoProvider(wallet).getPublicKey()
+                uid to wallet.getPublicKey()
             } else {
                 null
             }
@@ -48,36 +44,17 @@ object AccountWalletManager {
     }
 }
 
-
 class WalletStoreWithUid(private val uid: String, private val password: String) {
-    private var keyStore: StoredKey
-
-    init {
-        keyStore = generateKeyStore()
+    fun wallet(): CryptoProvider {
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val storage = FileSystemStorage(baseDir)
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = password,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = storage
+        )
+        return BackupCryptoProvider(seedPhraseKey)
     }
-
-    fun wallet(): HDWallet = keyStore.wallet(password.hexToBytes())
-
-    private fun generateKeyStore(): StoredKey {
-        return if (!File(storePath()).exists()) {
-            StoredKey(storeName(), password.hexToBytes())
-        } else {
-            StoredKey.load(storePath())
-        }
-    }
-
-    private fun storePath() = File(DATA_PATH, storeName()).absolutePath
-
-    private fun storeName() = aesEncrypt(key = storeNameAesKey(), message = uid)
-
-    private fun storeNameAesKey(): String {
-        var local = getWalletStoreNameAesKey()
-        if (local.isBlank()) {
-            local = randomString()
-            saveWalletStoreNameAesKey(local)
-        }
-        return local
-    }
-
-    private fun randomString(length: Int = 16): String = UUID.randomUUID().toString().take(length)
 }

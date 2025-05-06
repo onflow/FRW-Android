@@ -33,6 +33,9 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import java.io.File
 import wallet.core.jni.HDWallet
 
 
@@ -85,7 +88,15 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun createBackup() {
-        backupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(160, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        backupCryptoProvider = BackupCryptoProvider(seedPhraseKey)
         backupStateLiveData.postValue(BackupGoogleDriveState.UPLOAD_BACKUP)
     }
 

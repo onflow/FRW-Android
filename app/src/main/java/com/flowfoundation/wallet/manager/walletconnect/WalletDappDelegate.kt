@@ -33,13 +33,13 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.KeyStoreCryptoProvider
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.storage.FileSystemStorage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import java.io.File
 
 private val TAG = WalletDappDelegate::class.java.simpleName
-
 
 internal class WalletDappDelegate : SignClient.DappDelegate {
 
@@ -160,7 +160,12 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
 
     private fun addDeviceKeyResponse() {
         val activity = BaseActivity.getCurrentActivity() ?: return
-        login(KeyManager.getCurrentPrefix()) { isSuccess ->
+        val currentAccount = AccountManager.get()
+        if (currentAccount == null) {
+            toast(msgRes = R.string.login_failure)
+            return
+        }
+        login(currentAccount.prefix ?: "") { isSuccess ->
             uiScope {
                 if (isSuccess) {
                     MixpanelManager.accountRestore(deviceBackupAddress, RestoreType.DEVICE_BACKUP)
@@ -175,7 +180,8 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
 
     private fun login(prefix: String, callback: (isSuccess: Boolean) -> Unit) {
         ioScope {
-            val cryptoProvider = KeyStoreCryptoProvider(prefix)
+            val baseDir = File(Env.getApp().filesDir, "wallet")
+            val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false)
@@ -185,14 +191,14 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
                         val resp = service.login(
-                            LoginRequest(
-                                signature = cryptoProvider.getUserSignature(
+                            LoginRequest( // to-do : switch methods
+                                signature = privateKey.getUserSignature(
                                     getFirebaseJwt()
                                 ),
                                 accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    publicKey = privateKey.getPublicKey(),
+                                    hashAlgo = privateKey.getHashAlgorithm().index,
+                                    signAlgo = privateKey.getSignatureAlgorithm().index
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )

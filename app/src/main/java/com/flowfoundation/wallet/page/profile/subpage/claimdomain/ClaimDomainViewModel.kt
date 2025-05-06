@@ -30,6 +30,7 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.toAddress
+import org.onflow.flow.models.Signer
 
 class ClaimDomainViewModel : ViewModel() {
 
@@ -90,11 +91,15 @@ class ClaimDomainViewModel : ViewModel() {
 
             payerAddress = FlowAddress(AppConfig.payer().address)
 
-            addPayloadSignatures {
+            addPayloadSignatures { // to-do : remove all logic related to claim domain
                 signature(
                     FlowAddress(walletAddress),
                     currentKey.id,
-                    cryptoProvider.getSigner(),
+                    object : Signer {
+                        override fun sign(message: ByteArray): ByteArray {
+                            return cryptoProvider.signData(message).toByteArray()
+                        }
+                    }
                 )
             }
         }.buildPayerSignable()

@@ -277,7 +277,7 @@ fun fclAuthzResponse(address: String, signature: String, keyId: Int? = 0): Strin
         .replace(KEY_ID_REPLACEMENT, "$keyId")
 }
 
-fun fclSignMessageResponse(message: String?, address: String): String {
+suspend fun fclSignMessageResponse(message: String?, address: String): String {
     val messageBytes = message?.hexToBytes() ?: throw IllegalArgumentException("Message is empty")
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalArgumentException("Crypto Provider is null")
 

@@ -188,7 +188,7 @@ fun refreshBalance(value: Float) {
     }
 }
 
-fun signTypedData(data: ByteArray): String {
+suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
@@ -207,7 +207,7 @@ fun signTypedData(data: ByteArray): String {
     return Numeric.toHexString(encoded)
 }
 
-fun signEthereumMessage(message: String): String {
+suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)

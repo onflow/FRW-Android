@@ -19,6 +19,7 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
         return 500
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
         return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04") ?: ""
     }

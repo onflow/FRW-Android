@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.network.model.BackupInfoRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseOption
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseState
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.BackupError
@@ -30,8 +31,11 @@ import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
+import java.io.File
 import wallet.core.jni.HDWallet
-
 
 class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     val createBackupCallbackLiveData = MutableLiveData<Boolean>()
@@ -40,7 +44,19 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
 
     val optionChangeLiveData = MutableLiveData<BackupRecoveryPhraseOption>()
 
-    private val backupCryptoProvider: BackupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
+    val stateLiveData = MutableLiveData<BackupRecoveryPhraseState>()
+
+    private val backupCryptoProvider: BackupCryptoProvider = run {
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(160, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        BackupCryptoProvider(seedPhraseKey)
+    }
 
     private var currentTxId: String? = null
 
@@ -154,5 +170,23 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                 }
             }
         }
+    }
+
+    fun createBackup(mnemonic: String) {
+        val words = mnemonic.split(" ")
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        if (words.size == 15) {
+            BackupCryptoProvider(seedPhraseKey)
+        } else {
+            HDWalletCryptoProvider(seedPhraseKey)
+        }
+        stateLiveData.postValue(BackupRecoveryPhraseState.BACKUP_SUCCESS)
     }
 }

@@ -51,13 +51,16 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.library.Instabug
 import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import org.onflow.flow.models.TransactionStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import wallet.core.jni.HDWallet
+import java.io.File
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -193,17 +196,18 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
         ioScope {
             try {
-                val privateKey = PrivateKey.create(FileSystemStorage())
+                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
-                    arg { string(privateKey.getPublicKey()) }
-                    arg { uint8(SigningAlgorithm.ECDSA_P256.index) }
-                    arg { uint8(HashingAlgorithm.SHA2_256.index) }
+                    arg { string(privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "") }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.ordinal) }
                     arg { ufix64Safe(1000) }
                 }
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = TransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                     data = ""
                 )
@@ -229,19 +233,27 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private fun syncAccountInfo() {
         ioScope {
             try {
-                val privateKey = PrivateKey.create(FileSystemStorage())
+                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
                 val service = retrofit().create(ApiService::class.java)
                 val providers = mnemonicList.map {
                     val words = it.split(" ")
+                    val seedPhraseKey = SeedPhraseKey(
+                        mnemonicString = it,
+                        passphrase = "",
+                        derivationPath = "m/44'/539'/0'/0/0",
+                        keyPair = null,
+                        storage = FileSystemStorage(baseDir)
+                    )
                     if (words.size == 15) {
-                        BackupCryptoProvider(HDWallet(it, ""))
+                        BackupCryptoProvider(seedPhraseKey)
                     } else {
-                        HDWalletCryptoProvider(HDWallet(it, ""))
+                        HDWalletCryptoProvider(seedPhraseKey)
                     }
                 }
                 val resp = service.signAccount(
                     AccountSignRequest(
-                        AccountKey(publicKey = privateKey.getPublicKey()),
+                        AccountKey(publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: ""),
                         providers.map {
                             val jwt = getFirebaseJwt()
                             AccountKeySignature(
@@ -249,8 +261,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 signMessage = jwt,
                                 signature = it.getUserSignature(jwt),
                                 weight = it.getKeyWeight(),
-                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
-                                signAlgo = it.getSignatureAlgorithm().cadenceIndex
+                                hashAlgo = it.getHashAlgorithm().ordinal,
+                                signAlgo = it.getSignatureAlgorithm().ordinal
                             )
                         }.toList()
                     )
@@ -292,9 +304,9 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             LoginRequest(
                                 signature = privateKey.getUserSignature(getFirebaseJwt()),
                                 accountKey = AccountKey(
-                                    publicKey = privateKey.getPublicKey(),
-                                    hashAlgo = privateKey.getHashAlgorithm().index,
-                                    signAlgo = privateKey.getSignatureAlgorithm().index
+                                    publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "",
+                                    hashAlgo = HashingAlgorithm.SHA2_256.ordinal,
+                                    signAlgo = SigningAlgorithm.ECDSA_P256.ordinal
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -310,7 +322,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                         AccountManager.add(
                                             Account(
                                                 userInfo = service.userInfo().data,
-                                                prefix = privateKey.prefix
+                                                prefix = privateKey.id
                                             ),
                                             firebaseUid()
                                         )
@@ -341,12 +353,20 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     private suspend fun CadenceScript.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
+        val baseDir = File(Env.getApp().filesDir, "wallet")
         val providers = mnemonicList.map {
             val words = it.split(" ")
+            val seedPhraseKey = SeedPhraseKey(
+                mnemonicString = it,
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = FileSystemStorage(baseDir)
+            )
             if (words.size == 15) {
-                BackupCryptoProvider(HDWallet(it, ""))
+                BackupCryptoProvider(seedPhraseKey)
             } else {
-                HDWalletCryptoProvider(HDWallet(it, ""))
+                HDWalletCryptoProvider(seedPhraseKey)
             }
         }
         return try {
