@@ -14,7 +14,7 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
     }
 
     override fun getKeyWeight(): Int {
-        return 1000 // Standard key weight for Flow accounts
+        return 1000 // to-do: why was this set to 500 before?
     }
 
     @OptIn(ExperimentalStdlibApi::class)
@@ -47,7 +47,7 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
-        return HashingAlgorithm.SHA3_256 // Flow uses SHA3_256
+        return HashingAlgorithm.SHA3_256 // to-do: double check this
     }
 
     override fun getSignatureAlgorithm(): SigningAlgorithm {

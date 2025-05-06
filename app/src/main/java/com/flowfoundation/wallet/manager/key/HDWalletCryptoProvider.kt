@@ -15,7 +15,7 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04") ?: ""
+        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
     }
 
     @OptIn(ExperimentalStdlibApi::class)
