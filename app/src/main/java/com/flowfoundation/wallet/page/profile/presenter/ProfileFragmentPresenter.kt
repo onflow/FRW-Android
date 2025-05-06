@@ -24,8 +24,6 @@ import com.flowfoundation.wallet.page.profile.model.ProfileFragmentModel
 import com.flowfoundation.wallet.page.profile.subpage.about.AboutActivity
 import com.flowfoundation.wallet.page.profile.subpage.accountsetting.AccountSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.avatar.ViewAvatarActivity
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.MeowDomainClaimedStateChangeListener
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.observeMeowDomainClaimedStateChange
 import com.flowfoundation.wallet.page.profile.subpage.currency.CurrencyListActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
@@ -51,7 +49,7 @@ import com.instabug.library.OnSdkDismissCallback
 class ProfileFragmentPresenter(
     private val fragment: ProfileFragment,
     private val binding: FragmentProfileBinding,
-) : BasePresenter<ProfileFragmentModel>, MeowDomainClaimedStateChangeListener {
+) : BasePresenter<ProfileFragmentModel> {
 
     private val context = fragment.requireContext()
     private var userInfo: UserInfoData? = null
@@ -112,7 +110,7 @@ class ProfileFragmentPresenter(
 
         updatePreferenceState()
 //        updateClaimDomainState()
-        observeMeowDomainClaimedStateChange(this)
+//        observeMeowDomainClaimedStateChange(this)
     }
 
     override fun bind(model: ProfileFragmentModel) {
@@ -120,10 +118,6 @@ class ProfileFragmentPresenter(
         model.onResume?.let { updatePreferenceState() }
         model.inboxCount?.let { updateInboxCount(it) }
         updateNotificationPermissionStatus()
-    }
-
-    override fun onDomainClaimedStateChange(isClaimed: Boolean) {
-//        updateClaimDomainState()
     }
 
     private fun bindUserInfo(userInfo: UserInfoData) {
