@@ -24,7 +24,6 @@ import com.flowfoundation.wallet.network.model.ImportRequest
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitWithHost
-import com.flowfoundation.wallet.page.backup.model.BackupKey
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.page.restore.keystore.model.KeyStoreOption
@@ -42,20 +41,22 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
 import org.onflow.flow.models.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
 import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.crypto.Crypto
 import org.onflow.flow.models.AccountPublicKey
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
 import wallet.core.jni.PrivateKey
 import wallet.core.jni.StoredKey
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
+import java.io.File
 
 
 class KeyStoreRestoreViewModel : ViewModel() {
@@ -170,6 +171,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun importSeedPhrase(
         mnemonic: String,
         address: String,
@@ -180,28 +182,33 @@ class KeyStoreRestoreViewModel : ViewModel() {
         restoreType = RestoreType.SEED_PHRASE
         try {
             ioScope {
-                val hdWallet = HDWallet(mnemonic, passphrase)
-                val k1PrivateKey = hdWallet.getCurveKey(Curve.SECP256K1, derivationPath)
-                val k1PublicKey =
-                    k1PrivateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
-                val p1PrivateKey = hdWallet.getCurveKey(Curve.NIST256P1, derivationPath)
-                val p1PublicKey =
-                    p1PrivateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
-                        .removePrefix("04")
+                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = mnemonic,
+                    passphrase = passphrase,
+                    derivationPath = derivationPath,
+                    keyPair = null,
+                    storage = FileSystemStorage(baseDir)
+                )
+                val k1PrivateKey = seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)
+                val k1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                val p1PrivateKey = seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)
+                val p1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                
                 if (address.isEmpty()) {
                     checkIsQueryAddress(
-                        k1PrivateKey.data().bytesToHex(),
-                        k1PublicKey,
-                        p1PrivateKey.data().bytesToHex(),
-                        p1PublicKey
+                        k1PrivateKey?.toHexString() ?: "",
+                        k1PublicKey ?: "",
+                        p1PrivateKey?.toHexString() ?: "",
+                        p1PublicKey ?: ""
                     )
                 } else {
                     queryAddressPublicKey(
                         address,
-                        k1PrivateKey.data().bytesToHex(),
-                        k1PublicKey,
-                        p1PrivateKey.data().bytesToHex(),
-                        p1PublicKey
+                        k1PrivateKey?.toHexString() ?: "",
+                        k1PublicKey ?: "",
+                        p1PrivateKey?.toHexString() ?: "",
+                        p1PublicKey ?: ""
                     )
                 }
             }
@@ -389,7 +396,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
             val currentKey = currentKeyStoreAddress?.run {
-                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey == publicKey }
+                FlowAddress(this.address).lastBlockAccount().keys?.find { it.publicKey == publicKey }
             } ?: run {
                 toast(msgRes = R.string.login_failure)
                 activity.finish()
@@ -617,7 +624,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         ioScope {
             val addressResponse = queryService.queryAddress(publicKey)
             val currentKey = addressResponse.accounts.firstOrNull()?.run {
-                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey == publicKey }
+                FlowAddress(this.address).lastBlockAccount().keys?.find { it.publicKey == publicKey }
             } ?: run {
                 callback.invoke(false, R.string.login_failure)
                 return@ioScope
@@ -712,7 +719,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun getSignature(
+    @OptIn(ExperimentalStdlibApi::class)
+    private suspend fun getSignature(
         jwt: String,
         privateKey: String,
         hashAlgo: HashingAlgorithm,
@@ -725,6 +733,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 privateKey, signAlgo
             ),
             hashAlgo = hashAlgo
-        ).sign(DomainTag.User.bytes + jwt.encodeToByteArray()).bytesToHex()
+        ).sign(DomainTag.User.bytes + jwt.encodeToByteArray()).toHexString()
     }
 }
