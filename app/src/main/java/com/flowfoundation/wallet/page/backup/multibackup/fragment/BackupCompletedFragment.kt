@@ -32,6 +32,7 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.ioScope
 import org.onflow.flow.models.FlowAddress
 import java.io.File
 

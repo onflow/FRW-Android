@@ -2,10 +2,10 @@ package com.flowfoundation.wallet.manager.backup
 
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.crypto.DomainTag
-import com.flow.wallet.crypto.HashingAlgorithm
-import com.flow.wallet.crypto.Signer
-import com.flow.wallet.crypto.SigningAlgorithm
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
+import org.onflow.flow.models.SigningAlgorithm
 
 class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
 
@@ -31,9 +31,19 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
         return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256).toHexString()
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun getSigner(): Signer {
-        return seedPhraseKey.getSigner()
+        return object : Signer {
+            override var address: String = ""
+            override var keyIndex: Int = 0
+            
+            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+            }
+
+            override suspend fun sign(bytes: ByteArray): ByteArray {
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+            }
+        }
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
