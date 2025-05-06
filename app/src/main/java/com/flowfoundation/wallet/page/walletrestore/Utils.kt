@@ -22,7 +22,11 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.wallet.Wallet
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
 import kotlinx.coroutines.runBlocking
+import java.io.File
 import wallet.core.jni.HDWallet
 
 
@@ -46,7 +50,15 @@ fun requestWalletRestoreLogin(
     callback: (isSuccess: Boolean, reason: Int?) -> Unit
 ) {
     ioScope {
-        val cryptoProvider = HDWalletCryptoProvider(HDWallet(mnemonic, ""))
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        val cryptoProvider = HDWalletCryptoProvider(seedPhraseKey)
         getFirebaseUid { uid ->
             if (uid.isNullOrBlank()) {
                 callback.invoke(false, ERROR_UID)

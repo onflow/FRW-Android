@@ -23,6 +23,8 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
+import java.io.File
 
 class WalletConfirmPresenter(
     private val activity: Activity,
@@ -45,12 +47,13 @@ class WalletConfirmPresenter(
         ioScope {
             try {
                 val deviceInfoRequest = DeviceInfoManager.getWCDeviceInfo()
-                val privateKey = PrivateKey.create(FileSystemStorage())
+                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
                 val currentSession = currentWcSession() ?: return@ioScope
                 val params = WCAccountRequest(
                     method = WalletConnectMethod.ADD_DEVICE_KEY.value,
                     data = WCAccountInfo(
-                        WCAccountKey(publicKey = privateKey.getPublicKey()),
+                        WCAccountKey(publicKey = privateKey.key.public.toString()),
                         deviceInfoRequest
                     )
                 )

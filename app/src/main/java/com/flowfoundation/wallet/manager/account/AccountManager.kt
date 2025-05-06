@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.account
 
 import android.widget.Toast
 import com.flow.wallet.KeyManager
+import com.flow.wallet.toFormatString
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
@@ -198,7 +199,7 @@ object AccountManager {
             async {
                 val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
                 if (publicKey.isNotEmpty()) {
-                    val response = queryService.queryAddress(publicKey)
+                    val response = queryService.queryAddress(publicKey.toFormatString())
                     response.accounts.forEach {
                         map[it.address] = prefix
                     }

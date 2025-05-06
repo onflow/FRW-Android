@@ -47,6 +47,8 @@ import kotlinx.coroutines.delay
 import java.security.MessageDigest
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import com.flowfoundation.wallet.utils.Env
+import java.io.File
 
 private const val TAG = "UserRegisterUtils"
 
@@ -138,11 +140,12 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
-    val privateKey = PrivateKey.create(FileSystemStorage())
+    val baseDir = File(Env.getApp().filesDir, "wallet")
+    val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
     val user = service.register(
         RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = privateKey.getPublicKey()),
+            accountKey = AccountKey(publicKey = privateKey.key.public.toString()),
             deviceInfo = deviceInfoRequest
         )
     )

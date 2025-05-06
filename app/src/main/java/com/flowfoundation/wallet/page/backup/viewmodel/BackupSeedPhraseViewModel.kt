@@ -26,10 +26,13 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.nftco.flow.sdk.FlowTransactionStatus
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import wallet.core.jni.HDWallet
-
 
 class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
 
@@ -39,7 +42,17 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
 
     val mnemonicListLiveData = MutableLiveData<List<MnemonicModel>>()
 
-    private val cryptoProvider: HDWalletCryptoProvider = HDWalletCryptoProvider(HDWallet(128, ""))
+    private val cryptoProvider: HDWalletCryptoProvider = run {
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(128, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        HDWalletCryptoProvider(seedPhraseKey)
+    }
 
     private var currentTxId: String? = null
 

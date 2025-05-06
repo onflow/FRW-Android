@@ -196,7 +196,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                     getFirebaseJwt()
                                 ),
                                 accountKey = AccountKey(
-                                    publicKey = privateKey.getPublicKey(),
+                                    publicKey = privateKey.key.public.toString(),
                                     hashAlgo = privateKey.getHashAlgorithm().index,
                                     signAlgo = privateKey.getSignatureAlgorithm().index
                                 ),

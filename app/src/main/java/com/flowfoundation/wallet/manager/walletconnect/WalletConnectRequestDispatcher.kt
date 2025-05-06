@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
-import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
@@ -43,7 +42,6 @@ import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
-import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
@@ -240,7 +238,7 @@ private fun WCRequest.respondAccountInfo() {
     }) { error -> loge(error.throwable) }
 }
 
-private fun WCRequest.respondAuthn() {
+private suspend fun WCRequest.respondAuthn() {
     logd(TAG, "Starting respondAuthn with params: $params")
     val address = WalletManager.wallet()?.walletAddress() ?: run {
         loge(TAG, "No wallet address found")
@@ -267,7 +265,7 @@ private fun WCRequest.respondAuthn() {
     }
     val keyId = cryptoProvider.let {
         FlowAddress(address).currentKeyId(it.getPublicKey())
-    } ?: 0
+    }
     logd(TAG, "Using keyId: $keyId")
     
     val services = walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
@@ -327,7 +325,6 @@ private suspend fun WCRequest.respondAuthz() {
         }
     }
 }
-
 
 private fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
@@ -434,7 +431,6 @@ private suspend fun WCRequest.respondSignPayer() {
     }
 }
 
-
 private suspend fun WCRequest.respondSignProposer() {
     val activity = topActivity() ?: return
 
@@ -462,20 +458,22 @@ private suspend fun WCRequest.respondSignProposer() {
         data
     )
     FclAuthzDialog.observe { approve ->
-        if (approve) {
-            val response = PollingResponse(
-                status = ResponseStatus.APPROVED,
-                data = PollingData(
-                    fType = "CompositeSignature",
-                    fVsn = "1.0.0",
-                    address = address,
-                    keyId = keyId,
-                    signature = cryptoProvider.signData(signable?.message!!.hexToBytes())
+        ioScope {
+            if (approve) {
+                val response = PollingResponse(
+                    status = ResponseStatus.APPROVED,
+                    data = PollingData(
+                        fType = "CompositeSignature",
+                        fVsn = "1.0.0",
+                        address = address,
+                        keyId = keyId,
+                        signature = cryptoProvider.signData(signable?.message!!.hexToBytes())
+                    )
                 )
-            )
-            approve(gson().toJson(response))
-        } else {
-            reject()
+                approve(gson().toJson(response))
+            } else {
+                reject()
+            }
         }
     }
 }
@@ -499,7 +497,6 @@ private class SignableDeserializer : JsonDeserializer<Signable> {
         return Gson().fromJson(obj, Signable::class.java)
     }
 }
-
 
 fun ungzip(content: ByteArray): String =
     GZIPInputStream(content.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }

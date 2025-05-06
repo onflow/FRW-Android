@@ -292,10 +292,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.profile.subpage.claimdomain.ClaimDomainActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.profile.subpage.walletconnect.session.WalletConnectSessionActivity"
             android:screenOrientation="portrait"/>
 
