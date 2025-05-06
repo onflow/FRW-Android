@@ -4,8 +4,6 @@ import android.os.Parcelable
 import androidx.annotation.MainThread
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
 import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
@@ -14,7 +12,7 @@ import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollection
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -27,13 +25,13 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
-import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
 import kotlinx.parcelize.Parcelize
-import org.onflow.flow.models.hexToBytes
+import org.onflow.flow.infrastructure.parseErrorCode
+import org.onflow.flow.models.TransactionResult
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -103,7 +101,7 @@ object TransactionStateManager {
 
     private fun loopState() {
         ioScope {
-            var ret: FlowTransactionResult
+            var ret: TransactionResult
             while (true) {
                 val stateQueue = stateData.unsealedState()
 
@@ -111,13 +109,13 @@ object TransactionStateManager {
                     break
                 }
 
-                safeRun {
+                safeRunSuspend {
                     for (state in stateQueue) {
                         ret = checkNotNull(
-                            FlowApi.get().getTransactionResultById(FlowId.of(state.transactionId.hexToBytes()))
+                            FlowCadenceApi.getTransactionResultById(state.transactionId)
                         ) { "Transaction with that id not found" }
-                        if (ret.status.num != state.state) {
-                            state.state = ret.status.num
+                        if (ret.status.ordinal != state.state) {
+                            state.state = ret.status.ordinal
                             state.errorMsg = ret.errorMessage
                             logd(TAG, "update state:${ret.status}")
                             updateState(

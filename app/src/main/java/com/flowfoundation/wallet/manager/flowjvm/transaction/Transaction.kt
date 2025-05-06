@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.flowjvm.toAsArgument
 import com.flowfoundation.wallet.manager.flowjvm.valueString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -23,11 +22,12 @@ import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
 import com.flow.wallet.CryptoProvider
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.onflow.flow.models.*
 import java.security.Provider
 import java.security.Security
-import java.math.BigInteger
+import com.ionspin.kotlin.bignum.integer.BigInteger
 
 private const val TAG = "Transaction"
 
@@ -52,7 +52,7 @@ suspend fun sendTransaction(
         }
 
         logd(TAG, "sendTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).id
+        val txID = FlowCadenceApi.sendTransaction(tx).id
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
         MixpanelManager.cadenceTransactionSigned(
@@ -99,7 +99,7 @@ suspend fun sendBridgeTransaction(
         tx = tx.addFreeBridgeFeeEnvelope()
 
         logd(TAG, "sendBridgeTransaction to flow chain")
-        val txID = FlowApi.get().sendTransaction(tx).id
+        val txID = FlowCadenceApi.sendTransaction(tx).id
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
         MixpanelManager.cadenceTransactionSigned(
@@ -138,8 +138,8 @@ suspend fun sendTransactionWithMultiSignature(
 ): String {
     logd(TAG, "sendTransaction prepare")
     val transBuilder = TransactionBuilder().apply { builder(this) }
-    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(transBuilder.walletAddress?.toAddress().orEmpty())) ?: throw RuntimeException("get wallet account error")
-    val restoreProposalKey = account.keys.firstOrNull { providers.first().getPublicKey() == it.publicKey.base16Value } ?: throw InvalidKeyException("get account key error")
+    val account = FlowCadenceApi.getAccount(transBuilder.walletAddress?.toAddress().orEmpty())
+    val restoreProposalKey = account.keys?.firstOrNull { providers.first().getPublicKey() == it.publicKey.base16Value } ?: throw InvalidKeyException("get account key error")
     val voucher = prepareWithMultiSignature(
         walletAddress = account.address.base16Value,
         restoreProposalKey = restoreProposalKey,
@@ -152,7 +152,7 @@ suspend fun sendTransactionWithMultiSignature(
     providers.forEach { cryptoProvider ->
         tx = tx.addPayloadSignature(
             tx.proposalKey.address,
-            keyIndex = account.keys.first { cryptoProvider.getPublicKey() == it.publicKey.base16Value }.id,
+            keyIndex = account.keys?.first { cryptoProvider.getPublicKey() == it.publicKey.base16Value }.id,
             cryptoProvider.getSigner()
         )
     }
@@ -163,7 +163,7 @@ suspend fun sendTransactionWithMultiSignature(
     }
 
     logd(TAG, "sendTransaction to flow chain")
-    val txID = FlowApi.get().sendTransaction(tx).id
+    val txID = FlowCadenceApi.sendTransaction(tx).id
     logd(TAG, "transaction id:$${txID}")
     vibrateTransaction()
     return txID
@@ -174,7 +174,7 @@ private fun Transaction.addLocalSignatures(): Transaction {
     try {
         return copy(payloadSignatures = emptyList()).addEnvelopeSignature(
             payer,
-            keyIndex = proposalKey.keyId,
+            keyIndex = proposalKey.keyIndex,
             cryptoProvider.getSigner()
         )
     } catch (e: Exception) {
@@ -211,11 +211,11 @@ private suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
 
 private suspend fun prepare(builder: TransactionBuilder): Voucher {
     logd(TAG, "prepare builder:$builder")
-    val account = FlowApi.get().getAccountAtLatestBlock(FlowAddress(builder.walletAddress?.toAddress().orEmpty()))
+    val account = FlowCadenceApi.getAccount(builder.walletAddress?.toAddress().orEmpty())
         ?: throw RuntimeException("get wallet account error")
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
-    val currentKey = account.keys.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
+    val currentKey = account.keys?.findLast { it.publicKey.base16Value == cryptoProvider.getPublicKey() }
         ?: throw InvalidKeyException("get account key error")
 
     return Voucher(
@@ -226,9 +226,9 @@ private suspend fun prepare(builder: TransactionBuilder): Voucher {
         proposalKey = ProposalKey(
             address = account.address.base16Value,
             keyId = currentKey.id,
-            sequenceNum = currentKey.sequenceNumber,
+            sequenceNum = currentKey.sequenceNumber.toInt(),
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowCadenceApi.getBlockHeader(null).id.base16Value,
     )
 }
 
@@ -249,12 +249,12 @@ private suspend fun prepareWithMultiSignature(
             keyId = restoreProposalKey.index.toInt(),
             sequenceNum = restoreProposalKey.sequenceNumber.toInt(),
         ),
-        refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
+        refBlock = FlowCadenceApi.getBlockHeader(null).id.base16Value,
     )
 }
 
-fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
-    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payer) ?: return null
+suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
+    val payerAccount = FlowCadenceApi.getAccount(payer) ?: return null
     val voucher = Voucher(
         cadence = script,
         refBlock = referenceBlockId.base16Value,
@@ -262,7 +262,7 @@ fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
         arguments = arguments.map { it.toAsArgument() },
         proposalKey = ProposalKey(
             address = proposalKey.address.base16Value,
-            keyId = proposalKey.keyId,
+            keyId = proposalKey.keyIndex,
             sequenceNum = proposalKey.sequenceNumber,
         ),
         payer = payer.base16Value,
@@ -270,14 +270,14 @@ fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
         payloadSigs = payloadSignatures.map {
             Singature(
                 address = it.address.base16Value,
-                keyId = it.keyId,
+                keyId = it.keyIndex,
                 sig = it.signature,
             )
         },
         envelopeSigs = listOf(
             Singature(
                 address = AppConfig.bridgeFeePayer().address,
-                keyId = payerAccount.keys.first().id,
+                keyId = payerAccount.keys?.first().index,
             )
         ),
     )
@@ -290,8 +290,8 @@ fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
     )
 }
 
-fun Transaction.buildPayerSignable(): PayerSignable? {
-    val payerAccount = FlowApi.get().getAccountAtLatestBlock(payer) ?: return null
+suspend fun Transaction.buildPayerSignable(): PayerSignable? {
+    val payerAccount = FlowCadenceApi.getAccount(payer)
     val voucher = Voucher(
         cadence = script,
         refBlock = referenceBlockId.base16Value,
@@ -299,7 +299,7 @@ fun Transaction.buildPayerSignable(): PayerSignable? {
         arguments = arguments.map { it.toAsArgument() },
         proposalKey = ProposalKey(
             address = proposalKey.address.base16Value,
-            keyId = proposalKey.keyId,
+            keyId = proposalKey.keyIndex,
             sequenceNum = proposalKey.sequenceNumber,
         ),
         payer = payer.base16Value,
@@ -314,7 +314,7 @@ fun Transaction.buildPayerSignable(): PayerSignable? {
         envelopeSigs = listOf(
             Singature(
                 address = AppConfig.payer().address,
-                keyId = payerAccount.keys.first().id,
+                keyId = payerAccount.keys?.first().id,
             )
         ),
     )
@@ -337,7 +337,7 @@ fun Voucher.toFlowMultiTransaction(): Transaction {
         script = transaction.cadence.orEmpty(),
         arguments = transaction.arguments.orEmpty().map { it.toBytes() },
         referenceBlockId = transaction.refBlock.orEmpty(),
-        gasLimit = BigInteger.valueOf(transaction.computeLimit?.toLong() ?: 9999L),
+        gasLimit = BigInteger.fromLong(transaction.computeLimit?.toLong() ?: 9999L),
         proposalKey = org.onflow.flow.models.ProposalKey(
             address = transaction.proposalKey.address.orEmpty(),
             keyIndex = transaction.proposalKey.keyId ?: 0,
@@ -358,7 +358,7 @@ fun Voucher.toFlowTransaction(): Transaction {
         script = transaction.cadence.orEmpty(),
         arguments = transaction.arguments.orEmpty().map { it.toBytes() },
         referenceBlockId = transaction.refBlock.orEmpty(),
-        gasLimit = BigInteger.valueOf(transaction.computeLimit?.toLong() ?: 9999L),
+        gasLimit = BigInteger.fromLong(transaction.computeLimit?.toLong() ?: 9999L),
         proposalKey = org.onflow.flow.models.ProposalKey(
             address = transaction.proposalKey.address.orEmpty(),
             keyIndex = transaction.proposalKey.keyId ?: 0,
@@ -393,7 +393,7 @@ fun Voucher.toFlowTransactionWithBridgePayer(): Transaction {
         script = transaction.cadence.orEmpty(),
         arguments = transaction.arguments.orEmpty().map { it.toBytes() },
         referenceBlockId = transaction.refBlock.orEmpty(),
-        gasLimit = BigInteger.valueOf(transaction.computeLimit?.toLong() ?: 9999L),
+        gasLimit = BigInteger.fromLong(transaction.computeLimit?.toLong() ?: 9999L),
         proposalKey = org.onflow.flow.models.ProposalKey(
             address = transaction.proposalKey.address.orEmpty(),
             keyIndex = transaction.proposalKey.keyId ?: 0,

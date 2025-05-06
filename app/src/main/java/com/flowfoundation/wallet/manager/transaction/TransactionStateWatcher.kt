@@ -2,20 +2,17 @@ package com.flowfoundation.wallet.manager.transaction
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.onflow.flow.models.TransactionStatus
-import org.onflow.flow.models.hexToBytes
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
-import com.nftco.flow.sdk.FlowError
-import com.nftco.flow.sdk.parseErrorCode
 import kotlinx.coroutines.delay
+import org.onflow.flow.infrastructure.parseErrorCode
+import org.onflow.flow.models.TransactionResult
 
 private val TAG = TransactionStateWatcher::class.java.simpleName
 
@@ -23,17 +20,17 @@ class TransactionStateWatcher(
     val transactionId: String,
 ) {
 
-    suspend fun watch(callback: (state: FlowTransactionResult) -> Unit) {
-        var ret: FlowTransactionResult? = null
+    suspend fun watch(callback: (state: TransactionResult) -> Unit) {
+        var ret: TransactionResult? = null
         var statusCode = -1
         while (true) {
-            safeRun {
+            safeRunSuspend {
                 val result = checkNotNull(
-                    FlowApi.get().getTransactionResultById(FlowId.of(transactionId.hexToBytes()))
+                    FlowCadenceApi.getTransactionResultById(transactionId)
                 ) { "Transaction with that id not found" }
-                logd(TAG, "statusCode:${result.status.num}")
-                if (result.status.num != statusCode) {
-                    statusCode = result.status.num
+                logd(TAG, "statusCode:${result.status.ordinal}")
+                if (result.status.ordinal != statusCode) {
+                    statusCode = result.status.ordinal
                     callback.invoke(result)
                 }
                 ret = result

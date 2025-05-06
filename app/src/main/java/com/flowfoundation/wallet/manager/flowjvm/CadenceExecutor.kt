@@ -22,7 +22,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
-import com.nftco.flow.sdk.Flow
+import org.onflow.flow.AddressRegistry
 import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
@@ -756,9 +756,9 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
     logv(
         TAG,
         "executeScript:\n${
-            Flow.DEFAULT_ADDRESS_REGISTRY.processScript(
+            AddressRegistry().processScript(
                 this,
-                chainId = Flow.DEFAULT_CHAIN_ID
+                chainId = AddressRegistry().defaultChainId
             )
         }"
     )
