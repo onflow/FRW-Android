@@ -1,19 +1,19 @@
 package com.flowfoundation.wallet.manager.transaction
 
-import com.nftco.flow.sdk.FlowTransactionResult
+import org.onflow.flow.models.TransactionResult
 import org.onflow.flow.models.TransactionStatus
 
 const val ERROR_STORAGE_CAPACITY_EXCEEDED = 1103
 
-fun FlowTransactionResult.isProcessing(): Boolean {
-    return status.num.isProcessing()
+fun TransactionResult.isProcessing(): Boolean {
+    return status.ordinal.isProcessing()
 }
 
-fun FlowTransactionResult.isExecuteFinished(): Boolean {
-    return !status.num.isProcessing() && errorMessage.isBlank()
+fun TransactionResult.isExecuteFinished(): Boolean {
+    return !status.ordinal.isProcessing() && errorMessage.isBlank()
 }
 
-fun FlowTransactionResult.isFailed(): Boolean {
+fun TransactionResult.isFailed(): Boolean {
     if (isProcessing()) {
         return false
     }

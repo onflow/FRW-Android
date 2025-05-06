@@ -4,19 +4,20 @@ import androidx.annotation.WorkerThread
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.FlowAccount
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.FlowArgument
 import com.nftco.flow.sdk.cadence.Field
 import com.nftco.flow.sdk.cadence.JsonCadenceBuilder
 import com.nftco.flow.sdk.cadence.UFix64NumberField
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.transaction.AsArgument
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.Account
+import org.onflow.flow.models.FlowAddress
 import java.math.BigDecimal
 import java.util.Locale
 
@@ -39,12 +40,12 @@ internal fun Map<String, String>?.parseBigDecimalMap(): Map<String, BigDecimal>?
     }
 }
 
-fun addressVerify(address: String): Boolean {
+suspend fun addressVerify(address: String): Boolean {
     if (!address.startsWith("0x")) {
         return false
     }
     return try {
-        FlowApi.get().getAccountAtLatestBlock(FlowAddress(address)) != null
+        FlowCadenceApi.getAccount(address) != null
     } catch (e: Exception) {
         false
     }
@@ -87,18 +88,18 @@ fun (CadenceArgumentsBuilder.() -> Unit).builder(): CadenceArgumentsBuilder {
 }
 
 @WorkerThread
-fun FlowAddress.lastBlockAccount(): FlowAccount? {
-    return FlowApi.get().getAccountAtLatestBlock(this)
+suspend fun FlowAddress.lastBlockAccount(): Account {
+    return FlowCadenceApi.getAccount(this.formatted) // check this is the correct cast
 }
 
 @WorkerThread
-fun FlowAddress.lastBlockAccountKeyId(): Int {
-    return lastBlockAccount()?.keys?.firstOrNull()?.id ?: 0
+suspend fun FlowAddress.lastBlockAccountKeyId(): Int {
+    return lastBlockAccount().keys?.firstOrNull()?.index?.toInt() ?: 0
 }
 
 @WorkerThread
-fun FlowAddress.currentKeyId(publicKey: String): Int {
-    return lastBlockAccount()?.keys?.firstOrNull { publicKey == it.publicKey.base16Value }?.id ?: 0
+suspend fun FlowAddress.currentKeyId(publicKey: String): Int {
+    return lastBlockAccount().keys?.firstOrNull { publicKey == it.publicKey }?.index?.toInt() ?: 0
 }
 
 fun Field<*>.valueString(): String = if (value is String) value as String else Flow.OBJECT_MAPPER.writeValueAsString(value)

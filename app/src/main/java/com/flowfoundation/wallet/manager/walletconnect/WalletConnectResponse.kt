@@ -99,7 +99,7 @@ private fun userSign(address: String, keyId: Int): String {
     """.trimIndent()
 }
 
-private fun preAuthz(): String {
+private suspend fun preAuthz(): String {
     return """
 {
     "f_type": "Service",

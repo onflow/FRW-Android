@@ -170,7 +170,7 @@ class BackupCompletedFragment : Fragment() {
         }
     }
 
-    private fun checkRecoveryPhrase(item: BackupCompletedItem) {
+    private suspend fun checkRecoveryPhrase(item: BackupCompletedItem) {
         isRecoveryPhraseCheckLoading = true
         isRecoveryPhraseBackupSuccess = false
         val baseDir = File(Env.getApp().filesDir, "wallet")
@@ -184,7 +184,7 @@ class BackupCompletedFragment : Fragment() {
         val backupProvider = BackupCryptoProvider(seedPhraseKey)
 
         val blockAccount = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-        isRecoveryPhraseBackupSuccess = blockAccount?.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey.base16Value } != null
+        isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey } != null
         binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
             setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
         })

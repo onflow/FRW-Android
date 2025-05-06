@@ -52,6 +52,8 @@ import com.nftco.flow.sdk.crypto.Crypto
 import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
 import wallet.core.jni.Curve
 import wallet.core.jni.HDWallet
@@ -400,13 +402,13 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
             val currentKey = currentKeyStoreAddress?.run {
-                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey.base16Value == publicKey }
+                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey == publicKey }
             } ?: run {
                 toast(msgRes = R.string.login_failure)
                 activity.finish()
                 return@ioScope
             }
-            if (currentKey.weight < 1000) {
+            if (currentKey.weight.toInt() < 1000) {
                 toast(msgRes = R.string.restore_failure_insufficient_weight)
                 activity.finish()
                 return@ioScope
@@ -628,12 +630,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
         ioScope {
             val addressResponse = queryService.queryAddress(publicKey)
             val currentKey = addressResponse.accounts.firstOrNull()?.run {
-                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey.base16Value == publicKey }
+                FlowAddress(this.address).lastBlockAccount()?.keys?.find { it.publicKey == publicKey }
             } ?: run {
                 callback.invoke(false, R.string.login_failure)
                 return@ioScope
             }
-            if (currentKey.weight < 1000) {
+            if (currentKey.weight.toInt() < 1000) {
                 callback.invoke(false, R.string.restore_failure_insufficient_weight)
                 return@ioScope
             }
@@ -653,12 +655,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         val resp = service.login(
                             LoginRequest(
                                 signature = getSignature(
-                                    getFirebaseJwt(), privateKey, currentKey.hashAlgo, signAlgo
+                                    getFirebaseJwt(), privateKey, currentKey.hashingAlgorithm, signAlgo
                                 ),
                                 accountKey = AccountKey(
                                     publicKey = publicKey,
-                                    hashAlgo = currentKey.hashAlgo.index,
-                                    signAlgo = currentKey.signAlgo.index
+                                    hashAlgo = currentKey.hashingAlgorithm.cadenceIndex,
+                                    signAlgo = currentKey.signingAlgorithm.cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -726,12 +728,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun getSignature(
         jwt: String,
         privateKey: String,
-        hashAlgo: HashAlgorithm,
-        signAlgo: SignatureAlgorithm
+        hashAlgo: HashingAlgorithm,
+        signAlgo: SigningAlgorithm
     ): String {
         checkSecurityProvider()
         updateSecurityProvider()
-        return Crypto.getSigner(
+        return Crypto.getSigner( // to-do : swap out
             privateKey = Crypto.decodePrivateKey(
                 privateKey, signAlgo
             ),

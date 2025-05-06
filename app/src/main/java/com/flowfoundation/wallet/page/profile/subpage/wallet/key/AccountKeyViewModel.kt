@@ -37,22 +37,24 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
                 return@viewModelIOScope
             }
             uiScope {
-                keyList.addAll(account.keys.map {
-                    AccountKey(
-                        it.id,
-                        it.publicKey,
-                        it.signAlgo,
-                        it.hashAlgo,
-                        it.weight,
-                        it.sequenceNumber,
-                        it.revoked,
-                        isRevoking = false,
-                        isCurrentDevice = isCurrentDevice(it.publicKey),
-                        deviceName = "",
-                        backupType = -1,
-                        deviceType = -1,
-                    )
-                })
+                account.keys?.let {
+                    keyList.addAll(it.map {
+                        AccountKey(
+                            it.index.toInt(),
+                            it.publicKey,
+                            it.signingAlgorithm,
+                            it.hashingAlgorithm,
+                            it.weight.toInt(),
+                            it.sequenceNumber.toInt(),
+                            it.revoked,
+                            isRevoking = false,
+                            isCurrentDevice = isCurrentDevice(it.publicKey),
+                            deviceName = "",
+                            backupType = -1,
+                            deviceType = -1,
+                        )
+                    })
+                }
                 keyListLiveData.postValue(keyList)
                 loadDeviceInfo()
             }

@@ -36,12 +36,12 @@ class DevicesViewModel : ViewModel() {
                 val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
                 if (deviceKey != null) {
                     val unRevokedDevice = keys.firstOrNull {
-                        it.publicKey.base16Value ==
+                        it.publicKey ==
                                 deviceKey.pubKey.publicKey && it.revoked.not()
                     }
                     if (unRevokedDevice != null) {
                         val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
-                        val keyId = if (unRevokedDevice.publicKey.base16Value == currentKey) null else unRevokedDevice.id
+                        val keyId = if (unRevokedDevice.publicKey == currentKey) null else unRevokedDevice.index
                         deviceList.add(
                             DeviceKeyModel(
                                 deviceId = device.id,

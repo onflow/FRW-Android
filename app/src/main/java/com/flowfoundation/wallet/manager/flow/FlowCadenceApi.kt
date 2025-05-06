@@ -17,7 +17,7 @@ object FlowCadenceApi {
     private const val TAG = "FlowCadenceApi"
     private var api: FlowApi? = null
     var DEFAULT_CHAIN_ID: ChainId = ChainId.Mainnet
-    var DEFAULT_ADDRESS_REGISTRY: AddressRegistry = Flow.DEFAULT_ADDRESS_REGISTRY
+    var DEFAULT_ADDRESS_REGISTRY: AddressRegistry = AddressRegistry()
 
     fun refreshConfig() {
         logd(TAG, "refreshConfig start")

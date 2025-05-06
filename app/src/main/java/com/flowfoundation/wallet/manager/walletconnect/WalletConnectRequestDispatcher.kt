@@ -326,7 +326,7 @@ private suspend fun WCRequest.respondAuthz() {
     }
 }
 
-private fun WCRequest.respondPreAuthz() {
+private suspend fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
