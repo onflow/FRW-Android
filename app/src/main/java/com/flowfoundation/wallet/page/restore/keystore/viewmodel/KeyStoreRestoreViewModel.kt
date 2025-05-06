@@ -715,12 +715,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private fun getSignature(
         jwt: String,
         privateKey: String,
-        hashAlgo: HashingAlgorithm,
-        signAlgo: SigningAlgorithm
+        hashAlgo: org.onflow.flow.models.HashingAlgorithm,
+        signAlgo: org.onflow.flow.models.SigningAlgorithm
     ): String {
         checkSecurityProvider()
         updateSecurityProvider()
-        return Crypto.getSigner( // to-do : swap out
+        return Crypto.getSigner(
             privateKey = Crypto.decodePrivateKey(
                 privateKey, signAlgo
             ),

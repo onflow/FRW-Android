@@ -59,6 +59,7 @@ import org.onflow.flow.models.SigningAlgorithm
 import org.onflow.flow.models.TransactionStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.bytesToHex
 import java.io.File
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
@@ -299,12 +300,13 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
+                        val jwt = getFirebaseJwt()
                         val resp = service.login(
                             LoginRequest(
-                                signature = privateKey.getUserSignature(getFirebaseJwt()),
+                                signature = privateKey.sign(jwt.encodeToByteArray(), SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).bytesToHex(),
                                 accountKey = AccountKey(
                                     publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "",
-                                    hashAlgo = HashingAlgorithm.SHA2_256.ordinal,
+                                    hashAlgo = HashingAlgorithm.SHA3_256.ordinal,
                                     signAlgo = SigningAlgorithm.ECDSA_P256.ordinal
                                 ),
                                 deviceInfo = deviceInfoRequest

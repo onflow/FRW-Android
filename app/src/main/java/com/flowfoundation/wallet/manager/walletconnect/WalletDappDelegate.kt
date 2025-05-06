@@ -38,6 +38,8 @@ import com.flow.wallet.storage.FileSystemStorage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 
 private val TAG = WalletDappDelegate::class.java.simpleName
 
@@ -192,13 +194,15 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                         val service = retrofit().create(ApiService::class.java)
                         val resp = service.login(
                             LoginRequest( // to-do : switch methods
-                                signature = privateKey.getUserSignature(
-                                    getFirebaseJwt()
-                                ),
+                                signature = privateKey.sign(
+                                    getFirebaseJwt().toByteArray(),
+                                    SigningAlgorithm.ECDSA_P256,
+                                    HashingAlgorithm.SHA3_256
+                                ).let { String(it) },
                                 accountKey = AccountKey(
-                                    publicKey = privateKey.key.public.toString(),
-                                    hashAlgo = privateKey.getHashAlgorithm().index,
-                                    signAlgo = privateKey.getSignatureAlgorithm().index
+                                    publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "",
+                                    hashAlgo = HashingAlgorithm.SHA3_256.cadenceIndex,
+                                    signAlgo = SigningAlgorithm.ECDSA_P256.cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )

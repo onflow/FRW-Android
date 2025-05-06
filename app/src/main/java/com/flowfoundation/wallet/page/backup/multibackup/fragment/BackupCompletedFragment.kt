@@ -100,7 +100,9 @@ class BackupCompletedFragment : Fragment() {
         )
         backupViewModel = ViewModelProvider(this.requireActivity())[MultiBackupViewModel::class.java].apply {
             locationInfoLiveData.observe(viewLifecycleOwner) { info ->
-                setCompletedItemList(info)
+                ioScope {
+                    setCompletedItemList(info)
+                }
             }
             getLocationInfo()
         }

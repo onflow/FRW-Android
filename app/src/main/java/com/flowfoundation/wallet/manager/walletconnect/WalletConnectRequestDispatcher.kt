@@ -64,12 +64,16 @@ import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
+import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.models.FlowAddress
 import org.web3j.crypto.StructuredDataEncoder
 import java.lang.reflect.Type
 import java.util.zip.GZIPInputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import org.onflow.flow.models.Transaction
+import com.ionspin.kotlin.bignum.integer.BigInteger
+import com.ionspin.kotlin.bignum.integer.toBigInteger
 
 private const val TAG = "WalletConnectRequestDispatcher"
 
@@ -117,7 +121,9 @@ suspend fun WCRequest.evmSignTypedData() {
             model
         )
         EVMSignTypedDataDialog.observe { isApprove ->
-            if (isApprove) approve(signTypedData(hashData)) else reject()
+            ioScope {
+                if (isApprove) approve(signTypedData(hashData)) else reject()
+            }
         }
     }
 }
@@ -140,15 +146,17 @@ private suspend fun WCRequest.evmSendTransaction() {
             model
         )
         EVMSendTransactionDialog.observe { isApprove ->
-            if (isApprove) {
-                sendEthereumTransaction(transaction) { txHash ->
-                    if (txHash.isEmpty()) {
-                        reject()
-                    } else {
-                        approve(txHash)
+            ioScope {
+                if (isApprove) {
+                    sendEthereumTransaction(transaction) { txHash ->
+                        if (txHash.isEmpty()) {
+                            reject()
+                        } else {
+                            approve(txHash)
+                        }
                     }
-                }
-            } else reject()
+                } else reject()
+            }
         }
     }
 }
@@ -191,7 +199,9 @@ private suspend fun WCRequest.evmSignMessage() {
             model
         )
         EVMSignMessageDialog.observe { isApprove ->
-            if (isApprove) approve(signEthereumMessage(message)) else reject()
+            ioScope {
+                if (isApprove) approve(signEthereumMessage(message)) else reject()
+            }
         }
     }
 }
@@ -398,8 +408,10 @@ private suspend fun WCRequest.respondUserSign() {
         )
 
         FclSignMessageDialog.observe { isApprove ->
-            if (isApprove) approve(fclSignMessageResponse(message, address)) else reject()
-            FclAuthzDialog.dismiss()
+            ioScope {
+                if (isApprove) approve(fclSignMessageResponse(message, address)) else reject()
+                FclAuthzDialog.dismiss()
+            }
         }
     }
 }
@@ -407,10 +419,37 @@ private suspend fun WCRequest.respondUserSign() {
 private suspend fun WCRequest.respondSignPayer() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
+    val voucher = signable.voucher ?: return
+    
+    // Validate required fields
+    val cadence = voucher.cadence ?: return
+    val refBlock = voucher.refBlock ?: return
+    val computeLimit = voucher.computeLimit ?: return
+    val payer = voucher.payer ?: return
+    val proposalKey = voucher.proposalKey
+    val proposerAddress = proposalKey.address ?: return
+    val proposerKeyId = proposalKey.keyId ?: return
+    val proposerSequenceNum = proposalKey.sequenceNum ?: return
+    
+    val transaction = Transaction(
+        script = cadence,
+        arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
+        referenceBlockId = refBlock,
+        gasLimit = computeLimit.toBigInteger(),
+        payer = payer,
+        proposalKey = org.onflow.flow.models.ProposalKey(
+            address = proposerAddress,
+            keyIndex = proposerKeyId,
+            sequenceNumber = proposerSequenceNum.toBigInteger()
+        ),
+        authorizers = voucher.authorizers ?: emptyList()
+    )
+
+    val message = signable.message ?: return
     val server = executeHttpFunction(
         FUNCTION_SIGN_AS_PAYER, PayerSignable(
-            transaction = signable.voucher!!,
-            message = PayerSignable.Message(signable.message!!)
+            transaction = transaction,
+            message = PayerSignable.Message(message)
         )
     )
 

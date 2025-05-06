@@ -1,13 +1,11 @@
 package com.flowfoundation.wallet.manager.backup
 
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
-import org.onflow.flow.crypto.Crypto
-import org.onflow.flow.models.DomainTag
-import org.onflow.flow.models.HashingAlgorithm
-import org.onflow.flow.models.Signer
-import org.onflow.flow.models.SigningAlgorithm
+import com.flow.wallet.crypto.DomainTag
+import com.flow.wallet.crypto.HashingAlgorithm
+import com.flow.wallet.crypto.Signer
+import com.flow.wallet.crypto.SigningAlgorithm
 
 class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
 
@@ -35,14 +33,7 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getSigner(): Signer {
-        checkSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
-                getSignatureAlgorithm()
-            ),
-            hashAlgo = getHashAlgorithm()
-        )
+        return seedPhraseKey.getSigner()
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
