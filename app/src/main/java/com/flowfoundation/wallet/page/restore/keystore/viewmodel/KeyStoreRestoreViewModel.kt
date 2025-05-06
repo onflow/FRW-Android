@@ -45,8 +45,6 @@ import com.nftco.flow.sdk.DomainTag
 import com.nftco.flow.sdk.FlowAccount
 import com.nftco.flow.sdk.FlowAccountKey
 import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import org.onflow.flow.models.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
 import org.onflow.flow.models.hexToBytes
@@ -252,9 +250,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String,
         p1PublicKey: String
     ) {
-        if (checkIsLogin(k1PrivateKey, k1PublicKey, SignatureAlgorithm.ECDSA_SECP256k1)) {
+        if (checkIsLogin(k1PrivateKey, k1PublicKey, SigningAlgorithm.ECDSA_secp256k1)) {
             return
-        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SignatureAlgorithm.ECDSA_P256)) {
+        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SigningAlgorithm.ECDSA_P256)) {
             return
         } else {
             queryAddressWithPublicKey(
@@ -624,7 +622,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     private fun loginAndFetchWallet(
-        privateKey: String, publicKey: String, signAlgo: SignatureAlgorithm,
+        privateKey: String, publicKey: String, signAlgo: SigningAlgorithm,
         callback: (isSuccess: Boolean, errorMsg: Int) -> Unit
     ) {
         ioScope {

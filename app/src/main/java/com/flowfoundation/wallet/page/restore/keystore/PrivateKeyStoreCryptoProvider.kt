@@ -6,11 +6,11 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvi
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.google.gson.Gson
 import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.nftco.flow.sdk.Signer
 import org.onflow.flow.models.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 
 
 class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoProvider {
@@ -52,12 +52,12 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
         )
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.fromCadenceIndex(keyStoreAddress.hashAlgo)
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.fromCadenceIndex(keyStoreAddress.hashAlgo)
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.fromCadenceIndex(keyStoreAddress.signAlgo)
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.fromCadenceIndex(keyStoreAddress.signAlgo)
     }
 
     override fun getKeyWeight(): Int {

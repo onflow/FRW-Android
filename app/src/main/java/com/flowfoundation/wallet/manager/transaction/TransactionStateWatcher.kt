@@ -29,8 +29,8 @@ class TransactionStateWatcher(
                     FlowCadenceApi.getTransactionResultById(transactionId)
                 ) { "Transaction with that id not found" }
                 logd(TAG, "statusCode:${result.status?.ordinal}")
-                if (result.status.ordinal != statusCode) {
-                    statusCode = result.status.ordinal
+                if (result.status!!.ordinal != statusCode) {
+                    statusCode = result.status!!.ordinal
                     callback.invoke(result)
                 }
                 ret = result

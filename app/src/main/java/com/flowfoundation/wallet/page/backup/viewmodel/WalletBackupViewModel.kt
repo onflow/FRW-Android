@@ -63,7 +63,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                     keys.lastOrNull { info.pubKey.publicKey == it.publicKey.base16Value && it.revoked.not() }
                         ?.let {
                             BackupKey(
-                                it.id,
+                                it,
                                 info,
                                 isRevoking = false
                             )

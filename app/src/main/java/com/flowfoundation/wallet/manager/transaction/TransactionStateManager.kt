@@ -114,8 +114,8 @@ object TransactionStateManager {
                         ret = checkNotNull(
                             FlowCadenceApi.getTransactionResultById(state.transactionId)
                         ) { "Transaction with that id not found" }
-                        if (ret.status.ordinal != state.state) {
-                            state.state = ret.status.ordinal
+                        if (ret.status!!.ordinal != state.state) {
+                            state.state = ret.status!!.ordinal
                             state.errorMsg = ret.errorMessage
                             logd(TAG, "update state:${ret.status}")
                             updateState(
