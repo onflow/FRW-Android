@@ -105,9 +105,9 @@ suspend fun sendBridgeTransaction(
         MixpanelManager.cadenceTransactionSigned(
             cadence = voucher.cadence.orEmpty(), 
             txId = txID, 
-            authorizers = tx.authorizers.map { it.formatted },
-            proposer = tx.proposalKey.address.formatted,
-            payer = tx.payer.formatted,
+            authorizers = tx.authorizers.map { it },
+            proposer = tx.proposalKey.address,
+            payer = tx.payer,
             isSuccess = true
         )
         return txID
@@ -246,8 +246,8 @@ private suspend fun prepareWithMultiSignature(
         payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress),
         proposalKey = ProposalKey(
             address = walletAddress,
-            keyId = restoreProposalKey.id,
-            sequenceNum = restoreProposalKey.sequenceNumber,
+            keyId = restoreProposalKey.index.toInt(),
+            sequenceNum = restoreProposalKey.sequenceNumber.toInt(),
         ),
         refBlock = FlowApi.get().getLatestBlockHeader().id.base16Value,
     )
@@ -307,7 +307,7 @@ fun Transaction.buildPayerSignable(): PayerSignable? {
         payloadSigs = payloadSignatures.map {
             Singature(
                 address = it.address.base16Value,
-                keyId = it.keyId,
+                keyId = it.keyIndex,
                 sig = it.signature,
             )
         },
@@ -338,9 +338,9 @@ fun Voucher.toFlowMultiTransaction(): Transaction {
         arguments = transaction.arguments.orEmpty().map { it.toBytes() },
         referenceBlockId = transaction.refBlock.orEmpty(),
         gasLimit = BigInteger.valueOf(transaction.computeLimit?.toLong() ?: 9999L),
-        proposalKey = ProposalKey(
+        proposalKey = org.onflow.flow.models.ProposalKey(
             address = transaction.proposalKey.address.orEmpty(),
-            keyId = transaction.proposalKey.keyId ?: 0,
+            keyIndex = transaction.proposalKey.keyId ?: 0,
             sequenceNumber = transaction.proposalKey.sequenceNum ?: 0
         ),
         authorizers = if (transaction.authorizers.isNullOrEmpty()) {
@@ -359,9 +359,9 @@ fun Voucher.toFlowTransaction(): Transaction {
         arguments = transaction.arguments.orEmpty().map { it.toBytes() },
         referenceBlockId = transaction.refBlock.orEmpty(),
         gasLimit = BigInteger.valueOf(transaction.computeLimit?.toLong() ?: 9999L),
-        proposalKey = ProposalKey(
+        proposalKey = org.onflow.flow.models.ProposalKey(
             address = transaction.proposalKey.address.orEmpty(),
-            keyId = transaction.proposalKey.keyId ?: 0,
+            keyIndex = transaction.proposalKey.keyId ?: 0,
             sequenceNumber = transaction.proposalKey.sequenceNum ?: 0
         ),
         authorizers = if (transaction.authorizers.isNullOrEmpty()) {
@@ -373,14 +373,14 @@ fun Voucher.toFlowTransaction(): Transaction {
         payloadSignatures = transaction.payloadSigs?.map {
             TransactionSignature(
                 address = it.address,
-                keyId = it.keyId ?: 0,
+                keyIndex = it.keyId ?: 0,
                 signature = it.sig.orEmpty()
             )
         } ?: emptyList(),
         envelopeSignatures = transaction.envelopeSigs?.map {
             TransactionSignature(
                 address = it.address,
-                keyId = it.keyId ?: 0,
+                keyIndex = it.keyId ?: 0,
                 signature = it.sig.orEmpty()
             )
         } ?: emptyList()
@@ -396,7 +396,7 @@ fun Voucher.toFlowTransactionWithBridgePayer(): Transaction {
         gasLimit = BigInteger.valueOf(transaction.computeLimit?.toLong() ?: 9999L),
         proposalKey = org.onflow.flow.models.ProposalKey(
             address = transaction.proposalKey.address.orEmpty(),
-            keyId = transaction.proposalKey.keyId ?: 0,
+            keyIndex = transaction.proposalKey.keyId ?: 0,
             sequenceNumber = transaction.proposalKey.sequenceNum ?: 0
         ),
         authorizers = listOf(
