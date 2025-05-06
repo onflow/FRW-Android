@@ -70,8 +70,16 @@ object FlowCadenceApi {
         return get().getTransactionResult(transactionId)
     }
 
+    suspend fun getTransaction(transactionId: String): Transaction {
+        return get().getTransaction(transactionId)
+    }
+
     suspend fun sendTransaction(transaction: Transaction): Transaction {
         return get().sendTransaction(transaction)
+    }
+
+    suspend fun waitForSeal(transactionId: String): TransactionResult {
+        return get().waitForSeal(transactionId)
     }
 
 }

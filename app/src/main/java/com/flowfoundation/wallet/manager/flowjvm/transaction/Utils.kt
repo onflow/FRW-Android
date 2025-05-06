@@ -17,6 +17,10 @@ class TransactionBuilder {
 
     internal var limit: Int? = 9999
 
+    internal var isBridgePayer: Boolean = false
+
+    internal var authorizers: List<String>? = null
+
     fun scriptId(scriptId: String) {
         this.scriptId = scriptId
     }
@@ -44,6 +48,14 @@ class TransactionBuilder {
 
     fun payer(payerAddress: String) {
         this.payer = payerAddress
+    }
+
+    fun isBridgePayer(isBridgePayer: Boolean) {
+        this.isBridgePayer = isBridgePayer
+    }
+
+    fun authorizers(authorizers: List<String>) {
+        this.authorizers = authorizers
     }
 
     override fun toString(): String {
