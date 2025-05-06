@@ -219,7 +219,10 @@ class EvmInterface(
         )
         EVMSignMessageDialog.observe { approve ->
             if (approve) {
-                webView.sendResult(network, signEthereumMessage(signMessage), id)
+                uiScope {
+                    val signature = signEthereumMessage(signMessage)
+                    webView.sendResult(network, signature, id)
+                }
             }
         }
     }
@@ -238,7 +241,10 @@ class EvmInterface(
         )
         EVMSignTypedDataDialog.observe { approve ->
             if (approve) {
-                webView.sendResult(network, signTypedData(data), id)
+                uiScope {
+                    val signature = signTypedData(data)
+                    webView.sendResult(network, signature, id)
+                }
             }
         }
     }

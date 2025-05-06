@@ -198,7 +198,7 @@ object AccountManager {
         val jobs = prefixes.map { prefix ->
             async {
                 val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
-                if (publicKey.isNotEmpty()) {
+                if (publicKey != null) {
                     val response = queryService.queryAddress(publicKey.toFormatString())
                     response.accounts.forEach {
                         map[it.address] = prefix
