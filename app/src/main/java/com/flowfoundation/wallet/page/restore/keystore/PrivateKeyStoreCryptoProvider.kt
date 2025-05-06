@@ -3,22 +3,19 @@ package com.flowfoundation.wallet.page.restore.keystore
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.KeyFormat
-import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.google.gson.Gson
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
-import com.flowfoundation.wallet.utils.Env
-import java.io.File
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoProvider {
 
     private var keyStoreAddress: KeystoreAddress = Gson().fromJson(keyStoreInfo, KeystoreAddress::class.java)
     private val privateKey: PrivateKey by lazy {
-        val baseDir = File(Env.getApp().filesDir, "wallet")
-        val storage = FileSystemStorage(baseDir)
+        val storage = getStorage()
         PrivateKey.create(storage).apply {
             importPrivateKey(keyStoreAddress.privateKey.toByteArray(), KeyFormat.HEX)
         }

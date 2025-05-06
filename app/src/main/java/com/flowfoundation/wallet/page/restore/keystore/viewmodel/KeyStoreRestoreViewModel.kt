@@ -11,8 +11,6 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.RestoreType
@@ -40,23 +38,21 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import org.onflow.flow.models.bytesToHex
 import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.onflow.flow.crypto.Crypto
 import org.onflow.flow.models.AccountPublicKey
-import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
-import wallet.core.jni.PrivateKey
-import wallet.core.jni.StoredKey
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.Env
 import java.io.File
+import com.flow.wallet.keys.PrivateKey
+import wallet.core.jni.StoredKey
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 
 class KeyStoreRestoreViewModel : ViewModel() {
@@ -85,41 +81,34 @@ class KeyStoreRestoreViewModel : ViewModel() {
         return addressList
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun importKeyStore(json: String, password: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.KEYSTORE
         try {
             ioScope {
+                val storage = getStorage()
                 val keyStore = StoredKey.importJSON(json.toByteArray())
-                val privateKeyData = keyStore.decryptPrivateKey(password.toByteArray())
-                if (privateKeyData == null || privateKeyData.isEmpty()) {
-                    loadingLiveData.postValue(false)
-                    toast(msgRes = R.string.wrong_password)
-                    return@ioScope
-                }
-                val privateKey = PrivateKey(privateKeyData)
-
-                val p1PublicKey =
-                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
-                        .removePrefix("04")
-
-                val k1PublicKey =
-                    privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+                val privateKey = PrivateKey(keyStore.decryptPrivateKey(password.toByteArray()), storage)
+                val key = PrivateKey(privateKey, storage)
+                
+                val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
+                val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
 
                 if (address.isEmpty()) {
                     checkIsQueryAddress(
-                        privateKey.data().bytesToHex(),
-                        k1PublicKey,
-                        privateKey.data().bytesToHex(),
-                        p1PublicKey
+                        key.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
+                        k1PublicKey ?: "",
+                        key.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
+                        p1PublicKey ?: ""
                     )
                 } else {
                     queryAddressPublicKey(
                         address,
-                        privateKey.data().bytesToHex(),
-                        k1PublicKey,
-                        privateKey.data().bytesToHex(),
-                        p1PublicKey
+                        key.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
+                        k1PublicKey ?: "",
+                        key.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
+                        p1PublicKey ?: ""
                     )
                 }
             }
@@ -129,37 +118,35 @@ class KeyStoreRestoreViewModel : ViewModel() {
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.restore_failed)
         }
-
     }
 
-    fun importPrivateKey(privateKeyInput: String, address: String) {
+    fun importPrivateKey(privateKey: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.PRIVATE_KEY
         try {
             ioScope {
-                val privateKey = PrivateKey(privateKeyInput.hexToBytes())
-
-                val p1PublicKey =
-                    privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex()
-                        .removePrefix("04")
-
-                val k1PublicKey =
-                    privateKey.getPublicKeySecp256k1(false).data().bytesToHex().removePrefix("04")
+                val storage = getStorage()
+                val key = PrivateKey.create(storage).apply {
+                    importPrivateKey(privateKey.toByteArray(), KeyFormat.HEX)
+                }
+                
+                val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
+                val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
 
                 if (address.isEmpty()) {
                     checkIsQueryAddress(
-                        privateKey.data().bytesToHex(),
-                        k1PublicKey,
-                        privateKey.data().bytesToHex(),
-                        p1PublicKey
+                        key.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
+                        k1PublicKey ?: "",
+                        key.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
+                        p1PublicKey ?: ""
                     )
                 } else {
                     queryAddressPublicKey(
                         address,
-                        privateKey.data().bytesToHex(),
-                        k1PublicKey,
-                        privateKey.data().bytesToHex(),
-                        p1PublicKey
+                        key.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
+                        k1PublicKey ?: "",
+                        key.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
+                        p1PublicKey ?: ""
                     )
                 }
             }
@@ -171,43 +158,36 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    fun importSeedPhrase(
-        mnemonic: String,
-        address: String,
-        passphrase: String,
-        derivationPath: String
-    ) {
+    fun importSeedPhrase(mnemonic: String, passphrase: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.SEED_PHRASE
         try {
             ioScope {
-                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val storage = getStorage()
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = mnemonic,
                     passphrase = passphrase,
-                    derivationPath = derivationPath,
+                    derivationPath = "m/44'/539'/0'/0/0",
                     keyPair = null,
-                    storage = FileSystemStorage(baseDir)
+                    storage = storage
                 )
-                val k1PrivateKey = seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)
-                val k1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
-                val p1PrivateKey = seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)
-                val p1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
                 
+                val p1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
+                val k1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
+
                 if (address.isEmpty()) {
                     checkIsQueryAddress(
-                        k1PrivateKey?.toHexString() ?: "",
+                        seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
                         k1PublicKey ?: "",
-                        p1PrivateKey?.toHexString() ?: "",
+                        seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
                         p1PublicKey ?: ""
                     )
                 } else {
                     queryAddressPublicKey(
                         address,
-                        k1PrivateKey?.toHexString() ?: "",
+                        seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
                         k1PublicKey ?: "",
-                        p1PrivateKey?.toHexString() ?: "",
+                        seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: "",
                         p1PublicKey ?: ""
                     )
                 }
@@ -726,13 +706,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
         hashAlgo: HashingAlgorithm,
         signAlgo: SigningAlgorithm
     ): String {
-        checkSecurityProvider()
-        updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                privateKey, signAlgo
-            ),
-            hashAlgo = hashAlgo
-        ).sign(DomainTag.User.bytes + jwt.encodeToByteArray()).toHexString()
+        val storage = getStorage()
+        val key = PrivateKey.create(storage).apply {
+            importPrivateKey(privateKey.toByteArray(), KeyFormat.HEX)
+        }
+        return key.sign(DomainTag.User.bytes + jwt.encodeToByteArray(), SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
     }
 }

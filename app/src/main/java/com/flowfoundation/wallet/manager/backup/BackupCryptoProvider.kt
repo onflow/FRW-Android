@@ -14,12 +14,12 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
     }
 
     override fun getKeyWeight(): Int {
-        return 500
+        return 1000 // Standard key weight for Flow accounts
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04") ?: ""
+        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
     }
 
     override suspend fun getUserSignature(jwt: String): String {
@@ -28,7 +28,7 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
 
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
-        return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256).toHexString()
+        return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
     }
 
     override fun getSigner(): Signer {
@@ -37,17 +37,17 @@ class BackupCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoPro
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
             }
         }
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
-        return HashingAlgorithm.SHA2_256
+        return HashingAlgorithm.SHA3_256 // Flow uses SHA3_256
     }
 
     override fun getSignatureAlgorithm(): SigningAlgorithm {

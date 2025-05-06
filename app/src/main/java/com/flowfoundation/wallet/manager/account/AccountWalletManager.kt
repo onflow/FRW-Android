@@ -1,14 +1,15 @@
 package com.flowfoundation.wallet.manager.account
 
 import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.KeyProtocol
+import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.storage.FileSystemStorage
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
-import com.flowfoundation.wallet.utils.Env
-import java.io.File
+import com.flowfoundation.wallet.utils.Env.getStorage
+import kotlinx.coroutines.runBlocking
 
 /**
  * Created by Mengxy on 8/30/23.
@@ -46,15 +47,30 @@ object AccountWalletManager {
 
 class WalletStoreWithUid(private val uid: String, private val password: String) {
     fun wallet(): CryptoProvider {
-        val baseDir = File(Env.getApp().filesDir, "wallet")
-        val storage = FileSystemStorage(baseDir)
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = password,
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = storage
-        )
+        val storage = getStorage()
+        val seedPhraseKey = runBlocking {
+            try {
+                // First try to restore as a keystore
+                val key = PrivateKey.get(uid, password, storage)
+                // Convert the private key to a seed phrase key
+                SeedPhraseKey(
+                    mnemonicString = key.exportPrivateKey(com.flow.wallet.keys.KeyFormat.RAW).toString(Charsets.UTF_8),
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,
+                    storage = storage
+                )
+            } catch (e: Exception) {
+                // If that fails, try to restore as a seed phrase
+                SeedPhraseKey(
+                    mnemonicString = password,
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,
+                    storage = storage
+                )
+            }
+        }
         return BackupCryptoProvider(seedPhraseKey)
     }
 }

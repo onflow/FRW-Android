@@ -11,9 +11,7 @@ import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.KeyFormat
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.storage.FileSystemStorage
-import com.flowfoundation.wallet.utils.Env
-import java.io.File
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 object CryptoProviderManager {
 
@@ -33,33 +31,40 @@ object CryptoProviderManager {
         if (account.keyStoreInfo.isNullOrBlank().not()) {
             return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
         } else if (account.prefix.isNullOrBlank().not()) {
-            val baseDir = File(Env.getApp().filesDir, "wallet")
-            val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
+            val storage = getStorage()
+            val privateKey = PrivateKey.create(storage)
             return BackupCryptoProvider(SeedPhraseKey(
                 mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
-                storage = FileSystemStorage(baseDir)
+                storage = storage
             ))
         } else {
-            val wallet = if (account.isActive) {
-                Wallet.store().wallet()
+            val storage = getStorage()
+            return if (account.isActive) {
+                val wallet = Wallet.store().wallet()
+                BackupCryptoProvider(SeedPhraseKey(
+                    mnemonicString = wallet.mnemonic(),
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,
+                    storage = storage
+                ))
             } else {
-                AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
+                val wallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
+                if (wallet == null) {
+                    null
+                } else {
+                    BackupCryptoProvider(SeedPhraseKey(
+                        mnemonicString = wallet.mnemonic(),
+                        passphrase = "",
+                        derivationPath = "m/44'/539'/0'/0/0",
+                        keyPair = null,
+                        storage = storage
+                    ))
+                }
             }
-            if (wallet == null) {
-                return null
-            }
-            val baseDir = File(Env.getApp().filesDir, "wallet")
-            val backupProvider = BackupCryptoProvider(SeedPhraseKey(
-                mnemonicString = (wallet as BackupCryptoProvider).getMnemonic(),
-                passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
-                keyPair = null,
-                storage = FileSystemStorage(baseDir)
-            ))
-            return backupProvider
         }
     }
 
@@ -67,57 +72,55 @@ object CryptoProviderManager {
         if (account.keyStoreInfo.isNullOrBlank().not()) {
             return PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
         } else if (account.prefix.isNullOrBlank().not()) {
-            val baseDir = File(Env.getApp().filesDir, "wallet")
-            val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
+            val storage = getStorage()
+            val privateKey = PrivateKey.create(storage)
             return BackupCryptoProvider(SeedPhraseKey(
                 mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
-                storage = FileSystemStorage(baseDir)
+                storage = storage
             ))
         } else {
+            val storage = getStorage()
             val wallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
             if (wallet == null) {
                 return null
             }
-            val baseDir = File(Env.getApp().filesDir, "wallet")
-            val backupProvider = BackupCryptoProvider(SeedPhraseKey(
-                mnemonicString = (wallet as BackupCryptoProvider).getMnemonic(),
+            return BackupCryptoProvider(SeedPhraseKey(
+                mnemonicString = wallet.mnemonic(),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
-                storage = FileSystemStorage(baseDir)
+                storage = storage
             ))
-            return backupProvider
         }
     }
 
     fun getSwitchAccountCryptoProvider(switchAccount: LocalSwitchAccount): CryptoProvider? {
         if (switchAccount.prefix.isNullOrBlank().not()) {
-            val baseDir = File(Env.getApp().filesDir, "wallet")
-            val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
+            val storage = getStorage()
+            val privateKey = PrivateKey.create(storage)
             return BackupCryptoProvider(SeedPhraseKey(
                 mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
-                storage = FileSystemStorage(baseDir)
+                storage = storage
             ))
         } else {
+            val storage = getStorage()
             val wallet = AccountWalletManager.getHDWalletByUID(switchAccount.userId ?: "")
             if (wallet == null) {
                 return null
             }
-            val baseDir = File(Env.getApp().filesDir, "wallet")
-            val backupProvider = BackupCryptoProvider(SeedPhraseKey(
-                mnemonicString = (wallet as BackupCryptoProvider).getMnemonic(),
+            return BackupCryptoProvider(SeedPhraseKey(
+                mnemonicString = wallet.mnemonic(),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
-                storage = FileSystemStorage(baseDir)
+                storage = storage
             ))
-            return backupProvider
         }
     }
 
