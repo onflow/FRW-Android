@@ -59,12 +59,12 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowAddress
 import org.onflow.flow.models.hexToBytes
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
+import org.onflow.flow.models.FlowAddress
 import org.web3j.crypto.StructuredDataEncoder
 import java.lang.reflect.Type
 import java.util.zip.GZIPInputStream

@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
 import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
@@ -10,6 +8,8 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.FlowAddress
 
 private const val PRE_AUTHZ_REPLACEMENT = "#pre-authz"
 private const val ADDRESS_REPLACEMENT = "#address"
@@ -285,7 +285,7 @@ suspend fun fclSignMessageResponse(message: String?, address: String): String {
     return FCL_SIGN_MESSAGE_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
         .replace(KEY_ID_REPLACEMENT, "$keyId")
-        .replace(SIGNATURE_REPLACEMENT, cryptoProvider.signData(DomainTag.USER_DOMAIN_TAG + messageBytes))
+        .replace(SIGNATURE_REPLACEMENT, cryptoProvider.signData(DomainTag.User.bytes + messageBytes))
 }
 
 private suspend fun generateAuthnPreAuthz(): String {

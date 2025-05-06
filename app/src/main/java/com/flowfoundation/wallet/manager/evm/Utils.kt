@@ -22,13 +22,12 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
 import com.nftco.flow.sdk.cadence.toJsonElement
-import com.nftco.flow.sdk.decodeToAny
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.bytesToHex
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList

@@ -30,9 +30,9 @@ import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupVi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.nftco.flow.sdk.FlowAddress
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
+import org.onflow.flow.models.FlowAddress
 import java.io.File
 
 
@@ -149,7 +149,7 @@ class BackupCompletedFragment : Fragment() {
         GoogleDriveAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
     }
 
-    private fun setCompletedItemList(locationInfo: LocationInfo?) {
+    private suspend fun setCompletedItemList(locationInfo: LocationInfo?) {
         this.locationInfo = locationInfo
         with(binding) {
             tvOptionNote.gone()

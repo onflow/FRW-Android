@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
 import android.webkit.WebView
-import com.nftco.flow.sdk.FlowAddress
 import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
@@ -14,6 +13,7 @@ import com.flowfoundation.wallet.widgets.webview.executeJs
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSignMessageResponse
+import org.onflow.flow.models.FlowAddress
 
 fun WebView?.postMessage(message: String) {
     uiScope {

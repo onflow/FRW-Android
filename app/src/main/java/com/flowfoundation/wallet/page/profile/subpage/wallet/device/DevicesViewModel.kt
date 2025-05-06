@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.profile.subpage.wallet.device
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.R
-import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -16,6 +15,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import okhttp3.internal.filterList
+import org.onflow.flow.models.FlowAddress
 
 
 class DevicesViewModel : ViewModel() {
@@ -42,13 +42,15 @@ class DevicesViewModel : ViewModel() {
                     if (unRevokedDevice != null) {
                         val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
                         val keyId = if (unRevokedDevice.publicKey == currentKey) null else unRevokedDevice.index
-                        deviceList.add(
-                            DeviceKeyModel(
-                                deviceId = device.id,
-                                keyId = keyId,
-                                deviceModel = device
+                        if (keyId != null) {
+                            deviceList.add(
+                                DeviceKeyModel(
+                                    deviceId = device.id,
+                                    keyId = keyId.toInt(),
+                                    deviceModel = device
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
