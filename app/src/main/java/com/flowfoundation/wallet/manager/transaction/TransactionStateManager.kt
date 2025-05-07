@@ -84,7 +84,7 @@ object TransactionStateManager {
         loopState()
     }
 
-    fun getLastVisibleTransaction(): TransactionState? {
+    fun getLastVisibleTransaction(): TransactionState? { // update to use final?
         return stateData.data.toList().firstOrNull {
             (it.state < TransactionStatus.SEALED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
                     || (it.state == TransactionStatus.SEALED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)

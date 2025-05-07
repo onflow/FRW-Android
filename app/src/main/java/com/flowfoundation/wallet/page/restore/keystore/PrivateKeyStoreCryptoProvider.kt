@@ -35,7 +35,7 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04") ?: ""
+        return privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
     }
 
     override suspend fun getUserSignature(jwt: String): String {

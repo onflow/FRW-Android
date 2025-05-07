@@ -357,7 +357,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
             listOf(account.address)
         }
         else -> {
-            builder.authorizers
+            builder.authorizers ?: listOf(account.address)
         }
     }
 
@@ -394,7 +394,7 @@ suspend fun prepareWithMultiSignature(
             listOf(walletAddress)
         }
         else -> {
-            builder.authorizers
+            builder.authorizers ?: listOf(walletAddress)
         }
     }
 

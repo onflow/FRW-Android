@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.restore.keystore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flow.wallet.keys.KeyFormat
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
@@ -38,7 +39,6 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
-import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.AccountPublicKey
@@ -53,6 +53,7 @@ import java.io.File
 import com.flow.wallet.keys.PrivateKey
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.models.DomainTag
 
 
 class KeyStoreRestoreViewModel : ViewModel() {
@@ -120,6 +121,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun importPrivateKey(privateKey: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.PRIVATE_KEY
@@ -158,6 +160,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun importSeedPhrase(mnemonic: String, passphrase: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.SEED_PHRASE
@@ -710,6 +713,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val key = PrivateKey.create(storage).apply {
             importPrivateKey(privateKey.toByteArray(), KeyFormat.HEX)
         }
-        return key.sign(DomainTag.User.bytes + jwt.encodeToByteArray(), SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
+        return key.sign(DomainTag.User.bytes + jwt.encodeToByteArray(), signAlgo, hashAlgo).toHexString()
     }
 }

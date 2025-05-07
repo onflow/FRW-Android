@@ -11,6 +11,7 @@ import org.onflow.flow.AddressRegistry
 import org.onflow.flow.models.BlockHeader
 import org.onflow.flow.models.Transaction
 import org.onflow.flow.models.TransactionResult
+import org.onflow.flow.models.BlockStatus
 
 object FlowCadenceApi {
 
@@ -58,11 +59,11 @@ object FlowCadenceApi {
         }
     }
 
-    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: Boolean = true): Account {
+    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.FINAL): Account {
         return get().getAccount(address, blockHeight, sealed)
     }
 
-    suspend fun getBlockHeader(id: String?, blockHeight: String? = null, sealed: Boolean = true): BlockHeader {
+    suspend fun getBlockHeader(id: String?, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.FINAL): BlockHeader {
         return get().getBlockHeader(id, blockHeight, sealed)
     }
 
