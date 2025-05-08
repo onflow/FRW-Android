@@ -167,6 +167,12 @@ android {
     packagingOptions {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/io.netty.versions.properties', 'META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'project.properties', 'META-INF/rxjava.properties', 'META-INF/ASL2.0', 'META-INF/atomicfu.kotlin_module']
+            pickFirsts += [
+                'lib/arm64-v8a/libTrustWalletCore.so',
+                'org/bouncycastle/x509/CertPathReviewerMessages_de.properties',
+                'org/bouncycastle/x509/CertPathReviewerMessages.properties',
+                'org/bouncycastle/x509/CertPathReviewerMessages_*.properties'
+            ]
         }
     }
 
@@ -179,6 +185,8 @@ android {
 }
 
 configurations.all {
+    exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     resolutionStrategy {
         force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
         force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.0'
@@ -186,11 +194,14 @@ configurations.all {
         force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
         force 'org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1'
         force 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+        force 'com.google.protobuf:protobuf-javalite:3.22.3'
+        force 'com.google.api.grpc:proto-google-common-protos:2.0.1'
+        force 'org.bouncycastle:bcprov-jdk18on:1.77'
     }
 }
 
 dependencies {
-    api fileTree(dir: "libs", include: ["*.aar", "*.jar"])
+    api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     implementation project(':wallet')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
@@ -207,8 +218,10 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.8.8'
 
     // HD Wallet implementation
-    implementation 'com.trustwallet:wallet-core:4.3.2'
-
+    implementation('com.trustwallet:wallet-core:4.3.2') {
+        exclude group: 'com.trustwallet', module: 'wallet-core-proto'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
 
     // room https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
     implementation "androidx.room:room-runtime:2.6.1"
@@ -242,16 +255,23 @@ dependencies {
     /** Google Drive **/
     implementation('com.google.api-client:google-api-client:1.23.0') {
         exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
     implementation 'com.google.android.gms:play-services-auth:21.3.0'
-    implementation 'com.google.http-client:google-http-client:1.40.1'
-    implementation 'com.google.api-client:google-api-client-android:1.32.1'
+    implementation('com.google.http-client:google-http-client:1.40.1') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation('com.google.api-client:google-api-client-android:1.32.1') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
     implementation('com.google.oauth-client:google-oauth-client-jetty:1.31.0') {
         exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation('com.google.apis:google-api-services-drive:v3-rev110-1.23.0') {
         exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
 
@@ -277,15 +297,18 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
-//    implementation ('com.google.firebase:firebase-inappmessaging-display-ktx') {
-//        exclude group: 'com.google.protobuf', module: 'protobuf-javalite'
-//        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
-//    }
+    implementation('com.google.firebase:firebase-inappmessaging-display-ktx') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+        exclude group: 'com.google.api.grpc', module: 'proto-google-common-protos'
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
+    implementation('com.google.firebase:firebase-functions-ktx') {
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.firebase:firebase-crashlytics'
-    implementation 'com.google.firebase:firebase-functions-ktx'
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
     implementation 'com.google.firebase:firebase-appcheck'
     implementation 'com.google.firebase:firebase-appcheck-debug'
