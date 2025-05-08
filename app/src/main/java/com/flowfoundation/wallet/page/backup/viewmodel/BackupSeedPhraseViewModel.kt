@@ -25,11 +25,14 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.Env
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import wallet.core.jni.HDWallet
-
 
 class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
 
@@ -39,7 +42,17 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
 
     val mnemonicListLiveData = MutableLiveData<List<MnemonicModel>>()
 
-    private val cryptoProvider: HDWalletCryptoProvider = HDWalletCryptoProvider(HDWallet(128, ""))
+    private val cryptoProvider: HDWalletCryptoProvider = run {
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(128, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        HDWalletCryptoProvider(seedPhraseKey)
+    }
 
     private var currentTxId: String? = null
 
@@ -81,14 +94,14 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
-                        arg { uint8(it.getSignatureAlgorithm().index) }
-                        arg { uint8(it.getHashAlgorithm().index) }
+                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
                         arg { ufix64Safe(1000) }
                     }
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
@@ -113,8 +126,8 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                         AccountSyncRequest(
                             AccountKey(
                                 publicKey = it.getPublicKey(),
-                                signAlgo = it.getSignatureAlgorithm().index,
-                                hashAlgo = it.getHashAlgorithm().index,
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
                             ),
                             deviceInfo,

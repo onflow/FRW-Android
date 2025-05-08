@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.address.AddressBookViewModel

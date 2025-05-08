@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
@@ -39,7 +40,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 
 
 class MoveNFTDialog : BottomSheetDialogFragment() {
@@ -398,7 +399,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_MOVE_NFT,
             data = nft.uniqueId(),
         )

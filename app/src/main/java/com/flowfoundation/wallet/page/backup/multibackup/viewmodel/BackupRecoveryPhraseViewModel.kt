@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.page.backup.multibackup.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.network.model.BackupInfoRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseOption
+import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseState
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.BackupError
@@ -30,8 +31,18 @@ import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.utils.Env
+import java.io.File
 import wallet.core.jni.HDWallet
-
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
+import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     val createBackupCallbackLiveData = MutableLiveData<Boolean>()
@@ -40,7 +51,19 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
 
     val optionChangeLiveData = MutableLiveData<BackupRecoveryPhraseOption>()
 
-    private val backupCryptoProvider: BackupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
+    val stateLiveData = MutableLiveData<BackupRecoveryPhraseState>()
+
+    private val backupCryptoProvider: BackupCryptoProvider = run {
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(160, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        BackupCryptoProvider(seedPhraseKey)
+    }
 
     private var currentTxId: String? = null
 
@@ -86,14 +109,14 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
-                        arg { uint8(it.getSignatureAlgorithm().index) }
-                        arg { uint8(it.getHashAlgorithm().index) }
+                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
                         arg { ufix64Safe(500) }
                     }
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
@@ -118,8 +141,8 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                         AccountSyncRequest(
                             AccountKey(
                                 publicKey = it.getPublicKey(),
-                                signAlgo = it.getSignatureAlgorithm().index,
-                                hashAlgo = it.getHashAlgorithm().index,
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
                             ),
                             deviceInfo,
@@ -154,5 +177,66 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                 }
             }
         }
+    }
+
+    fun createBackup(mnemonic: String) {
+        val words = mnemonic.split(" ")
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        if (words.size == 15) {
+            BackupCryptoProvider(seedPhraseKey)
+        } else {
+            HDWalletCryptoProvider(seedPhraseKey)
+        }
+        stateLiveData.postValue(BackupRecoveryPhraseState.BACKUP_SUCCESS)
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    fun getBackupCryptoProvider(): BackupCryptoProvider {
+        val currentWallet = WalletManager.wallet() ?: throw IllegalStateException("No wallet available")
+
+        // Get the first account's address to identify the wallet
+        val walletAddress = currentWallet.accounts.values.flatten().firstOrNull()?.address
+            ?: throw IllegalStateException("No accounts available in wallet")
+            
+        // Get the crypto provider from AccountWalletManager
+        val cryptoProvider = AccountWalletManager.getHDWalletByUID(walletAddress)
+            ?: throw IllegalStateException("Failed to get crypto provider for wallet")
+            
+        // Create a new SeedPhraseKey with the mnemonic from the crypto provider
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = (cryptoProvider as BackupCryptoProvider).getMnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        return createBackupCryptoProvider(seedPhraseKey)
+    }
+
+    fun getBackupCryptoProvider(mnemonic: String): BackupCryptoProvider {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        return createBackupCryptoProvider(seedPhraseKey)
     }
 }

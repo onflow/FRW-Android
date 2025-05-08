@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.error.BaseError
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
@@ -65,7 +66,7 @@ object MixpanelManager {
 
     fun identifyUserProfile() {
         identify(
-            firebaseUid() ?: WalletManager.wallet()?.id ?: AccountManager.userInfo()?.username ?: ""
+            firebaseUid() ?: WalletManager.wallet()?.walletAddress() ?: AccountManager.userInfo()?.username ?: ""
         )
     }
 

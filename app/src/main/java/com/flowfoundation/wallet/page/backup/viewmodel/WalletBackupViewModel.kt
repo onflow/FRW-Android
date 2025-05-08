@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.backup.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.account.AccountKeyManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
@@ -11,6 +10,7 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.BackupListManager
@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.Device
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import okhttp3.internal.filterList
+import org.onflow.flow.models.FlowAddress
 
 
 class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
@@ -58,12 +59,12 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
             }
             val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
             uiScope {
-                val keys = account?.keys ?: emptyList()
+                val keys = account.keys ?: emptyList()
                 val keyList = backupKeyList.mapNotNull { info ->
-                    keys.lastOrNull { info.pubKey.publicKey == it.publicKey.base16Value && it.revoked.not() }
+                    keys.lastOrNull { info.pubKey.publicKey == it.publicKey && it.revoked.not() }
                         ?.let {
                             BackupKey(
-                                it.id,
+                                it.index.toInt(),
                                 info,
                                 isRevoking = false
                             )
@@ -96,25 +97,27 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
             val infoResponse = service.getKeyDeviceInfo()
             val keyDeviceList = infoResponse.data.result?.filter { it.backupInfo != null && it.backupInfo.type < 0 } ?: emptyList()
             val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-            val keys = account?.keys ?: emptyList()
+            val keys = account.keys ?: emptyList()
             val deviceList = mutableListOf<DeviceKeyModel>()
             deviceInfoList.forEach { device ->
                 val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
                 if (deviceKey != null) {
                     val unRevokedDevice = keys.firstOrNull {
-                        it.publicKey.base16Value ==
+                        it.publicKey ==
                                 deviceKey.pubKey.publicKey && it.revoked.not()
                     }
                     if (unRevokedDevice != null) {
                         val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
-                        val keyId = if (unRevokedDevice.publicKey.base16Value == currentKey) null else unRevokedDevice.id
-                        deviceList.add(
-                            DeviceKeyModel(
-                                deviceId = device.id,
-                                keyId = keyId,
-                                deviceModel = device
+                        val keyId = if (unRevokedDevice.publicKey == currentKey) null else unRevokedDevice.index
+                        if (keyId != null) {
+                            deviceList.add(
+                                DeviceKeyModel(
+                                    deviceId = device.id,
+                                    keyId = keyId.toInt(),
+                                    deviceModel = device
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }

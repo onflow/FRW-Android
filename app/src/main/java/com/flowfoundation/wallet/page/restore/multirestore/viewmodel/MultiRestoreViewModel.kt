@@ -3,9 +3,6 @@ package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -17,7 +14,6 @@ import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
-import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
 import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
@@ -28,7 +24,6 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
-import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.AccountKeySignature
 import com.flowfoundation.wallet.network.model.AccountSignRequest
@@ -42,7 +37,6 @@ import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreOptionMo
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.page.walletrestore.getFirebaseUid
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.InvalidKeyException
@@ -55,15 +49,23 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.library.Instabug
-import com.nftco.flow.sdk.parseErrorCode
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.KeyStoreCryptoProvider
-import io.outblock.wallet.WalletCoreException
-import io.outblock.wallet.toFormatString
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransactionWithMultiSignature
+import com.flowfoundation.wallet.utils.Env
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.TransactionStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import wallet.core.jni.HDWallet
-
+import org.onflow.flow.models.bytesToHex
+import java.io.File
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -199,17 +201,39 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
         ioScope {
             try {
-                val keyPair = KeyManager.generateKeyWithPrefix(generatePrefix(restoreUserName))
+                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val storage = FileSystemStorage(baseDir)
+                
+                // Create seed phrase key from the first mnemonic
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = mnemonicList.first(),
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,
+                    storage = storage
+                )
+                
+                // Create a new wallet using the seed phrase key
+                WalletFactory.createKeyWallet(
+                    seedPhraseKey,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    storage
+                )
+                
+                // Initialize WalletManager with the new wallet
+                WalletManager.init()
+                
+                val privateKey = PrivateKey.create(storage)
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
-                    arg { string(keyPair.public.toFormatString()) }
-                    arg { uint8(SignatureAlgorithm.ECDSA_P256.index) }
-                    arg { uint8(HashAlgorithm.SHA2_256.index) }
+                    arg { string(privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "") }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.ordinal) }
                     arg { ufix64Safe(1000) }
                 }
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                     data = ""
                 )
@@ -218,7 +242,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 pushBubbleStack(transactionState)
             } catch (e: Exception) {
                 loge(e)
-                if (e is WalletCoreException) {
+                if (e is IllegalStateException) {
                     ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
                 } else {
                     ErrorReporter.reportWithMixpanel(BackupError.MULTI_RESTORE_FAILED, e)
@@ -235,19 +259,35 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private fun syncAccountInfo() {
         ioScope {
             try {
-                val cryptoProvider = KeyStoreCryptoProvider(KeyManager.getCurrentPrefix())
+                val baseDir = File(Env.getApp().filesDir, "wallet")
+                val storage = FileSystemStorage(baseDir)
+                val privateKey = PrivateKey.create(storage)
                 val service = retrofit().create(ApiService::class.java)
-                val providers = mnemonicList.map {
-                    val words = it.split(" ")
+                
+                // Create seed phrase keys from mnemonics
+                val seedPhraseKeys = mnemonicList.map { mnemonic ->
+                    SeedPhraseKey(
+                        mnemonicString = mnemonic,
+                        passphrase = "",
+                        derivationPath = "m/44'/539'/0'/0/0",
+                        keyPair = null,
+                        storage = storage
+                    )
+                }
+                
+                // Create providers from seed phrase keys
+                val providers = seedPhraseKeys.map { seedPhraseKey ->
+                    val words = seedPhraseKey.mnemonic
                     if (words.size == 15) {
-                        BackupCryptoProvider(HDWallet(it, ""))
+                        BackupCryptoProvider(seedPhraseKey)
                     } else {
-                        HDWalletCryptoProvider(HDWallet(it, ""))
+                        HDWalletCryptoProvider(seedPhraseKey)
                     }
                 }
+                
                 val resp = service.signAccount(
                     AccountSignRequest(
-                        AccountKey(publicKey = cryptoProvider.getPublicKey()),
+                        AccountKey(publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: ""),
                         providers.map {
                             val jwt = getFirebaseJwt()
                             AccountKeySignature(
@@ -255,15 +295,15 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 signMessage = jwt,
                                 signature = it.getUserSignature(jwt),
                                 weight = it.getKeyWeight(),
-                                hashAlgo = it.getHashAlgorithm().index,
-                                signAlgo = it.getSignatureAlgorithm().index
+                                hashAlgo = it.getHashAlgorithm().ordinal,
+                                signAlgo = it.getSignatureAlgorithm().ordinal
                             )
                         }.toList()
                     )
                 )
                 if (resp.status == 200) {
                     val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-                    login(cryptoProvider) { isSuccess ->
+                    login(privateKey) { isSuccess ->
                         uiScope {
                             if (isSuccess) {
                                 MixpanelManager.accountRestore(restoreAddress, RestoreType.MULTI_BACKUP)
@@ -283,7 +323,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
-    private fun login(cryptoProvider: KeyStoreCryptoProvider, callback: (isSuccess: Boolean) -> Unit) {
+    private fun login(privateKey: PrivateKey, callback: (isSuccess: Boolean) -> Unit) {
         ioScope {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
@@ -294,15 +334,14 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
+                        val jwt = getFirebaseJwt()
                         val resp = service.login(
                             LoginRequest(
-                                signature = cryptoProvider.getUserSignature(
-                                    getFirebaseJwt()
-                                ),
+                                signature = privateKey.sign(jwt.encodeToByteArray(), SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).bytesToHex(),
                                 accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                                    publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "",
+                                    hashAlgo = HashingAlgorithm.SHA3_256.ordinal,
+                                    signAlgo = SigningAlgorithm.ECDSA_P256.ordinal
                                 ),
                                 deviceInfo = deviceInfoRequest
                             )
@@ -318,7 +357,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                         AccountManager.add(
                                             Account(
                                                 userInfo = service.userInfo().data,
-                                                prefix = KeyManager.getCurrentPrefix()
+                                                prefix = privateKey.id
                                             ),
                                             firebaseUid()
                                         )
@@ -349,14 +388,30 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     private suspend fun CadenceScript.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
-        val providers = mnemonicList.map {
-            val words = it.split(" ")
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val storage = FileSystemStorage(baseDir)
+        
+        // Create seed phrase keys from mnemonics
+        val seedPhraseKeys = mnemonicList.map { mnemonic ->
+            SeedPhraseKey(
+                mnemonicString = mnemonic,
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = storage
+            )
+        }
+        
+        // Create providers from seed phrase keys
+        val providers = seedPhraseKeys.map { seedPhraseKey ->
+            val words = seedPhraseKey.mnemonic
             if (words.size == 15) {
-                BackupCryptoProvider(HDWallet(it, ""))
+                BackupCryptoProvider(seedPhraseKey)
             } else {
-                HDWalletCryptoProvider(HDWallet(it, ""))
+                HDWalletCryptoProvider(seedPhraseKey)
             }
         }
+        
         return try {
             sendTransactionWithMultiSignature(providers = providers, builder = {
                 args.build().forEach { arg(it) }
@@ -383,6 +438,55 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 currentTxId = null
                 syncAccountInfo()
             }
+        }
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    private fun restoreFromMnemonic(mnemonic: String) {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        createBackupCryptoProvider(seedPhraseKey)
+        try {
+            // Add the mnemonic to the transaction list
+            addMnemonicToTransaction(mnemonic)
+            restoreWallet()
+        } catch (e: Exception) {
+            loge(e)
+            ErrorReporter.reportWithMixpanel(BackupError.MNEMONIC_RESTORE_FAILED, e)
+            restoreFailed()
+        }
+    }
+
+    private fun restoreFromKeystore(keystore: String) {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = keystore,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        createBackupCryptoProvider(seedPhraseKey)
+        try {
+            // Add the keystore to the transaction list
+            addMnemonicToTransaction(keystore)
+            restoreWallet()
+        } catch (e: Exception) {
+            loge(e)
+            ErrorReporter.reportWithMixpanel(BackupError.KEYSTORE_RESTORE_FAILED, e)
+            restoreFailed()
         }
     }
 }

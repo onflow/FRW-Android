@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.ApiService

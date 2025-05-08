@@ -1,21 +1,25 @@
 package com.flowfoundation.wallet.page.restore.keystore
 
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.keys.KeyFormat
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.google.gson.Gson
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import io.outblock.wallet.CryptoProvider
-
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
+import org.onflow.flow.models.SigningAlgorithm
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoProvider {
 
     private var keyStoreAddress: KeystoreAddress = Gson().fromJson(keyStoreInfo, KeystoreAddress::class.java)
+    private val privateKey: PrivateKey by lazy {
+        val storage = getStorage()
+        PrivateKey.create(storage).apply {
+            importPrivateKey(keyStoreAddress.privateKey.toByteArray(), KeyFormat.HEX)
+        }
+    }
 
     fun getKeyStoreInfo(): String {
         return keyStoreInfo
@@ -29,35 +33,41 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
         return keyStoreAddress.address
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return keyStoreAddress.publicKey
+        return privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override suspend fun getUserSignature(jwt: String): String {
+        return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
-        return getSigner().sign(data).bytesToHex()
+    @OptIn(ExperimentalStdlibApi::class)
+    override suspend fun signData(data: ByteArray): String {
+        return privateKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
     }
 
     override fun getSigner(): Signer {
-        checkSecurityProvider()
-        updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                keyStoreAddress.privateKey, getSignatureAlgorithm()
-            ),
-            hashAlgo = getHashAlgorithm()
-        )
+        return object : Signer {
+            override var address: String = keyStoreAddress.address
+            override var keyIndex: Int = 0
+            
+            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
+                return privateKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+            }
+
+            override suspend fun sign(bytes: ByteArray): ByteArray {
+                return privateKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+            }
+        }
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.fromCadenceIndex(keyStoreAddress.hashAlgo)
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.SHA3_256
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.fromCadenceIndex(keyStoreAddress.signAlgo)
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.ECDSA_P256
     }
 
     override fun getKeyWeight(): Int {

@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_CHECK_FINISH
 import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.LocationInfo
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupFailedDialog
@@ -30,8 +31,15 @@ import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupVi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.nftco.flow.sdk.FlowAddress
-import wallet.core.jni.HDWallet
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.ioScope
+import org.onflow.flow.models.FlowAddress
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
+import java.io.File
 
 
 class BackupCompletedFragment : Fragment() {
@@ -98,7 +106,9 @@ class BackupCompletedFragment : Fragment() {
         )
         backupViewModel = ViewModelProvider(this.requireActivity())[MultiBackupViewModel::class.java].apply {
             locationInfoLiveData.observe(viewLifecycleOwner) { info ->
-                setCompletedItemList(info)
+                ioScope {
+                    setCompletedItemList(info)
+                }
             }
             getLocationInfo()
         }
@@ -147,7 +157,7 @@ class BackupCompletedFragment : Fragment() {
         GoogleDriveAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
     }
 
-    private fun setCompletedItemList(locationInfo: LocationInfo?) {
+    private suspend fun setCompletedItemList(locationInfo: LocationInfo?) {
         this.locationInfo = locationInfo
         with(binding) {
             tvOptionNote.gone()
@@ -168,18 +178,50 @@ class BackupCompletedFragment : Fragment() {
         }
     }
 
-    private fun checkRecoveryPhrase(item: BackupCompletedItem) {
+    private suspend fun checkRecoveryPhrase(item: BackupCompletedItem) {
         isRecoveryPhraseCheckLoading = true
         isRecoveryPhraseBackupSuccess = false
-        val backupProvider = BackupCryptoProvider(HDWallet(item.mnemonic, ""))
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = item.mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
 
-        val blockAccount = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-        isRecoveryPhraseBackupSuccess = blockAccount?.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey.base16Value } != null
+        val blockAccount = FlowAddress(WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty()).lastBlockAccount()
+        isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey } != null
         binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
             setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
         })
         isRecoveryPhraseCheckLoading = false
         checkLoadingStatus()
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    private fun uploadToChain() {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address ?: "",
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+        // ... existing code ...
+    // to-do
+
     }
 
     override fun onDestroyView() {

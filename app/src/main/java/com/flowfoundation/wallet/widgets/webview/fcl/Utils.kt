@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.widgets.webview.fcl
 
 import android.webkit.WebView
 import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse

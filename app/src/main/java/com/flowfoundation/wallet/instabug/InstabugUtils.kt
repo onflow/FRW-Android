@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.instabug.library.Feature
 import com.instabug.library.Instabug
 import com.instabug.library.IssueType

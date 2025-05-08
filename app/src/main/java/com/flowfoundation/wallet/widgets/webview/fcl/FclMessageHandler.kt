@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
@@ -32,6 +33,8 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclService
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSignMessageResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSimpleResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.toAuthzTransaction
+import com.ionspin.kotlin.bignum.integer.toBigInteger
+import org.onflow.flow.infrastructure.Cadence
 import java.lang.reflect.Type
 
 private val TAG = FclMessageHandler::class.java.simpleName
@@ -232,9 +235,24 @@ class FclMessageHandler(
     }
 
     private suspend fun signEnvelope(fcl: FclAuthzResponse, webView: WebView, callback: () -> Unit) {
+        val voucher = fcl.body.voucher
+        val transaction = org.onflow.flow.models.Transaction(
+            script = voucher.cadence ?: "",
+            arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
+            referenceBlockId = voucher.refBlock ?: "",
+            gasLimit = (voucher.computeLimit ?: 9999).toBigInteger(),
+            payer = voucher.payer ?: "",
+            proposalKey = org.onflow.flow.models.ProposalKey(
+                address = voucher.proposalKey.address ?: "",
+                keyIndex = voucher.proposalKey.keyId ?: 0,
+                sequenceNumber = (voucher.proposalKey.sequenceNum ?: 0).toBigInteger()
+            ),
+            authorizers = voucher.authorizers ?: emptyList()
+        )
+
         val response = executeHttpFunction(
             FUNCTION_SIGN_AS_PAYER, PayerSignable(
-                transaction = fcl.body.voucher,
+                transaction = transaction,
                 message = PayerSignable.Message(fcl.body.message)
             )
         )

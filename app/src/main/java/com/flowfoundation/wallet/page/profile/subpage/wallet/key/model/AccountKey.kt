@@ -1,19 +1,19 @@
 package com.flowfoundation.wallet.page.profile.subpage.wallet.key.model
 
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowPublicKey
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
+import org.onflow.flow.models.AccountPublicKey
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 
 data class AccountKey(
     @SerializedName("id")
     val id: Int = -1,
     @SerializedName("publicKey")
-    val publicKey: FlowPublicKey,
+    val publicKey: AccountPublicKey,
     @SerializedName("signAlgo")
-    val signAlgo: SignatureAlgorithm,
+    val signAlgo: SigningAlgorithm,
     @SerializedName("hashAlgo")
-    val hashAlgo: HashAlgorithm,
+    val hashAlgo: HashingAlgorithm,
     @SerializedName("weight")
     val weight: Int,
     @SerializedName("sequenceNumber")

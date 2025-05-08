@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.network
 
 import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
-import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
 import okhttp3.ResponseBody

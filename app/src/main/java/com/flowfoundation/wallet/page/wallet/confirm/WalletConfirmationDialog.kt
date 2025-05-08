@@ -15,7 +15,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.R
@@ -140,7 +140,7 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
             val transactionState = TransactionState(
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                 data = ""
             )

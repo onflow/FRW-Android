@@ -7,7 +7,7 @@ import android.content.IntentFilter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS
@@ -33,7 +33,14 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import java.io.File
 import wallet.core.jni.HDWallet
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
 
 
 class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
@@ -85,8 +92,25 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun createBackup() {
-        backupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(160, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        createBackupCryptoProvider(seedPhraseKey)
         backupStateLiveData.postValue(BackupDropboxState.UPLOAD_BACKUP)
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey) {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        backupCryptoProvider = BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     fun uploadToChain() {
@@ -95,14 +119,14 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
-                        arg { uint8(it.getSignatureAlgorithm().index) }
-                        arg { uint8(it.getHashAlgorithm().index) }
+                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
                         arg { ufix64Safe(500) }
                     }
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
@@ -138,8 +162,8 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                         AccountSyncRequest(
                             AccountKey(
                                 publicKey = it.getPublicKey(),
-                                signAlgo = it.getSignatureAlgorithm().index,
-                                hashAlgo = it.getHashAlgorithm().index,
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
                             ),
                             deviceInfo,

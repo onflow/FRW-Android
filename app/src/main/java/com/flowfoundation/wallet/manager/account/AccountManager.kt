@@ -1,6 +1,8 @@
 package com.flowfoundation.wallet.manager.account
 
 import android.widget.Toast
+import com.flow.wallet.KeyManager
+import com.flow.wallet.toFormatString
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
@@ -36,6 +38,7 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.setUploadedAddressSet
@@ -45,8 +48,6 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import io.outblock.wallet.KeyManager
-import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -55,29 +56,56 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import com.flow.wallet.wallet.WalletFactory
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.ChainId
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 object AccountManager {
-
     private val TAG = AccountManager::class.java.simpleName
-
     private val accounts = mutableListOf<Account>()
     private var uploadedAddressSet = mutableSetOf<String>()
-    private val listeners = CopyOnWriteArrayList<WeakReference<OnUserInfoReload>>()
+    private val listeners = CopyOnWriteArrayList<WeakReference<OnAccountUpdate>>()
+    private val userInfoListeners = CopyOnWriteArrayList<WeakReference<OnUserInfoUpdate>>()
+    private val walletDataListeners = CopyOnWriteArrayList<WeakReference<OnWalletDataUpdate>>()
+    private val userInfoReloadListeners = CopyOnWriteArrayList<WeakReference<OnUserInfoReload>>()
     private val queryService by lazy {
         retrofitWithHost("https://production.key-indexer.flow.com").create(OtherHostService::class.java)
     }
     private val userPrefixes = mutableListOf<UserPrefix>()
     private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
+    private var currentAccount: Account? = null
+    private var currentWallet: com.flow.wallet.wallet.Wallet? = null
+
     fun init() {
         accounts.clear()
         userPrefixes.clear()
         switchAccounts.clear()
         ioScope {
-            migratePrefixInfo(migrateAccount())?.let {
-                accounts.addAll(it)
+            try {
+                val accountList = AccountCacheManager.read()
+                if (!accountList.isNullOrEmpty()) {
+                    val account = accountList.first()
+                    val seedPhraseKey = SeedPhraseKey(
+                        mnemonicString = account.wallet?.walletAddress() ?: "",
+                        passphrase = "",
+                        derivationPath = "m/44'/539'/0'/0/0",
+                        keyPair = null,
+                        storage = getStorage()
+                    )
+                    currentWallet = WalletFactory.createKeyWallet(
+                        seedPhraseKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        getStorage()
+                    )
+                    currentAccount = account
+                    dispatchListeners(account)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "init error: $e")
+                ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
             }
-            initEmojiAndEVMInfo()
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
     }
@@ -86,7 +114,7 @@ object AccountManager {
         val oldAccounts = oldAccountsCache()
         val newAccounts = AccountCacheManager.read()
         if (oldAccounts.isEmpty()) {
-            return newAccounts
+            return newAccounts?.toList()
         }
         if (newAccounts == null) {
             return oldAccounts
@@ -120,7 +148,7 @@ object AccountManager {
                 if (userPrefixInfo != null) {
                     account.prefix = userPrefixInfo.prefix
                 } else {
-                    val address = account.wallet?.mainnetWallet()?.address()
+                    val address = account.wallet?.walletAddress()
                     val prefix = addressPrefixMap[address]
                     if (!prefix.isNullOrEmpty()) {
                         account.prefix = prefix
@@ -159,7 +187,7 @@ object AccountManager {
                     if (switchAccounts.any { it.address == account.address }) {
                         return@let
                     }
-                    if (accountList != null && accountList.any { it.wallet?.mainnetWallet()?.address() == account.address }) {
+                    if (accountList != null && accountList.any { it.wallet?.walletAddress() == account.address }) {
                         return@let
                     }
                     var count = switchAccounts.size
@@ -197,9 +225,9 @@ object AccountManager {
         }
         val jobs = prefixes.map { prefix ->
             async {
-                val publicKey = KeyManager.getPublicKeyByPrefix(prefix).toFormatString()
-                if (publicKey.isNotEmpty()) {
-                    val response = queryService.queryAddress(publicKey)
+                val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
+                if (publicKey != null) {
+                    val response = queryService.queryAddress(publicKey.toFormatString())
                     response.accounts.forEach {
                         map[it.address] = prefix
                     }
@@ -226,11 +254,11 @@ object AccountManager {
         initEmojiAndEVMInfo()
     }
 
-    fun get(): Account? {
-        return accounts.toList().firstOrNull { it.isActive }
-    }
+    fun get(): Account? = currentAccount
 
-    fun userInfo() = get()?.userInfo
+    fun wallet(): com.flow.wallet.wallet.Wallet? = currentWallet
+
+    fun userInfo(): UserInfoData? = currentAccount?.userInfo
 
     fun evmAddressData() = get()?.evmAddressData
 
@@ -260,19 +288,32 @@ object AccountManager {
     }
 
     fun updateUserInfo(userInfo: UserInfoData) {
-        list().firstOrNull { it.userInfo.username == userInfo.username }?.userInfo = userInfo
-        AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+        ioScope {
+            try {
+                val account = currentAccount ?: return@ioScope
+                account.userInfo = userInfo
+                AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+                dispatchUserInfoListeners(userInfo)
+            } catch (e: Exception) {
+                loge(TAG, "updateUserInfo error: $e")
+                ErrorReporter.reportWithMixpanel(AccountError.UPDATE_USER_INFO_FAILED, e)
+            }
+        }
     }
 
     fun updateWalletInfo(wallet: WalletListData) {
-        val account: Account? = list().firstOrNull { it.userInfo.username == wallet.username }
-        if (account == null) {
-            addAccountWithWallet(wallet)
-        } else {
-            account.wallet = wallet
-            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
-            WalletManager.walletUpdate()
-            uploadPushToken()
+        ioScope {
+            try {
+                val account = currentAccount ?: return@ioScope
+                account.wallet = wallet
+                AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+                WalletManager.walletUpdate()
+                uploadPushToken()
+                dispatchWalletDataListeners(wallet)
+            } catch (e: Exception) {
+                loge(TAG, "updateWalletInfo error: $e")
+                ErrorReporter.reportWithMixpanel(AccountError.UPDATE_WALLET_INFO_FAILED, e)
+            }
         }
     }
 
@@ -307,14 +348,26 @@ object AccountManager {
         return userPrefixes.find { it.userId == userId }?.prefix ?: KeyManager.getCurrentPrefix()
     }
 
-    fun addListener(callback: OnUserInfoReload) {
-        uiScope { this.listeners.add(WeakReference(callback)) }
+    fun addListener(callback: OnAccountUpdate) {
+        uiScope { listeners.add(WeakReference(callback)) }
+    }
+
+    fun addUserInfoListener(callback: OnUserInfoUpdate) {
+        uiScope { userInfoListeners.add(WeakReference(callback)) }
+    }
+
+    fun addWalletDataListener(callback: OnWalletDataUpdate) {
+        uiScope { walletDataListeners.add(WeakReference(callback)) }
+    }
+
+    fun addUserInfoReloadListener(callback: OnUserInfoReload) {
+        uiScope { userInfoReloadListeners.add(WeakReference(callback)) }
     }
 
     private fun onUserInfoReload() {
         uiScope {
-            listeners.removeAll { it.get() == null}
-            listeners.forEach {it.get()?.onUserInfoReload()}
+            userInfoReloadListeners.removeAll { it.get() == null}
+            userInfoReloadListeners.forEach {it.get()?.onUserInfoReload()}
         }
     }
 
@@ -359,7 +412,6 @@ object AccountManager {
                 }
                 onFinish()
             }
-
         }
     }
 
@@ -383,7 +435,52 @@ object AccountManager {
                 }
                 onFinish()
             }
+        }
+    }
 
+    private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
+        if (!setToAnonymous()) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
+            callback.invoke(false)
+            return
+        }
+        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+        val service = retrofit().create(ApiService::class.java)
+        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(account)
+        if (cryptoProvider == null) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
+            callback.invoke(false)
+            return
+        }
+        val resp = service.login(
+            LoginRequest(
+                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+                accountKey = AccountKey(
+                    publicKey = cryptoProvider.getPublicKey(),
+                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                ),
+                deviceInfo = deviceInfoRequest
+            )
+        )
+        if (resp.data?.customToken.isNullOrBlank()) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+            callback.invoke(false)
+        } else {
+            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                if (isSuccess) {
+                    setRegistered()
+                    if (account.prefix == null && account.keyStoreInfo == null) {
+                        Wallet.store().resume()
+                    }
+                    callback.invoke(true)
+                } else {
+                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                    callback.invoke(false)
+                }
+            }
         }
     }
 
@@ -408,8 +505,8 @@ object AccountManager {
                 signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
                 accountKey = AccountKey(
                     publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
+                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
                 ),
                 deviceInfo = deviceInfoRequest
             )
@@ -439,58 +536,45 @@ object AccountManager {
         }
     }
 
-    private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
-        if (!setToAnonymous()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
-            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-        val service = retrofit().create(ApiService::class.java)
-        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(account)
-        if (cryptoProvider == null) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
-            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val resp = service.login(
-            LoginRequest(
-                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                accountKey = AccountKey(
-                    publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().index,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().index
-                ),
-                deviceInfo = deviceInfoRequest
-            )
-        )
-        if (resp.data?.customToken.isNullOrBlank()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
-            callback.invoke(false)
-        } else {
-            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                if (isSuccess) {
-                    setRegistered()
-                    if (account.prefix == null && account.keyStoreInfo == null) {
-                        Wallet.store().resume()
-                    }
-                    callback.invoke(true)
-                } else {
-                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
-                    callback.invoke(false)
-                }
-            }
-        }
-    }
-
     private suspend fun setToAnonymous(): Boolean {
         if (!isAnonymousSignIn()) {
             Firebase.auth.signOut()
             return signInAnonymously()
         }
         return true
+    }
+
+    private fun dispatchListeners(account: Account) {
+        logd(TAG, "dispatchListeners: $account")
+        uiScope {
+            listeners.removeAll { it.get() == null }
+            listeners.forEach { it.get()?.onAccountUpdate(account) }
+        }
+    }
+
+    private fun dispatchUserInfoListeners(userInfo: UserInfoData) {
+        logd(TAG, "dispatchUserInfoListeners: $userInfo")
+        uiScope {
+            userInfoListeners.removeAll { it.get() == null }
+            userInfoListeners.forEach { it.get()?.onUserInfoUpdate(userInfo) }
+        }
+    }
+
+    private fun dispatchWalletDataListeners(wallet: WalletListData) {
+        logd(TAG, "dispatchWalletDataListeners: $wallet")
+        uiScope {
+            walletDataListeners.removeAll { it.get() == null }
+            walletDataListeners.forEach { it.get()?.onWalletDataUpdate(wallet) }
+        }
+    }
+
+    fun clear() {
+        currentAccount = null
+        currentWallet = null
+        accounts.clear()
+        userPrefixes.clear()
+        switchAccounts.clear()
+        AccountCacheManager.cache(emptyList())
     }
 }
 
@@ -526,6 +610,14 @@ class UserPrefixes: ArrayList<UserPrefix>()
 
 class Accounts : ArrayList<Account>()
 
+interface OnAccountUpdate {
+    fun onAccountUpdate(account: Account)
+}
+
+interface OnUserInfoUpdate {
+    fun onUserInfoUpdate(userInfo: UserInfoData)
+}
+
 interface OnUserInfoReload {
     fun onUserInfoReload()
 }
@@ -542,7 +634,7 @@ private fun oldAccountsCache(): List<Account> {
     return accounts
 }
 
-private fun accountsCache(): Accounts? {
+private fun accountsCache(): List<Account>? {
     val file = File(DATA_PATH, "${"accounts".hashCode()}")
     val str = file.read()
     if (str.isBlank()) {
@@ -550,7 +642,7 @@ private fun accountsCache(): Accounts? {
     }
 
     try {
-        return Gson().fromJson(str, Accounts::class.java)
+        return Gson().fromJson(str, Accounts::class.java)?.toList()
     } catch (e: Exception) {
         e.printStackTrace()
     }

@@ -7,7 +7,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.retrofit
-import com.nftco.flow.sdk.bytesToHex
+import org.onflow.flow.models.bytesToHex
 import io.outblock.wallet.KeyManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

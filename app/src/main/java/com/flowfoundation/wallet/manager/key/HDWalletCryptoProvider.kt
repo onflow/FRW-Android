@@ -1,70 +1,61 @@
 package com.flowfoundation.wallet.manager.key
 
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
-import io.outblock.wallet.CryptoProvider
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
-import wallet.core.jni.Hash
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.Signer
+import org.onflow.flow.models.SigningAlgorithm
 
-class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
+class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
 
     fun getMnemonic(): String {
-        return wallet.mnemonic()
+        return seedPhraseKey.mnemonic.joinToString(" ")
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-        val publicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex()
-        return publicKey.removePrefix("04")
+        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun getPrivateKey(): String {
-        return wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH).data().bytesToHex()
+        return seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override suspend fun getUserSignature(jwt: String): String {
+        return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
-        val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-        val hashedData = Hash.sha256(data)
-        val signature = privateKey.sign(hashedData, Curve.SECP256K1).dropLast(1).toByteArray()
-        return signature.bytesToHex()
+    @OptIn(ExperimentalStdlibApi::class)
+    override suspend fun signData(data: ByteArray): String {
+        return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
     }
 
     override fun getSigner(): Signer {
-        checkSecurityProvider()
-        updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                getPrivateKey(),
-                getSignatureAlgorithm()
-            ),
-            hashAlgo = getHashAlgorithm()
-        )
+        return object : Signer {
+            override var address: String = ""
+            override var keyIndex: Int = 0
+            
+            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+            }
+
+            override suspend fun sign(bytes: ByteArray): ByteArray {
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+            }
+        }
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return HashingAlgorithm.SHA3_256
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_SECP256k1
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return SigningAlgorithm.ECDSA_P256
     }
 
     override fun getKeyWeight(): Int {
         return 1000
-    }
-
-    companion object {
-        private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
     }
 }

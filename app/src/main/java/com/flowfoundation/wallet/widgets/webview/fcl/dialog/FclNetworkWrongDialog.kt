@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -73,7 +72,6 @@ class FclNetworkWrongDialog : BottomSheetDialogFragment() {
                 delay(200)
                 refreshChainNetworkSync()
                 doNetworkChangeTask()
-                FlowApi.refreshConfig()
                 FlowCadenceApi.refreshConfig()
                 uiScope {
                     FlowLoadingDialog(requireContext()).show()

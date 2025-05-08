@@ -29,7 +29,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class EnableEVMActivity : BaseActivity() {
@@ -93,7 +93,7 @@ class EnableEVMActivity : BaseActivity() {
                 val transactionState = TransactionState(
                     transactionId = txId!!,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.UNKNOWN.num,
+                    state = TransactionStatus.UNKNOWN.ordinal,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                     data = ""
                 )

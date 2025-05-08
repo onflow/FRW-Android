@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
 import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog

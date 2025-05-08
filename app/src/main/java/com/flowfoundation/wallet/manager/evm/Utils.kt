@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
@@ -22,14 +23,13 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.cadence.toJsonElement
-import com.nftco.flow.sdk.decodeToAny
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.onflow.flow.models.FlowAddress
+import org.onflow.flow.models.bytesToHex
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
@@ -188,7 +188,7 @@ fun refreshBalance(value: Float) {
     }
 }
 
-fun signTypedData(data: ByteArray): String {
+suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
@@ -207,7 +207,7 @@ fun signTypedData(data: ByteArray): String {
     return Numeric.toHexString(encoded)
 }
 
-fun signEthereumMessage(message: String): String {
+suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val address = WalletManager.wallet()?.walletAddress() ?: return ""
     val flowAddress = FlowAddress(address)

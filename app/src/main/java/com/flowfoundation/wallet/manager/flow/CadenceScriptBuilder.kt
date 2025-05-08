@@ -1,10 +1,9 @@
 package com.flowfoundation.wallet.manager.flow
 
-import com.nftco.flow.sdk.AddressRegistry
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.FlowChainId
+import org.onflow.flow.AddressRegistry
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.FlowAddress
 
 
 class CadenceScriptBuilder {
@@ -31,10 +30,10 @@ class CadenceScriptBuilder {
 
     fun script(chainId: ChainId = _chainId, addresses: Map<String, FlowAddress> = mapOf(), code: () -> String) = this.script(code(), chainId, addresses)
 
-    private fun getFlowChainId(chainId: ChainId): FlowChainId {
+    private fun getFlowChainId(chainId: ChainId): ChainId {
         return when (chainId) {
-            ChainId.Testnet -> FlowChainId.TESTNET
-            else -> FlowChainId.MAINNET
+            ChainId.Testnet -> ChainId.Testnet
+            else -> ChainId.Mainnet
         }
     }
 

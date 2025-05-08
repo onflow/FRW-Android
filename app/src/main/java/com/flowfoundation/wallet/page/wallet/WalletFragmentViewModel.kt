@@ -2,15 +2,18 @@ package com.flowfoundation.wallet.page.wallet
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.Balance
 import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.account.OnAccountUpdate
 import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
 import com.flowfoundation.wallet.manager.account.OnUserInfoReload
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -22,6 +25,9 @@ import com.flowfoundation.wallet.manager.price.CurrencyUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.network.model.BlockchainData
+import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
@@ -36,16 +42,13 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate,
+class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate,
     TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener,
     OnUserInfoReload {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
-
     val headerLiveData = MutableLiveData<WalletHeaderModel?>()
-
     private val dataList = CopyOnWriteArrayList<WalletCoinItemModel>()
-
     private var needReload = true
 
     init {
@@ -128,7 +131,19 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
             logd(TAG, "loadWallet :: null")
         } else {
             logd(TAG, "loadWallet :: wallet")
-            updateWalletHeader(WalletManager.wallet())
+            val wallet = WalletManager.wallet()
+            val walletData = WalletListData(
+                id = "",
+                username = "",
+                wallets = listOf(WalletData(
+                    blockchain = listOf(BlockchainData(
+                        address = wallet?.walletAddress() ?: "",
+                        chainId = chainNetWorkString()
+                    )),
+                    name = ""
+                ))
+            )
+            updateWalletHeader(wallet = walletData)
             needReload = true
             loadCoinInfo(isRefresh)
         }
@@ -241,6 +256,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, OnBalanceUpdate
                 balance = dataList.toList().map { it.balance * it.coinRate }.fold(BigDecimal.ZERO) { sum, value -> sum + value }
                 count?.let { coinCount = it }
             })
+        }
+    }
+
+    override fun onAccountUpdate(account: Account) {
+        viewModelIOScope(this) {
+            loadWallet(true)
         }
     }
 

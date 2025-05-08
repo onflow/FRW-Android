@@ -27,6 +27,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
@@ -40,7 +41,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import kotlinx.serialization.Serializable
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
@@ -110,7 +111,9 @@ object EVMWalletManager {
     }
 
     private fun getNetworkAddress(network: String? = chainNetWorkString()): String? {
-       return WalletManager.wallet()?.chainNetworkWallet(network)?.address()
+        return WalletManager.wallet()?.let {
+            AccountManager.get()?.wallet?.chainNetworkWallet(network)?.address()
+        }
     }
 
     fun showEVMAccount(network: String?): Boolean {
@@ -425,7 +428,7 @@ object EVMWalletManager {
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_MOVE_NFT,
             data = nft.uniqueId(),
         )

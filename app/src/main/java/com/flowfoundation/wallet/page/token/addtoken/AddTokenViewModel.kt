@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.page.token.addtoken
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
@@ -73,7 +73,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
                 val transactionState = TransactionState(
                     transactionId = transactionId,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ADD_TOKEN,
                     data = Gson().toJson(coin)
                 )

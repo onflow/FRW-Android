@@ -19,7 +19,13 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import wallet.core.jni.HDWallet
-
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import java.io.File
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
 
 class DropboxAuthActivity : AppCompatActivity() {
     private val isLogin by lazy { intent.getBooleanExtra(EXTRA_LOGIN, false) }
@@ -31,7 +37,6 @@ class DropboxAuthActivity : AppCompatActivity() {
     }
     private val mnemonic by lazy { intent.getStringExtra(EXTRA_MNEMONIC) }
     private val clientIdentifier: String = "db-${BuildConfig.DROPBOX_APP_KEY}"
-
 
     private var isAwaitingResult = false
     private var dbxClient: DbxClientV2? = null
@@ -92,9 +97,31 @@ class DropboxAuthActivity : AppCompatActivity() {
             try {
                 when {
                     isViewBackup -> viewFromDropbox(dbxClient)
-                    isMultiBackup -> uploadDropboxBackup(dbxClient, BackupCryptoProvider(HDWallet(mnemonic, "")))
+                    isMultiBackup -> {
+                        val baseDir = File(Env.getApp().filesDir, "wallet")
+                        val storage = FileSystemStorage(baseDir)
+                        val seedPhraseKey = SeedPhraseKey(
+                            mnemonicString = mnemonic ?: "",
+                            passphrase = "",
+                            derivationPath = "m/44'/539'/0'/0/0",
+                            keyPair = null,
+                            storage = storage
+                        )
+                        uploadDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey))
+                    }
                     isMultiRestoreWithSignOut -> restoreFromDropbox(dbxClient)
-                    isCheckBackup -> checkDropboxBackup(dbxClient, BackupCryptoProvider(HDWallet(mnemonic, "")))
+                    isCheckBackup -> {
+                        val baseDir = File(Env.getApp().filesDir, "wallet")
+                        val storage = FileSystemStorage(baseDir)
+                        val seedPhraseKey = SeedPhraseKey(
+                            mnemonicString = mnemonic ?: "",
+                            passphrase = "",
+                            derivationPath = "m/44'/539'/0'/0/0",
+                            keyPair = null,
+                            storage = storage
+                        )
+                        checkDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey))
+                    }
                     else -> notifyLoginFinished(true)
                 }
                 finish()
@@ -111,6 +138,24 @@ class DropboxAuthActivity : AppCompatActivity() {
                 putExtra(EXTRA_SUCCESS, success)
             }
         )
+    }
+
+    private suspend fun uploadDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        uploadDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
+    }
+
+    private suspend fun checkDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        checkDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
     }
 
     companion object {
