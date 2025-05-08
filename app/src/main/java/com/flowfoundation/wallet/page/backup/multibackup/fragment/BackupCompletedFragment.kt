@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_CHECK_FINISH
 import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.LocationInfo
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupFailedDialog
@@ -36,7 +37,9 @@ import com.flowfoundation.wallet.utils.ioScope
 import org.onflow.flow.models.FlowAddress
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
+import java.io.File
 
 
 class BackupCompletedFragment : Fragment() {
@@ -188,7 +191,7 @@ class BackupCompletedFragment : Fragment() {
         )
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)
 
-        val blockAccount = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
+        val blockAccount = FlowAddress(WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty()).lastBlockAccount()
         isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey } != null
         binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
             setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
@@ -209,7 +212,7 @@ class BackupCompletedFragment : Fragment() {
 
     private fun uploadToChain() {
         val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = Wallet.store().mnemonic(),
+            mnemonicString = WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address ?: "",
             passphrase = "",
             derivationPath = "m/44'/539'/0'/0/0",
             keyPair = null,

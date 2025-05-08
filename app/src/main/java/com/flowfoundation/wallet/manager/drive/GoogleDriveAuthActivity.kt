@@ -34,6 +34,7 @@ import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
 import java.io.File
 import java.util.*
@@ -200,8 +201,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         }
     }
 
-    private fun uploadGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
-        // Create a proper KeyWallet
+    private suspend fun uploadGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -210,8 +210,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
     }
 
-    private fun checkGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
-        // Create a proper KeyWallet
+    private suspend fun checkGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),

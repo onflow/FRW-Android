@@ -39,6 +39,7 @@ import java.io.File
 import wallet.core.jni.HDWallet
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
 
 
@@ -104,7 +105,6 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey) {
-        // Create a proper KeyWallet
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),

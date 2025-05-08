@@ -63,6 +63,8 @@ import org.onflow.flow.models.bytesToHex
 import java.io.File
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
@@ -200,7 +202,28 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             try {
                 val baseDir = File(Env.getApp().filesDir, "wallet")
-                val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
+                val storage = FileSystemStorage(baseDir)
+                
+                // Create seed phrase key from the first mnemonic
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = mnemonicList.first(),
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,
+                    storage = storage
+                )
+                
+                // Create a new wallet using the seed phrase key
+                val wallet = WalletFactory.createKeyWallet(
+                    seedPhraseKey,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    storage
+                )
+                
+                // Initialize WalletManager with the new wallet
+                WalletManager.init()
+                
+                val privateKey = PrivateKey.create(storage)
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
                     arg { string(privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "") }
                     arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal) }
@@ -237,23 +260,31 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             try {
                 val baseDir = File(Env.getApp().filesDir, "wallet")
-                val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
+                val storage = FileSystemStorage(baseDir)
+                val privateKey = PrivateKey.create(storage)
                 val service = retrofit().create(ApiService::class.java)
-                val providers = mnemonicList.map {
-                    val words = it.split(" ")
-                    val seedPhraseKey = SeedPhraseKey(
-                        mnemonicString = it,
+                
+                // Create seed phrase keys from mnemonics
+                val seedPhraseKeys = mnemonicList.map { mnemonic ->
+                    SeedPhraseKey(
+                        mnemonicString = mnemonic,
                         passphrase = "",
                         derivationPath = "m/44'/539'/0'/0/0",
                         keyPair = null,
-                        storage = FileSystemStorage(baseDir)
+                        storage = storage
                     )
+                }
+                
+                // Create providers from seed phrase keys
+                val providers = seedPhraseKeys.map { seedPhraseKey ->
+                    val words = seedPhraseKey.mnemonicString.split(" ")
                     if (words.size == 15) {
                         BackupCryptoProvider(seedPhraseKey)
                     } else {
                         HDWalletCryptoProvider(seedPhraseKey)
                     }
                 }
+                
                 val resp = service.signAccount(
                     AccountSignRequest(
                         AccountKey(publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: ""),
@@ -358,21 +389,29 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private suspend fun CadenceScript.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val baseDir = File(Env.getApp().filesDir, "wallet")
-        val providers = mnemonicList.map {
-            val words = it.split(" ")
-            val seedPhraseKey = SeedPhraseKey(
-                mnemonicString = it,
+        val storage = FileSystemStorage(baseDir)
+        
+        // Create seed phrase keys from mnemonics
+        val seedPhraseKeys = mnemonicList.map { mnemonic ->
+            SeedPhraseKey(
+                mnemonicString = mnemonic,
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
-                storage = FileSystemStorage(baseDir)
+                storage = storage
             )
+        }
+        
+        // Create providers from seed phrase keys
+        val providers = seedPhraseKeys.map { seedPhraseKey ->
+            val words = seedPhraseKey.mnemonicString.split(" ")
             if (words.size == 15) {
                 BackupCryptoProvider(seedPhraseKey)
             } else {
                 HDWalletCryptoProvider(seedPhraseKey)
             }
         }
+        
         return try {
             sendTransactionWithMultiSignature(providers = providers, builder = {
                 args.build().forEach { arg(it) }
@@ -403,7 +442,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
-        // Create a proper KeyWallet
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -421,7 +459,15 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             storage = getStorage()
         )
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)
-        // ... existing code ...
+        try {
+            // Add the mnemonic to the transaction list
+            addMnemonicToTransaction(mnemonic)
+            restoreWallet()
+        } catch (e: Exception) {
+            loge(e)
+            ErrorReporter.reportWithMixpanel(BackupError.MNEMONIC_RESTORE_FAILED, e)
+            restoreFailed()
+        }
     }
 
     private fun restoreFromKeystore(keystore: String) {
@@ -433,6 +479,14 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             storage = getStorage()
         )
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)
-        // ... existing code ...
+        try {
+            // Add the keystore to the transaction list
+            addMnemonicToTransaction(keystore)
+            restoreWallet()
+        } catch (e: Exception) {
+            loge(e)
+            ErrorReporter.reportWithMixpanel(BackupError.KEYSTORE_RESTORE_FAILED, e)
+            restoreFailed()
+        }
     }
 }

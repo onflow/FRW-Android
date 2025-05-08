@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.RestoreType
@@ -47,13 +46,13 @@ import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
 import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.storage.FileSystemStorage
-import com.flowfoundation.wallet.utils.Env
-import java.io.File
 import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.wallet.WalletFactory
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import org.onflow.flow.ChainId
 
 
 class KeyStoreRestoreViewModel : ViewModel() {
@@ -95,6 +94,25 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     importPrivateKey(decryptedKey, KeyFormat.RAW)
                 }
                 
+                // Create a seed phrase key from the private key
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = "",  // Empty mnemonic since we're using a private key
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = key.toKeyPair(),  // Convert PrivateKey to KeyPair
+                    storage = storage
+                )
+                
+                // Create a new wallet using the seed phrase key
+                val wallet = WalletFactory.createKeyWallet(
+                    seedPhraseKey,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    storage
+                )
+                
+                // Initialize WalletManager with the new wallet
+                WalletManager.init()
+                
                 val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
 
@@ -133,6 +151,25 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val key = PrivateKey.create(storage).apply {
                     importPrivateKey(privateKey.toByteArray(), KeyFormat.HEX)
                 }
+                
+                // Create a seed phrase key from the private key
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = "",  // Empty mnemonic since we're using a private key
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = key.toKeyPair(),  // Convert PrivateKey to KeyPair
+                    storage = storage
+                )
+                
+                // Create a new wallet using the seed phrase key
+                val wallet = WalletFactory.createKeyWallet(
+                    seedPhraseKey,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    storage
+                )
+                
+                // Initialize WalletManager with the new wallet
+                WalletManager.init()
                 
                 val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
@@ -176,6 +213,16 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     keyPair = null,
                     storage = storage
                 )
+                
+                // Create a new wallet using the seed phrase key
+                val wallet = WalletFactory.createKeyWallet(
+                    seedPhraseKey,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    storage
+                )
+                
+                // Initialize WalletManager with the new wallet
+                WalletManager.init()
                 
                 val p1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")

@@ -10,16 +10,40 @@ import com.flowfoundation.wallet.utils.getSelectedWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flow.wallet.wallet.Wallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.StorageProtocol
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
 
 object WalletManager {
-
     private var childAccountMap = mutableMapOf<String, ChildAccountList>()
-
     private var selectedWalletAddress: String = ""
+    private var currentWallet: Wallet? = null
 
     fun init() {
         ioScope {
             selectedWalletAddress = getSelectedWalletAddress().orEmpty()
+            initializeWallet()
+        }
+    }
+
+    private fun initializeWallet() {
+        val account = AccountManager.get()
+        if (account != null) {
+            val seedPhraseKey = SeedPhraseKey(
+                mnemonicString = account.wallet?.walletAddress() ?: "",
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = getStorage()
+            )
+            currentWallet = WalletFactory.createKeyWallet(
+                seedPhraseKey,
+                setOf(ChainId.Mainnet, ChainId.Testnet),
+                getStorage()
+            )
         }
     }
 
@@ -27,32 +51,32 @@ object WalletManager {
         wallet()?.let { refreshChildAccount(it) }
     }
 
-    fun wallet() = AccountManager.get()?.wallet
+    fun wallet(): Wallet? = currentWallet
 
     fun isEVMAccountSelected(): Boolean {
         return selectedWalletAddress.toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {
-        return wallet()?.walletAddress() == address
+        return wallet()?.accounts?.values?.flatten()?.any { it.address == address } == true
     }
 
     fun isChildAccountSelected(): Boolean {
-        val wallets = wallet()?.wallets
-        if (wallets.isNullOrEmpty()) {
+        val accounts = wallet()?.accounts?.values?.flatten()
+        if (accounts.isNullOrEmpty()) {
             return false
         }
-        return wallets.firstOrNull { it.address().equals(selectedWalletAddress, ignoreCase = true) } == null
+        return accounts.none { it.address.equals(selectedWalletAddress, ignoreCase = true) }
                 && isEVMAccountSelected().not()
     }
 
     fun haveChildAccount(): Boolean {
-        val accountList = childAccountList(wallet()?.walletAddress())
+        val accountList = childAccountList(wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address)
         return accountList != null && accountList.get().isNotEmpty()
     }
 
     fun childAccountList(walletAddress: String? = null): ChildAccountList? {
-        val address = (walletAddress ?: wallet()?.walletAddress()) ?: return null
+        val address = (walletAddress ?: wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address) ?: return null
         return childAccountMap[address]
     }
 
@@ -71,25 +95,27 @@ object WalletManager {
     }
 
     fun changeNetwork() {
-        wallet()?.walletAddress()?.let { selectWalletAddress(it) }
+        wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address?.let { selectWalletAddress(it) }
     }
 
-    // @return network
     fun selectWalletAddress(address: String): String {
         if (selectedWalletAddress.equals(address, ignoreCase = true)) return chainNetWorkString()
 
         selectedWalletAddress = address
         updateSelectedWalletAddress(address)
 
-        val walletData = wallet()?.wallets?.firstOrNull { it.address().equals(address, ignoreCase = true) }
-        val networkStr = if (walletData == null) {
+        val account = wallet()?.accounts?.values?.flatten()?.firstOrNull { 
+            it.address.equals(address, ignoreCase = true) 
+        }
+        
+        val networkStr = if (account == null) {
             val walletAddress = childAccountMap.values
                 .firstOrNull { child -> child.get().any { it.address.equals(address, true) } }?.address
 
-            val data = wallet()?.wallets?.firstOrNull { it.address().equals(walletAddress, ignoreCase = true) }
-
-            data?.network()
-        } else walletData.network()
+            wallet()?.accounts?.values?.flatten()?.firstOrNull { 
+                it.address.equals(walletAddress, ignoreCase = true) 
+            }?.network
+        } else account.network
 
         return networkStr ?: chainNetWorkString()
     }
@@ -101,7 +127,7 @@ object WalletManager {
             return pref
         }
 
-        return wallet()?.walletAddress().orEmpty().apply {
+        return wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty().apply {
             if (isNotBlank()) {
                 selectedWalletAddress = this
                 updateSelectedWalletAddress(this)
@@ -112,17 +138,11 @@ object WalletManager {
     fun clear() {
         selectedWalletAddress = ""
         childAccountMap.clear()
+        currentWallet = null
     }
 
-    private fun refreshChildAccount(wallet: WalletListData) {
-//        To be optimized getAllWalletChildAccount with each chain id
-//        childAccountMap = wallet.wallets?.associate {
-//            it.address().orEmpty() to ChildAccountList(it.address().orEmpty())
-//        }.orEmpty().filter {
-//            it.key.isNotBlank()
-//        }
-        // get current wallet child account
-        wallet.walletAddress()?.let {
+    private fun refreshChildAccount(wallet: Wallet) {
+        wallet.accounts?.values?.flatten()?.firstOrNull()?.address?.let {
             if (childAccountMap.contains(it)) {
                 childAccountMap[it]?.refresh()
             } else {
@@ -130,4 +150,13 @@ object WalletManager {
             }
         }
     }
+}
+
+// Extension functions for backward compatibility
+fun Wallet?.walletAddress(): String? {
+    return this?.accounts?.values?.flatten()?.firstOrNull()?.address
+}
+
+fun WalletListData.walletAddress(): String? {
+    return wallet()?.address()?.toAddress()
 }

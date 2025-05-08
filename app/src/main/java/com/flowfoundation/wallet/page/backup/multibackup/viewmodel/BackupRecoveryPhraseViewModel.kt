@@ -39,7 +39,10 @@ import java.io.File
 import wallet.core.jni.HDWallet
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
+import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     val createBackupCallbackLiveData = MutableLiveData<Boolean>()
@@ -205,8 +208,22 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun getBackupCryptoProvider(): BackupCryptoProvider {
+        val currentWallet = WalletManager.wallet()
+        if (currentWallet == null) {
+            throw IllegalStateException("No wallet available")
+        }
+        
+        // Get the first account's address to identify the wallet
+        val walletAddress = currentWallet.accounts?.values?.flatten()?.firstOrNull()?.address
+            ?: throw IllegalStateException("No accounts available in wallet")
+            
+        // Get the crypto provider from AccountWalletManager
+        val cryptoProvider = AccountWalletManager.getHDWalletByUID(walletAddress)
+            ?: throw IllegalStateException("Failed to get crypto provider for wallet")
+            
+        // Create a new SeedPhraseKey with the mnemonic from the crypto provider
         val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = Wallet.store().mnemonic(),
+            mnemonicString = (cryptoProvider as BackupCryptoProvider).getMnemonic(),
             passphrase = "",
             derivationPath = "m/44'/539'/0'/0/0",
             keyPair = null,

@@ -50,7 +50,8 @@ enum class BackupError(
     SYNC_ACCOUNT_INFO_FAILED("syncAccountInfoFailed"),
     RESTORE_LOGIN_FAILED("restoreLoginFailed"),
     RESTORE_IMPORT_FAILED("restoreImportFailed"),
-    ADD_PUBLIC_KEY_FAILED("addPublicKeyFailed");
+    ADD_PUBLIC_KEY_FAILED("addPublicKeyFailed"),
+    MNEMONIC_RESTORE_FAILED("mnemonicRestoreFailed");
 }
 
 enum class GoogleBackupError(

@@ -24,6 +24,7 @@ import com.flow.wallet.storage.FileSystemStorage
 import java.io.File
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
 
 class DropboxAuthActivity : AppCompatActivity() {
@@ -139,8 +140,7 @@ class DropboxAuthActivity : AppCompatActivity() {
         )
     }
 
-    private fun uploadDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
-        // Create a proper KeyWallet
+    private suspend fun uploadDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -149,8 +149,7 @@ class DropboxAuthActivity : AppCompatActivity() {
         uploadDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
     }
 
-    private fun checkDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
-        // Create a proper KeyWallet
+    private suspend fun checkDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
