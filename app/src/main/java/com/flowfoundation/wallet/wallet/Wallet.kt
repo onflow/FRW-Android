@@ -100,11 +100,11 @@ class WalletStore internal constructor() {
 }
 
 private fun StoredKey.changeName(name: String, password: ByteArray): StoredKey {
-    return StoredKey.importHDWallet(decryptMnemonic(password), name, password, CoinType.FLOW)
+    return StoredKey.importHDWallet(decryptMnemonic(password), name, password, CoinType.ETHEREUM)
 }
 
 private fun StoredKey.changeMnemonic(mnemonic: String, password: ByteArray): StoredKey {
-    return StoredKey.importHDWallet(mnemonic, name(), password, CoinType.FLOW)
+    return StoredKey.importHDWallet(mnemonic, name(), password, CoinType.ETHEREUM)
 }
 
 private fun readCurrentUserPassword(): String? {
