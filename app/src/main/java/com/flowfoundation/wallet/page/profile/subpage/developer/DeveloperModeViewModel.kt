@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.isRegistered

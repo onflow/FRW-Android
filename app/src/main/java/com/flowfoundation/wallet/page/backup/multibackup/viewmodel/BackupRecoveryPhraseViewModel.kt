@@ -208,13 +208,10 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun getBackupCryptoProvider(): BackupCryptoProvider {
-        val currentWallet = WalletManager.wallet()
-        if (currentWallet == null) {
-            throw IllegalStateException("No wallet available")
-        }
-        
+        val currentWallet = WalletManager.wallet() ?: throw IllegalStateException("No wallet available")
+
         // Get the first account's address to identify the wallet
-        val walletAddress = currentWallet.accounts?.values?.flatten()?.firstOrNull()?.address
+        val walletAddress = currentWallet.accounts.values.flatten().firstOrNull()?.address
             ?: throw IllegalStateException("No accounts available in wallet")
             
         // Get the crypto provider from AccountWalletManager

@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.utils.uiScope

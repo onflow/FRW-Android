@@ -53,7 +53,7 @@ class WalletCreateMnemonicViewModel : ViewModel() {
         )
         
         // Create a new wallet using the seed phrase
-        val wallet = WalletFactory.createKeyWallet(
+        WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
             getStorage()

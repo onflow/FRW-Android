@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.getCOALinkCheckedAddressSet
 import com.flowfoundation.wallet.utils.ioScope

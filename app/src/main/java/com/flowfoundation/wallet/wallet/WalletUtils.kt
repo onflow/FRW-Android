@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.wallet
 
 import com.nftco.flow.sdk.DomainTag.normalize
-import org.onflow.flow.models.bytesToHex
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
@@ -15,15 +14,16 @@ import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.errors.WalletError
 import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.utils.Env.getStorage
-import org.onflow.flow.models.SigningAlgorithm
-import org.onflow.flow.models.HashingAlgorithm
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 
 private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
 
-suspend fun getPublicKey(removePrefix: Boolean = true): String {
+fun getPublicKey(removePrefix: Boolean = true): String {
     return try {
-        val wallet = getKeyWallet()
-        val publicKey = wallet.key.publicKey(SigningAlgorithm.ECDSA_P256)?.bytesToHex() ?: ""
+        getKeyWallet()
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            ?: throw WalletError.InitHDWalletFailed
+        val publicKey = cryptoProvider.getPublicKey()
         if (removePrefix) publicKey.removePrefix("04") else publicKey
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to get public key: ${e.message}")
@@ -63,12 +63,10 @@ fun getKeyWallet(): KeyWallet {
 
 suspend fun sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
     return try {
-        val wallet = getKeyWallet()
-        wallet.sign(
-            data = domainTag + text.encodeToByteArray(),
-            signAlgo = SigningAlgorithm.ECDSA_P256,
-            hashAlgo = HashingAlgorithm.SHA3_256
-        ).bytesToHex()
+        getKeyWallet()
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            ?: throw WalletError.InitHDWalletFailed
+        cryptoProvider.signData(domainTag + text.encodeToByteArray())
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to sign text: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
@@ -82,12 +80,10 @@ suspend fun sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user"
 
 suspend fun signData(data: ByteArray): String {
     return try {
-        val wallet = getKeyWallet()
-        wallet.sign(
-            data = data,
-            signAlgo = SigningAlgorithm.ECDSA_P256,
-            hashAlgo = HashingAlgorithm.SHA3_256
-        ).bytesToHex()
+        getKeyWallet()
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            ?: throw WalletError.InitHDWalletFailed
+        cryptoProvider.signData(data)
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to sign data: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)

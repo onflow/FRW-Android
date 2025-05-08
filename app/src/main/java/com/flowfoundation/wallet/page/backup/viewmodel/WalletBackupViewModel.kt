@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.BackupListManager

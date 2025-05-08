@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.sendBridgeTransacti
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.address.FlowDomainServer

@@ -21,7 +21,7 @@ class WalletCreateMnemonicCheckViewModel : ViewModel() {
             val currentWallet = WalletManager.wallet()
                 ?: throw IllegalStateException("No wallet available")
             
-            val walletAddress = currentWallet.accounts?.values?.flatten()?.firstOrNull()?.address
+            val walletAddress = currentWallet.accounts.values.flatten().firstOrNull()?.address
                 ?: throw IllegalStateException("No accounts available in wallet")
             
             val cryptoProvider = AccountWalletManager.getHDWalletByUID(walletAddress)

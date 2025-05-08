@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceKeyModel
@@ -30,7 +31,7 @@ class DevicesViewModel : ViewModel() {
             val infoResponse = service.getKeyDeviceInfo()
             val keyDeviceList = infoResponse.data.result?.filter { it.backupInfo != null && it.backupInfo.type < 0 } ?: emptyList()
             val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-            val keys = account?.keys ?: emptyList()
+            val keys = account.keys ?: emptyList()
             val deviceList = mutableListOf<DeviceKeyModel>()
             deviceInfoList.forEach { device ->
                 val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }

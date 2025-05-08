@@ -56,13 +56,10 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
-import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.keys.SeedPhraseKey
 import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.utils.Env.getStorage
-import com.flowfoundation.wallet.manager.wallet.walletAddress
-import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 
 object AccountManager {
     private val TAG = AccountManager::class.java.simpleName
@@ -87,8 +84,9 @@ object AccountManager {
         switchAccounts.clear()
         ioScope {
             try {
-                val account = AccountCacheManager.read()
-                if (account != null) {
+                val accountList = AccountCacheManager.read()
+                if (!accountList.isNullOrEmpty()) {
+                    val account = accountList.first()
                     val seedPhraseKey = SeedPhraseKey(
                         mnemonicString = account.wallet?.walletAddress() ?: "",
                         passphrase = "",
@@ -576,7 +574,7 @@ object AccountManager {
         accounts.clear()
         userPrefixes.clear()
         switchAccounts.clear()
-        AccountCacheManager.clear()
+        AccountCacheManager.cache(emptyList())
     }
 }
 
@@ -618,10 +616,6 @@ interface OnAccountUpdate {
 
 interface OnUserInfoUpdate {
     fun onUserInfoUpdate(userInfo: UserInfoData)
-}
-
-interface OnWalletDataUpdate {
-    fun onWalletDataUpdate(wallet: WalletListData)
 }
 
 interface OnUserInfoReload {

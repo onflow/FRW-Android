@@ -458,7 +458,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             keyPair = null,
             storage = getStorage()
         )
-        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+        createBackupCryptoProvider(seedPhraseKey)
         try {
             // Add the mnemonic to the transaction list
             addMnemonicToTransaction(mnemonic)
@@ -478,7 +478,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             keyPair = null,
             storage = getStorage()
         )
-        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+        createBackupCryptoProvider(seedPhraseKey)
         try {
             // Add the keystore to the transaction list
             addMnemonicToTransaction(keystore)

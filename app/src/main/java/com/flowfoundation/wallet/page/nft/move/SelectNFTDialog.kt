@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.widget.SelectNFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress

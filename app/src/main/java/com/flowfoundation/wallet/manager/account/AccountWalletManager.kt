@@ -89,7 +89,7 @@ class WalletStoreWithUid(private val uid: String, private val password: String) 
             }
         }
         // Create a proper KeyWallet using WalletFactory
-        val wallet = WalletFactory.createKeyWallet(
+        WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
             storage

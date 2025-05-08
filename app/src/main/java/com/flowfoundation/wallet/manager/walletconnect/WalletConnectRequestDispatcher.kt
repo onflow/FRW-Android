@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.Signable
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.Identity
 import com.flowfoundation.wallet.manager.walletconnect.model.PollingData
 import com.flowfoundation.wallet.manager.walletconnect.model.PollingResponse
