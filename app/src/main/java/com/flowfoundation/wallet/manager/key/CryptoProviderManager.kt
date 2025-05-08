@@ -44,20 +44,22 @@ object CryptoProviderManager {
             val storage = getStorage()
             return if (account.isActive) {
                 val wallet = Wallet.store().wallet()
-                BackupCryptoProvider(SeedPhraseKey(
-                    mnemonicString = wallet.mnemonic(),
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = Wallet.store().mnemonic(),
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
                     keyPair = null,
                     storage = storage
-                ))
+                )
+                BackupCryptoProvider(seedPhraseKey)
             } else {
                 val wallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
                 if (wallet == null) {
                     null
                 } else {
+                    val seedPhraseKey = (wallet as BackupCryptoProvider).getMnemonic()
                     BackupCryptoProvider(SeedPhraseKey(
-                        mnemonicString = wallet.mnemonic(),
+                        mnemonicString = seedPhraseKey,
                         passphrase = "",
                         derivationPath = "m/44'/539'/0'/0/0",
                         keyPair = null,
@@ -88,7 +90,7 @@ object CryptoProviderManager {
                 return null
             }
             return BackupCryptoProvider(SeedPhraseKey(
-                mnemonicString = wallet.mnemonic(),
+                mnemonicString = (wallet as BackupCryptoProvider).getMnemonic(),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,
@@ -115,7 +117,7 @@ object CryptoProviderManager {
                 return null
             }
             return BackupCryptoProvider(SeedPhraseKey(
-                mnemonicString = wallet.mnemonic(),
+                mnemonicString = (wallet as BackupCryptoProvider).getMnemonic(),
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
                 keyPair = null,

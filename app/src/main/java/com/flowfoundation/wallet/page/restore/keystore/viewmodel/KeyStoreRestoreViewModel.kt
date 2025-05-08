@@ -90,8 +90,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
             ioScope {
                 val storage = getStorage()
                 val keyStore = StoredKey.importJSON(json.toByteArray())
-                val privateKey = PrivateKey(keyStore.decryptPrivateKey(password.toByteArray()), storage)
-                val key = PrivateKey(privateKey, storage)
+                val decryptedKey = keyStore.decryptPrivateKey(password.toByteArray())
+                val key = PrivateKey.create(storage).apply {
+                    importPrivateKey(decryptedKey, KeyFormat.RAW)
+                }
                 
                 val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
