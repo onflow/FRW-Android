@@ -220,6 +220,8 @@ class BackupCompletedFragment : Fragment() {
         )
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)
         // ... existing code ...
+    // to-do
+
     }
 
     override fun onDestroyView() {

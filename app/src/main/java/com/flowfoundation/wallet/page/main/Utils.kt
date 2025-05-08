@@ -31,8 +31,10 @@ import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.clearWebViewCache
+import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.utils.Env
@@ -97,10 +99,17 @@ fun BottomNavigationView.setSvgDrawable(index: Int) {
 fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = false) {
     ioScope {
         val userInfo = AccountManager.userInfo() ?: return@ioScope
-        // todo multi account
-        val wallet = WalletManager.wallet()?.wallet() ?: return@ioScope
+        val wallet = WalletManager.wallet() ?: return@ioScope
         val list = mutableListOf<WalletData?>().apply {
-            add(wallet)
+            add(WalletData(
+                blockchain = listOf(
+                    BlockchainData(
+                    address = wallet.walletAddress() ?: "",
+                    chainId = chainNetWorkString()
+                )
+                ),
+                name = userInfo.username
+            ))
         }.filterNotNull()
 
         if (list.isEmpty()) {
@@ -114,7 +123,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
         }
 
-        WalletManager.childAccountList(wallet.address())?.get()?.forEach { childAccount ->
+        WalletManager.childAccountList(wallet.walletAddress())?.get()?.forEach { childAccount ->
             addressList.add(childAccount.address)
         }
 
@@ -144,11 +153,11 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
 }
 
 private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
-    wallet: WalletData,
+    wallet: com.flow.wallet.wallet.Wallet,
     userInfo: UserInfoData
 ) {
     llLinkedAccount.removeAllViews()
-    if (EVMWalletManager.showEVMAccount(wallet.network())) {
+    if (EVMWalletManager.showEVMAccount(chainNetWorkString())) {
         EVMWalletManager.getEVMAccount()?.let {
             val childView = LayoutInflater.from(root.context)
                 .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
@@ -165,7 +174,7 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
             clEvmLayout.gone()
         }
     }
-    WalletManager.childAccountList(wallet.address())?.get()?.forEach { childAccount ->
+    WalletManager.childAccountList(wallet.walletAddress())?.get()?.forEach { childAccount ->
         val childView = LayoutInflater.from(root.context)
             .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
         childAccount.address.walletData(userInfo)?.let { data ->
@@ -270,21 +279,21 @@ fun BottomNavigationView.updateIcons() {
 }
 
 private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
-    val wallet = WalletManager.wallet()?.wallets?.firstOrNull { it.address() == this }
-    return if (wallet == null) {
+    val wallet = WalletManager.wallet()
+    return if (wallet?.walletAddress() == this) {
+        WalletItemData(
+            address = this,
+            name = userInfo.username,
+            icon = userInfo.avatar,
+            isSelected = WalletManager.selectedWalletAddress() == this
+        )
+    } else {
         // child account
         val childAccount = WalletManager.childAccount(this) ?: return null
         WalletItemData(
             address = childAccount.address,
             name = childAccount.name,
             icon = childAccount.icon,
-            isSelected = WalletManager.selectedWalletAddress() == this
-        )
-    } else {
-        WalletItemData(
-            address = wallet.address().orEmpty(),
-            name = userInfo.username,
-            icon = userInfo.avatar,
             isSelected = WalletManager.selectedWalletAddress() == this
         )
     }

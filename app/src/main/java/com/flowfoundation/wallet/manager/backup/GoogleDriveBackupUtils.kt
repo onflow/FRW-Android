@@ -80,7 +80,7 @@ suspend fun checkGoogleDriveBackup(
     val wallet = AccountManager.get()?.wallet
     val exist = data.firstOrNull { it.userId == wallet?.id } != null
     val blockAccount = FlowAddress(wallet?.walletAddress().orEmpty()).lastBlockAccount()
-    val keyExist = blockAccount?.keys?.firstOrNull { provider.getPublicKey() == it.publicKey } != null
+    val keyExist = blockAccount.keys?.firstOrNull { provider.getPublicKey() == it.publicKey } != null
     LocalBroadcastManager.getInstance(Env.getApp())
         .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_CHECK_FINISH).apply {
             putExtra(EXTRA_SUCCESS, exist && keyExist)

@@ -97,7 +97,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
             val infoResponse = service.getKeyDeviceInfo()
             val keyDeviceList = infoResponse.data.result?.filter { it.backupInfo != null && it.backupInfo.type < 0 } ?: emptyList()
             val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-            val keys = account?.keys ?: emptyList()
+            val keys = account.keys ?: emptyList()
             val deviceList = mutableListOf<DeviceKeyModel>()
             deviceInfoList.forEach { device ->
                 val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
