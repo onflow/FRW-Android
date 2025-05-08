@@ -214,7 +214,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 )
                 
                 // Create a new wallet using the seed phrase key
-                val wallet = WalletFactory.createKeyWallet(
+                WalletFactory.createKeyWallet(
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
@@ -277,7 +277,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 
                 // Create providers from seed phrase keys
                 val providers = seedPhraseKeys.map { seedPhraseKey ->
-                    val words = seedPhraseKey.mnemonicString.split(" ")
+                    val words = seedPhraseKey.mnemonic
                     if (words.size == 15) {
                         BackupCryptoProvider(seedPhraseKey)
                     } else {
@@ -404,7 +404,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         
         // Create providers from seed phrase keys
         val providers = seedPhraseKeys.map { seedPhraseKey ->
-            val words = seedPhraseKey.mnemonicString.split(" ")
+            val words = seedPhraseKey.mnemonic
             if (words.size == 15) {
                 BackupCryptoProvider(seedPhraseKey)
             } else {

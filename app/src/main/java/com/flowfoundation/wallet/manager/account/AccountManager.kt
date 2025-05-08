@@ -79,7 +79,7 @@ object AccountManager {
     private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
     private var currentAccount: Account? = null
-    private var currentWallet: Wallet? = null
+    private var currentWallet: com.flow.wallet.wallet.Wallet? = null
 
     fun init() {
         accounts.clear()
@@ -90,7 +90,7 @@ object AccountManager {
                 val account = AccountCacheManager.read()
                 if (account != null) {
                     val seedPhraseKey = SeedPhraseKey(
-                        mnemonicString = account.wallet.walletAddress() ?: "",
+                        mnemonicString = account.wallet?.walletAddress() ?: "",
                         passphrase = "",
                         derivationPath = "m/44'/539'/0'/0/0",
                         keyPair = null,
@@ -116,7 +116,7 @@ object AccountManager {
         val oldAccounts = oldAccountsCache()
         val newAccounts = AccountCacheManager.read()
         if (oldAccounts.isEmpty()) {
-            return newAccounts
+            return newAccounts?.toList()
         }
         if (newAccounts == null) {
             return oldAccounts
@@ -150,7 +150,7 @@ object AccountManager {
                 if (userPrefixInfo != null) {
                     account.prefix = userPrefixInfo.prefix
                 } else {
-                    val address = account.wallet?.mainnetWallet()?.address()
+                    val address = account.wallet?.walletAddress()
                     val prefix = addressPrefixMap[address]
                     if (!prefix.isNullOrEmpty()) {
                         account.prefix = prefix
@@ -189,7 +189,7 @@ object AccountManager {
                     if (switchAccounts.any { it.address == account.address }) {
                         return@let
                     }
-                    if (accountList != null && accountList.any { it.wallet?.mainnetWallet()?.address() == account.address }) {
+                    if (accountList != null && accountList.any { it.wallet?.walletAddress() == account.address }) {
                         return@let
                     }
                     var count = switchAccounts.size
@@ -258,7 +258,7 @@ object AccountManager {
 
     fun get(): Account? = currentAccount
 
-    fun wallet(): Wallet? = currentWallet
+    fun wallet(): com.flow.wallet.wallet.Wallet? = currentWallet
 
     fun userInfo(): UserInfoData? = currentAccount?.userInfo
 
@@ -640,7 +640,7 @@ private fun oldAccountsCache(): List<Account> {
     return accounts
 }
 
-private fun accountsCache(): Accounts? {
+private fun accountsCache(): List<Account>? {
     val file = File(DATA_PATH, "${"accounts".hashCode()}")
     val str = file.read()
     if (str.isBlank()) {
@@ -648,7 +648,7 @@ private fun accountsCache(): Accounts? {
     }
 
     try {
-        return Gson().fromJson(str, Accounts::class.java)
+        return Gson().fromJson(str, Accounts::class.java)?.toList()
     } catch (e: Exception) {
         e.printStackTrace()
     }

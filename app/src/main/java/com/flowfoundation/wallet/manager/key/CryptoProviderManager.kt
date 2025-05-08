@@ -13,7 +13,6 @@ import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
-import com.flow.wallet.wallet.WalletType
 import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.error.AccountError
@@ -59,7 +58,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             } 
             
@@ -77,7 +76,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             } 
             
@@ -102,7 +101,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             }
         } catch (e: WalletError) {
@@ -140,7 +139,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             } 
             
@@ -165,7 +164,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             }
         } catch (e: WalletError) {
@@ -198,7 +197,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             } 
             
@@ -223,7 +222,7 @@ object CryptoProviderManager {
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
-                )
+                ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
             }
         } catch (e: WalletError) {

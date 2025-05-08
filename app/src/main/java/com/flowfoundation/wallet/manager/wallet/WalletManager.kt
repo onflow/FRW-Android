@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flow.wallet.wallet.Wallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.storage.StorageProtocol
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
 
@@ -114,8 +113,20 @@ object WalletManager {
 
             wallet()?.accounts?.values?.flatten()?.firstOrNull { 
                 it.address.equals(walletAddress, ignoreCase = true) 
-            }?.network
-        } else account.network
+            }?.let { acc ->
+                when (acc.chainID) {
+                    ChainId.Mainnet -> "mainnet"
+                    ChainId.Testnet -> "testnet"
+                    else -> chainNetWorkString()
+                }
+            }
+        } else {
+            when (account.chainID) {
+                ChainId.Mainnet -> "mainnet"
+                ChainId.Testnet -> "testnet"
+                else -> chainNetWorkString()
+            }
+        }
 
         return networkStr ?: chainNetWorkString()
     }
@@ -142,7 +153,7 @@ object WalletManager {
     }
 
     private fun refreshChildAccount(wallet: Wallet) {
-        wallet.accounts?.values?.flatten()?.firstOrNull()?.address?.let {
+        wallet.accounts.values.flatten().firstOrNull()?.address?.let {
             if (childAccountMap.contains(it)) {
                 childAccountMap[it]?.refresh()
             } else {

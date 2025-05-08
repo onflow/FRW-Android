@@ -25,7 +25,13 @@ enum class AccountError(
     MIGRATE_PREFIX_FAILED("migratePrefixFailed"),
     SET_ANONYMOUS_FAILED("setAnonymousFiled"),
     REGISTER_USER_FAILED("registerUserFailed"),
-    GET_CRYPTO_PROVIDER_FAILED("getCryptoProviderFailed");
+    GET_CRYPTO_PROVIDER_FAILED("getCryptoProviderFailed"),
+    INIT_FAILED("initFailed"),
+    UPDATE_USER_INFO_FAILED("updateUserInfoFailed"),
+    UPDATE_WALLET_INFO_FAILED("updateWalletInfoFailed"),
+    GET_WALLET_FAILED("getWalletFailed"),
+    WALLET_ERROR("walletError"),
+    UNEXPECTED_ERROR("unexpectedError");
 }
 
 enum class WalletError(

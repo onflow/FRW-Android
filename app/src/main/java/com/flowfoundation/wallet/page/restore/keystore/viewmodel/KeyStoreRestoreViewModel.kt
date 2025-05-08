@@ -41,7 +41,6 @@ import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.AccountPublicKey
-import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
@@ -99,12 +98,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     mnemonicString = "",  // Empty mnemonic since we're using a private key
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = key.toKeyPair(),  // Convert PrivateKey to KeyPair
+                    keyPair = key.key,
                     storage = storage
                 )
                 
                 // Create a new wallet using the seed phrase key
-                val wallet = WalletFactory.createKeyWallet(
+                WalletFactory.createKeyWallet(
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
@@ -157,12 +156,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     mnemonicString = "",  // Empty mnemonic since we're using a private key
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = key.toKeyPair(),  // Convert PrivateKey to KeyPair
+                    keyPair = key.key,
                     storage = storage
                 )
                 
                 // Create a new wallet using the seed phrase key
-                val wallet = WalletFactory.createKeyWallet(
+                WalletFactory.createKeyWallet(
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
@@ -215,7 +214,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 )
                 
                 // Create a new wallet using the seed phrase key
-                val wallet = WalletFactory.createKeyWallet(
+                WalletFactory.createKeyWallet(
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
@@ -428,7 +427,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
             val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
             val currentKey = currentKeyStoreAddress?.run {
-                FlowAddress(this.address).lastBlockAccount().keys?.find { it.publicKey == publicKey }
+                val flowAccount = FlowCadenceApi.getAccount(this.address)
+                flowAccount.keys?.find { it.publicKey == publicKey }
             } ?: run {
                 toast(msgRes = R.string.login_failure)
                 activity.finish()
@@ -656,7 +656,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
         ioScope {
             val addressResponse = queryService.queryAddress(publicKey)
             val currentKey = addressResponse.accounts.firstOrNull()?.run {
-                FlowAddress(this.address).lastBlockAccount().keys?.find { it.publicKey == publicKey }
+                val flowAccount = FlowCadenceApi.getAccount(this.address)
+                flowAccount.keys?.find { it.publicKey == publicKey }
             } ?: run {
                 callback.invoke(false, R.string.login_failure)
                 return@ioScope

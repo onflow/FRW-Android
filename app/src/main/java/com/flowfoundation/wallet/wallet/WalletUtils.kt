@@ -15,12 +15,16 @@ import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.errors.WalletError
 import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.HashingAlgorithm
 
 private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
 
-fun getPublicKey(removePrefix: Boolean = true): String {
+suspend fun getPublicKey(removePrefix: Boolean = true): String {
     return try {
-        getKeyWallet().getPublicKey(removePrefix)
+        val wallet = getKeyWallet()
+        val publicKey = wallet.key.publicKey(SigningAlgorithm.ECDSA_P256)?.bytesToHex() ?: ""
+        if (removePrefix) publicKey.removePrefix("04") else publicKey
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to get public key: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
@@ -30,11 +34,6 @@ fun getPublicKey(removePrefix: Boolean = true): String {
         ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
         ""
     }
-}
-
-fun KeyWallet.getPublicKey(removePrefix: Boolean = true): String {
-    val publicKey = key?.publicKey?.bytesToHex() ?: ""
-    return if (removePrefix) publicKey.removePrefix("04") else publicKey
 }
 
 fun getKeyWallet(): KeyWallet {
@@ -50,7 +49,7 @@ fun getKeyWallet(): KeyWallet {
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
             getStorage()
-        )
+        ) as KeyWallet
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to create key wallet: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
@@ -62,9 +61,14 @@ fun getKeyWallet(): KeyWallet {
     }
 }
 
-fun KeyWallet.sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
+suspend fun sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
     return try {
-        signData(domainTag + text.encodeToByteArray())
+        val wallet = getKeyWallet()
+        wallet.sign(
+            data = domainTag + text.encodeToByteArray(),
+            signAlgo = SigningAlgorithm.ECDSA_P256,
+            hashAlgo = HashingAlgorithm.SHA3_256
+        ).bytesToHex()
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to sign text: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
@@ -76,9 +80,14 @@ fun KeyWallet.sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-use
     }
 }
 
-fun KeyWallet.signData(data: ByteArray): String {
+suspend fun signData(data: ByteArray): String {
     return try {
-        key?.sign(data)?.bytesToHex() ?: ""
+        val wallet = getKeyWallet()
+        wallet.sign(
+            data = data,
+            signAlgo = SigningAlgorithm.ECDSA_P256,
+            hashAlgo = HashingAlgorithm.SHA3_256
+        ).bytesToHex()
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to sign data: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
@@ -98,7 +107,7 @@ fun createWalletFromServer() {
             logd("createWalletFromServer", "$resp")
         } catch (e: Exception) {
             loge("WalletUtils", "Failed to create wallet from server: ${e.message}")
-            ErrorReporter.reportWithMixpanel(AccountError.CREATE_WALLET_FAILED, e)
+            ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
         }
     }
 }
