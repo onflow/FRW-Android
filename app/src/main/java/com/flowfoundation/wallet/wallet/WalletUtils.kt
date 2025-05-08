@@ -6,43 +6,100 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
-import wallet.core.jni.Hash
+import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.error.AccountError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flow.wallet.errors.WalletError
+import org.onflow.flow.ChainId
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
 
 fun getPublicKey(removePrefix: Boolean = true): String {
-    return hdWallet().getPublicKey(removePrefix)
+    return try {
+        getKeyWallet().getPublicKey(removePrefix)
+    } catch (e: WalletError) {
+        loge("WalletUtils", "Failed to get public key: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
+        ""
+    } catch (e: Exception) {
+        loge("WalletUtils", "Unexpected error getting public key: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
+        ""
+    }
 }
 
-fun HDWallet.getPublicKey(removePrefix: Boolean = true): String {
-    val privateKey = getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-    val publicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex()
-
+fun KeyWallet.getPublicKey(removePrefix: Boolean = true): String {
+    val publicKey = key?.publicKey?.bytesToHex() ?: ""
     return if (removePrefix) publicKey.removePrefix("04") else publicKey
 }
 
-fun hdWallet(): HDWallet {
-    return Wallet.store().wallet()
+fun getKeyWallet(): KeyWallet {
+    return try {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = Wallet.store().mnemonic(),
+            passphrase = "",
+            derivationPath = DERIVATION_PATH,
+            keyPair = null,
+            storage = getStorage()
+        )
+        WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+    } catch (e: WalletError) {
+        loge("WalletUtils", "Failed to create key wallet: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
+        throw e
+    } catch (e: Exception) {
+        loge("WalletUtils", "Unexpected error creating key wallet: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
+        throw e
+    }
 }
 
-fun HDWallet.sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
-    return signData(domainTag + text.encodeToByteArray())
+fun KeyWallet.sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
+    return try {
+        signData(domainTag + text.encodeToByteArray())
+    } catch (e: WalletError) {
+        loge("WalletUtils", "Failed to sign text: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
+        ""
+    } catch (e: Exception) {
+        loge("WalletUtils", "Unexpected error signing text: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
+        ""
+    }
 }
 
-fun HDWallet.signData(data: ByteArray): String {
-    val privateKey = getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-    val hashedData = Hash.sha256(data)
-    val signature = privateKey.sign(hashedData, Curve.SECP256K1).dropLast(1).toByteArray()
-    return signature.bytesToHex()
+fun KeyWallet.signData(data: ByteArray): String {
+    return try {
+        key?.sign(data)?.bytesToHex() ?: ""
+    } catch (e: WalletError) {
+        loge("WalletUtils", "Failed to sign data: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
+        ""
+    } catch (e: Exception) {
+        loge("WalletUtils", "Unexpected error signing data: ${e.message}")
+        ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
+        ""
+    }
 }
 
 fun createWalletFromServer() {
     ioScope {
-        val service = retrofit().create(ApiService::class.java)
-        val resp = service.createWallet()
-        logd("createWalletFromServer", "$resp")
+        try {
+            val service = retrofit().create(ApiService::class.java)
+            val resp = service.createWallet()
+            logd("createWalletFromServer", "$resp")
+        } catch (e: Exception) {
+            loge("WalletUtils", "Failed to create wallet from server: ${e.message}")
+            ErrorReporter.reportWithMixpanel(AccountError.CREATE_WALLET_FAILED, e)
+        }
     }
 }
 

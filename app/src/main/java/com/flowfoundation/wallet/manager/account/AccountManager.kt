@@ -55,11 +55,14 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.ChainId
+import com.flowfoundation.wallet.utils.Env.getStorage
 
 object AccountManager {
-
     private val TAG = AccountManager::class.java.simpleName
-
     private val accounts = mutableListOf<Account>()
     private var uploadedAddressSet = mutableSetOf<String>()
     private val listeners = CopyOnWriteArrayList<WeakReference<OnUserInfoReload>>()
@@ -359,7 +362,6 @@ object AccountManager {
                 }
                 onFinish()
             }
-
         }
     }
 
@@ -382,59 +384,6 @@ object AccountManager {
                     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
                 }
                 onFinish()
-            }
-
-        }
-    }
-
-    private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
-        if (!setToAnonymous()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
-            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-        val service = retrofit().create(ApiService::class.java)
-        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
-        if (cryptoProvider == null) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
-            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val resp = service.login(
-            LoginRequest(
-                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                accountKey = AccountKey(
-                    publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                ),
-                deviceInfo = deviceInfoRequest
-            )
-        )
-        if (resp.data?.customToken.isNullOrBlank()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
-            callback.invoke(false)
-        } else {
-            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                if (isSuccess) {
-                    setRegistered()
-                    if (switchAccount.prefix == null) {
-                        Wallet.store().resume()
-                    } else {
-                        firebaseUid()?.let { userId ->
-                            userPrefixes.removeAll { it.userId == userId}
-                            userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
-                            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
-                        }
-                    }
-                    callback.invoke(true)
-                } else {
-                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
-                    callback.invoke(false)
-                }
             }
         }
     }

@@ -37,6 +37,9 @@ import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.utils.Env
 import java.io.File
 import wallet.core.jni.HDWallet
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import org.onflow.flow.ChainId
 
 class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     val createBackupCallbackLiveData = MutableLiveData<Boolean>()
@@ -189,5 +192,37 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
             HDWalletCryptoProvider(seedPhraseKey)
         }
         stateLiveData.postValue(BackupRecoveryPhraseState.BACKUP_SUCCESS)
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    fun getBackupCryptoProvider(): BackupCryptoProvider {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = Wallet.store().mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        return createBackupCryptoProvider(seedPhraseKey)
+    }
+
+    fun getBackupCryptoProvider(mnemonic: String): BackupCryptoProvider {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        return createBackupCryptoProvider(seedPhraseKey)
     }
 }

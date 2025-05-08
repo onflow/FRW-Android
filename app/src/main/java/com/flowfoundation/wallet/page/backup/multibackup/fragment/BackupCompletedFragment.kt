@@ -34,7 +34,9 @@ import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.ioScope
 import org.onflow.flow.models.FlowAddress
-import java.io.File
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import org.onflow.flow.ChainId
 
 
 class BackupCompletedFragment : Fragment() {
@@ -184,7 +186,7 @@ class BackupCompletedFragment : Fragment() {
             keyPair = null,
             storage = FileSystemStorage(baseDir)
         )
-        val backupProvider = BackupCryptoProvider(seedPhraseKey)
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
 
         val blockAccount = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
         isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey } != null
@@ -193,6 +195,28 @@ class BackupCompletedFragment : Fragment() {
         })
         isRecoveryPhraseCheckLoading = false
         checkLoadingStatus()
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    private fun uploadToChain() {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = Wallet.store().mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+        // ... existing code ...
     }
 
     override fun onDestroyView() {

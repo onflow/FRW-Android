@@ -32,6 +32,9 @@ import com.flowfoundation.wallet.utils.loge
 import com.google.android.gms.common.api.Scope
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import org.onflow.flow.ChainId
 import java.io.File
 import java.util.*
 
@@ -195,6 +198,26 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             httpRequest.connectTimeout = 3 * 60000
             httpRequest.readTimeout = 3 * 60000
         }
+    }
+
+    private fun uploadGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
+    }
+
+    private fun checkGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
     }
 
     companion object {

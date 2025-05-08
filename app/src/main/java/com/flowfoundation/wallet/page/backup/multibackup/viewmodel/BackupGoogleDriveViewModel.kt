@@ -37,6 +37,9 @@ import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import java.io.File
 import wallet.core.jni.HDWallet
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import org.onflow.flow.ChainId
 
 
 class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
@@ -96,8 +99,18 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
             keyPair = null,
             storage = FileSystemStorage(baseDir)
         )
-        backupCryptoProvider = BackupCryptoProvider(seedPhraseKey)
+        createBackupCryptoProvider(seedPhraseKey)
         backupStateLiveData.postValue(BackupGoogleDriveState.UPLOAD_BACKUP)
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey) {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        backupCryptoProvider = BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     fun uploadToChain() {

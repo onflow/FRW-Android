@@ -61,6 +61,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.bytesToHex
 import java.io.File
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import org.onflow.flow.ChainId
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -397,5 +400,39 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 syncAccountInfo()
             }
         }
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+    }
+
+    private fun restoreFromMnemonic(mnemonic: String) {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+        // ... existing code ...
+    }
+
+    private fun restoreFromKeystore(keystore: String) {
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = keystore,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+        // ... existing code ...
     }
 }

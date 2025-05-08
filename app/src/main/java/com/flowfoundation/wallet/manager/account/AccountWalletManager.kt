@@ -4,15 +4,19 @@ import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.KeyProtocol
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.wallet.WalletFactory
+import com.flow.wallet.wallet.WalletType
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.utils.Env.getStorage
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.ChainId
+import com.flow.wallet.wallet.KeyWallet
 
 /**
- * Created by Mengxy on 8/30/23.
+ * Manages wallet creation and access using Flow-Wallet-Kit
  */
 object AccountWalletManager {
 
@@ -30,7 +34,20 @@ object AccountWalletManager {
         if (password.isNullOrBlank()) {
             return null
         }
-        return WalletStoreWithUid(uid, password).wallet()
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = password,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = getStorage()
+        )
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     fun getUIDPublicKeyMap(): Map<String, String> {
@@ -71,6 +88,12 @@ class WalletStoreWithUid(private val uid: String, private val password: String) 
                 )
             }
         }
+        // Create a proper KeyWallet using WalletFactory
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            storage
+        )
         return BackupCryptoProvider(seedPhraseKey)
     }
 }
