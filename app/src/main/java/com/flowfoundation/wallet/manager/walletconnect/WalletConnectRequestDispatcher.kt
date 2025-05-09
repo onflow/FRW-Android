@@ -244,6 +244,7 @@ private fun WCRequest.respondAuthn() {
     logd(TAG, "Starting respondAuthn with params: $params")
     val address = WalletManager.wallet()?.walletAddress() ?: run {
         loge(TAG, "No wallet address found")
+        reject()
         return
     }
     logd(TAG, "Using wallet address: $address")
@@ -253,16 +254,19 @@ private fun WCRequest.respondAuthn() {
     } catch (e: Exception) {
         loge(TAG, "Failed to parse params: ${e.message}")
         loge(e)
+        reject()
         return
     }
     val signable = json.firstOrNull() ?: run {
         loge(TAG, "No signable params found")
+        reject()
         return
     }
     logd(TAG, "Signable params: $signable")
     
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: run {
         loge(TAG, "No crypto provider found")
+        reject()
         return
     }
     val keyId = cryptoProvider.let {
@@ -270,24 +274,54 @@ private fun WCRequest.respondAuthn() {
     } ?: 0
     logd(TAG, "Using keyId: $keyId")
     
-    val services = walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
-    logd(TAG, "Generated authn response: $services")
-    
-    val response = Sign.Params.Response(
-        sessionTopic = topic,
-        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
-    )
-    logd(TAG, "Sending response: $response")
-
-    SignClient.respond(response, onSuccess = { success ->
-        logd(TAG, "Response sent successfully: $success")
-        ioScope {
-            delay(1000)
-            logd(TAG, "Authn response sent, proceeding with session settlement")
+    try {
+        // Generate authn response without account proof if nonce or appIdentifier is null
+        val services = if (signable.nonce.isNullOrBlank() || signable.appIdentifier.isNullOrBlank()) {
+            logd(TAG, "No nonce or appIdentifier provided, generating authn response without account proof")
+            walletConnectAuthnServiceResponse(address, keyId, null, null)
+        } else {
+            logd(TAG, "Generating authn response with account proof")
+            walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
         }
-    }) { error -> 
-        loge(TAG, "Failed to send response: ${error.throwable.message}")
-        loge(error.throwable)
+        logd(TAG, "Generated authn response: $services")
+        
+        try {
+            val response = Sign.Params.Response(
+                sessionTopic = topic,
+                jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
+            )
+            logd(TAG, "Created response object: $response")
+
+            SignClient.respond(response, onSuccess = { success ->
+                logd(TAG, "Response sent successfully: $success")
+                ioScope {
+                    delay(1000)
+                    logd(TAG, "Authn response sent, proceeding with session settlement")
+                    // Try to get the redirect URL from the session
+                    val session = SignClient.getActiveSessionByTopic(topic)
+                    if (session?.metaData?.redirect.isNullOrEmpty()) {
+                        logd(TAG, "No redirect URL found in session metadata")
+                    } else {
+                        logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
+                    }
+                }
+            }) { error -> 
+                loge(TAG, "Failed to send response: ${error.throwable.message}")
+                loge(TAG, "Error details: ${error.throwable.stackTraceToString()}")
+                loge(error.throwable)
+                reject()
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Error creating or sending response: ${e.message}")
+            loge(TAG, "Error details: ${e.stackTraceToString()}")
+            loge(e)
+            reject()
+        }
+    } catch (e: Exception) {
+        loge(TAG, "Error in respondAuthn: ${e.message}")
+        loge(TAG, "Error details: ${e.stackTraceToString()}")
+        loge(e)
+        reject()
     }
 }
 

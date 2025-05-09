@@ -48,14 +48,28 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         if (!state.isAvailable) {
             logd(TAG, "Connection lost, attempting to reconnect")
             ioScope {
-                delay(1000) // Wait before reconnecting
-                try {
-                    CoreClient.Relay.connect { error: Core.Model.Error ->
-                        loge(TAG, "CoreClient.Relay connect error: $error")
+                var reconnectAttempts = 0
+                val maxReconnectAttempts = 3
+                
+                while (reconnectAttempts < maxReconnectAttempts && !isConnected) {
+                    try {
+                        logd(TAG, "Reconnection attempt ${reconnectAttempts + 1} of $maxReconnectAttempts")
+                        //delay(1000 * (reconnectAttempts + 1)) // Exponential backoff
+                        CoreClient.Relay.connect { error: Core.Model.Error ->
+                            loge(TAG, "CoreClient.Relay connect error: $error")
+                        }
+                        reconnectAttempts++
+                    } catch (e: Exception) {
+                        loge(TAG, "Error during reconnection attempt ${reconnectAttempts + 1}: ${e.message}")
+                        loge(e)
+                        reconnectAttempts++
                     }
-                } catch (e: Exception) {
-                    loge(TAG, "Error reconnecting: ${e.message}")
-                    loge(e)
+                }
+                
+                if (!isConnected) {
+                    loge(TAG, "Failed to reconnect after $maxReconnectAttempts attempts")
+                } else {
+                    logd(TAG, "Successfully reconnected")
                 }
             }
         } else if (isRedirecting) {
