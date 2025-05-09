@@ -46,6 +46,15 @@ class WalletConnect {
     }
 
     fun pair(uri: String) {
+        // Clean up any existing sessions for the dApp before pairing
+        try {
+            val dAppUrl = uri.split("?")[0] // Extract base URL from URI
+            disconnectSessionsForDApp(dAppUrl)
+        } catch (e: Exception) {
+            loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
+            loge(e)
+        }
+
         logd(TAG, "CoreClient.Relay isConnectionAvailable :${isConnectionAvailable.value}")
         
         // Show connecting toast immediately when pairing starts
@@ -184,7 +193,36 @@ class WalletConnect {
     fun disconnect(topic: String) {
         SignClient.disconnect(
             Sign.Params.Disconnect(sessionTopic = topic)
-        ) { error -> loge(error.throwable) }
+        ) { error -> 
+            loge(TAG, "Error disconnecting session $topic: ${error.throwable}")
+        }
+    }
+
+    fun disconnectAllSessions() {
+        try {
+            val activeSessions = SignClient.getListOfActiveSessions()
+            logd(TAG, "Disconnecting all sessions. Count: ${activeSessions.size}")
+            activeSessions.forEach { session ->
+                disconnect(session.topic)
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Error disconnecting all sessions: ${e.message}")
+            loge(e)
+        }
+    }
+
+    fun disconnectSessionsForDApp(dAppUrl: String) {
+        try {
+            val activeSessions = SignClient.getListOfActiveSessions()
+            val dAppSessions = activeSessions.filter { it.metaData?.url == dAppUrl }
+            logd(TAG, "Disconnecting sessions for dApp $dAppUrl. Count: ${dAppSessions.size}")
+            dAppSessions.forEach { session ->
+                disconnect(session.topic)
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Error disconnecting sessions for dApp $dAppUrl: ${e.message}")
+            loge(e)
+        }
     }
 
     private fun initCombine() {
