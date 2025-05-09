@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/home_page_background"
-        android:padding="16dp">
+        android:paddingVertical="16dp">
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:id="@+id/coin_icon"
@@ -32,7 +32,7 @@
             android:layout_marginStart="16dp"
             android:fontFamily="@font/inter"
             android:textColor="@color/text_1"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="4dp"
             android:textSize="14sp"
             android:textStyle="bold"
             android:lines="1"
@@ -41,9 +41,21 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/coin_icon"
             app:layout_constraintTop_toTopOf="@id/coin_icon"
-            app:layout_constraintEnd_toStartOf="@id/coin_balance"
+            app:layout_constraintEnd_toStartOf="@id/iv_verified"
             app:layout_constraintVertical_chainStyle="packed"
             tools:text="Flow"/>
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/iv_verified"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_verified"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/coin_name"
+            app:layout_constraintBottom_toBottomOf="@id/coin_name"
+            app:layout_constraintStart_toEndOf="@id/coin_name"
+            app:layout_constraintEnd_toStartOf="@id/coin_balance"/>
 
         <TextView
             android:id="@+id/coin_price"
@@ -69,6 +81,7 @@
             android:paddingHorizontal="8dp"
             android:textColor="@color/accent_green"
             android:textSize="12sp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/coin_price"
             app:layout_constraintStart_toEndOf="@id/coin_price"
             app:layout_constraintTop_toTopOf="@id/coin_price"
@@ -110,7 +123,7 @@
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintBottom_toTopOf="@id/coin_balance_price"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/coin_name"
+            app:layout_constraintStart_toEndOf="@id/iv_verified"
             app:layout_constraintTop_toTopOf="@id/coin_icon"
             tools:text="Flow"/>
 

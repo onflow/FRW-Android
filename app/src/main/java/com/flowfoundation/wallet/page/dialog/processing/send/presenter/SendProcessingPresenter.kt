@@ -6,7 +6,7 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_NFT
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_TRANSFER_COIN
@@ -89,13 +89,13 @@ class SendProcessingPresenter(
     private fun setupAmount() {
         ioScope {
             val coinData = transactionState.coinData()
-            val coin = FlowCoinListManager.getCoinById(coinData.coinId) ?: return@ioScope
+            val token = FungibleTokenListManager.getTokenById(coinData.coinId) ?: return@ioScope
             val amount = coinData.amount.format()
             uiScope {
                 with(binding) {
-                    amountView.text = "$amount ${coin.name}"
-                    Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
-                    coinNameView.text = coin.name
+                    amountView.text = "$amount ${token.name.orEmpty()}"
+                    Glide.with(coinIconView).load(token.tokenIcon()).into(coinIconView)
+                    coinNameView.text = token.name.orEmpty()
                 }
             }
         }

@@ -8,7 +8,7 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemInboxTokenBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.network.model.InboxToken
 import com.flowfoundation.wallet.page.inbox.InboxViewModel
 import com.flowfoundation.wallet.utils.findActivity
@@ -25,8 +25,8 @@ class InboxTokenItemPresenter(
     @SuppressLint("SetTextI18n")
     override fun bind(model: InboxToken) {
         with(binding) {
-            val coin = FlowCoinListManager.coinList().firstOrNull { it.address == model.coinAddress } ?: return
-            Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
+            val coin = FungibleTokenListManager.getFungibleToken { it.tokenAddress() == model.coinAddress } ?: return
+            Glide.with(coinIconView).load(coin.tokenIcon()).into(coinIconView)
             amountView.text = "${model.amount.format()} ${coin.symbol.uppercase()}"
 
             val marketValue = model.marketValue

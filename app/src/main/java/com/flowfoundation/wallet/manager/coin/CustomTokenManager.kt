@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.manager.coin
 import com.flowfoundation.wallet.cache.CustomTokenCacheManager.cacheSync
 import com.flowfoundation.wallet.cache.CustomTokenCacheManager.read
 import com.flowfoundation.wallet.manager.app.networkChainId
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.page.token.custom.model.CustomTokenItem
 import com.flowfoundation.wallet.utils.logd
 
@@ -30,20 +32,21 @@ object CustomTokenManager {
             return
         }
         cacheList.add(tokenItem)
-        FlowCoinListManager.addCustomToken()
+//        FlowCoinListManager.addCustomToken()
+        FungibleTokenListManager.addCustomToken()
         TokenStateManager.customTokenStateChanged(tokenItem, isAdded = true)
         cacheSync(cacheList)
     }
 
-    fun deleteCustomToken(coin: FlowCoin) {
-        val customToken = cacheList.firstOrNull { it.isSameToken(coin.chainId, coin.address) }
+    fun deleteCustomToken(token: FungibleToken) {
+        val customToken = cacheList.firstOrNull { it.isSameToken(token.evmChainId, token.tokenAddress()) }
         if (customToken == null) {
-            logd(TAG, "can not find this custom token :: ${coin.symbol} :: in ${coin.chainId} " +
+            logd(TAG, "can not find this custom token :: ${token.symbol} :: in ${token.evmChainId} " +
                     "network")
             return
         }
         cacheList.remove(customToken)
-        FlowCoinListManager.deleteCustomToken(customToken.contractAddress)
+        FungibleTokenListManager.deleteCustomToken(customToken.contractAddress)
         TokenStateManager.customTokenStateChanged(customToken, isAdded = false)
         cacheSync(cacheList)
     }

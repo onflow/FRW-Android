@@ -5,14 +5,10 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.manager.account.Balance
-import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.network.ApiService
@@ -25,10 +21,10 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 
-class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
+class SwapViewModel : ViewModel(), FungibleTokenUpdateListener {
 
-    val fromCoinLiveData = MutableLiveData<FlowCoin>()
-    val toCoinLiveData = MutableLiveData<FlowCoin>()
+    val fromCoinLiveData = MutableLiveData<FungibleToken>()
+    val toCoinLiveData = MutableLiveData<FungibleToken>()
     val onBalanceUpdate = MutableLiveData<Boolean>()
     val onCoinRateUpdate = MutableLiveData<Boolean>()
     val onEstimateFromUpdate = MutableLiveData<BigDecimal>()
@@ -39,46 +35,48 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
     val swapTransactionStateLiveData = MutableLiveData<Boolean>()
 
-    private val balanceMap: MutableMap<String, Balance> = mutableMapOf()
+    private val balanceMap: MutableMap<String, BigDecimal> = mutableMapOf()
     private val coinRateMap: MutableMap<String, BigDecimal> = mutableMapOf()
 
     var exactToken = ExactToken.FROM
         private set
 
     init {
-        BalanceManager.addListener(this)
-        CoinRateManager.addListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
     }
 
     fun initFromCoin(contractId: String) {
-        FlowCoinListManager.getCoinById(contractId)?.let { coin ->
-            fromCoinLiveData.value = coin
-            BalanceManager.getBalanceByCoin(coin)
-            CoinRateManager.fetchCoinRate(coin)
+        FungibleTokenListManager.getTokenById(contractId)?.let { token ->
+            fromCoinLiveData.value = token
+            ioScope {
+                FungibleTokenListManager.updateTokenInfo(contractId)
+            }
         }
     }
 
-    fun fromCoinBalance(): BigDecimal = if (fromCoin() == null) BigDecimal.ZERO else balanceMap[fromCoin()?.contractId()]?.balance ?: BigDecimal.ZERO
+    fun fromCoinBalance(): BigDecimal = if (fromCoin() == null) BigDecimal.ZERO else balanceMap[fromCoin()?.contractId()] ?: BigDecimal.ZERO
 
     fun fromCoin() = fromCoinLiveData.value
     fun toCoin() = toCoinLiveData.value
 
     fun fromCoinRate(): BigDecimal = coinRateMap[fromCoin()?.contractId()] ?: BigDecimal.ZERO
 
-    fun updateFromCoin(coin: FlowCoin) {
+    fun updateFromCoin(coin: FungibleToken) {
         if (fromCoin() == coin) return
         fromCoinLiveData.value = coin
-        BalanceManager.getBalanceByCoin(coin)
-        CoinRateManager.fetchCoinRate(coin)
         requestEstimate()
+        ioScope {
+            FungibleTokenListManager.updateTokenInfo(coin.contractId())
+        }
     }
 
-    fun updateToCoin(coin: FlowCoin) {
+    fun updateToCoin(coin: FungibleToken) {
         if (toCoin() == coin) return
         toCoinLiveData.value = coin
-        BalanceManager.getBalanceByCoin(coin)
-        CoinRateManager.fetchCoinRate(coin)
         requestEstimate()
+        ioScope {
+            FungibleTokenListManager.updateTokenInfo(coin.contractId())
+        }
     }
 
     fun updateExactToken(exactToken: ExactToken) {
@@ -102,14 +100,14 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
     fun swap() {
         val data = estimateLiveData.value ?: return
         ioScope {
-            val txid = swapSend(data)
-            safeRun { swapTransactionStateLiveData.postValue(!txid.isNullOrBlank()) }
-            if (txid.isNullOrBlank()) {
+            val txId = swapSend(data)
+            safeRun { swapTransactionStateLiveData.postValue(!txId.isNullOrBlank()) }
+            if (txId.isNullOrBlank()) {
                 toast(msgRes = R.string.swap_failed)
                 return@ioScope
             }
             val transactionState = TransactionState(
-                transactionId = txid,
+                transactionId = txId,
                 time = System.currentTimeMillis(),
                 state = FlowTransactionStatus.PENDING.num,
                 type = TransactionState.TYPE_TRANSACTION_DEFAULT,
@@ -120,13 +118,10 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         }
     }
 
-    override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        balanceMap[coin.contractId()] = balance
+    override fun onTokenUpdated(token: FungibleToken) {
+        balanceMap[token.contractId()] = token.tokenBalance()
         onBalanceUpdate.value = true
-    }
-
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
-        coinRateMap[coin.contractId()] = price
+        coinRateMap[token.contractId()] = token.tokenPrice()
         onCoinRateUpdate.value = true
     }
 
@@ -164,6 +159,7 @@ class SwapViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
             }
         }
     }
+
 }
 
 enum class ExactToken {

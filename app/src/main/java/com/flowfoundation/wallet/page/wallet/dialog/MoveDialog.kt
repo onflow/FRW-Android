@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.page.nft.move.SelectNFTDialog
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
 import com.flowfoundation.wallet.utils.extensions.gone
@@ -58,7 +58,7 @@ class MoveDialog : BottomSheetDialogFragment() {
             clMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
-                        MoveTokenDialog().showDialog(requireActivity(), FlowCoinListManager.getFlowCoinContractId()).let {
+                        MoveTokenDialog().showDialog(requireActivity(), FungibleTokenListManager.getFlowTokenContractId()).let {
                             result?.resume(true)
                         }
                         dismissAllowingStateLoss()

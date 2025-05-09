@@ -11,24 +11,20 @@ import androidx.core.view.size
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
-import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
-import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.clearUserCache
@@ -40,7 +36,6 @@ import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.extensions.colorStateList
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loadAvatar
@@ -53,7 +48,6 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
-import java.math.BigDecimal
 
 enum class HomeTab(val index: Int) {
     WALLET(0),
@@ -216,8 +210,7 @@ private fun ViewGroup.setupWallet(
             TokenStateManager.clear()
             NftCollectionStateManager.clear()
             TransactionStateManager.reload()
-            FlowCoinListManager.reload()
-            BalanceManager.clear()
+            FungibleTokenListManager.clear()
             StakingManager.clear()
             CryptoProviderManager.clear()
             delay(1000)
@@ -364,8 +357,7 @@ private fun View.setupWalletItem(
                 TokenStateManager.clear()
                 NftCollectionStateManager.clear()
                 TransactionStateManager.reload()
-                FlowCoinListManager.reload()
-                BalanceManager.clear()
+                FungibleTokenListManager.clear()
                 StakingManager.clear()
                 CryptoProviderManager.clear()
                 delay(1000)

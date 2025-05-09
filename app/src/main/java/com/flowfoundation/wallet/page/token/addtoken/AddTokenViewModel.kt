@@ -38,6 +38,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
     fun load() {
         viewModelIOScope(this) {
             coinList.clear()
+            // todo fetch all token list
             coinList.addAll(
                 FlowCoinListManager.coinList().map { TokenItem(coin = it, isAdded = TokenStateManager.isTokenAdded(it), isAdding = false) })
             tokenListLiveData.postValue(coinList.toList())

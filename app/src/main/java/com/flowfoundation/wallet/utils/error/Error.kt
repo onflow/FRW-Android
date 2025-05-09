@@ -22,6 +22,7 @@ enum class AccountError(
 ) : BaseError {
     DESERIALIZE_ACCOUNT_FAILED("deserializeAccountFailed"),
     DESERIALIZE_PREFIX_FAILED("deserializePrefixFailed"),
+    DESERIALIZE_DISPLAY_TOKEN_FAILED("deserializeDisplayTokenFailed"),
     MIGRATE_PREFIX_FAILED("migratePrefixFailed"),
     SET_ANONYMOUS_FAILED("setAnonymousFiled"),
     REGISTER_USER_FAILED("registerUserFailed"),

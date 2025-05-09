@@ -11,12 +11,10 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
-import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
@@ -28,9 +26,9 @@ import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
-import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
 import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
+import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity
 import com.flowfoundation.wallet.page.wallet.WalletFragmentViewModel
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.page.wallet.model.WalletHeaderModel
@@ -53,10 +51,6 @@ class WalletHeaderPresenter(
 
     private val activity by lazy { findActivity(view) as? FragmentActivity }
 
-    init {
-        binding.cvStake.setVisible(isMainnet())
-    }
-
     @SuppressLint("SetTextI18n")
     override fun bind(model: WalletHeaderModel?) {
         binding.root.setVisible(model != null)
@@ -73,7 +67,7 @@ class WalletHeaderPresenter(
                 ivHide.setImageResource(if (isHideBalance) R.drawable.ic_eye_off else R.drawable.ic_eye_on)
             }
 
-            val count = if (model.coinCount > 0 ) model.coinCount else FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it) }
+            val count = if (model.coinCount > 0 ) model.coinCount else FungibleTokenListManager.getCurrentDisplayTokenListSnapshot().size
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
             cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
@@ -88,11 +82,11 @@ class WalletHeaderPresenter(
             }
             if (WalletManager.isChildAccountSelected()) {
                 cvSwap.gone()
-                cvStake.gone()
                 cvBuy.gone()
-                ivAddToken.gone()
+                flManageToken.gone()
+                flAddToken.gone()
             } else {
-                ivAddToken.setOnClickListener {
+                flAddToken.setOnClickListener {
                     if (WalletManager.isEVMAccountSelected()) {
                         AddCustomTokenActivity.launch(view.context)
                     } else {
@@ -108,12 +102,14 @@ class WalletHeaderPresenter(
                         )
                     }
                 }
-                cvStake.setOnClickListener { openStakingPage(view.context) }
+                flManageToken.setOnClickListener {
+                    ManageTokenActivity.launch(view.context)
+                }
                 cvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
                 cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
-                cvStake.setVisible(isMainnet() && WalletManager.isEVMAccountSelected().not())
-                ivAddToken.visible()
+                flManageToken.setVisible(WalletManager.isEVMAccountSelected().not())
+                flAddToken.visible()
             }
 
             with(cvSend) {

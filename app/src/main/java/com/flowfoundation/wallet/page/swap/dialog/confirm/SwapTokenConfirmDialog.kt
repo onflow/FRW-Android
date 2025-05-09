@@ -44,8 +44,8 @@ class SwapTokenConfirmDialog : BottomSheetDialogFragment() {
     private fun DialogSwapTokenConfirmBinding.bindHeader() {
         val fromCoin = viewModel.fromCoin() ?: return
         val toCoin = viewModel.toCoin() ?: return
-        Glide.with(fromAvatarView).load(fromCoin.icon()).into(fromAvatarView)
-        Glide.with(toAvatarView).load(toCoin.icon()).into(toAvatarView)
+        Glide.with(fromAvatarView).load(fromCoin.tokenIcon()).into(fromAvatarView)
+        Glide.with(toAvatarView).load(toCoin.tokenIcon()).into(toAvatarView)
 
         fromNameView.text = fromCoin.symbol.uppercase()
         toNameView.text = fromCoin.symbol.uppercase()
