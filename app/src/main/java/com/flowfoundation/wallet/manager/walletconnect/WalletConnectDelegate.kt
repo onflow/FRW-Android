@@ -83,50 +83,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         }
     }
 
-    private fun cleanupSessionsForDApp(dAppUrl: String? = null) {
-        try {
-            val activeSessions = SignClient.getListOfActiveSessions()
-            logd(TAG, "Starting session cleanup. Current count: ${activeSessions.size}")
-            
-            // If dAppUrl is provided, only clean up sessions for that dApp
-            val sessionsToClean = if (dAppUrl != null) {
-                activeSessions.filter { session -> 
-                    session.metaData?.url == dAppUrl 
-                }
-            } else {
-                activeSessions
-            }
-
-            // Sort sessions by expiry to keep the most recent one
-            val sortedSessions = sessionsToClean.sortedByDescending { it.expiry }
-            
-            // Keep only the most recent session for each dApp
-            val sessionsToDisconnect = if (dAppUrl != null) {
-                sortedSessions.drop(1) // Keep only the most recent session for the specific dApp
-            } else {
-                // For general cleanup, keep only the most recent session per dApp
-                val dAppUrls = sortedSessions.mapNotNull { it.metaData?.url }.distinct()
-                val sessionsToKeep = dAppUrls.mapNotNull { url ->
-                    sortedSessions.firstOrNull { it.metaData?.url == url }
-                }
-                sortedSessions.filter { session -> session !in sessionsToKeep }
-            }
-
-            // Disconnect stale sessions
-            sessionsToDisconnect.forEach { session ->
-                logd(TAG, "Disconnecting session: ${session.topic} for dApp: ${session.metaData?.url}")
-                SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
-                    loge(TAG, "Error disconnecting session ${session.topic}: ${error.throwable}")
-                }
-            }
-
-            logd(TAG, "Session cleanup completed. Disconnected ${sessionsToDisconnect.size} sessions")
-        } catch (e: Exception) {
-            loge(TAG, "Error during session cleanup: ${e.message}")
-            loge(e)
-        }
-    }
-
     override fun onError(error: Sign.Model.Error) {
         logd(TAG, "onError() error:$error")
         loge(error.throwable)
@@ -135,14 +91,22 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         uiScope {
             val errorMessage = when {
                 error.throwable.message?.contains("No proposal or pending session") == true -> {
-                    // Extract dApp URL from the error message if possible
-                    val dAppUrl = error.throwable.message?.let { message ->
-                        // Try to extract URL from the error message
-                        message.split("pairing topic:").firstOrNull()?.trim()
+                    // Clean up any stale sessions when we get this error
+                    try {
+                        val activeSessions = SignClient.getListOfActiveSessions()
+                        logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
+                        activeSessions.forEach { session ->
+                            if (session.metaData == null) {
+                                logd(TAG, "Disconnecting stale session: ${session.topic}")
+                                SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { disconnectError ->
+                                    loge(TAG, "Error disconnecting stale session: ${disconnectError.throwable}")
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "Error cleaning up sessions: ${e.message}")
+                        loge(e)
                     }
-                    
-                    // Clean up sessions for the specific dApp or all sessions if URL not found
-                    cleanupSessionsForDApp(dAppUrl)
                     R.string.wallet_connect_no_proposal
                 }
                 error.throwable.message?.contains("pairing topic") == true -> {
@@ -219,9 +183,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     ) {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
         logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
-
-        // Clean up existing sessions for this dApp before processing new proposal
-        cleanupSessionsForDApp(sessionProposal.url)
 
         processedRequestIds.clear()
         isSessionApproved = false  // Reset approval state for new session
@@ -374,15 +335,8 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         logd(TAG, "Using metadata redirect URL: ${metadata?.redirect}")
                         metadata?.redirect
                     } else {
-                        // If no redirect URL in metadata, try to get it from the session proposal
-                        val activeSession = SignClient.getActiveSessionByTopic(settleSessionResponse.session.topic)
-                        if (!activeSession?.redirect.isNullOrEmpty()) {
-                            logd(TAG, "Using session redirect URL: ${activeSession?.redirect}")
-                            activeSession?.redirect
-                        } else {
-                            logd(TAG, "No redirect URL found in session metadata or active session")
-                            null
-                        }
+                        logd(TAG, "No redirect URL found in session metadata")
+                        null
                     }
                 }
 
@@ -406,18 +360,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                     }
                 } else {
                     logd(TAG, "No redirect URL found in pendingRedirectUrl or session metadata")
-                    // Try to reconnect to ensure the session is active
-                    ioScope {
-                        delay(1000) // Wait a bit before reconnecting
-                        try {
-                            CoreClient.Relay.connect { error: Core.Model.Error ->
-                                loge(TAG, "CoreClient.Relay connect error: $error")
-                            }
-                        } catch (e: Exception) {
-                            loge(TAG, "Error reconnecting after session settlement: ${e.message}")
-                            loge(e)
-                        }
-                    }
                 }
             }
             is Sign.Model.SettledSessionResponse.Error -> {
