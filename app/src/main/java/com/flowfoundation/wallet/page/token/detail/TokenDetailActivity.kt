@@ -13,6 +13,8 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailActivitiesModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailChartModel
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
@@ -29,25 +31,27 @@ class TokenDetailActivity : BaseActivity() {
     private lateinit var chartPresenter: TokenDetailChartPresenter
     private lateinit var activitiesPresenter: TokenDetailActivitiesPresenter
     private lateinit var viewModel: TokenDetailViewModel
-    private val coin by lazy {
-        intent.getParcelableExtra<FlowCoin>(EXTRA_COIN)
+    private val contractId by lazy {
+        intent.getStringExtra(EXTRA_TOKEN_CONTRACT_ID) ?: ""
     }
+    private var currentToken: FungibleToken? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        coin?.let { coin ->
+        currentToken = FungibleTokenListManager.getTokenById(contractId)
+        currentToken?.let { token ->
             binding = ActivityTokenDetailBinding.inflate(layoutInflater)
             setContentView(binding.root)
 
             UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
             UltimateBarX.with(this).fitWindow(true).light(!isNightMode(this)).applyNavigationBar()
 
-            presenter = TokenDetailPresenter(this, binding, coin)
+            presenter = TokenDetailPresenter(this, binding, token)
             chartPresenter = TokenDetailChartPresenter(this, binding.chartWrapper)
-            activitiesPresenter = TokenDetailActivitiesPresenter(this, binding.activitiesWrapper, coin)
+            activitiesPresenter = TokenDetailActivitiesPresenter(this, binding.activitiesWrapper, token)
 
             viewModel = ViewModelProvider(this)[TokenDetailViewModel::class.java].apply {
-                setCoin(coin)
+                setToken(token)
                 balanceAmountLiveData.observe(this@TokenDetailActivity) { presenter.bind(TokenDetailModel(balanceAmount = it)) }
                 balancePriceLiveData.observe(this@TokenDetailActivity) { presenter.bind(TokenDetailModel(balancePrice = it)) }
                 summaryLiveData.observe(this@TokenDetailActivity) { chartPresenter.bind(TokenDetailChartModel(summary = it)) }
@@ -61,7 +65,7 @@ class TokenDetailActivity : BaseActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val isCustomToken = CustomTokenManager.isCustomToken(coin?.address.orEmpty())
+        val isCustomToken = CustomTokenManager.isCustomToken(currentToken?.tokenAddress().orEmpty())
         menuInflater.inflateWithCrowdin(R.menu.token_detail_more, menu, resources)
         val menuItem = menu.findItem(R.id.action_more)
         menuItem.setVisible(isCustomToken)
@@ -78,16 +82,16 @@ class TokenDetailActivity : BaseActivity() {
     }
 
     private fun showMoreAction() {
-        coin?.let {
+        currentToken?.let {
             TokenDetailPopupMenu(binding.space, it).show()
         }
     }
 
     companion object {
-        private const val EXTRA_COIN = "EXTRA_COIN"
-        fun launch(context: Context, coin: FlowCoin) {
+        private const val EXTRA_TOKEN_CONTRACT_ID = "extra_token_contract_id"
+        fun launch(context: Context, contractId: String) {
             context.startActivity(Intent(context, TokenDetailActivity::class.java).apply {
-                putExtra(EXTRA_COIN, coin)
+                putExtra(EXTRA_TOKEN_CONTRACT_ID, contractId)
             })
         }
     }

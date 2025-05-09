@@ -1,15 +1,15 @@
 package com.flowfoundation.wallet.page.swap.model
 
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 
 data class SwapModel(
     @SerializedName("fromCoin")
-    val fromCoin: FlowCoin? = null,
+    val fromCoin: FungibleToken? = null,
     @SerializedName("toCoin")
-    val toCoin: FlowCoin? = null,
+    val toCoin: FungibleToken? = null,
     @SerializedName("onBalanceUpdate")
     val onBalanceUpdate: Boolean? = null,
     @SerializedName("onCoinRateUpdate")

@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev

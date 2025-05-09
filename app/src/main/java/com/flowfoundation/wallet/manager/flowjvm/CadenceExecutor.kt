@@ -9,6 +9,8 @@ import com.flowfoundation.wallet.manager.flow.CadenceScriptBuilder
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendBridgeTransaction
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
+import com.flowfoundation.wallet.manager.token.formatCadence
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -156,10 +158,10 @@ suspend fun cadenceEnableToken(coin: FlowCoin): String? {
     return transactionId
 }
 
-suspend fun cadenceTransferToken(coin: FlowCoin, toAddress: String, amount: Double): String? {
+suspend fun cadenceTransferToken(token: FungibleToken, toAddress: String, amount: Double): String? {
     logd(TAG, "cadenceTransferToken()")
     val script = CadenceScript.CADENCE_TRANSFER_TOKEN
-    val transactionId = coin.formatCadence(script).transactionByMainWallet(script.scriptId) {
+    val transactionId = token.formatCadence(script).transactionByMainWallet(script.scriptId) {
         arg { ufix64Safe(BigDecimal(amount)) }
         arg { address(toAddress.toAddress()) }
     }
@@ -315,13 +317,13 @@ suspend fun cadenceSendNFTFromChildToChild(
 suspend fun cadenceClaimInboxToken(
     domain: String,
     key: String,
-    coin: FlowCoin,
+    token: FungibleToken,
     amount: BigDecimal,
     root: String = FlowDomainServer.MEOW.domain,
 ): String? {
     logd(TAG, "cadenceClaimInboxToken()")
     val script = CadenceScript.CADENCE_CLAIM_INBOX_TOKEN
-    val transactionId = coin.formatCadence(script).transactionByMainWallet(script.scriptId) {
+    val transactionId = token.formatCadence(script).transactionByMainWallet(script.scriptId) {
         arg { string(domain) }
         arg { string(root) }
         arg { string(key) }

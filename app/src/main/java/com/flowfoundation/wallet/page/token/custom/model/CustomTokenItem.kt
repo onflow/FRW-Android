@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.page.token.custom.model
 
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinType
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.svgToPng
 import com.google.gson.annotations.SerializedName
@@ -76,6 +78,34 @@ data class CustomTokenItem(
             type = coinType
         )
     }
+}
+
+fun CustomTokenItem.toFungibleToken(): FungibleToken {
+    return FungibleToken(
+        name = this.name,
+        symbol = this.symbol,
+        logoURI = this.icon,
+        decimals = this.decimal,
+        balance = null,
+        currency = null,
+        priceInCurrency = null,
+        balanceInCurrency = null,
+        balanceInUSD = null,
+        isVerified = false,
+        tokenType = when (this.tokenType) {
+            TokenType.EVM -> FungibleTokenType.EVM
+            TokenType.FLOW -> FungibleTokenType.FLOW
+        },
+        flowIdentifier = this.flowIdentifier,
+        flowAddress = if (this.tokenType == TokenType.FLOW) this.contractAddress else null,
+        evmAddress = if (this.tokenType == TokenType.EVM) this.contractAddress else this.evmAddress,
+        flowContractName = this.contractName,
+        flowStoragePath = null,
+        flowReceiverPath = null,
+        flowBalancePath = null,
+        flowSocialsWebsiteUrl = null,
+        evmChainId = this.chainId
+    )
 }
 
 @Serializable

@@ -2,12 +2,13 @@ package com.flowfoundation.wallet.network
 
 import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
-import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
+import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -225,4 +226,19 @@ interface ApiService {
 
     @POST("/api/evm/decodeData")
     suspend fun getEVMTransactionDecodeData(@Body params: TransactionDecodeParams): TransactionDecodeDataResponse
+
+    @GET("/api/v4/evm/tokens/ft/{address}")
+    suspend fun getEVMTokenList(
+        @Path("address") address: String,
+        @Query("currency") currency: String?,
+        @Query("network") network: String?
+    ): EVMTokenListResponse
+
+    @GET("/api/v4/cadence/tokens/ft/{address}")
+    suspend fun getFlowTokenList(
+        @Path("address") address: String,
+        @Query("currency") currency: String?,
+        @Query("network") network: String?
+    ): FlowTokenListResponse
+
 }

@@ -4,6 +4,7 @@ import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountViewModel
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
@@ -30,7 +31,7 @@ class SendCoinPopupMenu(
     }
 
     private fun onMenuItemClick(text: String): Boolean {
-        FlowCoinListManager.coinList().firstOrNull { it.name.lowercase() == text.lowercase() }?.let { viewModel.changeCoin(it) }
+        FungibleTokenListManager.getFungibleToken { it.name.lowercase() == text.lowercase() }?.let { viewModel.changeToken(it) }
         return true
     }
 

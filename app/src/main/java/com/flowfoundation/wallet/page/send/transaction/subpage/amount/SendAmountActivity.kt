@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -40,7 +40,7 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
         viewModel = ViewModelProvider(this)[SendAmountViewModel::class.java].apply {
             setContact(contact)
             setInitialAmount(initialAmount)
-            FlowCoinListManager.getCoinById(coinContractId.orEmpty())?.let { changeCoin(it) }
+            FungibleTokenListManager.getTokenById(coinContractId.orEmpty())?.let { changeToken(it) }
             balanceLiveData.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(balance = it)) }
             onCoinSwap.observe(this@SendAmountActivity) { presenter.bind(SendAmountModel(onCoinSwap = true)) }
             load()

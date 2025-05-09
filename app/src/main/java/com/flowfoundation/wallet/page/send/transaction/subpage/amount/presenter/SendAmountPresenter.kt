@@ -15,11 +15,11 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryMinFlowBalance
 import com.flowfoundation.wallet.manager.price.CurrencyManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.model.AddressBookPersonModel
@@ -112,8 +112,7 @@ class SendAmountPresenter(
     }
 
     private suspend fun minBalance(): BigDecimal {
-        return if (WalletManager.isEVMAccountSelected() || FlowCoinListManager.isFlowCoin
-                (viewModel.currentCoin()).not() || isGasFree()) {
+        return if (WalletManager.isEVMAccountSelected() || FungibleTokenListManager.isFlowToken(viewModel.currentCoin()).not() || isGasFree()) {
             BigDecimal.ZERO
         } else {
             minFlowBalance.max(BigDecimal(0.001))
@@ -132,11 +131,9 @@ class SendAmountPresenter(
             updateTransferAmountConvert()
 
             val icon =
-                if (viewModel.currentCoin() == selectedCurrency().flag) FlowCoinListManager.getCoinById(
-                    viewModel.convertCoin()
-                )?.icon() else FlowCoinListManager.getCoinById(
-                    viewModel.currentCoin()
-                )?.icon()
+                if (viewModel.currentCoin() == selectedCurrency().flag)
+                    FungibleTokenListManager.getTokenById(viewModel.convertCoin())?.tokenIcon()
+                else FungibleTokenListManager.getTokenById(viewModel.currentCoin())?.tokenIcon()
             Glide.with(balanceIconView).load(icon).into(balanceIconView)
             coinWrapper.isEnabled = viewModel.currentCoin() != selectedCurrency().flag
             coinMoreArrowView.setVisible(viewModel.currentCoin() != selectedCurrency().flag)
@@ -171,7 +168,7 @@ class SendAmountPresenter(
     private fun updateBalance(balance: SendBalanceModel) {
         with(binding) {
             balanceAmountView.text =
-                "${balance.balance.format(8)} ${FlowCoinListManager.getCoinById(balance.contractId)?.name?.capitalizeV2()} "
+                "${balance.balance.format(8)} ${FungibleTokenListManager.getTokenById(balance.contractId)?.name?.capitalizeV2()} "
             balanceAmountConvertView.text =
                 "≈ " + (if (balance.coinRate > BigDecimal.ZERO) balance.coinRate * balance.balance else BigDecimal.ZERO).formatPrice(
                     includeSymbol = true,
@@ -265,21 +262,20 @@ class SendAmountPresenter(
     }
 
     private fun String.coinIcon(): Any {
-        return FlowCoinListManager.getCoinById(this)?.icon() ?: selectedCurrency().icon
+        return FungibleTokenListManager.getTokenById(this)?.tokenIcon() ?: selectedCurrency().icon
     }
 
     private fun String.decimal(): Int {
-        return FlowCoinListManager.getCoinById(this)?.run {
-            when (type) {
-                FlowCoinType.EVM -> {
+        return FungibleTokenListManager.getTokenById(this)?.run {
+            when (tokenType) {
+                FungibleTokenType.EVM -> {
                     if (isFlowAddress(contact.address.orEmpty())) {
-                        kotlin.math.min(decimal, 8)
+                        kotlin.math.min(tokenDecimal(), 8)
                     } else {
-                        kotlin.math.min(decimal, 18)
+                        kotlin.math.min(tokenDecimal(), 18)
                     }
                 }
-                FlowCoinType.CADENCE -> kotlin.math.min(decimal, 8)
-                null -> 8
+                FungibleTokenType.FLOW -> kotlin.math.min(tokenDecimal(), 8)
             }
         } ?: 8
     }

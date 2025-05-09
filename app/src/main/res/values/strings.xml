@@ -747,4 +747,13 @@
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
+    <string name="manage_tokens">Manage Tokens</string>
+    <string name="filters">Filters</string>
+    <string name="hide_dust_token">Hide Dust Tokens (&lt;1$ USD Balance)</string>
+    <string name="display_verified_token">Only show verified tokens</string>
+    <string name="tokens">Tokens</string>
+    <string name="verified">Verified</string>
+    <string name="contract_address">Contract address</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
 </resources>

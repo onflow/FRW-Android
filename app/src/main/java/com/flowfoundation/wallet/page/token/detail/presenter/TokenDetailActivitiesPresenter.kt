@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.LayoutTokenDetailActivitiesBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailActivitiesModel
 import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
 import com.flowfoundation.wallet.page.transaction.record.adapter.TransactionRecordListAdapter
@@ -16,7 +16,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 class TokenDetailActivitiesPresenter(
     private val activity: AppCompatActivity,
     private val binding: LayoutTokenDetailActivitiesBinding,
-    private val coin: FlowCoin,
+    private val token: FungibleToken,
 ) : BasePresenter<TokenDetailActivitiesModel> {
 
     private val adapter by lazy { TransactionRecordListAdapter() }
@@ -26,7 +26,7 @@ class TokenDetailActivitiesPresenter(
             adapter = this@TokenDetailActivitiesPresenter.adapter
             layoutManager = LinearLayoutManager(activity)
         }
-        binding.activitiesMoreButton.setOnClickListener { TransactionRecordActivity.launch(activity, coin.contractId()) }
+        binding.activitiesMoreButton.setOnClickListener { TransactionRecordActivity.launch(activity, token.contractId()) }
     }
 
     override fun bind(model: TokenDetailActivitiesModel) {
