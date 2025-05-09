@@ -204,25 +204,19 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
 
             if (activity == null) {
                 loge(TAG, "No current activity found after $maxAttempts attempts")
-                // Launch MainActivity if no activity is found
-                val context = Env.getApp()
-                MainActivity.launch(context)
-                delay(1000)  // Wait for activity to be ready
-                activity = BaseActivity.getCurrentActivity()
-                
-                if (activity == null) {
-                    loge(TAG, "Still no activity found after launching MainActivity")
-                    uiScope {
-                        toast(R.string.wallet_connect_activity_error)
-                    }
-                    try {
-                        sessionProposal.reject()
-                    } catch (e: Exception) {
-                        loge(TAG, "Error rejecting session: ${e.message}")
-                        loge(e)
-                    }
-                    return@ioScope
+                // Show error message to user and reject the session
+                uiScope {
+                    toast(R.string.wallet_connect_activity_error)
+                    logd(TAG, "Showing activity error toast to user")
                 }
+                try {
+                    sessionProposal.reject()
+                    logd(TAG, "Rejected session due to no activity found")
+                } catch (e: Exception) {
+                    loge(TAG, "Error rejecting session: ${e.message}")
+                    loge(e)
+                }
+                return@ioScope
             }
 
             try {

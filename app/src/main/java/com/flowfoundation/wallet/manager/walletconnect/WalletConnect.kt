@@ -46,6 +46,21 @@ class WalletConnect {
     }
 
     fun pair(uri: String) {
+        // Clean up all active sessions before pairing
+        try {
+            val activeSessions = SignClient.getListOfActiveSessions()
+            logd(TAG, "Cleaning up all active sessions before pairing. Current count: ${activeSessions.size}")
+            activeSessions.forEach { session ->
+                logd(TAG, "Disconnecting session before pairing: ${session.topic}")
+                SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                    loge(TAG, "Error disconnecting session: ${error.throwable}")
+                }
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
+            loge(e)
+        }
+
         logd(TAG, "CoreClient.Relay isConnectionAvailable :${isConnectionAvailable.value}")
         
         // Show connecting toast immediately when pairing starts
