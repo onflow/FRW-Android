@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
 import android.annotation.SuppressLint
+import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
@@ -122,6 +123,21 @@ class TokenDetailPresenter(
         }
         bindAccessible(token)
         bindStorageInfo(token)
+        bindVerifiedInfo(token)
+    }
+
+    private fun bindVerifiedInfo(token: FungibleToken) {
+        if (WalletManager.isEVMAccountSelected()) {
+            binding.securityWrapper.gone()
+            return
+        }
+        binding.securityWrapper.visible()
+        binding.tvVerifiedInfo.text = if (token.isVerified) R.string.yes.res2String() else R.string.no.res2String()
+        binding.tvContractAddress.text = token.tokenAddress()
+        binding.tvContractAddress.paintFlags = binding.tvContractAddress.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+        binding.tvContractAddress.setOnClickListener {
+            openBrowser(activity, "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}")
+        }
     }
 
     @SuppressLint("SetTextI18n")

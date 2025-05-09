@@ -451,7 +451,6 @@
                         android:id="@+id/storage_wrapper"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:padding="16dp"
                         android:visibility="gone">
 
@@ -548,6 +547,99 @@
                             app:layout_constraintBottom_toBottomOf="@id/tv_total_balance_title"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="@id/tv_total_balance_title" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/security_card_wrapper"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:layout_marginTop="12dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/storage_card_wrapper">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_card">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/security_wrapper"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tv_security_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter"
+                            android:text="@string/security"
+                            android:textColor="@color/text_1"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                        <TextView
+                            android:id="@+id/tv_verified_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="@font/inter"
+                            android:text="@string/verified"
+                            android:textColor="@color/text_1"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tv_security_title" />
+
+                        <TextView
+                            android:id="@+id/tv_verified_info"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter"
+                            android:textColor="@color/text_1"
+                            android:textSize="14sp"
+                            tools:text="No"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/tv_verified_title" />
+
+                        <TextView
+                            android:id="@+id/tv_contract_address_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:fontFamily="@font/inter"
+                            android:text="@string/contract_address"
+                            android:textColor="@color/text_1"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tv_verified_title" />
+
+                        <TextView
+                            android:id="@+id/tv_contract_address"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/inter"
+                            android:textColor="@color/text_1"
+                            android:layout_marginStart="30dp"
+                            android:textSize="14sp"
+                            android:ellipsize="middle"
+                            android:gravity="end"
+                            android:lines="1"
+                            android:maxLines="1"
+                            tools:text="TSLv...18o9k"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@id/tv_contract_address_title"
+                            app:layout_constraintTop_toTopOf="@id/tv_contract_address_title" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
                 </FrameLayout>
             </androidx.cardview.widget.CardView>

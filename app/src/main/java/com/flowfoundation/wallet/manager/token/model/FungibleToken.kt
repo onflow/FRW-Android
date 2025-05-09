@@ -154,7 +154,7 @@ data class FungibleToken(
     }
 
     fun isSameToken(contractId: String): Boolean {
-        return contractId.equals(contractId(), true)
+        return contractId.equals(this.contractId(), true)
     }
 
     companion object {
