@@ -240,7 +240,7 @@ private fun WCRequest.respondAccountInfo() {
     }) { error -> loge(error.throwable) }
 }
 
-private fun WCRequest.respondAuthn() {
+private suspend fun WCRequest.respondAuthn() {
     logd(TAG, "Starting respondAuthn with params: $params")
     val address = WalletManager.wallet()?.walletAddress() ?: run {
         loge(TAG, "No wallet address found")
@@ -314,29 +314,54 @@ private fun WCRequest.respondAuthn() {
         )
         logd(TAG, "Sending response: $response")
 
-        SignClient.respond(response, onSuccess = { success ->
-            logd(TAG, "Response sent successfully: $success")
-            ioScope {
-                try {
-                    delay(1000)
-                    logd(TAG, "Authn response sent, proceeding with session settlement")
-                    // Try to get the redirect URL from the session
-                    val session = SignClient.getActiveSessionByTopic(topic)
-                    if (session?.metaData?.redirect.isNullOrEmpty()) {
-                        logd(TAG, "No redirect URL found in session metadata")
-                    } else {
-                        logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
+        // Send response with retry logic
+        var retryCount = 0
+        val maxRetries = 3
+        var success = false
+
+        while (!success && retryCount < maxRetries) {
+            try {
+                SignClient.respond(response, onSuccess = { result ->
+                    logd(TAG, "Response sent successfully: $result")
+                    success = true
+                    ioScope {
+                        try {
+                            delay(1000)
+                            logd(TAG, "Authn response sent, proceeding with session settlement")
+                            // Try to get the redirect URL from the session
+                            val session = SignClient.getActiveSessionByTopic(topic)
+                            if (session?.metaData?.redirect.isNullOrEmpty()) {
+                                logd(TAG, "No redirect URL found in session metadata")
+                            } else {
+                                logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
+                            }
+                        } catch (e: Exception) {
+                            loge(TAG, "Error during authn response cleanup: ${e.message}")
+                            loge(e)
+                            // Don't reject here since the response was already sent successfully
+                        }
                     }
-                } catch (e: Exception) {
-                    loge(TAG, "Error during authn response cleanup: ${e.message}")
-                    loge(e)
-                    // Don't reject here since the response was already sent successfully
+                }) { error -> 
+                    loge(TAG, "Failed to send response (attempt ${retryCount + 1}): ${error.throwable.message}")
+                    loge(error.throwable)
+                    retryCount++
+                    if (retryCount >= maxRetries) {
+                        reject()
+                    }
                 }
+                if (!success) {
+                    delay(1000L * (retryCount + 1))
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error sending response (attempt ${retryCount + 1}): ${e.message}")
+                loge(e)
+                retryCount++
+                if (retryCount >= maxRetries) {
+                    reject()
+                    break
+                }
+                delay(1000L * (retryCount + 1))
             }
-        }) { error -> 
-            loge(TAG, "Failed to send response: ${error.throwable.message}")
-            loge(error.throwable)
-            reject()
         }
     } catch (e: Exception) {
         loge(TAG, "Error in respondAuthn: ${e.message}")

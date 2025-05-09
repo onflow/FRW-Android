@@ -38,6 +38,8 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     private var pendingRedirectUrl: String? = null
     private var isRedirecting = false
     private var isSessionApproved = false
+    private var lastActiveTopic: String? = null
+    private var isProcessingRequest = false
 
     /**
      * Triggered whenever the connection state is changed
@@ -56,21 +58,25 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         delay(1000L * (reconnectAttempts + 1))
                         logd(TAG, "Reconnection attempt ${reconnectAttempts + 1} of $maxReconnectAttempts")
                         
-                        // Clean up any stale sessions before reconnecting
-                        try {
-                            val activeSessions = SignClient.getListOfActiveSessions()
-                            logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
-                            activeSessions.forEach { session ->
-                                if (session.metaData == null) {
-                                    logd(TAG, "Disconnecting stale session: ${session.topic}")
-                                    SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
-                                        loge(TAG, "Error disconnecting stale session: ${error.throwable}")
+                        // Only clean up sessions if we're not processing a request
+                        if (!isProcessingRequest) {
+                            try {
+                                val activeSessions = SignClient.getListOfActiveSessions()
+                                logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
+                                activeSessions.forEach { session ->
+                                    if (session.metaData == null && session.topic != lastActiveTopic) {
+                                        logd(TAG, "Disconnecting stale session: ${session.topic}")
+                                        SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                                            loge(TAG, "Error disconnecting stale session: ${error.throwable}")
+                                        }
                                     }
                                 }
+                            } catch (e: Exception) {
+                                loge(TAG, "Error cleaning up sessions: ${e.message}")
+                                loge(e)
                             }
-                        } catch (e: Exception) {
-                            loge(TAG, "Error cleaning up sessions: ${e.message}")
-                            loge(e)
+                        } else {
+                            logd(TAG, "Skipping session cleanup while processing request")
                         }
                         
                         CoreClient.Relay.connect { error: Core.Model.Error ->
@@ -338,7 +344,15 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             logd(TAG, "Found redirect URL for session: $redirect")
         }
 
-        ioScope { sessionRequest.toWcRequest().dispatch() }
+        lastActiveTopic = sessionRequest.topic
+        isProcessingRequest = true
+        ioScope { 
+            try {
+                sessionRequest.toWcRequest().dispatch()
+            } finally {
+                isProcessingRequest = false
+            }
+        }
     }
 
     /**
