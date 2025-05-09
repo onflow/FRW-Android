@@ -26,6 +26,8 @@ import kotlinx.coroutines.delay
 import com.flowfoundation.wallet.page.window.WindowFrame
 import android.view.View
 import com.flowfoundation.wallet.page.browser.browserInstance
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.utils.Env
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -36,6 +38,8 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     private var pendingRedirectUrl: String? = null
     private var isRedirecting = false
     private var isSessionApproved = false
+    private var lastActiveTopic: String? = null
+    private var isProcessingRequest = false
 
     /**
      * Triggered whenever the connection state is changed
@@ -46,14 +50,48 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         if (!state.isAvailable) {
             logd(TAG, "Connection lost, attempting to reconnect")
             ioScope {
-                delay(1000) // Wait before reconnecting
-                try {
-                    CoreClient.Relay.connect { error: Core.Model.Error ->
-                        loge(TAG, "CoreClient.Relay connect error: $error")
+                var reconnectAttempts = 0
+                val maxReconnectAttempts = 3
+                
+                while (!isConnected && reconnectAttempts < maxReconnectAttempts) {
+                    try {
+                        delay(1000L * (reconnectAttempts + 1))
+                        logd(TAG, "Reconnection attempt ${reconnectAttempts + 1} of $maxReconnectAttempts")
+                        
+                        // Only clean up sessions if we're not processing a request
+                        if (!isProcessingRequest) {
+                            try {
+                                val activeSessions = SignClient.getListOfActiveSessions()
+                                logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
+                                activeSessions.forEach { session ->
+                                    if (session.metaData == null && session.topic != lastActiveTopic) {
+                                        logd(TAG, "Disconnecting stale session: ${session.topic}")
+                                        SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                                            loge(TAG, "Error disconnecting stale session: ${error.throwable}")
+                                        }
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                loge(TAG, "Error cleaning up sessions: ${e.message}")
+                                loge(e)
+                            }
+                        } else {
+                            logd(TAG, "Skipping session cleanup while processing request")
+                        }
+                        
+                        CoreClient.Relay.connect { error: Core.Model.Error ->
+                            loge(TAG, "CoreClient.Relay connect error: $error")
+                        }
+                        reconnectAttempts++
+                    } catch (e: Exception) {
+                        loge(TAG, "Error during reconnection attempt ${reconnectAttempts + 1}: ${e.message}")
+                        loge(e)
+                        reconnectAttempts++
                     }
-                } catch (e: Exception) {
-                    loge(TAG, "Error reconnecting: ${e.message}")
-                    loge(e)
+                }
+                
+                if (!isConnected) {
+                    loge(TAG, "Failed to reconnect after $maxReconnectAttempts attempts")
                 }
             }
         } else if (isRedirecting) {
@@ -84,14 +122,80 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     override fun onError(error: Sign.Model.Error) {
         logd(TAG, "onError() error:$error")
         loge(error.throwable)
+        
+        // Show user-friendly error message
+        uiScope {
+            val errorMessage = when {
+                error.throwable.message?.contains("No proposal or pending session") == true -> {
+                    // Clean up any stale sessions when we get this error
+                    try {
+                        val activeSessions = SignClient.getListOfActiveSessions()
+                        logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
+                        activeSessions.forEach { session ->
+                            if (session.metaData == null) {
+                                logd(TAG, "Disconnecting stale session: ${session.topic}")
+                                SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { disconnectError ->
+                                    loge(TAG, "Error disconnecting stale session: ${disconnectError.throwable}")
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "Error cleaning up sessions: ${e.message}")
+                        loge(e)
+                    }
+                    R.string.wallet_connect_no_proposal
+                }
+                error.throwable.message?.contains("pairing topic") == true -> {
+                    R.string.wallet_connect_pairing_error
+                }
+                error.throwable.message?.contains("Pairing URI expired") == true -> {
+                    R.string.wallet_connect_pairing_error
+                }
+                else -> R.string.wallet_connect_generic_error
+            }
+            try {
+                toast(errorMessage)
+                logd(TAG, "Showed error toast for message: ${error.throwable.message}")
+            } catch (e: Exception) {
+                loge(TAG, "Failed to show error toast: ${e.message}")
+                loge(e)
+            }
+        }
     }
 
     override fun onProposalExpired(proposal: Sign.Model.ExpiredProposal) {
         logd(TAG, "onProposalExpired() expiredProposal:${Gson().toJson(proposal)}")
+        // Clean up any associated sessions when proposal expires
+        try {
+            val activeSessions = SignClient.getListOfActiveSessions()
+            activeSessions.forEach { session ->
+                if (session.metaData == null) {
+                    logd(TAG, "Disconnecting session for expired proposal: ${session.topic}")
+                    SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                        loge(TAG, "Error disconnecting session: ${error.throwable}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Error cleaning up expired proposal sessions: ${e.message}")
+            loge(e)
+        }
+        uiScope {
+            try {
+                toast(R.string.wallet_connect_proposal_expired)
+                logd(TAG, "Showed proposal expired toast")
+            } catch (e: Exception) {
+                loge(TAG, "Failed to show proposal expired toast: ${e.message}")
+                loge(e)
+            }
+        }
     }
 
     override fun onRequestExpired(request: Sign.Model.ExpiredRequest) {
         logd(TAG, "onRequestExpired() expiredRequest:${Gson().toJson(request)}")
+        uiScope {
+            toast(R.string.wallet_connect_request_expired)
+        }
     }
 
     /**
@@ -122,22 +226,28 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         // Try to get the activity with a small delay to allow it to be ready
         ioScope {
             var attempts = 0
-            val maxAttempts = 3
+            val maxAttempts = 5
             var activity: BaseActivity? = null
 
             while (attempts < maxAttempts && activity == null) {
                 activity = BaseActivity.getCurrentActivity()
                 if (activity == null) {
                     logd(TAG, "Activity not found, attempt ${attempts + 1} of $maxAttempts")
-                    delay(500)
+                    delay(1000)
                     attempts++
                 }
             }
 
             if (activity == null) {
                 loge(TAG, "No current activity found after $maxAttempts attempts")
+                // Show error message to user and reject the session
+                uiScope {
+                    toast(R.string.wallet_connect_activity_error)
+                    logd(TAG, "Showing activity error toast to user")
+                }
                 try {
                     sessionProposal.reject()
+                    logd(TAG, "Rejected session due to no activity found")
                 } catch (e: Exception) {
                     loge(TAG, "Error rejecting session: ${e.message}")
                     loge(e)
@@ -200,6 +310,9 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             } catch (e: Exception) {
                 loge(TAG, "Error in session proposal handling: ${e.message}")
                 loge(e)
+                uiScope {
+                    toast(R.string.wallet_connect_proposal_error)
+                }
                 try {
                     sessionProposal.reject()
                 } catch (e: Exception) {
@@ -231,7 +344,15 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             logd(TAG, "Found redirect URL for session: $redirect")
         }
 
-        ioScope { sessionRequest.toWcRequest().dispatch() }
+        lastActiveTopic = sessionRequest.topic
+        isProcessingRequest = true
+        ioScope { 
+            try {
+                sessionRequest.toWcRequest().dispatch()
+            } finally {
+                isProcessingRequest = false
+            }
+        }
     }
 
     /**
@@ -281,6 +402,15 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             }
             is Sign.Model.SettledSessionResponse.Error -> {
                 loge(TAG, "Session settlement error: ${settleSessionResponse.errorMessage}")
+                uiScope {
+                    try {
+                        toast(R.string.wallet_connect_pairing_error)
+                        logd(TAG, "Showed session settlement error toast")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to show session settlement error toast: ${e.message}")
+                        loge(e)
+                    }
+                }
             }
         }
     }

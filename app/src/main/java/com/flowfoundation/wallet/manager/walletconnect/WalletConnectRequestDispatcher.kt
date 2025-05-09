@@ -240,10 +240,11 @@ private fun WCRequest.respondAccountInfo() {
     }) { error -> loge(error.throwable) }
 }
 
-private fun WCRequest.respondAuthn() {
+private suspend fun WCRequest.respondAuthn() {
     logd(TAG, "Starting respondAuthn with params: $params")
     val address = WalletManager.wallet()?.walletAddress() ?: run {
         loge(TAG, "No wallet address found")
+        reject()
         return
     }
     logd(TAG, "Using wallet address: $address")
@@ -253,16 +254,19 @@ private fun WCRequest.respondAuthn() {
     } catch (e: Exception) {
         loge(TAG, "Failed to parse params: ${e.message}")
         loge(e)
+        reject()
         return
     }
     val signable = json.firstOrNull() ?: run {
         loge(TAG, "No signable params found")
+        reject()
         return
     }
     logd(TAG, "Signable params: $signable")
     
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: run {
         loge(TAG, "No crypto provider found")
+        reject()
         return
     }
     val keyId = cryptoProvider.let {
@@ -270,24 +274,99 @@ private fun WCRequest.respondAuthn() {
     } ?: 0
     logd(TAG, "Using keyId: $keyId")
     
-    val services = walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
-    logd(TAG, "Generated authn response: $services")
-    
-    val response = Sign.Params.Response(
-        sessionTopic = topic,
-        jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
-    )
-    logd(TAG, "Sending response: $response")
-
-    SignClient.respond(response, onSuccess = { success ->
-        logd(TAG, "Response sent successfully: $success")
-        ioScope {
-            delay(1000)
-            logd(TAG, "Authn response sent, proceeding with session settlement")
+    try {
+        // Check if we have an active session for this topic
+        val activeSession = SignClient.getActiveSessionByTopic(topic)
+        if (activeSession == null) {
+            logd(TAG, "No active session found for topic: $topic")
+            // Only clean up sessions that are not the current topic
+            try {
+                val allSessions = SignClient.getListOfActiveSessions()
+                logd(TAG, "Found ${allSessions.size} active sessions")
+                allSessions.forEach { session ->
+                    if (session.metaData == null && session.topic != topic) {
+                        logd(TAG, "Disconnecting stale session: ${session.topic}")
+                        SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                            loge(TAG, "Error disconnecting stale session: ${error.throwable}")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error cleaning up sessions: ${e.message}")
+                loge(e)
+                // Continue with the authn response even if cleanup fails
+            }
         }
-    }) { error -> 
-        loge(TAG, "Failed to send response: ${error.throwable.message}")
-        loge(error.throwable)
+
+        // Generate authn response without account proof if nonce or appIdentifier is null
+        val services = if (signable.nonce.isNullOrBlank() || signable.appIdentifier.isNullOrBlank()) {
+            logd(TAG, "No nonce or appIdentifier provided, generating authn response without account proof")
+            walletConnectAuthnServiceResponse(address, keyId, null, null)
+        } else {
+            logd(TAG, "Generating authn response with account proof")
+            walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
+        }
+        logd(TAG, "Generated authn response: $services")
+        
+        val response = Sign.Params.Response(
+            sessionTopic = topic,
+            jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
+        )
+        logd(TAG, "Sending response: $response")
+
+        // Send response with retry logic
+        var retryCount = 0
+        val maxRetries = 3
+        var success = false
+
+        while (!success && retryCount < maxRetries) {
+            try {
+                SignClient.respond(response, onSuccess = { result ->
+                    logd(TAG, "Response sent successfully: $result")
+                    success = true
+                    ioScope {
+                        try {
+                            delay(1000)
+                            logd(TAG, "Authn response sent, proceeding with session settlement")
+                            // Try to get the redirect URL from the session
+                            val session = SignClient.getActiveSessionByTopic(topic)
+                            if (session?.metaData?.redirect.isNullOrEmpty()) {
+                                logd(TAG, "No redirect URL found in session metadata")
+                            } else {
+                                logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
+                            }
+                        } catch (e: Exception) {
+                            loge(TAG, "Error during authn response cleanup: ${e.message}")
+                            loge(e)
+                            // Don't reject here since the response was already sent successfully
+                        }
+                    }
+                }) { error -> 
+                    loge(TAG, "Failed to send response (attempt ${retryCount + 1}): ${error.throwable.message}")
+                    loge(error.throwable)
+                    retryCount++
+                    if (retryCount >= maxRetries) {
+                        reject()
+                    }
+                }
+                if (!success) {
+                    delay(1000L * (retryCount + 1))
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error sending response (attempt ${retryCount + 1}): ${e.message}")
+                loge(e)
+                retryCount++
+                if (retryCount >= maxRetries) {
+                    reject()
+                    break
+                }
+                delay(1000L * (retryCount + 1))
+            }
+        }
+    } catch (e: Exception) {
+        loge(TAG, "Error in respondAuthn: ${e.message}")
+        loge(e)
+        reject()
     }
 }
 

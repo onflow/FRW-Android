@@ -26,6 +26,7 @@ import android.widget.Toast
 import android.view.Gravity
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.utils.toast
 
 private val TAG = WalletConnect::class.java.simpleName
 
@@ -45,13 +46,28 @@ class WalletConnect {
     }
 
     fun pair(uri: String) {
+        // Clean up all active sessions before pairing
+        try {
+            val activeSessions = SignClient.getListOfActiveSessions()
+            logd(TAG, "Cleaning up all active sessions before pairing. Current count: ${activeSessions.size}")
+            activeSessions.forEach { session ->
+                logd(TAG, "Disconnecting session before pairing: ${session.topic}")
+                SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                    loge(TAG, "Error disconnecting session: ${error.throwable}")
+                }
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
+            loge(e)
+        }
+
         logd(TAG, "CoreClient.Relay isConnectionAvailable :${isConnectionAvailable.value}")
         
         // Show connecting toast immediately when pairing starts
         val activity = BaseActivity.getCurrentActivity()
         if (activity != null) {
             uiScope {
-                val toast = Toast.makeText(activity, R.string.connecting, Toast.LENGTH_LONG)
+                val toast = Toast.makeText(activity, R.string.connecting, Toast.LENGTH_SHORT)
                 toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
                 toast.show()
             }
@@ -70,16 +86,34 @@ class WalletConnect {
                             logd(TAG, "Attempting to pair with params: $pairingParams")
                             CoreClient.Pairing.pair(pairingParams) { error ->
                                 loge(TAG, "Pairing error: ${error.throwable}")
+                                uiScope {
+                                    try {
+                                        toast(R.string.wallet_connect_pairing_error)
+                                        logd(TAG, "Showed pairing error toast")
+                                    } catch (e: Exception) {
+                                        loge(TAG, "Failed to show pairing error toast: ${e.message}")
+                                        loge(e)
+                                    }
+                                }
                             }
                             val sessions = SignClient.getListOfActiveSessions()
                             logd(TAG, "Active sessions: ${sessions.size}")
                         } catch (e: Exception) {
                             loge(TAG, "Pairing exception: ${e.message}")
                             loge(e)
+                            uiScope {
+                                try {
+                                    toast(R.string.wallet_connect_pairing_error)
+                                    logd(TAG, "Showed pairing exception toast")
+                                } catch (e: Exception) {
+                                    loge(TAG, "Failed to show pairing exception toast: ${e.message}")
+                                    loge(e)
+                                }
+                            }
                         } finally {
                             job?.cancel()
                         }
-                    } else {
+                    
                         attempts++
                         if (attempts >= maxAttempts) {
                             try {
@@ -87,12 +121,30 @@ class WalletConnect {
                                 logd(TAG, "Attempting to pair with params: $pairingParams")
                                 CoreClient.Pairing.pair(pairingParams) { error ->
                                     loge(TAG, "Pairing error: ${error.throwable}")
+                                    uiScope {
+                                        try {
+                                            toast(R.string.wallet_connect_pairing_error)
+                                            logd(TAG, "Showed pairing error toast")
+                                        } catch (e: Exception) {
+                                            loge(TAG, "Failed to show pairing error toast: ${e.message}")
+                                            loge(e)
+                                        }
+                                    }
                                 }
                                 val sessions = SignClient.getListOfActiveSessions()
                                 logd(TAG, "Active sessions: ${sessions.size}")
                             } catch (e: Exception) {
                                 loge(TAG, "Pairing exception: ${e.message}")
                                 loge(e)
+                                uiScope {
+                                    try {
+                                        toast(R.string.wallet_connect_pairing_error)
+                                        logd(TAG, "Showed pairing exception toast")
+                                    } catch (e: Exception) {
+                                        loge(TAG, "Failed to show pairing exception toast: ${e.message}")
+                                        loge(e)
+                                    }
+                                }
                             } finally {
                                 job?.cancel()
                             }
@@ -112,12 +164,30 @@ class WalletConnect {
                 val pairingParams = Core.Params.Pair(uri)
                 CoreClient.Pairing.pair(pairingParams) { error ->
                     loge(TAG, "Pairing error: ${error.throwable}")
+                    uiScope {
+                        try {
+                            toast(R.string.wallet_connect_pairing_error)
+                            logd(TAG, "Showed pairing error toast")
+                        } catch (e: Exception) {
+                            loge(TAG, "Failed to show pairing error toast: ${e.message}")
+                            loge(e)
+                        }
+                    }
                 }
                 val sessions = SignClient.getListOfActiveSessions()
                 logd(TAG, "Active sessions: ${sessions.size}")
             } catch (e: Exception) {
                 loge(TAG, "Pairing exception: ${e.message}")
                 loge(e)
+                uiScope {
+                    try {
+                        toast(R.string.wallet_connect_pairing_error)
+                        logd(TAG, "Showed pairing exception toast")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to show pairing exception toast: ${e.message}")
+                        loge(e)
+                    }
+                }
             }
         }
     }
