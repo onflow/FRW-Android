@@ -275,6 +275,27 @@ private fun WCRequest.respondAuthn() {
     logd(TAG, "Using keyId: $keyId")
     
     try {
+        // Check if we have an active session for this topic
+        val activeSession = SignClient.getActiveSessionByTopic(topic)
+        if (activeSession == null) {
+            logd(TAG, "No active session found for topic: $topic")
+            // Clean up any stale sessions
+            try {
+                val allSessions = SignClient.getListOfActiveSessions()
+                allSessions.forEach { session ->
+                    if (session.metaData == null) {
+                        logd(TAG, "Disconnecting stale session: ${session.topic}")
+                        SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                            loge(TAG, "Error disconnecting stale session: ${error.throwable}")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Error cleaning up sessions: ${e.message}")
+                loge(e)
+            }
+        }
+
         // Generate authn response without account proof if nonce or appIdentifier is null
         val services = if (signable.nonce.isNullOrBlank() || signable.appIdentifier.isNullOrBlank()) {
             logd(TAG, "No nonce or appIdentifier provided, generating authn response without account proof")
@@ -285,16 +306,16 @@ private fun WCRequest.respondAuthn() {
         }
         logd(TAG, "Generated authn response: $services")
         
-        try {
-            val response = Sign.Params.Response(
-                sessionTopic = topic,
-                jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
-            )
-            logd(TAG, "Created response object: $response")
+        val response = Sign.Params.Response(
+            sessionTopic = topic,
+            jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
+        )
+        logd(TAG, "Sending response: $response")
 
-            SignClient.respond(response, onSuccess = { success ->
-                logd(TAG, "Response sent successfully: $success")
-                ioScope {
+        SignClient.respond(response, onSuccess = { success ->
+            logd(TAG, "Response sent successfully: $success")
+            ioScope {
+                try {
                     delay(1000)
                     logd(TAG, "Authn response sent, proceeding with session settlement")
                     // Try to get the redirect URL from the session
@@ -304,22 +325,19 @@ private fun WCRequest.respondAuthn() {
                     } else {
                         logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
                     }
+                } catch (e: Exception) {
+                    loge(TAG, "Error during authn response cleanup: ${e.message}")
+                    loge(e)
+                    // Don't reject here since the response was already sent successfully
                 }
-            }) { error -> 
-                loge(TAG, "Failed to send response: ${error.throwable.message}")
-                loge(TAG, "Error details: ${error.throwable.stackTraceToString()}")
-                loge(error.throwable)
-                reject()
             }
-        } catch (e: Exception) {
-            loge(TAG, "Error creating or sending response: ${e.message}")
-            loge(TAG, "Error details: ${e.stackTraceToString()}")
-            loge(e)
+        }) { error -> 
+            loge(TAG, "Failed to send response: ${error.throwable.message}")
+            loge(error.throwable)
             reject()
         }
     } catch (e: Exception) {
         loge(TAG, "Error in respondAuthn: ${e.message}")
-        loge(TAG, "Error details: ${e.stackTraceToString()}")
         loge(e)
         reject()
     }

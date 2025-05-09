@@ -51,10 +51,28 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                 var reconnectAttempts = 0
                 val maxReconnectAttempts = 3
                 
-                while (reconnectAttempts < maxReconnectAttempts && !isConnected) {
+                while (!isConnected && reconnectAttempts < maxReconnectAttempts) {
                     try {
+                        delay(1000L * (reconnectAttempts + 1))
                         logd(TAG, "Reconnection attempt ${reconnectAttempts + 1} of $maxReconnectAttempts")
-                        //delay(1000 * (reconnectAttempts + 1)) // Exponential backoff
+                        
+                        // Clean up any stale sessions before reconnecting
+                        try {
+                            val activeSessions = SignClient.getListOfActiveSessions()
+                            logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
+                            activeSessions.forEach { session ->
+                                if (session.metaData == null) {
+                                    logd(TAG, "Disconnecting stale session: ${session.topic}")
+                                    SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                                        loge(TAG, "Error disconnecting stale session: ${error.throwable}")
+                                    }
+                                }
+                            }
+                        } catch (e: Exception) {
+                            loge(TAG, "Error cleaning up sessions: ${e.message}")
+                            loge(e)
+                        }
+                        
                         CoreClient.Relay.connect { error: Core.Model.Error ->
                             loge(TAG, "CoreClient.Relay connect error: $error")
                         }
@@ -68,8 +86,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                 
                 if (!isConnected) {
                     loge(TAG, "Failed to reconnect after $maxReconnectAttempts attempts")
-                } else {
-                    logd(TAG, "Successfully reconnected")
                 }
             }
         } else if (isRedirecting) {
