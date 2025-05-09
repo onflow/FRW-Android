@@ -279,11 +279,12 @@ private fun WCRequest.respondAuthn() {
         val activeSession = SignClient.getActiveSessionByTopic(topic)
         if (activeSession == null) {
             logd(TAG, "No active session found for topic: $topic")
-            // Clean up any stale sessions
+            // Only clean up sessions that are not the current topic
             try {
                 val allSessions = SignClient.getListOfActiveSessions()
+                logd(TAG, "Found ${allSessions.size} active sessions")
                 allSessions.forEach { session ->
-                    if (session.metaData == null) {
+                    if (session.metaData == null && session.topic != topic) {
                         logd(TAG, "Disconnecting stale session: ${session.topic}")
                         SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
                             loge(TAG, "Error disconnecting stale session: ${error.throwable}")
@@ -293,6 +294,7 @@ private fun WCRequest.respondAuthn() {
             } catch (e: Exception) {
                 loge(TAG, "Error cleaning up sessions: ${e.message}")
                 loge(e)
+                // Continue with the authn response even if cleanup fails
             }
         }
 
