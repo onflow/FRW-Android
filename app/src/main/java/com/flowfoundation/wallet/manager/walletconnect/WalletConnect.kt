@@ -50,12 +50,11 @@ class WalletConnect {
         
         // Show connecting toast immediately when pairing starts
         val activity = BaseActivity.getCurrentActivity()
-        var connectingToast: Toast? = null
         if (activity != null) {
             uiScope {
-                connectingToast = Toast.makeText(activity, R.string.connecting, Toast.LENGTH_LONG)
-                connectingToast?.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
-                connectingToast?.show()
+                val toast = Toast.makeText(activity, R.string.connecting, Toast.LENGTH_SHORT)
+                toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
+                toast.show()
             }
         }
 
@@ -74,7 +73,6 @@ class WalletConnect {
                                 loge(TAG, "Pairing error: ${error.throwable}")
                                 uiScope {
                                     try {
-                                        connectingToast?.cancel()
                                         toast(R.string.wallet_connect_pairing_error)
                                         logd(TAG, "Showed pairing error toast")
                                     } catch (e: Exception) {
@@ -90,7 +88,6 @@ class WalletConnect {
                             loge(e)
                             uiScope {
                                 try {
-                                    connectingToast?.cancel()
                                     toast(R.string.wallet_connect_pairing_error)
                                     logd(TAG, "Showed pairing exception toast")
                                 } catch (e: Exception) {
@@ -111,7 +108,6 @@ class WalletConnect {
                                     loge(TAG, "Pairing error: ${error.throwable}")
                                     uiScope {
                                         try {
-                                            connectingToast?.cancel()
                                             toast(R.string.wallet_connect_pairing_error)
                                             logd(TAG, "Showed pairing error toast")
                                         } catch (e: Exception) {
@@ -127,7 +123,6 @@ class WalletConnect {
                                 loge(e)
                                 uiScope {
                                     try {
-                                        connectingToast?.cancel()
                                         toast(R.string.wallet_connect_pairing_error)
                                         logd(TAG, "Showed pairing exception toast")
                                     } catch (e: Exception) {
@@ -156,7 +151,6 @@ class WalletConnect {
                     loge(TAG, "Pairing error: ${error.throwable}")
                     uiScope {
                         try {
-                            connectingToast?.cancel()
                             toast(R.string.wallet_connect_pairing_error)
                             logd(TAG, "Showed pairing error toast")
                         } catch (e: Exception) {
@@ -172,7 +166,6 @@ class WalletConnect {
                 loge(e)
                 uiScope {
                     try {
-                        connectingToast?.cancel()
                         toast(R.string.wallet_connect_pairing_error)
                         logd(TAG, "Showed pairing exception toast")
                     } catch (e: Exception) {

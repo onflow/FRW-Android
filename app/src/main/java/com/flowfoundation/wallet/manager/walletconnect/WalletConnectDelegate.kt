@@ -328,24 +328,6 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
 
         when (settleSessionResponse) {
             is Sign.Model.SettledSessionResponse.Result -> {
-                // Check if this is the most recently approved session
-                if (!isSessionApproved) {
-                    logd(TAG, "Ignoring session settlement for non-approved session")
-                    return
-                }
-                isSessionApproved = false // Reset for next session
-
-                // Show success toast
-                uiScope {
-                    try {
-                        toast(R.string.connection_successful)
-                        logd(TAG, "Showed connection success toast")
-                    } catch (e: Exception) {
-                        loge(TAG, "Failed to show connection success toast: ${e.message}")
-                        loge(e)
-                    }
-                }
-
                 // Get the redirect URL from either pendingRedirectUrl or the settled session metadata
                 val redirectUrl = pendingRedirectUrl ?: run {
                     val metadata = settleSessionResponse.session.metaData
