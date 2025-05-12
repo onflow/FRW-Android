@@ -16,7 +16,6 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
@@ -207,7 +206,6 @@ private fun ViewGroup.setupWallet(
             clearCacheDir()
             clearWebViewCache()
             setMeowDomainClaimed(false)
-            TokenStateManager.clear()
             NftCollectionStateManager.clear()
             TransactionStateManager.reload()
             FungibleTokenListManager.clear()
@@ -354,7 +352,6 @@ private fun View.setupWalletItem(
                 clearCacheDir()
                 clearWebViewCache()
                 setMeowDomainClaimed(false)
-                TokenStateManager.clear()
                 NftCollectionStateManager.clear()
                 TransactionStateManager.reload()
                 FungibleTokenListManager.clear()

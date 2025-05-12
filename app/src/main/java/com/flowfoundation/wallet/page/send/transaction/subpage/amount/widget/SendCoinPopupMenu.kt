@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.send.transaction.subpage.amount.widget
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountViewModel
 import com.flowfoundation.wallet.utils.findActivity
@@ -19,11 +18,11 @@ class SendCoinPopupMenu(
 
     fun show() {
         ioScope {
-            val coinList = FlowCoinListManager.getEnabledCoinList()
+            val coinList = FungibleTokenListManager.getCurrentTokenListSnapshot()
             uiScope {
                 popupMenu(
                     view,
-                    items = coinList.map { PopupListView.ItemData(it.name, iconUrl = it.icon()) },
+                    items = coinList.map { PopupListView.ItemData(it.name, iconUrl = it.tokenIcon()) },
                     selectListener = { _, text -> onMenuItemClick(text) },
                 ).show()
             }

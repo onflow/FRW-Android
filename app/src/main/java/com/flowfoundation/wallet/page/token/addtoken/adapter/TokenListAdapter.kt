@@ -18,7 +18,7 @@ class TokenListAdapter : BaseAdapter<Any>(tokenListDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
-            TYPE_TOKEN -> TokenItemPresenter(parent.inflate(R.layout.item_token_list))
+            TYPE_TOKEN -> TokenItemPresenter(parent.inflate(R.layout.item_add_token_list))
             else -> BaseViewHolder(View(parent.context))
         }
     }

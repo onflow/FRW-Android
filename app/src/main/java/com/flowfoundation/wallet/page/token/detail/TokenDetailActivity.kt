@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailActivitiesModel

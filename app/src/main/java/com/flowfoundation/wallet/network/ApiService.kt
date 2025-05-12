@@ -241,4 +241,9 @@ interface ApiService {
         @Query("network") network: String?
     ): FlowTokenListResponse
 
+    @GET("/api/v3/fts/full")
+    suspend fun getAddTokenList(
+        @Query("chain_type") chainType: String,
+        @Query("network") currency: String?,
+    ): AddTokenListResponse
 }

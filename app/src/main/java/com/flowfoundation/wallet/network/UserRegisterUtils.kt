@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
@@ -213,7 +212,6 @@ suspend fun clearUserCache() {
     clearCacheDir()
     clearWebViewCache()
     setMeowDomainClaimed(false)
-    TokenStateManager.clear()
     WalletManager.clear()
     NftCollectionStateManager.clear()
     TransactionStateManager.reload()

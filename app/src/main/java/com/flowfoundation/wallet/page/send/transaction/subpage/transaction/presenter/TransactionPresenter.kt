@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
