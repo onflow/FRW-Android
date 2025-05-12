@@ -5,12 +5,12 @@ on:
     branches:
       - master
       - develop
-      - wc-debugging-2
 
 jobs:
   dev:
     runs-on: ubuntu-latest
     environment: dev
+    if: github.ref == 'refs/heads/develop'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
