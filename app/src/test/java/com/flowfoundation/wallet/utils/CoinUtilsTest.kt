@@ -43,7 +43,7 @@ class CoinUtilsTest {
     @Test
     fun `test formatPrice for Float with zero currency price`() {
         every { CurrencyManager.currencyPrice() } returns 0.0f
-        assertEquals("", 1.2345f.formatPrice())
+        assertEquals("1.234", 1.2345f.formatPrice())
     }
 
     @Test
@@ -67,7 +67,7 @@ class CoinUtilsTest {
     @Test
     fun `test formatPrice for BigDecimal with zero currency price`() {
         every { CurrencyManager.currencyDecimalPrice() } returns BigDecimal.ZERO
-        assertEquals("", BigDecimal("1.2345").formatPrice())
+        assertEquals("1.234", BigDecimal("1.2345").formatPrice())
     }
 
     @Test

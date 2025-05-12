@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.utils
 
-import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import java.math.BigDecimal
 import java.math.RoundingMode
