@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/icon_view"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:round="36dp"
+        tools:background="#999"/>
+
+    <TextView
+        android:id="@+id/name_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="16dp"
+        android:fontFamily="@font/inter_semi_bold"
+        android:textColor="@color/text"
+        android:textSize="14sp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintBottom_toTopOf="@id/symbol_view"
+        app:layout_constraintStart_toEndOf="@id/icon_view"
+        app:layout_constraintEnd_toStartOf="@id/iv_verified"
+        app:layout_constraintTop_toTopOf="@id/icon_view"
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="ALT - Block Token"/>
+
+    <androidx.constraintlayout.utils.widget.ImageFilterView
+        android:id="@+id/iv_verified"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/ic_verified"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/name_view"
+        app:layout_constraintBottom_toBottomOf="@id/name_view"
+        app:layout_constraintStart_toEndOf="@id/name_view"/>
+
+    <TextView
+        android:id="@+id/symbol_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/inter_medium"
+        android:textColor="@color/text_3"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/icon_view"
+        app:layout_constraintStart_toStartOf="@id/name_view"
+        app:layout_constraintTop_toBottomOf="@id/name_view"
+        tools:text="SPL"/>
+
+    <androidx.constraintlayout.utils.widget.ImageFilterButton
+        android:id="@+id/state_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:background="?attr/actionBarItemBackground"
+        android:layout_marginEnd="12dp"
+        android:padding="4dp"
+        android:src="@drawable/ic_add_circle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:visibility="gone"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/salmon_primary"
+        tools:visibility="visible"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/border_line_stroke"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

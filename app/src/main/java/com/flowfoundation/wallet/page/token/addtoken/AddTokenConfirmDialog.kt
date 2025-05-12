@@ -9,12 +9,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogAddTokenConfirmBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.network.model.TokenInfo
 import com.flowfoundation.wallet.utils.uiScope
 
 class AddTokenConfirmDialog : BottomSheetDialogFragment() {
 
-    private val coin by lazy { arguments?.getParcelable<FlowCoin>(EXTRA_TOKEN)!! }
+    private val info by lazy { arguments?.getParcelable<TokenInfo>(EXTRA_TOKEN)!! }
 
     private lateinit var binding: DialogAddTokenConfirmBinding
 
@@ -37,12 +37,12 @@ class AddTokenConfirmDialog : BottomSheetDialogFragment() {
 
         binding.closeButton.setOnClickListener { dismiss() }
         with(binding) {
-            tokenNameView.text = coin.name
-            Glide.with(iconView).load(coin.icon()).into(iconView)
+            tokenNameView.text = info.tokenName()
+            Glide.with(iconView).load(info.icon()).into(iconView)
             actionButton.setOnClickListener {
                 uiScope {
                     actionButton.setProgressVisible(true)
-                    viewModel.addToken(coin)
+                    viewModel.addToken(info)
                 }
             }
         }
@@ -51,10 +51,10 @@ class AddTokenConfirmDialog : BottomSheetDialogFragment() {
     companion object {
         private const val EXTRA_TOKEN = "extra_token"
 
-        fun show(fragmentManager: FragmentManager, coin: FlowCoin) {
+        fun show(fragmentManager: FragmentManager, info: TokenInfo) {
             AddTokenConfirmDialog().apply {
                 arguments = Bundle().apply {
-                    putParcelable(EXTRA_TOKEN, coin)
+                    putParcelable(EXTRA_TOKEN, info)
                 }
             }.show(fragmentManager, "")
         }

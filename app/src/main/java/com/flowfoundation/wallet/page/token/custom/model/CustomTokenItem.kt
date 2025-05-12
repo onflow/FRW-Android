@@ -1,7 +1,5 @@
 package com.flowfoundation.wallet.page.token.custom.model
 
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinType
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -62,22 +60,6 @@ data class CustomTokenItem(
         }
     }
 
-    fun toFlowCoin(coinType: FlowCoinType? = FlowCoinType.EVM): FlowCoin {
-        return FlowCoin(
-            chainId = chainId,
-            name = name,
-            address = contractAddress,
-            contractName = contractName,
-            storagePath = null,
-            decimal = decimal,
-            icon = icon,
-            symbol = symbol,
-            extensions = null,
-            flowIdentifier = flowIdentifier,
-            evmAddress = evmAddress,
-            type = coinType
-        )
-    }
 }
 
 fun CustomTokenItem.toFungibleToken(): FungibleToken {
