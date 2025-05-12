@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.coin.TokenStateCache
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateCache
 import com.flowfoundation.wallet.manager.price.CurrencyCache
 import com.flowfoundation.wallet.manager.staking.StakingCache
@@ -40,10 +39,6 @@ fun addressBookCache(): CacheManager<AddressBookContactBookList> {
 // recent send history
 fun recentTransactionCache(): CacheManager<AddressBookContactBookList> {
     return CacheManager(RECENT_ADDRESS_BOOK, AddressBookContactBookList::class.java)
-}
-
-fun tokenStateCache(): CacheManager<TokenStateCache> {
-    return CacheManager(TOKEN_STATE, TokenStateCache::class.java)
 }
 
 fun nftCollectionStateCache(): CacheManager<NftCollectionStateCache> {

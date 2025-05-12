@@ -15,6 +15,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityAddTokenBinding
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenViewModel
 import com.flowfoundation.wallet.page.token.addtoken.adapter.TokenListAdapter
@@ -34,7 +35,17 @@ class AddTokenPresenter(
         binding.root.addStatusBarTopPadding()
         setupToolbar()
         setupEditText()
+        setupFilters()
         setupRecyclerView()
+    }
+
+    private fun setupFilters() {
+        with(binding) {
+            switchVerifiedToken.isChecked = false
+            switchVerifiedToken.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.switchVerifiedToken(isChecked)
+            }
+        }
     }
 
     override fun bind(model: AddTokenModel) {

@@ -32,9 +32,7 @@ object CustomTokenManager {
             return
         }
         cacheList.add(tokenItem)
-//        FlowCoinListManager.addCustomToken()
         FungibleTokenListManager.addCustomToken()
-        TokenStateManager.customTokenStateChanged(tokenItem, isAdded = true)
         cacheSync(cacheList)
     }
 
@@ -47,7 +45,6 @@ object CustomTokenManager {
         }
         cacheList.remove(customToken)
         FungibleTokenListManager.deleteCustomToken(customToken.contractAddress)
-        TokenStateManager.customTokenStateChanged(customToken, isAdded = false)
         cacheSync(cacheList)
     }
 }

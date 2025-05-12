@@ -17,7 +17,6 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryMinFlowBalance
-import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -144,12 +143,12 @@ class SendAmountPresenter(
     private fun checkAmount() {
         ioScope {
             val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
-            val coinRate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
+            val coinRate = balance()?.coinRate ?: BigDecimal.ZERO
             val inputBalance = if (viewModel.convertCoin() == selectedCurrency().flag) {
                 amount
             } else {
                 // If we don't have a valid rate (zero or negative), use the original amount rather than attempting an invalid conversion
-                if (coinRate.compareTo(BigDecimal.ZERO) <= 0) amount else amount / coinRate
+                if (coinRate <= BigDecimal.ZERO) amount else amount / coinRate
             }
             val isOutOfBalance = inputBalance > ((balance()?.balance ?: BigDecimal.ZERO) - minBalance())
             uiScope {
@@ -198,7 +197,7 @@ class SendAmountPresenter(
         ioScope {
             val inputAmount =
                 binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
-            val rate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
+            val rate = balance()?.coinRate ?: BigDecimal.ZERO
             val amount =
                 if (viewModel.currentCoin() == selectedCurrency().flag) inputAmount / rate else inputAmount
             uiScope {
@@ -254,7 +253,7 @@ class SendAmountPresenter(
 
     private fun getAmountConvert(): String {
         val amount = binding.transferAmountInput.text.ifBlank { "0" }.toString().toSafeDecimal()
-        val rate = (balance()?.coinRate ?: BigDecimal.ZERO) * CurrencyManager.currencyDecimalPrice()
+        val rate = balance()?.coinRate ?: BigDecimal.ZERO
         val convert = if (viewModel.convertCoin() == selectedCurrency().flag) amount * rate else {
             if (rate <= BigDecimal.ZERO) BigDecimal.ZERO else amount / rate
         }
