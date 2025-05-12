@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.formatCadence
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flow.CadenceScriptBuilder
@@ -15,6 +13,8 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.network.model.TokenInfo
+import com.flowfoundation.wallet.network.model.formatCadence
 import com.flowfoundation.wallet.page.address.FlowDomainServer
 import com.flowfoundation.wallet.utils.error.CadenceError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
@@ -54,27 +54,6 @@ suspend fun cadenceQueryAddressByDomainFind(domain: String): String? {
     return result?.decode<String>()
 }
 
-suspend fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
-    logd(TAG, "cadenceCheckTokenEnabled() address:${coin.address}")
-    val walletAddress = WalletManager.selectedWalletAddress()
-    val script = CadenceScript.CADENCE_CHECK_TOKEN_IS_ENABLED
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceCheckTokenEnabled response:${result?.encode()}")
-    return result?.decode<Boolean>()
-}
-
-suspend fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceCheckTokenListEnabled()")
-    val result = CadenceScript.CADENCE_CHECK_TOKEN_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceCheckTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
-}
-
 suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
     val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     logd(TAG, "cadenceGetTokenBalanceStorage()")
@@ -94,53 +73,13 @@ suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
-suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled()")
-    val result = CadenceScript.CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
-}
-
-suspend fun cadenceQueryTokenListBalance(): Map<String, BigDecimal>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceQueryTokenListBalance()")
-    val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceQueryTokenListBalance response:${result?.encode()}")
-    return result?.decode<Map<String, String>>().parseBigDecimalMap()
-}
-
-suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String, BigDecimal>? {
-    logd(TAG, "cadenceQueryTokenListBalanceWithAddress()")
-    val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(address) }
-    }
-    logd(TAG, "cadenceQueryTokenListBalanceWithAddress response:${result?.encode()}")
-    return result?.decode<Map<String, String>>().parseBigDecimalMap()
-}
-
-suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): BigDecimal? {
-    val walletAddress = (address ?: WalletManager.selectedWalletAddress()).toAddress()
-    logd(TAG, "cadenceQueryTokenBalance()")
-    val script = CadenceScript.CADENCE_GET_BALANCE
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceQueryTokenBalance response:${result?.encode()}")
-    return result?.parseBigDecimal()
-}
-
-suspend fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): BigDecimal? {
-    if (coin == null || address == null) {
+suspend fun cadenceQueryTokenBalanceWithAddress(token: FungibleToken?, address: String?): BigDecimal? {
+    if (token == null || address == null) {
         return null
     }
     logd(TAG, "cadenceQueryTokenBalanceWithAddress()")
     val script = CadenceScript.CADENCE_GET_BALANCE
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
+    val result = token.formatCadence(script).executeCadence(script.scriptId) {
         arg { Cadence.address(address) }
     }
     logd(
@@ -150,7 +89,7 @@ suspend fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String
     return result?.parseBigDecimal()
 }
 
-suspend fun cadenceEnableToken(coin: FlowCoin): String? {
+suspend fun cadenceEnableToken(coin: TokenInfo): String? {
     logd(TAG, "cadenceEnableToken()")
     val script = CadenceScript.CADENCE_ADD_TOKEN
     val transactionId = coin.formatCadence(script).transactionByMainWallet(script.scriptId) {}

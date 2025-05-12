@@ -749,11 +749,12 @@
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
-    <string name="hide_dust_token">Hide Dust Tokens (&lt;1$ USD Balance)</string>
+    <string name="hide_dust_token">Hide dust tokens (&lt;0.01 USD Balance)</string>
     <string name="display_verified_token">Only show verified tokens</string>
     <string name="tokens">Tokens</string>
     <string name="verified">Verified</string>
     <string name="contract_address">Contract address</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
+    <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
 </resources>

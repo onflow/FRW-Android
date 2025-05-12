@@ -10,18 +10,11 @@ import java.util.Locale
 
 fun Float.formatPrice(
     digits: Int = 3,
-    convertCurrency: Boolean = true,
     includeSymbol: Boolean = false,
     includeSymbolSpace: Boolean = false,
     isAbbreviation: Boolean = false
 ): String {
-    var value = this
-    if (convertCurrency) {
-        if (CurrencyManager.currencyPrice() <= 0) {
-            return ""
-        }
-        value *= CurrencyManager.currencyPrice()
-    }
+    val value = this
 
     if (value < 0.01f) {
         return formatTokenPrice(value.toDouble())
@@ -39,18 +32,11 @@ fun Float.formatPrice(
 
 fun BigDecimal.formatPrice(
     digits: Int = 3,
-    convertCurrency: Boolean = true,
     includeSymbol: Boolean = false,
     includeSymbolSpace: Boolean = false,
     isAbbreviation: Boolean = false
 ): String {
-    var value = this
-    if (convertCurrency) {
-        if (CurrencyManager.currencyDecimalPrice() <= BigDecimal.ZERO) {
-            return ""
-        }
-        value *= CurrencyManager.currencyDecimalPrice()
-    }
+    val value = this
 
     // For token prices less than one cent, use token formatting.
     if (value < BigDecimal("0.01")) {
@@ -139,17 +125,10 @@ fun Double.formatNumberWithCommas(): String {
 
 fun Double.formatPrice(
     digits: Int = 3,
-    convertCurrency: Boolean = true,
     includeSymbol: Boolean = false,
     includeSymbolSpace: Boolean = false,
 ): String {
-    var value = this
-    if (convertCurrency) {
-        if (CurrencyManager.currencyPrice() <= 0) {
-            return ""
-        }
-        value *= CurrencyManager.currencyPrice()
-    }
+    val value = this
 
     // For token prices less than one cent, use token formatting.
     if (value < 0.01) {

@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.token.detail
 
 import android.text.format.DateUtils
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.plusMonth
@@ -105,24 +104,12 @@ fun QuoteMarket.getFlowPricePair(): String {
     }
 }
 
-fun FlowCoin.getPricePair(market: QuoteMarket): String {
-    return when (symbol.lowercase()) {
-        FlowCoin.SYMBOL_FLOW -> market.getFlowPricePair()
-        FlowCoin.SYMBOL_USDC -> market.getUSDCPricePair()
-        else -> ""
-    }
-}
-
 fun FungibleToken.getPricePair(market: QuoteMarket): String {
     return when (symbol.lowercase()) {
         FungibleToken.SYMBOL_FLOW -> market.getFlowPricePair()
         FungibleToken.SYMBOL_USDC -> market.getUSDCPricePair()
         else -> ""
     }
-}
-
-fun FlowCoin.isUSDStableCoin(): Boolean {
-    return symbol.lowercase() == FlowCoin.SYMBOL_USDC
 }
 
 @Suppress("UNCHECKED_CAST")

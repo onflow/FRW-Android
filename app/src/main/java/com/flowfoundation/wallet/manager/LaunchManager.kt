@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.manager.app.refreshChainNetwork
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
@@ -74,7 +73,6 @@ object LaunchManager {
         safeRun { NftCollectionConfig.sync() }
         safeRun { FungibleTokenListManager.init() }
         safeRun { TransactionStateManager.reload() }
-        safeRun { TokenStateManager.reload() }
         safeRun { NftCollectionStateManager.reload() }
         safeRun { CurrencyManager.init() }
         safeRun { StakingManager.init() }

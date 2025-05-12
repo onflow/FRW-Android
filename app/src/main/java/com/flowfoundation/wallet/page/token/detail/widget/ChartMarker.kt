@@ -19,7 +19,7 @@ class ChartMarker(context: Context) : MarkerView(context, R.layout.layout_chart_
         super.refreshContent(entry, highlight)
         entry ?: return
         with(binding) {
-            priceView.text = entry.y.formatPrice(convertCurrency = false, includeSymbol = true)
+            priceView.text = entry.y.formatPrice(includeSymbol = true)
             dateView.text = (entry.x * 1000).toLong().formatDate()
         }
     }

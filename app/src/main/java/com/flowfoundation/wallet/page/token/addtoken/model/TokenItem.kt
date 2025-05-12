@@ -1,11 +1,11 @@
 package com.flowfoundation.wallet.page.token.addtoken.model
 
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.network.model.TokenInfo
 import com.google.gson.annotations.SerializedName
 
 data class TokenItem(
     @SerializedName("coin")
-    val coin: FlowCoin,
+    val coin: TokenInfo,
     @SerializedName("isAdded")
     var isAdded: Boolean,
     @SerializedName("isAdding")

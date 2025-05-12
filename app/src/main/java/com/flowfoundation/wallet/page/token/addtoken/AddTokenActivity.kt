@@ -11,12 +11,15 @@ import com.flowfoundation.wallet.databinding.ActivityAddTokenBinding
 import com.flowfoundation.wallet.page.token.addtoken.model.AddTokenModel
 import com.flowfoundation.wallet.page.token.addtoken.presenter.AddTokenPresenter
 import com.flowfoundation.wallet.utils.isNightMode
+import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 
 class AddTokenActivity : BaseActivity() {
 
     private lateinit var presenter: AddTokenPresenter
     private lateinit var viewModel: AddTokenViewModel
     private lateinit var binding: ActivityAddTokenBinding
+
+    private val loadingDialog by lazy { FlowLoadingDialog(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,8 +31,12 @@ class AddTokenActivity : BaseActivity() {
 
         presenter = AddTokenPresenter(this, binding)
         viewModel = ViewModelProvider(this)[AddTokenViewModel::class.java].apply {
-            tokenListLiveData.observe(this@AddTokenActivity) { presenter.bind(AddTokenModel(data = it)) }
+            tokenListLiveData.observe(this@AddTokenActivity) {
+                loadingDialog.dismiss()
+                presenter.bind(AddTokenModel(data = it))
+            }
             load()
+            loadingDialog.show()
         }
     }
 
