@@ -50,13 +50,24 @@ android {
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
         buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
-        manifestPlaceholders = [dropboxKey: dropboxKeyProd]
+        manifestPlaceholders = new HashMap<String, String>()
+        manifestPlaceholders.put("dropboxKey", dropboxKeyProd)
     }
 
     def keyAliasProperty = properties.getProperty("keyAlias", "androiddebugkey")
     def keyPasswordProperty = properties.getProperty("keyPassword", "android")
     def storePasswordProperty = properties.getProperty("storePassword", "android")
     def storeFilePath = properties.getProperty("storeFile", rootProject.file("app/debug.keystore").absolutePath)
+
+    def localTesters = properties.getProperty("testers", "")
+    def envTesters = System.getenv("FIREBASE_TESTERS") ?: ""
+    def mergedTesters = ([localTesters, envTesters]
+        .findAll { it?.trim() } // Filter out null/empty sources
+        .collectMany { it.split(",") as List<String> } // Split comma-separated strings
+        .collect { it.trim() } // Trim each entry
+        .findAll { it } // Filter out blanks
+        .toSet() // Remove duplicates
+        .join(","))
 
     signingConfigs {
         release {
@@ -88,7 +99,7 @@ android {
             multiDexEnabled true
             debuggable true
             signingConfig signingConfigs.release
-            matchingFallbacks = ['release']
+            matchingFallbacks = ['debug', 'qa', 'release'] as List<String>
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyProd]
         }
@@ -107,7 +118,7 @@ android {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
-                testers = properties.getProperty("testers", "")
+                testers = mergedTesters
             }
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
@@ -124,7 +135,7 @@ android {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
                 serviceCredentialsFile = properties.getProperty("serviceCredentialsFile", "")
-                testers = properties.getProperty("testers", "")
+                testers = mergedTesters
             }
             firebaseCrashlytics {
                 mappingFileUploadEnabled true
@@ -310,7 +321,7 @@ dependencies {
     }
     implementation 'com.github.onflow.flow-kmm:flow:0.0.1'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    implementation(platform("com.reown:android-bom:1.2.1"))
+    implementation(platform("com.reown:android-bom:1.3.3"))
     implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
     }

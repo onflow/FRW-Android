@@ -8,22 +8,20 @@ import com.flowfoundation.wallet.firebase.config.initFirebaseConfig
 import com.flowfoundation.wallet.firebase.firebaseInitialize
 import com.flowfoundation.wallet.instabug.instabugInitialize
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
 import com.flowfoundation.wallet.manager.app.PageLifecycleObserver
 import com.flowfoundation.wallet.manager.app.refreshChainNetwork
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
@@ -73,11 +71,9 @@ object LaunchManager {
         safeRun { WalletManager.init() }
         safeRun { CustomTokenManager.init() }
         safeRun { NftCollectionConfig.sync() }
-        safeRun { BalanceManager.reload() }
+        safeRun { FungibleTokenListManager.init() }
         safeRun { TransactionStateManager.reload() }
-        safeRun { TokenStateManager.reload() }
         safeRun { NftCollectionStateManager.reload() }
-        safeRun { CoinRateManager.init() }
         safeRun { CurrencyManager.init() }
         safeRun { StakingManager.init() }
     }

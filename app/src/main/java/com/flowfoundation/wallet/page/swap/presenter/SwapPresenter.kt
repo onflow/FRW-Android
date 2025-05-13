@@ -55,7 +55,7 @@ class SwapPresenter(
                 selectedCoin = contractId,
                 disableCoin = if (isFrom) viewModel.toCoin()?.contractId() else viewModel.fromCoin()?.contractId(),
                 fragmentManager = activity.supportFragmentManager,
-                moveFromAddress = if (isFrom) null else viewModel.fromCoin()?.address
+                moveFromAddress = if (isFrom) null else viewModel.fromCoin()?.tokenAddress()
             )?.let {
                 if (isFrom) viewModel.updateFromCoin(it) else viewModel.updateToCoin(it)
             }

@@ -3,10 +3,9 @@ package com.flowfoundation.wallet.page.dialog.processing.send
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -15,7 +14,7 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 
-class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRateUpdate {
+class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenUpdateListener {
     val userInfoLiveData = MutableLiveData<UserInfoData>()
 
     val amountConvertLiveData = MutableLiveData<BigDecimal>()
@@ -25,7 +24,7 @@ class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRat
     lateinit var state: TransactionState
 
     init {
-        CoinRateManager.addListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
     }
 
     fun bindTransactionState(state: TransactionState) {
@@ -42,8 +41,9 @@ class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRat
             }
             if (state.type == TransactionState.TYPE_TRANSFER_COIN) {
                 val coinData = state.coinData()
-                val coin = FlowCoinListManager.getCoinById(coinData.coinId) ?: return@viewModelIOScope
-                CoinRateManager.fetchCoinRate(coin)
+                FungibleTokenListManager.getTokenById(coinData.coinId)?.run {
+                    FungibleTokenListManager.updateTokenInfo(contractId())
+                }
             }
         }
     }
@@ -56,7 +56,11 @@ class SendProcessingViewModel : ViewModel(), OnTransactionStateChange, OnCoinRat
         stateChangeLiveData.postValue(state)
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
-        amountConvertLiveData.postValue(price * state.coinData().amount)
+    override fun onTokenUpdated(token: FungibleToken) {
+        if (token.isSameToken(state.coinData().coinId)) {
+            amountConvertLiveData.postValue(
+                token.tokenPrice() * state.coinData().amount
+            )
+        }
     }
 }

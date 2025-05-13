@@ -226,6 +226,7 @@
     <string name="made_by_outblock">Made by <a href="https://flow.com/">Flow</a></string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="connecting">Connecting...</string>
     <string name="transaction_to">Transaction Request from</string>
     <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
@@ -745,4 +746,22 @@
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
+    <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
+    <string name="manage_tokens">Manage Tokens</string>
+    <string name="filters">Filters</string>
+    <string name="hide_dust_token">Hide dust tokens (&lt;0.01 USD Balance)</string>
+    <string name="display_verified_token">Only show verified tokens</string>
+    <string name="tokens">Tokens</string>
+    <string name="verified">Verified</string>
+    <string name="contract_address">Contract address</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="wallet_connect_no_proposal">Unable to establish connection. Please try again.</string>
+    <string name="wallet_connect_pairing_error">Connection failed. Please try again.</string>
+    <string name="wallet_connect_generic_error">An error occurred while connecting. Please try again.</string>
+    <string name="wallet_connect_proposal_expired">Connection request has expired. Please try again.</string>
+    <string name="wallet_connect_request_expired">Request has expired. Please try again.</string>
+    <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
+    <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
+    <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
 </resources>

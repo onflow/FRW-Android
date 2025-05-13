@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
 import android.annotation.SuppressLint
+import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
@@ -8,14 +9,12 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityTokenDetailBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.app.isMainnet
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.staking.STAKING_DEFAULT_NORMAL_APY
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.isLilico
 import com.flowfoundation.wallet.manager.staking.stakingCount
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
@@ -45,7 +44,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,
     private val binding: ActivityTokenDetailBinding,
-    private val coin: FlowCoin,
+    private val token: FungibleToken,
 ) : BasePresenter<TokenDetailModel> {
 
     init {
@@ -53,13 +52,15 @@ class TokenDetailPresenter(
         with(binding) {
             root.addStatusBarTopPadding()
             root.addNavigationBarBottomPadding()
-            nameView.text = coin.name
-            coinTypeView.text = coin.symbol.uppercase()
-            Glide.with(iconView).load(coin.icon()).into(iconView)
+            nameView.text = token.name
+            coinTypeView.text = token.symbol.uppercase()
+            Glide.with(iconView).load(token.tokenIcon()).into(iconView)
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener {
-                TransactionSendActivity.launch(activity, coinContractId = coin.contractId())
+                TransactionSendActivity.launch(activity, coinContractId = token.contractId())
             }
+            ivVerified.setVisible(token.isVerified)
+            clVerifiedTip.setVisible(token.isVerified.not())
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
@@ -68,9 +69,9 @@ class TokenDetailPresenter(
                 SwapProviderDialog.show(
                     activity.supportFragmentManager,
                     isEVMToken = WalletManager.isEVMAccountSelected(),
-                    isFlowToken = coin.isFlowCoin())
+                    isFlowToken = token.isFlowToken())
             }
-            btnTrade.setVisible(coin.isFlowCoin())
+            btnTrade.setVisible(token.isFlowToken())
             btnTrade.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
                     return@setOnClickListener
@@ -79,39 +80,39 @@ class TokenDetailPresenter(
             }
             btnSend.isEnabled = !WalletManager.isChildAccountSelected()
             val moveVisible = !WalletManager.isChildAccountSelected()
-                    && (coin.isFlowCoin() || coin.isCOABridgeCoin() || coin.canBridgeToCOA())
+                    && (token.isFlowToken() || token.canBridgeToEVM() || token.canBridgeToCadence())
             llEvmMoveToken.setVisible(moveVisible)
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
-                        MoveTokenDialog().showDialog(activity, coin.contractId())
+                        MoveTokenDialog().showDialog(activity, token.contractId())
                     }
                 } else {
                     EnableEVMActivity.launch(activity)
                 }
             }
-            if (coin.website().isEmpty()) {
+            if (token.tokenWebsite().isEmpty()) {
                 ivLink.gone()
             } else {
                 ivLink.visible()
-                nameWrapper.setOnClickListener { openBrowser(activity, coin.website()) }
+                nameWrapper.setOnClickListener { openBrowser(activity, token.tokenWebsite()) }
             }
         }
 
-        if (!coin.isFlowCoin()) {
+        if (!token.isFlowToken()) {
             binding.getMoreWrapper.setVisible(false)
             binding.chartWrapper.root.setVisible(false)
         }
 
-        if (!StakingManager.isStaking() && coin.isFlowCoin() && isMainnet()) {
+        if (!StakingManager.isStaking() && token.isFlowToken() && isMainnet()) {
             binding.stakingBanner.root.setVisible(true)
             binding.getMoreWrapper.setVisible(false)
             binding.stakingBanner.root.setOnClickListener { openStakingPage(activity) }
         }
 
-        if (StakingManager.isStaking() && coin.isFlowCoin() && isMainnet()) {
+        if (StakingManager.isStaking() && token.isFlowToken() && isMainnet()) {
             binding.getMoreWrapper.setVisible(false)
-            setupStakingRewards()
+            setupStakingRewards(token)
         }
 
         if (!isMainnet()) {
@@ -122,13 +123,28 @@ class TokenDetailPresenter(
                 )
             }
         }
-        bindAccessible(coin)
-        bindStorageInfo(coin)
+        bindAccessible(token)
+        bindStorageInfo(token)
+        bindVerifiedInfo(token)
+    }
+
+    private fun bindVerifiedInfo(token: FungibleToken) {
+        if (WalletManager.isEVMAccountSelected()) {
+            binding.securityWrapper.gone()
+            return
+        }
+        binding.securityWrapper.visible()
+        binding.tvVerifiedInfo.text = if (token.isVerified) R.string.yes.res2String() else R.string.no.res2String()
+        binding.tvContractAddress.text = token.tokenAddress()
+        binding.tvContractAddress.paintFlags = binding.tvContractAddress.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+        binding.tvContractAddress.setOnClickListener {
+            openBrowser(activity, "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}")
+        }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun bindStorageInfo(coin: FlowCoin) {
-        if (WalletManager.isEVMAccountSelected().not() && coin.isFlowCoin()) {
+    private fun bindStorageInfo(token: FungibleToken) {
+        if (WalletManager.isEVMAccountSelected().not() && token.isFlowToken()) {
             binding.storageWrapper.visible()
             binding.tvStorageUsage.text = AccountInfoManager.getStorageUsageFlow()
             binding.tvTotalBalance.text = AccountInfoManager.getTotalFlowBalance()
@@ -146,13 +162,13 @@ class TokenDetailPresenter(
         }
     }
 
-    private fun bindAccessible(coin: FlowCoin) {
-        if (ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)) {
+    private fun bindAccessible(token: FungibleToken) {
+        if (ChildAccountCollectionManager.isTokenAccessible(token.tokenContractName(), token.tokenAddress())) {
             binding.inaccessibleTip.gone()
             return
         }
         val accountName = WalletManager.childAccount(WalletManager.selectedWalletAddress())?.name ?: R.string.default_child_account_name.res2String()
-        binding.tvInaccessibleTip.text = activity.getString(R.string.inaccessible_token_tip, coin.name, accountName)
+        binding.tvInaccessibleTip.text = activity.getString(R.string.inaccessible_token_tip, token.name, accountName)
         binding.inaccessibleTip.visible()
     }
 
@@ -170,10 +186,10 @@ class TokenDetailPresenter(
         activity.title = ""
     }
 
-    private fun setupStakingRewards() {
+    private fun setupStakingRewards(token: FungibleToken) {
         with(binding.stakingRewardWrapper) {
             val currency = selectedCurrency()
-            val coinRate = CoinRateManager.coinRate(FlowCoinListManager.getFlowCoinContractId()) ?: 0f
+            val coinRate = token.tokenPrice()
             val stakingCount = StakingManager.stakingCount()
 
             val dayRewards =

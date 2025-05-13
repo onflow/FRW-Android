@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/home_page_background"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/home_page_background"
+        android:paddingVertical="16dp">
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/coin_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:round="48dp"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_coin_flow"/>
+
+        <TextView
+            android:id="@+id/coin_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/inter"
+            android:textColor="@color/text_1"
+            android:layout_marginEnd="4dp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:lines="1"
+            android:maxLines="1"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@id/coin_icon"
+            app:layout_constraintTop_toTopOf="@id/coin_icon"
+            app:layout_constraintEnd_toStartOf="@id/iv_verified"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Flow"/>
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/iv_verified"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/ic_verified"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="@id/coin_name"
+            app:layout_constraintBottom_toBottomOf="@id/coin_name"
+            app:layout_constraintStart_toEndOf="@id/coin_name"
+            app:layout_constraintEnd_toStartOf="@id/coin_balance"/>
+
+        <TextView
+            android:id="@+id/coin_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:textColor="@color/text_2"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/coin_icon"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="@id/coin_name"
+            app:layout_constraintTop_toBottomOf="@id/coin_name"
+            tools:text="$9.8"/>
+
+        <TextView
+            android:id="@+id/coin_balance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/text_1"
+            android:textSize="14sp"
+            android:gravity="center_vertical|end"
+            android:lines="1"
+            android:maxLines="1"
+            app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="10sp"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintBottom_toTopOf="@id/coin_balance_price"
+            app:layout_constraintEnd_toStartOf="@id/switch_display"
+            app:layout_constraintStart_toEndOf="@id/iv_verified"
+            app:layout_constraintTop_toTopOf="@id/coin_icon"
+            tools:text="Flow"/>
+
+        <TextView
+            android:id="@+id/coin_balance_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/inter"
+            android:textColor="@color/text_2"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/coin_icon"
+            app:layout_constraintEnd_toEndOf="@id/coin_balance"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintTop_toBottomOf="@id/coin_balance"
+            tools:text="$9.8"/>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/switch_display"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:theme="@style/FrozenSwitch"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/coin_balance"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</com.google.android.material.card.MaterialCardView>

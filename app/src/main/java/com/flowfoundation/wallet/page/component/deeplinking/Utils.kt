@@ -7,7 +7,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.networkId
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
@@ -16,13 +16,14 @@ import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
@@ -43,16 +44,22 @@ enum class DeepLinkPath(val path: String) {
     }
 }
 
-
-fun dispatchDeepLinking(context: Context, uri: Uri) {
-    ioScope {
-        val wcUri = getWalletConnectUri(uri)
-        if (wcUri?.startsWith("wc:") == true) {
-            dispatchWalletConnect(uri)
-            return@ioScope
+suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
+    logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
+    val wcUri = getWalletConnectUri(uri)
+    if (wcUri?.startsWith("wc:") == true) {
+        val success = dispatchWalletConnect(uri)
+        if (success) {
+            logd(TAG, "WalletConnect dispatch completed successfully")
+        } else {
+            loge(TAG, "WalletConnect dispatch failed")
+            // Save as pending action if WalletConnect fails
+            PendingActionHelper.savePendingDeepLink(context, uri)
         }
-        PendingActionHelper.savePendingDeepLink(context, uri)
+        return
     }
+    logd(TAG, "No WalletConnect URI found, saving as pending action")
+    PendingActionHelper.savePendingDeepLink(context, uri)
 }
 
 suspend fun executePendingDeepLink(uri: Uri) {
@@ -95,39 +102,83 @@ suspend fun executePendingDeepLink(uri: Uri) {
 private fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = getWalletConnectUri(uri)
-        logd(TAG, "dispatchWalletConnect: $data")
-        assert(data?.startsWith("wc:") ?: false)
 
-        if (!WalletConnect.isInitialized()) {
-            runBlocking {
-                while (!WalletConnect.isInitialized()) {
-                    delay(200)
-                }
-                WalletConnect.get().pair(data.toString())
-            }
-        } else {
-            WalletConnect.get().pair(data.toString())
+        if (data.isNullOrBlank() || !data.startsWith("wc:")) {
+            loge(TAG, "Invalid WalletConnect URI format: $data")
+            return@runCatching false
         }
-    }.getOrNull() != null
+        
+        if (!WalletConnect.isInitialized()) {
+            logd(TAG, "WalletConnect is not initialized, initializing...")
+            var result = false
+            ioScope {
+                val initResult = withTimeoutOrNull(3000) {
+                    var waitTime = 50L
+                    var attempts = 0
+                    val maxAttempts = 5
+
+                    while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
+                        delay(waitTime)
+                        attempts++
+                        waitTime = minOf(waitTime * 2, 500)
+                    }
+
+                    WalletConnect.isInitialized()
+                }
+                if (initResult == null) {
+                    loge(TAG, "WalletConnect initialization timeout")
+                    uiScope {
+                        toast(R.string.wallet_connect_error)
+                    }
+                    result = false
+                } else {
+                    try {
+                        WalletConnect.get().pair(data.toString())
+                        // Wait for session proposal to be handled
+                        result = true
+                    } catch (e: Exception) {
+                        loge(TAG, "WalletConnect pairing failed: ${e.message}")
+                        loge(e)
+                        result = false
+                    }
+                }
+            }
+            result
+        } else {
+            try {
+                WalletConnect.get().pair(data.toString())
+                // Wait for session proposal to be handled
+                true
+            } catch (e: Exception) {
+                loge(TAG, "WalletConnect pairing failed: ${e.message}")
+                loge(e)
+                false
+            }
+        }
+    }.getOrDefault(false)
 }
 
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
         val uriString = uri.toString()
-
         val uriParamStart = uriString.indexOf("uri=")
         val wcUriEncoded = if (uriParamStart != -1) {
             uriString.substring(uriParamStart + 4)
         } else {
             uri.getQueryParameter("uri")
         }
+        
         wcUriEncoded?.let {
             if (it.contains("%")) {
-                URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
+                decoded
             } else {
                 it
             }
         }
+    }.onFailure { e ->
+        loge(TAG, "Error processing WalletConnect URI: ${e.message}")
+        loge(e)
     }.getOrNull()
 }
 
@@ -172,7 +223,7 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
             SendAmountActivity.launch(
                 it,
                 AddressBookContact(address = recipient.toAddress()),
-                FlowCoinListManager.getFlowCoinContractId(),
+                FungibleTokenListManager.getFlowTokenContractId(),
                 value?.toString()
             )
         }

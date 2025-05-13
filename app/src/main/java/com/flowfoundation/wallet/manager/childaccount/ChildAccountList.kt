@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.ref.WeakReference
@@ -21,7 +22,7 @@ class ChildAccountList(
     private val accountList = mutableListOf<ChildAccount>()
 
     init {
-        ioScope { accountList.addAll(cache().read().orEmpty()) }
+        ioScope { accountList.addAll(cache().read()?.accountList.orEmpty()) }
         refresh()
     }
 
@@ -34,8 +35,7 @@ class ChildAccountList(
         } else {
             localAccount.pinTime = System.currentTimeMillis()
         }
-
-        cache().cache(ChildAccountCache().apply { addAll(accountList) })
+        cache().cache(ChildAccountCache(accountList.toList()))
     }
 
     fun refresh() {
@@ -45,7 +45,7 @@ class ChildAccountList(
             accounts.forEach { account -> account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0) }
             accountList.clear()
             accountList.addAll(accounts)
-            cache().cache(ChildAccountCache().apply { addAll(accountList) })
+            cache().cache(ChildAccountCache(accountList.toList()))
             dispatchAccountUpdateListener(address, accountList.toList())
 
             logd(TAG, "refresh: $address, ${accountList.size}")
@@ -102,4 +102,7 @@ data class ChildAccount(
     val description: String? = null,
 ) : Parcelable
 
-private class ChildAccountCache : ArrayList<ChildAccount>()
+data class ChildAccountCache(
+    @SerializedName("accountList")
+    val accountList: List<ChildAccount> = emptyList(),
+)

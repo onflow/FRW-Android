@@ -3,8 +3,8 @@ package com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.viewModelIOScope
@@ -24,16 +24,15 @@ class ChildAccountDetailViewModel : ViewModel() {
                 val idSplitList = it.id.split(".", ignoreCase = true, limit = 0)
                 val contractName = idSplitList[2]
                 val address = idSplitList[1]
-                val flowCoin = FlowCoinListManager.coinList().firstOrNull { flowCoin ->
-                    contractName == flowCoin.contractName() && address == flowCoin.address
-                }
+                val token = FungibleTokenListManager.getFungibleToken { flowCoin ->
+                    contractName == flowCoin.tokenContractName() && address == flowCoin.tokenAddress() }
                 coinDataList.add(
                     CoinData(
-                        flowCoin?.name ?: contractName,
-                        flowCoin?.icon().orEmpty().ifBlank {
+                        token?.name ?: contractName,
+                        token?.tokenIcon().orEmpty().ifBlank {
                             "https://lilico.app/placeholder-2.0.png"
                         },
-                        flowCoin?.symbol.orEmpty(),
+                        token?.symbol.orEmpty(),
                         it.balance
                     )
                 )

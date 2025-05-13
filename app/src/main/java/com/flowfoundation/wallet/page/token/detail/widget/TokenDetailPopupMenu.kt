@@ -4,7 +4,7 @@ import android.view.View
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.popupMenu
@@ -14,7 +14,7 @@ import com.flowfoundation.wallet.widgets.popup.PopupListView
 
 class TokenDetailPopupMenu(
     private val view: View,
-    private val coin: FlowCoin,
+    private val token: FungibleToken,
 ) {
     fun show() {
         uiScope {
@@ -30,13 +30,13 @@ class TokenDetailPopupMenu(
     }
 
     private fun getDeleteText(): String {
-        return "${R.string.delete.res2String()} ${coin.symbol}"
+        return "${R.string.delete.res2String()} ${token.symbol}"
     }
 
     private fun onMenuItemClick(text: String): Boolean {
         when (text) {
             getDeleteText() ->  {
-                CustomTokenManager.deleteCustomToken(coin)
+                CustomTokenManager.deleteCustomToken(token)
                 uiScope {
                     val activity = BaseActivity.getCurrentActivity() ?: return@uiScope
                     activity.finish()

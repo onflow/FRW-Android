@@ -183,7 +183,7 @@
             app:cardBackgroundColor="@android:color/transparent"
             app:cardElevation="0dp"
             app:layout_constraintStart_toEndOf="@id/cv_receive"
-            app:layout_constraintEnd_toStartOf="@id/cv_stake"
+            app:layout_constraintEnd_toStartOf="@id/cv_buy"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_weight="1">
@@ -219,9 +219,9 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Stake Icon -->
+        <!-- Buy Icon -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cv_stake"
+            android:id="@+id/cv_buy"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
@@ -246,19 +246,19 @@
                     app:cardBackgroundColor="@color/accent_green"
                     app:cardElevation="0dp">
                     <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_staking"
+                        android:src="@drawable/ic_buy"
                         app:tint="@color/text_white_90"/>
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
-                    android:id="@+id/tv_stake"
+                    android:id="@+id/tv_buy"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/stake"
+                    android:text="@string/buy"
                     android:textColor="@color/text_2"
                     android:textSize="12sp"/>
             </LinearLayout>
@@ -285,50 +285,47 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="16dp"
         app:layout_constraintBottom_toBottomOf="@id/tv_token_count"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_token_count">
 
-        <ImageView
-            android:id="@+id/iv_add_token"
-            android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:paddingHorizontal="4dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_account_add"
+        <FrameLayout
+            android:id="@+id/fl_add_token"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_4"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/text_3"/>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cv_buy"
-            android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:layout_marginEnd="4dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/iv_add_token"
-            app:layout_constraintTop_toTopOf="parent"
-            app:rippleColor="?attr/colorControlHighlight">
-
-            <TextView
-                android:layout_width="wrap_content"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/buy_background"
-                android:drawablePadding="4dp"
-                android:fontFamily="@font/inter_semi_bold"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="8dp"
-                android:text="@string/buy"
-                android:textColor="@color/text_3"
-                android:textSize="14sp"
-                app:drawableStartCompat="@drawable/ic_buy"/>
-        </com.google.android.material.card.MaterialCardView>
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_account_add"
+                app:tint="@color/text_3"/>
+        </FrameLayout>
 
+        <FrameLayout
+            android:id="@+id/fl_manage_token"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_round_corner"
+            android:backgroundTint="@color/text_4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/fl_add_token"
+            app:layout_constraintTop_toTopOf="parent">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleType="center"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_manage_token"
+                app:tint="@color/text_3"/>
+        </FrameLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

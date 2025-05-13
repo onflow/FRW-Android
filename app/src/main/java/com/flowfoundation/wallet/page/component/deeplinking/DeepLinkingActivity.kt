@@ -6,7 +6,10 @@ import android.view.View
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
+import kotlinx.coroutines.launch
 
 private val TAG = DeepLinkingActivity::class.java.simpleName
 
@@ -23,14 +26,24 @@ class DeepLinkingActivity : BaseActivity() {
             return
         }
 
-        logd(TAG, "uri:$uri")
+        logd(TAG, "DeepLinkingActivity received uri: $uri")
         MainActivity.launch(this)
-        dispatchDeepLinking(this, uri)
-        finish()
+        
+        ioScope {
+            try {
+                dispatchDeepLinking(this@DeepLinkingActivity, uri)
+                logd(TAG, "DeepLinkingDispatch completed for uri: $uri")
+            } catch (e: Exception) {
+                logd(TAG, "Error in DeepLinkingDispatch: ${e.message}")
+                loge(e)
+            } finally {
+                finish()
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
-        finish()
+        // Don't finish here, let the coroutine handle it
     }
 }

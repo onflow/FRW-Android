@@ -123,11 +123,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         addressList.add(0, evmAddress)
                         needMoveFee = true
                         layoutToAccount.setAccountInfo(evmAddress)
-
-                    } else {
-                        val childAccount = WalletManager.childAccount(addressList[0]) ?: return@with
-                        needMoveFee = false
-                        layoutToAccount.setAccountInfo(childAccount.address)
+                    } else if (addressList.isNotEmpty()) {
+                        WalletManager.childAccount(addressList[0])?.let { child ->
+                            needMoveFee = false
+                            layoutToAccount.setAccountInfo(child.address)
+                        }
                     }
                     configureToLayoutAction(addressList)
                 }
