@@ -80,14 +80,13 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             isStaked = StakingManager.isStaked(),
             stakeAmount = StakingManager.stakingCount()
         )
-        dataListLiveData.value = dataList
+        dataListLiveData.postValue(dataList)
     }
 
     fun onBalanceHideStateUpdate() {
         viewModelIOScope(this) {
             val isHideBalance = isHideWalletBalance()
             val data = dataList.toList().map { it.copy(isHideBalance = isHideBalance) }
-
             dataListLiveData.postValue(data)
         }
     }
