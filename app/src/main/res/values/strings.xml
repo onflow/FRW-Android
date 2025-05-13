@@ -756,5 +756,12 @@
     <string name="contract_address">Contract address</string>
     <string name="no">No</string>
     <string name="yes">Yes</string>
+    <string name="wallet_connect_no_proposal">Unable to establish connection. Please try again.</string>
+    <string name="wallet_connect_pairing_error">Connection failed. Please try again.</string>
+    <string name="wallet_connect_generic_error">An error occurred while connecting. Please try again.</string>
+    <string name="wallet_connect_proposal_expired">Connection request has expired. Please try again.</string>
+    <string name="wallet_connect_request_expired">Request has expired. Please try again.</string>
+    <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
+    <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
     <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
 </resources>
