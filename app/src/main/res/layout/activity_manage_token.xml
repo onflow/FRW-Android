@@ -44,16 +44,31 @@
 
         <TextView
             android:id="@+id/tv_hide_dust"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/hide_dust_token"
             android:textColor="@color/text"
             android:textSize="14sp"
             android:layout_marginTop="8dp"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constrainedWidth="true"
             app:layout_constraintTop_toBottomOf="@id/tv_filter"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/switch_dust_token"
+            app:layout_constraintEnd_toStartOf="@id/iv_hide_dust_tip"
             />
+        
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/iv_hide_dust_tip"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginHorizontal="4dp"
+            app:layout_constraintStart_toEndOf="@id/tv_hide_dust"
+            app:layout_constraintTop_toTopOf="@id/tv_hide_dust"
+            app:layout_constraintBottom_toBottomOf="@id/tv_hide_dust"
+            app:layout_constraintEnd_toStartOf="@id/switch_dust_token"
+            app:tint="@color/text_2"
+            android:src="@drawable/ic_question"/>
 
         <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/switch_dust_token"
@@ -64,9 +79,9 @@
             android:minHeight="0dp"
             android:padding="0dp"
             android:theme="@style/FrozenSwitch"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintBottom_toBottomOf="@id/tv_hide_dust"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tv_hide_dust"
             app:layout_constraintTop_toTopOf="@id/tv_hide_dust"/>
 
         <TextView
@@ -89,8 +104,7 @@
             android:id="@+id/iv_verified"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginHorizontal="4dp"
             android:src="@drawable/ic_verified"
             app:layout_constraintBottom_toBottomOf="@id/tv_display_verified"
             app:layout_constraintEnd_toStartOf="@id/switch_verified_token"
