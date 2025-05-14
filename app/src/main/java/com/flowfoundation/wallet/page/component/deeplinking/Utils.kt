@@ -116,9 +116,6 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, waiting for initialization...")
             
-            // We don't directly initialize WalletConnect here
-            // Instead we just wait for it to be initialized by FlowWalletApplication
-            
             // Wait for WalletConnect to initialize with timeout
             val initialized = withTimeoutOrNull(10000) {
                 var waitTime = 200L
