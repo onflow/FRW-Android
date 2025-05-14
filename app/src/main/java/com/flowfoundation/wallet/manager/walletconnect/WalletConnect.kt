@@ -46,10 +46,9 @@ class WalletConnect {
         )
     }
 
-    private var isInitializing = false
     private var pairingInProgress = false
 
-    suspend fun waitForInitialization(timeoutMs: Long = 10000): Boolean {
+    private suspend fun waitForInitialization(timeoutMs: Long = 10000): Boolean {
         if (!isInitialized()) {
             logd(TAG, "WalletConnect not initialized. Waiting for initialization...")
             return withTimeoutOrNull(timeoutMs) {

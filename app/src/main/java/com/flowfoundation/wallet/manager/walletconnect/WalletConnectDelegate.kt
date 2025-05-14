@@ -1,14 +1,15 @@
 package com.flowfoundation.wallet.manager.walletconnect
 
+import android.app.AlertDialog
+import android.view.View
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.google.gson.Gson
-import com.reown.sign.client.Sign
-import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
+import com.flowfoundation.wallet.page.browser.browserInstance
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isShowMoveDialog
@@ -20,17 +21,12 @@ import com.flowfoundation.wallet.widgets.webview.evm.dialog.EvmRequestAccountDia
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.fcl.dialog.FclAuthnDialog
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
+import com.google.gson.Gson
 import com.reown.android.Core
 import com.reown.android.CoreClient
+import com.reown.sign.client.Sign
+import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
-import com.flowfoundation.wallet.page.window.WindowFrame
-import android.view.View
-import com.flowfoundation.wallet.page.browser.browserInstance
-import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.utils.Env
-import android.app.AlertDialog
-import com.flowfoundation.wallet.manager.walletconnect.approveSession
-import com.flowfoundation.wallet.manager.walletconnect.reject
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -333,7 +329,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                                 }
                                 
                                 // Show toast only if no redirect URL and browser is not active
-                                if (sessionProposal.redirect.isNullOrEmpty()) {
+                                if (sessionProposal.redirect.isEmpty()) {
                                     logd(TAG, "No redirect URL, checking if browser is active")
                                     val browserContainer = WindowFrame.browserContainer()
                                     val browserInstance = browserInstance()
