@@ -28,6 +28,9 @@ import android.view.View
 import com.flowfoundation.wallet.page.browser.browserInstance
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.utils.Env
+import android.app.AlertDialog
+import com.flowfoundation.wallet.manager.walletconnect.approveSession
+import com.flowfoundation.wallet.manager.walletconnect.reject
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 
@@ -219,35 +222,58 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     ) {
         logd(TAG, "onSessionProposal() sessionProposal json:${Gson().toJson(sessionProposal)}")
         logd(TAG, "onSessionProposal() verifyContext json:${Gson().toJson(verifyContext)}")
+        logd(TAG, "onSessionProposal() Starting session proposal handling")
 
         processedRequestIds.clear()
         isSessionApproved = false  // Reset approval state for new session
 
-        // Try to get the activity with a small delay to allow it to be ready
+        // Try to get the activity with a more robust approach
         ioScope {
             var attempts = 0
-            val maxAttempts = 5
+            val maxAttempts = 15  // Increased attempts
             var activity: BaseActivity? = null
+            var lastError: Exception? = null
+
+            // First add a small delay to allow any activity transitions to complete
+            delay(300)
 
             while (attempts < maxAttempts && activity == null) {
-                activity = BaseActivity.getCurrentActivity()
-                if (activity == null) {
-                    logd(TAG, "Activity not found, attempt ${attempts + 1} of $maxAttempts")
-                    delay(1000)
+                try {
+                    activity = BaseActivity.getCurrentActivity()
+                    if (activity == null) {
+                        logd(TAG, "Activity not found, attempt ${attempts + 1} of $maxAttempts")
+                        delay(500)
+                        attempts++
+                    } else {
+                        logd(TAG, "Found activity: ${activity.javaClass.simpleName}")
+                        // Verify activity is in a valid state
+                        if (activity.isFinishing || activity.isDestroyed) {
+                            logd(TAG, "Activity is finishing or destroyed, retrying")
+                            activity = null
+                            delay(500)
+                            attempts++
+                        }
+                    }
+                } catch (e: Exception) {
+                    lastError = e
+                    loge(TAG, "Error getting activity: ${e.message}")
+                    delay(500)
                     attempts++
                 }
             }
 
             if (activity == null) {
-                loge(TAG, "No current activity found after $maxAttempts attempts")
+                val errorMsg = lastError?.message ?: "Unknown error"
+                loge(TAG, "No current activity found after $maxAttempts attempts. Last error: $errorMsg")
                 // Show error message to user and reject the session
                 uiScope {
                     toast(R.string.wallet_connect_activity_error)
                     logd(TAG, "Showing activity error toast to user")
                 }
                 try {
+                    logd(TAG, "Rejecting session due to no activity found")
                     sessionProposal.reject()
-                    logd(TAG, "Rejected session due to no activity found")
+                    logd(TAG, "Session rejected successfully")
                 } catch (e: Exception) {
                     loge(TAG, "Error rejecting session: ${e.message}")
                     loge(e)
@@ -255,55 +281,129 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                 return@ioScope
             }
 
+            // Store a local reference to avoid activity becoming null later
+            val foundActivity = activity
+
             try {
+                logd(TAG, "Activity is ready, showing connection dialog UI")
                 uiScope {
-                    with(sessionProposal) {
-                        val approve = if (WalletManager.isEVMAccountSelected()) {
-                            if (isShowMoveDialog()) {
-                                MoveDialog().showMove(activity.supportFragmentManager, description)
-                            }
-                            EvmRequestAccountDialog().show(
-                                activity.supportFragmentManager,
-                                EVMDialogModel(
+                    try {
+                        with(sessionProposal) {
+                            val approve = if (WalletManager.isEVMAccountSelected()) {
+                                logd(TAG, "Using EVM account, showing EVM dialog")
+                                if (isShowMoveDialog()) {
+                                    logd(TAG, "Showing move dialog")
+                                    MoveDialog().showMove(foundActivity.supportFragmentManager, description)
+                                }
+                                EvmRequestAccountDialog().show(
+                                    foundActivity.supportFragmentManager,
+                                    EVMDialogModel(
+                                        title = name,
+                                        url = url,
+                                        network = chainNetWorkString()
+                                    )
+                                )
+                            } else {
+                                logd(TAG, "Using FCL account, showing FCL dialog")
+                                val data = FclDialogModel(
                                     title = name,
                                     url = url,
-                                    network = chainNetWorkString()
+                                    logo = icons.firstOrNull()?.toString(),
+                                    network = network()
                                 )
-                            )
-                        } else {
-                            val data = FclDialogModel(
-                                title = name,
-                                url = url,
-                                logo = icons.firstOrNull()?.toString(),
-                                network = network()
-                            )
-                            FclAuthnDialog().show(
-                                activity.supportFragmentManager,
-                                data
-                            )
-                        }
-                        if (approve) {
-                            isSessionApproved = true
-                            logd(TAG, "Session approved by user")
-                            approveSession()
+                                FclAuthnDialog().show(
+                                    foundActivity.supportFragmentManager,
+                                    data
+                                )
+                            }
                             
-                            // Show toast only if no redirect URL and browser is not active
-                            if (sessionProposal.redirect.isNullOrEmpty()) {
-                                logd(TAG, "No redirect URL, checking if browser is active")
-                                val browserContainer = WindowFrame.browserContainer()
-                                val browserInstance = browserInstance()
-                                if (browserContainer?.visibility != View.VISIBLE || browserInstance == null) {
-                                    logd(TAG, "Browser is not active, showing toast")
+                            // Check if dialog was actually shown
+                            if (approve) {
+                                isSessionApproved = true
+                                logd(TAG, "Session approved by user")
+                                try {
+                                    approveSession()
+                                    logd(TAG, "Session approval sent successfully")
+                                } catch (e: Exception) {
+                                    loge(TAG, "Error during session approval: ${e.message}")
+                                    loge(e)
                                     uiScope {
-                                        toast(R.string.return_to_browser_to_continue)
+                                        toast(R.string.wallet_connect_approval_error)
+                                    }
+                                }
+                                
+                                // Show toast only if no redirect URL and browser is not active
+                                if (sessionProposal.redirect.isNullOrEmpty()) {
+                                    logd(TAG, "No redirect URL, checking if browser is active")
+                                    val browserContainer = WindowFrame.browserContainer()
+                                    val browserInstance = browserInstance()
+                                    if (browserContainer?.visibility != View.VISIBLE || browserInstance == null) {
+                                        logd(TAG, "Browser is not active, showing toast")
+                                        uiScope {
+                                            toast(R.string.return_to_browser_to_continue)
+                                        }
+                                    } else {
+                                        logd(TAG, "Browser is active, skipping toast")
                                     }
                                 } else {
-                                    logd(TAG, "Browser is active, skipping toast")
+                                    logd(TAG, "Redirect URL found: ${sessionProposal.redirect}")
+                                }
+                            } else {
+                                logd(TAG, "Session rejected by user")
+                                try {
+                                    reject()
+                                    logd(TAG, "Session rejection sent successfully")
+                                } catch (e: Exception) {
+                                    loge(TAG, "Error during session rejection: ${e.message}")
+                                    loge(e)
                                 }
                             }
-                        } else {
-                            logd(TAG, "Session rejected by user")
-                            reject()
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "Error showing dialog: ${e.message}")
+                        loge(e)
+                        // Try again with a different approach if dialog fails
+                        try {
+                            // Use a simpler dialog approach as fallback
+                            AlertDialog.Builder(foundActivity)
+                                .setTitle(sessionProposal.name)
+                                .setMessage(sessionProposal.description)
+                                .setPositiveButton(R.string.connect) { _, _ ->
+                                    isSessionApproved = true
+                                    logd(TAG, "Session approved via fallback dialog")
+                                    try {
+                                        sessionProposal.approveSession()
+                                        logd(TAG, "Session approval sent successfully via fallback")
+                                    } catch (e: Exception) {
+                                        loge(TAG, "Error during fallback session approval: ${e.message}")
+                                        loge(e)
+                                        uiScope {
+                                            toast(R.string.wallet_connect_approval_error)
+                                        }
+                                    }
+                                }
+                                .setNegativeButton(R.string.cancel) { _, _ ->
+                                    logd(TAG, "Session rejected via fallback dialog")
+                                    try {
+                                        sessionProposal.reject()
+                                        logd(TAG, "Session rejection sent successfully via fallback")
+                                    } catch (e: Exception) {
+                                        loge(TAG, "Error during fallback session rejection: ${e.message}")
+                                        loge(e)
+                                    }
+                                }
+                                .show()
+                        } catch (e2: Exception) {
+                            loge(TAG, "Error showing fallback dialog: ${e2.message}")
+                            loge(e2)
+                            try {
+                                sessionProposal.reject()
+                                logd(TAG, "Session rejected due to dialog failure")
+                            } catch (e3: Exception) {
+                                loge(TAG, "Error rejecting session after fallback failure: ${e3.message}")
+                                loge(e3)
+                            }
+                            toast(R.string.wallet_connect_proposal_error)
                         }
                     }
                 }
@@ -315,6 +415,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                 }
                 try {
                     sessionProposal.reject()
+                    logd(TAG, "Session rejected due to error")
                 } catch (e: Exception) {
                     loge(TAG, "Error rejecting session: ${e.message}")
                     loge(e)

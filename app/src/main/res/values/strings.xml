@@ -746,6 +746,8 @@
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
+    <string name="wallet_connect_initialization_error">wallet_connect_initialization_error</string>
+    <string name="wallet_connect_approval_error">wallet_connect_approval_error</string>
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
