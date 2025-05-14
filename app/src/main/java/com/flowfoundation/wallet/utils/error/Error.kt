@@ -86,8 +86,7 @@ enum class EVMError(
     override val rawValue: String,
     override val baseCode: Int = 7000
 ) : BaseError {
-    QUERY_EVM_ADDRESS_FAILED("queryEVMAddressFailed"),
-    GET_ADDRESS_FAILED("getAddressFailed");
+    QUERY_EVM_ADDRESS_FAILED("queryEVMAddressFailed");
 }
 
 enum class CadenceError(

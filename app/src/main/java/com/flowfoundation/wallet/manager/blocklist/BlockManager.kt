@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.blocklist
 
 import android.net.Uri
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
@@ -77,7 +78,7 @@ object BlockManager {
                 mutex.withLock {
                     blockList = mergedList
                     lastFetchTime = System.currentTimeMillis()
-                    loge(TAG, "Block list updated, total domains: ${blockList.size}")
+                    logd(TAG, "Block list updated, total domains: ${blockList.size}")
                 }
             } catch (e: Exception) {
                 loge(TAG, "Failed to fetch block list: ${e.message}")
