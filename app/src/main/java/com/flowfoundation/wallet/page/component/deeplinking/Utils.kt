@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
+import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
@@ -99,63 +100,80 @@ suspend fun executePendingDeepLink(uri: Uri) {
 
 // https://lilico.app/?uri=wc%3A83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c%402%3Frelay-protocol%3Diridium%26symKey%3D618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
 // wc:83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c@2?relay-protocol=iridium&symKey=618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
-private fun dispatchWalletConnect(uri: Uri): Boolean {
+private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = getWalletConnectUri(uri)
 
         if (data.isNullOrBlank() || !data.startsWith("wc:")) {
             loge(TAG, "Invalid WalletConnect URI format: $data")
+            uiScope {
+                toast(R.string.wallet_connect_pairing_error)
+            }
             return@runCatching false
         }
         
+        // Initialize WalletConnect if needed
         if (!WalletConnect.isInitialized()) {
-            logd(TAG, "WalletConnect is not initialized, initializing...")
-            var result = false
-            ioScope {
-                val initResult = withTimeoutOrNull(3000) {
-                    var waitTime = 50L
-                    var attempts = 0
-                    val maxAttempts = 5
-
-                    while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
-                        delay(waitTime)
-                        attempts++
-                        waitTime = minOf(waitTime * 2, 500)
-                    }
-
-                    WalletConnect.isInitialized()
+            logd(TAG, "WalletConnect is not initialized, waiting for initialization...")
+            
+            // Wait for WalletConnect to initialize with timeout
+            val initialized = withTimeoutOrNull(10000) {
+                var waitTime = 200L
+                var attempts = 0
+                val maxAttempts = 10
+                
+                while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
+                    logd(TAG, "Waiting for WalletConnect initialization, attempt ${attempts + 1} of $maxAttempts")
+                    delay(waitTime)
+                    attempts++
+                    waitTime = minOf(waitTime * 2, 1000)
                 }
-                if (initResult == null) {
-                    loge(TAG, "WalletConnect initialization timeout")
-                    uiScope {
-                        toast(R.string.wallet_connect_error)
-                    }
-                    result = false
-                } else {
-                    try {
-                        WalletConnect.get().pair(data.toString())
-                        // Wait for session proposal to be handled
-                        result = true
-                    } catch (e: Exception) {
-                        loge(TAG, "WalletConnect pairing failed: ${e.message}")
-                        loge(e)
-                        result = false
-                    }
+                
+                WalletConnect.isInitialized()
+            } ?: false
+            
+            if (!initialized) {
+                loge(TAG, "WalletConnect initialization failed or timed out")
+                uiScope {
+                    toast(R.string.wallet_connect_initialization_error)
                 }
+                return@runCatching false
             }
-            result
-        } else {
-            try {
-                WalletConnect.get().pair(data.toString())
-                // Wait for session proposal to be handled
-                true
-            } catch (e: Exception) {
-                loge(TAG, "WalletConnect pairing failed: ${e.message}")
-                loge(e)
-                false
-            }
+            
+            logd(TAG, "WalletConnect successfully initialized")
         }
-    }.getOrDefault(false)
+        
+        // Get instance and proceed with pairing
+        try {
+            // Try to get an instance of WalletConnect and pair
+            val wcInstance = WalletConnect.get()
+            
+            // Add a short delay to ensure all UI transitions are complete
+            delay(300)
+            
+            // Call the improved pairing method
+            logd(TAG, "Initiating WalletConnect pairing with URI: $data")
+            wcInstance.pair(data)
+            
+            // Return success immediately, but the actual connection will happen asynchronously
+            logd(TAG, "WalletConnect pairing initiated successfully")
+            return@runCatching true
+        } catch (e: Exception) {
+            loge(TAG, "Error during WalletConnect pairing: ${e.message}")
+            loge(e)
+            uiScope {
+                toast(R.string.wallet_connect_pairing_error)
+            }
+            return@runCatching false
+        }
+    }.getOrElse { e ->
+        loge(TAG, "Unexpected error in WalletConnect dispatch: ${e.message}")
+        loge(e)
+        uiScope {
+            toast(R.string.wallet_connect_generic_error)
+        }
+        false
+    }
 }
 
 fun getWalletConnectUri(uri: Uri): String? {
