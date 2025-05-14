@@ -29,6 +29,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.withTimeoutOrNull
 
+
 private val TAG = WalletConnect::class.java.simpleName
 
 private const val projectId = BuildConfig.WALLET_CONNECT_PROJECT_ID

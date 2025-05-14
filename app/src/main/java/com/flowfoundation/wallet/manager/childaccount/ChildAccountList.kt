@@ -8,7 +8,6 @@ import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.google.gson.reflect.TypeToken
 import kotlinx.parcelize.Parcelize
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.ref.WeakReference
@@ -64,7 +63,7 @@ class ChildAccountList(
 
     private fun cache(): CacheManager<ChildAccountCache> {
         return CacheManager(
-            "${address}.child_account_list".cacheFile(),
+            "${address}.child_accounts".cacheFile(),
             ChildAccountCache::class.java,
         )
     }

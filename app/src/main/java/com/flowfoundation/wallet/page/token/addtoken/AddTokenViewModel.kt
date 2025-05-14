@@ -33,6 +33,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenLi
     private var transactionIds = mutableListOf<String>()
 
     private var keyword = ""
+    private var isShowVerifiedToken = true
 
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
@@ -49,8 +50,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenLi
 
             coinList.addAll(
                 tokenResponse.tokens.map { TokenItem(coin = it, isAdded = FungibleTokenListManager.isTokenAdded(it.contractId()), isAdding = false) })
-            tokenListLiveData.postValue(coinList.toList())
-
+            postTokenList(coinList.toList())
             onTransactionStateChange()
 
         }
@@ -59,19 +59,24 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenLi
     fun search(keyword: String) {
         this.keyword = keyword
         if (keyword.isBlank()) {
-            tokenListLiveData.postValue(coinList.toList())
+            postTokenList(coinList.toList())
         } else {
-            tokenListLiveData.postValue(coinList.filter {
+            postTokenList(coinList.filter {
                 it.coin.tokenName().contains(keyword, true) || it.coin.tokenSymbol().contains(keyword, true)
             })
         }
     }
 
     fun switchVerifiedToken(isChecked: Boolean) {
-        if (isChecked) {
-            tokenListLiveData.postValue(coinList.filter { it.coin.isVerified })
+        this.isShowVerifiedToken = isChecked
+        postTokenList(coinList.toList())
+    }
+
+    private fun postTokenList(tokenList: List<TokenItem>) {
+        if (isShowVerifiedToken) {
+            tokenListLiveData.postValue(tokenList.filter { it.coin.isVerified })
         } else {
-            tokenListLiveData.postValue(coinList.toList())
+            tokenListLiveData.postValue(tokenList.toList())
         }
     }
 

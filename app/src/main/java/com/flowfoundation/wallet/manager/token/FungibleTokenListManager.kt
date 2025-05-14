@@ -231,9 +231,9 @@ object FungibleTokenListManager {
             tokenListCache[address] = oldItem.copy(hideDustTokens = true, displayTokenList = filteredList)
         } else {
             val tokenList = getCurrentTokenListSnapshot()
+            val displayListSnapshot = currentDisplayTokenList.toList()
             currentDisplayTokenList.clear()
             if (isOnlyShowVerifiedTokens()) {
-                val displayListSnapshot = currentDisplayTokenList.toList()
                 val filteredList = tokenList.filter { it.isVerified }.filter { verified -> displayListSnapshot.any { it.isSameToken(verified.contractId()) } }
                 currentDisplayTokenList.addAll(filteredList)
             } else {
@@ -260,9 +260,9 @@ object FungibleTokenListManager {
                 oldItem.copy(onlyShowVerifiedTokens = true, displayTokenList = filteredList)
         } else {
             val tokenList = getCurrentTokenListSnapshot()
+            val displayListSnapshot = currentDisplayTokenList.toList()
             currentDisplayTokenList.clear()
             if (isHideDustTokens()) {
-                val displayListSnapshot = currentDisplayTokenList.toList()
                 val filteredList = tokenList.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }.filter { verified -> displayListSnapshot.any{ it.isSameToken(verified.contractId()) } }
                 currentDisplayTokenList.addAll(filteredList)
             } else {

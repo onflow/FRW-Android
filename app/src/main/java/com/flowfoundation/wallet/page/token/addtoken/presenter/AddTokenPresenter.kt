@@ -41,7 +41,7 @@ class AddTokenPresenter(
 
     private fun setupFilters() {
         with(binding) {
-            switchVerifiedToken.isChecked = false
+            switchVerifiedToken.isChecked = true
             switchVerifiedToken.setOnCheckedChangeListener { _, isChecked ->
                 viewModel.switchVerifiedToken(isChecked)
             }

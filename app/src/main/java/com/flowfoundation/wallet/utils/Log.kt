@@ -25,7 +25,7 @@ fun loge(tag: String?, msg: Any?) {
 fun loge(throwable: Throwable?, printStackTrace: Boolean = true, report: Boolean = true) {
     val message = throwable?.message ?: ""
     log("Exception", message, Log.ERROR)
-    InstabugLog.e("Exception: $message")
+    InstabugLog.e("Exception: $message : ${throwable?.cause ?: ""}")
     
     if (printLog() && printStackTrace) {
         throwable?.printStackTrace()

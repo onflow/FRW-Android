@@ -751,7 +751,7 @@
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
-    <string name="hide_dust_token">Hide dust tokens (&lt;0.01 USD Balance)</string>
+    <string name="hide_dust_token">Hide dust tokens</string>
     <string name="display_verified_token">Only show verified tokens</string>
     <string name="tokens">Tokens</string>
     <string name="verified">Verified</string>
@@ -766,4 +766,5 @@
     <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
     <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
     <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
+    <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
 </resources>
