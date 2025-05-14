@@ -135,10 +135,10 @@ class TokenDetailPresenter(
         binding.tvContractAddress.text = token.tokenAddress()
         binding.tvContractAddress.paintFlags = binding.tvContractAddress.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         binding.tvContractAddress.setOnClickListener {
-            val url = if (token.tokenType == FungibleTokenType.EVM) {
-                "https://evm.flowscan.io/token/${token.tokenAddress()}"
-            } else {
+            val url = if (token.tokenType == FungibleTokenType.FLOW || token.isFlowToken()) {
                 "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}"
+            } else {
+                "https://evm.flowscan.io/token/${token.tokenAddress()}"
             }
             openBrowser(activity, url)
         }
