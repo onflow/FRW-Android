@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.isLilico
 import com.flowfoundation.wallet.manager.staking.stakingCount
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
@@ -129,16 +130,17 @@ class TokenDetailPresenter(
     }
 
     private fun bindVerifiedInfo(token: FungibleToken) {
-        if (WalletManager.isEVMAccountSelected()) {
-            binding.securityWrapper.gone()
-            return
-        }
         binding.securityWrapper.visible()
         binding.tvVerifiedInfo.text = if (token.isVerified) R.string.yes.res2String() else R.string.no.res2String()
         binding.tvContractAddress.text = token.tokenAddress()
         binding.tvContractAddress.paintFlags = binding.tvContractAddress.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         binding.tvContractAddress.setOnClickListener {
-            openBrowser(activity, "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}")
+            val url = if (token.tokenType == FungibleTokenType.EVM) {
+                "https://evm.flowscan.io/token/${token.tokenAddress()}"
+            } else {
+                "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}"
+            }
+            openBrowser(activity, url)
         }
     }
 
