@@ -28,7 +28,7 @@ data class EVMToken(
     val logoURI: String?,
     @SerializedName("flowIdentifier")
     val flowIdentifier: String?,
-    @SerializedName("balance")
+    @SerializedName("displayBalance")
     val balance: String?,
     @SerializedName("priceInUSD")
     val priceInUSD: String?,
@@ -43,7 +43,9 @@ data class EVMToken(
     @SerializedName("priceInCurrency")
     val priceInCurrency: String?,
     @SerializedName("balanceInCurrency")
-    val balanceInCurrency: String?
+    val balanceInCurrency: String?,
+    @SerializedName("isVerified")
+    val isVerified: Boolean? = false
 )
 
 fun EVMToken.toFungibleToken(): FungibleToken {
@@ -57,7 +59,7 @@ fun EVMToken.toFungibleToken(): FungibleToken {
         priceInCurrency = this.priceInCurrency,
         balanceInCurrency = this.balanceInCurrency,
         balanceInUSD = this.balanceInUSD,
-        isVerified = false,
+        isVerified = this.isVerified ?: false,
         tokenType = FungibleTokenType.EVM,
         flowIdentifier = this.flowIdentifier,
         flowAddress = null,

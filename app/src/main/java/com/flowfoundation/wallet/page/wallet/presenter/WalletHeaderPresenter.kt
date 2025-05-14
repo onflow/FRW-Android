@@ -108,7 +108,6 @@ class WalletHeaderPresenter(
                 cvBuy.setOnClickListener { activity?.let { SwapDialog.show(it.supportFragmentManager) } }
                 cvBuy.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppBuy())
                 cvSwap.setVisible(WalletManager.isEVMAccountSelected().not() && AppConfig.isInAppSwap())
-                flManageToken.setVisible(WalletManager.isEVMAccountSelected().not())
                 flAddToken.visible()
             }
 
