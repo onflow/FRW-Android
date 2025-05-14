@@ -94,7 +94,14 @@ data class Path(
     val domain: String?,
     @SerializedName("identifier")
     val identifier: String?
-)
+) {
+    fun getPath(): String {
+        if (domain.isNullOrBlank()) {
+            return identifier.orEmpty()
+        }
+        return "/${domain}/${identifier.orEmpty()}"
+    }
+}
 
 data class StorageInfo(
     @SerializedName("storageUsedInMB")
@@ -126,9 +133,9 @@ fun FlowToken.toFungibleToken(): FungibleToken {
         flowAddress = this.contractAddress,
         evmAddress = this.evmAddress,
         flowContractName = this.contractName,
-        flowStoragePath = this.storagePath?.identifier,
-        flowReceiverPath = this.receiverPath?.identifier,
-        flowBalancePath = this.balancePath?.identifier,
+        flowStoragePath = this.storagePath?.getPath(),
+        flowReceiverPath = this.receiverPath?.getPath(),
+        flowBalancePath = this.balancePath?.getPath(),
         flowSocialsWebsiteUrl = this.socials?.website?.url,
         evmChainId = null
     )
