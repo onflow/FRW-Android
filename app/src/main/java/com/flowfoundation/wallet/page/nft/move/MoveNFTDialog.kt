@@ -92,10 +92,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             child.address.takeIf { address -> address != fromAddress }
                         }?.toMutableList() ?: mutableListOf()
                     addressList.add(parentAddress)
-                    if (it.canBridgeToEVM()) {
-                        EVMWalletManager.getEVMAddress()?.let { evmAddress ->
-                            addressList.add(evmAddress)
-                        }
+                    EVMWalletManager.getEVMAddress()?.let { evmAddress ->
+                        addressList.add(evmAddress)
                     }
                     configureToLayoutAction(addressList)
                 }
@@ -118,17 +116,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             child.address
                         }?.toMutableList() ?: mutableListOf()
 
-                    if (it.canBridgeToEVM()) {
-                        val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
-                        addressList.add(0, evmAddress)
-                        needMoveFee = true
-                        layoutToAccount.setAccountInfo(evmAddress)
-                    } else if (addressList.isNotEmpty()) {
-                        WalletManager.childAccount(addressList[0])?.let { child ->
-                            needMoveFee = false
-                            layoutToAccount.setAccountInfo(child.address)
-                        }
-                    }
+                    val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                    addressList.add(0, evmAddress)
+                    needMoveFee = true
+                    layoutToAccount.setAccountInfo(evmAddress)
                     configureToLayoutAction(addressList)
                 }
             }
@@ -221,7 +212,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 }
                             }
                         }
-                    } else if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                    } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         EVMWalletManager.moveChildNFT(it, fromAddress, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -269,7 +260,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         }
                     }
                 } else {
-                    if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                    if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         EVMWalletManager.moveNFT(it, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
