@@ -748,6 +748,7 @@
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
     <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
     <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
+    <string name="wallet_connect_session_expired">Wallet Connect session expired.</string>
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
