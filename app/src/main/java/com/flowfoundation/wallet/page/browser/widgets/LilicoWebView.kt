@@ -281,8 +281,8 @@ class LilicoWebView : WebView {
                     logd(TAG, "Handling WalletConnect URI")
                     WalletConnect.get().pair(it.toString())
                     return true
-                } else if (it.scheme == "frw" && it.path?.startsWith("/wc") == true) {
-                    logd(TAG, "Handling frw://wc URI")
+                } else if ((it.scheme == "frw" || it.scheme == "fcw") && it.path?.startsWith("/wc") == true) {
+                    logd(TAG, "Handling ${it.scheme}://wc URI")
                     val uri = getWalletConnectUri(it)
                     uri?.let { wcUri ->
                         WalletConnect.get().pair(wcUri)
