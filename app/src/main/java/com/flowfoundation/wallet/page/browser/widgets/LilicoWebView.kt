@@ -274,7 +274,7 @@ class LilicoWebView : WebView {
         ): Boolean {
             isLoading = true
             request?.url?.let {
-                logd(TAG, "shouldOverrideUrlLoading URL: ${it.toString()}, scheme: ${it.scheme}")
+                logd(TAG, "shouldOverrideUrlLoading URL: $it, scheme: ${it.scheme}")
 
                 if (it.scheme == "wc") {
                     logd(TAG, "Handling WalletConnect URI")
@@ -297,8 +297,8 @@ class LilicoWebView : WebView {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
                     try {
-                        context.startActivity(openTg)   // works if *any* Telegram client is present
-                    } catch (e: ActivityNotFoundException) {
+                        context.startActivity(openTg)
+                    } catch (e: Exception) {
                         // Nothing handled it → send user to Play Store (or web fallback)
                         val pkgName = "org.telegram.messenger"
                         val goPlay = Intent(
@@ -306,10 +306,10 @@ class LilicoWebView : WebView {
                             Uri.parse("market://details?id=$pkgName")
                         ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-                        try {                    // Play Store present
+                        try {  // Play Store present
                             context.startActivity(goPlay)
                         } catch (_: ActivityNotFoundException) {
-                            // Play Store itself missing (e.g. Huawei) – open web page
+                            // Play Store itself missing – open web page
                             val web = Intent(
                                 Intent.ACTION_VIEW,
                                 Uri.parse("https://play.google.com/store/apps/details?id=$pkgName")
