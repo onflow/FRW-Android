@@ -281,6 +281,13 @@ class LilicoWebView : WebView {
                     logd(TAG, "Handling WalletConnect URI")
                     WalletConnect.get().pair(it.toString())
                     return true
+                } else if (it.scheme == "frw" && it.path?.startsWith("/wc") == true) {
+                    logd(TAG, "Handling frw://wc URI")
+                    val uri = getWalletConnectUri(it)
+                    uri?.let { wcUri ->
+                        WalletConnect.get().pair(wcUri)
+                    }
+                    return true
                 } else if (it.scheme == "intent") {
                     return try {
                         logd(TAG, "Handling Intent URI")
@@ -313,8 +320,10 @@ class LilicoWebView : WebView {
                     logd(TAG, "Handling wallet link URI")
                     safeRun {
                         val wcUri = getWalletConnectUri(it)
-                        logd(TAG, "Wallet Connect URI: ${wcUri.toString()}")
-                        WalletConnect.get().pair(wcUri.toString())
+                        wcUri?.let { uri ->
+                            logd(TAG, "Wallet Connect URI: $uri")
+                            WalletConnect.get().pair(uri)
+                        }
                     }
                     return true
                 } else if (it.toString() == "about:blank#blocked") {
