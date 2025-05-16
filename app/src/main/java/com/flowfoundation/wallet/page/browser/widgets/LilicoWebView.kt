@@ -270,6 +270,15 @@ class LilicoWebView : WebView {
                         e.printStackTrace()
                         false
                     }
+                } else if (it.scheme == "tg") {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, it)
+                        context.startActivity(intent)
+                        return true
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        return false
+                    }
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
                         .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com") {
                     safeRun {
