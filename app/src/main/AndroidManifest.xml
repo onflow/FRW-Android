@@ -361,7 +361,6 @@
                 <data android:scheme="frw"/>
                 <data android:scheme="fcw"/>
                 <data android:scheme="lilico"/>
-                <data android:scheme="tg"/>
             </intent-filter>
         </activity>
 
