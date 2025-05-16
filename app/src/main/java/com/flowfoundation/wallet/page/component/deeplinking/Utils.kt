@@ -178,6 +178,21 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
 
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
+        // Skip processing if this is a Telegram URI
+        if (uri.scheme == "tg") {
+            logd(TAG, "Skipping Telegram URI in getWalletConnectUri")
+            return@runCatching null
+        }
+        
+        // Handle URLs from WC links directly
+        if (uri.host?.contains("lilico.app") == true && uri.path == "/wc") {
+            logd(TAG, "Processing WalletConnect link URL: $uri")
+            val wcUriParam = uri.getQueryParameter("uri")
+            if (wcUriParam != null) {
+                return@runCatching URLDecoder.decode(wcUriParam, StandardCharsets.UTF_8.name())
+            }
+        }
+        
         val uriString = uri.toString()
         val uriParamStart = uriString.indexOf("uri=")
         val wcUriEncoded = if (uriParamStart != -1) {

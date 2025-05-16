@@ -1,13 +1,13 @@
 package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.text.Html
 import android.text.SpannableString
-import android.text.method.LinkMovementMethod
 import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -20,6 +20,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
@@ -57,10 +58,16 @@ class LilicoWebView : WebView {
     constructor(context: Context) : super(context) {
         initWebView()
     }
+
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         initWebView()
     }
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         initWebView()
     }
 
@@ -70,7 +77,7 @@ class LilicoWebView : WebView {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        
+
         // Disable hardware acceleration for this WebView to prevent some layout issues
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         initBlockedViewLayout()
@@ -119,7 +126,8 @@ class LilicoWebView : WebView {
                     }
                 }
 
-                blockedViewLayout = LayoutInflater.from(context).inflate(R.layout.layout_blocked_view, parent, false)
+                blockedViewLayout = LayoutInflater.from(context)
+                    .inflate(R.layout.layout_blocked_view, parent, false)
 
                 val layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -141,13 +149,15 @@ class LilicoWebView : WebView {
         tvBlockedInfo = blockedViewLayout.findViewById(R.id.tv_blocked_info)
         tvIgnoreWarning = blockedViewLayout.findViewById(R.id.tv_ignore_warning)
 
-        tvBlockedInfo.text = Html.fromHtml(context.getString(R.string.blocked_info), Html.FROM_HTML_MODE_LEGACY)
+        tvBlockedInfo.text =
+            Html.fromHtml(context.getString(R.string.blocked_info), Html.FROM_HTML_MODE_LEGACY)
         tvBlockedInfo.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Outblock/flow-blocklist"))
+            val intent =
+                Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Outblock/flow-blocklist"))
             context.startActivity(intent)
         }
 
-        val content = SpannableString(context.getString(R.string.ignore_warning) )
+        val content = SpannableString(context.getString(R.string.ignore_warning))
         content.setSpan(UnderlineSpan(), 0, content.length, 0)
         tvIgnoreWarning.text = content
 
@@ -178,6 +188,10 @@ class LilicoWebView : WebView {
 
     fun setWebViewCallback(callback: WebviewCallback?) {
         this.callback = callback
+    }
+
+    fun getCallback(): WebviewCallback? {
+        return callback
     }
 
     private inner class WebChromeClient : android.webkit.WebChromeClient() {
@@ -214,6 +228,7 @@ class LilicoWebView : WebView {
             try {
                 isLoading = true
                 logd(TAG, "onPageStarted")
+
                 view.executeJs(JS_FCL_EXTENSIONS)
                 view.executeJs(JS_LISTEN_WINDOW_FCL_MESSAGE)
                 view.executeJs(JS_LISTEN_FLOW_WALLET_TRANSACTION)
@@ -239,7 +254,11 @@ class LilicoWebView : WebView {
             }
         }
 
-        override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+        override fun onReceivedError(
+            view: WebView?,
+            request: WebResourceRequest?,
+            error: WebResourceError?
+        ) {
             super.onReceivedError(view, request, error)
             logd(TAG, "WebView error: ${error?.description}")
             isLoading = false
@@ -256,11 +275,22 @@ class LilicoWebView : WebView {
         ): Boolean {
             isLoading = true
             request?.url?.let {
+                logd(TAG, "shouldOverrideUrlLoading URL: $it, scheme: ${it.scheme}")
+
                 if (it.scheme == "wc") {
+                    logd(TAG, "Handling WalletConnect URI")
                     WalletConnect.get().pair(it.toString())
+                    return true
+                } else if ((it.scheme == "frw" || it.scheme == "fcw") && it.path?.startsWith("/wc") == true) {
+                    logd(TAG, "Handling ${it.scheme}://wc URI")
+                    val uri = getWalletConnectUri(it)
+                    uri?.let { wcUri ->
+                        WalletConnect.get().pair(wcUri)
+                    }
                     return true
                 } else if (it.scheme == "intent") {
                     return try {
+                        logd(TAG, "Handling Intent URI")
                         val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                         if (intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
@@ -270,10 +300,30 @@ class LilicoWebView : WebView {
                         e.printStackTrace()
                         false
                     }
+                } else if (it.scheme == "tg") {
+                    val openTg = Intent(Intent.ACTION_VIEW, it)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                    try {
+                        context.startActivity(openTg)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, R.string.telegram_not_installed, Toast.LENGTH_SHORT).show()
+                    }
+
+                    // Stop the WebView navigation to avoid looping
+                    view?.stopLoading()
+                    view?.clearHistory()
+                    return true
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
-                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com") {
+                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com"
+                ) {
+                    logd(TAG, "Handling wallet link URI")
                     safeRun {
-                        WalletConnect.get().pair(getWalletConnectUri(it).toString())
+                        val wcUri = getWalletConnectUri(it)
+                        wcUri?.let { uri ->
+                            logd(TAG, "Wallet Connect URI: $uri")
+                            WalletConnect.get().pair(uri)
+                        }
                     }
                     return true
                 } else if (it.toString() == "about:blank#blocked") {
