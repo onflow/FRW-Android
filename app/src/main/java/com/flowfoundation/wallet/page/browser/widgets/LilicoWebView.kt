@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.text.Html
 import android.text.SpannableString
-import android.text.method.LinkMovementMethod
 import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -270,19 +268,6 @@ class LilicoWebView : WebView {
             callback?.onPageUrlChange(url.orEmpty(), isReload)
         }
 
-        private fun hasTelegramClient(pm: PackageManager, uri: Uri): Boolean {
-            val intent = Intent(Intent.ACTION_VIEW, uri)
-            val matches = pm.queryIntentActivities(intent, 0)
-
-            for (ri in matches) {
-                val pkg = ri.activityInfo.packageName
-                if (pkg != "android" && pkg != context.packageName) {
-                    return true              // found a 3rd-party app that can open tg:
-                }
-            }
-            return false
-        }
-
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
@@ -308,40 +293,34 @@ class LilicoWebView : WebView {
                         false
                     }
                 } else if (it.scheme == "tg") {
-                    val pm = context.packageManager
-                    val hasClient = hasTelegramClient(pm, it)
+                    val openTg = Intent(Intent.ACTION_VIEW, it)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-                    if (hasClient) {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, it))
-                    } else {
-                        // No Telegram client found → jump to Play Store
-                        view?.stopLoading()          // cancel the pending navigation
-                        view?.clearHistory()         // optional: keep Back button clean
-
-                        val pkgName    = "org.telegram.messenger"
-                        val playStore  = "com.android.vending"
-
-                        // Try to launch the Play Store app directly
-                        val marketIntent = Intent(Intent.ACTION_VIEW,
+                    try {
+                        context.startActivity(openTg)   // works if *any* Telegram client is present
+                    } catch (e: ActivityNotFoundException) {
+                        // Nothing handled it → send user to Play Store (or web fallback)
+                        val pkgName = "org.telegram.messenger"
+                        val goPlay = Intent(
+                            Intent.ACTION_VIEW,
                             Uri.parse("market://details?id=$pkgName")
-                        ).apply {
-                            setPackage(playStore)
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-                        try {
-                            context.startActivity(marketIntent)   // Opens Play Store install page
-                        } catch (e: ActivityNotFoundException) {
-                            // Device has no Play Store  → open web page
-                            val webIntent = Intent(Intent.ACTION_VIEW,
+                        try {                    // Play Store present
+                            context.startActivity(goPlay)
+                        } catch (_: ActivityNotFoundException) {
+                            // Play Store itself missing (e.g. Huawei) – open web page
+                            val web = Intent(
+                                Intent.ACTION_VIEW,
                                 Uri.parse("https://play.google.com/store/apps/details?id=$pkgName")
                             ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-                            context.startActivity(webIntent)
+                            context.startActivity(web)
                         }
-
-                        return true
                     }
+
+                    // Stop the WebView navigation to avoid looping
+                    view?.stopLoading()
+                    view?.clearHistory()
                     return true
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
                         .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com"
