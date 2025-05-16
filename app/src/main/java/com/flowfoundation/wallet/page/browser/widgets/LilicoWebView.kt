@@ -20,6 +20,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
@@ -299,23 +300,7 @@ class LilicoWebView : WebView {
                     try {
                         context.startActivity(openTg)
                     } catch (e: Exception) {
-                        // Nothing handled it → send user to Play Store (or web fallback)
-                        val pkgName = "org.telegram.messenger"
-                        val goPlay = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("market://details?id=$pkgName")
-                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-                        try {  // Play Store present
-                            context.startActivity(goPlay)
-                        } catch (_: ActivityNotFoundException) {
-                            // Play Store itself missing – open web page
-                            val web = Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://play.google.com/store/apps/details?id=$pkgName")
-                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(web)
-                        }
+                        Toast.makeText(context, R.string.telegram_not_installed, Toast.LENGTH_SHORT).show()
                     }
 
                     // Stop the WebView navigation to avoid looping
