@@ -32,6 +32,14 @@ class DeepLinkingActivity : BaseActivity() {
 
         logd(TAG, "DeepLinkingActivity received uri: $uri")
         
+        // Check if it's a WalletConnect URI or Telegram URI
+        if (uri.scheme == DeepLinkScheme.TG.scheme) {
+            // Handle Telegram URI directly
+            UriHandler.processUri(this, uri)
+            finish()
+            return
+        }
+        
         // Check if it's a WalletConnect URI
         isWalletConnectUri = isWalletConnectUri(uri)
         logd(TAG, "URI is WalletConnect: $isWalletConnectUri")
@@ -47,6 +55,7 @@ class DeepLinkingActivity : BaseActivity() {
                     delay(1000)
                 }
                 
+                // Use the new UriHandler to process the URI
                 dispatchDeepLinking(this@DeepLinkingActivity, uri)
                 logd(TAG, "DeepLinkingDispatch completed for uri: $uri")
                 
@@ -84,9 +93,7 @@ class DeepLinkingActivity : BaseActivity() {
     
     private fun isWalletConnectUri(uri: Uri): Boolean {
         return try {
-            val uriString = uri.toString()
-            val wcUriEncoded = getWalletConnectUri(uri)
-            
+            val wcUriEncoded = UriHandler.extractWalletConnectUri(uri)
             wcUriEncoded?.startsWith("wc:") == true
         } catch (e: Exception) {
             loge(TAG, "Error determining if URI is WalletConnect: ${e.message}")

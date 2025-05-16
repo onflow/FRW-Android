@@ -41,6 +41,8 @@ import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
 import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
+import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
+import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
 import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -294,15 +296,9 @@ class LilicoWebView : WebView {
                         false
                     }
                 } else if (it.scheme == "tg") {
-                    val openTg = Intent(Intent.ACTION_VIEW, it)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-                    try {
-                        context.startActivity(openTg)
-                    } catch (e: Exception) {
-                        Toast.makeText(context, R.string.telegram_not_installed, Toast.LENGTH_SHORT).show()
-                    }
-
+                    logd(TAG, "Handling Telegram URI")
+                    UriHandler.processUri(context, it)
+                    
                     // Stop the WebView navigation to avoid looping
                     view?.stopLoading()
                     view?.clearHistory()
