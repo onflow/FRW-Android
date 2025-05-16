@@ -178,6 +178,12 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
 
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
+        // Skip processing if this is a Telegram URI
+        if (uri.scheme == "tg") {
+            logd(TAG, "Skipping Telegram URI in getWalletConnectUri")
+            return@runCatching null
+        }
+        
         val uriString = uri.toString()
         val uriParamStart = uriString.indexOf("uri=")
         val wcUriEncoded = if (uriParamStart != -1) {

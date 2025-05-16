@@ -46,6 +46,22 @@ class JsInterface(
         }
     }
 
+    @JavascriptInterface
+    fun windowColor(color: String) {
+        logd(TAG, "windowColor called with color: $color")
+        try {
+            // Parse the color string to an int and pass to callback
+            if (color.startsWith("#")) {
+                val colorInt = android.graphics.Color.parseColor(color)
+                uiScope {
+                    webView.getCallback()?.onWindowColorChange(colorInt)
+                }
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error processing window color: ${e.message}")
+        }
+    }
+
     companion object {
         private val TAG = JsInterface::class.java.simpleName
     }

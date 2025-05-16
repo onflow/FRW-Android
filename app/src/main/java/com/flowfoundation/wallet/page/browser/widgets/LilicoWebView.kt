@@ -1,8 +1,10 @@
 package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.text.Html
@@ -57,10 +59,16 @@ class LilicoWebView : WebView {
     constructor(context: Context) : super(context) {
         initWebView()
     }
+
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         initWebView()
     }
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         initWebView()
     }
 
@@ -70,7 +78,7 @@ class LilicoWebView : WebView {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        
+
         // Disable hardware acceleration for this WebView to prevent some layout issues
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         initBlockedViewLayout()
@@ -119,7 +127,8 @@ class LilicoWebView : WebView {
                     }
                 }
 
-                blockedViewLayout = LayoutInflater.from(context).inflate(R.layout.layout_blocked_view, parent, false)
+                blockedViewLayout = LayoutInflater.from(context)
+                    .inflate(R.layout.layout_blocked_view, parent, false)
 
                 val layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -141,13 +150,15 @@ class LilicoWebView : WebView {
         tvBlockedInfo = blockedViewLayout.findViewById(R.id.tv_blocked_info)
         tvIgnoreWarning = blockedViewLayout.findViewById(R.id.tv_ignore_warning)
 
-        tvBlockedInfo.text = Html.fromHtml(context.getString(R.string.blocked_info), Html.FROM_HTML_MODE_LEGACY)
+        tvBlockedInfo.text =
+            Html.fromHtml(context.getString(R.string.blocked_info), Html.FROM_HTML_MODE_LEGACY)
         tvBlockedInfo.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Outblock/flow-blocklist"))
+            val intent =
+                Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/Outblock/flow-blocklist"))
             context.startActivity(intent)
         }
 
-        val content = SpannableString(context.getString(R.string.ignore_warning) )
+        val content = SpannableString(context.getString(R.string.ignore_warning))
         content.setSpan(UnderlineSpan(), 0, content.length, 0)
         tvIgnoreWarning.text = content
 
@@ -178,6 +189,10 @@ class LilicoWebView : WebView {
 
     fun setWebViewCallback(callback: WebviewCallback?) {
         this.callback = callback
+    }
+
+    fun getCallback(): WebviewCallback? {
+        return callback
     }
 
     private inner class WebChromeClient : android.webkit.WebChromeClient() {
@@ -214,6 +229,7 @@ class LilicoWebView : WebView {
             try {
                 isLoading = true
                 logd(TAG, "onPageStarted")
+
                 view.executeJs(JS_FCL_EXTENSIONS)
                 view.executeJs(JS_LISTEN_WINDOW_FCL_MESSAGE)
                 view.executeJs(JS_LISTEN_FLOW_WALLET_TRANSACTION)
@@ -239,7 +255,11 @@ class LilicoWebView : WebView {
             }
         }
 
-        override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+        override fun onReceivedError(
+            view: WebView?,
+            request: WebResourceRequest?,
+            error: WebResourceError?
+        ) {
             super.onReceivedError(view, request, error)
             logd(TAG, "WebView error: ${error?.description}")
             isLoading = false
@@ -250,17 +270,34 @@ class LilicoWebView : WebView {
             callback?.onPageUrlChange(url.orEmpty(), isReload)
         }
 
+        private fun hasTelegramClient(pm: PackageManager, uri: Uri): Boolean {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            val matches = pm.queryIntentActivities(intent, 0)
+
+            for (ri in matches) {
+                val pkg = ri.activityInfo.packageName
+                if (pkg != "android" && pkg != context.packageName) {
+                    return true              // found a 3rd-party app that can open tg:
+                }
+            }
+            return false
+        }
+
         override fun shouldOverrideUrlLoading(
             view: WebView?,
             request: WebResourceRequest?
         ): Boolean {
             isLoading = true
             request?.url?.let {
+                logd(TAG, "shouldOverrideUrlLoading URL: ${it.toString()}, scheme: ${it.scheme}")
+
                 if (it.scheme == "wc") {
+                    logd(TAG, "Handling WalletConnect URI")
                     WalletConnect.get().pair(it.toString())
                     return true
                 } else if (it.scheme == "intent") {
                     return try {
+                        logd(TAG, "Handling Intent URI")
                         val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                         if (intent.resolveActivity(context.packageManager) != null) {
                             context.startActivity(intent)
@@ -271,18 +308,49 @@ class LilicoWebView : WebView {
                         false
                     }
                 } else if (it.scheme == "tg") {
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, it)
-                        context.startActivity(intent)
+                    val pm = context.packageManager
+                    val hasClient = hasTelegramClient(pm, it)
+
+                    if (hasClient) {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, it))
+                    } else {
+                        // No Telegram client found → jump to Play Store
+                        view?.stopLoading()          // cancel the pending navigation
+                        view?.clearHistory()         // optional: keep Back button clean
+
+                        val pkgName    = "org.telegram.messenger"
+                        val playStore  = "com.android.vending"
+
+                        // Try to launch the Play Store app directly
+                        val marketIntent = Intent(Intent.ACTION_VIEW,
+                            Uri.parse("market://details?id=$pkgName")
+                        ).apply {
+                            setPackage(playStore)
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+
+                        try {
+                            context.startActivity(marketIntent)   // Opens Play Store install page
+                        } catch (e: ActivityNotFoundException) {
+                            // Device has no Play Store  → open web page
+                            val webIntent = Intent(Intent.ACTION_VIEW,
+                                Uri.parse("https://play.google.com/store/apps/details?id=$pkgName")
+                            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                            context.startActivity(webIntent)
+                        }
+
                         return true
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        return false
                     }
+                    return true
                 } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
-                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com") {
+                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com"
+                ) {
+                    logd(TAG, "Handling wallet link URI")
                     safeRun {
-                        WalletConnect.get().pair(getWalletConnectUri(it).toString())
+                        val wcUri = getWalletConnectUri(it)
+                        logd(TAG, "Wallet Connect URI: ${wcUri.toString()}")
+                        WalletConnect.get().pair(wcUri.toString())
                     }
                     return true
                 } else if (it.toString() == "about:blank#blocked") {
