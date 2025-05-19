@@ -30,7 +30,8 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
     private val nft by lazy {
         NftCache(nftWalletAddress()).findNFTByIdAndContractName(
             arguments?.getString(EXTRA_ID)!!,
-            arguments?.getString(EXTRA_CONTRACT_NAME)
+            arguments?.getString(EXTRA_CONTRACT_ID, "").orEmpty(),
+            arguments?.getString(EXTRA_CONTRACT_NAME, "").orEmpty()
         )
     }
     private val fromAddress by lazy { arguments?.getString(EXTRA_FROM_ADDRESS) ?: WalletManager.selectedWalletAddress() }
@@ -45,7 +46,7 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
         barcodeLauncher = registerBarcodeLauncher { presenter.bind(TransactionSendModel(qrcode = it)) }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = DialogSendNftAddressBinding.inflate(inflater)
         return binding.root
     }
@@ -93,11 +94,13 @@ class NftSendAddressDialog : BottomSheetDialogFragment() {
         private const val EXTRA_ID = "extra_nft"
         private const val EXTRA_CONTRACT_NAME = "extra_contract_name"
         private const val EXTRA_FROM_ADDRESS = "extra_from_address"
+        private const val EXTRA_CONTRACT_ID = "extra_contract_id"
 
-        fun newInstance(nftUniqueId: String, fromAddress: String, contractName: String?): NftSendAddressDialog {
+        fun newInstance(nftUniqueId: String, fromAddress: String, contractId: String?, contractName: String?): NftSendAddressDialog {
             return NftSendAddressDialog().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_ID, nftUniqueId)
+                    putString(EXTRA_CONTRACT_ID, contractId ?: "")
                     putString(EXTRA_CONTRACT_NAME, contractName ?: "")
                     putString(EXTRA_FROM_ADDRESS, fromAddress)
                 }

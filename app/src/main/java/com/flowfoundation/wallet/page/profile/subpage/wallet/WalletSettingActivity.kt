@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.page.emoji.EditWalletEmojiDialog
 import com.flowfoundation.wallet.page.profile.subpage.claimdomain.ClaimDomainActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.dialog.WalletResetConfirmDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyActivity
+import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.page.security.recovery.SecurityPrivateKeyActivity
 import com.flowfoundation.wallet.page.security.recovery.SecurityPublicKeyActivity
 import com.flowfoundation.wallet.page.security.recovery.SecurityRecoveryActivity
@@ -68,6 +69,11 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
                 recoveryPreference.setOnClickListener {
                     securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
                 }
+                privatePreference.setOnClickListener {
+                    securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
+                }
+            } else if (CryptoProviderManager.getCurrentCryptoProvider() is PrivateKeyStoreCryptoProvider) {
+                llRecoveryLayout.gone()
                 privatePreference.setOnClickListener {
                     securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
                 }

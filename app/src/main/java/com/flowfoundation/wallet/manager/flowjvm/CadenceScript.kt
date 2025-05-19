@@ -9,14 +9,12 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_GET_BALANCE("getTokenBalanceWithModel", CadenceScriptType.BASIC),
     CADENCE_ADD_PUBLIC_KEY("addKey", CadenceScriptType.BASIC),
     CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS("getFlownsAddress", CadenceScriptType.BASIC),
-    CADENCE_QUERY_DOMAIN_BY_ADDRESS_FLOWNS("getFlownsDomainsByAddress", CadenceScriptType.BASIC),
     CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND("getFindAddress", CadenceScriptType.BASIC),
-    CADENCE_QUERY_DOMAIN_BY_ADDRESS_FIND("getFindDomainByAddress", CadenceScriptType.BASIC),
     CADENCE_QUERY_STORAGE_INFO("getStorageInfo", CadenceScriptType.BASIC),
     CADENCE_QUERY_MIN_FLOW_BALANCE("getAccountMinFlow", CadenceScriptType.BASIC),
-    CADENCE_QUERY_FLOW_BALANCE("queryFlowBalance", CadenceScriptType.BASIC),
     CADENCE_REVOKE_ACCOUNT_KEY("revokeKey", CadenceScriptType.BASIC),
     CADENCE_GET_ACCOUNT_INFO("getAccountInfo", CadenceScriptType.BASIC),
+    CADENCE_GET_ALL_FLOW_BALANCE("getFlowBalanceForAnyAccounts", CadenceScriptType.BASIC),
 
     // FT
     CADENCE_TRANSFER_TOKEN("transferTokensV3", CadenceScriptType.FT),
@@ -24,6 +22,7 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_GET_TOKEN_LIST_BALANCE("getTokenListBalance", CadenceScriptType.FT),
     CADENCE_CHECK_TOKEN_LIST_ENABLED("isTokenListEnabled", CadenceScriptType.FT),
     CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED("isLinkedAccountTokenListEnabled", CadenceScriptType.FT),
+    CADENCE_GET_TOKEN_BALANCE_STORAGE("getTokenBalanceStorage", CadenceScriptType.FT),
 
     // NFT
     CADENCE_CHECK_NFT_LIST_ENABLED("checkNFTListEnabled", CadenceScriptType.NFT),
@@ -32,6 +31,7 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_NFT_ENABLE("enableNFTStorage", CadenceScriptType.COLLECTION),
     CADENCE_NFT_TRANSFER("sendNFTV3", CadenceScriptType.COLLECTION),
     CADENCE_NBA_NFT_TRANSFER("sendNbaNFTV3", CadenceScriptType.COLLECTION),
+    CADENCE_GET_NFT_BALANCE_STORAGE("getNFTBalanceStorage", CadenceScriptType.COLLECTION),
 
     // SWAP
     CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS("SwapExactTokensForTokens", CadenceScriptType.SWAP),
@@ -55,10 +55,8 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
 
     // HYBRID_CUSTODY
     CADENCE_QUERY_CHILD_ACCOUNT_META("getChildAccountMeta", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_QUERY_CHILD_ACCOUNT_LIST("getChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_UNLINK_CHILD_ACCOUNT("unlinkChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_EDIT_CHILD_ACCOUNT("editChildAccount", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_QUERY_CHILD_ACCOUNT_NFT("getAccessibleCollectionAndIdsDisplay", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_TOKENS("getAccessibleCoinInfo", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS("getChildAccountAllowTypes", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_BRIDGE_CHILD_NFT_TO_EVM("bridgeChildNFTToEvm", CadenceScriptType.HYBRID_CUSTODY),
@@ -74,9 +72,6 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD("transferNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD("batchTransferNFTToChild", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT("batchTransferChildNFT", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT("transferChildFT", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_SEND_FT_FROM_CHILD_TO_FLOW("sendChildFT", CadenceScriptType.HYBRID_CUSTODY),
-    CADENCE_CHECK_CHILD_LINKED_VAULT("checkChildLinkedVaults", CadenceScriptType.HYBRID_CUSTODY),
 
     // BRIDGE
     CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER("getAssociatedFlowIdentifier", CadenceScriptType.BRIDGE),
@@ -85,11 +80,17 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_BRIDGE_FT_FROM_EVM("bridgeTokensFromEvmV2", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_FT_FROM_EVM_TO_FLOW("bridgeTokensFromEvmToFlowV3", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_TO_EVM("bridgeNFTToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_TO_EVM_WITH_PAYER("bridgeNFTToEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_FROM_EVM("bridgeNFTFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_EVM_WITH_PAYER("bridgeNFTFromEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_LIST_TO_EVM("batchBridgeNFTToEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_LIST_TO_EVM_WITH_PAYER("batchBridgeNFTToEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_LIST_FROM_EVM("batchBridgeNFTFromEvmV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_LIST_FROM_EVM_WITH_PAYER("batchBridgeNFTFromEvmWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM("bridgeNFTToEvmAddressV2", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM_WITH_PAYER("bridgeNFTToEvmAddressWithPayer", CadenceScriptType.BRIDGE),
     CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW("bridgeNFTFromEvmToFlowV3", CadenceScriptType.BRIDGE),
+    CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW_WITH_PAYER("bridgeNFTFromEvmToFlowWithPayer", CadenceScriptType.BRIDGE),
 
     // EVM
     CADENCE_CREATE_COA_ACCOUNT("createCoaEmpty", CadenceScriptType.EVM),

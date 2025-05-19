@@ -41,8 +41,6 @@ fun inBubbleStack(data: Any): Boolean = tabs.toList().firstOrNull { it.data == d
 
 fun bubbleTabs() = tabs.toList()
 
-fun bubbleTabCount() = tabs.size
-
 fun clearBubbleTabs() {
     tabs.toList().forEach {
         popBubbleStack(it.data)

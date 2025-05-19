@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.walletrestore
 import androidx.annotation.WorkerThread
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.deleteAnonymousUser
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
@@ -41,17 +40,6 @@ const val ERROR_NETWORK = 4
 const val ERROR_ACCOUNT_NOT_FOUND = 5
 
 private const val TAG = "WalletRestoreUtils"
-
-private val WALLET_STEP_ROOT_ID = mapOf(
-    WALLET_RESTORE_STEP_GUIDE to R.id.fragment_wallet_restore_guide,
-    WALLET_RESTORE_STEP_DRIVE_USERNAME to R.id.fragment_wallet_restore_drive_username,
-    WALLET_RESTORE_STEP_DRIVE_PASSWORD to R.id.fragment_wallet_restore_drive_password,
-    WALLET_RESTORE_STEP_MNEMONIC to R.id.fragment_wallet_restore_mnemonic,
-    WALLET_RESTORE_ERROR to R.id.fragment_restore_error,
-    WALLET_RESTORE_BACKUP_NOT_FOUND to R.id.fragment_restore_error
-)
-
-fun getRootIdByStep(step: Int) = WALLET_STEP_ROOT_ID[step]!!
 
 fun requestWalletRestoreLogin(
     mnemonic: String,

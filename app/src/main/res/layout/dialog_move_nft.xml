@@ -184,7 +184,7 @@
                 android:textSize="12sp"
                 android:textColor="@color/text_2"
                 android:layout_marginTop="12dp"
-                tools:text="0.001 FLOW"
+                tools:text="0.0001 FLOW"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 

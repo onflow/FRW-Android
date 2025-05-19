@@ -8,7 +8,7 @@ import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
 
 class StakingProviderPresenter(
-    private val binding: ActivityStakeProviderBinding,
+    binding: ActivityStakeProviderBinding,
 ) {
 
     private val adapter = StakeProviderAdapter()

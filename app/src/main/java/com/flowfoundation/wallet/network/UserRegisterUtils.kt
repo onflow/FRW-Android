@@ -14,13 +14,11 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
@@ -32,6 +30,9 @@ import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.cleanBackupMnemonicPreference
 import com.flowfoundation.wallet.utils.clearCacheDir
+import com.flowfoundation.wallet.utils.error.AccountError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
@@ -40,6 +41,7 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
 import io.outblock.wallet.KeyManager
+import io.outblock.wallet.WalletCoreException
 import io.outblock.wallet.toFormatString
 import kotlinx.coroutines.delay
 import java.security.MessageDigest
@@ -92,22 +94,30 @@ private suspend fun registerOutblockUserInternal(
     callback: (isSuccess: Boolean, prefix: String) -> Unit,
 ) {
     val prefix = generatePrefix(username)
-    if (!setToAnonymous()) {
-        resumeAccount()
+    try {
+        if (!setToAnonymous()) {
+            resumeAccount()
+            callback.invoke(false, prefix)
+            return
+        }
+        val user = registerServer(username, prefix)
+
+        if (user.status > 400) {
+            callback(false, prefix)
+            return
+        }
+        logd(TAG, "SYNC Register userId:::${user.data.uid}")
+        logd(TAG, "start delete user")
+        registerFirebase(user) { isSuccess ->
+            callback.invoke(isSuccess, prefix)
+        }
+    } catch (e: Exception) {
+        if (e is WalletCoreException) {
+            ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
+        } else {
+            ErrorReporter.reportWithMixpanel(AccountError.REGISTER_USER_FAILED, e)
+        }
         callback.invoke(false, prefix)
-        return
-    }
-
-    val user = registerServer(username, prefix)
-
-    if (user.status > 400) {
-        callback(false, prefix)
-        return
-    }
-    logd(TAG, "SYNC Register userId:::${user.data.uid}")
-    logd(TAG, "start delete user")
-    registerFirebase(user) { isSuccess ->
-        callback.invoke(isSuccess, prefix)
     }
 }
 
@@ -202,12 +212,10 @@ suspend fun clearUserCache() {
     clearCacheDir()
     clearWebViewCache()
     setMeowDomainClaimed(false)
-    TokenStateManager.clear()
     WalletManager.clear()
     NftCollectionStateManager.clear()
     TransactionStateManager.reload()
-    FlowCoinListManager.reload()
-    BalanceManager.clear()
+    FungibleTokenListManager.clear()
     StakingManager.clear()
     CryptoProviderManager.clear()
     cleanBackupMnemonicPreference()

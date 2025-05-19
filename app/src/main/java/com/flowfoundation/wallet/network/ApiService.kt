@@ -2,10 +2,13 @@ package com.flowfoundation.wallet.network
 
 import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
-import com.flowfoundation.wallet.manager.cadence.CadenceScriptResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
+import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
+import okhttp3.ResponseBody
+import retrofit2.Response
 import retrofit2.http.*
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -41,9 +44,6 @@ interface ApiService {
 
     @POST("/v3/signed")
     suspend fun signAccount(@Body params: AccountSignRequest): CommonResponse
-
-    @GET("/v1/account/info")
-    suspend fun getAddressInfo(@Query("address") address: String): AddressInfoResponse
 
     @GET("/api/v2/nft/list")
     suspend fun getNFTList(
@@ -85,13 +85,6 @@ interface ApiService {
         @Query("address") address: String,
     ): NftCollectionsResponse
 
-    @GET("/v2/nft/detail")
-    suspend fun nftMeta(
-        @Query("address") address: String,
-        @Query("nftCollection") contractName: String,
-        @Query("nftID") tokenId: String,
-    ): CommonResponse
-
     @GET("/api/v2/nft/collections")
     suspend fun getNFTCollections(): NftCollectionListResponse
 
@@ -129,15 +122,8 @@ interface ApiService {
     @DELETE("/v1/addressbook/contact")
     suspend fun deleteAddressBook(@Query("id") contactId: String): CommonResponse
 
-    @POST("/v1/addressbook/contact")
-    @JvmSuppressWildcards
-    suspend fun editAddressBook(@Body params: Map<String, Any>): CommonResponse
-
     @GET("/v1/coin/rate")
     suspend fun coinRate(@Query("coinId") coinId: Int): CoinRateResponse
-
-    @GET("/v1/coin/map")
-    suspend fun coinMap(): CoinMapResponse
 
     // @doc https://docs.cryptowat.ch/rest-api/
     // @example https://api.cryptowat.ch/markets/binance/btcusdt/price
@@ -165,13 +151,6 @@ interface ApiService {
         @Query("provider") market: String,
         @Query("pair") coinPair: String
     ): CryptowatchSummaryResponse
-
-    @GET("/v2/account/query")
-    suspend fun flowScanQuery(
-        @Query("address") walletAddress: String,
-        @Query("limit") limit: Int = 25,
-        @Query("after") after: String = "",
-    ): TransferCountResponse
 
     @GET("/v1/flowns/prepare")
     suspend fun claimDomainPrepare(): ClaimDomainPrepareResponse
@@ -218,9 +197,6 @@ interface ApiService {
         @Query("to") to: String,
     ): CurrencyResponse
 
-    @POST("/v1/user/address/network")
-    suspend fun enableNetwork(@Body param: NetworkEnableParams): NetworkEnableResponse
-
     @GET("/v1/user/location")
     suspend fun getDeviceLocation(): LocationInfoResponse
 
@@ -237,7 +213,7 @@ interface ApiService {
     suspend fun getTokenPrices(): TokenPriceResponse
 
     @GET("/api/v2/scripts")
-    suspend fun getCadenceScript(): CadenceScriptResponse
+    suspend fun getCadenceScriptWithHeaders(): Response<ResponseBody>
 
     @GET("/api/v3/evm/{evmAddress}/fts")
     suspend fun getEVMTokenBalance(
@@ -247,4 +223,27 @@ interface ApiService {
 
     @GET("/v3/checkimport")
     suspend fun checkKeystorePublicKeyImport(@Query("key") publicKey: String): CommonResponse
+
+    @POST("/api/evm/decodeData")
+    suspend fun getEVMTransactionDecodeData(@Body params: TransactionDecodeParams): TransactionDecodeDataResponse
+
+    @GET("/api/v4/evm/tokens/ft/{address}")
+    suspend fun getEVMTokenList(
+        @Path("address") address: String,
+        @Query("currency") currency: String?,
+        @Query("network") network: String?
+    ): EVMTokenListResponse
+
+    @GET("/api/v4/cadence/tokens/ft/{address}")
+    suspend fun getFlowTokenList(
+        @Path("address") address: String,
+        @Query("currency") currency: String?,
+        @Query("network") network: String?
+    ): FlowTokenListResponse
+
+    @GET("/api/v3/fts/full")
+    suspend fun getAddTokenList(
+        @Query("chain_type") chainType: String,
+        @Query("network") currency: String?,
+    ): AddTokenListResponse
 }

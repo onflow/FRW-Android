@@ -118,7 +118,10 @@ class NftDetailPresenter(
             })
 
             moreButton.setOnClickListener {
-                nft?.let { NftMorePopupMenu(activity, it, moreButton, pageColor,
+                nft?.let { NftMorePopupMenu(
+                    it,
+                    moreButton,
+                    pageColor,
                     onDownloadRequest = { mediaUrl ->
                         currentDownloadUrl = mediaUrl
                         mediaUrl.downloadToGallery(downloadLauncher)
@@ -129,13 +132,14 @@ class NftDetailPresenter(
             sendButton.setOnClickListener {
                 val uniqueId = nft?.uniqueId() ?: return@setOnClickListener
                 NftSendAddressDialog.newInstance(uniqueId, fromAddress ?: WalletManager
-                    .selectedWalletAddress(), nft?.contractName()).show(activity.supportFragmentManager, "")
+                    .selectedWalletAddress(), nft?.getCollectionContractId(), nft?.contractName())
+                    .show(activity.supportFragmentManager, "")
             }
 
             moveButton.setOnClickListener {
                 nft?.let {
                     if (EVMWalletManager.haveEVMAddress() || WalletManager.haveChildAccount()) {
-                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId(),
+                        MoveNFTDialog.show(activity.supportFragmentManager, it.uniqueId(), it.getCollectionContractId(),
                             it.contractName(), fromAddress ?: WalletManager.selectedWalletAddress())
                     } else {
                         EnableEVMActivity.launch(activity)
@@ -215,7 +219,7 @@ class NftDetailPresenter(
             bindAccessible(title, nft)
 
             collectionWrapper.setOnClickListener {
-                CollectionActivity.launch(activity, nft.contractName())
+                CollectionActivity.launch(activity, config?.id.orEmpty(), nft.contractName())
             }
 
             ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }

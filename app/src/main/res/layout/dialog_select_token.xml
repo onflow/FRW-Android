@@ -1,87 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/rootView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_top_radius_16dp"
-    android:backgroundTint="@color/deep_bg"
-    android:orientation="vertical"
-    android:paddingHorizontal="18dp"
-    android:paddingTop="18dp"
-    android:paddingBottom="@dimen/wallet_create_button_margin">
+    android:backgroundTint="@color/select_tokens_dialog">
 
     <TextView
-        android:layout_width="match_parent"
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:fontFamily="@font/inter_semi_bold"
-        android:gravity="center"
         android:text="@string/select_token"
-        android:textColor="@color/text"
+        android:textColor="@color/text_1"
         android:textSize="18sp"
-        android:textStyle="bold"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/close_button"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="24dp"
+        android:src="@drawable/ic_back_arrow"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:tint="@color/text_1" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <EditText
+        android:id="@+id/search_input"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_round_8dp"
+        android:backgroundTint="@color/bg_2"
+        android:drawableStart="@drawable/ic_search"
+        android:drawablePadding="8dp"
+        android:hint="@string/search_tokens"
+        android:paddingHorizontal="16dp"
+        android:singleLine="true"
+        android:textColor="@color/text_1"
+        android:textColorHint="@color/text_3"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title" />
 
-        <EditText
-            android:id="@+id/edit_text"
-            style="@style/EditText"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="18dp"
-            android:layout_marginEnd="16dp"
-            android:autofillHints="name"
-            android:background="@drawable/bg_search_input"
-            android:fontFamily="@font/inter_medium"
-            android:hint="@string/search_token"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:maxLines="1"
-            android:paddingVertical="0dp"
-            android:paddingStart="44dp"
-            android:paddingEnd="16dp"
-            android:textColor="@color/text"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toStartOf="@id/cancel_button"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_goneMarginEnd="18dp"/>
-
-        <androidx.constraintlayout.utils.widget.ImageFilterView
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_marginStart="13dp"
-            android:src="@drawable/ic_baseline_search_24"
-            android:tint="@color/profile_accent"
-            app:layout_constraintBottom_toBottomOf="@id/edit_text"
-            app:layout_constraintStart_toStartOf="@id/edit_text"
-            app:layout_constraintTop_toTopOf="@id/edit_text"/>
-
-        <TextView
-            android:id="@+id/cancel_button"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:fontFamily="@font/inter_medium"
-            android:gravity="center_vertical"
-            android:text="@string/cancel"
-            android:textColor="@color/note"
-            android:textSize="14sp"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/edit_text"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/edit_text"
-            tools:visibility="visible"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/token_list_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/token_list"
+        android:textColor="@color/text_1"
+        android:textSize="16sp"
+        android:fontFamily="@font/inter_semi_bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_input" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
+        android:id="@+id/token_list"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"/>
+        android:layout_marginTop="16dp"
+        android:maxHeight="400dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/token_list_label" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

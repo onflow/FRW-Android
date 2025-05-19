@@ -1,23 +1,18 @@
 package com.flowfoundation.wallet.widgets.webview
 
-import android.graphics.Color
 import android.webkit.JavascriptInterface
-import androidx.core.graphics.toColorInt
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.FclMessageHandler
 import com.flowfoundation.wallet.widgets.webview.fcl.authzTransaction
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.nftco.flow.sdk.FlowTransactionStatus
 
 class JsInterface(
     private val webView: LilicoWebView,
@@ -53,9 +48,18 @@ class JsInterface(
 
     @JavascriptInterface
     fun windowColor(color: String) {
-        logd(TAG, "window color:$color")
-        val colorInt = color.toColorInt()
-        webView.onWindowColorChange(if (colorInt == Color.BLACK) R.color.deep_bg.res2color() else colorInt)
+        logd(TAG, "windowColor called with color: $color")
+        try {
+            // Parse the color string to an int and pass to callback
+            if (color.startsWith("#")) {
+                val colorInt = android.graphics.Color.parseColor(color)
+                uiScope {
+                    webView.getCallback()?.onWindowColorChange(colorInt)
+                }
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error processing window color: ${e.message}")
+        }
     }
 
     companion object {

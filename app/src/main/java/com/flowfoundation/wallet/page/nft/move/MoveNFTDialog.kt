@@ -12,6 +12,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveNftBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceMoveNFTFromChildToParent
@@ -28,8 +29,12 @@ import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -39,6 +44,7 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 
 class MoveNFTDialog : BottomSheetDialogFragment() {
     private val uniqueId by lazy { arguments?.getString(EXTRA_UNIQUE_ID) ?: "" }
+    private val contractId by lazy { arguments?.getString(EXTRA_COLLECTION_CONTRACT_ID) ?: "" }
     private val contractName by lazy { arguments?.getString(EXTRA_COLLECTION_CONTRACT) ?: "" }
     private val fromAddress by lazy {
         arguments?.getString(EXTRA_FROM_ADDRESS) ?: WalletManager.selectedWalletAddress()
@@ -65,7 +71,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractName)
+        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractId, contractName)
         with(binding) {
             btnMove.isEnabled = nft != null
             btnMove.setOnClickListener {
@@ -86,10 +92,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             child.address.takeIf { address -> address != fromAddress }
                         }?.toMutableList() ?: mutableListOf()
                     addressList.add(parentAddress)
-                    if (it.canBridgeToEVM()) {
-                        EVMWalletManager.getEVMAddress()?.let { evmAddress ->
-                            addressList.add(evmAddress)
-                        }
+                    EVMWalletManager.getEVMAddress()?.let { evmAddress ->
+                        addressList.add(evmAddress)
                     }
                     configureToLayoutAction(addressList)
                 }
@@ -112,17 +116,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             child.address
                         }?.toMutableList() ?: mutableListOf()
 
-                    if (it.canBridgeToEVM()) {
-                        val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
-                        addressList.add(0, evmAddress)
-                        needMoveFee = true
-                        layoutToAccount.setAccountInfo(evmAddress)
-
-                    } else {
-                        val childAccount = WalletManager.childAccount(addressList[0]) ?: return@with
-                        needMoveFee = false
-                        layoutToAccount.setAccountInfo(childAccount.address)
-                    }
+                    val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                    addressList.add(0, evmAddress)
+                    needMoveFee = true
+                    layoutToAccount.setAccountInfo(evmAddress)
                     configureToLayoutAction(addressList)
                 }
             }
@@ -185,12 +182,13 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     private fun configureMoveFeeLayout() {
         with(binding) {
             tvMoveFee.text = if (needMoveFee) {
-                "0.001"
+                "0.0001"
             } else {
                 "0.00"
             } + " FLOW"
             tvMoveFeeTips.text =
                 (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
+            clMoveFee.setVisible(AppConfig.coverBridgeFee().not())
         }
     }
 
@@ -214,7 +212,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 }
                             }
                         }
-                    } else if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                    } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         EVMWalletManager.moveChildNFT(it, fromAddress, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -262,7 +260,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         }
                     }
                 } else {
-                    if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                    if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         EVMWalletManager.moveNFT(it, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -316,6 +314,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 nft
             )
             trackMoveNFT(childAddress, toAddress, nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.CHILD)
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -331,12 +334,22 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         try {
             val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
+            if (identifier.isEmpty()) {
+                ErrorReporter.reportWithMixpanel(MoveError.INVALIDATE_IDENTIFIER, getCurrentCodeLocation())
+                callback.invoke(false)
+                return
+            }
             val txId = cadenceMoveNFTFromChildToParent(
                 childAddress,
                 identifier,
                 nft
             )
             trackMoveNFT(childAddress, WalletManager.wallet()?.walletAddress().orEmpty(), nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.FLOW)
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -359,6 +372,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             )
             trackMoveNFT(WalletManager.wallet()?.walletAddress().orEmpty(), toAddress, nft
                 .getNFTIdentifier(), txId.orEmpty(), TransferAccountType.FLOW, TransferAccountType.CHILD)
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -366,11 +384,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         }
     }
 
-    private fun postTransaction(nft: Nft, txId: String?, callback: (isSuccess: Boolean) -> Unit) {
-        callback.invoke(txId != null)
-        if (txId.isNullOrBlank()) {
-            return
-        }
+    private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
+        callback.invoke(true)
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
@@ -385,15 +400,17 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     companion object {
         private const val EXTRA_UNIQUE_ID = "extra_unique_id"
         private const val EXTRA_FROM_ADDRESS = "extra_from_address"
+        private const val EXTRA_COLLECTION_CONTRACT_ID = "extra_collection_contract_id"
         private const val EXTRA_COLLECTION_CONTRACT = "extra_collection_contract"
         fun show(
-            fragmentManager: FragmentManager, uniqueId: String, contractName: String,
-            fromAddress: String
+            fragmentManager: FragmentManager, uniqueId: String, contractId: String,
+            contractName: String, fromAddress: String
         ) {
             MoveNFTDialog().apply {
                 arguments = Bundle().apply {
                     putString(EXTRA_UNIQUE_ID, uniqueId)
                     putString(EXTRA_FROM_ADDRESS, fromAddress)
+                    putString(EXTRA_COLLECTION_CONTRACT_ID, contractId)
                     putString(EXTRA_COLLECTION_CONTRACT, contractName)
                 }
             }.show(fragmentManager, "")

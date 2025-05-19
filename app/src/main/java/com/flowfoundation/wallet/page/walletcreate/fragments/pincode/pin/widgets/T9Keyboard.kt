@@ -24,7 +24,7 @@ internal class T9Keyboard(
     private val container: LinearLayout,
     lineKeys: List<List<KeyboardItem>>,
     private val onKeyboardActionListener: ((key: KeyboardItem) -> Unit)? = null,
-) : KeyboardLayout(container, lineKeys, onKeyboardActionListener) {
+) : KeyboardLayout(container) {
 
     private lateinit var recyclerView: RecyclerView
 

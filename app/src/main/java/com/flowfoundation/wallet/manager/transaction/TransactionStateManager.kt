@@ -12,18 +12,19 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.network.model.TokenInfo
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.page.window.bubble.tools.popBubbleStack
 import com.flowfoundation.wallet.page.window.bubble.tools.updateBubbleStack
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -45,6 +46,8 @@ object TransactionStateManager {
 
     private val onStateChangeCallbacks = mutableListOf<WeakReference<OnTransactionStateChange>>()
 
+    private val txScriptMap = mutableMapOf<String, String>()
+
     fun reload() {
         ioScope {
             stateData = cache.read() ?: TransactionStateData(
@@ -52,6 +55,14 @@ object TransactionStateManager {
             )
             loopState()
         }
+    }
+
+    fun recordTransactionScript(txId: String, script: String) {
+        txScriptMap[txId] = script
+    }
+
+    fun getScriptId(txId: String): String {
+        return txScriptMap[txId] ?: ""
     }
 
     fun getTransactionStateList() = stateData.data.toList()
@@ -132,7 +143,9 @@ object TransactionStateManager {
                 delay(3000)
                 popBubbleStack(state)
                 if (state.isFailed()) {
-                    when (parseErrorCode(state.errorMsg.orEmpty())) {
+                    val errorCode = parseErrorCode(state.errorMsg.orEmpty())
+                    ErrorReporter.reportTransactionError(state.transactionId, errorCode ?: -1)
+                    when (errorCode) {
                         ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                             BaseActivity.getCurrentActivity()?.let {
                                 StorageLimitErrorDialog(it, StorageLimitDialogType.LIMIT_REACHED_ERROR).show()
@@ -145,7 +158,7 @@ object TransactionStateManager {
         }
         ioScope {
             if (state.type == TransactionState.TYPE_ADD_TOKEN && state.isSuccess()) {
-                TokenStateManager.fetchStateSingle(state.tokenData(), cache = true)
+                FungibleTokenListManager.updateTokenList()
             }
 
             if (state.type == TransactionState.TYPE_ENABLE_NFT && state.isSuccess()) {
@@ -170,8 +183,6 @@ object TransactionStateManager {
     }
 
     private fun Int.isProcessing() = this < FlowTransactionStatus.SEALED.num && this >= FlowTransactionStatus.UNKNOWN.num
-
-    private fun Int.isUnknown() = this == FlowTransactionStatus.UNKNOWN.num || this == FlowTransactionStatus.EXPIRED.num
 }
 
 interface OnTransactionStateChange {
@@ -237,7 +248,7 @@ data class TransactionState(
 
     fun nftData() = Gson().fromJson(data, NftSendModel::class.java)
 
-    fun tokenData() = Gson().fromJson(data, FlowCoin::class.java)
+    fun tokenData() = Gson().fromJson(data, TokenInfo::class.java)
 
     fun nftCollectionData() = Gson().fromJson(data, NftCollection::class.java)
 

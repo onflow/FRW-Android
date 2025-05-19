@@ -11,10 +11,10 @@ class NftDetailViewModel : ViewModel() {
 
     val nftLiveData = MutableLiveData<Nft>()
 
-    fun load(uniqueId: String, collectionContract: String?) {
+    fun load(uniqueId: String, collectionContractId: String?, collectionContract: String?) {
         viewModelIOScope(this) {
             val walletAddress = nftWalletAddress()
-            val nft = NftCache(walletAddress).findNFTByIdAndContractName(uniqueId, collectionContract)
+            val nft = NftCache(walletAddress).findNFTByIdAndContractName(uniqueId, collectionContractId.orEmpty(), collectionContract.orEmpty())
 
             nft?.let {
                 nftLiveData.postValue(it)
@@ -23,7 +23,7 @@ class NftDetailViewModel : ViewModel() {
         }
     }
 
-    private suspend fun requestMeta(walletAddress: String, nft: Nft) {
+    private fun requestMeta(walletAddress: String, nft: Nft) {
 //        val service = retrofit().create(ApiService::class.java)
 //        val resp = service.nftMeta(walletAddress, nft.contract.name.orEmpty(), nft.id.tokenId)
     }

@@ -3,13 +3,10 @@ package com.flowfoundation.wallet.page.token.detail
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.cache.transferRecordCache
-import com.flowfoundation.wallet.manager.account.Balance
-import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.price.CurrencyManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -26,10 +23,9 @@ import kotlinx.coroutines.delay
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
-    OnTransactionStateChange {
+class TokenDetailViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenUpdateListener {
 
-    private lateinit var coin: FlowCoin
+    private lateinit var token: FungibleToken
 
     val balanceAmountLiveData = MutableLiveData<BigDecimal>()
     val balancePriceLiveData = MutableLiveData<BigDecimal>()
@@ -47,22 +43,15 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
     private val chartCache = ConcurrentHashMap<String, List<Quote>>()
 
     init {
-        BalanceManager.addListener(this)
-        CoinRateManager.addListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
         TransactionStateManager.addOnTransactionStateChange(this)
     }
 
-    override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        if (this.coin.isSameCoin(coin.contractId())) {
-            balanceAmountLiveData.value = balance.balance
-            balancePriceLiveData.value = coinRate * balance.balance
-        }
-    }
-
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
-        if (this.coin.isSameCoin(coin.contractId())) {
-            coinRate = price
-            balancePriceLiveData.value = coinRate * (balanceAmountLiveData.value ?: BigDecimal.ZERO)
+    override fun onTokenUpdated(token: FungibleToken) {
+        if (this.token.isSameToken(token.contractId())) {
+            balanceAmountLiveData.value = token.tokenBalance()
+            balancePriceLiveData.value = token.tokenBalancePrice()
+            coinRate = token.tokenPrice()
         }
     }
 
@@ -73,13 +62,14 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
         }
     }
 
-    fun setCoin(coin: FlowCoin) {
-        this.coin = coin
+    fun setToken(token: FungibleToken) {
+        this.token = token
     }
 
     fun load() {
-        BalanceManager.getBalanceByCoin(coin)
-        CoinRateManager.fetchCoinRate(coin)
+        viewModelIOScope(this) {
+            FungibleTokenListManager.updateTokenInfo(token.contractId())
+        }
         transactionQuery()
     }
 
@@ -112,7 +102,7 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
                 val service = retrofit().create(ApiService::class.java)
                 val result = service.ohlc(
                     market = market,
-                    coinPair = coin.getPricePair(QuoteMarket.fromMarketName(market)),
+                    coinPair = token.getPricePair(QuoteMarket.fromMarketName(market)),
                     after = if (period == Period.ALL) null else period.getChartPeriodTs(),
                     periods = "${period.getChartPeriodFrequency()}",
                 )
@@ -133,7 +123,7 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
             val service = retrofit().create(ApiService::class.java)
             val result = service.summary(
                 market = market,
-                coinPair = coin.getPricePair(QuoteMarket.fromMarketName(market)),
+                coinPair = token.getPricePair(QuoteMarket.fromMarketName(market)),
             )
             if (this.period == period && this.market == market) {
                 summaryLiveData.postValue(result.data.result)
@@ -146,18 +136,18 @@ class TokenDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate,
             return
         }
         viewModelIOScope(this) {
-            val cache = transferRecordCache(coin.contractId()).read()?.list
+            val cache = transferRecordCache(token.contractId()).read()?.list
             if (!cache.isNullOrEmpty()) {
                 transferListLiveData.postValue(cache.take(3))
             }
 
             val service = retrofit().create(ApiService::class.java)
             val walletAddress = WalletManager.selectedWalletAddress()
-            val resp = service.getTransferRecordByToken(walletAddress, coin.contractId(), limit = 3)
+            val resp = service.getTransferRecordByToken(walletAddress, token.contractId(), limit = 3)
             val data = resp.data?.transactions.orEmpty()
             transferListLiveData.postValue(data)
 
-            transferRecordCache(coin.contractId()).cache(TransferRecordList(data))
+            transferRecordCache(token.contractId()).cache(TransferRecordList(data))
         }
     }
 }

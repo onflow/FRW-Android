@@ -21,7 +21,7 @@ import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecorati
 class EditAvatarPresenter(
     private val activity: EditAvatarActivity,
     private val binding: ActivityEditAvatarBinding,
-    private val userInfo: UserInfoData,
+    userInfo: UserInfoData,
 ) : BasePresenter<EditAvatarModel> {
 
     private val avatarAdapter by lazy { AvatarListAdapter() }

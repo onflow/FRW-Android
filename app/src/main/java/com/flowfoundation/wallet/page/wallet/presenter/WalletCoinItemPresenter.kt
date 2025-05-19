@@ -1,24 +1,21 @@
 package com.flowfoundation.wallet.page.wallet.presenter
 
 import android.annotation.SuppressLint
-import android.content.res.ColorStateList
 import android.view.View
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoinItemBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.token.detail.TokenDetailActivity
 import com.flowfoundation.wallet.page.wallet.model.WalletCoinItemModel
-import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import java.math.BigDecimal
-import kotlin.math.absoluteValue
 
 class WalletCoinItemPresenter(
     private val view: View,
@@ -29,48 +26,27 @@ class WalletCoinItemPresenter(
     @SuppressLint("SetTextI18n")
     override fun bind(model: WalletCoinItemModel) {
         with(binding) {
-            Glide.with(coinIcon).load(model.coin.icon()).into(coinIcon)
-            coinName.text = model.coin.name
+            Glide.with(coinIcon).load(model.token.tokenIcon()).into(coinIcon)
+            coinName.text = model.token.name
             if (model.isHideBalance) {
-                coinBalance.text = "**** ${model.coin.symbol.uppercase()}"
+                coinBalance.text = "**** ${model.token.symbol.uppercase()}"
                 coinBalancePrice.text = "****"
             } else {
                 coinBalance.text =
-                    "${model.balance.formatLargeBalanceNumber(isAbbreviation = true)} ${model.coin.symbol.uppercase()}"
-                coinBalancePrice.text =
-                    (model.balance * model.coinRate).formatPrice(includeSymbol = true, isAbbreviation = true)
+                    "${model.token.tokenBalance().formatLargeBalanceNumber(true)} ${model.token.symbol.uppercase()}"
+                coinBalancePrice.text = (model.token.tokenBalancePrice()).formatPrice(includeSymbol = true, isAbbreviation = true)
             }
-            coinPrice.text = if (model.coinRate == BigDecimal.ZERO) "" else model.coinRate.formatPrice(includeSymbol = true)
-            val isStable = model.quoteChange == 0f
-            val isRise = model.quoteChange > 0
-            tvQuoteChange.backgroundTintList =
-                ColorStateList.valueOf(
-                    if (isStable) {
-                       R.color.transparent.res2color()
-                    } else {
-                        if (isRise) R.color.accent_quote_up_opacity.res2color() else R.color.accent_quote_down_opacity.res2color()
-                    }
-                )
-            tvQuoteChange.setTextColor(
-                if (isStable) {
-                    R.color.accent_gray.res2color()
-                } else {
-                    if (isRise) R.color.accent_green.res2color() else R.color.accent_red.res2color()
-                }
-            )
-            tvQuoteChange.text = if (isStable) {
-                ""
-            } else {
-                (if (isRise) "+" else "-") + "${model.quoteChange.absoluteValue.formatNum(2)}%"
-            }
+            coinPrice.text = if (model.token.tokenPrice() == BigDecimal.ZERO) "" else model.token.tokenPrice().formatPrice(includeSymbol = true)
+            ivVerified.setVisible(model.token.isVerified)
+            tvQuoteChange.gone()
             bindStaking(model)
-            bindAccessible(model.coin)
-            view.setOnClickListener { TokenDetailActivity.launch(view.context, model.coin) }
+            bindAccessible(model.token)
+            view.setOnClickListener { TokenDetailActivity.launch(view.context, model.token.contractId()) }
         }
     }
 
     private fun bindStaking(model: WalletCoinItemModel) {
-        if (!model.coin.isFlowCoin() || !model.isStaked) {
+        if (!model.token.isFlowToken() || !model.isStaked) {
             setStakingVisible(false)
             return
         }
@@ -78,17 +54,16 @@ class WalletCoinItemPresenter(
         binding.stakingAmount.text =
             view.context.getString(R.string.flow_num, model.stakeAmount.formatLargeBalanceNumber(isAbbreviation = true))
         binding.stakingAmountPrice.text =
-            (model.stakeAmount * model.coinRate.toFloat()).formatPrice(includeSymbol = true, isAbbreviation = true)
+            (model.stakeAmount * model.token.tokenPrice().toFloat()).formatPrice(includeSymbol = true, isAbbreviation = true)
     }
 
-    private fun bindAccessible(coin: FlowCoin) {
+    private fun bindAccessible(token: FungibleToken) {
         val accessible =
-            ChildAccountCollectionManager.isTokenAccessible(coin.contractName(), coin.address)
+            ChildAccountCollectionManager.isTokenAccessible(token.tokenContractName(), token.tokenAddress())
         if (accessible.not()) {
             setStakingVisible(false)
         }
         binding.coinPrice.setVisible(accessible)
-        binding.tvQuoteChange.setVisible(accessible)
         binding.tvInaccessibleTag.setVisible(accessible.not())
     }
 

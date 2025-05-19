@@ -10,9 +10,6 @@ import com.flowfoundation.wallet.page.backup.fragment.ViewErrorFragment
 import com.flowfoundation.wallet.page.backup.fragment.ViewPinCodeFragment
 import com.flowfoundation.wallet.page.backup.fragment.ViewRecoveryPhraseFragment
 import com.flowfoundation.wallet.page.backup.model.BackupViewMnemonicModel
-import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreErrorFragment
-import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreGoogleDriveWithPinFragment
-import com.flowfoundation.wallet.page.restore.multirestore.fragment.RestoreStartFragment
 import com.flowfoundation.wallet.page.restore.multirestore.model.RestoreErrorOption
 import com.google.android.material.transition.MaterialSharedAxis
 

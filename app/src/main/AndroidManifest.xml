@@ -209,6 +209,10 @@
             android:name=".page.token.addtoken.AddTokenActivity"
             android:screenOrientation="portrait"/>
 
+        <activity
+            android:name=".page.token.manage.ManageTokenActivity"
+            android:screenOrientation="portrait"/>
+
         <activity android:name=".page.token.custom.AddCustomTokenActivity"
             android:screenOrientation="portrait"/>
 
@@ -343,6 +347,7 @@
                 <data android:host="link.lilico.app"/>
                 <data android:host="frw-link.lilico.app"/>
                 <data android:host="fcw-link.lilico.app"/>
+                <data android:host="link.wallet.flow.com"/>
             </intent-filter>
 
             <intent-filter android:autoVerify="true"

@@ -5,6 +5,8 @@ import com.nftco.flow.sdk.cadence.JsonCadenceBuilder
 
 class TransactionBuilder {
 
+    internal var scriptId: String? = null
+
     internal var script: String? = null
 
     internal var walletAddress: String? = null
@@ -14,6 +16,10 @@ class TransactionBuilder {
     internal var arguments: MutableList<Field<*>> = mutableListOf()
 
     internal var limit: Int? = 9999
+
+    fun scriptId(scriptId: String) {
+        this.scriptId = scriptId
+    }
 
     fun script(script: String) {
         this.script = script
@@ -32,10 +38,6 @@ class TransactionBuilder {
 
     fun arg(argument: JsonCadenceBuilder.() -> Field<*>) = arg(argument(JsonCadenceBuilder()))
 
-    fun gaslimit(limit: Int) {
-        this.limit = limit
-    }
-
     fun walletAddress(address: String) {
         this.walletAddress = address
     }
@@ -45,6 +47,7 @@ class TransactionBuilder {
     }
 
     override fun toString(): String {
-        return "TransactionBuilder(script=$script, walletAddress=$walletAddress, payer=$payer, arguments=${arguments.map { "${it.type}:${it.value}" }}, limit=$limit)"
+        return "TransactionBuilder(scriptId=$scriptId, script=$script, " +
+                "walletAddress=$walletAddress, payer=$payer, arguments=${arguments.map { "${it.type}:${it.value}" }}, limit=$limit)"
     }
 }

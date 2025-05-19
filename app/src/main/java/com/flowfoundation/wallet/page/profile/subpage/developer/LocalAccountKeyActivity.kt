@@ -20,7 +20,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
-
 class LocalAccountKeyActivity: BaseActivity()  {
     private lateinit var binding: ActivityLocalAccountKeyBinding
     private val keyListAdapter by lazy { LocalAccountKeyAdapter() }

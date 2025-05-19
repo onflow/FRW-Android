@@ -2,32 +2,28 @@ package com.flowfoundation.wallet.page.send.transaction.subpage.amount
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.manager.account.Balance
-import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.SendBalanceModel
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 
-class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
+class SendAmountViewModel : ViewModel(), FungibleTokenUpdateListener {
     private lateinit var contact: AddressBookContact
 
     val balanceLiveData = MutableLiveData<SendBalanceModel>()
+    private var initialAmount: String? = null
 
     val onCoinSwap = MutableLiveData<Boolean>()
 
-    private var currentCoin = FlowCoinListManager.getFlowCoin()?.contractId().orEmpty()
+    private var currentCoin = FungibleTokenListManager.getFlowToken()?.contractId().orEmpty()
     private var convertCoin = selectedCurrency().flag
 
     init {
-        BalanceManager.addListener(this)
-        CoinRateManager.addListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
     }
 
     fun currentCoin() = currentCoin
@@ -39,12 +35,17 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
     fun contact() = contact
 
+    fun setInitialAmount(amount: String?) {
+        this.initialAmount = amount
+    }
+
+    fun getInitialAmount() = initialAmount
+
     fun load() {
         viewModelIOScope(this) {
-            val coin = FlowCoinListManager.getCoinById(currentCoin) ?: return@viewModelIOScope
+            val coin = FungibleTokenListManager.getTokenById(currentCoin) ?: return@viewModelIOScope
             balanceLiveData.postValue(SendBalanceModel(contractId = coin.contractId()))
-            BalanceManager.getBalanceByCoin(coin)
-            CoinRateManager.fetchCoinRate(coin)
+            FungibleTokenListManager.updateTokenInfo(currentCoin)
         }
     }
 
@@ -55,29 +56,23 @@ class SendAmountViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         onCoinSwap.postValue(true)
     }
 
-    fun changeCoin(coin: FlowCoin) {
-        if (currentCoin == coin.contractId()) {
+    fun changeToken(token: FungibleToken) {
+        if (currentCoin == token.contractId()) {
             return
         }
-        currentCoin = coin.contractId()
+        currentCoin = token.contractId()
         onCoinSwap.postValue(true)
         load()
     }
 
-    override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        if (coin.contractId() != currentCoin) {
-            return
+    override fun onTokenUpdated(token: FungibleToken) {
+        if (token.isSameToken(currentCoin)) {
+            val data = balanceLiveData.value ?: SendBalanceModel(token.contractId())
+            balanceLiveData.value = data.copy(
+                coinRate = token.tokenPrice(),
+                balance = token.tokenBalance()
+            )
         }
-        val data = balanceLiveData.value ?: SendBalanceModel(coin.contractId())
-        balanceLiveData.value = data.copy(balance = balance.balance)
-    }
-
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
-        if (coin.contractId() != currentCoin) {
-            return
-        }
-        val data = balanceLiveData.value ?: SendBalanceModel(coin.contractId())
-        balanceLiveData.value = data.copy(coinRate = price)
     }
 }
 

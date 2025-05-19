@@ -21,7 +21,7 @@ class ChildAccountList(
     private val accountList = mutableListOf<ChildAccount>()
 
     init {
-        ioScope { accountList.addAll(cache().read().orEmpty()) }
+        ioScope { accountList.addAll(cache().read()?.accountList.orEmpty()) }
         refresh()
     }
 
@@ -34,8 +34,7 @@ class ChildAccountList(
         } else {
             localAccount.pinTime = System.currentTimeMillis()
         }
-
-        cache().cache(ChildAccountCache().apply { addAll(accountList) })
+        cache().cache(ChildAccountCache(accountList.toList()))
     }
 
     fun refresh() {
@@ -45,7 +44,7 @@ class ChildAccountList(
             accounts.forEach { account -> account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0) }
             accountList.clear()
             accountList.addAll(accounts)
-            cache().cache(ChildAccountCache().apply { addAll(accountList) })
+            cache().cache(ChildAccountCache(accountList.toList()))
             dispatchAccountUpdateListener(address, accountList.toList())
 
             logd(TAG, "refresh: $address, ${accountList.size}")
@@ -58,13 +57,13 @@ class ChildAccountList(
 //    }
 
     private suspend fun queryAccountMeta(address: String): List<ChildAccount>? {
-        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence() { arg { Cadence.address(address) } }
+        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence { arg { Cadence.address(address) } }
         return result?.encode()?.parseAccountMetas()
     }
 
     private fun cache(): CacheManager<ChildAccountCache> {
         return CacheManager(
-            "${address}.child_account_list".cacheFile(),
+            "${address}.child_accounts".cacheFile(),
             ChildAccountCache::class.java,
         )
     }
@@ -102,4 +101,7 @@ data class ChildAccount(
     val description: String? = null,
 ) : Parcelable
 
-private class ChildAccountCache : ArrayList<ChildAccount>()
+data class ChildAccountCache(
+    @SerializedName("accountList")
+    val accountList: List<ChildAccount> = emptyList(),
+)

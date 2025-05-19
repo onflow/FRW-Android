@@ -3,18 +3,14 @@ package com.flowfoundation.wallet.page.staking.detail
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.nftco.flow.sdk.FlowTransactionStatus
-import com.flowfoundation.wallet.manager.account.Balance
-import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.flowjvm.*
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
 import com.flowfoundation.wallet.manager.staking.createStakingDelegatorId
 import com.flowfoundation.wallet.manager.staking.delegatorId
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
@@ -24,19 +20,16 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import kotlinx.coroutines.delay
-import java.math.BigDecimal
 
-class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
+class StakingDetailViewModel : ViewModel(), FungibleTokenUpdateListener {
 
     val dataLiveData = MutableLiveData<StakingDetailModel>()
 
     private var detailModel = StakingDetailModel()
 
     init {
-        BalanceManager.addListener(this)
-        CoinRateManager.addListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
     }
-
 
     fun load(provider: StakingProvider) {
         ioScope {
@@ -47,11 +40,10 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
             updateLiveData(detailModel)
 
-            val coin = FlowCoinListManager.getFlowCoin() ?: return@ioScope
+            val token = FungibleTokenListManager.getFlowToken() ?: return@ioScope
 
-            logd("xxx", "coin:$coin")
-            BalanceManager.getBalanceByCoin(coin)
-            CoinRateManager.fetchCoinRate(coin)
+            logd("StakingDetail", "token:$token")
+            FungibleTokenListManager.updateTokenInfo(token.contractId())
         }
     }
 
@@ -113,26 +105,21 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
         }
     }
 
-    override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        if (coin.isFlowCoin()) {
-            logd("xxx", "balance:${balance.balance}")
-            detailModel = detailModel.copy(balance = balance.balance.toFloat())
-            updateLiveData(detailModel)
-        }
-    }
-
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
-        logd("xxx", "price:${price}")
-        if (coin.isFlowCoin()) {
-            detailModel = detailModel.copy(coinRate = price.toFloat())
-            updateLiveData(detailModel)
-        }
-    }
-
     private fun updateLiveData(data: StakingDetailModel) {
         uiScope {
-            logd("xxx", "updateLiveData:$data")
+            logd("StakingDetail", "updateLiveData:$data")
             dataLiveData.value = data
+        }
+    }
+
+    override fun onTokenUpdated(token: FungibleToken) {
+        logd("StakingDetail", "price:${token.tokenPrice()}, balance:${token.tokenBalance()}")
+        if (token.isFlowToken()) {
+            detailModel = detailModel.copy(
+                coinRate = token.tokenPrice().toFloat(),
+                balance = token.tokenBalance().toFloat()
+            )
+            updateLiveData(detailModel)
         }
     }
 }

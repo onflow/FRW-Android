@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.flowfoundation.wallet.manager.backup.ACTION_GOOGLE_DRIVE_VIEW_FINISH
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -25,6 +24,8 @@ import com.flowfoundation.wallet.manager.backup.restoreFromGoogleDrive
 import com.flowfoundation.wallet.manager.backup.uploadGoogleDriveBackup
 import com.flowfoundation.wallet.manager.backup.viewFromGoogleDrive
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.GoogleBackupError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -57,7 +58,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
         UltimateBarX.with(this).fitWindow(false).light(false).applyNavigationBar()
 
 
-        val signInOptions = GoogleSignInOptions.Builder()
+        val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestScopes(Scope(DriveScopes.DRIVE_APPDATA))
             .build()
@@ -114,6 +115,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                 doAction(googleDriveService)
             } else {
                 loge(TAG, "google account sign in fail ${task.exception}")
+                ErrorReporter.reportWithMixpanel(GoogleBackupError.ACCOUNT_SIGN_IN_FAILED, task.exception)
                 signOutAndSignInAgain()
             }
         }

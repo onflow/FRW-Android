@@ -2,10 +2,9 @@ package com.flowfoundation.wallet.network.model
 
 import android.os.Parcelable
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
-import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.wallet.toAddress
+import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 

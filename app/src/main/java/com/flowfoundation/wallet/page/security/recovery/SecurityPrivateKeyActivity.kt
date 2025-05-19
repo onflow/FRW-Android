@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySecurityPrivateKeyBinding
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
@@ -37,7 +38,9 @@ class SecurityPrivateKeyActivity : BaseActivity() {
     private fun initPrivateKey() {
         with(binding) {
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-            val privateKeyText = (cryptoProvider as? HDWalletCryptoProvider)?.getPrivateKey() ?: ""
+            val privateKeyText = (cryptoProvider as? HDWalletCryptoProvider)?.getPrivateKey()
+                ?: (cryptoProvider as? PrivateKeyStoreCryptoProvider)?.getPrivateKey()
+                ?: ""
             privateKeyView.text = privateKeyText
             publicKeyView.text = cryptoProvider.getPublicKey()
 
@@ -45,7 +48,6 @@ class SecurityPrivateKeyActivity : BaseActivity() {
                 privateKeyCopyButton.setOnClickListener { copyToClipboard(privateKeyText) }
             }
             publicKeyCopyButton.setOnClickListener { copyToClipboard(cryptoProvider.getPublicKey()) }
-
             hashAlgorithm.text = getString(R.string.hash_algorithm, cryptoProvider.getHashAlgorithm().algorithm)
             signAlgorithm.text = getString(R.string.sign_algorithm, cryptoProvider.getSignatureAlgorithm().id)
             Instabug.addPrivateViews(privateKeyView)

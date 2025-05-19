@@ -2,7 +2,6 @@
 <resources>
     <string name="next">Siguiente</string>
     <string name="list">Lista</string>
-    <string name="grid">Rejilla</string>
     <string name="view_as">Mostrar como</string>
     <string name="creating_account">Creando tu cuenta…</string>
     <string name="secure_design">Seguro por diseño</string>
@@ -34,6 +33,7 @@
     <string name="protection">Protección</string>
     <string name="to_your_wallet">A su cartera</string>
     <string name="pin_code">Código PIN</string>
+    <string name="grid">Rejilla</string>
     <string name="create_pin">Crear un PIN</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Escriba de nuevo su PIN en\n</string>
@@ -67,7 +67,7 @@
     <string name="continue_str">Continúe en</string>
     <string name="restore_with_google_drive">Restaurar con Google Drive</string>
     <string name="wrong_password">contraseña incorrecta</string>
-    <string name="word_not_found">Opps, palabra no encontrada.</string>
+    <string name="word_not_found">Vaya, palabra no encontrada.</string>
     <string name="restore_mnemonic_tip">Se trata de una frase de 12 palabras que te dieron cuando creaste tu cartera anterior.</string>
     <string name="multi_restore_mnemonic_tip">Se trata de una frase de 15 palabras que te dieron cuando creaste tu cartera anterior en
             .</string>
@@ -184,6 +184,8 @@
     <string name="add_token">Añadir ficha</string>
     <string name="add_token_failed">Error al añadir token</string>
     <string name="search_token">Fichero de búsqueda</string>
+    <string name="search_tokens">Buscar fichas</string>
+    <string name="token_list">Lista de tokens</string>
     <string name="confirmation">Confirmación</string>
     <string name="app_initializing">Inicialización de</string>
     <string name="developer_mode">Modo Desarrollador</string>
@@ -208,7 +210,6 @@
     <string name="add_collection">Añadir colección</string>
     <string name="search_nft_collection">Buscar en la colección NFT</string>
     <string name="scan_qr_code">Escanear código QR</string>
-    <string name="scan">Escanear</string>
     <string name="explore_search_hint">Buscar nombre o URL</string>
     <string name="bookmark">Marcar como favorito</string>
     <string name="drag_here_to_unpin">Arrastre aquí para desanclar</string>
@@ -216,7 +217,7 @@
     <string name="open_in_browser">Abrir en el navegador</string>
     <string name="clear_cache">Vaciar la caché</string>
     <string name="pending_transaction">Transacción pendiente</string>
-    <string name="welcome_to_wallet">Bienvenido a Flow Wallet</string>
+    <string name="welcome_to_wallet">Bienvenido a Flow Wallet !</string>
     <string name="profile_sign_tips"><![CDATA[Únete a nosotros y descubre nuevas y brillantes experiencias.]]></string>
     <string name="favourite">Favoritos</string>
     <string name="cancel_favourite">Cancelar Favorito</string>
@@ -239,7 +240,7 @@
     <string name="free_gas_fee_desc">Permitir que Flow Wallet pague la tasa de gas para todas mis transacciones
             .</string>
     <string name="file_picker_title">Seleccionar archivo</string>
-    <string name="transaction_fee">Tasa de transacción</string>
+    <string name="transaction_fee">Gastos de Transacción</string>
     <string name="hold_to_confirm">Mantener pulsado para confirmar</string>
     <string name="hold_to_sign">Mantén para firmar</string>
     <string name="enable">Activar</string>
@@ -256,7 +257,7 @@
     <string name="start">Inicio</string>
     <string name="import_wallet">Cartera de importación</string>
     <string name="import_wallet_button">Ya tengo una cuenta</string>
-    <string name="import_str">Importar</string>
+    <string name="import_str">IMPORTE</string>
     <string name="explore_new_nfts">Explorar nuevos NFT</string>
     <string name="network_error">Error de red</string>
     <string name="claim">Reclamación</string>
@@ -573,7 +574,7 @@
     <string name="exit_backup_warning_dialog_title">¿Estás seguro de que no quieres hacer una copia de seguridad?</string>
     <string name="exit_backup_warning_dialog">Si pierde su dispositivo o elimina su cartera, sus fondos se perderán para siempre.</string>
     <string name="back">Volver</string>
-    <string name="token_count">%1$d Tokens</string>
+    <string name="token_count">Tokens %1$d</string>
     <string name="wallpaper_static">Estático</string>
     <string name="wallpaper_dynamic">Dinámico</string>
     <string name="wallpaper">Fondo de pantalla</string>
@@ -701,4 +702,24 @@
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Elegir proveedor de intercambio</string>
     <string name="welcome_desc">¡Bienvenido a Flow Wallet! Crea una cuenta para empezar</string>
+    <string name="scan">Escanear</string>
+    <string name="results">Resultados</string>
+    <string name="search_nft_name">Buscar NFT</string>
+    <string name="loading_nfts">Cargando NFT...</string>
+    <string name="nft_list_loading_error">Error, por favor comprueba tu internet o actualiza.</string>
+    <string name="refresh">Actualizar</string>
+    <string name="no_relevant_nft">No se encontró NFT relevante.</string>
+    <string name="contact_address">Dirección de contacto</string>
+    <string name="amount">Importe</string>
+    <string name="contact">Contacto</string>
+    <string name="function">Función</string>
+    <string name="parameters">Parámetros</string>
+    <string name="call_data">Datos de llamada</string>
+    <string name="blocked_info">"<![CDATA[Este sitio web está bloqueado como parte de una lista de sitios web maliciosos mantenida por la comunidad. Si cree que el sitio web ha sido bloqueado por error, <u>por favor reporte el problema.</u>]]>"</string>
+    <string name="blocked_url">%1$s está bloqueado!</string>
+    <string name="ignore_warning">Ignorar advertencia, mostrar de todos modos</string>
+    <string name="connect_warning">Ignorar advertencia, conectar de todos modos</string>
+    <string name="blocked_tip">Esta app ha sido marcada como peligrosa.</string>
+    <string name="switch_to">Cambiar a %1$s</string>
+    <string name="deeplink_login_failed">Error al abrir, por favor cree una cartera primero.</string>
 </resources>

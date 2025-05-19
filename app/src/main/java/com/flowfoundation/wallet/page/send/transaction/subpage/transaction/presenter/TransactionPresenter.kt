@@ -7,16 +7,13 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
-import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionDialog
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionViewModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.model.TransactionDialogModel
-import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
@@ -31,11 +28,11 @@ class TransactionPresenter(
 
     private val transaction by lazy { viewModel.transaction }
 
-    private val coin by lazy { FlowCoinListManager.getCoinById(transaction.coinId)!! }
+    private val token by lazy { FungibleTokenListManager.getTokenById(transaction.coinId)!! }
     private val contact by lazy { viewModel.transaction.target }
 
     init {
-        binding.sendButton.button().setOnProcessing { viewModel.send(coin) }
+        binding.sendButton.button().setOnProcessing { viewModel.send(token) }
         binding.amountWrapper.setVisible()
     }
 
@@ -65,12 +62,12 @@ class TransactionPresenter(
     @SuppressLint("SetTextI18n")
     private fun setupAmount() {
         with(binding) {
-            amountView.text = "${transaction.amount} ${coin.symbol.uppercase()}"
-            coinNameView.text = coin.name
-            Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
+            amountView.text = "${transaction.amount} ${token.symbol.uppercase()}"
+            coinNameView.text = token.name
+            Glide.with(coinIconView).load(token.tokenIcon()).into(coinIconView)
             uiScope {
                 storageTip.setInsufficientTip(
-                    if (coin.isFlowCoin()) {
+                    if (token.isFlowToken()) {
                         AccountInfoManager.validateFlowTokenTransaction(transaction.amount, false)
                     } else {
                         AccountInfoManager.validateOtherTransaction(false)

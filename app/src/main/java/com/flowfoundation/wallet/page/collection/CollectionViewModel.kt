@@ -21,7 +21,7 @@ class CollectionViewModel : ViewModel() {
     private val requester by lazy { NftListRequester() }
     private var accountAddress: String? = null
 
-    fun load(contractName: String, accountAddress: String, collectionSize: Int) {
+    fun load(contractId: String, contractName: String, accountAddress: String, collectionSize: Int) {
         this.accountAddress = accountAddress
         viewModelIOScope(this) {
             if (accountAddress.isEmpty()) {
@@ -29,7 +29,7 @@ class CollectionViewModel : ViewModel() {
                     NftCache(nftWalletAddress())
                         .collection()
                         .read()?.collections
-                        ?.firstOrNull { it.collection?.contractName() == contractName }
+                        ?.firstOrNull { it.collection?.id == contractId && it.collection.contractName() == contractName }
                         ?: return@viewModelIOScope
 
                 this.collection = collectionWrapper.collection

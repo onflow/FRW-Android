@@ -7,13 +7,12 @@ import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.inboxCache
 import com.flowfoundation.wallet.manager.app.isTestnet
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flowjvm.cadenceClaimInboxNft
 import com.flowfoundation.wallet.manager.flowjvm.cadenceClaimInboxToken
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -24,9 +23,8 @@ import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.toSafeInt
-import java.math.BigDecimal
 
-class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
+class InboxViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenUpdateListener {
 
     val tokenListLiveData = MutableLiveData<List<InboxToken>>()
     val nftListLiveData = MutableLiveData<List<InboxNft>>()
@@ -34,7 +32,7 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
     val claimExecutingLiveData = MutableLiveData<Boolean>()
 
     init {
-        CoinRateManager.addListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
         TransactionStateManager.addOnTransactionStateChange(this)
     }
 
@@ -49,24 +47,14 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         }
     }
 
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal) {
-        val tokens = tokenListLiveData.value.orEmpty().toMutableList()
-        tokens.toList().forEachIndexed { index, token ->
-            if (token.coinAddress == coin.address) {
-                tokens[index] = token.copy(marketValue = token.amount * price)
-            }
-        }
-        tokenListLiveData.postValue(tokens)
-    }
-
     fun claimToken(token: InboxToken) {
         claimExecutingLiveData.postValue(true)
         viewModelIOScope(this) {
             try {
-                val coin = FlowCoinListManager.coinList().firstOrNull { it.address == token.coinAddress }!!
-                val txid = cadenceClaimInboxToken(meowDomainHost()!!, token.key, coin, token.amount)!!
+                val coin = FungibleTokenListManager.getFungibleToken { it.tokenAddress() == token.coinAddress } ?: return@viewModelIOScope
+                val txId = cadenceClaimInboxToken(meowDomainHost()!!, token.key, coin, token.amount)!!
                 val transactionState = TransactionState(
-                    transactionId = txid,
+                    transactionId = txId,
                     time = System.currentTimeMillis(),
                     state = FlowTransactionStatus.PENDING.num,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
@@ -87,9 +75,9 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         viewModelIOScope(this) {
             try {
                 val collection = NftCollectionConfig.get(nft.collectionAddress, nft.collectionName)!!
-                val txid = cadenceClaimInboxNft(meowDomainHost()!!, nft.key, collection, nft.tokenId.toSafeInt())!!
+                val txId = cadenceClaimInboxNft(meowDomainHost()!!, nft.key, collection, nft.tokenId.toSafeInt())!!
                 val transactionState = TransactionState(
-                    transactionId = txid,
+                    transactionId = txId,
                     time = System.currentTimeMillis(),
                     state = FlowTransactionStatus.PENDING.num,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
@@ -112,7 +100,6 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         tokenListLiveData.postValue(response.tokenList())
         nftListLiveData.postValue(response.nftList())
         updateInboxReadList(response)
-        CoinRateManager.fetchCoinListRate(response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address == token.coinAddress } })
         inboxCache().cache(response)
     }
 
@@ -120,6 +107,15 @@ class InboxViewModel : ViewModel(), OnCoinRateUpdate, OnTransactionStateChange {
         val response = inboxCache().read() ?: return
         tokenListLiveData.postValue(response.tokenList())
         nftListLiveData.postValue(response.nftList())
-        CoinRateManager.fetchCoinListRate(response.tokenList().mapNotNull { token -> FlowCoinListManager.coinList().firstOrNull { it.address == token.coinAddress } })
+    }
+
+    override fun onTokenUpdated(token: FungibleToken) {
+        val tokens = tokenListLiveData.value.orEmpty().toMutableList()
+        tokens.toList().forEachIndexed { index, item ->
+            if (item.coinAddress == token.tokenAddress()) {
+                tokens[index] = item.copy(marketValue = item.amount * token.tokenPrice())
+            }
+        }
+        tokenListLiveData.postValue(tokens)
     }
 }

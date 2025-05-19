@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.cache
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.utils.*
+import com.flowfoundation.wallet.utils.error.AccountError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -25,6 +27,7 @@ object AccountCacheManager{
             }
             return json.decodeFromString(ListSerializer(Account.serializer()), str)
         } catch (e: Exception) {
+            ErrorReporter.reportWithMixpanel(AccountError.DESERIALIZE_ACCOUNT_FAILED, e)
             loge(TAG, e)
         }
         return null
@@ -34,17 +37,8 @@ object AccountCacheManager{
         ioScope { cacheSync(data) }
     }
 
-    fun cacheSync(data: List<Account>) {
+    private fun cacheSync(data: List<Account>) {
         val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
         str.saveToFile(file)
     }
-
-    fun isCacheExist(): Boolean = file.exists() && file.length() > 0
-
-    fun modifyTime() = file.lastModified()
-
-    fun isExpired(duration: Long): Boolean {
-        return System.currentTimeMillis() - modifyTime() > duration
-    }
-
 }

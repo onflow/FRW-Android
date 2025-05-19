@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.evm
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromCOA
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTToCOA
@@ -21,6 +20,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceFundFlowToCOAAccount
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.cadenceTransferToken
 import com.flowfoundation.wallet.manager.flowjvm.cadenceWithdrawTokenFromCOAAccount
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
@@ -31,7 +31,11 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.utils.error.CadenceError
+import com.flowfoundation.wallet.utils.error.EVMError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
@@ -73,13 +77,14 @@ object EVMWalletManager {
         }
     }
 
-    fun toChecksumEVMAddress(evmAddress: String): String {
+    private fun toChecksumEVMAddress(evmAddress: String): String {
         return Keys.toChecksumAddress(evmAddress)
     }
 
     // todo get evm address for each network
     fun fetchEVMAddress(callback: ((isSuccess: Boolean) -> Unit)? = null) {
         if (canFetchEVMAddress().not()) {
+            ErrorReporter.reportWithMixpanel(CadenceError.EMPTY, getCurrentCodeLocation())
             callback?.invoke(false)
             return
         }
@@ -88,6 +93,7 @@ object EVMWalletManager {
             val address = cadenceQueryEVMAddress()
             logd(TAG, "fetchEVMAddress address::$address")
             if (address.isNullOrEmpty()) {
+                ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                 callback?.invoke(false)
             } else {
                 val networkAddress = getNetworkAddress()
@@ -139,64 +145,65 @@ object EVMWalletManager {
     }
 
     suspend fun moveFlowToken(
-        coin: FlowCoin,
+        token: FungibleToken,
         amount: BigDecimal,
         fromAddress: String,
         toAddress: String,
         callback: (isSuccess: Boolean) -> Unit
     ) {
-        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+        if (isEVMWalletAddress(fromAddress)) {
             if (WalletManager.isChildAccount(toAddress)) {
                 // COA -> Linked Account
-                val moveAmount = amount.movePointRight(coin.decimal)
-                bridgeTokenFromCOAToChild(coin.getFTIdentifier(), moveAmount, toAddress, callback)
+                val moveAmount = amount.movePointRight(token.tokenDecimal())
+                bridgeTokenFromCOAToChild(token.tokenIdentifier(), moveAmount, toAddress, callback)
             } else {
                 // COA -> Parent Flow
                 withdrawFlowFromCOA(amount, toAddress, callback)
             }
         } else if (WalletManager.isChildAccount(fromAddress)) {
-            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+            if (isEVMWalletAddress(toAddress)) {
                 // Linked Account -> COA
-                bridgeTokenFromChildToCOA(coin.getFTIdentifier(), amount, fromAddress, callback)
+                bridgeTokenFromChildToCOA(token.tokenIdentifier(), amount, fromAddress, callback)
             } else {
                 // Linked Account -> Parent Flow / Linked Account
-                transferToken(coin, toAddress, amount, callback)
+                transferToken(token, toAddress, amount, callback)
             }
         } else {
-            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+            if (isEVMWalletAddress(toAddress)) {
                 // Parent Flow -> COA
                 fundFlowToCOA(amount, callback)
             } else {
                 // Parent Flow -> Linked Account
-                transferToken(coin, toAddress, amount, callback)
+                transferToken(token, toAddress, amount, callback)
             }
         }
     }
 
     suspend fun moveBridgeToken(
-        coin: FlowCoin, amount: BigDecimal, fromAddress: String, toAddress: String, callback: (isSuccess: Boolean) -> Unit
+        token: FungibleToken, amount: BigDecimal, fromAddress: String, toAddress: String, callback: (isSuccess: Boolean) -> Unit
     ) {
-        if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
-            val moveAmount = amount.movePointRight(coin.decimal)
+        if (isEVMWalletAddress(fromAddress)) {
+            val moveAmount = amount.movePointRight(token.tokenDecimal())
             if (WalletManager.isChildAccount(toAddress)) {
                 // COA -> Linked Account
-                bridgeTokenFromCOAToChild(coin.getFTIdentifier(), moveAmount, toAddress, callback)
+                bridgeTokenFromCOAToChild(token.tokenIdentifier(), moveAmount, toAddress, callback)
             } else {
                 // COA -> Parent Flow
-                bridgeTokenFromCOAToFlow(coin.getFTIdentifier(), moveAmount, callback)
+                bridgeTokenFromCOAToFlow(token.tokenIdentifier(), moveAmount, callback)
             }
         } else {
-            if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
+            if (isEVMWalletAddress(toAddress)) {
                 if (WalletManager.isChildAccount(fromAddress)) {
                     // Linked Account -> COA
-                    bridgeTokenFromChildToCOA(coin.getFTIdentifier(), amount, fromAddress, callback)
+                    bridgeTokenFromChildToCOA(token.tokenIdentifier(), amount, fromAddress,
+                        callback)
                 } else {
                     // Parent Flow -> COA
-                    bridgeTokenFromFlowToCOA(coin.getFTIdentifier(), amount, callback)
+                    bridgeTokenFromFlowToCOA(token.tokenIdentifier(), amount, callback)
                 }
             } else {
                 // Linked Account / Parent Flow -> Parent Flow / Linked Account
-                transferToken(coin, toAddress, amount, callback)
+                transferToken(token, toAddress, amount, callback)
             }
         }
     }
@@ -219,6 +226,11 @@ object EVMWalletManager {
                 if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.FLOW,
                 true
             )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -244,6 +256,11 @@ object EVMWalletManager {
                 if (isMoveToEVM) TransferAccountType.COA else TransferAccountType.CHILD,
                 true
             )
+            if (txId.isNullOrBlank()) {
+                callback.invoke(false)
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
+                return
+            }
             postTransaction(nft, txId, callback)
         } catch (e: Exception) {
             callback.invoke(false)
@@ -320,9 +337,10 @@ object EVMWalletManager {
         )
     }
 
-    suspend fun transferToken(coin: FlowCoin, toAddress: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+    suspend fun transferToken(token: FungibleToken, toAddress: String, amount: BigDecimal, callback:
+        (isSuccess: Boolean) -> Unit) {
         executeTransaction(
-            action = { cadenceTransferToken(coin, toAddress, amount.toDouble()) },
+            action = { cadenceTransferToken(token, toAddress, amount.toDouble()) },
             operationName = "transfer token",
             callback = callback
         )
@@ -379,6 +397,7 @@ object EVMWalletManager {
             val txId = action()
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
+                ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation(operationName))
                 callback(false)
                 return
             }
@@ -401,11 +420,8 @@ object EVMWalletManager {
         }
     }
 
-    private fun postTransaction(nft: Nft, txId: String?, callback: (isSuccess: Boolean) -> Unit) {
-        callback.invoke(txId != null)
-        if (txId.isNullOrBlank()) {
-            return
-        }
+    private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
+        callback.invoke(true)
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),

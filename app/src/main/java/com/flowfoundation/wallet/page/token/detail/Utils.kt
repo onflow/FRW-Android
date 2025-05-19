@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail
 
 import android.text.format.DateUtils
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.plusMonth
 import com.flowfoundation.wallet.utils.plusYear
@@ -22,7 +22,6 @@ enum class Period(val value: String) {
 }
 
 enum class PeriodFrequency(val value: Int) {
-    fiveMinute(300),
     halfHour(1800),
     oneHour(3600),
     oneDay(86400),
@@ -105,16 +104,12 @@ fun QuoteMarket.getFlowPricePair(): String {
     }
 }
 
-fun FlowCoin.getPricePair(market: QuoteMarket): String {
+fun FungibleToken.getPricePair(market: QuoteMarket): String {
     return when (symbol.lowercase()) {
-        FlowCoin.SYMBOL_FLOW -> market.getFlowPricePair()
-        FlowCoin.SYMBOL_USDC -> market.getUSDCPricePair()
+        FungibleToken.SYMBOL_FLOW -> market.getFlowPricePair()
+        FungibleToken.SYMBOL_USDC -> market.getUSDCPricePair()
         else -> ""
     }
-}
-
-fun FlowCoin.isUSDStableCoin(): Boolean {
-    return symbol.lowercase() == FlowCoin.SYMBOL_USDC
 }
 
 @Suppress("UNCHECKED_CAST")

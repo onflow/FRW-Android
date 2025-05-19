@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
 
-
 suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
     val binding = swapPageBinding() ?: return ""
     val viewModel = binding.viewModel()
@@ -21,8 +20,10 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
 
     val estimateOut = data.tokenOutAmount
     val amountOutMin = estimateOut * (1.0f - slippageRate).toBigDecimal()
-    val storageIn = viewModel.fromCoin()!!.storagePath
-    val storageOut = viewModel.toCoin()!!.storagePath
+    val storageIn = viewModel.fromCoin()?.flowStoragePath
+    val storageOut = viewModel.toCoin()?.flowStoragePath
+    val outBalancePath = viewModel.toCoin()?.flowBalancePath
+    val outReceiverPath = viewModel.toCoin()?.flowReceiverPath
 
     val estimateIn = data.tokenInAmount
     val amountInMax = estimateIn / (1.0f - slippageRate).toBigDecimal()
@@ -31,12 +32,12 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
         swapPaths = tokenKeyFlatSplitPath,
         tokenInMax = amountInMax,
         tokenOutMin = amountOutMin,
-        tokenInVaultPath = storageIn?.vault?.split("/")?.last() ?: "",
+        tokenInVaultPath = storageIn?.split("/")?.last() ?: "",
         tokenOutSplit = amountOutSplit,
         tokenInSplit = amountInSplit,
-        tokenOutVaultPath = storageOut?.vault?.split("/")?.last() ?: "",
-        tokenOutReceiverPath = storageOut?.receiver?.split("/")?.last() ?: "",
-        tokenOutBalancePath = storageOut?.balance?.split("/")?.last() ?: "",
+        tokenOutVaultPath = storageOut?.split("/")?.last() ?: "",
+        tokenOutReceiverPath = outReceiverPath?.split("/")?.last() ?: "",
+        tokenOutBalancePath = outBalancePath?.split("/")?.last() ?: "",
         deadline = deadline,
     )
 }
@@ -59,12 +60,12 @@ private suspend fun swapSendInternal(
     // want use how many token to swap other token
     val isExactFrom = viewModel.exactToken == ExactToken.FROM
 
-    val cadenceScript = (if (isExactFrom) CadenceScript.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else CadenceScript.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS).getScript()
+    val cadenceScript = (if (isExactFrom) CadenceScript.CADENCE_SWAP_EXACT_TOKENS_TO_OTHER_TOKENS else CadenceScript.CADENCE_SWAP_TOKENS_FROM_EXACT_TOKENS)
 
     val tokenName = swapPaths.last().split(".").last()
     val tokenAddress = swapPaths.last().split(".")[1].toAddress()
-    return cadenceScript.replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
-        .transactionByMainWallet {
+    return cadenceScript.getScript().replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
+        .transactionByMainWallet(cadenceScript.scriptId) {
             arg { array { swapPaths.map { string(it) } } }
 
             if (isExactFrom) {

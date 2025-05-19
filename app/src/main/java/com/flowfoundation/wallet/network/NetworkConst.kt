@@ -5,8 +5,7 @@ import com.flowfoundation.wallet.network.interceptor.GzipResponseInterceptor
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
-import com.instabug.library.apm_okhttp_event_listener.InstabugApmOkHttpEventListener
-import com.instabug.library.apmokhttplogger.InstabugAPMOkhttpInterceptor
+import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -16,6 +15,7 @@ import java.util.concurrent.TimeUnit
 
 
 val API_HOST = if (isDev()) "https://dev.lilico.app" else "https://api.lilico.app"
+val BASE_HOST = if (isDev()) "https://web-dev.api.wallet.flow.com" else "https://web.api.wallet.flow.com"
 
 fun retrofit(
     disableConverter: Boolean = false,
@@ -23,7 +23,7 @@ fun retrofit(
 ): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(network = network))
-        addInterceptor(InstabugAPMOkhttpInterceptor())
+        addInterceptor(InstabugOkhttpInterceptor())
 
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
@@ -33,7 +33,6 @@ fun retrofit(
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
-        eventListener(InstabugApmOkHttpEventListener())
     }.build()
 
     val builder = Retrofit.Builder()
@@ -46,14 +45,13 @@ fun retrofit(
 }
 
 fun retrofitApi(): Retrofit {
-    return retrofitWithHost(if (isDev()) "https://test.lilico.app" else "https://lilico.app", ignoreAuthorization = false)
+    return retrofitWithHost(BASE_HOST, ignoreAuthorization = false)
 }
 
 fun cadenceScriptApi(): Retrofit {
-    val host = if (isDev()) "https://test.lilico.app" else "https://lilico.app"
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(false))
-        addInterceptor(InstabugAPMOkhttpInterceptor())
+        addInterceptor(InstabugOkhttpInterceptor())
         addInterceptor(GzipRequestInterceptor())
         addInterceptor(GzipResponseInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
@@ -64,18 +62,17 @@ fun cadenceScriptApi(): Retrofit {
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
-        eventListener(InstabugApmOkHttpEventListener())
     }.build()
 
     val builder = Retrofit.Builder()
     builder.addConverterFactory(GsonConverterFactory.create())
-    return builder.baseUrl(host).client(client).build()
+    return builder.baseUrl(BASE_HOST).client(client).build()
 }
 
 fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuthorization: Boolean = true): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(ignoreAuthorization))
-        addInterceptor(InstabugAPMOkhttpInterceptor())
+        addInterceptor(InstabugOkhttpInterceptor())
         callTimeout(20, TimeUnit.SECONDS)
         connectTimeout(20, TimeUnit.SECONDS)
         readTimeout(20, TimeUnit.SECONDS)
@@ -84,7 +81,6 @@ fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuth
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
-        eventListener(InstabugApmOkHttpEventListener())
     }.build()
 
     val builder = Retrofit.Builder()

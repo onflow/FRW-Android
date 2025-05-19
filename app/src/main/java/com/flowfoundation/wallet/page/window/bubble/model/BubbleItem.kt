@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.window.bubble.model
 
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_ADD_TOKEN
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_ENABLE_NFT
@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_TRANSFER_NFT
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.tools.BrowserTab
-import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.utils.extensions.res2String
 
@@ -38,7 +37,7 @@ fun BubbleItem.title(): String {
 private fun TransactionState.icon(): Any {
     return when (type) {
         TYPE_NFT -> nftData().nft.getNFTCover() ?: ""
-        TYPE_TRANSFER_COIN -> FlowCoinListManager.getCoinById(coinData().coinId)?.icon().orEmpty()
+        TYPE_TRANSFER_COIN -> FungibleTokenListManager.getTokenById(coinData().coinId)?.tokenIcon().orEmpty()
         TYPE_ADD_TOKEN -> tokenData()?.icon().orEmpty()
         TYPE_ENABLE_NFT -> nftCollectionData()?.logo().orEmpty()
         TYPE_TRANSFER_NFT -> nftSendData().nft.getNFTCover() ?: ""
@@ -49,12 +48,4 @@ private fun TransactionState.icon(): Any {
 
 private fun TransactionState.title(): String {
     return R.string.pending_transaction.res2String()
-//    return when (type) {
-//        TYPE_NFT -> nftData().nft.cover().orEmpty()
-//        TYPE_TRANSFER_COIN -> FlowCoinListManager.getCoin(coinData().coinSymbol)?.icon.orEmpty()
-//        TYPE_ADD_TOKEN -> tokenData()?.icon.orEmpty()
-//        TYPE_ENABLE_NFT -> nftCollectionData()?.logo.orEmpty()
-//        TYPE_TRANSFER_NFT -> nftSendData().nft.cover().orEmpty()
-//        else -> ""
-//    }
 }

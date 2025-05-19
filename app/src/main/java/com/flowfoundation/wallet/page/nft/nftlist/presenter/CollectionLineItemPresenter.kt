@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.nft.nftlist.presenter
 
 import android.view.View
-import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -30,7 +29,7 @@ class CollectionLineItemPresenter(
             Glide.with(coverView).load(config.logo()).transform(CenterCrop(), RoundedCorners(corner)).into(coverView)
         }
         bindAccessible(model)
-        view.setOnClickListener { CollectionActivity.launch(view.context, model.collection.contractName()) }
+        view.setOnClickListener { CollectionActivity.launch(view.context, model.collection.id, model.collection.contractName()) }
     }
 
     private fun bindAccessible(model: CollectionItemModel) {

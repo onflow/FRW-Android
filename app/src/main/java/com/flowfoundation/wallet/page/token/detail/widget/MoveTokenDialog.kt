@@ -16,24 +16,26 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveTokenBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
-import com.flowfoundation.wallet.manager.account.BalanceManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
-import com.flowfoundation.wallet.page.token.detail.model.MoveToken
-import com.flowfoundation.wallet.page.token.detail.provider.EVMAccountTokenProvider
-import com.flowfoundation.wallet.page.token.detail.provider.FlowAccountTokenProvider
-import com.flowfoundation.wallet.page.token.detail.provider.MoveTokenProvider
+import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
+import com.flowfoundation.wallet.page.token.list.CadenceTokenListProvider
+import com.flowfoundation.wallet.page.token.list.EVMTokenListProvider
+import com.flowfoundation.wallet.page.token.list.TokenListProvider
 import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.extensions.hideKeyboard
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.isVisible
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setDecimalDigitsFilter
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.format
+import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
@@ -45,15 +47,20 @@ import kotlin.coroutines.suspendCoroutine
 
 
 class MoveTokenDialog : BottomSheetDialogFragment() {
-    private var contractId: String = FlowCoinListManager.getFlowCoinContractId()
+    private var contractId: String = FungibleTokenListManager.getFlowTokenContractId()
     private lateinit var binding: DialogMoveTokenBinding
     private var fromBalance = BigDecimal.ZERO
     private var result: Continuation<Boolean>? = null
     private var isFlowCoin = false
     private var moveFromAddress: String = WalletManager.selectedWalletAddress()
-    private var moveToAddress: String = EVMWalletManager.getEVMAddress().orEmpty()
-    private var currentTokenProvider: MoveTokenProvider? = null
-    private var currentToken: MoveToken? = null
+    private var moveToAddress: String = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
+        WalletManager.wallet()?.walletAddress().orEmpty()
+    } else {
+        EVMWalletManager.getEVMAddress().orEmpty()
+    }
+    private var currentTokenProvider: TokenListProvider? = null
+    private var currentToken: FungibleToken? = null
+    private var availableTokens: List<FungibleToken> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,16 +71,42 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         return binding.rootView
     }
 
-    private fun getProvider(moveFromAddress: String): MoveTokenProvider {
+    private fun getProvider(moveFromAddress: String): TokenListProvider {
         val isEVMAddress = EVMWalletManager.isEVMWalletAddress(moveFromAddress)
-        return when {
-            isEVMAddress && currentTokenProvider is EVMAccountTokenProvider -> currentTokenProvider!!
-            isEVMAddress.not() && currentTokenProvider is FlowAccountTokenProvider -> currentTokenProvider!!
-            else -> if (isEVMAddress) {
-                EVMAccountTokenProvider()
+
+        // Always create a new provider if the address type doesn't match the current provider
+        val existingProvider = currentTokenProvider
+
+        if (existingProvider != null) {
+            val providerCurrentAddress = existingProvider.getWalletAddress()
+
+            if (providerCurrentAddress == moveFromAddress) {
+                return if (isEVMAddress) {
+                    if (existingProvider is EVMTokenListProvider) {
+                        existingProvider
+                    } else {
+                        EVMTokenListProvider(moveFromAddress)
+                    }
+                } else {
+                    if (existingProvider is CadenceTokenListProvider) {
+                        existingProvider
+                    } else {
+                        CadenceTokenListProvider(moveFromAddress)
+                    }
+                }
             } else {
-                FlowAccountTokenProvider()
-            }.also { currentTokenProvider = it  }
+                return if (isEVMAddress) {
+                    EVMTokenListProvider(moveFromAddress)
+                } else {
+                    CadenceTokenListProvider(moveFromAddress)
+                }
+            }
+        } else {
+            return if (isEVMAddress) {
+                EVMTokenListProvider(moveFromAddress)
+            } else {
+                CadenceTokenListProvider(moveFromAddress)
+            }
         }
     }
 
@@ -95,12 +128,12 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     }
 
     private fun getEligibleAccounts(): List<String> {
-        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
-        val childAccounts = WalletManager.childAccountList(walletAddress)
+        val flowAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        val childAccounts = WalletManager.childAccountList(flowAddress)
             ?.get()
             ?.map { it.address } ?: emptyList()
         val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
-        return listOf(walletAddress) + childAccounts + listOf(evmAddress)
+        return listOf(flowAddress) + childAccounts + listOf(evmAddress)
     }
 
     private fun verifyAmount(): Boolean {
@@ -108,34 +141,46 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         return number != null && number > 0
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        moveFromAddress = WalletManager.selectedWalletAddress()
-        moveToAddress = if (WalletManager.isEVMAccountSelected()) {
+        super.onViewCreated(view, savedInstanceState)
+        setupViews()
+        loadTokens()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setupViews() {
+        // Initialize addresses based on whether EVM is selected
+        moveToAddress = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
             WalletManager.wallet()?.walletAddress().orEmpty()
         } else {
             EVMWalletManager.getEVMAddress().orEmpty()
         }
-        with(binding.etAmount) {
-            setDecimalDigitsFilter(contractId.decimal())
-            doOnTextChanged { _, _, _, _ ->
+
+        with(binding) {
+            etAmount.setDecimalDigitsFilter(contractId.decimal())
+            etAmount.doOnTextChanged { _, _, _, _ ->
                 checkAmount()
             }
-            setOnEditorActionListener { _, actionId, _ ->
+            etAmount.setOnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_NEXT) {
-                    hideKeyboard()
                     if (verifyAmount() && !binding.llErrorLayout.isVisible()) moveToken()
                 }
                 return@setOnEditorActionListener false
             }
-        }
-        with(binding) {
-            tvMoveFee.text = "0.001 FLOW"
+
+            coinWrapper.setOnClickListener {
+                showTokenSelection()
+            }
+
+            tvMoveFee.text = "0.0001 FLOW"
             tvMoveFeeTips.text = R.string.move_fee_tips.res2String()
             ivArrow.setOnClickListener {
                 val temp = moveFromAddress
                 moveFromAddress = moveToAddress
                 moveToAddress = temp
+                // Clear current token selection and refresh token list for new from address
+                currentToken = null
+                loadTokens()
                 initView()
             }
             tvMax.setOnClickListener {
@@ -161,10 +206,18 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     newFromAddress?.let { selected ->
                         binding.layoutFromAccount.setAccountInfo(selected)
                         moveFromAddress = selected
+                        // Update to address based on new from address
+                        moveToAddress = if (EVMWalletManager.isEVMWalletAddress(selected)) {
+                            WalletManager.wallet()?.walletAddress().orEmpty()
+                        } else {
+                            EVMWalletManager.getEVMAddress().orEmpty()
+                        }
+                        binding.layoutToAccount.setAccountInfo(moveToAddress)
                         tvBalance.text = ""
                         etAmount.setText("")
                         btnMove.isEnabled = false
-                        updateTokenInfo()
+                        // Refresh token list with new from address
+                        loadTokens()
                         updateMoveFeeVisibility()
                     }
                 }
@@ -184,7 +237,6 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         updateMoveFeeVisibility()
                     }
                 }
-
             }
             // Conditionally render arrows in dropdown
             val eligibleFrom = getEligibleAccounts().filter { it != layoutToAccount.getAccountAddress() }
@@ -199,6 +251,97 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
     }
 
+    private fun loadTokens() {
+        ioScope {
+            val provider = getProvider(moveFromAddress)
+            currentTokenProvider = provider
+            
+            // Get fresh token list with updated balances
+            availableTokens = provider.getTokenList(moveFromAddress)
+
+            if (availableTokens.isNotEmpty()) {
+                // If we have a current token, try to find it in the new list
+                val token = if (currentToken != null) {
+                    availableTokens.find { it.contractId() == currentToken!!.contractId() }
+                } else {
+                    // If no current token, use the contract ID or first available token with non-zero balance
+                    availableTokens.firstOrNull { it.contractId() == contractId && it.tokenBalance() > BigDecimal.ZERO }
+                        ?: availableTokens.firstOrNull { it.tokenBalance() > BigDecimal.ZERO }
+                        ?: availableTokens.first()
+                }
+                
+                uiScope {
+                    if (token != null) {
+                        updateSelectedToken(token)
+                    }
+                }
+            } else {
+                // If no tokens available, clear the current selection
+                uiScope {
+                    currentToken = null
+                    with(binding) {
+                        tvBalance.text = ""
+                        etAmount.setText("")
+                        btnMove.isEnabled = false
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showTokenSelection() {
+        ioScope {
+            val dialog = SelectTokenDialog()
+
+            val provider = getProvider(moveFromAddress)
+            currentTokenProvider = provider
+            
+            // Get fresh token list with updated balances
+            availableTokens = provider.getFungibleTokenListSnapshot()
+
+            // Convert MoveTokens to FlowCoins for the dialog, filtering out zero balances
+            val coinsWithBalance = availableTokens
+                .filter { it.tokenBalance() > BigDecimal.ZERO }
+                .map { it }
+
+            val selectedToken = dialog.show(
+                selectedCoin = currentToken?.contractId(),
+                disableCoin = null,
+                fragmentManager = childFragmentManager,
+                moveFromAddress = moveFromAddress,
+                availableCoins = coinsWithBalance,
+                initialTokens = availableTokens
+            )
+            if (selectedToken != null) {
+                uiScope {
+                    // Find the selected token in the updated list
+                    val moveToken = availableTokens.find { it.contractId() == selectedToken.contractId() }
+                    moveToken?.let {
+                        updateSelectedToken(it)
+                    }
+                }
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateSelectedToken(token: FungibleToken) {
+        currentToken = token
+        contractId = token.contractId()
+        isFlowCoin = token.isFlowToken()
+        fromBalance = token.tokenBalance()
+
+        with(binding) {
+            etAmount.setDecimalDigitsFilter(contractId.decimal())
+            Glide.with(ivTokenIcon).load(token.tokenIcon()).into(ivTokenIcon)
+            tvBalance.text = "${token.tokenBalance().toPlainString()} ${token.symbol.uppercase()}"
+            etAmount.setText("")
+            btnMove.isEnabled = false
+            updateMoveFeeVisibility()
+            checkAmount()
+        }
+    }
+
     private fun moveToken() {
         if (binding.btnMove.isProgressVisible()) {
             return
@@ -206,7 +349,11 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         binding.btnMove.setProgressVisible(true)
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
-            val coin = currentToken?.tokenInfo ?: return@ioScope
+            val token = currentToken
+            if (token == null) {
+                ErrorReporter.reportWithMixpanel(MoveError.LOAD_TOKEN_INFO_FAILED, getCurrentCodeLocation())
+                return@ioScope
+            }
 
             val from = moveFromAddress
             val to = moveToAddress
@@ -214,17 +361,17 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             MixpanelManager.transferFT(
                 from,
                 to,
-                coin.symbol,
+                token.symbol,
                 amount.toString(),
-                coin.getFTIdentifier()
+                token.tokenIdentifier()
             )
 
-            if (coin.isFlowCoin()) {
-                EVMWalletManager.moveFlowToken(coin, amount, from, to) { isSuccess ->
+            if (token.isFlowToken()) {
+                EVMWalletManager.moveFlowToken(token, amount, from, to) { isSuccess ->
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            BalanceManager.getBalanceByCoin(FlowCoinListManager.getFlowCoinContractId())
+                            FungibleTokenListManager.updateTokenList()
                             result?.resume(true)
                             dismiss()
                         } else {
@@ -232,16 +379,12 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         }
                     }
                 }
-            } else if (coin.isCOABridgeCoin() || coin.canBridgeToCOA()) {
-                EVMWalletManager.moveBridgeToken(coin, amount, from, to) { isSuccess ->
+            } else if (token.canBridgeToEVM() || token.canBridgeToCadence()) {
+                EVMWalletManager.moveBridgeToken(token, amount, from, to) { isSuccess ->
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            if (WalletManager.isEVMAccountSelected()) {
-                                BalanceManager.refresh()
-                            } else {
-                                BalanceManager.getBalanceByCoin(contractId)
-                            }
+                            FungibleTokenListManager.updateTokenList()
                             result?.resume(true)
                             dismiss()
                         } else {
@@ -250,15 +393,11 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     }
                 }
             } else {
-                EVMWalletManager.transferToken(coin, to, amount) { isSuccess ->
+                EVMWalletManager.transferToken(token, to, amount) { isSuccess ->
                     uiScope {
                         binding.btnMove.setProgressVisible(false)
                         if (isSuccess) {
-                            if (WalletManager.isEVMAccountSelected()) {
-                                BalanceManager.refresh()
-                            } else {
-                                BalanceManager.getBalanceByCoin(contractId)
-                            }
+                            FungibleTokenListManager.updateTokenList()
                             result?.resume(true)
                             dismiss()
                         } else {
@@ -296,15 +435,15 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun updateTokenInfo() {
         ioScope {
             currentToken = if (currentToken != null) {
-                getProvider(moveFromAddress).getMoveToken(currentToken!!.getTokenId(moveFromAddress), moveFromAddress)
+                getProvider(moveFromAddress).getTokenById(currentToken!!.contractId())
             } else {
-                getProvider(moveFromAddress).getMoveToken(contractId)
+                getProvider(moveFromAddress).getTokenById(contractId)
             }
-            isFlowCoin = currentToken?.tokenInfo?.isFlowCoin()?: false
-            fromBalance = currentToken?.tokenBalance?: BigDecimal.ZERO
+            isFlowCoin = currentToken?.isFlowToken() ?: false
+            fromBalance = currentToken?.tokenBalance() ?: BigDecimal.ZERO
             uiScope {
-                currentToken?.tokenInfo?.let {
-                    Glide.with(binding.ivTokenIcon).load(it.icon()).into(binding.ivTokenIcon)
+                currentToken?.let {
+                    Glide.with(binding.ivTokenIcon).load(it.tokenIcon()).into(binding.ivTokenIcon)
                 }
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
             }
@@ -312,8 +451,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     }
 
     private fun String.decimal(): Int {
-        return FlowCoinListManager.getCoinById(this)?.run {
-            kotlin.math.min(decimal, 8)
+        return FungibleTokenListManager.getTokenById(this)?.run {
+            kotlin.math.min(tokenDecimal(), 8)
         } ?: 8
     }
 

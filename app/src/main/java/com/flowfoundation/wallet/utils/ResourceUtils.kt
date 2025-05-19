@@ -18,13 +18,14 @@ fun drawableResToBitmap(context: Context, @DrawableRes res: Int, @ColorInt tint:
     return sourceBitmap
 }
 
-fun Drawable.toBitmap(): Bitmap? {
-    if (this is BitmapDrawable) {
-        return this.bitmap
-    }
-    val bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888)
+fun Drawable.toBitmap(): Bitmap {
+    val width = if (intrinsicWidth > 0) intrinsicWidth else 100 // Default to 100px
+    val height = if (intrinsicHeight > 0) intrinsicHeight else 100 // Default to 100px
+
+    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
     setBounds(0, 0, canvas.width, canvas.height)
     draw(canvas)
+
     return bitmap
 }

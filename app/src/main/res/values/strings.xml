@@ -185,6 +185,8 @@
     <string name="add_token">Add Token</string>
     <string name="add_token_failed">Add token failed</string>
     <string name="search_token">Search Token</string>
+    <string name="search_tokens">Search tokens</string>
+    <string name="token_list">Token List</string>
     <string name="confirmation">Confirmation</string>
     <string name="app_initializing">Initializing</string>
     <string name="developer_mode">Developer Mode</string>
@@ -224,6 +226,7 @@
     <string name="made_by_outblock">Made by <a href="https://flow.com/">Flow</a></string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="connecting">Connecting...</string>
     <string name="transaction_to">Transaction Request from</string>
     <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
@@ -239,7 +242,7 @@
     <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
         .</string>
     <string name="file_picker_title">Select File</string>
-    <string name="transaction_fee">Transaction fee</string>
+    <string name="transaction_fee">Transaction Fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
     <string name="hold_to_sign">Hold to sign</string>
     <string name="enable">Enable</string>
@@ -613,7 +616,7 @@
     <string name="add_public_key_failure">Add Public Key Failure</string>
     <string name="send_response_failure">Send Response Failure</string>
     <string name="collection_list">Collection List</string>
-    <string name="balance_value">Balance %1$s</string>
+    <string name="balance_value">Balance: %1$s</string>
     <string name="backup_not_found">Backup Not Found</string>
     <string name="backup_not_found_desc">No backup file is associated with your account. Please verify and try again.</string>
     <string name="backup_decryption_failed">Backup Decryption Failed</string>
@@ -708,6 +711,7 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="telegram_not_installed">Telegram app is not installed</string>
     <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="get_started">Let\'s get started</string>
     <string name="on_flow">#onFlow</string>
@@ -721,7 +725,7 @@
     <string name="increment_finance" translatable="false">Increment Finance</string>
     <string name="increment_url" translatable="false">increment.fi</string>
     <string name="results">Results</string>
-    <string name="search_nft_name">Search NFT Name</string>
+    <string name="search_nft_name">Search NFT</string>
     <string name="loading_nfts">Loading NFTs...</string>
     <string name="nft_list_loading_error">Error, please check your internet or refresh.</string>
     <string name="refresh">Refresh</string>
@@ -729,4 +733,39 @@
     <string name="json" translatable="false">JSON</string>
     <string name="required_asterisk" translatable="false">" *"</string>
     <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="contact_address">Contact Address</string>
+    <string name="amount">Amount</string>
+    <string name="contact">Contact</string>
+    <string name="function">Function</string>
+    <string name="parameters">Parameters</string>
+    <string name="call_data">Call Data</string>
+    <string name="blocked_info">"<![CDATA[This website is blocked as part of a community-maintained list of
+        malicious websites, if you believe the website has been blocked in error, <u>please file an issue.</u>]]>"</string>
+    <string name="blocked_url">%1$s is blocked!</string>
+    <string name="ignore_warning">Ignore warning, show anyway</string>
+    <string name="connect_warning">Ignore warning, connect anyway</string>
+    <string name="blocked_tip">This app has been flagged as dangerous.</string>
+    <string name="switch_to">Switch to %1$s</string>
+    <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
+    <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
+    <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
+    <string name="manage_tokens">Manage Tokens</string>
+    <string name="filters">Filters</string>
+    <string name="hide_dust_token">Hide dust tokens</string>
+    <string name="display_verified_token">Only show verified tokens</string>
+    <string name="tokens">Tokens</string>
+    <string name="verified">Verified</string>
+    <string name="contract_address">Contract address</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="wallet_connect_no_proposal">Unable to establish connection. Please try again.</string>
+    <string name="wallet_connect_pairing_error">Connection failed. Please try again.</string>
+    <string name="wallet_connect_generic_error">An error occurred while connecting. Please try again.</string>
+    <string name="wallet_connect_proposal_expired">Connection request has expired. Please try again.</string>
+    <string name="wallet_connect_request_expired">Request has expired. Please try again.</string>
+    <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
+    <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
+    <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
+    <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
 </resources>

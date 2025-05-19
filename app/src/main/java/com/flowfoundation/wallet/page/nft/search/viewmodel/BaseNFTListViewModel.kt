@@ -7,6 +7,8 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.nft.search.model.NFTListType
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import kotlinx.coroutines.Deferred
@@ -143,6 +145,7 @@ abstract class BaseNFTListViewModel<T> : ViewModel() {
             } catch (e: Exception) {
                 logd(TAG, "Load all NFTs failed: ${e.message}")
                 e.printStackTrace()
+                ErrorReporter.reportWithMixpanel(MoveError.LOAD_NFT_LIST_FAILED, e)
                 nftListLiveData.postValue(Pair(NFTListType.ALL, null))
             } finally {
                 isLoadingAll = false

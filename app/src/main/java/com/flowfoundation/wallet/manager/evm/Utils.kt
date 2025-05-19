@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
@@ -9,6 +8,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNonce
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMV2Transaction
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
@@ -146,7 +146,7 @@ fun sendEthereumTransaction(transaction: EvmTransaction, callback: (txHash: Stri
         val rlpList = RlpList(listOf<RlpType>(
             RlpString.create(nonce.toBigInteger()),
             RlpString.create(BigInteger.ZERO),
-            RlpString.create(EVM_GAS_LIMIT.toBigInteger()),
+            RlpString.create(gasValue.toBigInteger()),
             RlpString.create(Numeric.hexStringToByteArray(toAddress.toAddress())),
             RlpString.create(amountValue),
             RlpString.create(data),
@@ -184,7 +184,9 @@ private fun jsonArrayToByteArray(jsonArray: JsonArray): ByteArray {
 
 fun refreshBalance(value: Float) {
     if (WalletManager.isEVMAccountSelected() && value > 0) {
-        BalanceManager.refresh()
+        ioScope {
+            FungibleTokenListManager.updateTokenList()
+        }
     }
 }
 

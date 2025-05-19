@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 
-
 enum class Currency(
     val title: String,
     val symbol: String,
@@ -27,7 +26,7 @@ enum class Currency(
 }
 
 fun findCurrencyFromFlag(flag: String): Currency {
-    return Currency.values().firstOrNull { it.flag == flag } ?: Currency.USD
+    return Currency.entries.firstOrNull { it.flag == flag } ?: Currency.USD
 }
 
 fun selectedCurrency(): Currency {

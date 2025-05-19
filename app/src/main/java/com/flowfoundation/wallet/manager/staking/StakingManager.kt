@@ -10,6 +10,8 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.error.StakingError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -67,8 +69,6 @@ object StakingManager {
     fun hasBeenSetup() = isSetup
 
     fun apy() = apy
-
-    fun apyYear() = apyYear
 
     fun isStaked(): Boolean {
         return stakingCount() > 0.0f
@@ -148,6 +148,7 @@ object StakingManager {
             parseStakingInfoResult(text)
         }.onFailure {
             println(it)
+            ErrorReporter.reportWithMixpanel(StakingError.STAKING_QUERY_INFO_FAILED, it)
             loge(TAG, "queryStakingInfo failure:$it")
         }.getOrNull()
     }
@@ -196,7 +197,10 @@ suspend fun createStakingDelegatorId(provider: StakingProvider, amount: BigDecim
                     }
                 }
             }
-        }.getOrElse { continuation.resume(false) }
+        }.getOrElse {
+            ErrorReporter.reportWithMixpanel(StakingError.STAKING_CREATE_DELEGATOR_ID_FAILED, it)
+            continuation.resume(false)
+        }
     }
 
 private suspend fun setupStaking(callback: () -> Unit) {
@@ -214,7 +218,10 @@ private suspend fun setupStaking(callback: () -> Unit) {
                 callback.invoke()
             }
         }
-    }.getOrElse { callback.invoke() }
+    }.getOrElse {
+        ErrorReporter.reportWithMixpanel(StakingError.STAKING_SETUP_FAILED, it)
+        callback.invoke()
+    }
 }
 
 private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
@@ -228,7 +235,10 @@ private suspend fun getDelegatorInfo() = suspendCoroutine { continuation ->
             logv(TAG, "getDelegatorInfo response:${response}")
             continuation.resume(parseStakingDelegatorInfo(response))
         }
-    }.getOrElse { continuation.resume(mapOf<String, Int>()) }
+    }.getOrElse {
+        ErrorReporter.reportWithMixpanel(StakingError.STAKING_GET_DELEGATOR_INFO_FAILED, it)
+        continuation.resume(mapOf<String, Int>())
+    }
 }
 
 @WorkerThread
@@ -238,7 +248,10 @@ private suspend fun checkHasBeenSetup(): Boolean {
         val response =
             CadenceScript.CADENCE_CHECK_IS_STAKING_SETUP.executeCadence { arg { Cadence.address(address) } }
         response?.decode<Boolean>() ?: false
-    }.getOrElse { false }
+    }.getOrElse {
+        ErrorReporter.reportWithMixpanel(StakingError.STAKING_CHECK_SETUP_FAILED, it)
+        false
+    }
 }
 
 interface StakingInfoUpdateListener {

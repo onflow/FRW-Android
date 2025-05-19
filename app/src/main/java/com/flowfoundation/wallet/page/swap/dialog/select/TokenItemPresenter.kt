@@ -1,43 +1,43 @@
 package com.flowfoundation.wallet.page.swap.dialog.select
 
-import android.content.res.ColorStateList
+import android.annotation.SuppressLint
 import android.view.View
 import com.bumptech.glide.Glide
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.ItemTokenListBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.formatLargeBalanceNumber
+import com.flowfoundation.wallet.utils.formatPrice
 
 class TokenItemPresenter(
     private val view: View,
     private val selectedCoin: String? = null,
-    private var disableCoin: String? = null,
-    private val callback: (FlowCoin) -> Unit
-) : BaseViewHolder(view), BasePresenter<FlowCoin> {
+    private val disableCoin: String? = null,
+    private val callback: (FungibleToken) -> Unit
+) : BaseViewHolder(view), BasePresenter<FungibleToken> {
 
     private val binding by lazy { ItemTokenListBinding.bind(view) }
 
-    override fun bind(model: FlowCoin) {
+    @SuppressLint("SetTextI18n")
+    override fun bind(model: FungibleToken) {
         with(binding) {
             nameView.text = model.name
             symbolView.text = model.symbol.uppercase()
-            Glide.with(iconView).load(model.icon()).into(iconView)
+            Glide.with(iconView).load(model.tokenIcon()).into(iconView)
             stateButton.setVisible(false)
-            selectedView.setVisible(model.isSameCoin(selectedCoin.orEmpty()))
+            view.isSelected = model.isSameToken(selectedCoin.orEmpty())
+            
+            // Display balance
+            tokenAmount.text = "${model.tokenBalance().formatLargeBalanceNumber(isAbbreviation = true)} ${model.symbol.uppercase()}"
+
+            tokenPrice.text = model.tokenBalancePrice().formatPrice(includeSymbol = true, isAbbreviation = true)
+            tokenPrice.setVisible(true)
         }
 
-        val backgroundColor = if (model.isSameCoin(disableCoin.orEmpty())) {
-            R.color.transparent.res2color()
-        } else {
-            R.color.background.res2color()
-        }
-
-        view.backgroundTintList = ColorStateList.valueOf(backgroundColor)
         view.setOnClickListener {
-            if (model.isSameCoin(disableCoin.orEmpty()).not()) {
+            if (model.isSameToken(disableCoin.orEmpty()).not()) {
                 callback.invoke(model)
             }
         }

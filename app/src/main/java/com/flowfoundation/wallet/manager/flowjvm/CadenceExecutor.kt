@@ -1,23 +1,32 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.formatCadence
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flow.CadenceScriptBuilder
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import com.flowfoundation.wallet.manager.flowjvm.transaction.sendBridgeTransaction
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
+import com.flowfoundation.wallet.manager.token.formatCadence
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.network.model.TokenInfo
+import com.flowfoundation.wallet.network.model.formatCadence
 import com.flowfoundation.wallet.page.address.FlowDomainServer
+import com.flowfoundation.wallet.utils.error.CadenceError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
+import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
 import com.nftco.flow.sdk.Flow
 import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
 
 private const val TAG = "CadenceExecutor"
@@ -45,74 +54,32 @@ suspend fun cadenceQueryAddressByDomainFind(domain: String): String? {
     return result?.decode<String>()
 }
 
-suspend fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
-    logd(TAG, "cadenceCheckTokenEnabled() address:${coin.address}")
-    val walletAddress = WalletManager.selectedWalletAddress()
-    val script = CadenceScript.CADENCE_CHECK_TOKEN_IS_ENABLED
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceCheckTokenEnabled response:${result?.encode()}")
-    return result?.decode<Boolean>()
-}
-
-suspend fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
+suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
     val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceCheckTokenListEnabled()")
-    val result = CadenceScript.CADENCE_CHECK_TOKEN_LIST_ENABLED.executeCadence {
+    logd(TAG, "cadenceGetTokenBalanceStorage()")
+    val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
         arg { Cadence.address(walletAddress) }
     }
-    logd(TAG, "cadenceCheckTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
-}
-
-suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled()")
-    val result = CadenceScript.CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
-}
-
-suspend fun cadenceQueryTokenListBalance(): Map<String, BigDecimal>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceQueryTokenListBalance()")
-    val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceQueryTokenListBalance response:${result?.encode()}")
+    logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
-suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String, BigDecimal>? {
-    logd(TAG, "cadenceQueryTokenListBalanceWithAddress()")
-    val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(address) }
+suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal>? {
+    logd(TAG, "cadenceGetAllFlowBalance()")
+    val result = CadenceScript.CADENCE_GET_ALL_FLOW_BALANCE.executeCadence {
+        arg { Cadence.array(list.map { string(it) }) }
     }
-    logd(TAG, "cadenceQueryTokenListBalanceWithAddress response:${result?.encode()}")
+    logd(TAG, "cadenceGetAllFlowBalance response:${result?.encode()}")
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
-suspend fun cadenceQueryTokenBalance(coin: FlowCoin): BigDecimal? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceQueryTokenBalance()")
-    val script = CadenceScript.CADENCE_GET_BALANCE
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceQueryTokenBalance response:${result?.encode()}")
-    return result?.parseBigDecimal()
-}
-
-suspend fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): BigDecimal? {
-    if (coin == null || address == null) {
+suspend fun cadenceQueryTokenBalanceWithAddress(token: FungibleToken?, address: String?): BigDecimal? {
+    if (token == null || address == null) {
         return null
     }
     logd(TAG, "cadenceQueryTokenBalanceWithAddress()")
     val script = CadenceScript.CADENCE_GET_BALANCE
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
+    val result = token.formatCadence(script).executeCadence(script.scriptId) {
         arg { Cadence.address(address) }
     }
     logd(
@@ -122,16 +89,18 @@ suspend fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String
     return result?.parseBigDecimal()
 }
 
-suspend fun cadenceEnableToken(coin: FlowCoin): String? {
+suspend fun cadenceEnableToken(coin: TokenInfo): String? {
     logd(TAG, "cadenceEnableToken()")
-    val transactionId = coin.formatCadence(CadenceScript.CADENCE_ADD_TOKEN).transactionByMainWallet {}
+    val script = CadenceScript.CADENCE_ADD_TOKEN
+    val transactionId = coin.formatCadence(script).transactionByMainWallet(script.scriptId) {}
     logd(TAG, "cadenceEnableToken() transactionId:$transactionId")
     return transactionId
 }
 
-suspend fun cadenceTransferToken(coin: FlowCoin, toAddress: String, amount: Double): String? {
+suspend fun cadenceTransferToken(token: FungibleToken, toAddress: String, amount: Double): String? {
     logd(TAG, "cadenceTransferToken()")
-    val transactionId = coin.formatCadence(CadenceScript.CADENCE_TRANSFER_TOKEN).transactionByMainWallet {
+    val script = CadenceScript.CADENCE_TRANSFER_TOKEN
+    val transactionId = token.formatCadence(script).transactionByMainWallet(script.scriptId) {
         arg { ufix64Safe(BigDecimal(amount)) }
         arg { address(toAddress.toAddress()) }
     }
@@ -141,7 +110,8 @@ suspend fun cadenceTransferToken(coin: FlowCoin, toAddress: String, amount: Doub
 
 suspend fun cadenceNftEnabled(nft: NftCollection): String? {
     logd(TAG, "cadenceNftEnabled() nft:${nft.name}")
-    val transactionId = nft.formatCadence(CadenceScript.CADENCE_NFT_ENABLE).transactionByMainWallet {}
+    val script = CadenceScript.CADENCE_NFT_ENABLE
+    val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {}
     logd(TAG, "cadenceEnableToken() transactionId:$transactionId")
     return transactionId
 }
@@ -156,19 +126,27 @@ suspend fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
     return result?.decode<Map<String, Boolean>>()
 }
 
+suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
+    logd(TAG, "cadenceGetNFTBalanceStorage()")
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val result = CadenceScript.CADENCE_GET_NFT_BALANCE_STORAGE.executeCadence {
+        arg { Cadence.address(walletAddress) }
+    }
+    logd(TAG, "cadenceGetNFTBalanceStorage response:${result?.encode()}")
+    return result?.decode<Map<String, Int>>()
+}
+
 suspend fun cadenceTransferNft(toAddress: String, nft: Nft): String? {
     logd(TAG, "cadenceTransferNft()")
-    val transactionId =
-        nft.formatCadence(
-            if (nft.isNBA()) {
-                CadenceScript.CADENCE_NBA_NFT_TRANSFER
-            } else {
-                CadenceScript.CADENCE_NFT_TRANSFER
-            }
-        ).transactionByMainWallet {
-            arg { address(toAddress.toAddress()) }
-            arg { uint64(nft.id) }
-        }
+    val script = if (nft.isNBA()) {
+        CadenceScript.CADENCE_NBA_NFT_TRANSFER
+    } else {
+        CadenceScript.CADENCE_NFT_TRANSFER
+    }
+    val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(toAddress.toAddress()) }
+        arg { uint64(nft.id) }
+    }
     logd(TAG, "cadenceTransferNft() transactionId:$transactionId")
     return transactionId
 }
@@ -176,14 +154,12 @@ suspend fun cadenceTransferNft(toAddress: String, nft: Nft): String? {
 suspend fun cadenceSendNFTFromParentToChild(
     childAddress: String, identifier: String, nft: Nft): String? {
     logd(TAG, "cadenceSendNFTFromParentToChild()")
-    val transactionId =
-        nft.formatCadence(
-            CadenceScript.CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { uint64(nft.id) }
-        }
+    val script = CadenceScript.CADENCE_SEND_NFT_FROM_PARENT_TO_CHILD
+    val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { uint64(nft.id) }
+    }
     logd(TAG, "cadenceSendNFTFromParentToChild() transactionId:$transactionId")
     return transactionId
 }
@@ -191,31 +167,13 @@ suspend fun cadenceSendNFTFromParentToChild(
 suspend fun cadenceMoveNFTFromChildToParent(childAddress: String, identifier: String, nft: Nft):
         String? {
     logd(TAG, "cadenceMoveNFTFromChildToParent()")
-    val transactionId =
-        nft.formatCadence(
-            CadenceScript.CADENCE_MOVE_NFT_FROM_CHILD_TO_PARENT
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { uint64(nft.id) }
-        }
+    val script = CadenceScript.CADENCE_MOVE_NFT_FROM_CHILD_TO_PARENT
+    val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { uint64(nft.id) }
+    }
     logd(TAG, "cadenceMoveNFTFromChildToParent() transactionId:$transactionId")
-    return transactionId
-}
-
-suspend fun cadenceMoveFTFromChildToParent(coin: FlowCoin, childAddress: String, path:
-String, amount: Double):
-        String? {
-    logd(TAG, "cadenceMoveFTFromChildToParent()")
-    val transactionId =
-        coin.formatCadence(
-            CadenceScript.CADENCE_MOVE_FT_FROM_CHILD_TO_PARENT
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(path) }
-            arg { ufix64Safe(BigDecimal(amount)) }
-        }
-    logd(TAG, "cadenceMoveFTFromChildToParent() transactionId:$transactionId")
     return transactionId
 }
 
@@ -223,14 +181,12 @@ suspend fun cadenceMoveNFTListFromChildToParent(
     childAddress: String, identifier: String, collection: NftCollection, nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceMoveNFTListFromChildToParent()")
-    val transactionId =
-        collection.formatCadence(
-            CadenceScript.CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { array(nftIdList.map { uint64(it) }) }
-        }
+    val script = CadenceScript.CADENCE_MOVE_NFT_LIST_FROM_CHILD_TO_PARENT
+    val transactionId = collection.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { array(nftIdList.map { uint64(it) }) }
+    }
     logd(TAG, "cadenceMoveNFTListFromChildToParent() transactionId:$transactionId")
     return transactionId
 }
@@ -239,14 +195,12 @@ suspend fun cadenceSendNFTListFromParentToChild(
     childAddress: String, identifier: String, collection: NftCollection, nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceSendNFTListFromParentToChild()")
-    val transactionId =
-        collection.formatCadence(
-            CadenceScript.CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { array(nftIdList.map { uint64(it) }) }
-        }
+    val script = CadenceScript.CADENCE_SEND_NFT_LIST_FROM_PARENT_TO_CHILD
+    val transactionId = collection.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { array(nftIdList.map { uint64(it) }) }
+    }
     logd(TAG, "cadenceMoveNFTListFromParentToChild() transactionId:$transactionId")
     return transactionId
 }
@@ -256,15 +210,13 @@ suspend fun cadenceSendNFTListFromChildToChild(
     identifier: String, collection: NftCollection, nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceSendNFTListFromChildToChild()")
-    val transactionId =
-        collection.formatCadence(
-            CadenceScript.CADENCE_SEND_NFT_LIST_FROM_CHILD_TO_CHILD
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { address(toAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { array(nftIdList.map { uint64(it) }) }
-        }
+    val script = CadenceScript.CADENCE_SEND_NFT_LIST_FROM_CHILD_TO_CHILD
+    val transactionId = collection.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { address(toAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { array(nftIdList.map { uint64(it) }) }
+    }
     logd(TAG, "cadenceSendNFTListFromChildToChild() transactionId:$transactionId")
     return transactionId
 }
@@ -274,15 +226,13 @@ suspend fun cadenceSendNFTFromChildToFlow(
     identifier: String, nft: Nft
 ): String? {
     logd(TAG, "cadenceSendNFTFromChildToFlow()")
-    val transactionId =
-        nft.formatCadence(
-            CadenceScript.CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { address(toAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { uint64(nft.id) }
-        }
+    val script = CadenceScript.CADENCE_SEND_NFT_FROM_CHILD_TO_FLOW
+    val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { address(toAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { uint64(nft.id) }
+    }
     logd(TAG, "cadenceSendNFTFromChildToFlow() transactionId:$transactionId")
     return transactionId
 }
@@ -292,49 +242,34 @@ suspend fun cadenceSendNFTFromChildToChild(
     identifier: String, nft: Nft
 ): String? {
     logd(TAG, "cadenceSendNFTFromChildToChild()")
-    val transactionId =
-        nft.formatCadence(
-            CadenceScript.CADENCE_SEND_NFT_FROM_CHILD_TO_CHILD
-        ).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { address(toAddress.toAddress()) }
-            arg { string(identifier) }
-            arg { uint64(nft.id) }
-        }
+    val script = CadenceScript.CADENCE_SEND_NFT_FROM_CHILD_TO_CHILD
+    val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {
+        arg { address(childAddress.toAddress()) }
+        arg { address(toAddress.toAddress()) }
+        arg { string(identifier) }
+        arg { uint64(nft.id) }
+    }
     logd(TAG, "cadenceSendNFTFromChildToChild() transactionId:$transactionId")
-    return transactionId
-}
-
-suspend fun cadenceSendFTFromChildToFlow(
-    coin: FlowCoin, childAddress: String, path: String, amount: Double
-): String? {
-    logd(TAG, "cadenceSendFTFromChildToFlow()")
-    val transactionId =
-        coin.formatCadence(CadenceScript.CADENCE_SEND_FT_FROM_CHILD_TO_FLOW).transactionByMainWallet {
-            arg { address(childAddress.toAddress()) }
-            arg { string(path) }
-            arg { ufix64Safe(BigDecimal(amount)) }
-        }
-    logd(TAG, "cadenceSendFTFromChildToFlow() transactionId:$transactionId")
     return transactionId
 }
 
 suspend fun cadenceClaimInboxToken(
     domain: String,
     key: String,
-    coin: FlowCoin,
+    token: FungibleToken,
     amount: BigDecimal,
     root: String = FlowDomainServer.MEOW.domain,
 ): String? {
     logd(TAG, "cadenceClaimInboxToken()")
-    val txid = coin.formatCadence(CadenceScript.CADENCE_CLAIM_INBOX_TOKEN).transactionByMainWallet {
+    val script = CadenceScript.CADENCE_CLAIM_INBOX_TOKEN
+    val transactionId = token.formatCadence(script).transactionByMainWallet(script.scriptId) {
         arg { string(domain) }
         arg { string(root) }
         arg { string(key) }
         arg { ufix64Safe(amount) }
     }
-    logd(TAG, "cadenceClaimInboxToken() txid:$txid")
-    return txid
+    logd(TAG, "cadenceClaimInboxToken() transactionId:$transactionId")
+    return transactionId
 }
 
 suspend fun cadenceClaimInboxNft(
@@ -345,8 +280,8 @@ suspend fun cadenceClaimInboxNft(
     root: String = FlowDomainServer.MEOW.domain,
 ): String? {
     logd(TAG, "cadenceClaimInboxToken()")
-    val txId = collection.formatCadence(CadenceScript.CADENCE_CLAIM_INBOX_NFT)
-        .transactionByMainWallet {
+    val script = CadenceScript.CADENCE_CLAIM_INBOX_NFT
+    val txId = collection.formatCadence(script).transactionByMainWallet(script.scriptId) {
         arg { string(domain) }
         arg { string(root) }
         arg { string(key) }
@@ -492,9 +427,16 @@ suspend fun cadenceBridgeNFTToEvm(
     nftId: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTToEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_TO_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint64(nftId) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_TO_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTToEvm transactionId:$transactionId")
     return transactionId
@@ -505,9 +447,16 @@ suspend fun cadenceBridgeNFTListToEvm(
     nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceBridgeNFTListToEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_LIST_TO_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { array(nftIdList.map { uint64(it) }) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint64(it) }) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_TO_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint64(it) }) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTListToEvm transactionId:$transactionId")
     return transactionId
@@ -518,9 +467,16 @@ suspend fun cadenceBridgeNFTListFromEvm(
     nftIdList: List<String>
 ): String? {
     logd(TAG, "cadenceBridgeNFTListFromEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_LIST_FROM_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { array(nftIdList.map { uint256(it) }) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_FROM_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint256(it) }) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_LIST_FROM_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { array(nftIdList.map { uint256(it) }) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTListFromEvm transactionId:$transactionId")
     return transactionId
@@ -531,9 +487,16 @@ suspend fun cadenceBridgeNFTFromEvm(
     nftId: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTFromEvm")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint256(nftId) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTFromEvm transactionId:$transactionId")
     return transactionId
@@ -634,10 +597,18 @@ suspend fun cadenceBridgeNFTFromFlowToEVM(
     nftId: String, recipient: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTFromFlowToEVM")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint64(nftId) }
-        arg { string(recipient) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+            arg { string(recipient) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_FLOW_TO_EVM.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint64(nftId) }
+            arg { string(recipient) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTFromFlowToEVM transactionId:$transactionId")
     return transactionId
@@ -648,10 +619,18 @@ suspend fun cadenceBridgeNFTFromEVMToFlow(
     nftId: String, recipient: String
 ): String? {
     logd(TAG, "cadenceBridgeNFTFromEVMToFlow")
-    val transactionId = CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW.transactionByMainWallet {
-        arg { string(nftIdentifier) }
-        arg { uint256(nftId) }
-        arg { address(recipient) }
+    val transactionId = if (AppConfig.coverBridgeFee()) {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW_WITH_PAYER.transactionWithBridgePayer {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+            arg { address(recipient) }
+        }
+    } else {
+        CadenceScript.CADENCE_BRIDGE_NFT_FROM_EVM_TO_FLOW.transactionByMainWallet {
+            arg { string(nftIdentifier) }
+            arg { uint256(nftId) }
+            arg { address(recipient) }
+        }
     }
     logd(TAG, "cadenceBridgeNFTFromEVMToFlow transactionId:$transactionId")
     return transactionId
@@ -730,9 +709,11 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
             block()
         }
     } catch (e: Throwable) {
-        loge(ScriptExecutionException(scriptId, e))
+        val exception = ScriptExecutionException(scriptId, e)
+        loge(exception)
+        ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
         MixpanelManager.scriptError(scriptId, e.cause?.message.orEmpty())
-//        reportCadenceErrorToDebugView()
+        reportCadenceErrorToDebugView(scriptId, e)
         return null
     }
 }
@@ -743,23 +724,48 @@ class ScriptExecutionException(
 ) : Throwable("Error while running script :: \n $script", cause)
 
 suspend fun CadenceScript.transactionByMainWallet(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
-    return this.getScript().transactionByMainWallet(arguments)
+    return this.getScript().transactionByMainWallet(this.scriptId, arguments)
 }
 
-suspend fun String.transactionByMainWallet(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
     logd(TAG, "transactionByMainWallet() walletAddress:$walletAddress")
     val args = CadenceArgumentsBuilder().apply { arguments(this) }
-    return try {
+    val txId = try {
         sendTransaction {
             args.build().forEach { arg(it) }
             walletAddress(walletAddress)
             script(this@transactionByMainWallet.addPlatformInfo())
+            scriptId(scriptId)
         }
     } catch (e: Exception) {
         loge(e)
         null
+    }?.apply {
+        TransactionStateManager.recordTransactionScript(this, scriptId)
     }
+    return txId
+}
+
+suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
+    val walletAddress = WalletManager.wallet()?.walletAddress()?: return null
+    logd(TAG, "transactionBridge() walletAddress:$walletAddress")
+    val args = CadenceArgumentsBuilder().apply { arguments(this) }
+    val txId = try {
+        sendBridgeTransaction {
+            args.build().forEach { arg(it) }
+            walletAddress(walletAddress)
+            script(this@transactionWithBridgePayer.getScript().addPlatformInfo())
+            payer(AppConfig.bridgeFeePayer().address)
+            scriptId(this@transactionWithBridgePayer.scriptId)
+        }
+    } catch (e: Exception) {
+        loge(e)
+        null
+    }?.apply {
+        TransactionStateManager.recordTransactionScript(this, this@transactionWithBridgePayer.scriptId)
+    }
+    return txId
 }
 
 fun String.addPlatformInfo(): String {
@@ -775,15 +781,3 @@ private fun devPrefix(): String {
     }
 }
 
-suspend fun String.executeTransaction(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
-    val args = CadenceArgumentsBuilder().apply { arguments(this) }
-    return try {
-        sendTransaction {
-            args.build().forEach { arg(it) }
-            script(this@executeTransaction)
-        }
-    } catch (e: Exception) {
-        loge(e)
-        null
-    }
-}

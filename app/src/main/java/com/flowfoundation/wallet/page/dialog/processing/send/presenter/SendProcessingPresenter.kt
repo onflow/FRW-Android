@@ -6,26 +6,23 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_NFT
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_TRANSFER_COIN
 import com.flowfoundation.wallet.manager.transaction.TransactionState.Companion.TYPE_TRANSFER_NFT
-import com.flowfoundation.wallet.page.dialog.processing.send.SendProcessingDialog
 import com.flowfoundation.wallet.page.dialog.processing.send.model.SendProcessingDialogModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindNft
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.format
-import com.flowfoundation.wallet.utils.formatNum
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import java.math.BigDecimal
 
 class SendProcessingPresenter(
-    private val fragment: SendProcessingDialog,
     private val binding: DialogSendConfirmBinding,
     private val transactionState: TransactionState,
 ) : BasePresenter<SendProcessingDialogModel> {
@@ -92,13 +89,13 @@ class SendProcessingPresenter(
     private fun setupAmount() {
         ioScope {
             val coinData = transactionState.coinData()
-            val coin = FlowCoinListManager.getCoinById(coinData.coinId) ?: return@ioScope
+            val token = FungibleTokenListManager.getTokenById(coinData.coinId) ?: return@ioScope
             val amount = coinData.amount.format()
             uiScope {
                 with(binding) {
-                    amountView.text = "$amount ${coin.name}"
-                    Glide.with(coinIconView).load(coin.icon()).into(coinIconView)
-                    coinNameView.text = coin.name
+                    amountView.text = "$amount ${token.name.orEmpty()}"
+                    Glide.with(coinIconView).load(token.tokenIcon()).into(coinIconView)
+                    coinNameView.text = token.name.orEmpty()
                 }
             }
         }

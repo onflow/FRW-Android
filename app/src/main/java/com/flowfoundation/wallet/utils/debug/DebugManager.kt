@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.utils.debug
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.SharedPreferences
 import android.view.ViewGroup
 import android.widget.EditText
@@ -13,12 +12,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.debug.fragments.debugTweaks.DebugTweaksFragment
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerFragment
-import com.flowfoundation.wallet.utils.isTesting
 import java.lang.ref.WeakReference
-
-interface TweaksInterface<T : Enum<T>> {
-    val tweak: DebugTweak<Any>
-}
 
 object DebugManager {
 
@@ -200,11 +194,6 @@ class DebugTweak<T>(
         get() {
             if (defaultValue is TweakAction) return null
             return value.toString()
-        }
-
-    val isDefaultValue: Boolean
-        get() {
-            return defaultValue == value
         }
 
     fun performAction(completion: (() -> Unit)? = null) {

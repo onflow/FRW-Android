@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.clearUserCache
@@ -32,6 +31,8 @@ import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.error.AccountError
+import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.loge
@@ -134,6 +135,7 @@ object AccountManager {
             getLocalStoredKey(accountList)
             accountList
         } catch (e: Exception) {
+            ErrorReporter.reportWithMixpanel(AccountError.MIGRATE_PREFIX_FAILED, e)
             loge(TAG, "Error during migration :: $e")
             accountList
         }
@@ -331,10 +333,6 @@ object AccountManager {
 
     fun list() = accounts.toList()
 
-    fun addressList(): List<String> {
-        return accounts.map { it.wallet?.walletAddress() ?: "" }
-    }
-
     private var isSwitching = false
 
     fun switch(account: Account, onFinish: () -> Unit) {
@@ -392,6 +390,7 @@ object AccountManager {
     private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
         if (!setToAnonymous()) {
             loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
             callback.invoke(false)
             return
         }
@@ -400,6 +399,7 @@ object AccountManager {
         val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
         if (cryptoProvider == null) {
             loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
             callback.invoke(false)
             return
         }
@@ -442,6 +442,7 @@ object AccountManager {
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
         if (!setToAnonymous()) {
             loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
             callback.invoke(false)
             return
         }
@@ -450,6 +451,7 @@ object AccountManager {
         val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(account)
         if (cryptoProvider == null) {
             loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
             callback.invoke(false)
             return
         }

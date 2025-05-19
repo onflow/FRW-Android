@@ -16,6 +16,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogSelectNftBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
@@ -391,11 +392,12 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
     private fun configureMoveFeeLayout() {
         with(binding) {
             tvMoveFee.text = if (needMoveFee) {
-                "0.001"
+                "0.0001"
             } else {
                 "0.00"
             } + " FLOW"
             tvMoveFeeTips.text = (if (needMoveFee) R.string.move_fee_tips else R.string.no_move_fee_tips).res2String()
+            clMoveFee.setVisible(AppConfig.coverBridgeFee().not())
         }
     }
 
