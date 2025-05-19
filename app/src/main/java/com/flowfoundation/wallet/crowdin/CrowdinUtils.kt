@@ -11,6 +11,5 @@ fun crowdinInitialize(application: Application) {
         CrowdinConfig.Builder()
             .withDistributionHash(BuildConfig.CROWDIN_DISTRIBUTION)
             .withNetworkType(NetworkType.ALL)
-            .withInitSyncDisabled() // Disable initial sync to prevent framework resource issues
             .build())
 }
