@@ -253,13 +253,11 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
     private fun loadTokens() {
         ioScope {
-            // Force provider refresh by setting currentTokenProvider to null
-            currentTokenProvider = null
             val provider = getProvider(moveFromAddress)
             currentTokenProvider = provider
             
             // Get fresh token list with updated balances
-            availableTokens = provider.getFungibleTokenListSnapshot()
+            availableTokens = provider.getTokenList(moveFromAddress)
 
             if (availableTokens.isNotEmpty()) {
                 // If we have a current token, try to find it in the new list
@@ -294,8 +292,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun showTokenSelection() {
         ioScope {
             val dialog = SelectTokenDialog()
-            // Force provider refresh and use consistent balance refresh logic
-            currentTokenProvider = null
+
             val provider = getProvider(moveFromAddress)
             currentTokenProvider = provider
             

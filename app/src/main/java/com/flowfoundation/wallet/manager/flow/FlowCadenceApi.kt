@@ -52,7 +52,7 @@ object FlowCadenceApi {
                 arguments = builder.arguments
             )
         } catch (t: Throwable) {
-            throw FlowException("Error while running script", t)
+            throw FlowException(t)
         }
     }
 

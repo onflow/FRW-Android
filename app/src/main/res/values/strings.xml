@@ -711,6 +711,7 @@
     <string name="connect_to_dropbox">Connect to Dropbox</string>
     <string name="connect_dropbox">Connect Dropbox</string>
     <string name="deposit_evm_tip">Please make sure your deposit is on FLOW EVM network, if your deposit via another network your assets may be lost.</string>
+    <string name="telegram_not_installed">Telegram app is not installed</string>
     <string name="legal_message">"     <![CDATA[     By using Flow Wallet you agree to the <a href="https://wallet.flow.com/terms-of-service"><u>Terms of Service</u></a> and <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="get_started">Let\'s get started</string>
     <string name="on_flow">#onFlow</string>
@@ -746,13 +747,10 @@
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
-    <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
-    <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
-    <string name="wallet_connect_session_expired">Wallet Connect session expired.</string>
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
-    <string name="hide_dust_token">Hide dust tokens (&lt;0.01 USD Balance)</string>
+    <string name="hide_dust_token">Hide dust tokens</string>
     <string name="display_verified_token">Only show verified tokens</string>
     <string name="tokens">Tokens</string>
     <string name="verified">Verified</string>
@@ -766,5 +764,9 @@
     <string name="wallet_connect_request_expired">Request has expired. Please try again.</string>
     <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
     <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
+    <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
+    <string name="wallet_connect_session_expired">Wallet Connect session expired.</string>
     <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
+    <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
 </resources>
