@@ -12,5 +12,6 @@ fun crowdinInitialize(application: Application) {
         CrowdinConfig.Builder()
             .withDistributionHash(BuildConfig.CROWDIN_DISTRIBUTION)
             .withNetworkType(NetworkType.ALL)
+            .withFrameworkResourcesEnabled(false)
             .build())
 }
