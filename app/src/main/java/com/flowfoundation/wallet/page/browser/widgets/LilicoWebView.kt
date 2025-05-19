@@ -43,6 +43,7 @@ import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
 import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
 import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
+import com.flowfoundation.wallet.page.component.deeplinking.UniversalLinkHost
 import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -279,33 +280,47 @@ class LilicoWebView : WebView {
             request?.url?.let {
                 logd(TAG, "shouldOverrideUrlLoading URL: $it, scheme: ${it.scheme}")
 
-                if (it.scheme == "wc") {
-                    logd(TAG, "Handling WalletConnect URI")
-                    WalletConnect.get().pair(it.toString())
-                    return true
-                } else if (it.scheme == "intent") {
-                    return try {
-                        logd(TAG, "Handling Intent URI")
-                        val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        }
-                        true
-                    } catch (e: URISyntaxException) {
-                        e.printStackTrace()
-                        false
+                when (it.scheme) {
+                    DeepLinkScheme.WC.scheme -> {
+                        logd(TAG, "Handling WalletConnect URI")
+                        WalletConnect.get().pair(it.toString())
+                        return true
                     }
-                } else if (it.scheme == "tg") {
-                    logd(TAG, "Handling Telegram URI")
-                    UriHandler.processUri(context, it)
-                    
-                    // Stop the WebView navigation to avoid looping
-                    view?.stopLoading()
-                    view?.clearHistory()
-                    return true
-                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
-                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com"
-                ) {
+                    DeepLinkScheme.FRW.scheme, DeepLinkScheme.FCW.scheme -> {
+                        if (it.path?.startsWith("/wc") == true) {
+                            logd(TAG, "Handling ${it.scheme}://wc URI")
+                            val uri = getWalletConnectUri(it)
+                            uri?.let { wcUri ->
+                                WalletConnect.get().pair(wcUri.toString())
+                            }
+                            return true
+                        }
+                    }
+                    DeepLinkScheme.TG.scheme -> {
+                        logd(TAG, "Handling Telegram URI")
+                        UriHandler.processUri(context, it)
+                        
+                        // Stop the WebView navigation to avoid looping
+                        view?.stopLoading()
+                        view?.clearHistory()
+                        return true
+                    }
+                    "intent" -> {
+                        return try {
+                            logd(TAG, "Handling Intent URI")
+                            val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                            if (intent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(intent)
+                            }
+                            true
+                        } catch (e: URISyntaxException) {
+                            e.printStackTrace()
+                            false
+                        }
+                    }
+                }
+
+                if (UniversalLinkHost.isKnownHost(it.host)) {
                     logd(TAG, "Handling wallet link URI")
                     safeRun {
                         val wcUri = getWalletConnectUri(it)

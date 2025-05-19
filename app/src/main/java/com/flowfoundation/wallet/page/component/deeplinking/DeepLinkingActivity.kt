@@ -94,7 +94,7 @@ class DeepLinkingActivity : BaseActivity() {
     private fun isWalletConnectUri(uri: Uri): Boolean {
         return try {
             val wcUriEncoded = UriHandler.extractWalletConnectUri(uri)
-            wcUriEncoded?.startsWith("wc:") == true
+            wcUriEncoded?.startsWith(DeepLinkScheme.WC.scheme + ":") == true
         } catch (e: Exception) {
             loge(TAG, "Error determining if URI is WalletConnect: ${e.message}")
             false
