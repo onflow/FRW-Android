@@ -56,7 +56,7 @@ suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
     
     // For backward compatibility, continue with the existing logic
     val wcUri = UriHandler.extractWalletConnectUri(uri)
-    if (wcUri?.startsWith("wc:") == true) {
+    if (wcUri?.startsWith(DeepLinkScheme.WC.scheme + ":") == true) {
         val success = dispatchWalletConnect(uri)
         if (success) {
             logd(TAG, "WalletConnect dispatch completed successfully")
@@ -111,7 +111,7 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = UriHandler.extractWalletConnectUri(uri)
 
-        if (data.isNullOrBlank() || !data.startsWith("wc:")) {
+        if (data.isNullOrBlank() || !data.startsWith(DeepLinkScheme.WC.scheme + ":")) {
             loge(TAG, "Invalid WalletConnect URI format: $data")
             uiScope {
                 toast(R.string.wallet_connect_pairing_error)

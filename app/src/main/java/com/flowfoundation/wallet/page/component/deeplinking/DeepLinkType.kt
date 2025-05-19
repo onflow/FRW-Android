@@ -26,7 +26,9 @@ enum class DeepLinkScheme(val scheme: String) {
     FRW("frw"),
     FCW("fcw"),
     LILICO("lilico"),
-    TG("tg");
+    TG("tg"),
+    HTTP("http"),
+    HTTPS("https");
     
     companion object {
         fun fromScheme(scheme: String?): DeepLinkScheme? = values().firstOrNull { it.scheme == scheme }

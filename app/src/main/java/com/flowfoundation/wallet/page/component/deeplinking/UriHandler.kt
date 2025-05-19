@@ -31,13 +31,13 @@ object UriHandler {
         
         // Check for WalletConnect URIs
         val wcUri = extractWalletConnectUri(uri)
-        if (wcUri != null && wcUri.startsWith("wc:")) {
+        if (wcUri != null && wcUri.startsWith(DeepLinkScheme.WC.scheme + ":")) {
             return handleWalletConnectUri(context, wcUri)
         }
         
         // Handle other deep links and universal links
         return when {
-            uri.scheme == "http" || uri.scheme == "https" -> {
+            uri.scheme == DeepLinkScheme.HTTP.scheme || uri.scheme == DeepLinkScheme.HTTPS.scheme -> {
                 // Check if it's a known universal link host
                 if (UniversalLinkHost.isKnownHost(uri.host)) {
                     handleUniversalLink(context, uri)
@@ -144,6 +144,10 @@ object UriHandler {
                 // Already handled in processUri
                 false
             }
+            DeepLinkScheme.HTTP,
+            DeepLinkScheme.HTTPS -> {
+                false
+            }
         }
     }
     
@@ -171,7 +175,7 @@ object UriHandler {
             val uriString = uri.toString()
             
             // Direct WC URI
-            if (uriString.startsWith("wc:")) {
+            if (uriString.startsWith(DeepLinkScheme.WC.scheme + ":")) {
                 return uriString
             }
             
