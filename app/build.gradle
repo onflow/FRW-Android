@@ -347,7 +347,7 @@ dependencies {
     implementation 'com.dropbox.core:dropbox-android-sdk:7.0.0'
 
     /** Crowdin **/
-    implementation ('com.github.crowdin.mobile-sdk-android:sdk:1.9.2') {
+    implementation ('com.github.crowdin.mobile-sdk-android:sdk:1.13.1') {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
 

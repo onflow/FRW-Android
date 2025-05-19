@@ -22,6 +22,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorInt
+import com.crowdin.platform.Crowdin
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
@@ -55,16 +56,16 @@ class LilicoWebView : WebView {
 
     private var blockedUrl: String? = null
 
-    constructor(context: Context) : super(context) {
+    constructor(context: Context) : super(Crowdin.wrapContext(context)) {
         initWebView()
     }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(context: Context, attrs: AttributeSet?) : super(Crowdin.wrapContext(context), attrs) {
         initWebView()
     }
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
+        Crowdin.wrapContext(context),
         attrs,
         defStyleAttr
     ) {

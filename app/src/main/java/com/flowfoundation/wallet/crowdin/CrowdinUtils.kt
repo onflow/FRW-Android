@@ -6,7 +6,6 @@ import com.crowdin.platform.CrowdinConfig
 import com.crowdin.platform.data.remote.NetworkType
 import com.flowfoundation.wallet.BuildConfig
 
-
 fun crowdinInitialize(application: Application) {
     Crowdin.init(application,
         CrowdinConfig.Builder()

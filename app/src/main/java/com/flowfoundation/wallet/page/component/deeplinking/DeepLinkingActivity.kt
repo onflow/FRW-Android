@@ -77,11 +77,6 @@ class DeepLinkingActivity : BaseActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        // Don't finish here, let the coroutine handle it
-    }
-    
     private fun isWalletConnectUri(uri: Uri): Boolean {
         return try {
             val uriString = uri.toString()
