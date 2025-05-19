@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -11,8 +10,8 @@ import android.text.SpannableString
 import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebResourceError
@@ -20,18 +19,15 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.ColorInt
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
-import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFilePicker
-import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
 import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
-import com.flowfoundation.wallet.page.component.deeplinking.UniversalLinkHost
+import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
@@ -43,7 +39,6 @@ import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
 import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
-import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -276,35 +271,41 @@ class LilicoWebView : WebView {
             request: WebResourceRequest?
         ): Boolean {
             isLoading = true
-            request?.url?.let { uri ->
-                logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
+            
+            // Handle null request or URL
+            if (request?.url == null) {
+                logd(TAG, "shouldOverrideUrlLoading: Request or URL is null")
+                return super.shouldOverrideUrlLoading(view, request)
+            }
+            
+            val uri = request.url
+            logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
 
-                // Check if it's an about:blank#blocked URL (internal for blocked pages)
-                if (uri.toString() == "about:blank#blocked") {
-                    return true
+            // Check if it's an about:blank#blocked URL (internal for blocked pages)
+            if (uri.toString() == "about:blank#blocked") {
+                return true
+            }
+            
+            // Check if URL is blocked - this must be done on UI thread
+            uiScope {
+                if (BlockManager.isBlocked(uri.toString())) {
+                    logd(TAG, "URL blocked: $uri")
+                    showBlockedViewLayout(uri.toString())
+                    loadUrl("about:blank#blocked")
+                    isLoading = false
                 }
-                
-                // Check if URL is blocked - this must be done on UI thread
-                uiScope {
-                    if (BlockManager.isBlocked(uri.toString())) {
-                        logd(TAG, "URL blocked: $uri")
-                        showBlockedViewLayout(uri.toString())
-                        loadUrl("about:blank#blocked")
-                        isLoading = false
-                    }
+            }
+            
+            // Process URI with UriHandler
+            val handled = UriHandler.processUri(context, uri)
+            if (handled) {
+                // If URI was handled by UriHandler, stop WebView navigation
+                view?.stopLoading()
+                if (uri.scheme == DeepLinkScheme.TG.scheme) {
+                    // For Telegram URLs, also clear history to avoid loops
+                    view?.clearHistory()
                 }
-                
-                // Process URI with UriHandler
-                val handled = UriHandler.processUri(context, uri)
-                if (handled) {
-                    // If URI was handled by UriHandler, stop WebView navigation
-                    view?.stopLoading()
-                    if (uri.scheme == DeepLinkScheme.TG.scheme) {
-                        // For Telegram URLs, also clear history to avoid loops
-                        view?.clearHistory()
-                    }
-                    return true
-                }
+                return true
             }
             
             // If the URL wasn't handled by our custom handlers, let WebView handle it

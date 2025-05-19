@@ -11,7 +11,7 @@ enum class UniversalLinkHost(val host: String) {
     WC("wc");
 
     companion object {
-        fun fromHost(host: String?): UniversalLinkHost? = values().firstOrNull { 
+        fun fromHost(host: String?): UniversalLinkHost? = entries.firstOrNull {
             it.host.equals(host, ignoreCase = true) 
         }
         
@@ -33,7 +33,7 @@ enum class DeepLinkScheme(val scheme: String) {
     HTTPS("https");
     
     companion object {
-        fun fromScheme(scheme: String?): DeepLinkScheme? = values().firstOrNull { 
+        fun fromScheme(scheme: String?): DeepLinkScheme? = entries.firstOrNull {
             it.scheme.equals(scheme, ignoreCase = true) 
         }
         
