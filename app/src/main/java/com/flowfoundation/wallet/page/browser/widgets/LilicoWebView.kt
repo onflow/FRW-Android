@@ -29,7 +29,9 @@ import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFilePicker
-import com.flowfoundation.wallet.page.component.deeplinking.getWalletConnectUri
+import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
+import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
+import com.flowfoundation.wallet.page.component.deeplinking.UniversalLinkHost
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
@@ -41,9 +43,6 @@ import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
 import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
-import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
-import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
-import com.flowfoundation.wallet.page.component.deeplinking.UniversalLinkHost
 import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
@@ -277,70 +276,38 @@ class LilicoWebView : WebView {
             request: WebResourceRequest?
         ): Boolean {
             isLoading = true
-            request?.url?.let {
-                logd(TAG, "shouldOverrideUrlLoading URL: $it, scheme: ${it.scheme}")
+            request?.url?.let { uri ->
+                logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
 
-                when (it.scheme) {
-                    DeepLinkScheme.WC.scheme -> {
-                        logd(TAG, "Handling WalletConnect URI")
-                        WalletConnect.get().pair(it.toString())
-                        return true
-                    }
-                    DeepLinkScheme.FRW.scheme, DeepLinkScheme.FCW.scheme -> {
-                        if (it.path?.startsWith("/wc") == true) {
-                            logd(TAG, "Handling ${it.scheme}://wc URI")
-                            val uri = getWalletConnectUri(it)
-                            uri?.let { wcUri ->
-                                WalletConnect.get().pair(wcUri.toString())
-                            }
-                            return true
-                        }
-                    }
-                    DeepLinkScheme.TG.scheme -> {
-                        logd(TAG, "Handling Telegram URI")
-                        UriHandler.processUri(context, it)
-                        
-                        // Stop the WebView navigation to avoid looping
-                        view?.stopLoading()
-                        view?.clearHistory()
-                        return true
-                    }
-                    "intent" -> {
-                        return try {
-                            logd(TAG, "Handling Intent URI")
-                            val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
-                            if (intent.resolveActivity(context.packageManager) != null) {
-                                context.startActivity(intent)
-                            }
-                            true
-                        } catch (e: URISyntaxException) {
-                            e.printStackTrace()
-                            false
-                        }
-                    }
-                }
-
-                if (UniversalLinkHost.isKnownHost(it.host)) {
-                    logd(TAG, "Handling wallet link URI")
-                    safeRun {
-                        val wcUri = getWalletConnectUri(it)
-                        logd(TAG, "Wallet Connect URI: ${wcUri.toString()}")
-                        WalletConnect.get().pair(wcUri.toString())
-                    }
-                    return true
-                } else if (it.toString() == "about:blank#blocked") {
+                // Check if it's an about:blank#blocked URL (internal for blocked pages)
+                if (uri.toString() == "about:blank#blocked") {
                     return true
                 }
+                
+                // Check if URL is blocked - this must be done on UI thread
                 uiScope {
-                    if (BlockManager.isBlocked(it.toString())) {
-                        logd(TAG, "URL blocked: $url")
-                        showBlockedViewLayout(it.toString())
+                    if (BlockManager.isBlocked(uri.toString())) {
+                        logd(TAG, "URL blocked: $uri")
+                        showBlockedViewLayout(uri.toString())
                         loadUrl("about:blank#blocked")
                         isLoading = false
-                        return@uiScope
                     }
                 }
+                
+                // Process URI with UriHandler
+                val handled = UriHandler.processUri(context, uri)
+                if (handled) {
+                    // If URI was handled by UriHandler, stop WebView navigation
+                    view?.stopLoading()
+                    if (uri.scheme == DeepLinkScheme.TG.scheme) {
+                        // For Telegram URLs, also clear history to avoid loops
+                        view?.clearHistory()
+                    }
+                    return true
+                }
             }
+            
+            // If the URL wasn't handled by our custom handlers, let WebView handle it
             return super.shouldOverrideUrlLoading(view, request)
         }
     }
