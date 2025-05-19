@@ -420,6 +420,16 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         }
     }
 
+
+    private fun isSessionTopicValid(topic: String): Boolean {
+        val session = SignClient.getActiveSessionByTopic(topic)
+        val isValid = session != null
+        if (!isValid) {
+            loge(TAG, "Attempted to respond on stale or unknown topic: $topic")
+        }
+        return isValid
+    }
+
     /**
      * Triggered when a Dapp sends SessionRequest to sign a transaction or a message
      */
@@ -432,10 +442,14 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             return
         }
         processedRequestIds.add(sessionRequest.request.id)
-        logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
-        logd(TAG, "onSessionRequest() sessionRequest:$sessionRequest")
 
-        // Get the redirect from the active session
+        if (!isSessionTopicValid(sessionRequest.topic)) {
+            loge(TAG, "Stale session topic detected in sessionRequest. Dropping request.")
+            return
+        }
+
+        logd(TAG, "onSessionRequest() sessionRequest:${Gson().toJson(sessionRequest)}")
+
         val redirect = SignClient.getActiveSessionByTopic(sessionRequest.topic)?.redirect
         if (!redirect.isNullOrEmpty()) {
             logd(TAG, "Found redirect URL for session: $redirect")
@@ -443,7 +457,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
 
         lastActiveTopic = sessionRequest.topic
         isProcessingRequest = true
-        ioScope { 
+        ioScope {
             try {
                 sessionRequest.toWcRequest().dispatch()
             } finally {

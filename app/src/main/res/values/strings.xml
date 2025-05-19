@@ -747,8 +747,6 @@
     <string name="blocked_tip">This app has been flagged as dangerous.</string>
     <string name="switch_to">Switch to %1$s</string>
     <string name="deeplink_login_failed">Failed to open, please create a wallet first.</string>
-    <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
-    <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
@@ -766,6 +764,8 @@
     <string name="wallet_connect_request_expired">Request has expired. Please try again.</string>
     <string name="wallet_connect_activity_error">Unable to show connection prompt. Please try again.</string>
     <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
+    <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
     <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
     <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
 </resources>
