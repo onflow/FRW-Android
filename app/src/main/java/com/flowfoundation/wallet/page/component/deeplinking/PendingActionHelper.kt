@@ -44,7 +44,12 @@ object PendingActionHelper {
     fun getPendingDeepLink(context: Context): Uri? {
         try {
             val deepLinkStr = getPrefs(context).getString(KEY_PENDING_DEEPLINK, null) ?: return null
-            return Uri.parse(deepLinkStr)
+            return try {
+                Uri.parse(deepLinkStr)
+            } catch (e: IllegalArgumentException) {
+                loge(TAG, "Invalid URI format: ${e.message}")
+                null
+            }
         } catch (e: Exception) {
             loge(TAG, "Error retrieving pending deep link: ${e.message}")
             loge(e)
