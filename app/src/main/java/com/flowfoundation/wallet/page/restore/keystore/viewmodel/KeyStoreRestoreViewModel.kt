@@ -620,6 +620,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         )
                         logd("KeyStoreRestoreViewModel", "Sending login request: $loginRequest")
                         
+                        // Add logging for API host and full URL
+                        logd("KeyStoreRestoreViewModel", "API_HOST: ${com.flowfoundation.wallet.network.API_HOST}")
+                        logd("KeyStoreRestoreViewModel", "Full login URL: ${com.flowfoundation.wallet.network.API_HOST}/v3/login")
+                        
                         val resp = service.login(loginRequest)
                         logd("KeyStoreRestoreViewModel", "Login response: $resp")
                         
@@ -788,6 +792,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         signAlgo: SigningAlgorithm
     ): String {
         logd("KeyStoreRestoreViewModel", "Getting signature for JWT")
+        logd("KeyStoreRestoreViewModel", "JWT: $jwt")
         val storage = getStorage()
         logd("KeyStoreRestoreViewModel", "Got storage")
         
@@ -800,8 +805,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
             logd("KeyStoreRestoreViewModel", "Imported private key")
         }
         
-        val signature = key.sign(DomainTag.User.bytes + jwt.encodeToByteArray(), signAlgo, hashAlgo).toHexString()
+        // Use the old format for domain tag and signing
+        val domainTagBytes = DomainTag.User.bytes
+        val jwtBytes = jwt.encodeToByteArray()
+        logd("KeyStoreRestoreViewModel", "Domain tag bytes: ${domainTagBytes.joinToString("") { "%02x".format(it) }}")
+        logd("KeyStoreRestoreViewModel", "JWT bytes: ${jwtBytes.joinToString("") { "%02x".format(it) }}")
+        
+        val dataToSign = domainTagBytes + jwtBytes
+        logd("KeyStoreRestoreViewModel", "Data to sign length: ${dataToSign.size}")
+        logd("KeyStoreRestoreViewModel", "Data to sign: ${dataToSign.joinToString("") { "%02x".format(it) }}")
+        
+        val signature = key.sign(dataToSign, signAlgo, hashAlgo).toHexString()
         logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
+        logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
         return signature
     }
 }
