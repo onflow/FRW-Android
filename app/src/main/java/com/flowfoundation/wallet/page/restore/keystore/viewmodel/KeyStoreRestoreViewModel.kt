@@ -53,16 +53,16 @@ import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
 import com.flowfoundation.wallet.manager.wallet.walletAddress
-import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.utils.logd
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
+import com.nftco.flow.sdk.bytesToHex
 import com.nftco.flow.sdk.crypto.Crypto
-import org.onflow.flow.models.bytesToHex
+import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 
+
 class KeyStoreRestoreViewModel : ViewModel() {
-    private val TAG = KeyStoreRestoreViewModel::class.java.simpleName
 
     private val queryService by lazy {
         retrofitWithHost("https://production.key-indexer.flow.com").create(OtherHostService::class.java)
@@ -93,28 +93,53 @@ class KeyStoreRestoreViewModel : ViewModel() {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.KEYSTORE
         try {
+            logd("KeyStoreRestoreViewModel", "Starting keystore import")
             ioScope {
                 val storage = getStorage()
+                logd("KeyStoreRestoreViewModel", "Got storage")
+
                 val keyStore = StoredKey.importJSON(json.toByteArray())
+                logd("KeyStoreRestoreViewModel", "Imported JSON keystore")
+
                 val decryptedKey = keyStore.decryptPrivateKey(password.toByteArray())
+                logd("KeyStoreRestoreViewModel", "Decrypted private key")
+
                 val key = PrivateKey.create(storage).apply {
+                    logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
                     importPrivateKey(decryptedKey, KeyFormat.RAW)
+                    logd("KeyStoreRestoreViewModel", "Imported private key")
                 }
-                
-                // Create a new wallet using the private key
-                val wallet = WalletFactory.createKeyWallet(
-                    key,
+                logd("KeyStoreRestoreViewModel", "Key created and imported: $key")
+
+                // Create a seed phrase key from the private key
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = "",  // Empty mnemonic since we're using a private key
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,  // We don't need to pass the keyPair since we're using the private key directly
+                    storage = storage
+                )
+                logd("KeyStoreRestoreViewModel", "Created seed phrase key")
+
+                // Create a new wallet using the seed phrase key
+                WalletFactory.createKeyWallet(
+                    seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
-                
+                logd("KeyStoreRestoreViewModel", "Created key wallet")
+
                 // Initialize WalletManager with the new wallet
                 WalletManager.init()
-                
-                val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
-                val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
+                logd("KeyStoreRestoreViewModel", "Initialized WalletManager")
+
+                // Get public keys and format them correctly
+                val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                logd("KeyStoreRestoreViewModel", "Generated public keys - P256: $p1PublicKey, K1: $k1PublicKey")
 
                 if (address.isEmpty()) {
+                    logd("KeyStoreRestoreViewModel", "No address provided, checking query address")
                     checkIsQueryAddress(
                         key.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
                         k1PublicKey ?: "",
@@ -122,6 +147,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         p1PublicKey ?: ""
                     )
                 } else {
+                    logd("KeyStoreRestoreViewModel", "Address provided: $address, querying public key")
                     queryAddressPublicKey(
                         address,
                         key.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
@@ -133,6 +159,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            logd("KeyStoreRestoreViewModel", "Error during keystore import: ${e.message}")
             ErrorReporter.reportWithMixpanel(BackupError.KEYSTORE_RESTORE_FAILED, e)
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.restore_failed)
@@ -147,19 +174,29 @@ class KeyStoreRestoreViewModel : ViewModel() {
             ioScope {
                 val storage = getStorage()
                 val key = PrivateKey.create(storage).apply {
-                    importPrivateKey(privateKey.toByteArray(), KeyFormat.HEX)
+                    importPrivateKey(privateKey.toByteArray(), KeyFormat.RAW)
                 }
-                
-                // Create a new wallet using the private key
-                val wallet = WalletFactory.createKeyWallet(
-                    key,
+                logd("KeyStoreRestoreViewModel", key)
+
+                // Create a seed phrase key from the private key
+                val seedPhraseKey = SeedPhraseKey(
+                    mnemonicString = "",  // Empty mnemonic since we're using a private key
+                    passphrase = "",
+                    derivationPath = "m/44'/539'/0'/0/0",
+                    keyPair = null,  // We don't need to pass the keyPair since we're using the private key directly
+                    storage = storage
+                )
+
+                // Create a new wallet using the seed phrase key
+                WalletFactory.createKeyWallet(
+                    seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
-                
+
                 // Initialize WalletManager with the new wallet
                 WalletManager.init()
-                
+
                 val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
 
@@ -190,12 +227,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
     @OptIn(ExperimentalStdlibApi::class)
     fun importSeedPhrase(mnemonic: String, passphrase: String, address: String) {
-        logd(TAG, "importSeedPhrase called with mnemonic length: ${mnemonic.length}, passphrase length: ${passphrase.length}, address: $address")
         loadingLiveData.postValue(true)
         restoreType = RestoreType.SEED_PHRASE
         try {
             ioScope {
-                logd(TAG, "Creating storage and seed phrase key")
                 val storage = getStorage()
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = mnemonic,
@@ -204,28 +239,21 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     keyPair = null,
                     storage = storage
                 )
-                
-                logd(TAG, "Creating wallet with seed phrase key")
+
                 // Create a new wallet using the seed phrase key
-                val wallet = WalletFactory.createKeyWallet(
+                WalletFactory.createKeyWallet(
                     seedPhraseKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
-                logd(TAG, "Wallet created with address: ${wallet.walletAddress()}")
-                
-                logd(TAG, "Initializing WalletManager")
+
                 // Initialize WalletManager with the new wallet
                 WalletManager.init()
-                
-                logd(TAG, "Getting public keys")
+
                 val p1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
-                logd(TAG, "P1 Public Key: $p1PublicKey")
-                logd(TAG, "K1 Public Key: $k1PublicKey")
 
                 if (address.isEmpty()) {
-                    logd(TAG, "Address is empty, checking query address")
                     checkIsQueryAddress(
                         seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
                         k1PublicKey ?: "",
@@ -233,7 +261,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         p1PublicKey ?: ""
                     )
                 } else {
-                    logd(TAG, "Address provided, querying address public key")
                     queryAddressPublicKey(
                         address,
                         seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: "",
@@ -244,7 +271,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 }
             }
         } catch (e: Exception) {
-            logd(TAG, "Error in importSeedPhrase: ${e.message}")
             e.printStackTrace()
             ErrorReporter.reportWithMixpanel(BackupError.SEED_PHRASE_RESTORE_FAILED, e)
             loadingLiveData.postValue(false)
@@ -257,16 +283,23 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String, p1PublicKey: String
     ) {
         try {
+            logd("KeyStoreRestoreViewModel", "Querying address: $address")
             val account = FlowCadenceApi.getAccount(address)
+            logd("KeyStoreRestoreViewModel", "Got account: $account")
+
             if (checkIsMatched(account, k1PrivateKey, k1PublicKey)) {
+                logd("KeyStoreRestoreViewModel", "K1 key matched")
                 return
             } else if (checkIsMatched(account, p1PrivateKey, p1PublicKey)) {
+                logd("KeyStoreRestoreViewModel", "P256 key matched")
                 return
             } else {
+                logd("KeyStoreRestoreViewModel", "No key matched, checking query address")
                 checkIsQueryAddress(k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey)
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            logd("KeyStoreRestoreViewModel", "Error querying address: ${e.message}")
             ErrorReporter.reportWithMixpanel(WalletError.QUERY_PUBLIC_KEY_FAILED, e)
             checkIsQueryAddress(k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey)
         }
@@ -278,18 +311,21 @@ class KeyStoreRestoreViewModel : ViewModel() {
         p1PrivateKey: String,
         p1PublicKey: String
     ) {
-        logd(TAG, "checkIsQueryAddress called")
+        logd("KeyStoreRestoreViewModel", "Checking query address with K1 public key: $k1PublicKey")
         if (checkIsLogin(k1PrivateKey, k1PublicKey, SigningAlgorithm.ECDSA_secp256k1)) {
-            logd(TAG, "K1 login successful")
-            return
-        } else if (checkIsLogin(p1PrivateKey, p1PublicKey, SigningAlgorithm.ECDSA_P256)) {
-            logd(TAG, "P1 login successful")
+            logd("KeyStoreRestoreViewModel", "K1 key login successful")
             return
         } else {
-            logd(TAG, "No login successful, querying address with public key")
-            queryAddressWithPublicKey(
-                k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey
-            )
+            logd("KeyStoreRestoreViewModel", "K1 key login failed, trying P256")
+            if (checkIsLogin(p1PrivateKey, p1PublicKey, SigningAlgorithm.ECDSA_P256)) {
+                logd("KeyStoreRestoreViewModel", "P256 key login successful")
+                return
+            } else {
+                logd("KeyStoreRestoreViewModel", "Both keys failed, querying address with public keys")
+                queryAddressWithPublicKey(
+                    k1PrivateKey, k1PublicKey, p1PrivateKey, p1PublicKey
+                )
+            }
         }
     }
 
@@ -298,8 +334,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
         privateKey: String,
         publicKey: String
     ): Boolean {
+        logd("KeyStoreRestoreViewModel", "Checking if key matches account: $account")
         val accountKey = account.keys?.lastOrNull { it.publicKey == publicKey }
         return accountKey?.run {
+            logd("KeyStoreRestoreViewModel", "Found matching key: $this")
             checkAndImportKeyStoreAddress(
                 this,
                 KeystoreAddress(
@@ -313,16 +351,25 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 )
             )
             true
-        } ?: false
+        } ?: run {
+            logd("KeyStoreRestoreViewModel", "No matching key found")
+            false
+        }
     }
 
     private suspend fun queryAddressWithPublicKey(
         k1PrivateKey: String, k1PublicKey: String,
         p1PrivateKey: String, p1PublicKey: String
     ) {
+        logd("KeyStoreRestoreViewModel", "Querying address with public keys")
         addressList.clear()
+
+        logd("KeyStoreRestoreViewModel", "Querying K1 key: $k1PublicKey")
         val k1Response = queryService.queryAddress(k1PublicKey)
+        logd("KeyStoreRestoreViewModel", "K1 response: $k1Response")
+
         if (k1Response.publicKey == k1PublicKey && k1Response.accounts.isNotEmpty()) {
+            logd("KeyStoreRestoreViewModel", "Found K1 accounts: ${k1Response.accounts}")
             addressList.addAll(k1Response.accounts.map {
                 KeystoreAddress(
                     address = it.address,
@@ -335,8 +382,13 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 )
             }.toList())
         }
+
+        logd("KeyStoreRestoreViewModel", "Querying P256 key: $p1PublicKey")
         val p1Response = queryService.queryAddress(p1PublicKey)
+        logd("KeyStoreRestoreViewModel", "P256 response: $p1Response")
+
         if (p1Response.publicKey == p1PublicKey && p1Response.accounts.isNotEmpty()) {
+            logd("KeyStoreRestoreViewModel", "Found P256 accounts: ${p1Response.accounts}")
             addressList.addAll(p1Response.accounts.map {
                 KeystoreAddress(
                     address = it.address,
@@ -349,8 +401,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 )
             }.toList())
         }
+
         loadingLiveData.postValue(false)
         addressListLiveData.postValue(addressList)
+        logd("KeyStoreRestoreViewModel", "Final address list: $addressList")
     }
 
     private suspend fun checkIsLogin(
@@ -358,30 +412,26 @@ class KeyStoreRestoreViewModel : ViewModel() {
         publicKey: String,
         signAlgo: SigningAlgorithm
     ): Boolean {
-        logd(TAG, "checkIsLogin called for algorithm: $signAlgo")
         try {
-            logd(TAG, "Calling checkKeystorePublicKeyImport with public key: ${publicKey.take(10)}...")
+            logd("KeyStoreRestoreViewModel", "Checking login for public key: $publicKey")
             val response = apiService.checkKeystorePublicKeyImport(publicKey)
-            logd(TAG, "checkKeystorePublicKeyImport response status: ${response.status}")
+            logd("KeyStoreRestoreViewModel", "Check import response: $response")
+
             if (response.status == 200) {
-                logd(TAG, "Response status 200, returning false")
+                logd("KeyStoreRestoreViewModel", "Key not imported yet")
                 return false
             }
-            logd(TAG, "Response status not 200, returning false")
             return false
         } catch (e: Exception) {
-            logd(TAG, "Error in checkIsLogin: ${e.message}")
+            logd("KeyStoreRestoreViewModel", "Error checking login: ${e.message}")
             (e as? HttpException)?.let {
-                logd(TAG, "HTTP Exception with code: ${it.code()}")
                 if (it.code() == 409) {
-                    logd(TAG, "HTTP 409 received, attempting login with private key")
+                    logd("KeyStoreRestoreViewModel", "Key already exists, attempting login")
                     loginWithPrivateKey(privateKey, publicKey, signAlgo)
                     return true
                 }
-                logd(TAG, "HTTP code not 409, returning false")
                 return false
             } ?: run {
-                logd(TAG, "Not an HTTP Exception, returning false")
                 return false
             }
         }
@@ -540,22 +590,219 @@ class KeyStoreRestoreViewModel : ViewModel() {
         publicKey: String,
         signAlgo: SigningAlgorithm
     ) {
-        logd(TAG, "loginWithPrivateKey called")
+        logd("KeyStoreRestoreViewModel", "Starting login with private key")
         ioScope {
-            val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-            logd(TAG, "Getting current activity")
-            loginAndFetchWallet(privateKey, publicKey, signAlgo) { isSuccess, errorMsg ->
-                logd(TAG, "loginAndFetchWallet callback - success: $isSuccess, error: $errorMsg")
-                uiScope {
-                    loadingLiveData.postValue(false)
-                    if (isSuccess) {
-                        logd(TAG, "Login successful, delaying and relaunching activity")
-                        delay(200)
-                        MainActivity.relaunch(activity, clearTop = true)
-                    } else {
-                        logd(TAG, "Login failed, showing error toast and finishing activity")
-                        toast(msgRes = errorMsg)
-                        activity.finish()
+            getFirebaseUid { uid ->
+                if (uid.isNullOrBlank()) {
+                    logd("KeyStoreRestoreViewModel", "No Firebase UID found")
+                    return@getFirebaseUid
+                }
+                logd("KeyStoreRestoreViewModel", "Got Firebase UID: $uid")
+
+                runBlocking {
+                    val catching = runCatching {
+                        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+                        logd("KeyStoreRestoreViewModel", "Got device info: $deviceInfoRequest")
+
+                        val service = retrofit().create(ApiService::class.java)
+                        val jwt = getFirebaseJwt()
+                        logd("KeyStoreRestoreViewModel", "Got Firebase JWT: $jwt")
+
+                        // Convert SigningAlgorithm to SignatureAlgorithm for getSignatureOld
+                        val oldSignAlgo = when (signAlgo) {
+                            SigningAlgorithm.ECDSA_P256 -> SignatureAlgorithm.ECDSA_P256
+                            SigningAlgorithm.ECDSA_secp256k1 -> SignatureAlgorithm.ECDSA_SECP256k1
+                            else -> SignatureAlgorithm.ECDSA_P256
+                        }
+
+                        val signature = getSignatureOld(jwt, privateKey, HashAlgorithm.SHA2_256, oldSignAlgo)
+                        logd("KeyStoreRestoreViewModel", "Generated signature using old method: $signature")
+
+                        // Format public key - remove "04" prefix if present
+                        val formattedPublicKey = if (publicKey.startsWith("04")) publicKey.substring(2) else publicKey
+                        logd("KeyStoreRestoreViewModel", "Formatted public key: $formattedPublicKey")
+
+                        val loginRequest = LoginRequest(
+                            signature = signature,
+                            accountKey = AccountKey(
+                                publicKey = formattedPublicKey,
+                                hashAlgo = HashAlgorithm.SHA2_256.index,
+                                signAlgo = oldSignAlgo.index
+                            ),
+                            deviceInfo = deviceInfoRequest
+                        )
+                        logd("KeyStoreRestoreViewModel", "Sending login request: $loginRequest")
+
+                        val resp = service.login(loginRequest)
+                        logd("KeyStoreRestoreViewModel", "Login response: $resp")
+
+                        if (resp.data?.customToken.isNullOrBlank()) {
+                            logd("KeyStoreRestoreViewModel", "No custom token in response")
+                            return@runCatching
+                        }
+
+                        logd("KeyStoreRestoreViewModel", "Starting Firebase login with custom token")
+                        firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                            logd("KeyStoreRestoreViewModel", "Firebase login result: $isSuccess")
+                            if (isSuccess) {
+                                logd("KeyStoreRestoreViewModel", "Setting registered and backup manually flags")
+                                setRegistered()
+                                setBackupManually()
+
+                                ioScope {
+                                    try {
+                                        logd("KeyStoreRestoreViewModel", "Getting user info from service")
+                                        try {
+                                            val userInfo = service.userInfo().data
+                                            logd("KeyStoreRestoreViewModel", "Got user info: $userInfo")
+
+                                            // Get wallet list to ensure we have the correct address
+                                            logd("KeyStoreRestoreViewModel", "Getting wallet list")
+                                            val walletList = service.getWalletList()
+                                            logd("KeyStoreRestoreViewModel", "Got wallet list: $walletList")
+
+                                            if (walletList.data == null || walletList.data?.walletAddress().isNullOrBlank()) {
+                                                logd("KeyStoreRestoreViewModel", "WARNING: No wallet address found in wallet list")
+                                                throw IllegalStateException("No wallet address found")
+                                            }
+
+                                            val walletAddress = walletList.data?.walletAddress()
+                                            logd("KeyStoreRestoreViewModel", "Wallet address from list: '$walletAddress'")
+
+                                            logd("KeyStoreRestoreViewModel", "Creating KeystoreAddress")
+                                            val keystoreAddress = KeystoreAddress(
+                                                address = walletAddress ?: "",
+                                                publicKey = formattedPublicKey,
+                                                privateKey = privateKey,
+                                                keyId = currentKeyStoreAddress?.keyId ?: 0,
+                                                weight = currentKeyStoreAddress?.weight ?: 0,
+                                                hashAlgo = HashAlgorithm.SHA2_256.index,
+                                                signAlgo = oldSignAlgo.index
+                                            )
+                                            logd("KeyStoreRestoreViewModel", "Created KeystoreAddress: $keystoreAddress")
+
+                                            logd("KeyStoreRestoreViewModel", "Creating Account")
+                                            val account = Account(
+                                                userInfo = userInfo,
+                                                keyStoreInfo = Gson().toJson(keystoreAddress),
+                                                wallet = walletList.data
+                                            )
+                                            logd("KeyStoreRestoreViewModel", "Created Account: $account")
+
+                                            logd("KeyStoreRestoreViewModel", "Adding account to AccountManager")
+                                            AccountManager.add(account)
+                                            logd("KeyStoreRestoreViewModel", "Account added to AccountManager")
+
+                                            // Set the wallet address in WalletManager
+                                            logd("KeyStoreRestoreViewModel", "Setting wallet address in WalletManager: '$walletAddress'")
+                                            if (walletAddress.isNullOrBlank()) {
+                                                logd("KeyStoreRestoreViewModel", "WARNING: Attempting to set blank wallet address")
+                                            }
+
+                                            // Clear any existing wallet state
+                                            logd("KeyStoreRestoreViewModel", "Clearing existing wallet state")
+                                            WalletManager.clear()
+
+                                            // Create a seed phrase key for the wallet
+                                            val seedPhraseKey = SeedPhraseKey(
+                                                mnemonicString = walletAddress ?: "",
+                                                passphrase = "",
+                                                derivationPath = "m/44'/539'/0'/0/0",
+                                                keyPair = null,
+                                                storage = getStorage()
+                                            )
+                                            logd("KeyStoreRestoreViewModel", "Created seed phrase key")
+
+                                            // Create a new wallet using the seed phrase key
+                                            val wallet = WalletFactory.createKeyWallet(
+                                                seedPhraseKey,
+                                                setOf(ChainId.Mainnet, ChainId.Testnet),
+                                                getStorage()
+                                            )
+                                            logd("KeyStoreRestoreViewModel", "Created key wallet")
+
+                                            // Set the wallet address
+                                            logd("KeyStoreRestoreViewModel", "Selecting wallet address: '$walletAddress'")
+                                            WalletManager.selectWalletAddress(walletAddress ?: "")
+
+                                            // Initialize the wallet
+                                            logd("KeyStoreRestoreViewModel", "Initializing WalletManager")
+                                            WalletManager.init()
+
+                                            // Verify the wallet address was set correctly
+                                            val currentAddress = WalletManager.selectedWalletAddress()
+                                            logd("KeyStoreRestoreViewModel", "Current wallet address after init: '$currentAddress'")
+
+                                            if (currentAddress != walletAddress) {
+                                                logd("KeyStoreRestoreViewModel", "WARNING: Wallet address mismatch. Expected: '$walletAddress', Got: '$currentAddress'")
+                                                // Try to set it again
+                                                WalletManager.selectWalletAddress(walletAddress ?: "")
+                                                WalletManager.init()
+                                                logd("KeyStoreRestoreViewModel", "Retried wallet initialization. New address: '${WalletManager.selectedWalletAddress()}'")
+                                            }
+
+                                            logd("KeyStoreRestoreViewModel", "Tracking account restore in Mixpanel")
+                                            MixpanelManager.accountRestore(
+                                                walletAddress ?: "",
+                                                restoreType
+                                            )
+
+                                            logd("KeyStoreRestoreViewModel", "Clearing user cache")
+                                            clearUserCache()
+                                            logd("KeyStoreRestoreViewModel", "User cache cleared")
+
+                                            logd("KeyStoreRestoreViewModel", "Post-login process completed")
+
+                                            // Add a small delay before finishing
+                                            delay(500)
+                                            logd("KeyStoreRestoreViewModel", "Setting loading to false")
+                                            loadingLiveData.postValue(false)
+
+                                            // Relaunch the main activity
+                                            val activity = BaseActivity.getCurrentActivity()
+                                            if (activity != null) {
+                                                logd("KeyStoreRestoreViewModel", "Relaunching MainActivity")
+                                                MainActivity.relaunch(activity, clearTop = true)
+                                            } else {
+                                                logd("KeyStoreRestoreViewModel", "No current activity found for relaunch")
+                                            }
+                                        } catch (e: Exception) {
+                                            logd("KeyStoreRestoreViewModel", "Error during post-login process: ${e.message}")
+                                            logd("KeyStoreRestoreViewModel", "Error stack trace: ${e.stackTraceToString()}")
+
+                                            // Check if it's a 404 error
+                                            if (e is HttpException && e.code() == 404) {
+                                                logd("KeyStoreRestoreViewModel", "User info not found (404). Checking if user exists...")
+
+                                            }
+
+                                            ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e)
+                                            loadingLiveData.postValue(false)
+                                            toast(msgRes = R.string.login_failure)
+                                        }
+                                    } catch (e: Exception) {
+                                        logd("KeyStoreRestoreViewModel", "Error during post-login process: ${e.message}")
+                                        logd("KeyStoreRestoreViewModel", "Error stack trace: ${e.stackTraceToString()}")
+
+                                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e)
+                                        loadingLiveData.postValue(false)
+                                        toast(msgRes = R.string.login_failure)
+                                    }
+                                }
+                            } else {
+                                logd("KeyStoreRestoreViewModel", "Firebase login failed")
+                                loadingLiveData.postValue(false)
+                            }
+                        }
+                    }
+
+                    if (catching.isFailure) {
+                        val error = catching.exceptionOrNull()
+                        logd("KeyStoreRestoreViewModel", "Login failed: ${error?.message}")
+                        logd("KeyStoreRestoreViewModel", "Error details: ${error?.stackTraceToString()}")
+                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, error)
+                        loge(error)
+                        loadingLiveData.postValue(false)
                     }
                 }
             }
@@ -632,109 +879,27 @@ class KeyStoreRestoreViewModel : ViewModel() {
                             )
                         )
                         if (resp.data?.customToken.isNullOrBlank()) {
-                            logd(TAG, "No custom token in response")
                             callback.invoke(false)
                         } else {
-                            logd(TAG, "Got custom token, attempting Firebase login")
                             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
                                 if (isSuccess) {
-                                    logd(TAG, "Firebase login successful")
+                                    setRegistered()
+                                    setBackupManually()
                                     ioScope {
-                                        try {
-                                            logd(TAG, "Getting wallet list")
-                                            val walletList = service.getWalletList()
-                                            val wallet = walletList.data?.let { walletData ->
-                                                val address = walletData.walletAddress()
-                                                if (address == cryptoProvider.getAddress()) {
-                                                    walletData
-                                                } else null
-                                            }
-                                            if (wallet == null) {
-                                                logd(TAG, "No matching wallet found")
-                                                callback.invoke(false)
-                                            } else {
-                                                logd(TAG, "Found matching wallet, adding to AccountManager")
-                                                AccountManager.add(
-                                                    Account(
-                                                        userInfo = service.userInfo().data,
-                                                        keyStoreInfo = cryptoProvider.getKeyStoreInfo()
-                                                    )
-                                                )
-                                                logd(TAG, "Account added to AccountManager")
-                                                
-                                                // Set the wallet address in WalletManager
-                                                val walletAddress = wallet.walletAddress()
-                                                logd(TAG, "Setting wallet address in WalletManager: '$walletAddress'")
-                                                if (walletAddress.isNullOrBlank()) {
-                                                    logd(TAG, "WARNING: Attempting to set blank wallet address")
-                                                }
-                                                
-                                                // Clear any existing wallet state
-                                                logd(TAG, "Clearing existing wallet state")
-                                                WalletManager.clear()
-                                                
-                                                // Create a private key from the existing private key
-                                                val storage = getStorage()
-                                                val key = PrivateKey.create(storage).apply {
-                                                    logd(TAG, "Created new PrivateKey instance")
-                                                    importPrivateKey(cryptoProvider.getPrivateKey().hexToBytes(), KeyFormat.RAW)
-                                                    logd(TAG, "Imported private key")
-                                                }
-                                                logd(TAG, "Created private key")
-
-                                                // Create a new wallet using the private key
-                                                val newWallet = WalletFactory.createKeyWallet(
-                                                    key,
-                                                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                                                    storage
-                                                )
-                                                logd(TAG, "Created key wallet")
-
-                                                // Set the wallet address
-                                                logd(TAG, "Selecting wallet address: '$walletAddress'")
-                                                WalletManager.selectWalletAddress(walletAddress ?: "")
-
-                                                // Initialize the wallet
-                                                logd(TAG, "Initializing WalletManager")
-                                                WalletManager.init()
-
-                                                // Verify the wallet address was set correctly
-                                                val currentAddress = WalletManager.selectedWalletAddress()
-                                                logd(TAG, "Current wallet address after init: '$currentAddress'")
-
-                                                if (currentAddress != walletAddress) {
-                                                    logd(TAG, "WARNING: Wallet address mismatch. Expected: '$walletAddress', Got: '$currentAddress'")
-                                                    // Try to set it again
-                                                    WalletManager.selectWalletAddress(walletAddress ?: "")
-                                                    WalletManager.init()
-                                                    logd(TAG, "Retried wallet initialization. New address: '${WalletManager.selectedWalletAddress()}'")
-                                                }
-
-                                                logd(TAG, "Tracking account restore in Mixpanel")
-                                                MixpanelManager.accountRestore(
-                                                    newWallet.walletAddress() ?: "",
-                                                    restoreType
-                                                )
-                                                setRegistered()
-                                                setBackupManually()
-                                                clearUserCache()
-                                                
-                                                // Ensure AccountManager is initialized
-                                                AccountManager.init()
-                                                
-                                                // Wait a bit to ensure initialization is complete
-                                                delay(500)
-                                                
-                                                callback.invoke(true)
-                                            }
-                                        } catch (e: Exception) {
-                                            logd(TAG, "Error in wallet setup: ${e.message}")
-                                            e.printStackTrace()
-                                            callback.invoke(false)
-                                        }
+                                        AccountManager.add(
+                                            Account(
+                                                userInfo = service.userInfo().data,
+                                                keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                            )
+                                        )
+                                        MixpanelManager.accountRestore(
+                                            cryptoProvider.getAddress(),
+                                            restoreType
+                                        )
+                                        clearUserCache()
+                                        callback.invoke(true)
                                     }
                                 } else {
-                                    logd(TAG, "Firebase login failed")
                                     callback.invoke(false)
                                 }
                             }
@@ -742,7 +907,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     }
 
                     if (catching.isFailure) {
-                        logd(TAG, "Error in login process: ${catching.exceptionOrNull()?.message}")
                         ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, catching.exceptionOrNull())
                         loge(catching.exceptionOrNull())
                         callback.invoke(false)
@@ -775,248 +939,33 @@ class KeyStoreRestoreViewModel : ViewModel() {
         hashAlgo: HashingAlgorithm,
         signAlgo: SigningAlgorithm
     ): String {
-        logd(TAG, "getSignature called with hashAlgo: $hashAlgo, signAlgo: $signAlgo")
+        logd("KeyStoreRestoreViewModel", "Getting signature for JWT")
+        logd("KeyStoreRestoreViewModel", "JWT: $jwt")
         val storage = getStorage()
+        logd("KeyStoreRestoreViewModel", "Got storage")
+
         val key = PrivateKey.create(storage).apply {
-            logd(TAG, "Importing private key in RAW format")
-            importPrivateKey(privateKey.hexToBytes(), KeyFormat.RAW)
+            logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
+            // Convert hex string to bytes
+            val keyBytes = privateKey.hexToBytes()
+            logd("KeyStoreRestoreViewModel", "Converted private key to bytes")
+            importPrivateKey(keyBytes, KeyFormat.RAW)
+            logd("KeyStoreRestoreViewModel", "Imported private key")
         }
-        logd(TAG, "Private key imported successfully")
-        val signature = key.sign(DomainTag.User.bytes + jwt.encodeToByteArray(), signAlgo, hashAlgo).toHexString()
-        logd(TAG, "Signature generated successfully")
+
+        // Use the old format for domain tag and signing
+        val domainTagBytes = DomainTag.User.bytes
+        val jwtBytes = jwt.encodeToByteArray()
+        logd("KeyStoreRestoreViewModel", "Domain tag bytes: ${domainTagBytes.joinToString("") { "%02x".format(it) }}")
+        logd("KeyStoreRestoreViewModel", "JWT bytes: ${jwtBytes.joinToString("") { "%02x".format(it) }}")
+
+        val dataToSign = domainTagBytes + jwtBytes
+        logd("KeyStoreRestoreViewModel", "Data to sign length: ${dataToSign.size}")
+        logd("KeyStoreRestoreViewModel", "Data to sign: ${dataToSign.joinToString("") { "%02x".format(it) }}")
+
+        val signature = key.sign(dataToSign, signAlgo, hashAlgo).toHexString()
+        logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
+        logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
         return signature
-    }
-
-    private fun loginAndFetchWallet(
-        privateKeyHex: String, publicKey: String, signAlgo: SigningAlgorithm,
-        callback: (isSuccess: Boolean, errorMsg: Int) -> Unit
-    ) {
-        logd(TAG, "loginAndFetchWallet called")
-        ioScope {
-            logd(TAG, "Querying address with public key")
-            val addressResponse = queryService.queryAddress(publicKey)
-            logd(TAG, "Got address response with ${addressResponse.accounts.size} accounts")
-
-            if (addressResponse.accounts.isEmpty()) {
-                logd(TAG, "No accounts found for public key")
-                callback.invoke(false, R.string.login_failure)
-                return@ioScope
-            }
-
-            val currentKey = addressResponse.accounts.firstOrNull()?.run {
-                logd(TAG, "Getting Flow account for address: $address")
-                val flowAccount = FlowCadenceApi.getAccount(this.address)
-                logd(TAG, "Flow account keys: ${flowAccount.keys?.map { it.publicKey }}")
-                logd(TAG, "Looking for public key: $publicKey")
-
-                // Try to find the key with the same public key, handling both 0x and 04 prefixes
-                val matchingKey = flowAccount.keys?.find {
-                    val keyWithoutPrefix = it.publicKey.removePrefix("0x").removePrefix("04")
-                    val searchKeyWithoutPrefix = publicKey.removePrefix("0x").removePrefix("04")
-                    logd(TAG, "Comparing with key: $keyWithoutPrefix")
-                    logd(TAG, "Search key without prefix: $searchKeyWithoutPrefix")
-                    keyWithoutPrefix.equals(searchKeyWithoutPrefix, ignoreCase = true)
-                }
-
-                if (matchingKey == null) {
-                    logd(TAG, "No exact match found, trying with raw public key")
-                    // If no match found, try with the raw public key
-                    flowAccount.keys?.find {
-                        val keyWithoutPrefix = it.publicKey.removePrefix("0x")
-                        val searchKeyWithoutPrefix = publicKey.removePrefix("0x")
-                        logd(TAG, "Comparing raw keys: $keyWithoutPrefix == $searchKeyWithoutPrefix")
-                        keyWithoutPrefix.equals(searchKeyWithoutPrefix, ignoreCase = true)
-                    }
-                } else {
-                    logd(TAG, "Found matching key")
-                    matchingKey
-                }
-            } ?: run {
-                logd(TAG, "No matching account found")
-                callback.invoke(false, R.string.login_failure)
-                return@ioScope
-            }
-
-            logd(TAG, "Checking key weight: ${currentKey.weight}")
-            if (currentKey.weight.toInt() < 1000) {
-                logd(TAG, "Key weight insufficient")
-                callback.invoke(false, R.string.restore_failure_insufficient_weight)
-                return@ioScope
-            }
-
-            logd(TAG, "Checking if key is revoked: ${currentKey.revoked}")
-            if (currentKey.revoked) {
-                logd(TAG, "Key is revoked")
-                callback.invoke(false, R.string.restore_failure_key_revoked)
-                return@ioScope
-            }
-
-            logd(TAG, "Getting Firebase UID")
-            getFirebaseUid { uid ->
-                if (uid.isNullOrBlank()) {
-                    logd(TAG, "Firebase UID is null or blank")
-                    callback.invoke(false, R.string.login_failure)
-                    return@getFirebaseUid
-                }
-
-                logd(TAG, "Got Firebase UID: $uid")
-                runBlocking {
-                    val catching = runCatching {
-                        logd(TAG, "Getting device info")
-                        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-                        val service = retrofit().create(ApiService::class.java)
-
-                        logd(TAG, "Calling login API")
-                        val resp = service.login(
-                            LoginRequest(
-                                signature = getSignatureOld(
-                                    getFirebaseJwt(),
-                                    privateKeyHex,
-                                    when (currentKey.hashingAlgorithm) {
-                                        HashingAlgorithm.SHA2_256 -> HashAlgorithm.SHA2_256
-                                        HashingAlgorithm.SHA3_256 -> HashAlgorithm.SHA3_256
-                                        else -> HashAlgorithm.SHA2_256
-                                    },
-                                    when (currentKey.signingAlgorithm) {
-                                        SigningAlgorithm.ECDSA_P256 -> SignatureAlgorithm.ECDSA_P256
-                                        SigningAlgorithm.ECDSA_secp256k1 -> SignatureAlgorithm.ECDSA_SECP256k1
-                                        else -> SignatureAlgorithm.ECDSA_P256
-                                    }
-                                ),
-                                accountKey = AccountKey(
-                                    publicKey = publicKey,
-                                    hashAlgo = currentKey.hashingAlgorithm.cadenceIndex,
-                                    signAlgo = currentKey.signingAlgorithm.cadenceIndex
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
-                        )
-
-                        if (resp.data?.customToken.isNullOrBlank()) {
-                            logd(TAG, "No custom token in response")
-                            callback.invoke(false, R.string.login_failure)
-                        } else {
-                            logd(TAG, "Got custom token, attempting Firebase login")
-                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                                if (isSuccess) {
-                                    logd(TAG, "Firebase login successful")
-                                    ioScope {
-                                        try {
-                                            logd(TAG, "Getting wallet list")
-                                            val walletList = service.getWalletList()
-                                            val matchingWallet = addressResponse.accounts.firstOrNull { account ->
-                                                walletList.data?.walletAddress() == account.address
-                                            }
-                                            if (matchingWallet == null) {
-                                                logd(TAG, "No matching wallet found")
-                                                callback.invoke(false, R.string.login_failure)
-                                            } else {
-                                                logd(TAG, "Found matching wallet, adding to AccountManager")
-                                                val keystoreAddress = KeystoreAddress(
-                                                    address = matchingWallet.address,
-                                                    publicKey = publicKey,
-                                                    privateKey = privateKeyHex,
-                                                    keyId = currentKey.index.toInt(),
-                                                    weight = currentKey.weight.toInt(),
-                                                    hashAlgo = currentKey.hashingAlgorithm.cadenceIndex,
-                                                    signAlgo = currentKey.signingAlgorithm.cadenceIndex
-                                                )
-
-                                                AccountManager.add(
-                                                    Account(
-                                                        userInfo = service.userInfo().data,
-                                                        keyStoreInfo = Gson().toJson(keystoreAddress)
-                                                    )
-                                                )
-                                                logd(TAG, "Account added to AccountManager")
-
-                                                // Set the wallet address in WalletManager
-                                                val walletAddress = matchingWallet.address
-                                                logd(TAG, "Setting wallet address in WalletManager: '$walletAddress'")
-                                                if (walletAddress.isNullOrBlank()) {
-                                                    logd(TAG, "WARNING: Attempting to set blank wallet address")
-                                                }
-
-                                                // Clear any existing wallet state
-                                                logd(TAG, "Clearing existing wallet state")
-                                                WalletManager.clear()
-
-                                                // Create a private key from the existing private key
-                                                val storage = getStorage()
-                                                val key = PrivateKey.create(storage).apply {
-                                                    logd(TAG, "Created new PrivateKey instance")
-                                                    importPrivateKey(privateKeyHex.hexToBytes(), KeyFormat.RAW)
-                                                    logd(TAG, "Imported private key")
-                                                }
-                                                logd(TAG, "Created private key")
-                                                
-                                                // Create a new wallet using the private key
-                                                val newWallet = WalletFactory.createKeyWallet(
-                                                    key,
-                                                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                                                    storage
-                                                )
-                                                logd(TAG, "Created key wallet")
-                                                
-                                                // Set the wallet address
-                                                logd(TAG, "Selecting wallet address: '$walletAddress'")
-                                                WalletManager.selectWalletAddress(walletAddress)
-                                                
-                                                // Initialize the wallet
-                                                logd(TAG, "Initializing WalletManager")
-                                                WalletManager.init()
-                                                
-                                                // Verify the wallet address was set correctly
-                                                val currentAddress = WalletManager.selectedWalletAddress()
-                                                logd(TAG, "Current wallet address after init: '$currentAddress'")
-                                                
-                                                if (currentAddress != walletAddress) {
-                                                    logd(TAG, "WARNING: Wallet address mismatch. Expected: '$walletAddress', Got: '$currentAddress'")
-                                                    // Try to set it again
-                                                    WalletManager.selectWalletAddress(walletAddress)
-                                                    WalletManager.init()
-                                                    logd(TAG, "Retried wallet initialization. New address: '${WalletManager.selectedWalletAddress()}'")
-                                                }
-                                                
-                                                logd(TAG, "Tracking account restore in Mixpanel")
-                                                MixpanelManager.accountRestore(
-                                                    newWallet.walletAddress() ?: "",
-                                                    restoreType
-                                                )
-                                                setRegistered()
-                                                setBackupManually()
-                                                clearUserCache()
-                                                
-                                                // Ensure AccountManager is initialized
-                                                AccountManager.init()
-                                                
-                                                // Wait a bit to ensure initialization is complete
-                                                delay(500)
-                                                
-                                                callback.invoke(true, 0)
-                                            }
-                                        } catch (e: Exception) {
-                                            logd(TAG, "Error in wallet setup: ${e.message}")
-                                            e.printStackTrace()
-                                            callback.invoke(false, R.string.login_failure)
-                                        }
-                                    }
-                                } else {
-                                    logd(TAG, "Firebase login failed")
-                                    callback.invoke(false, R.string.login_failure)
-                                }
-                            }
-                        }
-                    }
-
-                    if (catching.isFailure) {
-                        logd(TAG, "Error in login process: ${catching.exceptionOrNull()?.message}")
-                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, catching.exceptionOrNull())
-                        loge(catching.exceptionOrNull())
-                        callback.invoke(false, R.string.login_failure)
-                    }
-                }
-            }
-        }
     }
 }
