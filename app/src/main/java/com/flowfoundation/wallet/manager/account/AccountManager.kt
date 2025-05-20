@@ -239,6 +239,11 @@ object AccountManager {
     }
 
     fun add(account: Account, userId: String? = null) {
+        logd(TAG, "Adding account: ${account.userInfo.username}")
+        logd(TAG, "Account prefix: ${account.prefix}")
+        logd(TAG, "Account wallet: ${account.wallet}")
+        logd(TAG, "User ID: $userId")
+        
         accounts.removeAll { it.userInfo.username == account.userInfo.username }
         accounts.add(account)
         accounts.forEach {
@@ -252,6 +257,7 @@ object AccountManager {
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
         }
         initEmojiAndEVMInfo()
+        logd(TAG, "Account added successfully")
     }
 
     fun get(): Account? = currentAccount

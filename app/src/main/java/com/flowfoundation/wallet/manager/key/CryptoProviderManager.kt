@@ -17,6 +17,7 @@ import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import org.onflow.flow.ChainId
 
@@ -26,25 +27,35 @@ object CryptoProviderManager {
 
     fun getCurrentCryptoProvider(): CryptoProvider? {
         if (cryptoProvider == null) {
+            logd("CryptoProviderManager", "in getCurrentCryptoProvider")
             cryptoProvider = generateAccountCryptoProvider(AccountManager.get())
+            logd("CryptoProviderManager", cryptoProvider)
         }
         return cryptoProvider
     }
 
     fun generateAccountCryptoProvider(account: Account?): CryptoProvider? {
         if (account == null) {
+            logd("CryptoProviderManager", "account is null")
             return null
         }
+        logd("CryptoProviderManager", "Generating crypto provider for account: ${account.userInfo.username}")
+        logd("CryptoProviderManager", "Account prefix: ${account.prefix}")
+        logd("CryptoProviderManager", "Account keystore info: ${account.keyStoreInfo}")
+        logd("CryptoProviderManager", "Account wallet: ${account.wallet}")
+        
         val storage = getStorage()
         
         return try {
             // Handle keystore-based accounts
             if (account.keyStoreInfo.isNullOrBlank().not()) {
+                logd("CryptoProviderManager", "Creating keystore-based crypto provider")
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
             } 
             
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
+                logd("CryptoProviderManager", "Creating prefix-based crypto provider")
                 val privateKey = PrivateKey.create(storage)
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
@@ -64,6 +75,7 @@ object CryptoProviderManager {
             
             // Handle active accounts
             else if (account.isActive) {
+                logd("CryptoProviderManager", "Creating active account crypto provider")
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = Wallet.store().mnemonic(),
                     passphrase = "",
@@ -82,6 +94,7 @@ object CryptoProviderManager {
             
             // Handle inactive accounts
             else {
+                logd("CryptoProviderManager", "Creating inactive account crypto provider")
                 val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
                 if (existingWallet == null) {
                     loge("CryptoProviderManager", "Failed to get existing wallet for account ${account.userInfo.username}")

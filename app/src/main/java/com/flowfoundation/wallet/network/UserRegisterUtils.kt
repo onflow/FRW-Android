@@ -49,6 +49,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import com.flowfoundation.wallet.utils.Env
 import java.io.File
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.keys.KeyFormat
+import com.flow.wallet.wallet.WalletFactory
+import org.onflow.flow.ChainId
+import org.onflow.flow.models.SigningAlgorithm
+import com.google.common.io.BaseEncoding
+import org.onflow.flow.models.HashingAlgorithm
 
 private const val TAG = "UserRegisterUtils"
 
@@ -63,21 +70,95 @@ suspend fun registerOutblock(
                     createWalletFromServer()
                     setRegistered()
 
+                    val baseDir = File(Env.getApp().filesDir, "wallet")
+                    val storage = FileSystemStorage(baseDir)
+                    
+                    // Create a new private key using Trust Wallet Core
+                    val privateKey = PrivateKey.create(storage)
+                    logd(TAG, "Created new private key")
+                    
+                    // Get the public key using ECDSA_secp256k1
+                    val publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+                    if (publicKey == null) {
+                        logd(TAG, "Failed to get public key from private key")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    
+                    // Convert public key to hex string
+                    val hexPublicKey = publicKey.joinToString("") { "%02x".format(it) }
+                    logd(TAG, "Formatted public key: $hexPublicKey")
+                    
+                    // Get device info for registration
+                    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+                    logd(TAG, "Got device info request")
+                    
                     val service = retrofit().create(ApiService::class.java)
+                    val user = service.register(
+                        RegisterRequest(
+                            username = username,
+                            accountKey = AccountKey(
+                                publicKey = hexPublicKey
+                            ),
+                            deviceInfo = deviceInfoRequest
+                        )
+                    )
+                    logd(TAG, "Registered user: $user")
+                    
+                    // Create a seed phrase key from the private key
+                    val seedPhraseKey = SeedPhraseKey(
+                        mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
+                        passphrase = "",
+                        derivationPath = "m/44'/539'/0'/0/0",
+                        keyPair = null,
+                        storage = storage
+                    )
+                    logd(TAG, "Created seed phrase key")
+                    
+                    // Create a key wallet using WalletFactory
+                    val wallet = WalletFactory.createKeyWallet(
+                        seedPhraseKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        storage
+                    )
+                    logd(TAG, "Created key wallet")
+                    
+                    WalletManager.init()
+
                     val account = Account(
                         userInfo = service.userInfo().data,
-                        prefix = prefix
+                        prefix = prefix,
+                        wallet = service.getWalletList().data
                     )
+                    logd(TAG, "Adding account to AccountManager: $account")
                     AccountManager.add(
                         account,
                         firebaseUid()
                     )
-                    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+                    logd(TAG, "Account added, getting crypto provider")
+                    
+                    // Ensure account is properly set before generating crypto provider
+                    val currentAccount = AccountManager.get()
+                    if (currentAccount == null) {
+                        logd(TAG, "Failed to get current account after adding")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    
+                    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount)
+                    logd(TAG, "Crypto provider generated: ${cryptoProvider != null}")
+                    
+                    if (cryptoProvider == null) {
+                        logd(TAG, "Failed to generate crypto provider")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    
                     MixpanelManager.accountCreated(
-                        cryptoProvider?.getPublicKey().orEmpty(),
+                        cryptoProvider.getPublicKey(),
                         AccountCreateKeyType.KEY_STORE,
-                        cryptoProvider?.getSignatureAlgorithm()?.value.orEmpty(),
-                        cryptoProvider?.getHashAlgorithm()?.algorithm.orEmpty()
+                        cryptoProvider.getSignatureAlgorithm().value,
+                        cryptoProvider.getHashAlgorithm().algorithm
                     )
                     clearUserCache()
                     continuation.resume(true)
@@ -138,19 +219,58 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 }
 
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
+    logd(TAG, "Starting server registration for username: $username")
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
     val baseDir = File(Env.getApp().filesDir, "wallet")
-    val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
-    val user = service.register(
-        RegisterRequest(
+    val storage = FileSystemStorage(baseDir)
+    
+    try {
+        // Create a new private key
+        val privateKey = PrivateKey.create(storage)
+        logd(TAG, "Created new private key for registration")
+        
+        // Get the public key using ECDSA_secp256k1
+        val publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+        if (publicKey == null) {
+            logd(TAG, "Failed to get public key from private key")
+            throw IllegalStateException("Failed to generate public key")
+        }
+        
+        // Convert public key to hex string
+        val hexPublicKey = publicKey.joinToString("") { "%02x".format(it) }
+        logd(TAG, "Formatted public key: $hexPublicKey")
+        
+        // Create registration request
+        val request = RegisterRequest(
             username = username,
-            accountKey = AccountKey(publicKey = privateKey.key.public.toString()),
+            accountKey = AccountKey(
+                publicKey = hexPublicKey
+            ),
             deviceInfo = deviceInfoRequest
         )
-    )
-    logd(TAG, user.toString())
-    return user
+        
+        logd(TAG, "Sending registration request: $request")
+        try {
+            val user = service.register(request)
+            logd(TAG, "Registration response: $user")
+            
+            if (user.status > 400) {
+                logd(TAG, "Registration failed with status: ${user.status}, message: ${user.message}")
+                throw IllegalStateException("Registration failed with status: ${user.status}, message: ${user.message}")
+            }
+            
+            return user
+        } catch (e: retrofit2.HttpException) {
+            val errorBody = e.response()?.errorBody()?.string()
+            logd(TAG, "HTTP Error: ${e.code()}, Response: $errorBody")
+            throw e
+        }
+    } catch (e: Exception) {
+        logd(TAG, "Error during server registration: ${e.message}")
+        logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
+        throw e
+    }
 }
 
 fun generatePrefix(text: String): String {

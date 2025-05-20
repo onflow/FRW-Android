@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.Env
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import wallet.core.jni.HDWallet
@@ -124,6 +125,8 @@ suspend fun firebaseLogin(customToken: String, callback: (isSuccess: Boolean) ->
         true
     }
     if (isSuccess) {
+        // Add a delay to ensure Firebase auth state is cleared
+        delay(1000)
         firebaseCustomLogin(customToken) { isSuccessful, _ ->
             if (isSuccessful) {
                 MixpanelManager.identifyUserProfile()

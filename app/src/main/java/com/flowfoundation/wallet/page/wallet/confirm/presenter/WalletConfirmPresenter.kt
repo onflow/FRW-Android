@@ -25,6 +25,7 @@ import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.Env
 import java.io.File
+import org.onflow.flow.models.SigningAlgorithm
 
 class WalletConfirmPresenter(
     private val activity: Activity,
@@ -42,6 +43,7 @@ class WalletConfirmPresenter(
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun addDeviceKey(username: String) {
         loadingDialog.show()
         ioScope {
@@ -53,7 +55,7 @@ class WalletConfirmPresenter(
                 val params = WCAccountRequest(
                     method = WalletConnectMethod.ADD_DEVICE_KEY.value,
                     data = WCAccountInfo(
-                        WCAccountKey(publicKey = privateKey.key.public.toString()),
+                        WCAccountKey(publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString() ?: ""),
                         deviceInfoRequest
                     )
                 )
