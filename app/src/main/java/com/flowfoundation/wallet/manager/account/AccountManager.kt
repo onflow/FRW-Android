@@ -56,10 +56,8 @@ import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
-import com.flow.wallet.wallet.WalletFactory
-import com.flow.wallet.keys.SeedPhraseKey
-import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 
 object AccountManager {
     private val TAG = AccountManager::class.java.simpleName
@@ -87,24 +85,54 @@ object AccountManager {
                 val accountList = AccountCacheManager.read()
                 if (!accountList.isNullOrEmpty()) {
                     val account = accountList.first()
-                    val seedPhraseKey = SeedPhraseKey(
-                        mnemonicString = account.wallet?.walletAddress() ?: "",
-                        passphrase = "",
-                        derivationPath = "m/44'/539'/0'/0/0",
-                        keyPair = null,
-                        storage = getStorage()
-                    )
-                    currentWallet = WalletFactory.createKeyWallet(
-                        seedPhraseKey,
-                        setOf(ChainId.Mainnet, ChainId.Testnet),
-                        getStorage()
-                    )
+                    var walletRestored = false
+                    // Try to restore from private key (keyStoreInfo)
+                    if (!account.keyStoreInfo.isNullOrBlank()) {
+                        logd(TAG, "Restoring wallet from keyStoreInfo (private key)")
+                        try {
+                            val keystoreAddress = com.google.gson.Gson().fromJson(account.keyStoreInfo, com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress::class.java)
+                            val privateKey = keystoreAddress.privateKey
+                            val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
+                                importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.HEX)
+                            }
+                            currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                                key,
+                                setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                                getStorage()
+                            )
+                            logd(TAG, "Wallet restored from private key. Address: ${currentWallet?.walletAddress()}")
+                            walletRestored = true
+                        } catch (e: Exception) {
+                            loge(TAG, "Failed to restore wallet from private key: $e")
+                        }
+                    }
+                    // Fallback: Try to restore from mnemonic (if available and not blank)
+                    if (!walletRestored && !account.wallet?.walletAddress().isNullOrBlank()) {
+                        logd(TAG, "Attempting fallback: restoring wallet from mnemonic (not recommended, only if mnemonic is stored)")
+                        try {
+                            val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
+                                mnemonicString = account.wallet?.walletAddress() ?: "",
+                                passphrase = "",
+                                derivationPath = "m/44'/539'/0'/0/0",
+                                keyPair = null,
+                                storage = getStorage()
+                            )
+                            currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                                seedPhraseKey,
+                                setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                                getStorage()
+                            )
+                            logd(TAG, "Wallet restored from mnemonic. Address: ${currentWallet?.walletAddress()}")
+                        } catch (e: Exception) {
+                            loge(TAG, "Failed to restore wallet from mnemonic: $e")
+                        }
+                    }
                     currentAccount = account
                     dispatchListeners(account)
                 }
             } catch (e: Exception) {
                 loge(TAG, "init error: $e")
-                ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
+                com.flowfoundation.wallet.utils.error.ErrorReporter.reportWithMixpanel(com.flowfoundation.wallet.utils.error.AccountError.INIT_FAILED, e)
             }
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
@@ -238,12 +266,10 @@ object AccountManager {
         return@withContext map
     }
 
-    fun add(account: Account, userId: String? = null) {
-        logd(TAG, "Adding account: ${account.userInfo.username}")
-        logd(TAG, "Account prefix: ${account.prefix}")
-        logd(TAG, "Account wallet: ${account.wallet}")
-        logd(TAG, "User ID: $userId")
-        
+    fun add(account: Account, uid: String? = null) {
+        logd(TAG, "add() called. Adding account: $account, uid: $uid")
+        currentAccount = account
+        logd(TAG, "Account added. Current account is now: $currentAccount")
         accounts.removeAll { it.userInfo.username == account.userInfo.username }
         accounts.add(account)
         accounts.forEach {
@@ -251,24 +277,43 @@ object AccountManager {
         }
         AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
         val prefix = account.prefix
-        if (!prefix.isNullOrEmpty() && userId != null) {
-            userPrefixes.removeAll { it.userId == userId}
-            userPrefixes.add(UserPrefix(userId, prefix))
+        if (!prefix.isNullOrEmpty() && uid != null) {
+            userPrefixes.removeAll { it.userId == uid}
+            userPrefixes.add(UserPrefix(uid, prefix))
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
         }
         initEmojiAndEVMInfo()
         logd(TAG, "Account added successfully")
     }
 
-    fun get(): Account? = currentAccount
+    fun get(): Account? {
+        logd(TAG, "get() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
+        val account = currentAccount
+        logd(TAG, "get() returning account: $account")
+        return account
+    }
 
-    fun wallet(): com.flow.wallet.wallet.Wallet? = currentWallet
+    fun wallet(): com.flow.wallet.wallet.Wallet? {
+        logd(TAG, "wallet() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
+        val wallet = currentWallet
+        logd(TAG, "wallet() returning wallet: $wallet")
+        return wallet
+    }
 
-    fun userInfo(): UserInfoData? = currentAccount?.userInfo
+    fun userInfo(): UserInfoData? {
+        logd(TAG, "userInfo() called")
+        return currentAccount?.userInfo
+    }
 
-    fun evmAddressData() = get()?.evmAddressData
+    fun evmAddressData(): EVMAddressData? {
+        logd(TAG, "evmAddressData() called")
+        return get()?.evmAddressData
+    }
 
-    fun emojiInfoList() = get()?.walletEmojiList
+    fun emojiInfoList(): List<WalletEmojiInfo>? {
+        logd(TAG, "emojiInfoList() called")
+        return get()?.walletEmojiList
+    }
 
     private fun initEmojiAndEVMInfo() {
         EVMWalletManager.init()
@@ -390,16 +435,23 @@ object AccountManager {
         setUploadedAddressSet(uploadedAddressSet)
     }
 
-    fun list() = accounts.toList()
+    fun list(): List<Account> {
+        logd(TAG, "list() called. Accounts: $accounts")
+        return accounts
+    }
 
     private var isSwitching = false
 
     fun switch(account: Account, onFinish: () -> Unit) {
+        logd(TAG, "switch() called. Switching to account: $account")
         ioScope {
             if (isSwitching) {
+                logd(TAG, "Already switching accounts, aborting switch.")
                 return@ioScope
             }
             isSwitching = true
+            currentAccount = account
+            logd(TAG, "Account switched. Current account is now: $currentAccount")
             switchAccount(account) { isSuccess ->
                 if (isSuccess) {
                     isSwitching = false
@@ -416,6 +468,7 @@ object AccountManager {
                     isSwitching = false
                     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
                 }
+                logd(TAG, "switch() completed. Current account: $currentAccount")
                 onFinish()
             }
         }

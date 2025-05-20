@@ -12,29 +12,53 @@ import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flow.wallet.wallet.Wallet
 import com.flow.wallet.wallet.WalletFactory
-import com.flow.wallet.keys.SeedPhraseKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.ChainId
+import com.google.gson.Gson
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.keys.KeyFormat
+import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
+import org.onflow.flow.models.hexToBytes
+import java.util.concurrent.atomic.AtomicReference
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
     private var childAccountMap = mutableMapOf<String, ChildAccountList>()
-    private var selectedWalletAddress: String = ""
+    private val selectedWalletAddressRef = AtomicReference<String>("")
     private var currentWallet: Wallet? = null
+    private var lastAddressCheck = 0L
+    private val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
+    private var isInitializing = false
 
     fun init() {
-        ioScope {
-            logd(TAG, "Initializing WalletManager")
-            selectedWalletAddress = getSelectedWalletAddress().orEmpty()
-            logd(TAG, "Retrieved selected wallet address from preferences: '$selectedWalletAddress'")
-            initializeWallet()
+        logd(TAG, "init() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
+        if (isInitializing) {
+            logd(TAG, "Already initializing, skipping")
+            return
+        }
+        isInitializing = true
+        try {
+            ioScope {
+                logd(TAG, "Initializing WalletManager")
+                val address = getSelectedWalletAddress().orEmpty()
+                logd(TAG, "Retrieved selected wallet address from preferences: '$address'")
+                selectedWalletAddressRef.set(address)
+                initializeWallet()
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error during initialization: ${e.message}")
+            logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
+        } finally {
+            isInitializing = false
+            logd(TAG, "Initialization completed")
         }
     }
 
     private fun initializeWallet() {
-        logd(TAG, "Initializing wallet")
+        logd(TAG, "initializeWallet() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
         val account = AccountManager.get()
+        logd(TAG, "Got account from AccountManager: $account")
         if (account != null) {
             logd(TAG, "Found account in AccountManager: ${account.wallet?.walletAddress()}")
             logd(TAG, "Account details - userInfo: ${account.userInfo}, keyStoreInfo: ${account.keyStoreInfo}")
@@ -44,31 +68,55 @@ object WalletManager {
             
             if (walletAddress.isNullOrBlank()) {
                 logd(TAG, "WARNING: Wallet address is null or blank")
+                return
             }
-            
-            val seedPhraseKey = SeedPhraseKey(
-                mnemonicString = walletAddress ?: "",
-                passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
-                keyPair = null,
-                storage = getStorage()
-            )
-            logd(TAG, "Created seed phrase key with mnemonic: '${seedPhraseKey}'")
-            
-            currentWallet = WalletFactory.createKeyWallet(
-                seedPhraseKey,
-                setOf(ChainId.Mainnet, ChainId.Testnet),
-                getStorage()
-            )
-            logd(TAG, "Created wallet with address: '${currentWallet?.walletAddress()}'")
-            
-            // Set the wallet address if it's not already set
-            if (selectedWalletAddress.isBlank() && !walletAddress.isNullOrBlank()) {
-                logd(TAG, "Setting initial wallet address to: '$walletAddress'")
-                selectWalletAddress(walletAddress)
+
+            try {
+                // Get the private key from the keystore info
+                val keystoreInfo = account.keyStoreInfo
+                if (keystoreInfo.isNullOrBlank()) {
+                    logd(TAG, "WARNING: No keystore info found in account")
+                    return
+                }
+
+                // Parse the keystore info to get the private key
+                val keystoreAddress = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
+                val privateKey = keystoreAddress.privateKey
+                logd(TAG, "Got private key from keystore info")
+
+                // Create a private key instance
+                val key = PrivateKey.create(getStorage()).apply {
+                    importPrivateKey(privateKey.hexToBytes(), KeyFormat.RAW)
+                }
+                logd(TAG, "Created and imported private key")
+
+                // Create a new wallet using the private key
+                currentWallet = WalletFactory.createKeyWallet(
+                    key,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    getStorage()
+                )
+                logd(TAG, "Created wallet with address: '${currentWallet?.walletAddress()}'")
+
+                // Set the wallet address if it's not already set
+                if (selectedWalletAddressRef.get().isBlank() && !walletAddress.isNullOrBlank()) {
+                    logd(TAG, "Setting initial wallet address to: '$walletAddress'")
+                    selectWalletAddress(walletAddress)
+                }
+            } catch (e: Exception) {
+                logd(TAG, "Error initializing wallet: ${e.message}")
+                logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
             }
         } else {
             logd(TAG, "No account found in AccountManager")
+            // If we have a selected address but no account, try to use that address
+            if (selectedWalletAddressRef.get().isNotBlank()) {
+                logd(TAG, "Found selected address in preferences: '${selectedWalletAddressRef.get()}'")
+                // Keep the selected address in preferences but don't create a wallet yet
+                // The wallet will be created when an account is added
+            } else {
+                logd(TAG, "No selected address found in preferences")
+            }
         }
     }
 
@@ -79,7 +127,7 @@ object WalletManager {
     fun wallet(): Wallet? = currentWallet
 
     fun isEVMAccountSelected(): Boolean {
-        return selectedWalletAddress.toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
+        return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {
@@ -91,7 +139,7 @@ object WalletManager {
         if (accounts.isNullOrEmpty()) {
             return false
         }
-        return accounts.none { it.address.equals(selectedWalletAddress, ignoreCase = true) }
+        return accounts.none { it.address.equals(selectedWalletAddress(), ignoreCase = true) }
                 && isEVMAccountSelected().not()
     }
 
@@ -129,13 +177,13 @@ object WalletManager {
             logd(TAG, "WARNING: Attempting to select blank address")
         }
         
-        if (selectedWalletAddress.equals(address, ignoreCase = true)) {
+        if (selectedWalletAddressRef.get().equals(address, ignoreCase = true)) {
             logd(TAG, "Address already selected, returning network string")
             return chainNetWorkString()
         }
 
-        selectedWalletAddress = address
-        logd(TAG, "Updated selected wallet address to: '$selectedWalletAddress'")
+        selectedWalletAddressRef.set(address)
+        logd(TAG, "Updated selected wallet address to: '$address'")
         updateSelectedWalletAddress(address)
         logd(TAG, "Updated selected wallet address in preferences")
 
@@ -172,8 +220,14 @@ object WalletManager {
     }
 
     fun selectedWalletAddress(): String {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastAddressCheck < ADDRESS_CACHE_DURATION) {
+            return selectedWalletAddressRef.get()
+        }
+        
+        lastAddressCheck = currentTime
         logd(TAG, "Getting selected wallet address")
-        val pref = selectedWalletAddress.toAddress()
+        val pref = selectedWalletAddressRef.get().toAddress()
         logd(TAG, "Current selected address: '$pref'")
         
         if (pref.isBlank()) {
@@ -186,10 +240,16 @@ object WalletManager {
             return pref
         }
 
+        // If we have a selected address in preferences, use it even if no wallet exists yet
+        if (selectedWalletAddressRef.get().isNotBlank()) {
+            logd(TAG, "Using selected address from preferences: '${selectedWalletAddressRef.get()}'")
+            return selectedWalletAddressRef.get()
+        }
+
         val defaultAddress = wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty().apply {
             if (isNotBlank()) {
                 logd(TAG, "No valid selected address found, using default wallet address: '$this'")
-                selectedWalletAddress = this
+                selectedWalletAddressRef.set(this)
                 updateSelectedWalletAddress(this)
             } else {
                 logd(TAG, "WARNING: No default wallet address available")
@@ -201,9 +261,10 @@ object WalletManager {
 
     fun clear() {
         logd(TAG, "Clearing WalletManager state")
-        selectedWalletAddress = ""
+        selectedWalletAddressRef.set("")
         childAccountMap.clear()
         currentWallet = null
+        lastAddressCheck = 0
         logd(TAG, "WalletManager state cleared")
     }
 
