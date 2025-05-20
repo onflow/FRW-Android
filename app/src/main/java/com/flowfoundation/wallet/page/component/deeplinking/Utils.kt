@@ -47,8 +47,16 @@ enum class DeepLinkPath(val path: String) {
 
 suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
     logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
-    val wcUri = getWalletConnectUri(uri)
-    if (wcUri?.startsWith("wc:") == true) {
+    
+    // Try to handle with the new UriHandler first
+    if (uri.scheme == DeepLinkScheme.TG.scheme) {
+        UriHandler.processUri(context, uri)
+        return
+    }
+    
+    // For backward compatibility, continue with the existing logic
+    val wcUri = UriHandler.extractWalletConnectUri(uri)
+    if (wcUri?.startsWith(DeepLinkScheme.WC.scheme + ":") == true) {
         val success = dispatchWalletConnect(uri)
         if (success) {
             logd(TAG, "WalletConnect dispatch completed successfully")
@@ -95,16 +103,15 @@ suspend fun executePendingDeepLink(uri: Uri) {
     } else {
         toast(R.string.deeplink_login_failed)
     }
-
 }
 
 // https://lilico.app/?uri=wc%3A83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c%402%3Frelay-protocol%3Diridium%26symKey%3D618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
 // wc:83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c@2?relay-protocol=iridium&symKey=618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
 private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
-        val data = getWalletConnectUri(uri)
+        val data = UriHandler.extractWalletConnectUri(uri)
 
-        if (data.isNullOrBlank() || !data.startsWith("wc:")) {
+        if (data.isNullOrBlank() || !data.startsWith(DeepLinkScheme.WC.scheme + ":")) {
             loge(TAG, "Invalid WalletConnect URI format: $data")
             uiScope {
                 toast(R.string.wallet_connect_pairing_error)
@@ -158,6 +165,7 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
             // Return success immediately, but the actual connection will happen asynchronously
             logd(TAG, "WalletConnect pairing initiated successfully")
             return@runCatching true
+        
         } catch (e: Exception) {
             loge(TAG, "Error during WalletConnect pairing: ${e.message}")
             loge(e)
@@ -176,43 +184,10 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     }
 }
 
+// No longer needed, use UriHandler.extractWalletConnectUri instead
+@Deprecated("Use UriHandler.extractWalletConnectUri instead")
 fun getWalletConnectUri(uri: Uri): String? {
-    return runCatching {
-        // Skip processing if this is a Telegram URI
-        if (uri.scheme == "tg") {
-            logd(TAG, "Skipping Telegram URI in getWalletConnectUri")
-            return@runCatching null
-        }
-        
-        // Handle URLs from WC links directly
-        if (uri.host?.contains("lilico.app") == true && uri.path == "/wc") {
-            logd(TAG, "Processing WalletConnect link URL: $uri")
-            val wcUriParam = uri.getQueryParameter("uri")
-            if (wcUriParam != null) {
-                return@runCatching URLDecoder.decode(wcUriParam, StandardCharsets.UTF_8.name())
-            }
-        }
-        
-        val uriString = uri.toString()
-        val uriParamStart = uriString.indexOf("uri=")
-        val wcUriEncoded = if (uriParamStart != -1) {
-            uriString.substring(uriParamStart + 4)
-        } else {
-            uri.getQueryParameter("uri")
-        }
-        
-        wcUriEncoded?.let {
-            if (it.contains("%")) {
-                val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
-                decoded
-            } else {
-                it
-            }
-        }
-    }.onFailure { e ->
-        loge(TAG, "Error processing WalletConnect URI: ${e.message}")
-        loge(e)
-    }.getOrNull()
+    return UriHandler.extractWalletConnectUri(uri)
 }
 
 private fun parseValue(value: String?): BigDecimal? {
