@@ -36,6 +36,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.toAuthzTransaction
 import com.ionspin.kotlin.bignum.integer.toBigInteger
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.reflect.Type
+import com.flowfoundation.wallet.manager.account.AccountManager
 
 private val TAG = FclMessageHandler::class.java.simpleName
 
@@ -48,7 +49,41 @@ class FclMessageHandler(
 ) {
     private fun activity() = findActivity(webView) as FragmentActivity
 
-    private fun wallet() = WalletManager.wallet()?.walletAddress().orEmpty()
+    private fun wallet(): String {
+        // Try getting from WalletManager first
+        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        if (walletAddress.isNotBlank()) {
+            logd(TAG, "Got wallet address from WalletManager: '$walletAddress'")
+            return walletAddress
+        }
+        
+        // If empty, try from AccountManager
+        val account = AccountManager.get()
+        val accountWalletAddress = account?.wallet?.walletAddress()
+        if (!accountWalletAddress.isNullOrBlank()) {
+            logd(TAG, "Got wallet address from AccountManager: '$accountWalletAddress'")
+            return accountWalletAddress
+        }
+        
+        // If still empty, try getting from current account directly
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        if (selectedAddress.isNotBlank()) {
+            logd(TAG, "Got wallet address from WalletManager.selectedWalletAddress(): '$selectedAddress'")
+            return selectedAddress
+        }
+        
+        // Last attempt - use any active account from AccountManager
+        val accounts = AccountManager.list()
+        val activeAccount = accounts.firstOrNull { it.isActive }
+        val activeWalletAddress = activeAccount?.wallet?.walletAddress()
+        if (!activeWalletAddress.isNullOrBlank()) {
+            logd(TAG, "Got wallet address from active account: '$activeWalletAddress'")
+            return activeWalletAddress
+        }
+        
+        logd(TAG, "Could not find any wallet address")
+        return ""
+    }
 
     private var message: String = ""
 

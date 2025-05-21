@@ -2,13 +2,11 @@ package com.flowfoundation.wallet.page.transaction.record
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.cache.transferRecordCache
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.model.TransferRecordList
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionViewMoreModel
