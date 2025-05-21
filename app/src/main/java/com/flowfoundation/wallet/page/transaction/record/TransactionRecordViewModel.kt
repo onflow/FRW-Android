@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import com.flowfoundation.wallet.manager.account.AccountManager
 
 private const val LIMIT = 30
 
@@ -44,50 +45,155 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     private suspend fun loadTransfer() {
-        val wallet = WalletManager.wallet()
-        val walletAddress = wallet?.walletAddress().orEmpty()
-        logd("TransactionRecordViewModel", "Fetching transaction history. Wallet: $wallet, Wallet address: '$walletAddress'")
+        logd("TransactionRecordViewModel", "Starting loadTransfer(), checking wallet status")
+        // Check if WalletManager is initialized
+        if (WalletManager.wallet() == null) {
+            logd("TransactionRecordViewModel", "WalletManager.wallet() is null, attempting to initialize")
+            try {
+                // Try to initialize WalletManager if not already initialized
+                WalletManager.init()
+                logd("TransactionRecordViewModel", "WalletManager initialized. New wallet status: ${WalletManager.wallet() != null}")
+            } catch (e: Exception) {
+                loge("TransactionRecordViewModel", "Failed to initialize WalletManager: ${e.message}")
+                loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
+            }
+        }
+        
+        // Try to get wallet address from multiple sources
+        var walletAddress = ""
+        
+        // Try getting from WalletManager first
+        try {
+            val wallet = WalletManager.wallet()
+            walletAddress = wallet?.walletAddress().orEmpty()
+            logd("TransactionRecordViewModel", "From WalletManager - Wallet: $wallet, Wallet address: '$walletAddress'")
+        } catch (e: Exception) {
+            loge("TransactionRecordViewModel", "Error getting address from WalletManager: ${e.message}")
+        }
+        
+        // If still empty, try from AccountManager
         if (walletAddress.isEmpty()) {
-            logd("TransactionRecordViewModel", "Wallet address is empty, aborting transaction fetch.")
+            try {
+                val account = AccountManager.get()
+                val accountWallet = account?.wallet
+                walletAddress = accountWallet?.walletAddress() ?: ""
+                logd("TransactionRecordViewModel", "From AccountManager - Wallet address: '$walletAddress'")
+            } catch (e: Exception) {
+                loge("TransactionRecordViewModel", "Error getting address from AccountManager: ${e.message}")
+            }
+        }
+        
+        // If still empty, try getting from current account directly
+        if (walletAddress.isEmpty()) {
+            try {
+                walletAddress = WalletManager.selectedWalletAddress()
+                logd("TransactionRecordViewModel", "From WalletManager.selectedWalletAddress(): '$walletAddress'")
+            } catch (e: Exception) {
+                loge("TransactionRecordViewModel", "Error getting selectedWalletAddress: ${e.message}")
+            }
+        }
+        
+        // Last attempt - use any active account from AccountManager
+        if (walletAddress.isEmpty()) {
+            try {
+                val accounts = AccountManager.list()
+                val activeAccount = accounts.firstOrNull { it.isActive }
+                walletAddress = activeAccount?.wallet?.walletAddress() ?: ""
+                logd("TransactionRecordViewModel", "From AccountManager.list() - Found active account: ${activeAccount != null}, Wallet address: '$walletAddress'")
+            } catch (e: Exception) {
+                loge("TransactionRecordViewModel", "Error getting from account list: ${e.message}")
+            }
+        }
+        
+        // If we still don't have a wallet address, we can't proceed
+        if (walletAddress.isEmpty()) {
+            logd("TransactionRecordViewModel", "Could not find a valid wallet address from any source, aborting transaction fetch.")
             return
         }
+        
+        // Process with the wallet address we found
+        logd("TransactionRecordViewModel", "Final wallet address: '$walletAddress'")
+        fetchTransactions(walletAddress)
+    }
+    
+    private suspend fun fetchTransactions(walletAddress: String) {
+        logd("TransactionRecordViewModel", "Checking if EVM account is selected: ${WalletManager.isEVMAccountSelected()}")
+        
         if (WalletManager.isEVMAccountSelected()) {
             logd("TransactionRecordViewModel", "EVM account selected. Fetching EVM transfer records for address: '$walletAddress'")
             ioScope {
                 try {
                     val service = retrofitApi().create(ApiService::class.java)
+                    logd("TransactionRecordViewModel", "Making API call to get EVM transfer records...")
                     val resp = service.getEVMTransferRecord(walletAddress)
-                    logd("TransactionRecordViewModel", "EVM transfer record response: $resp")
+                    logd("TransactionRecordViewModel", "EVM transfer record response received. Status: ${resp.status}, Transactions: ${resp.trxs?.size ?: 0}")
                     val data = mutableListOf<Any>().apply {
                         addAll(resp.trxs.orEmpty())
                     }
+                    logd("TransactionRecordViewModel", "EVM transfer records processed: ${data.size} items")
                     if ((resp.trxs?.size ?: 0) > LIMIT) {
                         data.add(TransactionViewMoreModel(walletAddress))
+                        logd("TransactionRecordViewModel", "Added 'View More' option for EVM transfers")
                     }
+                    logd("TransactionRecordViewModel", "Posting EVM transaction data to UI: ${data.size} items")
                     transferListLiveData.postValue(data)
+                    
+                    // Update count regardless of empty list
+                    transferCountLiveData.postValue(data.size)
                 } catch (e: Exception) {
                     loge("TransactionRecordViewModel", "Error fetching EVM transfer records: ${e.message}")
+                    loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
+                    
+                    // Ensure the UI shows something even on error
+                    transferListLiveData.postValue(emptyList())
+                    transferCountLiveData.postValue(0)
                 }
             }
         } else {
             logd("TransactionRecordViewModel", "Flow account selected. Fetching transfer records for address: '$walletAddress'")
             ioScope {
                 try {
+                    logd("TransactionRecordViewModel", "Creating API service for Flow transfers")
                     val service = retrofit().create(ApiService::class.java)
+                    logd("TransactionRecordViewModel", "Making API call to get Flow transfer records...")
                     val resp = service.getTransferRecord(walletAddress, limit = LIMIT)
-                    logd("TransactionRecordViewModel", "Transfer record response: $resp")
+                    logd("TransactionRecordViewModel", "Transfer record response received. Status: ${resp.status}, Message: ${resp.message}")
+                    logd("TransactionRecordViewModel", "Response data: Total=${resp.data?.total}, Next=${resp.data?.next}, Transactions=${resp.data?.transactions?.size ?: 0}")
+                    
                     val processing = TransactionStateManager.getProcessingTransaction().map { it.toTransactionRecord() }
+                    logd("TransactionRecordViewModel", "Processing transactions: ${processing.size}")
+                    
                     val transfers = resp.data?.transactions.orEmpty()
+                    logd("TransactionRecordViewModel", "Completed transfers: ${transfers.size}")
+                    
                     val data = mutableListOf<Any>().apply {
-                        addAll(processing)
-                        addAll(transfers)
+                        if (processing.isNotEmpty()) {
+                            logd("TransactionRecordViewModel", "Adding ${processing.size} processing transactions")
+                            addAll(processing)
+                        }
+                        if (transfers.isNotEmpty()) {
+                            logd("TransactionRecordViewModel", "Adding ${transfers.size} completed transactions")
+                            addAll(transfers)
+                        }
                     }
+                    
                     if ((resp.data?.total ?: 0) > LIMIT) {
                         data.add(TransactionViewMoreModel(walletAddress))
+                        logd("TransactionRecordViewModel", "Added 'View More' option for Flow transfers")
                     }
+                    
+                    logd("TransactionRecordViewModel", "Posting Flow transaction data to UI: ${data.size} items")
                     transferListLiveData.postValue(data)
+                    
+                    // Also update the count
+                    transferCountLiveData.postValue(data.size)
                 } catch (e: Exception) {
-                    loge("TransactionRecordViewModel", "Error fetching transfer records: ${e.message}")
+                    loge("TransactionRecordViewModel", "Error fetching Flow transfer records: ${e.message}")
+                    loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
+                    
+                    // Ensure the UI shows something even on error
+                    transferListLiveData.postValue(emptyList())
+                    transferCountLiveData.postValue(0)
                 }
             }
         }
