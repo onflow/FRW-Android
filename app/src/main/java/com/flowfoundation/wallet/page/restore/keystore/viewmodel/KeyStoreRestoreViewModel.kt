@@ -111,19 +111,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 }
                 logd("KeyStoreRestoreViewModel", "Key created and imported: $key")
 
-                // Create a seed phrase key from the private key
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = "",  // Empty mnemonic since we're using a private key
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,  // We don't need to pass the keyPair since we're using the private key directly
-                    storage = storage
-                )
-                logd("KeyStoreRestoreViewModel", "Created seed phrase key")
-
-                // Create a new wallet using the seed phrase key
+                // Create a new wallet using the private key directly
                 WalletFactory.createKeyWallet(
-                    seedPhraseKey,
+                    key,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
@@ -174,22 +164,18 @@ class KeyStoreRestoreViewModel : ViewModel() {
             ioScope {
                 val storage = getStorage()
                 val key = PrivateKey.create(storage).apply {
-                    importPrivateKey(privateKey.toByteArray(), KeyFormat.RAW)
+                    logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
+                    // Convert hex string to bytes
+                    val keyBytes = privateKey.hexToBytes()
+                    logd("KeyStoreRestoreViewModel", "Converted private key to bytes")
+                    importPrivateKey(keyBytes, KeyFormat.RAW)
+                    logd("KeyStoreRestoreViewModel", "Imported private key")
                 }
                 logd("KeyStoreRestoreViewModel", key)
 
-                // Create a seed phrase key from the private key
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = "",  // Empty mnemonic since we're using a private key
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,  // We don't need to pass the keyPair since we're using the private key directly
-                    storage = storage
-                )
-
-                // Create a new wallet using the seed phrase key
+                // Create a new wallet using the private key directly
                 WalletFactory.createKeyWallet(
-                    seedPhraseKey,
+                    key,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 )
@@ -674,23 +660,22 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 address = walletAddress ?: "",
                                                 publicKey = formattedPublicKey,
                                                 privateKey = privateKey,
-                                                keyId = currentKeyStoreAddress?.keyId ?: 0,
-                                                weight = currentKeyStoreAddress?.weight ?: 0,
+                                                keyId = 0, // Default key ID
+                                                weight = 1000, // Default weight for a main key
                                                 hashAlgo = HashAlgorithm.SHA2_256.index,
                                                 signAlgo = oldSignAlgo.index
                                             )
                                             logd("KeyStoreRestoreViewModel", "Created KeystoreAddress: $keystoreAddress")
 
                                             logd("KeyStoreRestoreViewModel", "Creating Account")
-                                            val account = Account(
+                                            val userAccount = Account(
                                                 userInfo = userInfo,
-                                                keyStoreInfo = Gson().toJson(keystoreAddress),
-                                                wallet = walletList.data
+                                                keyStoreInfo = Gson().toJson(keystoreAddress)
                                             )
-                                            logd("KeyStoreRestoreViewModel", "Created Account: $account")
+                                            logd("KeyStoreRestoreViewModel", "Created Account: $userAccount")
 
                                             logd("KeyStoreRestoreViewModel", "Adding account to AccountManager")
-                                            AccountManager.add(account)
+                                            AccountManager.add(userAccount)
                                             logd("KeyStoreRestoreViewModel", "Account added to AccountManager")
 
                                             // Set the wallet address in WalletManager
@@ -703,21 +688,22 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             logd("KeyStoreRestoreViewModel", "Clearing existing wallet state")
                                             WalletManager.clear()
 
-                                            // Create a seed phrase key for the wallet
-                                            val seedPhraseKey = SeedPhraseKey(
-                                                mnemonicString = walletAddress ?: "",
-                                                passphrase = "",
-                                                derivationPath = "m/44'/539'/0'/0/0",
-                                                keyPair = null,
-                                                storage = getStorage()
-                                            )
-                                            logd("KeyStoreRestoreViewModel", "Created seed phrase key")
-
-                                            // Create a new wallet using the seed phrase key
+                                            // Create a new wallet using the private key
+                                            val storage = getStorage()
+                                            val key = PrivateKey.create(storage).apply {
+                                                logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
+                                                // Convert hex string to bytes
+                                                val keyBytes = privateKey.hexToBytes()
+                                                logd("KeyStoreRestoreViewModel", "Converted private key to bytes")
+                                                importPrivateKey(keyBytes, KeyFormat.RAW)
+                                                logd("KeyStoreRestoreViewModel", "Imported private key")
+                                            }
+                                            
+                                            // Create a new wallet using the private key
                                             val wallet = WalletFactory.createKeyWallet(
-                                                seedPhraseKey,
+                                                key,
                                                 setOf(ChainId.Mainnet, ChainId.Testnet),
-                                                getStorage()
+                                                storage
                                             )
                                             logd("KeyStoreRestoreViewModel", "Created key wallet")
 
@@ -742,10 +728,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             }
 
                                             logd("KeyStoreRestoreViewModel", "Tracking account restore in Mixpanel")
-                                            MixpanelManager.accountRestore(
-                                                walletAddress ?: "",
-                                                restoreType
-                                            )
+                                            if (walletAddress != null) {
+                                                MixpanelManager.accountRestore(walletAddress, restoreType)
+                                            }
 
                                             logd("KeyStoreRestoreViewModel", "Clearing user cache")
                                             clearUserCache()
@@ -770,15 +755,59 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             logd("KeyStoreRestoreViewModel", "Error during post-login process: ${e.message}")
                                             logd("KeyStoreRestoreViewModel", "Error stack trace: ${e.stackTraceToString()}")
 
-                                            // Check if it's a 404 error
-                                            if (e is HttpException && e.code() == 404) {
-                                                logd("KeyStoreRestoreViewModel", "User info not found (404). Checking if user exists...")
-
+                                            // Use the SDK's key indexer functionality
+                                            logd("KeyStoreRestoreViewModel", "Fetching account from Flow Wallet Kit SDK...")
+                                            
+                                            // Use the SDK to fetch accounts
+                                            logd("KeyStoreRestoreViewModel", "Fetching accounts from wallet")
+                                            val wallet = WalletManager.wallet() ?: throw IllegalStateException("Wallet not initialized")
+                                            
+                                            // Manually fetch the wallet address since we just created it
+                                            logd("KeyStoreRestoreViewModel", "Getting wallet address")
+                                            val walletAddress = wallet.walletAddress()
+                                            if (walletAddress.isNullOrBlank()) {
+                                                throw IllegalStateException("Failed to get wallet address from blockchain")
                                             }
-
-                                            ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e)
+                                            logd("KeyStoreRestoreViewModel", "Got wallet address: $walletAddress")
+                                            
+                                            // Convert SigningAlgorithm to SignatureAlgorithm
+                                            val oldSignAlgo = SignatureAlgorithm.ECDSA_P256
+                                            
+                                            // Create KeystoreAddress with the account info
+                                            val keystoreAddress = KeystoreAddress(
+                                                address = walletAddress,
+                                                publicKey = formattedPublicKey,
+                                                privateKey = privateKey,
+                                                keyId = 0, // Default key ID
+                                                weight = 1000, // Default weight for a main key
+                                                hashAlgo = HashAlgorithm.SHA2_256.index,
+                                                signAlgo = oldSignAlgo.index
+                                            )
+                                            
+                                            // Get user info from service
+                                            val userInfo = service.userInfo().data
+                                            
+                                            // Create and add account
+                                            val userAccount = Account(
+                                                userInfo = userInfo,
+                                                keyStoreInfo = Gson().toJson(keystoreAddress)
+                                            )
+                                            AccountManager.add(userAccount)
+                                            
+                                            // Track the restore
+                                            MixpanelManager.accountRestore(walletAddress, restoreType)
+                                            
+                                            // Clear cache and finish
+                                            clearUserCache()
+                                            delay(500)
                                             loadingLiveData.postValue(false)
-                                            toast(msgRes = R.string.login_failure)
+                                            
+                                            // Relaunch main activity
+                                            val activity = BaseActivity.getCurrentActivity()
+                                            if (activity != null) {
+                                                MainActivity.relaunch(activity, clearTop = true)
+                                            }
+                                            return@ioScope
                                         }
                                     } catch (e: Exception) {
                                         logd("KeyStoreRestoreViewModel", "Error during post-login process: ${e.message}")

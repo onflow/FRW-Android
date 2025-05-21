@@ -105,19 +105,9 @@ suspend fun registerOutblock(
                     )
                     logd(TAG, "Registered user: $user")
                     
-                    // Create a seed phrase key from the private key
-                    val seedPhraseKey = SeedPhraseKey(
-                        mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
-                        passphrase = "",
-                        derivationPath = "m/44'/539'/0'/0/0",
-                        keyPair = null,
-                        storage = storage
-                    )
-                    logd(TAG, "Created seed phrase key")
-                    
-                    // Create a key wallet using WalletFactory
+                    // Create a key wallet using the private key directly
                     val wallet = WalletFactory.createKeyWallet(
-                        seedPhraseKey,
+                        privateKey,
                         setOf(ChainId.Mainnet, ChainId.Testnet),
                         storage
                     )
