@@ -42,6 +42,7 @@ import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.loadAvatar
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.bug.BugReporting
 import com.instabug.library.OnSdkDismissCallback
@@ -55,11 +56,13 @@ class ProfileFragmentPresenter(
     private var userInfo: UserInfoData? = null
 
     init {
+        logd("ProfileFragmentPresenter", "init called")
         binding.root.addStatusBarTopPadding()
         binding.userInfo.editButton.setOnClickListener {
             userInfo?.let { AccountSettingActivity.launch(fragment.requireContext(), it) }
         }
         binding.userInfo.nicknameView.setOnClickListener {
+            logd("ProfileFragmentPresenter", "nicknameView clicked")
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
         binding.notLoggedIn.root.setOnClickListener {
@@ -105,6 +108,7 @@ class ProfileFragmentPresenter(
         binding.group3.bugReport.setOnClickListener { Instabug.show() }
         binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
         binding.group4.switchAccountPreference.setOnClickListener {
+            logd("ProfileFragmentPresenter", "switchAccountPreference clicked")
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
 

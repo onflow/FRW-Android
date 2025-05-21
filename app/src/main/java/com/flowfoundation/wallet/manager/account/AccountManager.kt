@@ -223,10 +223,20 @@ object AccountManager {
     }
 
     fun getSwitchAccountList(): List<Any> {
+        logd(TAG, "getSwitchAccountList() called")
+        logd(TAG, "Current accounts: $accounts")
+        logd(TAG, "Current switchAccounts: $switchAccounts")
+        
         val list = mutableListOf<Any>()
         list.addAll(accounts)
         val addressSet = accounts.mapNotNull { it.wallet?.walletAddress() }.toSet()
-        list.addAll(switchAccounts.filter { it.address !in addressSet })
+        logd(TAG, "Address set from accounts: $addressSet")
+        
+        val filteredSwitchAccounts = switchAccounts.filter { it.address !in addressSet }
+        logd(TAG, "Filtered switch accounts: $filteredSwitchAccounts")
+        
+        list.addAll(filteredSwitchAccounts)
+        logd(TAG, "Final list size: ${list.size}")
         return list
     }
 

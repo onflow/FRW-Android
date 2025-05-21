@@ -10,7 +10,10 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.ForegroundColorSpan
+import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.graphics.ColorUtils
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
@@ -62,14 +65,28 @@ class DrawerLayoutPresenter(
 ) : BasePresenter<MainDrawerLayoutModel>, ChildAccountUpdateListenerCallback, OnWalletDataUpdate,
     OnEmojiUpdate {
 
+    private val TAG = "DrawerLayoutPresenter"
     private val activity by lazy { findActivity(drawer) as FragmentActivity }
 
     init {
+        Log.d(TAG, "Initializing DrawerLayoutPresenter")
         drawer.addDrawerListener(DrawerListener())
 
         with(binding.root.layoutParams) {
             width = (ScreenUtils.getScreenWidth() * 0.8f).toInt()
             binding.root.layoutParams = this
+        }
+        Log.d(TAG, "Drawer width set to: ${binding.root.layoutParams.width}")
+
+        // Set initial lock mode
+        ioScope {
+            val wallet = WalletManager.wallet()
+            Log.d(TAG, "Wallet state: ${if (wallet == null) "null" else "not null"}")
+            val address = wallet?.walletAddress()
+            Log.d(TAG, "Wallet address: $address")
+            val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
+            Log.d(TAG, "Initial drawer lock mode set to: $lockMode, address is ${if (address.isNullOrBlank()) "null/blank" else "present"}")
+            drawer.setDrawerLockMode(lockMode)
         }
 
         with(binding) {
@@ -91,8 +108,10 @@ class DrawerLayoutPresenter(
         }
 
         bindData()
+        Log.d(TAG, "Initial wallet list refresh")
         binding.refreshWalletList(true)
 
+        Log.d(TAG, "Adding listeners for account updates")
         AccountEmojiManager.addListener(this)
         ChildAccountList.addAccountUpdateListener(this)
         WalletFetcher.addListener(this)
@@ -131,6 +150,7 @@ class DrawerLayoutPresenter(
     }
 
     private fun bindData() {
+        Log.d(TAG, "Binding data to drawer")
         uiScope {
             with(binding.tvNetwork) {
                 val network = chainNetWorkString()
@@ -145,17 +165,16 @@ class DrawerLayoutPresenter(
             }
         }
         ioScope {
-            val address = WalletManager.wallet()?.walletAddress()
-            drawer.setDrawerLockMode(if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED)
-
-            val userInfo = AccountManager.userInfo() ?: return@ioScope
+            val userInfo = AccountManager.userInfo()
+            Log.d(TAG, "User info: ${userInfo?.nickname}, avatar: ${userInfo?.avatar}")
+            
             uiScope {
                 with(binding) {
-//                    avatarView.loadAvatar(userInfo.avatar)
-                    nickNameView.text = userInfo.nickname
+                    nickNameView.text = userInfo?.nickname ?: ""
 
-                    val avatarUrl = userInfo.avatar.parseAvatarUrl()
-                    val avatar = if (avatarUrl.contains("flovatar.com")) {
+                    val avatarUrl = userInfo?.avatar?.parseAvatarUrl()
+                    Log.d(TAG, "Avatar URL: $avatarUrl")
+                    val avatar = if (avatarUrl?.contains("flovatar.com") == true) {
                         avatarUrl.svgToPng()
                     } else {
                         avatarUrl
@@ -187,12 +206,6 @@ class DrawerLayoutPresenter(
                 }
             }
         }
-        /**
-         * Temp Remove
-         * The account 'quick switch' feature must be removed until we enable user-defined profile pictures or otherwise make it more obvious which profile icon corresponds to which account.
-         * Until that time, we must remove the quick switch feature.
-         */
-//        bindAccountData()
     }
 
     private fun bindEVMInfo() {
@@ -207,20 +220,48 @@ class DrawerLayoutPresenter(
     private inner class DrawerListener : DrawerLayout.SimpleDrawerListener() {
         override fun onDrawerOpened(drawerView: View) {
             super.onDrawerOpened(drawerView)
+            Log.d(TAG, "Drawer opened")
             bindData()
             bindEVMInfo()
+        }
+
+        override fun onDrawerClosed(drawerView: View) {
+            super.onDrawerClosed(drawerView)
+            Log.d(TAG, "Drawer closed")
+        }
+
+        override fun onDrawerStateChanged(newState: Int) {
+            super.onDrawerStateChanged(newState)
+            val stateString = when (newState) {
+                DrawerLayout.STATE_IDLE -> "IDLE"
+                DrawerLayout.STATE_DRAGGING -> "DRAGGING"
+                DrawerLayout.STATE_SETTLING -> "SETTLING"
+                else -> "UNKNOWN"
+            }
+            Log.d(TAG, "Drawer state changed to: $stateString")
         }
     }
 
     override fun onChildAccountUpdate(parentAddress: String, accounts: List<ChildAccount>) {
+        Log.d(TAG, "Child accounts updated. Parent: $parentAddress, accounts count: ${accounts.size}")
+        accounts.forEach { account ->
+            Log.d(TAG, "Child account: ${account.address}, name: ${account.name}")
+        }
         binding.refreshWalletList()
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
+        Log.d(TAG, "Wallet data updated: ${wallet.walletAddress()}")
+        val address = wallet.walletAddress()
+        val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
+        Log.d(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
+        drawer.setDrawerLockMode(lockMode)
+        Log.d(TAG, "Refreshing wallet list")
         binding.refreshWalletList(true)
     }
 
     override fun onEmojiUpdate(userName: String, address: String, emojiId: Int, emojiName: String) {
+        Log.d(TAG, "Emoji updated for user: $userName, address: $address, emoji: $emojiName")
         binding.refreshWalletList()
     }
 
@@ -236,3 +277,5 @@ fun openDrawerLayout(context: Context) {
     val viewModel = ViewModelProvider(activity)[MainActivityViewModel::class.java]
     viewModel.openDrawerLayout()
 }
+
+

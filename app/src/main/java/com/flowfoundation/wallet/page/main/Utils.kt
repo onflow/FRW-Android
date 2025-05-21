@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.page.main
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -98,21 +99,43 @@ fun BottomNavigationView.setSvgDrawable(index: Int) {
 
 fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = false) {
     ioScope {
-        val userInfo = AccountManager.userInfo() ?: return@ioScope
-        val wallet = WalletManager.wallet() ?: return@ioScope
+        val userInfo = AccountManager.userInfo()
+        Log.d("DrawerLayoutPresenter", "Refreshing wallet list - User info: ${userInfo?.username}, avatar: ${userInfo?.avatar}")
+        
+        // Try to get wallet multiple times if it's null
+        var wallet = WalletManager.wallet()
+        var retryCount = 0
+        while (wallet == null && retryCount < 3) {
+            Log.d("DrawerLayoutPresenter", "Wallet is null, retry attempt ${retryCount + 1}")
+            kotlinx.coroutines.delay(100) // Wait 100ms between retries
+            wallet = WalletManager.wallet()
+            retryCount++
+        }
+        
+        Log.d("DrawerLayoutPresenter", "Wallet after retries: ${wallet?.walletAddress()}")
+        
+        if (userInfo == null || wallet == null) {
+            Log.d("DrawerLayoutPresenter", "User info or wallet is null after retries, skipping refresh")
+            return@ioScope
+        }
+
         val list = mutableListOf<WalletData?>().apply {
+            val mainWalletAddress = wallet.walletAddress()
+            Log.d("DrawerLayoutPresenter", "Adding main wallet: $mainWalletAddress")
+            
             add(WalletData(
                 blockchain = listOf(
                     BlockchainData(
-                    address = wallet.walletAddress() ?: "",
-                    chainId = chainNetWorkString()
-                )
+                        address = mainWalletAddress ?: "",
+                        chainId = chainNetWorkString()
+                    )
                 ),
                 name = userInfo.username
             ))
         }.filterNotNull()
 
         if (list.isEmpty()) {
+            Log.d("DrawerLayoutPresenter", "Wallet list is empty after filtering")
             return@ioScope
         }
 
@@ -120,23 +143,31 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
         list.forEach { walletItem ->
             walletItem.address()?.let {
                 addressList.add(it)
+                Log.d("DrawerLayoutPresenter", "Added main wallet address to list: $it")
             }
         }
 
-        WalletManager.childAccountList(wallet.walletAddress())?.get()?.forEach { childAccount ->
+        val childAccounts = WalletManager.childAccountList(wallet.walletAddress())?.get()
+        Log.d("DrawerLayoutPresenter", "Child accounts found: ${childAccounts?.size ?: 0}")
+        
+        childAccounts?.forEach { childAccount ->
             addressList.add(childAccount.address)
+            Log.d("DrawerLayoutPresenter", "Added child account address: ${childAccount.address}")
         }
 
         EVMWalletManager.getEVMAddress()?.let {
             addressList.add(it)
+            Log.d("DrawerLayoutPresenter", "Added EVM address: $it")
         }
 
         if (refreshBalance && llMainAccount.childCount > 0) {
+            Log.d("DrawerLayoutPresenter", "Refreshing balances only")
             fetchAllBalancesAndUpdateUI(addressList)
             return@ioScope
         }
 
         uiScope {
+            Log.d("DrawerLayoutPresenter", "Updating UI with ${list.size} main accounts")
             llMainAccount.removeAllViews()
 
             list.forEach { walletItem ->
@@ -145,9 +176,12 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
                 (itemView as ViewGroup).setupWallet(walletItem, userInfo)
                 llMainAccount.addView(itemView)
             }
+            
+            Log.d("DrawerLayoutPresenter", "Setting up linked accounts")
             this.setupLinkedAccount(wallet, userInfo)
         }
 
+        Log.d("DrawerLayoutPresenter", "Fetching balances for ${addressList.size} addresses")
         this.fetchAllBalancesAndUpdateUI(addressList)
     }
 }
@@ -156,9 +190,18 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     wallet: com.flow.wallet.wallet.Wallet,
     userInfo: UserInfoData
 ) {
+    Log.d("DrawerLayoutPresenter", "Setting up linked accounts")
     llLinkedAccount.removeAllViews()
-    if (EVMWalletManager.showEVMAccount(chainNetWorkString())) {
-        EVMWalletManager.getEVMAccount()?.let {
+    
+    // Check EVM account
+    val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
+    Log.d("DrawerLayoutPresenter", "Show EVM account: $showEVMAccount")
+    
+    if (showEVMAccount) {
+        val evmAccount = EVMWalletManager.getEVMAccount()
+        Log.d("DrawerLayoutPresenter", "EVM account: ${evmAccount?.address}")
+        
+        evmAccount?.let {
             val childView = LayoutInflater.from(root.context)
                 .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
             childView.setupWalletItem(
@@ -174,15 +217,25 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
             clEvmLayout.gone()
         }
     }
-    WalletManager.childAccountList(wallet.walletAddress())?.get()?.forEach { childAccount ->
+    
+    // Check child accounts
+    val childAccounts = WalletManager.childAccountList(wallet.walletAddress())?.get()
+    Log.d("DrawerLayoutPresenter", "Child accounts count: ${childAccounts?.size ?: 0}")
+    
+    childAccounts?.forEach { childAccount ->
+        Log.d("DrawerLayoutPresenter", "Processing child account: ${childAccount.address}, name: ${childAccount.name}")
         val childView = LayoutInflater.from(root.context)
             .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
         childAccount.address.walletData(userInfo)?.let { data ->
+            Log.d("DrawerLayoutPresenter", "Adding child account to UI: ${data.address}, name: ${data.name}")
             childView.setupWalletItem(data)
             llLinkedAccount.addView(childView)
         }
     }
-    tvLinkedAccount.setVisible(llLinkedAccount.size > 0)
+    
+    val hasLinkedAccounts = llLinkedAccount.size > 0
+    Log.d("DrawerLayoutPresenter", "Has linked accounts: $hasLinkedAccounts")
+    tvLinkedAccount.setVisible(hasLinkedAccounts)
 }
 
 @SuppressLint("SetTextI18n")
