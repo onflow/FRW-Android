@@ -33,6 +33,8 @@ object AccountCacheManager{
                 logd(TAG, "Warning: Account cache exists but is empty")
             } else {
                 logd(TAG, "First account username: ${result.firstOrNull()?.userInfo?.username ?: "null"}")
+                logd(TAG, "First account wallet address: ${result.firstOrNull()?.wallet?.walletAddress() ?: "null"}")
+                logd(TAG, "First account keystore info present: ${!result.firstOrNull()?.keyStoreInfo.isNullOrBlank()}")
             }
             return result
         } catch (e: Exception) {

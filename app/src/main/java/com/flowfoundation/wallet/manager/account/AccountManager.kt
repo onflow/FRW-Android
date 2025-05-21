@@ -120,6 +120,7 @@ object AccountManager {
                         try {
                             val keystoreAddress = com.google.gson.Gson().fromJson(account.keyStoreInfo, com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress::class.java)
                             val privateKey = keystoreAddress.privateKey
+                            logd(TAG, "Got private key from keystore info: ${privateKey.take(10)}...")
                             val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
                                 importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.RAW)
                             }
@@ -138,7 +139,13 @@ object AccountManager {
                     if (!walletRestored && !account.wallet?.walletAddress().isNullOrBlank()) {
                         logd(TAG, "Attempting fallback: restoring wallet from private key")
                         try {
+                            val walletAddress = account.wallet?.walletAddress()
+                            logd(TAG, "Wallet address for fallback: $walletAddress")
+                            
+                            // Try to get the private key from the wallet address
                             val privateKey = account.wallet?.walletAddress() ?: ""
+                            logd(TAG, "Attempting to use wallet address as private key: ${privateKey.take(10)}...")
+                            
                             val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
                                 importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.RAW)
                             }
@@ -322,7 +329,6 @@ object AccountManager {
     }
 
     fun get(): Account? {
-        logd(TAG, "get() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
         val account = currentAccount
         logd(TAG, "get() returning account: $account")
         return account

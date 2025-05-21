@@ -67,6 +67,8 @@ class DrawerLayoutPresenter(
 
     private val TAG = "DrawerLayoutPresenter"
     private val activity by lazy { findActivity(drawer) as FragmentActivity }
+    private var isUpdatingWallet = false
+    private val walletUpdateLock = Object()
 
     init {
         Log.d(TAG, "Initializing DrawerLayoutPresenter")
@@ -253,11 +255,52 @@ class DrawerLayoutPresenter(
     override fun onWalletDataUpdate(wallet: WalletListData) {
         Log.d(TAG, "Wallet data updated: ${wallet.walletAddress()}")
         val address = wallet.walletAddress()
-        val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
-        Log.d(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
-        drawer.setDrawerLockMode(lockMode)
-        Log.d(TAG, "Refreshing wallet list")
-        binding.refreshWalletList(true)
+        if (address.isNullOrBlank()) {
+            Log.d(TAG, "Received wallet update with null/blank address")
+            return
+        }
+
+        synchronized(walletUpdateLock) {
+            if (isUpdatingWallet) {
+                Log.d(TAG, "Wallet update already in progress, skipping")
+                return
+            }
+
+            isUpdatingWallet = true
+            try {
+                Log.d(TAG, "Starting wallet update process")
+                // Update the wallet first
+                WalletManager.updateWallet(wallet)
+                
+                // Wait a short moment for the wallet to be initialized
+                var retryCount = 0
+                var currentWallet = WalletManager.wallet()
+                
+                while (currentWallet == null && retryCount < 3) {
+                    Log.d(TAG, "Waiting for wallet initialization, attempt ${retryCount + 1}")
+                    Thread.sleep(100)
+                    currentWallet = WalletManager.wallet()
+                    retryCount++
+                }
+                
+                if (currentWallet != null) {
+                    Log.d(TAG, "Wallet initialized successfully with address: ${currentWallet.walletAddress()}")
+                    val lockMode = DrawerLayout.LOCK_MODE_UNLOCKED
+                    Log.d(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
+                    drawer.setDrawerLockMode(lockMode)
+                    Log.d(TAG, "Refreshing wallet list")
+                    binding.refreshWalletList(true)
+                } else {
+                    Log.d(TAG, "Failed to initialize wallet after $retryCount attempts")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during wallet update: ${e.message}")
+                Log.e(TAG, "Error stack trace: ${e.stackTraceToString()}")
+            } finally {
+                isUpdatingWallet = false
+                Log.d(TAG, "Wallet update process completed")
+            }
+        }
     }
 
     override fun onEmojiUpdate(userName: String, address: String, emojiId: Int, emojiName: String) {
