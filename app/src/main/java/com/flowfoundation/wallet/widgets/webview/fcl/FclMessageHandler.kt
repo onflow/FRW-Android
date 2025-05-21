@@ -72,15 +72,6 @@ class FclMessageHandler(
             return selectedAddress
         }
         
-        // Last attempt - use any active account from AccountManager
-        val accounts = AccountManager.list()
-        val activeAccount = accounts.firstOrNull { it.isActive }
-        val activeWalletAddress = activeAccount?.wallet?.walletAddress()
-        if (!activeWalletAddress.isNullOrBlank()) {
-            logd(TAG, "Got wallet address from active account: '$activeWalletAddress'")
-            return activeWalletAddress
-        }
-        
         logd(TAG, "Could not find any wallet address")
         return ""
     }

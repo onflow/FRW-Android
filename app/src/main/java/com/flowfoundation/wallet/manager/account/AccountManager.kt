@@ -83,7 +83,35 @@ object AccountManager {
         ioScope {
             try {
                 val accountList = AccountCacheManager.read()
-                if (!accountList.isNullOrEmpty()) {
+                if (accountList.isNullOrEmpty()) {
+                    logd(TAG, "No accounts found in cache, attempting to fetch from server")
+                    try {
+                        val service = retrofit().create(ApiService::class.java)
+                        val userInfo = service.userInfo().data
+                        val walletList = service.getWalletList()
+                        
+                        if (walletList.data != null && !walletList.data?.walletAddress().isNullOrBlank()) {
+                            val walletAddress = walletList.data?.walletAddress()
+                            logd(TAG, "Fetched wallet address from server: $walletAddress")
+                            
+                            // Create and add the account
+                            val account = Account(
+                                userInfo = userInfo,
+                                wallet = walletList.data
+                            )
+                            currentAccount = account
+                            accounts.add(account)
+                            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+                            dispatchListeners(account)
+                            logd(TAG, "Successfully fetched and cached account from server")
+                        } else {
+                            logd(TAG, "No wallet data found in server response")
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to fetch account from server: $e")
+                        ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
+                    }
+                } else {
                     val account = accountList.first()
                     var walletRestored = false
                     // Try to restore from private key (keyStoreInfo)
@@ -93,7 +121,7 @@ object AccountManager {
                             val keystoreAddress = com.google.gson.Gson().fromJson(account.keyStoreInfo, com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress::class.java)
                             val privateKey = keystoreAddress.privateKey
                             val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
-                                importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.HEX)
+                                importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.RAW)
                             }
                             currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
                                 key,
@@ -106,25 +134,22 @@ object AccountManager {
                             loge(TAG, "Failed to restore wallet from private key: $e")
                         }
                     }
-                    // Fallback: Try to restore from mnemonic (if available and not blank)
+                    // Fallback: Try to restore from private key
                     if (!walletRestored && !account.wallet?.walletAddress().isNullOrBlank()) {
-                        logd(TAG, "Attempting fallback: restoring wallet from mnemonic (not recommended, only if mnemonic is stored)")
+                        logd(TAG, "Attempting fallback: restoring wallet from private key")
                         try {
-                            val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
-                                mnemonicString = account.wallet?.walletAddress() ?: "",
-                                passphrase = "",
-                                derivationPath = "m/44'/539'/0'/0/0",
-                                keyPair = null,
-                                storage = getStorage()
-                            )
+                            val privateKey = account.wallet?.walletAddress() ?: ""
+                            val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
+                                importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.RAW)
+                            }
                             currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
-                                seedPhraseKey,
+                                key,
                                 setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
                                 getStorage()
                             )
-                            logd(TAG, "Wallet restored from mnemonic. Address: ${currentWallet?.walletAddress()}")
+                            logd(TAG, "Wallet restored from private key. Address: ${currentWallet?.walletAddress()}")
                         } catch (e: Exception) {
-                            loge(TAG, "Failed to restore wallet from mnemonic: $e")
+                            loge(TAG, "Failed to restore wallet from private key: $e")
                         }
                     }
                     currentAccount = account
@@ -302,6 +327,11 @@ object AccountManager {
 
     fun userInfo(): UserInfoData? {
         logd(TAG, "userInfo() called")
+        logd(TAG, "Current account: $currentAccount")
+        logd(TAG, "Current account userInfo: ${currentAccount?.userInfo}")
+        logd(TAG, "Current account wallet address: ${currentAccount?.wallet?.walletAddress()}")
+        logd(TAG, "Current account prefix: ${currentAccount?.prefix}")
+        logd(TAG, "Current account isActive: ${currentAccount?.isActive}")
         return currentAccount?.userInfo
     }
 

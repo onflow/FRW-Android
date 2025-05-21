@@ -17,7 +17,9 @@ object AccountCacheManager{
     @WorkerThread
     fun read(): List<Account>? {
         val str = file.read()
+        logd(TAG, "read() called, returned ${str?.length ?: 0} characters, isBlank=${str.isBlank()}")
         if (str.isBlank()) {
+            logd(TAG, "Warning: Account cache exists but is empty")
             return null
         }
 
@@ -25,7 +27,14 @@ object AccountCacheManager{
             val json = Json {
                 ignoreUnknownKeys = true
             }
-            return json.decodeFromString(ListSerializer(Account.serializer()), str)
+            val result = json.decodeFromString(ListSerializer(Account.serializer()), str)
+            logd(TAG, "read() returned ${result.size} accounts")
+            if (result.isEmpty()) {
+                logd(TAG, "Warning: Account cache exists but is empty")
+            } else {
+                logd(TAG, "First account username: ${result.firstOrNull()?.userInfo?.username ?: "null"}")
+            }
+            return result
         } catch (e: Exception) {
             ErrorReporter.reportWithMixpanel(AccountError.DESERIALIZE_ACCOUNT_FAILED, e)
             loge(TAG, e)
@@ -34,6 +43,12 @@ object AccountCacheManager{
     }
 
     fun cache(data: List<Account>) {
+        logd(TAG, "cache() called with ${data.size} accounts")
+        if (data.isEmpty()) {
+            logd(TAG, "Warning: Caching empty accounts list")
+        } else {
+            logd(TAG, "Caching accounts with usernames: ${data.map { it.userInfo.username }}")
+        }
         ioScope { cacheSync(data) }
     }
 

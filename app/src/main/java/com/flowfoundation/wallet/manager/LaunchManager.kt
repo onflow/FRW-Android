@@ -30,6 +30,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.service.MessagingService
 import com.flowfoundation.wallet.utils.getThemeMode
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.startServiceSafe
 import com.flowfoundation.wallet.utils.uiScope
@@ -42,7 +43,12 @@ object LaunchManager {
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
         ioScope {
-            safeRun { AccountManager.init() }
+            logd("LaunchManager", "About to initialize AccountManager")
+            safeRun { 
+                AccountManager.init() 
+                logd("LaunchManager", "AccountManager initialized successfully")
+            }
+            logd("LaunchManager", "After AccountManager initialization")
         }
         refreshChainNetwork {
             safeRun { MixpanelManager.init(application) }
