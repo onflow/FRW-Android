@@ -18,6 +18,10 @@ import org.onflow.flow.ChainId
 import com.google.gson.Gson
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.KeyFormat
+import com.flowfoundation.wallet.cache.AccountCacheManager
+import com.flowfoundation.wallet.manager.account.Accounts
+import com.flowfoundation.wallet.network.model.BlockchainData
+import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
@@ -48,28 +52,58 @@ object WalletManager {
     private fun initializeWallet(): Boolean {
         logd(TAG, "initializeWallet() called")
 
-        val account = AccountManager.get() ?: return false
-        val keystoreInfo = account.keyStoreInfo ?: return false
-        val walletAddress = account.wallet?.walletAddress() ?: return false
+        val account = AccountManager.get() ?: run {
+            logd(TAG, "-- bail: AccountManager.get() == null")
+            return false
+        }
 
-        // 1. Build the key
+        val keystoreInfo = account.keyStoreInfo ?: run {
+            logd(TAG, "-- bail: account.keyStoreInfo == null")
+            return false
+        }
+
+        /* 1. Build the key */
         val ks      = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
+        val keyHex  = ks.privateKey.removePrefix("0x")
+            .also { require(it.length == 64) { "Private key must be 32-byte hex" } }
+
         val key     = PrivateKey.create(getStorage()).apply {
-            importPrivateKey(ks.privateKey.hexToBytes(), KeyFormat.RAW)
+            importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
         }
 
-        // 2. Build the wallet
-        currentWallet = WalletFactory.createKeyWallet(
-            key, setOf(ChainId.Mainnet, ChainId.Testnet), getStorage()
+        /* 2. Create the wallet */
+        val newWallet = WalletFactory.createKeyWallet(
+            key,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
         )
+        currentWallet = newWallet
+        logd(TAG, "Wallet restored, address = ${newWallet.walletAddress()}")
 
-        // 3.  First‐time address selection
-        if (selectedWalletAddressRef.get().isBlank()) {
-            selectWalletAddress(walletAddress)
+        /* 3. Persist the wallet info back into the Account (optional but handy) */
+        if (account.wallet == null) {
+            val wallets = newWallet.accounts.map { (chainId, accounts) ->
+                WalletData(
+                    blockchain = accounts.map {
+                        BlockchainData(address = it.address, chainId = chainId.toString())
+                    },
+                    name = chainId.toString()
+                )
+            }
+            account.wallet = WalletListData(
+                id       = account.userInfo.username,         // or whatever id you use
+                username = account.userInfo.username,
+                wallets  = wallets
+            )
+            AccountCacheManager.cache(Accounts().apply { addAll(AccountManager.list()) })
         }
 
-        refreshChildAccount(currentWallet!!)
-        logd(TAG, "Wallet created: ${currentWallet?.walletAddress()}")
+        /* 4. Make sure WalletManager knows which address is selected */
+        val address = newWallet.walletAddress()
+        if (!address.isNullOrBlank()) {
+            selectWalletAddress(address)
+        }
+
         return true
     }
 
@@ -80,11 +114,12 @@ object WalletManager {
     fun wallet(): Wallet? = synchronized(initializationLock) {
         if (!isInitialized) init()           // first pass
 
+
         if (currentWallet == null) {         // still null? retry once
             if (initializeWallet()) isInitialized = true
         }
 
-        logd(TAG, "Returning wallet: ${currentWallet?.walletAddress()}")
+        logd(TAG, "Returning wallet: ${currentWallet}")
         currentWallet
     }
 

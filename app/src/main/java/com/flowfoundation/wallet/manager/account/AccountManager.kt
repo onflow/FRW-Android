@@ -308,10 +308,12 @@ object AccountManager {
     }
 
     fun wallet(): com.flow.wallet.wallet.Wallet? {
-        logd(TAG, "wallet() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
-        val wallet = currentWallet
-        logd(TAG, "wallet() returning wallet: $wallet")
-        return wallet
+        // Ask the source of truth first
+        val wmWallet = WalletManager.wallet()
+        if (wmWallet != null) return wmWallet
+
+        // fall back to the copy we may have created in init()
+        return currentWallet
     }
 
     fun userInfo(): UserInfoData? {
