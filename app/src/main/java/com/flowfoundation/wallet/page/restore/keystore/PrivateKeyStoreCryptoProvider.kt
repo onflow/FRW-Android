@@ -10,6 +10,7 @@ import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.models.hexToBytes
 
 class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoProvider {
 
@@ -17,7 +18,10 @@ class PrivateKeyStoreCryptoProvider(private val keyStoreInfo: String): CryptoPro
     private val privateKey: PrivateKey by lazy {
         val storage = getStorage()
         PrivateKey.create(storage).apply {
-            importPrivateKey(keyStoreAddress.privateKey.toByteArray(), KeyFormat.HEX)
+            val keyBytes = keyStoreAddress.privateKey
+                .removePrefix("0x")
+                .hexToBytes()
+            importPrivateKey(keyBytes, KeyFormat.RAW)
         }
     }
 
