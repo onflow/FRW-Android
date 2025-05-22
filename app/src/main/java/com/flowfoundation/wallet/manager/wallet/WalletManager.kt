@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.manager.account.Accounts
 import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
+import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 
@@ -333,7 +334,11 @@ object WalletManager {
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     getStorage()
                 )
+                runBlocking { newWallet.awaitFirstAccount() }
+
                 logd(TAG, "Created new wallet with address: '${newWallet.walletAddress()}'")
+
+
 
                 // Update the current wallet reference
                 currentWallet = newWallet
