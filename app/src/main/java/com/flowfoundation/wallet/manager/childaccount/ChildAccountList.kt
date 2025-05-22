@@ -21,7 +21,16 @@ class ChildAccountList(
     private val accountList = mutableListOf<ChildAccount>()
 
     init {
-        ioScope { accountList.addAll(cache().read().orEmpty()) }
+        logd(TAG, "Initializing ChildAccountList for address: $address")
+        ioScope { 
+            try {
+                val cachedAccounts = cache().read().orEmpty()
+                logd(TAG, "Loaded ${cachedAccounts.size} accounts from cache")
+                accountList.addAll(cachedAccounts)
+            } catch (e: Exception) {
+                logd(TAG, "Error loading cached accounts: ${e.message}")
+            }
+        }
         refresh()
     }
 
@@ -38,16 +47,39 @@ class ChildAccountList(
     }
 
     fun refresh() {
+        logd(TAG, "Starting refresh for address: $address")
         ioScope {
-            val accounts = queryAccountMeta(address) ?: return@ioScope
-            val oldAccounts = accountList.toList()
-            accounts.forEach { account -> account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0) }
-            accountList.clear()
-            accountList.addAll(accounts)
-            cache().cache(ArrayList(accountList))
-            dispatchAccountUpdateListener(address, accountList.toList())
-
-            logd(TAG, "refresh: $address, ${accountList.size}")
+            try {
+                logd(TAG, "Querying account metadata")
+                val accounts = queryAccountMeta(address)
+                if (accounts == null) {
+                    logd(TAG, "No accounts returned from query")
+                    return@ioScope
+                }
+                logd(TAG, "Found ${accounts.size} accounts")
+                
+                val oldAccounts = accountList.toList()
+                accounts.forEach { account -> 
+                    account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0)
+                }
+                
+                accountList.clear()
+                accountList.addAll(accounts)
+                logd(TAG, "Updated account list with ${accountList.size} accounts")
+                
+                try {
+                    cache().cache(ArrayList(accountList))
+                    logd(TAG, "Cached account list")
+                } catch (e: Exception) {
+                    logd(TAG, "Error caching accounts: ${e.message}")
+                }
+                
+                dispatchAccountUpdateListener(address, accountList.toList())
+                logd(TAG, "Dispatched account update listener")
+            } catch (e: Exception) {
+                logd(TAG, "Error during refresh: ${e.message}")
+                logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
+            }
         }
     }
 
@@ -57,8 +89,21 @@ class ChildAccountList(
 //    }
 
     private suspend fun queryAccountMeta(address: String): List<ChildAccount>? {
-        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence { arg { Cadence.address(address) } }
-        return result?.encode()?.parseAccountMetas()
+        logd(TAG, "Executing Cadence script for address: $address")
+        try {
+            val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence { arg { Cadence.address(address) } }
+            if (result == null) {
+                logd(TAG, "Cadence script returned null")
+                return null
+            }
+            val accounts = result.encode()?.parseAccountMetas()
+            logd(TAG, "Parsed ${accounts?.size ?: 0} accounts from Cadence result")
+            return accounts
+        } catch (e: Exception) {
+            logd(TAG, "Error executing Cadence script: ${e.message}")
+            logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
+            return null
+        }
     }
 
     private fun cache(): CacheManager<List<ChildAccount>> {
