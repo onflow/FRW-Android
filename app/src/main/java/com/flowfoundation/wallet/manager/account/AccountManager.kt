@@ -58,6 +58,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.manager.wallet.walletAddress
+import org.onflow.flow.models.hexToBytes
 
 object AccountManager {
     private val TAG = AccountManager::class.java.simpleName
@@ -84,87 +85,59 @@ object AccountManager {
             try {
                 val accountList = AccountCacheManager.read()
                 if (accountList.isNullOrEmpty()) {
-                    logd(TAG, "No accounts found in cache, attempting to fetch from server")
-                    try {
-                        val service = retrofit().create(ApiService::class.java)
-                        val userInfo = service.userInfo().data
-                        val walletList = service.getWalletList()
-                        
-                        if (walletList.data != null && !walletList.data?.walletAddress().isNullOrBlank()) {
-                            val walletAddress = walletList.data?.walletAddress()
-                            logd(TAG, "Fetched wallet address from server: $walletAddress")
-                            
-                            // Create and add the account
-                            val account = Account(
-                                userInfo = userInfo,
-                                wallet = walletList.data
-                            )
-                            currentAccount = account
-                            accounts.add(account)
-                            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
-                            dispatchListeners(account)
-                            logd(TAG, "Successfully fetched and cached account from server")
-                        } else {
-                            logd(TAG, "No wallet data found in server response")
-                        }
-                    } catch (e: Exception) {
-                        loge(TAG, "Failed to fetch account from server: $e")
-                        ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
-                    }
+                    // Instead of going to the server, jump straight to the
+                    // restore screen (or show the “import keystore” UI).
+                    logd(TAG, "No cached account – require keystore/seed restore")
+                    return@ioScope
                 } else {
                     val account = accountList.first()
+                    currentAccount = account
                     var walletRestored = false
-                    // Try to restore from private key (keyStoreInfo)
-                    if (!account.keyStoreInfo.isNullOrBlank()) {
-                        logd(TAG, "Restoring wallet from keyStoreInfo (private key)")
-                        try {
-                            val keystoreAddress = com.google.gson.Gson().fromJson(account.keyStoreInfo, com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress::class.java)
-                            val privateKey = keystoreAddress.privateKey
-                            logd(TAG, "Got private key from keystore info: ${privateKey.take(10)}...")
-                            val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
-                                importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.RAW)
-                            }
-                            currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
-                                key,
-                                setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
-                                getStorage()
-                            )
-                            logd(TAG, "Wallet restored from private key. Address: ${currentWallet?.walletAddress()}")
-                            walletRestored = true
-                        } catch (e: Exception) {
-                            loge(TAG, "Failed to restore wallet from private key: $e")
-                        }
+
+                    // 1)  If there's no keystore, log once and bail out.
+                    val keyStoreJson = account.keyStoreInfo
+                    if (keyStoreJson.isNullOrBlank()) {
+                        logd(TAG, "Cached account has no keyStoreInfo – wallet cannot be restored")
+                        dispatchListeners(account)
+                        return@ioScope                      // leave currentWallet == null
                     }
-                    // Fallback: Try to restore from private key
-                    if (!walletRestored && !account.wallet?.walletAddress().isNullOrBlank()) {
-                        logd(TAG, "Attempting fallback: restoring wallet from private key")
-                        try {
-                            val walletAddress = account.wallet?.walletAddress()
-                            logd(TAG, "Wallet address for fallback: $walletAddress")
-                            
-                            // Try to get the private key from the wallet address
-                            val privateKey = account.wallet?.walletAddress() ?: ""
-                            logd(TAG, "Attempting to use wallet address as private key: ${privateKey.take(10)}...")
-                            
-                            val key = com.flow.wallet.keys.PrivateKey.create(getStorage()).apply {
-                                importPrivateKey(privateKey.toByteArray(), com.flow.wallet.keys.KeyFormat.RAW)
-                            }
-                            currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
-                                key,
-                                setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
-                                getStorage()
-                            )
-                            logd(TAG, "Wallet restored from private key. Address: ${currentWallet?.walletAddress()}")
-                        } catch (e: Exception) {
-                            loge(TAG, "Failed to restore wallet from private key: $e")
-                        }
+
+                    try {
+                        logd(TAG, "Restoring wallet from cached keyStoreInfo")
+                        val ks = Gson().fromJson(keyStoreJson,
+                            com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress::class.java)
+
+                        val keyBytes = ks.privateKey
+                            .removePrefix("0x")
+                            .also { require(it.length == 64) { "Private key must be 32-byte hex" } }
+                            .hexToBytes()
+
+                        val key = com.flow.wallet.keys.PrivateKey
+                            .create(getStorage())
+                            .apply { importPrivateKey(keyBytes, com.flow.wallet.keys.KeyFormat.RAW) }
+
+                        currentWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                            key,
+                            setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                            getStorage()
+                        )
+
+                        logd(TAG, "Wallet restored, address = ${currentWallet?.walletAddress()}")
+
+                        // 2)  Nudge WalletManager so the app sees the wallet immediately.
+                        WalletManager.updateWallet(
+                            account.wallet!!
+                        )
+                    } catch (e: Exception) {
+                        logd(TAG, "Failed to restore wallet from cached keyStoreInfo: $e")
+                        currentWallet = null
                     }
                     currentAccount = account
                     dispatchListeners(account)
                 }
             } catch (e: Exception) {
                 loge(TAG, "init error: $e")
-                com.flowfoundation.wallet.utils.error.ErrorReporter.reportWithMixpanel(com.flowfoundation.wallet.utils.error.AccountError.INIT_FAILED, e)
+                ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
             }
         }
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()

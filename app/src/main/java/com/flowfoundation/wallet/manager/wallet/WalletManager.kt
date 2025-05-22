@@ -53,6 +53,12 @@ object WalletManager {
                 
                 // Add more detailed logging for account retrieval
                 val account = AccountManager.get()
+                if (account == null || account.keyStoreInfo.isNullOrBlank()) {
+                    logd(TAG, "No account yet – deferring wallet initialisation")
+                    // Leave isInitialized = false so the next caller will try again
+                    return
+                }
+
                 logd(TAG, "Account from AccountManager: ${account?.userInfo?.username}")
                 logd(TAG, "Account wallet address: ${account?.wallet?.walletAddress()}")
                 logd(TAG, "Account keystore info present: ${!account?.keyStoreInfo.isNullOrBlank()}")
@@ -124,10 +130,8 @@ object WalletManager {
                     selectWalletAddress(walletAddress)
                 }
             } catch (e: Exception) {
-                logd(TAG, "Error initializing wallet: ${e.message}")
-                logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
-                // Clear the wallet state on error
-                currentWallet = null
+                logd(TAG, "Wallet initialisation error: $e")
+                throw e        // propagate; remove the currentWallet=null line
             }
         } else {
             logd(TAG, "No account found in AccountManager")
@@ -164,9 +168,14 @@ object WalletManager {
             logd(TAG, "Account wallet address: ${account?.wallet?.walletAddress()}")
             logd(TAG, "Account keystore info present: ${!account?.keyStoreInfo.isNullOrBlank()}")
             
-            if (currentWallet == null && account != null) {
-                logd(TAG, "Wallet is null but account exists, attempting to reinitialize wallet")
-                initializeWallet()
+            if (currentWallet == null) {
+                logd(TAG, "Current wallet is null, attempting to initialize")
+                if (account != null && !account.keyStoreInfo.isNullOrBlank()) {
+                    logd(TAG, "Found account with keystore info, initializing wallet")
+                    initializeWallet()
+                } else {
+                    logd(TAG, "Cannot initialize wallet - missing account or keystore info")
+                }
             }
             
             // Log final wallet state
@@ -369,9 +378,13 @@ object WalletManager {
                 val privateKey = keystoreAddress.privateKey
                 logd(TAG, "Got private key from keystore info")
 
+                val keyHex   = keystoreAddress.privateKey.removePrefix("0x")
+                require(keyHex.length == 64) { "Private key must be 32-byte hex" }
+
+                val keyBytes = keyHex.hexToBytes()
                 // Create a private key instance
                 val key = PrivateKey.create(getStorage()).apply {
-                    importPrivateKey(privateKey.hexToBytes(), KeyFormat.RAW)
+                    importPrivateKey(keyBytes, KeyFormat.RAW)
                 }
                 logd(TAG, "Created and imported private key")
 

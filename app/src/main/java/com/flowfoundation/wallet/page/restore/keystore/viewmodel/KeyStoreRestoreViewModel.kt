@@ -715,6 +715,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             logd("KeyStoreRestoreViewModel", "Initializing WalletManager")
                                             WalletManager.init()
 
+
                                             // Verify the wallet address was set correctly
                                             val currentAddress = WalletManager.selectedWalletAddress()
                                             logd("KeyStoreRestoreViewModel", "Current wallet address after init: '$currentAddress'")
