@@ -53,6 +53,9 @@ import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
 import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.network.model.BlockchainData
+import com.flowfoundation.wallet.network.model.WalletData
+import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.utils.logd
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
@@ -551,6 +554,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 keyStoreInfo = cryptoProvider.getKeyStoreInfo()
                                             )
                                         )
+                                        WalletManager.init()
                                         clearUserCache()
                                         callback.invoke(true)
                                     }
@@ -676,57 +680,31 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                                             logd("KeyStoreRestoreViewModel", "Adding account to AccountManager")
                                             AccountManager.add(userAccount)
-                                            logd("KeyStoreRestoreViewModel", "Account added to AccountManager")
-
-                                            // Set the wallet address in WalletManager
-                                            logd("KeyStoreRestoreViewModel", "Setting wallet address in WalletManager: '$walletAddress'")
-                                            if (walletAddress.isNullOrBlank()) {
-                                                logd("KeyStoreRestoreViewModel", "WARNING: Attempting to set blank wallet address")
-                                            }
-
-                                            // Clear any existing wallet state
-                                            logd("KeyStoreRestoreViewModel", "Clearing existing wallet state")
-                                            WalletManager.clear()
-
-                                            // Create a new wallet using the private key
-                                            val storage = getStorage()
-                                            val key = PrivateKey.create(storage).apply {
-                                                logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
-                                                // Convert hex string to bytes
-                                                val keyBytes = privateKey.hexToBytes()
-                                                logd("KeyStoreRestoreViewModel", "Converted private key to bytes")
-                                                importPrivateKey(keyBytes, KeyFormat.RAW)
-                                                logd("KeyStoreRestoreViewModel", "Imported private key")
-                                            }
-                                            
-                                            // Create a new wallet using the private key
-                                            val wallet = WalletFactory.createKeyWallet(
-                                                key,
-                                                setOf(ChainId.Mainnet, ChainId.Testnet),
-                                                storage
-                                            )
-                                            logd("KeyStoreRestoreViewModel", "Created key wallet")
-
-                                            // Set the wallet address
-                                            logd("KeyStoreRestoreViewModel", "Selecting wallet address: '$walletAddress'")
-                                            WalletManager.selectWalletAddress(walletAddress ?: "")
-
-                                            // Initialize the wallet
-                                            logd("KeyStoreRestoreViewModel", "Initializing WalletManager")
                                             WalletManager.init()
 
+//                                            val wallet = WalletManager.wallet()
+//                                            if (wallet != null) {
+//                                                // Build WalletListData from the SDK wallet
+//                                                val wallets = wallet.accounts.map { (chainId, accounts) ->
+//                                                    WalletData(
+//                                                        blockchain = accounts.map { account ->
+//                                                            BlockchainData(
+//                                                                address = account.address,
+//                                                                chainId = chainId.toString()
+//                                                            )
+//                                                        },
+//                                                        name = chainId.toString()
+//                                                    )
+//                                                }
+//                                                val walletListData = WalletListData(
+//                                                    id = "local", // or some identifier
+//                                                    username = "local", // or get from user info if available
+//                                                    wallets = wallets
+//                                                )
+//                                                WalletManager.updateWallet(walletListData)
+//                                            }
 
-                                            // Verify the wallet address was set correctly
-                                            val currentAddress = WalletManager.selectedWalletAddress()
-                                            logd("KeyStoreRestoreViewModel", "Current wallet address after init: '$currentAddress'")
-
-                                            if (currentAddress != walletAddress) {
-                                                logd("KeyStoreRestoreViewModel", "WARNING: Wallet address mismatch. Expected: '$walletAddress', Got: '$currentAddress'")
-                                                // Try to set it again
-                                                WalletManager.selectWalletAddress(walletAddress ?: "")
-                                                WalletManager.init()
-                                                logd("KeyStoreRestoreViewModel", "Retried wallet initialization. New address: '${WalletManager.selectedWalletAddress()}'")
-                                            }
+                                            logd("KeyStoreRestoreViewModel", "Account added to AccountManager")
 
                                             logd("KeyStoreRestoreViewModel", "Tracking account restore in Mixpanel")
                                             if (walletAddress != null) {
@@ -794,6 +772,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 keyStoreInfo = Gson().toJson(keystoreAddress)
                                             )
                                             AccountManager.add(userAccount)
+                                            WalletManager.init()
                                             
                                             // Track the restore
                                             MixpanelManager.accountRestore(walletAddress, restoreType)
@@ -922,6 +901,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 keyStoreInfo = cryptoProvider.getKeyStoreInfo()
                                             )
                                         )
+                                        WalletManager.init()
                                         MixpanelManager.accountRestore(
                                             cryptoProvider.getAddress(),
                                             restoreType

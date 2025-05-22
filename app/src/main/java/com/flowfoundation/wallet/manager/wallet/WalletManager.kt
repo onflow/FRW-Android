@@ -34,154 +34,58 @@ object WalletManager {
     private var isInitialized = false
 
     fun init() {
-        logd(TAG, "init() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
         synchronized(initializationLock) {
-            if (isInitializing) {
-                logd(TAG, "Already initializing, skipping")
-                return
-            }
-            if (isInitialized) {
-                logd(TAG, "Already initialized, skipping")
-                return
-            }
+            if (isInitializing || isInitialized) return
             isInitializing = true
             try {
-                logd(TAG, "Initializing WalletManager")
-                val address = getSelectedWalletAddress().orEmpty()
-                logd(TAG, "Retrieved selected wallet address from preferences: '$address'")
-                selectedWalletAddressRef.set(address)
-                
-                // Add more detailed logging for account retrieval
-                val account = AccountManager.get()
-                if (account == null || account.keyStoreInfo.isNullOrBlank()) {
-                    logd(TAG, "No account yet – deferring wallet initialisation")
-                    // Leave isInitialized = false so the next caller will try again
-                    return
+                if (initializeWallet()) {
+                    isInitialized = true          // mark ready ***after*** success
                 }
-
-                logd(TAG, "Account from AccountManager: ${account?.userInfo?.username}")
-                logd(TAG, "Account wallet address: ${account?.wallet?.walletAddress()}")
-                logd(TAG, "Account keystore info present: ${!account?.keyStoreInfo.isNullOrBlank()}")
-                
-                initializeWallet()
-                isInitialized = true
-                logd(TAG, "Initialization completed successfully")
-            } catch (e: Exception) {
-                logd(TAG, "Error during initialization: ${e.message}")
-                logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
-            } finally {
-                isInitializing = false
-            }
+            } finally { isInitializing = false }
         }
     }
 
-    private fun initializeWallet() {
-        logd(TAG, "initializeWallet() called. Stack trace: ${Thread.currentThread().stackTrace.joinToString("\n") { it.toString() }}")
-        val account = AccountManager.get()
-        logd(TAG, "Got account from AccountManager: $account")
-        
-        if (account != null) {
-            logd(TAG, "Found account in AccountManager: ${account.wallet?.walletAddress()}")
-            logd(TAG, "Account details - userInfo: ${account.userInfo}, keyStoreInfo: ${account.keyStoreInfo}")
-            
-            val walletAddress = account.wallet?.walletAddress()
-            logd(TAG, "Wallet address from account: '$walletAddress'")
-            
-            if (walletAddress.isNullOrBlank()) {
-                logd(TAG, "WARNING: Wallet address is null or blank")
-                return
-            }
+    private fun initializeWallet(): Boolean {
+        logd(TAG, "initializeWallet() called")
 
-            try {
-                // Get the private key from the keystore info
-                val keystoreInfo = account.keyStoreInfo
-                if (keystoreInfo.isNullOrBlank()) {
-                    logd(TAG, "WARNING: No keystore info found in account")
-                    return
-                }
+        val account = AccountManager.get() ?: return false
+        val keystoreInfo = account.keyStoreInfo ?: return false
+        val walletAddress = account.wallet?.walletAddress() ?: return false
 
-                // Parse the keystore info to get the private key
-                val keystoreAddress = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
-                val privateKey = keystoreAddress.privateKey
-                logd(TAG, "Got private key from keystore info")
-
-                // Create a private key instance
-                val key = PrivateKey.create(getStorage()).apply {
-                    importPrivateKey(privateKey.hexToBytes(), KeyFormat.RAW)
-                }
-                logd(TAG, "Created and imported private key")
-
-                // Create a new wallet using the private key
-                val newWallet = WalletFactory.createKeyWallet(
-                    key,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    getStorage()
-                )
-                logd(TAG, "Created wallet with address: '${newWallet.walletAddress()}'")
-
-                // Update the current wallet reference
-                currentWallet = newWallet
-                logd(TAG, "Updated current wallet reference")
-
-                // Set the wallet address if it's not already set or if we're switching back to Flow
-                if (selectedWalletAddressRef.get().isBlank() || 
-                    (selectedWalletAddressRef.get().startsWith("0x") && !selectedWalletAddressRef.get().equals(walletAddress, ignoreCase = true))) {
-                    logd(TAG, "Setting wallet address to: '$walletAddress'")
-                    selectWalletAddress(walletAddress)
-                }
-            } catch (e: Exception) {
-                logd(TAG, "Wallet initialisation error: $e")
-                throw e        // propagate; remove the currentWallet=null line
-            }
-        } else {
-            logd(TAG, "No account found in AccountManager")
-            // If we have a selected address but no account, try to use that address
-            if (selectedWalletAddressRef.get().isNotBlank()) {
-                logd(TAG, "Found selected address in preferences: '${selectedWalletAddressRef.get()}'")
-                // Keep the selected address in preferences but don't create a wallet yet
-                // The wallet will be created when an account is added
-            } else {
-                logd(TAG, "No selected address found in preferences")
-            }
+        // 1. Build the key
+        val ks      = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
+        val key     = PrivateKey.create(getStorage()).apply {
+            importPrivateKey(ks.privateKey.hexToBytes(), KeyFormat.RAW)
         }
+
+        // 2. Build the wallet
+        currentWallet = WalletFactory.createKeyWallet(
+            key, setOf(ChainId.Mainnet, ChainId.Testnet), getStorage()
+        )
+
+        // 3.  First‐time address selection
+        if (selectedWalletAddressRef.get().isBlank()) {
+            selectWalletAddress(walletAddress)
+        }
+
+        refreshChildAccount(currentWallet!!)
+        logd(TAG, "Wallet created: ${currentWallet?.walletAddress()}")
+        return true
     }
 
     fun walletUpdate() {
         wallet()?.let { refreshChildAccount(it) }
     }
 
-    fun wallet(): Wallet? {
-        synchronized(initializationLock) {
-            if (!isInitialized) {
-                logd(TAG, "WalletManager not initialized, calling init()")
-                init()
-            }
-            
-            // Add detailed logging about the current state
-            logd(TAG, "wallet() called, current wallet: ${currentWallet?.walletAddress()}")
-            logd(TAG, "isInitialized: $isInitialized")
-            logd(TAG, "isInitializing: $isInitializing")
-            logd(TAG, "Selected wallet address: ${selectedWalletAddressRef.get()}")
-            
-            val account = AccountManager.get()
-            logd(TAG, "Account from AccountManager: ${account?.userInfo?.username}")
-            logd(TAG, "Account wallet address: ${account?.wallet?.walletAddress()}")
-            logd(TAG, "Account keystore info present: ${!account?.keyStoreInfo.isNullOrBlank()}")
-            
-            if (currentWallet == null) {
-                logd(TAG, "Current wallet is null, attempting to initialize")
-                if (account != null && !account.keyStoreInfo.isNullOrBlank()) {
-                    logd(TAG, "Found account with keystore info, initializing wallet")
-                    initializeWallet()
-                } else {
-                    logd(TAG, "Cannot initialize wallet - missing account or keystore info")
-                }
-            }
-            
-            // Log final wallet state
-            logd(TAG, "Returning wallet with address: ${currentWallet?.walletAddress()}")
-            return currentWallet
+    fun wallet(): Wallet? = synchronized(initializationLock) {
+        if (!isInitialized) init()           // first pass
+
+        if (currentWallet == null) {         // still null? retry once
+            if (initializeWallet()) isInitialized = true
         }
+
+        logd(TAG, "Returning wallet: ${currentWallet?.walletAddress()}")
+        currentWallet
     }
 
     fun isEVMAccountSelected(): Boolean {
