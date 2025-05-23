@@ -4,6 +4,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.flowfoundation.wallet.firebase.messaging.getFirebaseMessagingToken
+import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -18,6 +19,7 @@ typealias FirebaseAuthCallback = (isSuccessful: Boolean, exception: Exception?) 
 fun isAnonymousSignIn(): Boolean {
     return Firebase.auth.currentUser?.isAnonymous ?: true
 }
+
 
 fun isUserSignIn(): Boolean {
     val user = Firebase.auth.currentUser

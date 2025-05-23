@@ -344,6 +344,8 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
     val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
+    logd(TAG, accountKeys)
+    logd(TAG, cryptoProvider.getPublicKey())
     val currentKey = accountKeys.findLast { it.publicKey == cryptoProvider.getPublicKey() }
         ?: throw InvalidKeyException("get account key error")
 

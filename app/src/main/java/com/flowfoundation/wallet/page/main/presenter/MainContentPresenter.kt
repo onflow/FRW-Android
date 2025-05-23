@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
+import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.activeColor
@@ -35,10 +36,13 @@ class MainContentPresenter(
         setupListener()
         binding.viewPager.offscreenPageLimit = 4
         binding.viewPager.adapter = MainPageAdapter(activity)
+
+
     }
 
     suspend fun checkAndShowContent() {
-        if (isRegistered() && isUserSignIn()) {
+        val hasValidKeyStore = AccountManager.list().any { !it.keyStoreInfo.isNullOrBlank() }
+        if (isRegistered() && isUserSignIn() && hasValidKeyStore) {
             showMainContent()
         } else {
             showUnregisteredFragment()
