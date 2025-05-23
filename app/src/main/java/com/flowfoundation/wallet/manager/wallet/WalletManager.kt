@@ -24,8 +24,10 @@ import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.flow.collect
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -334,11 +336,14 @@ object WalletManager {
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     getStorage()
                 )
-                runBlocking { newWallet.awaitFirstAccount() }
+                
+                // Wait for accounts to be loaded using flow's first() operation
+                runBlocking { 
+                    newWallet.accountsFlow.first { accounts -> accounts.isNotEmpty() }
+                    logd(TAG, "Accounts loaded, proceeding with wallet setup")
+                }
 
                 logd(TAG, "Created new wallet with address: '${newWallet.walletAddress()}'")
-
-
 
                 // Update the current wallet reference
                 currentWallet = newWallet
