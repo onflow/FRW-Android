@@ -351,7 +351,11 @@ object WalletManager {
 
                 // Refresh child accounts
                 refreshChildAccount(newWallet)
-                logd(TAG, "Refreshed child accounts")
+                logd(TAG, "Refreshed child accounts for address $newWallet")
+
+                // Refresh EVM wallet/account
+//                EVMWalletManager.init()
+//                logd(TAG, "Refreshed EVM wallet/account")
                 
                 // Update selected address if needed
                 val walletAddress = newWallet.walletAddress()
