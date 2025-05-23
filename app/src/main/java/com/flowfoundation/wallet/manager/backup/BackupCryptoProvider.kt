@@ -15,7 +15,8 @@ import org.onflow.flow.models.SigningAlgorithm
  */
 class BackupCryptoProvider(
     private val seedPhraseKey: SeedPhraseKey,
-    private val keyWallet: KeyWallet? = null
+    private val keyWallet: KeyWallet? = null,
+    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1
 ) : CryptoProvider {
 
     /**
@@ -40,7 +41,7 @@ class BackupCryptoProvider(
      */
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
+        return seedPhraseKey.publicKey(signingAlgorithm)?.toHexString() ?: ""
     }
 
     /**
@@ -59,7 +60,7 @@ class BackupCryptoProvider(
      */
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
-        return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
+        return seedPhraseKey.sign(data, signingAlgorithm, HashingAlgorithm.SHA3_256).toHexString()
     }
 
     /**
@@ -72,11 +73,11 @@ class BackupCryptoProvider(
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+                return seedPhraseKey.sign(bytes, signingAlgorithm, HashingAlgorithm.SHA3_256)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+                return seedPhraseKey.sign(bytes, signingAlgorithm, HashingAlgorithm.SHA3_256)
             }
         }
     }
@@ -91,10 +92,10 @@ class BackupCryptoProvider(
 
     /**
      * Get the signing algorithm used by this provider
-     * @return ECDSA_P256 signing algorithm
+     * @return The configured signing algorithm
      */
     override fun getSignatureAlgorithm(): SigningAlgorithm {
-        return SigningAlgorithm.ECDSA_P256
+        return signingAlgorithm
     }
 
     /**

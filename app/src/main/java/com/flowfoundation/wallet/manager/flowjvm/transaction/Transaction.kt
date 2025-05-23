@@ -346,8 +346,16 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
     logd(TAG, accountKeys)
     logd(TAG, cryptoProvider.getPublicKey())
-    val currentKey = accountKeys.findLast { it.publicKey == cryptoProvider.getPublicKey() }
-        ?: throw InvalidKeyException("get account key error")
+    
+    // Normalize the crypto provider's public key by adding 0x prefix if missing
+    val providerPublicKey = cryptoProvider.getPublicKey().let { 
+        if (!it.startsWith("0x")) "0x$it" else it 
+    }
+
+    logd(TAG, providerPublicKey)
+
+    val currentKey = accountKeys.findLast { it.publicKey == providerPublicKey }
+        ?: throw InvalidKeyException("Get account key error")
 
     val payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress).orEmpty()
     val authorizers = when {

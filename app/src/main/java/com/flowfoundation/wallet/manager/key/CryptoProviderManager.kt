@@ -14,12 +14,15 @@ import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.errors.WalletError
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import org.onflow.flow.ChainId
+import org.onflow.flow.models.SigningAlgorithm
+import kotlinx.coroutines.runBlocking
 
 object CryptoProviderManager {
 
@@ -43,16 +46,16 @@ object CryptoProviderManager {
         logd("CryptoProviderManager", "Account prefix: ${account.prefix}")
         logd("CryptoProviderManager", "Account keystore info: ${account.keyStoreInfo}")
         logd("CryptoProviderManager", "Account wallet: ${account.wallet}")
-        
+
         val storage = getStorage()
-        
+
         return try {
             // Handle keystore-based accounts
             if (account.keyStoreInfo.isNullOrBlank().not()) {
                 logd("CryptoProviderManager", "Creating keystore-based crypto provider")
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
-            } 
-            
+            }
+
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
                 logd("CryptoProviderManager", "Creating prefix-based crypto provider")
@@ -71,8 +74,8 @@ object CryptoProviderManager {
                     storage
                 ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
-            } 
-            
+            }
+
             // Handle active accounts
             else if (account.isActive) {
                 logd("CryptoProviderManager", "Creating active account crypto provider")
@@ -89,9 +92,20 @@ object CryptoProviderManager {
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
-            } 
-            
+
+                // Get the account's keys to determine the signing algorithm
+                val accountKeys = account.wallet?.walletAddress()
+                    ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
+                val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
+                    SigningAlgorithm.ECDSA_secp256k1
+                } else {
+                    SigningAlgorithm.ECDSA_P256
+                }
+                logd("CryptoProviderManager", "Using signing algorithm: $signingAlgorithm")
+
+                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
+            }
+
             // Handle inactive accounts
             else {
                 logd("CryptoProviderManager", "Creating inactive account crypto provider")
@@ -101,7 +115,7 @@ object CryptoProviderManager {
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-                
+
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = (existingWallet as BackupCryptoProvider).getMnemonic(),
                     passphrase = "",
@@ -115,7 +129,18 @@ object CryptoProviderManager {
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
+
+                // Get the account's keys to determine the signing algorithm
+                val accountKeys = account.wallet?.walletAddress()
+                    ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
+                val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
+                    SigningAlgorithm.ECDSA_secp256k1
+                } else {
+                    SigningAlgorithm.ECDSA_P256
+                }
+                logd("CryptoProviderManager", "Using signing algorithm: $signingAlgorithm")
+
+                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
             }
         } catch (e: WalletError) {
             loge("CryptoProviderManager", "Wallet error: ${e.message}")
@@ -130,13 +155,13 @@ object CryptoProviderManager {
 
     fun getSwitchAccountCryptoProvider(account: Account): CryptoProvider? {
         val storage = getStorage()
-        
+
         return try {
             // Handle keystore-based accounts
             if (account.keyStoreInfo.isNullOrBlank().not()) {
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
-            } 
-            
+            }
+
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
                 val privateKey = PrivateKey.create(storage)
@@ -154,8 +179,8 @@ object CryptoProviderManager {
                     storage
                 ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
-            } 
-            
+            }
+
             // Handle other accounts
             else {
                 val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
@@ -164,7 +189,7 @@ object CryptoProviderManager {
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-                
+
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = (existingWallet as BackupCryptoProvider).getMnemonic(),
                     passphrase = "",
@@ -193,7 +218,7 @@ object CryptoProviderManager {
 
     fun getSwitchAccountCryptoProvider(switchAccount: LocalSwitchAccount): CryptoProvider? {
         val storage = getStorage()
-        
+
         return try {
             // Handle prefix-based accounts
             if (switchAccount.prefix.isNullOrBlank().not()) {
@@ -212,8 +237,8 @@ object CryptoProviderManager {
                     storage
                 ) as KeyWallet
                 BackupCryptoProvider(seedPhraseKey, wallet)
-            } 
-            
+            }
+
             // Handle other accounts
             else {
                 val existingWallet = AccountWalletManager.getHDWalletByUID(switchAccount.userId ?: "")
@@ -222,7 +247,7 @@ object CryptoProviderManager {
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-                
+
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = (existingWallet as BackupCryptoProvider).getMnemonic(),
                     passphrase = "",
