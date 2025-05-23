@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.BalanceManager
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
 import com.flowfoundation.wallet.manager.app.networkId
@@ -56,6 +58,7 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
+import org.onflow.flow.ChainId
 import java.math.BigDecimal
 
 enum class HomeTab(val index: Int) {
@@ -119,19 +122,35 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             return@ioScope
         }
 
+        val currentNetwork = chainNetWorkString()
+        Log.d("DrawerLayoutPresenter", "Current network: $currentNetwork")
+
+        // Filter accounts for current network
+        val networkAccounts = wallet.accounts.entries.firstOrNull { (chainId, _) ->
+            when (currentNetwork) {
+                NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                else -> false
+            }
+        }?.value ?: emptyList()
+
+        Log.d("DrawerLayoutPresenter", "Found ${networkAccounts.size} accounts for network: $currentNetwork")
+
         val list = mutableListOf<WalletData?>().apply {
-            val mainWalletAddress = wallet.walletAddress()
+            val mainWalletAddress = networkAccounts.firstOrNull()?.address
             Log.d("DrawerLayoutPresenter", "Adding main wallet: $mainWalletAddress")
             
-            add(WalletData(
-                blockchain = listOf(
-                    BlockchainData(
-                        address = mainWalletAddress ?: "",
-                        chainId = chainNetWorkString()
-                    )
-                ),
-                name = userInfo.username
-            ))
+            if (mainWalletAddress != null) {
+                add(WalletData(
+                    blockchain = listOf(
+                        BlockchainData(
+                            address = mainWalletAddress,
+                            chainId = currentNetwork
+                        )
+                    ),
+                    name = userInfo.username
+                ))
+            }
         }.filterNotNull()
 
         if (list.isEmpty()) {
@@ -147,7 +166,12 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
         }
 
-        val childAccounts = WalletManager.childAccountList(wallet.walletAddress())?.get()
+        // Only get child accounts for the current network's main account
+        val mainAccountAddress = networkAccounts.firstOrNull()?.address
+        val childAccounts = if (mainAccountAddress != null) {
+            WalletManager.childAccountList(mainAccountAddress)?.get()
+        } else null
+        
         Log.d("DrawerLayoutPresenter", "Child accounts found: ${childAccounts?.size ?: 0}")
         
         childAccounts?.forEach { childAccount ->
@@ -155,9 +179,12 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             Log.d("DrawerLayoutPresenter", "Added child account address: ${childAccount.address}")
         }
 
-        EVMWalletManager.getEVMAddress()?.let {
-            addressList.add(it)
-            Log.d("DrawerLayoutPresenter", "Added EVM address: $it")
+        // Only show EVM account if it's for the current network
+        if (EVMWalletManager.showEVMAccount(currentNetwork)) {
+            EVMWalletManager.getEVMAddress()?.let {
+                addressList.add(it)
+                Log.d("DrawerLayoutPresenter", "Added EVM address: $it")
+            }
         }
 
         if (refreshBalance && llMainAccount.childCount > 0) {
