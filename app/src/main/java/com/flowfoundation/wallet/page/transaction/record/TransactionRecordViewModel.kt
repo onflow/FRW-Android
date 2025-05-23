@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 
 private const val LIMIT = 30
 
@@ -57,51 +58,9 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
             }
         }
         
-        // Try to get wallet address from multiple sources
-        var walletAddress = ""
-        
-        // Try getting from WalletManager first
-        try {
-            val wallet = WalletManager.wallet()
-            walletAddress = wallet?.walletAddress().orEmpty()
-            logd("TransactionRecordViewModel", "From WalletManager - Wallet: $wallet, Wallet address: '$walletAddress'")
-        } catch (e: Exception) {
-            loge("TransactionRecordViewModel", "Error getting address from WalletManager: ${e.message}")
-        }
-        
-        // If still empty, try from AccountManager
-        if (walletAddress.isEmpty()) {
-            try {
-                val account = AccountManager.get()
-                val accountWallet = account?.wallet
-                walletAddress = accountWallet?.walletAddress() ?: ""
-                logd("TransactionRecordViewModel", "From AccountManager - Wallet address: '$walletAddress'")
-            } catch (e: Exception) {
-                loge("TransactionRecordViewModel", "Error getting address from AccountManager: ${e.message}")
-            }
-        }
-        
-        // If still empty, try getting from current account directly
-        if (walletAddress.isEmpty()) {
-            try {
-                walletAddress = WalletManager.selectedWalletAddress()
-                logd("TransactionRecordViewModel", "From WalletManager.selectedWalletAddress(): '$walletAddress'")
-            } catch (e: Exception) {
-                loge("TransactionRecordViewModel", "Error getting selectedWalletAddress: ${e.message}")
-            }
-        }
-        
-        // Last attempt - use any active account from AccountManager
-        if (walletAddress.isEmpty()) {
-            try {
-                val accounts = AccountManager.list()
-                val activeAccount = accounts.firstOrNull { it.isActive }
-                walletAddress = activeAccount?.wallet?.walletAddress() ?: ""
-                logd("TransactionRecordViewModel", "From AccountManager.list() - Found active account: ${activeAccount != null}, Wallet address: '$walletAddress'")
-            } catch (e: Exception) {
-                loge("TransactionRecordViewModel", "Error getting from account list: ${e.message}")
-            }
-        }
+        // Get the selected wallet address first
+        val walletAddress = WalletManager.selectedWalletAddress()
+        logd("TransactionRecordViewModel", "Selected wallet address: '$walletAddress'")
         
         // If we still don't have a wallet address, we can't proceed
         if (walletAddress.isEmpty()) {
@@ -114,14 +73,14 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         fetchTransactions(walletAddress)
     }
     
-    private suspend fun fetchTransactions(walletAddress: String) {
+    private fun fetchTransactions(walletAddress: String) {
         logd("TransactionRecordViewModel", "Checking if EVM account is selected: ${WalletManager.isEVMAccountSelected()}")
         
         if (WalletManager.isEVMAccountSelected()) {
             logd("TransactionRecordViewModel", "EVM account selected. Fetching EVM transfer records for address: '$walletAddress'")
             ioScope {
                 try {
-                    val service = retrofitApi().create(ApiService::class.java)
+                    val service = retrofit(network = chainNetWorkString()).create(ApiService::class.java)
                     logd("TransactionRecordViewModel", "Making API call to get EVM transfer records...")
                     val resp = service.getEVMTransferRecord(walletAddress)
                     logd("TransactionRecordViewModel", "EVM transfer record response received. Status: ${resp.status}, Transactions: ${resp.trxs?.size ?: 0}")
@@ -152,7 +111,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
             ioScope {
                 try {
                     logd("TransactionRecordViewModel", "Creating API service for Flow transfers")
-                    val service = retrofit().create(ApiService::class.java)
+                    val service = retrofit(network = chainNetWorkString()).create(ApiService::class.java)
                     logd("TransactionRecordViewModel", "Making API call to get Flow transfer records...")
                     val resp = service.getTransferRecord(walletAddress, limit = LIMIT)
                     logd("TransactionRecordViewModel", "Transfer record response received. Status: ${resp.status}, Message: ${resp.message}")
