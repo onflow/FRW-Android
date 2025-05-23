@@ -20,6 +20,8 @@ import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.KeyFormat
 import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.manager.account.Accounts
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
@@ -117,9 +119,30 @@ object WalletManager {
     fun wallet(): Wallet? = synchronized(initializationLock) {
         if (!isInitialized) init()           // first pass
 
-
         if (currentWallet == null) {         // still null? retry once
             if (initializeWallet()) isInitialized = true
+        }
+
+        val currentNetwork = chainNetWorkString()
+        logd(TAG, "Current network: $currentNetwork")
+
+        // Get the account for the current network
+        currentWallet?.let { wallet ->
+            val networkAccount = wallet.accounts.entries.firstOrNull { (chainId, _) ->
+                when (currentNetwork) {
+                    NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                    NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                    else -> false
+                }
+            }?.value?.firstOrNull()
+
+            if (networkAccount != null) {
+                logd(TAG, "Found account for $currentNetwork: ${networkAccount.address}")
+                // Update the selected wallet address to match the current network
+                selectWalletAddress(networkAccount.address)
+            } else {
+                logd(TAG, "No account found for network: $currentNetwork")
+            }
         }
 
         logd(TAG, "Returning wallet: ${currentWallet}")
@@ -168,7 +191,22 @@ object WalletManager {
     }
 
     fun changeNetwork() {
-        wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address?.let { selectWalletAddress(it) }
+        val currentNetwork = chainNetWorkString()
+        logd(TAG, "Changing network to: $currentNetwork")
+        
+        // Get the first account for the current network
+        val networkAccount = wallet()?.accounts?.entries?.firstOrNull { (chainId, _) ->
+            when (currentNetwork) {
+                NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                else -> false
+            }
+        }?.value?.firstOrNull()
+        
+        networkAccount?.address?.let { address ->
+            logd(TAG, "Selecting network account: $address")
+            selectWalletAddress(address)
+        }
     }
 
     fun selectWalletAddress(address: String): String {
