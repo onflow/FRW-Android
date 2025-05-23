@@ -290,26 +290,70 @@ suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
     return signEnvelope(listOf(signer))
 }
 
-suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
-    val payerAccount = FlowCadenceApi.getAccount(payer)
-    payerAccount.keys ?: return null
-
-    return PayerSignable(
-        transaction = this,
-        message = PayerSignable.Message(
-            payloadMessage().toHexString()
-        )
-    )
-}
-
 suspend fun Transaction.buildPayerSignable(): PayerSignable? {
     val payerAccount = FlowCadenceApi.getAccount(payer)
     payerAccount.keys ?: return null
 
+    // Ensure all hex strings in the transaction have the 0x prefix removed
+    val formattedTx = copy(
+        referenceBlockId = referenceBlockId.removeHexPrefix(),
+        payer = payer.removeHexPrefix(),
+        proposalKey = proposalKey.copy(
+            address = proposalKey.address.removeHexPrefix()
+        ),
+        authorizers = authorizers.map { it.removeHexPrefix() },
+        payloadSignatures = payloadSignatures.map { sig ->
+            sig.copy(
+                address = sig.address.removeHexPrefix(),
+                signature = sig.signature.removeHexPrefix()
+            )
+        },
+        envelopeSignatures = envelopeSignatures.map { sig ->
+            sig.copy(
+                address = sig.address.removeHexPrefix(),
+                signature = sig.signature.removeHexPrefix()
+            )
+        }
+    )
+
     return PayerSignable(
-        transaction = this,
+        transaction = formattedTx,
         message = PayerSignable.Message(
-            payloadMessage().toHexString()
+            formattedTx.payloadMessage().toHexString()
+        )
+    )
+}
+
+suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
+    val payerAccount = FlowCadenceApi.getAccount(payer)
+    payerAccount.keys ?: return null
+
+    // Ensure all hex strings in the transaction have the 0x prefix removed
+    val formattedTx = copy(
+        referenceBlockId = referenceBlockId.removeHexPrefix(),
+        payer = payer.removeHexPrefix(),
+        proposalKey = proposalKey.copy(
+            address = proposalKey.address.removeHexPrefix()
+        ),
+        authorizers = authorizers.map { it.removeHexPrefix() },
+        payloadSignatures = payloadSignatures.map { sig ->
+            sig.copy(
+                address = sig.address.removeHexPrefix(),
+                signature = sig.signature.removeHexPrefix()
+            )
+        },
+        envelopeSignatures = envelopeSignatures.map { sig ->
+            sig.copy(
+                address = sig.address.removeHexPrefix(),
+                signature = sig.signature.removeHexPrefix()
+            )
+        }
+    )
+
+    return PayerSignable(
+        transaction = formattedTx,
+        message = PayerSignable.Message(
+            formattedTx.payloadMessage().toHexString()
         )
     )
 }
@@ -338,6 +382,14 @@ fun checkSecurityProvider() {
     }
 }
 
+private fun String.ensureHexFormat(): String {
+    return if (startsWith("0x")) this else "0x$this"
+}
+
+private fun String.removeHexPrefix(): String {
+    return if (startsWith("0x")) substring(2) else this
+}
+
 suspend fun prepare(builder: TransactionBuilder): Transaction {
     logd(TAG, "prepare builder:$builder")
     val account = FlowCadenceApi.getAccount(builder.walletAddress?.toAddress().orEmpty())
@@ -348,26 +400,23 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     logd(TAG, cryptoProvider.getPublicKey())
     
     // Normalize the crypto provider's public key by adding 0x prefix if missing
-    val providerPublicKey = cryptoProvider.getPublicKey().let { 
-        if (!it.startsWith("0x")) "0x$it" else it 
-    }
-
+    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
     logd(TAG, providerPublicKey)
 
     val currentKey = accountKeys.findLast { it.publicKey == providerPublicKey }
         ?: throw InvalidKeyException("Get account key error")
 
-    val payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress).orEmpty()
+    val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
     val authorizers = when {
         builder.isBridgePayer -> {
             // For bridge payer transactions, we need both the proposer and payer as authorizers
-            listOf(account.address, payer)
+            listOf(account.address.removeHexPrefix(), payer)
         }
         builder.authorizers.isNullOrEmpty() -> {
-            listOf(account.address)
+            listOf(account.address.removeHexPrefix())
         }
         else -> {
-            builder.authorizers ?: listOf(account.address)
+            builder.authorizers?.map { it.removeHexPrefix() } ?: listOf(account.address.removeHexPrefix())
         }
     }
 
@@ -376,10 +425,10 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         arguments = builder.arguments.map { Cadence.string(it.toString()) },
         gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
     ).apply {
-        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id)
+        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix())
         withPayer(payer)
         withProposalKey(
-            address = account.address,
+            address = account.address.removeHexPrefix(),
             keyIndex = currentKey.index.toInt(),
             sequenceNumber = BigInteger.fromInt(currentKey.sequenceNumber.toInt())
         )
@@ -394,17 +443,17 @@ suspend fun prepareWithMultiSignature(
 ): Transaction {
     logd(TAG, "prepare builder:$builder")
 
-    val payer = builder.payer ?: (if (isGasFree()) AppConfig.payer().address else builder.walletAddress).orEmpty()
+    val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
     val authorizers = when {
         builder.isBridgePayer -> {
             // For bridge payer transactions, we need both the proposer and payer as authorizers
-            listOf(walletAddress, payer)
+            listOf(walletAddress.removeHexPrefix(), payer)
         }
         builder.authorizers.isNullOrEmpty() -> {
-            listOf(walletAddress)
+            listOf(walletAddress.removeHexPrefix())
         }
         else -> {
-            builder.authorizers ?: listOf(walletAddress)
+            builder.authorizers?.map { it.removeHexPrefix() } ?: listOf(walletAddress.removeHexPrefix())
         }
     }
 
@@ -413,10 +462,10 @@ suspend fun prepareWithMultiSignature(
         arguments = builder.arguments.map { Cadence.string(it.toString()) },
         gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
     ).apply {
-        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id)
+        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix())
         withPayer(payer)
         withProposalKey(
-            address = walletAddress,
+            address = walletAddress.removeHexPrefix(),
             keyIndex = restoreProposalKey.index.toInt(),
             sequenceNumber = BigInteger.fromInt(restoreProposalKey.sequenceNumber.toInt())
         )
