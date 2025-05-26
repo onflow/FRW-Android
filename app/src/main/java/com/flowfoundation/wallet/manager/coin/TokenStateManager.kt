@@ -86,20 +86,30 @@ object TokenStateManager {
     }
 
     private suspend fun fetchLinkedAccountStateSync() {
+        logd(TAG, "fetchLinkedAccountStateSync() called")
         val coinList = FlowCoinListManager.coinList()
-        val enabledToken = cadenceGetTokenBalanceStorage()
+        logd(TAG, "fetchLinkedAccountStateSync: Checking ${coinList.size} coins")
+        
+        val enabledToken = cadenceCheckLinkedAccountTokenListEnabled()
         if (enabledToken == null) {
-            logw(TAG, "fetch error")
+            logw(TAG, "fetchLinkedAccountStateSync: cadenceCheckLinkedAccountTokenListEnabled returned null")
             return
         }
+        
+        logd(TAG, "fetchLinkedAccountStateSync: Found ${enabledToken.size} enabled tokens: $enabledToken")
+        
         coinList.forEach { coin ->
             val isEnable = enabledToken.containsKey(coin.contractId())
+            logd(TAG, "fetchLinkedAccountStateSync: ${coin.symbol} (${coin.contractId()}) -> enabled: $isEnable")
+            
             val oldState = tokenStateList.firstOrNull {
                 it.isSameCoin(coin.contractId())
             }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable, coin.contractId()))
         }
+        
+        logd(TAG, "fetchLinkedAccountStateSync: Final token state list size: ${tokenStateList.size}")
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }

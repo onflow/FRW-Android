@@ -233,13 +233,28 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
     }
 
     private fun updateCoinBalance(balance: Balance) {
-        logd(TAG, "updateCoinBalance :$balance")
-        val oldItem = dataList.firstOrNull { balance.isSameCoin(it.coin) } ?: return
+        logd(TAG, "updateCoinBalance: Received balance update - balance=${balance.balance}, address=${balance.address}, contractName=${balance.contractName}")
+        logd(TAG, "updateCoinBalance: Current dataList has ${dataList.size} coins: ${dataList.map { "${it.coin.symbol}(${it.coin.contractId()})" }}")
+        logd(TAG, "updateCoinBalance: Looking for match with address=${balance.address}, contractName=${balance.contractName}")
+        
+        val oldItem = dataList.firstOrNull { 
+            val isMatch = balance.isSameCoin(it.coin)
+            logd(TAG, "updateCoinBalance: Comparing address '${balance.address}' with '${it.coin.address}' and contractName '${balance.contractName}' with '${it.coin.contractName()}' -> match: $isMatch")
+            isMatch
+        }
+        
+        if (oldItem == null) {
+            logd(TAG, "updateCoinBalance: No matching coin found in dataList for address=${balance.address}, contractName=${balance.contractName}")
+            return
+        }
+        
+        logd(TAG, "updateCoinBalance: Found matching coin ${oldItem.coin.symbol}, updating balance from ${oldItem.balance} to ${balance.balance}")
         val item = oldItem.copy(balance = balance.balance)
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()
         dataListLiveData.value = dataList
         updateWalletHeader()
+        logd(TAG, "updateCoinBalance: Successfully updated coin balance and posted to LiveData")
     }
 
     private fun updateCoinRate(
