@@ -255,11 +255,16 @@ suspend fun Transaction.send(): Transaction {
     logd(TAG, "Sending transaction: $this")
 
     val result = FlowCadenceApi.sendTransaction(this)
-    logd(TAG, "Received transaction result: $result")
-    return result.id?.let { 
-        logd(TAG, "Fetching transaction with ID: $it")
-        val tx = FlowCadenceApi.getTransaction(it)
-        logd(TAG, "Retrieved transaction: $tx")
+    logd(TAG, "Received transaction result (pending): $result")
+
+    return result.id?.let { id ->
+        // Wait until the transaction is SEALED or EXPIRED before fetching the full payload
+        val seal = FlowCadenceApi.waitForSeal(id)
+        logd(TAG, "Transaction sealed. Status=${seal.status}, Execution=${seal.execution}")
+
+        logd(TAG, "Fetching full transaction $id after seal")
+        val tx = FlowCadenceApi.getTransaction(id)
+        logd(TAG, "Retrieved full transaction: $tx")
         tx
     } ?: throw RuntimeException("Failed to get transaction ID")
 }

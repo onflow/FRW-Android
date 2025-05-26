@@ -77,17 +77,25 @@ suspend fun registerOutblock(
                     val privateKey = PrivateKey.create(storage)
                     logd(TAG, "Created new private key")
                     
-                    // Get the public key using ECDSA_secp256k1
-                    val publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-                    if (publicKey == null) {
+                    // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
+                    val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
+                    if (publicKeyBytes == null) {
                         logd(TAG, "Failed to get public key from private key")
                         continuation.resume(false)
                         return@ioScope
                     }
                     
-                    // Convert public key to hex string
-                    val hexPublicKey = publicKey.joinToString("") { "%02x".format(it) }
-                    logd(TAG, "Formatted public key: $hexPublicKey")
+                    logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
+                    
+                    // Convert public key to hex string, removing "04" prefix if present
+                    // Flow expects uncompressed public keys without the format indicator
+                    val hexPublicKey = if (publicKeyBytes.size == 65 && publicKeyBytes[0] == 0x04.toByte()) {
+                        // Remove the "04" prefix for uncompressed keys
+                        publicKeyBytes.copyOfRange(1, publicKeyBytes.size).joinToString("") { "%02x".format(it) }
+                    } else {
+                        publicKeyBytes.joinToString("") { "%02x".format(it) }
+                    }
+                    logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
                     
                     // Get device info for registration
                     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
@@ -99,6 +107,7 @@ suspend fun registerOutblock(
                             username = username,
                             accountKey = AccountKey(
                                 publicKey = hexPublicKey
+                                // Using default values: ECDSA_P256 and SHA2_256
                             ),
                             deviceInfo = deviceInfoRequest
                         )
@@ -220,22 +229,31 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
         val privateKey = PrivateKey.create(storage)
         logd(TAG, "Created new private key for registration")
         
-        // Get the public key using ECDSA_secp256k1
-        val publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-        if (publicKey == null) {
+        // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
+        val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
+        if (publicKeyBytes == null) {
             logd(TAG, "Failed to get public key from private key")
-            throw IllegalStateException("Failed to generate public key")
+            throw IllegalStateException("Failed to get public key from private key")
         }
         
-        // Convert public key to hex string
-        val hexPublicKey = publicKey.joinToString("") { "%02x".format(it) }
-        logd(TAG, "Formatted public key: $hexPublicKey")
+        logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
         
-        // Create registration request
+        // Convert public key to hex string, removing "04" prefix if present
+        // Flow expects uncompressed public keys without the format indicator
+        val hexPublicKey = if (publicKeyBytes.size == 65 && publicKeyBytes[0] == 0x04.toByte()) {
+            // Remove the "04" prefix for uncompressed keys
+            publicKeyBytes.copyOfRange(1, publicKeyBytes.size).joinToString("") { "%02x".format(it) }
+        } else {
+            publicKeyBytes.joinToString("") { "%02x".format(it) }
+        }
+        logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
+        
+        // Create registration request with correct algorithm parameters
         val request = RegisterRequest(
             username = username,
             accountKey = AccountKey(
                 publicKey = hexPublicKey
+                // Using default values: ECDSA_P256 and SHA2_256
             ),
             deviceInfo = deviceInfoRequest
         )

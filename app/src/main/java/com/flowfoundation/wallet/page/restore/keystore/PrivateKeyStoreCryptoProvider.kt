@@ -12,8 +12,10 @@ import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.hexToBytes
+import com.flowfoundation.wallet.utils.logd
 
 class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoProvider {
+    private val TAG = "PrivateKeyStoreCryptoProvider"
     private val keyInfo: JsonObject = Gson().fromJson(keystoreInfo, JsonObject::class.java)
     private val signingAlgorithm = when (keyInfo.get("signAlgo").asInt) {
         1 -> SigningAlgorithm.ECDSA_P256
@@ -30,6 +32,10 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
                 .hexToBytes()
             importPrivateKey(keyBytes, KeyFormat.RAW)
         }
+    }
+
+    init {
+        logd(TAG, "Init keystore provider. signAlgo=${keyInfo.get("signAlgo").asInt}, hashAlgo=${keyInfo.get("hashAlgo").asInt}, address=${keyInfo.get("address").asString}")
     }
 
     fun getKeyStoreInfo(): String {
@@ -53,8 +59,9 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override suspend fun signData(data: ByteArray): String {
-        // Implement signing logic here using the private key and signing algorithm
+        logd(TAG, "signData called. dataSize=${data.size} bytes, signAlgo=$signingAlgorithm, hashAlgo=${getHashAlgorithm()}")
         val signatureBytes = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
+        logd(TAG, "Signature generated. size=${signatureBytes.size} bytes")
         return signatureBytes.joinToString("") { String.format("%02x", it) } 
     }
 
@@ -76,11 +83,15 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
-        return when (keyInfo.get("hashAlgo").asInt) {
-            1 -> HashingAlgorithm.SHA2_256
+        val code = keyInfo.get("hashAlgo").asInt
+        val algo = when (code) {
+            1 -> HashingAlgorithm.SHA2_256  // SHA2-256
+            2 -> HashingAlgorithm.SHA2_256  // Legacy value for SHA2-256
             3 -> HashingAlgorithm.SHA3_256
             else -> HashingAlgorithm.SHA2_256
         }
+        logd(TAG, "hashAlgo mapping. code=$code -> $algo")
+        return algo
     }
 
     override fun getSignatureAlgorithm(): SigningAlgorithm {
