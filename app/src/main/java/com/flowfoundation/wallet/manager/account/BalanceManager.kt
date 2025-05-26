@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalance
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -38,12 +39,18 @@ object BalanceManager {
     }
 
     fun refresh() {
+        logd(TAG, "refresh() called")
         if (WalletManager.isEVMAccountSelected()) {
+            logd(TAG, "EVM account selected, fetching EVM balances")
             FlowCoinListManager.getFlowCoin()?.let {
                 fetch(it)
             }
             getEVMTokenBalance()
+        } else if (WalletManager.isChildAccountSelected()) {
+            logd(TAG, "Child account selected, fetching child account balances")
+            fetchChildAccountTokenBalance()
         } else {
+            logd(TAG, "Regular account selected, fetching regular balances")
             fetchTokenBalance()
         }
     }
@@ -141,12 +148,18 @@ object BalanceManager {
             balanceList.firstOrNull { it.isSameCoin(coin) }?.let { dispatchListeners(coin, it.balance) }
 
             val balance = if (WalletManager.isEVMAccountSelected()) {
+                logd(TAG, "Fetching balance for EVM account")
                 if (coin.isFlowCoin()) {
                     cadenceQueryCOATokenBalance()
                 } else {
                     getEVMBalanceByCoin(coin.address)
                 }
+            } else if (WalletManager.isChildAccountSelected()) {
+                logd(TAG, "Fetching balance for child account")
+                val selectedAddress = WalletManager.selectedWalletAddress()
+                cadenceQueryTokenBalanceWithAddress(coin, selectedAddress)
             } else {
+                logd(TAG, "Fetching balance for regular account")
                 if (coin.isFlowCoin()) {
                     AccountInfoManager.getCurrentFlowBalance() ?: cadenceQueryTokenBalance(coin)
                 } else {
@@ -161,6 +174,52 @@ object BalanceManager {
                     balanceList.removeAll { it.isSameCoin(coin) }
                     balanceList.add(Balance(balance, coin.address, coin.contractName()))
                     ioScope { cache.cache(BalanceCache(balanceList.toList())) }
+                }
+            }
+        }
+    }
+
+    private fun fetchChildAccountTokenBalance() {
+        ioScope {
+            val selectedAddress = WalletManager.selectedWalletAddress()
+            logd(TAG, "fetchChildAccountTokenBalance for address: '$selectedAddress'")
+            
+            val coinList = FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
+            logd(TAG, "Fetching balances for ${coinList.size} coins")
+            
+            coinList.forEach { coin ->
+                logd(TAG, "Fetching balance for coin: ${coin.symbol}")
+                
+                // Dispatch cached balance first if available
+                balanceList.firstOrNull { it.isSameCoin(coin) }?.let { 
+                    logd(TAG, "Found cached balance for ${coin.symbol}: ${it.balance}")
+                    dispatchListeners(coin, it.balance) 
+                }
+
+                val balance = if (coin.isFlowCoin()) {
+                    logd(TAG, "Fetching Flow coin balance for child account")
+                    cadenceQueryTokenBalanceWithAddress(coin, selectedAddress)
+                } else {
+                    logd(TAG, "Fetching ${coin.symbol} balance for child account")
+                    cadenceQueryTokenBalanceWithAddress(coin, selectedAddress)
+                }
+                
+                logd(TAG, "Fetched balance for ${coin.symbol}: $balance")
+                
+                if (balance != null) {
+                    val existBalance = balanceList.firstOrNull { it.isSameCoin(coin) }
+                    val isDiff = balanceList.isEmpty() || existBalance == null || existBalance.balance != balance
+                    if (isDiff) {
+                        logd(TAG, "Balance changed for ${coin.symbol}, updating: $balance")
+                        dispatchListeners(coin, balance)
+                        balanceList.removeAll { it.isSameCoin(coin) }
+                        balanceList.add(Balance(balance, coin.address, coin.contractName()))
+                        ioScope { cache.cache(BalanceCache(balanceList.toList())) }
+                    } else {
+                        logd(TAG, "Balance unchanged for ${coin.symbol}: $balance")
+                    }
+                } else {
+                    logd(TAG, "Failed to fetch balance for ${coin.symbol}")
                 }
             }
         }

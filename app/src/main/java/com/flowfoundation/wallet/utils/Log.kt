@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.firebase.analytics.reportErrorToDebugView
 import com.flowfoundation.wallet.firebase.analytics.reportException
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.instabug.library.logging.InstabugLog
+import com.instabug.library.Instabug
 import com.nftco.flow.sdk.FlowException
 import retrofit2.HttpException
 
@@ -25,7 +26,10 @@ fun loge(tag: String?, msg: Any?) {
 fun loge(throwable: Throwable?, printStackTrace: Boolean = true, report: Boolean = true) {
     val message = throwable?.message ?: ""
     log("Exception", message, Log.ERROR)
-    InstabugLog.e("Exception: $message")
+    
+    if (isInstabugInitialized()) {
+        InstabugLog.e("Exception: $message")
+    }
     
     if (printLog() && printStackTrace) {
         throwable?.printStackTrace()
@@ -57,7 +61,26 @@ fun reportCadenceErrorToDebugView(cadence: String, throwable: Throwable?) {
 
 private fun logWithLevel(tag: String?, msg: Any?, level: Int, instabugLog: (String) -> Unit) {
     log(tag, msg, level)
-    instabugLog("${tag.orEmpty()}: ${msg?.toString().orEmpty()}")
+    
+    if (isInstabugInitialized()) {
+        try {
+            instabugLog("${tag.orEmpty()}: ${msg?.toString().orEmpty()}")
+        } catch (e: Exception) {
+            // Silently fail if there's still an issue with Instabug
+            // This prevents logging errors from causing crashes or more error logs
+        }
+    }
+}
+
+private fun isInstabugInitialized(): Boolean {
+    return try {
+        // Try to check if Instabug is initialized
+        // This will return true if Instabug is properly initialized
+        Instabug.isBuilt()
+    } catch (e: Exception) {
+        // If any exception occurs, assume Instabug is not initialized
+        false
+    }
 }
 
 private fun log(tag: String?, msg: Any?, level: Int) {

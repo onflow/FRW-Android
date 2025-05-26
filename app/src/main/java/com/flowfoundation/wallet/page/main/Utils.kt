@@ -296,6 +296,11 @@ private fun ViewGroup.setupWallet(
     setOnClickListener {
         FlowLoadingDialog(context).show()
         WalletManager.selectWalletAddress(data.address)
+        
+        // Refresh balances immediately after selecting wallet address
+        Log.d("Utils", "Triggering BalanceManager.refresh() after main wallet address selection")
+        BalanceManager.refresh()
+        
         ioScope {
             delay(200)
             doNetworkChangeTask()
@@ -365,11 +370,13 @@ private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
     
     return if (wallet?.walletAddress() == this) {
         Log.d("Utils", "Creating main wallet data for: '$this'")
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        Log.d("Utils", "Main account - selected address: '$selectedAddress', current address: '$this'")
         WalletItemData(
             address = this,
             name = userInfo.username,
             icon = userInfo.avatar,
-            isSelected = WalletManager.selectedWalletAddress() == this
+            isSelected = selectedAddress == this
         )
     } else {
         // child account
@@ -382,12 +389,22 @@ private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
             return null
         }
         
-        Log.d("Utils", "Creating child account data - address: '${childAccount.address}', name: '${childAccount.name}'")
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        Log.d("Utils", "Child account - selected address: '$selectedAddress', child address: '${childAccount.address}'")
+        
+        // Normalize addresses for comparison (remove 0x prefix for comparison)
+        val normalizedSelected = selectedAddress.removePrefix("0x")
+        val normalizedChild = childAccount.address.removePrefix("0x")
+        val isSelected = normalizedSelected.equals(normalizedChild, ignoreCase = true)
+        
+        Log.d("Utils", "Child account selection comparison - normalized selected: '$normalizedSelected', normalized child: '$normalizedChild', isSelected: $isSelected")
+        
+        Log.d("Utils", "Creating child account data - address: '${childAccount.address}', name: '${childAccount.name}', isSelected: $isSelected")
         WalletItemData(
             address = childAccount.address,
             name = childAccount.name,
             icon = childAccount.icon,
-            isSelected = WalletManager.selectedWalletAddress() == childAccount.address
+            isSelected = isSelected
         )
     }
 }
@@ -444,6 +461,10 @@ private fun View.setupWalletItem(
         Log.d("Utils", "Child account clicked - isEVMAccount: $isEVMAccount")
         
         val newNetwork = WalletManager.selectWalletAddress(data.address.toAddress())
+        
+        // Refresh balances immediately after selecting wallet address
+        Log.d("Utils", "Triggering BalanceManager.refresh() after wallet address selection")
+        BalanceManager.refresh()
 
         if (newNetwork != chainNetWorkString()) {
             // network change
