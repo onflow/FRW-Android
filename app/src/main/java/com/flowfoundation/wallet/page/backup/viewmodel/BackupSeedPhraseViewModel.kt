@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -31,6 +30,7 @@ import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.Env
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import java.io.File
 import wallet.core.jni.HDWallet
 
@@ -94,8 +94,8 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
-                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex) }
-                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
+                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex.toUByte()) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex.toUByte()) }
                         arg { ufix64Safe(1000) }
                     }
                     val transactionState = TransactionState(

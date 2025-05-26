@@ -22,7 +22,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogWalletConfirmationBinding
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -36,6 +35,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 
 class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback,
@@ -133,8 +133,8 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
         try {
             val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                 arg { string(accountKey.publicKey) }
-                arg { uint8(accountKey.signAlgo) }
-                arg { uint8(accountKey.hashAlgo) }
+                arg { uint8(accountKey.signAlgo.toUByte()) }
+                arg { uint8(accountKey.hashAlgo.toUByte()) }
                 arg { ufix64Safe(1000) }
             }
             val transactionState = TransactionState(

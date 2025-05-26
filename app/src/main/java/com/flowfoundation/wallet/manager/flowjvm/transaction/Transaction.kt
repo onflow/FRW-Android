@@ -253,7 +253,7 @@ private fun createSigner(
 
 suspend fun Transaction.send(): Transaction {
     logd(TAG, "Sending transaction: $this")
-    
+
     val result = FlowCadenceApi.sendTransaction(this)
     logd(TAG, "Received transaction result: $result")
     return result.id?.let { 
@@ -429,7 +429,6 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
     val authorizers = when {
         builder.isBridgePayer -> {
-            // For bridge payer transactions, we need both the proposer and payer as authorizers
             listOf(account.address.removeHexPrefix(), payer)
         }
         builder.authorizers.isNullOrEmpty() -> {
@@ -442,7 +441,11 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
 
     val referenceBlockId = FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix()
     val script = builder.script.orEmpty()
-    val arguments = builder.arguments.map { Cadence.string(it.toString()) }
+    
+    // Use Flow KMM Cadence arguments directly (no conversion needed)
+    val arguments = builder.arguments
+    logd(TAG, "Flow KMM arguments: $arguments")
+    
     val gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
 
     // Create local signer from crypto provider
@@ -453,7 +456,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     )
 
     // Use Flow KMM's TransactionBuilder with buildAndSign for clean serialization
-    return org.onflow.flow.models.TransactionBuilder(
+    val signedTransaction = TransactionBuilder(
         script = script,
         arguments = arguments,
         gasLimit = gasLimit
@@ -468,6 +471,9 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         withAuthorizers(authorizers)
         withSigners(listOf(localSigner))
     }.buildAndSign()
+    
+    logd(TAG, "Built and signed transaction: $signedTransaction")
+    return signedTransaction
 }
 
 suspend fun prepareWithMultiSignature(
@@ -493,9 +499,9 @@ suspend fun prepareWithMultiSignature(
 
     // Note: For multi-signature transactions, we still build without signing
     // since the signers will be added separately in sendTransactionWithMultiSignature
-    return org.onflow.flow.models.TransactionBuilder(
+    return TransactionBuilder(
         script = builder.script.orEmpty(),
-        arguments = builder.arguments.map { Cadence.string(it.toString()) },
+        arguments = builder.arguments,
         gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
     ).apply {
         withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix())

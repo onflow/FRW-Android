@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.swap
 
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.wallet.toAddress
 import java.math.BigDecimal
@@ -64,7 +63,7 @@ private suspend fun swapSendInternal(
     val tokenAddress = swapPaths.last().split(".")[1].toAddress()
     return cadenceScript.getScript().replace("Token1Name", tokenName).replace("Token1Addr", tokenAddress)
         .transactionByMainWallet(cadenceScript.scriptId) {
-            arg { array { swapPaths.map { string(it) } } }
+            arg { array(swapPaths.map { string(it) }) }
 
             if (isExactFrom) {
                 arg { array(tokenInSplit.map { ufix64Safe(it) }) }

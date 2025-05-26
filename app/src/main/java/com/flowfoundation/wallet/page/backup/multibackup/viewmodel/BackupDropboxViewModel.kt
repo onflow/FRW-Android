@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_LOGIN_FINISH
 import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_UPLOAD_FINISH
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -41,6 +40,7 @@ import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 
 class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
@@ -119,8 +119,8 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         arg { string(it.getPublicKey()) }
-                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex) }
-                        arg { uint8(it.getHashAlgorithm().cadenceIndex) }
+                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex.toUByte()) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex.toUByte()) }
                         arg { ufix64Safe(500) }
                     }
                     val transactionState = TransactionState(

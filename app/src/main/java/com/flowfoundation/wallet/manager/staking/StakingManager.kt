@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.cache.stakingCache
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager

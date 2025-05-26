@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -66,6 +65,7 @@ import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -226,8 +226,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val privateKey = PrivateKey.create(storage)
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
                     arg { string(privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "") }
-                    arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal) }
-                    arg { uint8(HashingAlgorithm.SHA2_256.ordinal) }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal.toUByte()) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.ordinal.toUByte()) }
                     arg { ufix64Safe(1000) }
                 }
                 val transactionState = TransactionState(

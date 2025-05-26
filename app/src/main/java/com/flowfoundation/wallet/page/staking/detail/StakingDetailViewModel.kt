@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import kotlinx.coroutines.delay
+import org.onflow.flow.infrastructure.Cadence.Companion.uint32
 import java.math.BigDecimal
 
 class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
@@ -96,7 +97,7 @@ class StakingDetailViewModel : ViewModel(), OnBalanceUpdate, OnCoinRateUpdate {
 
             val txId = transactionByMainWallet {
                 arg { string(provider.id) }
-                arg { uint32(delegatorId) }
+                arg { uint32(delegatorId.toUInt()) }
                 arg { ufix64Safe(amount) }
             }
 
