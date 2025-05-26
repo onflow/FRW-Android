@@ -37,14 +37,18 @@ suspend fun sendTransaction(
     try {
         logd(TAG, "sendTransaction prepare")
         var tx = prepare(transactionBuilder)
+        logd(TAG, "Prepared and signed Tx: $tx")
 
+        // For free gas transactions, we still need to add the payer's envelope signature
         if (tx.envelopeSignatures.isEmpty() && isGasFree()) {
             logd(TAG, "sendTransaction request free gas envelope")
             tx = tx.addFreeGasEnvelope()
         } else if (tx.envelopeSignatures.isEmpty()) {
-            logd(TAG, "sendTransaction sign envelope")
-            tx = tx.addLocalSignatures()
+            logd(TAG, "sendTransaction sign local envelope")
+            // For non-free gas, we need to add the local wallet's envelope signature
+            tx = tx.addLocalEnvelopeSignatures()
         }
+        logd(TAG, "Tx after envelope signatures: $tx")
 
         logd(TAG, "sendTransaction to flow chain")
         val result = tx.send()
@@ -248,8 +252,16 @@ private fun createSigner(
 }
 
 suspend fun Transaction.send(): Transaction {
+    logd(TAG, "Sending transaction: $this")
+    
     val result = FlowCadenceApi.sendTransaction(this)
-    return result.id?.let { FlowCadenceApi.getTransaction(it) } ?: throw RuntimeException("Failed to get transaction ID")
+    logd(TAG, "Received transaction result: $result")
+    return result.id?.let { 
+        logd(TAG, "Fetching transaction with ID: $it")
+        val tx = FlowCadenceApi.getTransaction(it)
+        logd(TAG, "Retrieved transaction: $tx")
+        tx
+    } ?: throw RuntimeException("Failed to get transaction ID")
 }
 
 suspend fun Transaction.waitForSeal(): TransactionResult {
@@ -259,9 +271,11 @@ suspend fun Transaction.waitForSeal(): TransactionResult {
 suspend fun Transaction.addLocalSignatures(): Transaction {
     val account = FlowCadenceApi.getAccount(proposalKey.address)
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-        ?: throw RuntimeException("get account error")
+        ?: throw RuntimeException("get crypto provider error")
+    logd("Transaction", "Current CryptoProvider: ${cryptoProvider::class.java.name}")
     val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
-    val currentKey = accountKeys.findLast { it.publicKey == cryptoProvider.getPublicKey() }
+    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
+    val currentKey = accountKeys.findLast { it.publicKey == providerPublicKey }
         ?: throw InvalidKeyException("get account key error")
 
     val signer = createSigner(
@@ -303,14 +317,16 @@ suspend fun Transaction.buildPayerSignable(): PayerSignable? {
         ),
         authorizers = authorizers.map { it.removeHexPrefix() },
         payloadSignatures = payloadSignatures.map { sig ->
-            sig.copy(
+            TransactionSignature(
                 address = sig.address.removeHexPrefix(),
+                keyIndex = sig.keyIndex,
                 signature = sig.signature.removeHexPrefix()
             )
         },
         envelopeSignatures = envelopeSignatures.map { sig ->
-            sig.copy(
+            TransactionSignature(
                 address = sig.address.removeHexPrefix(),
+                keyIndex = sig.keyIndex,
                 signature = sig.signature.removeHexPrefix()
             )
         }
@@ -337,14 +353,16 @@ suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
         ),
         authorizers = authorizers.map { it.removeHexPrefix() },
         payloadSignatures = payloadSignatures.map { sig ->
-            sig.copy(
+            TransactionSignature(
                 address = sig.address.removeHexPrefix(),
+                keyIndex = sig.keyIndex,
                 signature = sig.signature.removeHexPrefix()
             )
         },
         envelopeSignatures = envelopeSignatures.map { sig ->
-            sig.copy(
+            TransactionSignature(
                 address = sig.address.removeHexPrefix(),
+                keyIndex = sig.keyIndex,
                 signature = sig.signature.removeHexPrefix()
             )
         }
@@ -392,7 +410,9 @@ private fun String.removeHexPrefix(): String {
 
 suspend fun prepare(builder: TransactionBuilder): Transaction {
     logd(TAG, "prepare builder:$builder")
-    val account = FlowCadenceApi.getAccount(builder.walletAddress?.toAddress().orEmpty())
+    val walletAddress = builder.walletAddress?.toAddress().orEmpty()
+    
+    val account = FlowCadenceApi.getAccount(walletAddress)
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
     val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
@@ -420,12 +440,25 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         }
     }
 
-    return TransactionBuilder(
-        script = builder.script.orEmpty(),
-        arguments = builder.arguments.map { Cadence.string(it.toString()) },
-        gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
+    val referenceBlockId = FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix()
+    val script = builder.script.orEmpty()
+    val arguments = builder.arguments.map { Cadence.string(it.toString()) }
+    val gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
+
+    // Create local signer from crypto provider
+    val localSigner = createSigner(
+        address = account.address.removeHexPrefix(),
+        keyIndex = currentKey.index.toInt(),
+        signer = cryptoProvider.getSigner()
+    )
+
+    // Use Flow KMM's TransactionBuilder with buildAndSign for clean serialization
+    return org.onflow.flow.models.TransactionBuilder(
+        script = script,
+        arguments = arguments,
+        gasLimit = gasLimit
     ).apply {
-        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix())
+        withReferenceBlockId(referenceBlockId)
         withPayer(payer)
         withProposalKey(
             address = account.address.removeHexPrefix(),
@@ -433,7 +466,8 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
             sequenceNumber = BigInteger.fromInt(currentKey.sequenceNumber.toInt())
         )
         withAuthorizers(authorizers)
-    }.build()
+        withSigners(listOf(localSigner))
+    }.buildAndSign()
 }
 
 suspend fun prepareWithMultiSignature(
@@ -457,7 +491,9 @@ suspend fun prepareWithMultiSignature(
         }
     }
 
-    return TransactionBuilder(
+    // Note: For multi-signature transactions, we still build without signing
+    // since the signers will be added separately in sendTransactionWithMultiSignature
+    return org.onflow.flow.models.TransactionBuilder(
         script = builder.script.orEmpty(),
         arguments = builder.arguments.map { Cadence.string(it.toString()) },
         gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
@@ -474,18 +510,24 @@ suspend fun prepareWithMultiSignature(
 }
 
 suspend fun Transaction.addFreeGasEnvelope(): Transaction {
-    val response = executeHttpFunction(FUNCTION_SIGN_AS_PAYER, buildPayerSignable())
-    logd(TAG, "response:$response")
+    val signable = buildPayerSignable()
+    logd(TAG, "Building payer signable: $signable")
+    val response = executeHttpFunction(FUNCTION_SIGN_AS_PAYER, signable)
+    logd(TAG, "Received envelope signature response: $response")
 
     val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
+    logd(TAG, "Parsed envelope signature: $sign")
 
-    return copy(
-        envelopeSignatures = envelopeSignatures + TransactionSignature(
-            address = sign.address,
-            keyIndex = sign.keyId,
-            signature = sign.sig
-        )
+    // Create envelope signature without signerIndex (following Flow KMM pattern)
+    val newEnvelopeSignature = TransactionSignature(
+        address = sign.address,
+        keyIndex = sign.keyId,
+        signature = sign.sig
+        // signerIndex defaults to -1 but won't be serialized if we use kotlinx.serialization
     )
+    logd(TAG, "Created new envelope signature: $newEnvelopeSignature")
+
+    return copy(envelopeSignatures = envelopeSignatures + newEnvelopeSignature)
 }
 
 suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
@@ -494,12 +536,13 @@ suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
 
     val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
 
-    return copy(
-        envelopeSignatures = envelopeSignatures + TransactionSignature(
-            address = sign.address,
-            keyIndex = sign.keyId,
-            signature = sign.sig
-        )
+    // Create envelope signature without signerIndex (following Flow KMM pattern)
+    val newEnvelopeSignature = TransactionSignature(
+        address = sign.address,
+        keyIndex = sign.keyId,
+        signature = sign.sig
+        // signerIndex defaults to -1 but won't be serialized if we use kotlinx.serialization
     )
-}
 
+    return copy(envelopeSignatures = envelopeSignatures + newEnvelopeSignature)
+}
