@@ -59,7 +59,18 @@ object CryptoProviderManager {
 
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
-                val privateKey = PrivateKey.create(storage)
+                logd("CryptoProviderManager", "Creating prefix-based crypto provider")
+                
+                // Load the stored private key using the prefix-based ID
+                val keyId = "prefix_key_${account.prefix}"
+                val privateKey = try {
+                    PrivateKey.get(keyId, account.prefix!!, storage)
+                } catch (e: Exception) {
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+                    loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
+                    return null // Return null instead of creating a new key
+                }
+                logd("CryptoProviderManager", "Successfully loaded private key for prefix: ${account.prefix}")
                 
                 // Create a proper KeyWallet directly with the PrivateKey
                 val wallet = WalletFactory.createKeyWallet(
@@ -160,7 +171,15 @@ object CryptoProviderManager {
 
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
-                val privateKey = PrivateKey.create(storage)
+                // Load the stored private key using the prefix-based ID
+                val keyId = "prefix_key_${account.prefix}"
+                val privateKey = try {
+                    PrivateKey.get(keyId, account.prefix!!, storage)
+                } catch (e: Exception) {
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for switch account prefix ${account.prefix}: ${e.message}")
+                    loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
+                    return null // Return null instead of creating a new key
+                }
                 
                 // Create a proper KeyWallet directly with the PrivateKey
                 val wallet = WalletFactory.createKeyWallet(
@@ -214,7 +233,15 @@ object CryptoProviderManager {
         return try {
             // Handle prefix-based accounts
             if (switchAccount.prefix.isNullOrBlank().not()) {
-                val privateKey = PrivateKey.create(storage)
+                // Load the stored private key using the prefix-based ID
+                val keyId = "prefix_key_${switchAccount.prefix}"
+                val privateKey = try {
+                    PrivateKey.get(keyId, switchAccount.prefix!!, storage)
+                } catch (e: Exception) {
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for local switch account prefix ${switchAccount.prefix}: ${e.message}")
+                    loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
+                    return null // Return null instead of creating a new key
+                }
                 
                 // Create a proper KeyWallet directly with the PrivateKey
                 val wallet = WalletFactory.createKeyWallet(

@@ -77,7 +77,11 @@ suspend fun registerOutblock(
                     val privateKey = PrivateKey.create(storage)
                     logd(TAG, "Created new private key")
                     
-                    // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
+                    // Store the private key with prefix as ID for later retrieval
+                    val keyId = "prefix_key_$prefix"
+                    privateKey.store(keyId, prefix) // Use prefix as password for simplicity
+                    logd(TAG, "Stored private key with ID: $keyId")
+                    
                     val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
                     if (publicKeyBytes == null) {
                         logd(TAG, "Failed to get public key from private key")
@@ -130,6 +134,32 @@ suspend fun registerOutblock(
                         wallet = service.getWalletList().data
                     )
                     logd(TAG, "Adding account to AccountManager: $account")
+                    
+                    // Manually add accounts from server to the wallet
+                    // This is needed because new accounts may not be indexed yet by the key indexer
+                    account.wallet?.wallets?.forEach { walletData ->
+                        walletData.blockchain?.forEach { blockchain ->
+                            try {
+                                val chainId = when (blockchain.chainId?.lowercase()) {
+                                    "mainnet" -> ChainId.Mainnet
+                                    "testnet" -> ChainId.Testnet
+                                    else -> null
+                                }
+                                
+                                if (chainId != null && !blockchain.address.isNullOrBlank()) {
+                                    logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
+                                    
+                                    // Use the wallet's fetchAccountByAddress method to get the account directly
+                                    // from the Flow network, bypassing the key indexer
+                                    wallet.fetchAccountByAddress(blockchain.address!!, chainId)
+                                    logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
+                                }
+                            } catch (e: Exception) {
+                                logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
+                            }
+                        }
+                    }
+                    
                     AccountManager.add(
                         account,
                         firebaseUid()
@@ -228,6 +258,11 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
         // Create a new private key
         val privateKey = PrivateKey.create(storage)
         logd(TAG, "Created new private key for registration")
+        
+        // Store the private key with prefix as ID for later retrieval
+        val keyId = "prefix_key_$prefix"
+        privateKey.store(keyId, prefix) // Use prefix as password for simplicity
+        logd(TAG, "Stored private key with ID: $keyId")
         
         // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
         val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)

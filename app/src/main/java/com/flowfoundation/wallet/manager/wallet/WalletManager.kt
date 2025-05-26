@@ -28,6 +28,9 @@ import kotlinx.coroutines.flow.first
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.TimeoutCancellationException
+import org.onflow.flow.models.Account
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -60,49 +63,133 @@ object WalletManager {
             return false
         }
 
-        val keystoreInfo = account.keyStoreInfo ?: run {
-            logd(TAG, "-- bail: account.keyStoreInfo == null")
+        val storage = getStorage()
+
+        // Handle keystore-based accounts
+        if (!account.keyStoreInfo.isNullOrBlank()) {
+            logd(TAG, "Initializing keystore-based wallet")
+            
+            /* 1. Build the key */
+            val ks      = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
+            val keyHex  = ks.privateKey.removePrefix("0x")
+                .also { require(it.length == 64) { "Private key must be 32-byte hex" } }
+
+            val key     = PrivateKey.create(storage).apply {
+                importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
+            }
+
+            /* 2. Create the wallet */
+            val newWallet = WalletFactory.createKeyWallet(
+                key,
+                setOf(ChainId.Mainnet, ChainId.Testnet),
+                storage
+            )
+            currentWallet = newWallet
+            logd(TAG, "Keystore wallet created, waiting for accounts to load...")
+        }
+
+        // Handle prefix-based accounts
+        else if (!account.prefix.isNullOrBlank()) {
+            logd(TAG, "Initializing prefix-based wallet")
+            
+            // Load the stored private key using the prefix-based ID
+            val keyId = "prefix_key_${account.prefix}"
+            val privateKey = try {
+                PrivateKey.get(keyId, account.prefix!!, storage)
+            } catch (e: Exception) {
+                logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+                logd(TAG, "Cannot proceed without the stored key as it would create a different account")
+                return false // Fail gracefully instead of creating a new key
+            }
+            logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
+            
+            /* 2. Create the wallet */
+            val newWallet = WalletFactory.createKeyWallet(
+                privateKey,
+                setOf(ChainId.Mainnet, ChainId.Testnet),
+                storage
+            )
+            currentWallet = newWallet
+            logd(TAG, "Prefix wallet created, waiting for accounts to load...")
+        }
+
+        else {
+            logd(TAG, "-- bail: account has neither keyStoreInfo nor prefix")
             return false
         }
 
-        /* 1. Build the key */
-        val ks      = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
-        val keyHex  = ks.privateKey.removePrefix("0x")
-            .also { require(it.length == 64) { "Private key must be 32-byte hex" } }
-
-        val key     = PrivateKey.create(getStorage()).apply {
-            importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
+        // Wait for accounts to be loaded
+        currentWallet?.let { wallet ->
+            try {
+                logd(TAG, "Wallet created, checking for existing account addresses...")
+                logd(TAG, "Account wallet data: ${account.wallet}")
+                
+                // Check if we already have account addresses from the server
+                if (account.wallet?.wallets?.isNotEmpty() == true) {
+                    logd(TAG, "Found existing wallet addresses from server, using them:")
+                    account.wallet!!.wallets?.forEach { walletData ->
+                        walletData.blockchain?.forEach { blockchain ->
+                            logd(TAG, "  - ${blockchain.chainId}: ${blockchain.address}")
+                        }
+                    }
+                    
+                    // The wallet should work with these addresses - no need to wait for auto-discovery
+                    logd(TAG, "Wallet properly initialized with known addresses")
+                    logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
+                } else {
+                    logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
+                    
+                    runBlocking { 
+                        // Add timeout to prevent infinite hanging
+                        withTimeout(5000) { // 5 second timeout
+                            wallet.accountsFlow.first { accounts -> 
+                                logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
+                                accounts.isNotEmpty() 
+                            }
+                        }
+                        logd(TAG, "Accounts discovered successfully!")
+                        logd(TAG, "Number of account chains: ${wallet.accounts.size}")
+                        wallet.accounts.forEach { (chainId, accounts) ->
+                            logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
+                            accounts.forEach { account ->
+                                logd(TAG, "  - Account address: ${account.address}")
+                            }
+                        }
+                        logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
+                    }
+                }
+            } catch (e: TimeoutCancellationException) {
+                logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
+                logd(TAG, "Final wallet address: ${wallet.walletAddress()}")
+            } catch (e: Exception) {
+                logd(TAG, "ERROR during wallet initialization: ${e.message}")
+                logd(TAG, "Error type: ${e.javaClass.simpleName}")
+                logd(TAG, "Attempting to continue anyway...")
+            }
         }
-
-        /* 2. Create the wallet */
-        val newWallet = WalletFactory.createKeyWallet(
-            key,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            getStorage()
-        )
-        currentWallet = newWallet
-        logd(TAG, "Wallet restored, address = ${newWallet.walletAddress()}")
 
         /* 3. Persist the wallet info back into the Account (optional but handy) */
         if (account.wallet == null) {
-            val wallets = newWallet.accounts.map { (chainId, accounts) ->
-                WalletData(
-                    blockchain = accounts.map {
-                        BlockchainData(address = it.address, chainId = chainId.toString())
-                    },
-                    name = chainId.toString()
+            currentWallet?.let { newWallet ->
+                val wallets = newWallet.accounts.map { (chainId, accounts) ->
+                    WalletData(
+                        blockchain = accounts.map {
+                            BlockchainData(address = it.address, chainId = chainId.toString())
+                        },
+                        name = chainId.toString()
+                    )
+                }
+                account.wallet = WalletListData(
+                    id       = account.userInfo.username,         // or whatever id you use
+                    username = account.userInfo.username,
+                    wallets  = wallets
                 )
+                AccountCacheManager.cache(Accounts().apply { addAll(AccountManager.list()) })
             }
-            account.wallet = WalletListData(
-                id       = account.userInfo.username,         // or whatever id you use
-                username = account.userInfo.username,
-                wallets  = wallets
-            )
-            AccountCacheManager.cache(Accounts().apply { addAll(AccountManager.list()) })
         }
 
         /* 4. Make sure WalletManager knows which address is selected */
-        val address = newWallet.walletAddress()
+        val address = currentWallet?.walletAddress()
         if (!address.isNullOrBlank()) {
             selectWalletAddress(address)
         }
@@ -343,40 +430,110 @@ object WalletManager {
                     return@synchronized
                 }
 
-                val keystoreInfo = account.keyStoreInfo
-                logd(TAG, "Keystore info present: ${!keystoreInfo.isNullOrBlank()}")
-                
-                if (keystoreInfo.isNullOrBlank()) {
-                    logd(TAG, "No keystore info found in account")
+                val storage = getStorage()
+                val newWallet: Wallet
+
+                // Handle keystore-based accounts
+                if (!account.keyStoreInfo.isNullOrBlank()) {
+                    logd(TAG, "Updating keystore-based wallet")
+                    
+                    // Parse the keystore info to get the private key
+                    val keystoreAddress = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
+                    logd(TAG, "Got private key from keystore info")
+
+                    val keyHex = keystoreAddress.privateKey.removePrefix("0x")
+                    require(keyHex.length == 64) { "Private key must be 32-byte hex" }
+
+                    val keyBytes = keyHex.hexToBytes()
+                    // Create a private key instance
+                    val key = PrivateKey.create(storage).apply {
+                        importPrivateKey(keyBytes, KeyFormat.RAW)
+                    }
+                    logd(TAG, "Created and imported private key")
+
+                    // Create a new wallet using the private key
+                    newWallet = WalletFactory.createKeyWallet(
+                        key,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        storage
+                    )
+                }
+
+                // Handle prefix-based accounts
+                else if (!account.prefix.isNullOrBlank()) {
+                    logd(TAG, "Updating prefix-based wallet")
+                    
+                    // Load the stored private key using the prefix-based ID
+                    val keyId = "prefix_key_${account.prefix}"
+                    val privateKey = try {
+                        PrivateKey.get(keyId, account.prefix!!, storage)
+                    } catch (e: Exception) {
+                        logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+                        logd(TAG, "Cannot proceed without the stored key as it would create a different account")
+                        return@synchronized
+                    }
+                    logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
+                    
+                    // Create a new wallet using the private key
+                    newWallet = WalletFactory.createKeyWallet(
+                        privateKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        storage
+                    )
+                }
+
+                else {
+                    logd(TAG, "Account has neither keystore info nor prefix, cannot update wallet")
                     return@synchronized
                 }
-
-                // Parse the keystore info to get the private key
-                val keystoreAddress = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
-                val privateKey = keystoreAddress.privateKey
-                logd(TAG, "Got private key from keystore info")
-
-                val keyHex   = keystoreAddress.privateKey.removePrefix("0x")
-                require(keyHex.length == 64) { "Private key must be 32-byte hex" }
-
-                val keyBytes = keyHex.hexToBytes()
-                // Create a private key instance
-                val key = PrivateKey.create(getStorage()).apply {
-                    importPrivateKey(keyBytes, KeyFormat.RAW)
-                }
-                logd(TAG, "Created and imported private key")
-
-                // Create a new wallet using the private key
-                val newWallet = WalletFactory.createKeyWallet(
-                    key,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    getStorage()
-                )
                 
-                // Wait for accounts to be loaded using flow's first() operation
-                runBlocking { 
-                    newWallet.accountsFlow.first { accounts -> accounts.isNotEmpty() }
-                    logd(TAG, "Accounts loaded, proceeding with wallet setup")
+                // Wait for accounts to be loaded - but handle server addresses like initializeWallet
+                logd(TAG, "Wallet created, checking for existing account addresses...")
+                logd(TAG, "Account wallet data: ${account.wallet}")
+                
+                // Check if we already have account addresses from the server
+                if (account.wallet?.wallets?.isNotEmpty() == true) {
+                    logd(TAG, "Found existing wallet addresses from server, using them:")
+                    account.wallet!!.wallets?.forEach { walletData ->
+                        walletData.blockchain?.forEach { blockchain ->
+                            logd(TAG, "  - ${blockchain.chainId}: ${blockchain.address}")
+                        }
+                    }
+                    
+                    // The wallet should work with these addresses - no need to wait for auto-discovery
+                    logd(TAG, "Wallet properly initialized with known addresses")
+                    logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
+                } else {
+                    logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
+                    
+                    try {
+                        // Wait for accounts to be loaded using flow's first() operation
+                        runBlocking { 
+                            // Add timeout to prevent infinite hanging
+                            withTimeout(5000) { // 5 second timeout
+                                newWallet.accountsFlow.first { accounts -> 
+                                    logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
+                                    accounts.isNotEmpty() 
+                                }
+                            }
+                            logd(TAG, "Accounts discovered successfully!")
+                            logd(TAG, "Number of account chains: ${newWallet.accounts.size}")
+                            newWallet.accounts.forEach { (chainId, accounts) ->
+                                logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
+                                accounts.forEach { account ->
+                                    logd(TAG, "  - Account address: ${account.address}")
+                                }
+                            }
+                            logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
+                        }
+                    } catch (e: TimeoutCancellationException) {
+                        logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
+                        logd(TAG, "Final wallet address: ${newWallet.walletAddress()}")
+                    } catch (e: Exception) {
+                        logd(TAG, "ERROR during wallet update: ${e.message}")
+                        logd(TAG, "Error type: ${e.javaClass.simpleName}")
+                        logd(TAG, "Attempting to continue anyway...")
+                    }
                 }
 
                 logd(TAG, "Created new wallet with address: '${newWallet.walletAddress()}'")
@@ -384,6 +541,31 @@ object WalletManager {
                 // Update the current wallet reference
                 currentWallet = newWallet
                 logd(TAG, "Updated current wallet reference")
+                
+                // Manually add accounts from server to the wallet
+                // This is needed because new accounts may not be indexed yet by the key indexer
+                account.wallet?.wallets?.forEach { walletData ->
+                    walletData.blockchain?.forEach { blockchain ->
+                        try {
+                            val chainId = when (blockchain.chainId?.lowercase()) {
+                                "mainnet" -> ChainId.Mainnet
+                                "testnet" -> ChainId.Testnet
+                                else -> null
+                            }
+                            
+                            if (chainId != null && !blockchain.address.isNullOrBlank()) {
+                                logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
+                                
+                                // Use the wallet's fetchAccountByAddress method to get the account directly
+                                // from the Flow network, bypassing the key indexer
+                                newWallet.fetchAccountByAddress(blockchain.address!!, chainId)
+                                logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
+                            }
+                        } catch (e: Exception) {
+                            logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
+                        }
+                    }
+                }
 
                 // Refresh child accounts
                 refreshChildAccount(newWallet)
