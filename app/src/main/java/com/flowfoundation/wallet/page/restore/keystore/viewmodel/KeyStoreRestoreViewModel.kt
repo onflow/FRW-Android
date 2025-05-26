@@ -686,28 +686,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             AccountManager.add(userAccount)
                                             WalletManager.init()
 
-//                                            val wallet = WalletManager.wallet()
-//                                            if (wallet != null) {
-//                                                // Build WalletListData from the SDK wallet
-//                                                val wallets = wallet.accounts.map { (chainId, accounts) ->
-//                                                    WalletData(
-//                                                        blockchain = accounts.map { account ->
-//                                                            BlockchainData(
-//                                                                address = account.address,
-//                                                                chainId = chainId.toString()
-//                                                            )
-//                                                        },
-//                                                        name = chainId.toString()
-//                                                    )
-//                                                }
-//                                                val walletListData = WalletListData(
-//                                                    id = "local", // or some identifier
-//                                                    username = "local", // or get from user info if available
-//                                                    wallets = wallets
-//                                                )
-//                                                WalletManager.updateWallet(walletListData)
-//                                            }
-
                                             logd("KeyStoreRestoreViewModel", "Account added to AccountManager")
 
                                             logd("KeyStoreRestoreViewModel", "Tracking account restore in Mixpanel")
@@ -930,7 +908,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     private suspend fun getSignature(
         jwt: String,
         privateKey: String,
@@ -972,32 +949,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
         
         logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
         logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
-        
-        return signature
-    }
-
-    @OptIn(ExperimentalStdlibApi::class)
-    private suspend fun getSignatureOld(
-        jwt: String,
-        privateKey: String,
-        hashAlgo: HashAlgorithm,
-        signAlgo: SignatureAlgorithm
-    ): String {
-        logd("KeyStoreRestoreViewModel", "Generating signature using legacy SDK method")
-        logd("KeyStoreRestoreViewModel", "Hash algorithm: $hashAlgo, Sign algorithm: $signAlgo")
-        
-        checkSecurityProvider()
-        updateSecurityProvider()
-        
-        // Sign using the legacy SDK
-        val signatureBytes = Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(privateKey, signAlgo),
-            hashAlgo = hashAlgo
-        ).sign(com.nftco.flow.sdk.DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
-        
-        val signature = signatureBytes.bytesToHex()
-        logd("KeyStoreRestoreViewModel", "Generated legacy signature: $signature")
-        logd("KeyStoreRestoreViewModel", "Legacy signature length: ${signature.length}")
         
         return signature
     }
