@@ -226,10 +226,6 @@ suspend fun setDoNotShowBackupDialog(notShow: Boolean) {
     dataStore.edit { it[KEY_DO_NOT_SHOW_BACKUP_DIALOG] = notShow }
 }
 
-fun getSelectedWalletAddress(): String? {
-    return sharedPreferencesTraditional.getString(KEY_SELECTED_WALLET_ADDRESS, null)
-}
-
 fun updateSelectedWalletAddress(address: String) {
     sharedPreferencesTraditional.edit().putString(KEY_SELECTED_WALLET_ADDRESS, address).apply()
 }

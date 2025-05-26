@@ -6,8 +6,6 @@ import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.model.WalletListData
-import com.flowfoundation.wallet.utils.getSelectedWalletAddress
-import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flow.wallet.wallet.Wallet
