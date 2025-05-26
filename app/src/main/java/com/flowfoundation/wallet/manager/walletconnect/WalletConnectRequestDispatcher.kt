@@ -255,7 +255,6 @@ private suspend fun WCRequest.respondAuthn() {
         loge(TAG, "No wallet address found")
         return
     }
-    logd(TAG, "Using wallet address: $address")
     
     val json = try {
         Gson().fromJson<List<SignableParams>>(params, object : TypeToken<List<SignableParams>>() {}.type)
@@ -269,17 +268,23 @@ private suspend fun WCRequest.respondAuthn() {
         return
     }
     logd(TAG, "Signable params: $signable")
+    logd(TAG, "Request address: ${signable.address}")
+    
+    // Use the wallet's current address for the active network, not the request address
+    // The request address might be for a different network
+    val walletAddress = address
+    logd(TAG, "Using wallet address for signing: $walletAddress")
     
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: run {
         loge(TAG, "No crypto provider found")
         return
     }
     val keyId = cryptoProvider.let {
-        FlowAddress(address).currentKeyId(it.getPublicKey())
+        FlowAddress(walletAddress).currentKeyId(it.getPublicKey())
     }
     logd(TAG, "Using keyId: $keyId")
     
-    val services = walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
+    val services = walletConnectAuthnServiceResponse(walletAddress, keyId, signable.nonce, signable.appIdentifier)
     logd(TAG, "Generated authn response: $services")
     
     val response = Sign.Params.Response(

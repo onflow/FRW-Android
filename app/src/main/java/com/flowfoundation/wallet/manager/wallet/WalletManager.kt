@@ -622,7 +622,37 @@ object WalletManager {
 
 // Extension functions for backward compatibility
 fun Wallet?.walletAddress(): String? {
-    return this?.accounts?.values?.flatten()?.firstOrNull()?.address
+    // Return the currently selected address, not just the first account
+    val selectedAddress = WalletManager.selectedWalletAddress()
+    if (selectedAddress.isNotBlank()) {
+        // Find the account that matches the selected address
+        val matchingAccount = this?.accounts?.values?.flatten()?.find { 
+            it.address.equals(selectedAddress, ignoreCase = true) ||
+            it.address.equals("0x$selectedAddress", ignoreCase = true) ||
+            it.address.removePrefix("0x").equals(selectedAddress, ignoreCase = true)
+        }
+        if (matchingAccount != null) {
+            return matchingAccount.address
+        }
+    }
+    
+    // Fallback to account for current network instead of just any first account
+    val currentNetwork = chainNetWorkString()
+    val networkAccount = this?.accounts?.entries?.firstOrNull { (chainId, _) ->
+        when (currentNetwork) {
+            NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+            NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+            else -> false
+        }
+    }?.value?.firstOrNull()
+    
+    // If we found a network-specific account, return it
+    if (networkAccount != null) {
+        return networkAccount.address
+    }
+    
+    // Final fallback to any first account if no network match
+    return null
 }
 
 fun WalletListData.walletAddress(): String? {
