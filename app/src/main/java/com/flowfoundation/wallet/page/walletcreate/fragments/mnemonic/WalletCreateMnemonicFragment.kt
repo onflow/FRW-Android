@@ -60,6 +60,5 @@ class WalletCreateMnemonicFragment : Fragment() {
             mnemonicList.observe(viewLifecycleOwner) { adapter.setNewDiffData(it) }
             loadMnemonic()
         }
-        setRegistered()
     }
 }

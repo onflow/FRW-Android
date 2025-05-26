@@ -360,7 +360,11 @@ fun BottomNavigationView.updateIcons() {
 
 private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
     val wallet = WalletManager.wallet()
+    Log.d("Utils", "walletData called with address: '$this'")
+    Log.d("Utils", "Main wallet address: '${wallet?.walletAddress()}'")
+    
     return if (wallet?.walletAddress() == this) {
+        Log.d("Utils", "Creating main wallet data for: '$this'")
         WalletItemData(
             address = this,
             name = userInfo.username,
@@ -369,12 +373,21 @@ private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
         )
     } else {
         // child account
-        val childAccount = WalletManager.childAccount(this) ?: return null
+        Log.d("Utils", "Looking for child account with address: '$this'")
+        val childAccount = WalletManager.childAccount(this)
+        Log.d("Utils", "Found child account: ${childAccount?.address}, name: ${childAccount?.name}")
+        
+        if (childAccount == null) {
+            Log.d("Utils", "No child account found for address: '$this'")
+            return null
+        }
+        
+        Log.d("Utils", "Creating child account data - address: '${childAccount.address}', name: '${childAccount.name}'")
         WalletItemData(
             address = childAccount.address,
             name = childAccount.name,
             icon = childAccount.icon,
-            isSelected = WalletManager.selectedWalletAddress() == this
+            isSelected = WalletManager.selectedWalletAddress() == childAccount.address
         )
     }
 }
@@ -425,7 +438,12 @@ private fun View.setupWalletItem(
     }
 
     setOnClickListener {
-        val newNetwork = WalletManager.selectWalletAddress(data.address)
+        Log.d("Utils", "Child account clicked - data.address: '${data.address}'")
+        Log.d("Utils", "Child account clicked - data.address.toAddress(): '${data.address.toAddress()}'")
+        Log.d("Utils", "Child account clicked - data.name: '${data.name}'")
+        Log.d("Utils", "Child account clicked - isEVMAccount: $isEVMAccount")
+        
+        val newNetwork = WalletManager.selectWalletAddress(data.address.toAddress())
 
         if (newNetwork != chainNetWorkString()) {
             // network change

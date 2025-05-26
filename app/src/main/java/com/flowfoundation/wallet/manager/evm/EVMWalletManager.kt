@@ -92,15 +92,29 @@ object EVMWalletManager {
         logd(TAG, "fetchEVMAddress()")
         ioScope {
             val address = cadenceQueryEVMAddress()
-            logd(TAG, "fetchEVMAddress address::$address")
+            logd(TAG, "fetchEVMAddress cadence response: '$address'")
+            logd(TAG, "fetchEVMAddress address length: ${address?.length ?: 0}")
             if (address.isNullOrEmpty()) {
                 ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                 callback?.invoke(false)
             } else {
                 val networkAddress = getNetworkAddress()
+                logd(TAG, "fetchEVMAddress networkAddress: '$networkAddress'")
                 if (networkAddress != null) {
-                    evmAddressMap[networkAddress] = address.toAddress()
+                    val formattedAddress = address.toAddress()
+                    logd(TAG, "fetchEVMAddress formatted address: '$formattedAddress'")
+                    
+                    // Validate the address before storing it
+                    if (!isValidEVMAddress(formattedAddress)) {
+                        logd(TAG, "fetchEVMAddress received invalid address: '$formattedAddress'")
+                        ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
+                        callback?.invoke(false)
+                        return@ioScope
+                    }
+                    
+                    evmAddressMap[networkAddress] = formattedAddress
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
+                    logd(TAG, "fetchEVMAddress successfully stored address: '$formattedAddress'")
                     callback?.invoke(true)
                 } else {
                     ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
@@ -141,8 +155,40 @@ object EVMWalletManager {
             ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
             return null
         } else {
-            toChecksumEVMAddress(address)
+            val checksumAddress = toChecksumEVMAddress(address)
+            // Validate the address format - if it's corrupted, try to refresh it
+            if (!isValidEVMAddress(checksumAddress)) {
+                logd(TAG, "Detected corrupted EVM address: $checksumAddress, attempting to refresh")
+                fetchEVMAddress { success ->
+                    if (success) {
+                        logd(TAG, "Successfully refreshed EVM address")
+                    } else {
+                        logd(TAG, "Failed to refresh EVM address")
+                    }
+                }
+                return null
+            }
+            checksumAddress
         }
+    }
+
+    private fun isValidEVMAddress(address: String): Boolean {
+        // Check if address matches valid EVM address pattern and doesn't have suspicious patterns
+        if (!address.matches(Regex("^0x[a-fA-F0-9]{40}$"))) {
+            return false
+        }
+        
+        // Check for addresses with too many leading zeros (likely corrupted)
+        val hexPart = address.removePrefix("0x")
+        val leadingZeros = hexPart.takeWhile { it == '0' }.length
+        
+        // If more than 30 characters are zeros (out of 40), it's likely corrupted
+        if (leadingZeros > 30) {
+            logd(TAG, "Address appears corrupted due to excessive leading zeros: $leadingZeros")
+            return false
+        }
+        
+        return true
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
@@ -434,6 +480,31 @@ object EVMWalletManager {
         )
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
+    }
+
+    fun clearCorruptedEVMAddress(network: String? = chainNetWorkString()) {
+        logd(TAG, "clearCorruptedEVMAddress called for network: $network")
+        val networkAddress = getNetworkAddress(network)
+        if (networkAddress != null) {
+            val currentAddress = evmAddressMap[networkAddress]
+            logd(TAG, "Clearing corrupted EVM address: '$currentAddress' for network address: '$networkAddress'")
+            evmAddressMap.remove(networkAddress)
+            AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
+            logd(TAG, "Corrupted EVM address cleared, attempting to fetch fresh address")
+            fetchEVMAddress { success ->
+                logd(TAG, "Fresh EVM address fetch result: $success")
+            }
+        }
+    }
+
+    fun validateAndRefreshEVMAddress(network: String? = chainNetWorkString()): Boolean {
+        val currentAddress = getEVMAddress(network)
+        if (currentAddress == null || !isValidEVMAddress(currentAddress)) {
+            logd(TAG, "EVM address validation failed, clearing and refreshing")
+            clearCorruptedEVMAddress(network)
+            return false
+        }
+        return true
     }
 }
 

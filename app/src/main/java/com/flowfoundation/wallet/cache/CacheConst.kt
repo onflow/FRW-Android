@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.staking.StakingCache
 import com.flowfoundation.wallet.manager.staking.StakingProviderCache
 import com.flowfoundation.wallet.network.model.*
 import com.flowfoundation.wallet.page.profile.subpage.wallet.StorageInfo
+import com.google.gson.reflect.TypeToken
 
 
 const val CACHE_NFT_LIST = "nft_list"
@@ -34,12 +35,12 @@ fun userInfoCache(): CacheManager<UserInfoData> {
 }
 
 fun addressBookCache(): CacheManager<AddressBookContactBookList> {
-    return CacheManager(ADDRESS_BOOK, AddressBookContactBookList::class.java)
+    return CacheManager(ADDRESS_BOOK, object : TypeToken<AddressBookContactBookList>() {}.type)
 }
 
 // recent send history
 fun recentTransactionCache(): CacheManager<AddressBookContactBookList> {
-    return CacheManager(RECENT_ADDRESS_BOOK, AddressBookContactBookList::class.java)
+    return CacheManager(RECENT_ADDRESS_BOOK, object : TypeToken<AddressBookContactBookList>() {}.type)
 }
 
 fun tokenStateCache(): CacheManager<TokenStateCache> {
@@ -55,7 +56,7 @@ fun inboxCache(): CacheManager<InboxResponse> {
 }
 
 fun transferRecordCache(tokenId: String = ""): CacheManager<TransferRecordList> {
-    return CacheManager("transfer_record_$tokenId".cacheFile(), TransferRecordList::class.java)
+    return CacheManager("transfer_record_$tokenId".cacheFile(), object : TypeToken<TransferRecordList>() {}.type)
 }
 
 fun nftCollectionsCache(): CacheManager<NftCollectionListResponse> {

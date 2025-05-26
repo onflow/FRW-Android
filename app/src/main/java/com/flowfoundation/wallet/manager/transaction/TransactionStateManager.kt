@@ -38,7 +38,7 @@ import kotlin.math.abs
 object TransactionStateManager {
     private val TAG = TransactionStateManager::class.java.simpleName
 
-    private val cache by lazy { CacheManager("transaction_state", TransactionStateData::class.java) }
+    private val cache by lazy { CacheManager<TransactionStateData>("transaction_state", TransactionStateData::class.java) }
 
     private lateinit var stateData: TransactionStateData
 

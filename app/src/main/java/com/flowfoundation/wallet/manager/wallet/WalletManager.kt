@@ -223,8 +223,24 @@ object WalletManager {
 
             if (networkAccount != null) {
                 logd(TAG, "Found account for $currentNetwork: ${networkAccount.address}")
-                // Update the selected wallet address to match the current network
-                selectWalletAddress(networkAccount.address)
+                
+                // Only update the selected wallet address if:
+                // 1. No address is currently selected, OR
+                // 2. The current address is not valid (not a child account, not EVM, not parent account)
+                val currentSelected = selectedWalletAddressRef.get()
+                val isValidSelection = currentSelected.isNotBlank() && (
+                    isChildAccount(currentSelected) || 
+                    EVMWalletManager.isEVMWalletAddress(currentSelected) ||
+                    currentWallet!!.accounts.values.flatten().any { it.address.equals(currentSelected, ignoreCase = true) }
+                )
+                
+                if (currentSelected.isBlank() || !isValidSelection) {
+                    logd(TAG, "No valid address selected, setting network account: ${networkAccount.address}")
+                    selectedWalletAddressRef.set(networkAccount.address)
+                    updateSelectedWalletAddress(networkAccount.address)
+                } else {
+                    logd(TAG, "Valid address already selected: $currentSelected, keeping it")
+                }
             } else {
                 logd(TAG, "No account found for network: $currentNetwork")
             }
@@ -262,13 +278,22 @@ object WalletManager {
     }
 
     fun childAccount(childAddress: String): ChildAccount? {
+        // Normalize the input address by removing 0x prefix for comparison
+        val normalizedInput = childAddress.removePrefix("0x")
+        logd(TAG, "Looking for child account with normalized address: '$normalizedInput' (original: '$childAddress')")
+        
         return childAccountMap.toMap().values.flatMap { it.get() }.firstOrNull {
-            it.address.equals(childAddress, ignoreCase = true)
+            val normalizedStored = it.address.removePrefix("0x")
+            logd(TAG, "Comparing with stored child address: '${it.address}' (normalized: '$normalizedStored')")
+            normalizedStored.equals(normalizedInput, ignoreCase = true)
         }
     }
 
     fun isChildAccount(address: String): Boolean {
-        return childAccount(address) != null
+        logd(TAG, "Checking if address is child account: '$address'")
+        val result = childAccount(address) != null
+        logd(TAG, "isChildAccount result: $result")
+        return result
     }
 
     fun refreshChildAccount() {

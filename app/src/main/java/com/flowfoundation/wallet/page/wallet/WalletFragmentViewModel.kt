@@ -158,7 +158,28 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
             logd(TAG, "loadCoinInfo :: dataList :: ${dataList.size}")
             if (isRefresh || dataList.isEmpty()) {
                 logd(TAG, "loadCoinInfo :: fetchState")
-                TokenStateManager.fetchState()
+                // Wait for wallet to be properly initialized before fetching token state
+                viewModelIOScope(this) {
+                    var retryCount = 0
+                    while (retryCount < 10) { // Max 10 retries (5 seconds)
+                        val walletAddress = WalletManager.selectedWalletAddress()
+                        logd(TAG, "loadCoinInfo :: checking wallet address: '$walletAddress' (attempt ${retryCount + 1})")
+                        
+                        if (walletAddress.isNotBlank() && walletAddress.length > 10) {
+                            logd(TAG, "loadCoinInfo :: valid wallet address found, fetching token state")
+                            TokenStateManager.fetchState()
+                            break
+                        } else {
+                            logd(TAG, "loadCoinInfo :: wallet address not ready, waiting 500ms...")
+                            kotlinx.coroutines.delay(500)
+                            retryCount++
+                        }
+                    }
+                    
+                    if (retryCount >= 10) {
+                        logd(TAG, "loadCoinInfo :: timeout waiting for wallet address, skipping token state fetch")
+                    }
+                }
             }
             ChildAccountCollectionManager.loadChildAccountTokenList()
         }

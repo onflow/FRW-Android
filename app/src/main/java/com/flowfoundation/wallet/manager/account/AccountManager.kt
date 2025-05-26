@@ -48,6 +48,7 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -728,7 +729,7 @@ interface OnUserInfoReload {
 }
 
 private fun oldAccountsCache(): List<Account> {
-    val cacheAccounts = CacheManager("${"accounts".hashCode()}", Accounts::class.java).read()
+    val cacheAccounts = CacheManager<Accounts>("${"accounts".hashCode()}", object : TypeToken<Accounts>() {}.type).read()
     val accounts = mutableListOf<Account>()
     cacheAccounts?.let {
         accounts.addAll(it)

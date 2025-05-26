@@ -19,6 +19,7 @@ import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
+import com.google.gson.reflect.TypeToken
 
 object CoinRateManager {
     private val TAG = CoinRateManager::class.java.simpleName
@@ -27,7 +28,7 @@ object CoinRateManager {
 
     private val listeners = CopyOnWriteArrayList<WeakReference<OnCoinRateUpdate>>()
 
-    private val cache by lazy { CacheManager("COIN_RATE", CoinRateCacheData::class.java) }
+    private val cache by lazy { CacheManager<CoinRateCacheData>("COIN_RATE", CoinRateCacheData::class.java) }
 
     fun init() {
         ioScope {

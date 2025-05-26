@@ -230,6 +230,10 @@ fun updateSelectedWalletAddress(address: String) {
     sharedPreferencesTraditional.edit().putString(KEY_SELECTED_WALLET_ADDRESS, address).apply()
 }
 
+fun getSelectedWalletAddress(): String {
+    return sharedPreferencesTraditional.getString(KEY_SELECTED_WALLET_ADDRESS, "") ?: ""
+}
+
 fun setUploadedAddressSet(addressSet: Set<String>) {
     sharedPreferencesTraditional.edit().putStringSet(KEY_TOKEN_UPLOADED_ADDRESS_SET, addressSet).apply()
 }

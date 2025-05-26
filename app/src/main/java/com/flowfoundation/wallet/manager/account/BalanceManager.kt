@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
+import com.google.gson.reflect.TypeToken
 
 object BalanceManager {
     private val TAG = BalanceManager::class.java.simpleName
@@ -27,7 +28,7 @@ object BalanceManager {
 
     private val balanceList = CopyOnWriteArrayList<Balance>()
 
-    private val cache by lazy { CacheManager("BALANCE_CACHE_v1.0", BalanceCache::class.java) }
+    private val cache by lazy { CacheManager<BalanceCache>("BALANCE_CACHE_v1.0", BalanceCache::class.java) }
 
     fun reload() {
         ioScope {

@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import kotlinx.parcelize.Parcelize
 import java.lang.ref.WeakReference
+import com.google.gson.reflect.TypeToken
 
 private val TAG = ChildAccountList::class.java.simpleName
 
@@ -132,7 +133,7 @@ class ChildAccountList(
         @Suppress("UNCHECKED_CAST")
         return CacheManager(
             "${address}.child_account_list".cacheFile(),
-            ArrayList::class.java as Class<List<ChildAccount>>,
+            object : TypeToken<List<ChildAccount>>() {}.type
         )
     }
 
