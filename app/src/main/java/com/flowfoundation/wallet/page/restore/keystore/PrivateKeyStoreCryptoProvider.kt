@@ -54,7 +54,8 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
 
     override suspend fun signData(data: ByteArray): String {
         // Implement signing logic here using the private key and signing algorithm
-        return "" // TODO: Implement actual signing
+        val signatureBytes = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
+        return signatureBytes.joinToString("") { String.format("%02x", it) } 
     }
 
     override fun getSigner(): Signer {
@@ -63,13 +64,13 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             override var keyIndex: Int = keyInfo.get("keyId").asInt
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                // Implement signing logic here using the private key and signing algorithm
-                return ByteArray(0) // TODO: Implement actual signing
+                // Use the already loaded privateKey and determined signing/hashing algorithms
+                return privateKey.sign(bytes, signingAlgorithm, getHashAlgorithm())
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                // Implement signing logic here using the private key and signing algorithm
-                return ByteArray(0) // TODO: Implement actual signing
+                // Use the already loaded privateKey and determined signing/hashing algorithms
+                return privateKey.sign(bytes, signingAlgorithm, getHashAlgorithm())
             }
         }
     }

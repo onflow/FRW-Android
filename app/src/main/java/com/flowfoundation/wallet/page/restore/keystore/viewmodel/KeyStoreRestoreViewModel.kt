@@ -598,15 +598,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         val jwt = getFirebaseJwt()
                         logd("KeyStoreRestoreViewModel", "Got Firebase JWT: $jwt")
 
-                        // Convert SigningAlgorithm to SignatureAlgorithm for getSignatureOld
+                        // Convert SigningAlgorithm to SignatureAlgorithm for consistency
                         val oldSignAlgo = when (signAlgo) {
                             SigningAlgorithm.ECDSA_P256 -> SignatureAlgorithm.ECDSA_P256
                             SigningAlgorithm.ECDSA_secp256k1 -> SignatureAlgorithm.ECDSA_SECP256k1
                             else -> SignatureAlgorithm.ECDSA_P256
                         }
 
-                        val signature = getSignatureOld(jwt, privateKey, HashAlgorithm.SHA2_256, oldSignAlgo)
-                        logd("KeyStoreRestoreViewModel", "Generated signature using old method: $signature")
+                        val newSignature = getSignature(jwt, privateKey, HashingAlgorithm.SHA2_256, signAlgo)
+
+                        logd("KeyStoreRestoreViewModel", "NEW wallet module signature: $newSignature")
+
+                        // Use the new wallet module signature (with recovery ID removed)
+                        val signature = newSignature
 
                         // Format public key - remove "04" prefix if present
                         val formattedPublicKey = if (publicKey.startsWith("04")) publicKey.substring(2) else publicKey
@@ -616,8 +620,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                             signature = signature,
                             accountKey = AccountKey(
                                 publicKey = formattedPublicKey,
-                                hashAlgo = HashAlgorithm.SHA2_256.index,
-                                signAlgo = oldSignAlgo.index
+                                hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
+                                signAlgo = signAlgo.cadenceIndex
                             ),
                             deviceInfo = deviceInfoRequest
                         )
@@ -926,22 +930,6 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
     }
 
-    private fun getSignatureOld(
-        jwt: String,
-        privateKey: String,
-        hashAlgo: HashAlgorithm,
-        signAlgo: SignatureAlgorithm
-    ): String {
-        checkSecurityProvider()
-        updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                privateKey, signAlgo
-            ),
-            hashAlgo = hashAlgo
-        ).sign(com.nftco.flow.sdk.DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray()).bytesToHex()
-    }
-
     @OptIn(ExperimentalStdlibApi::class)
     private suspend fun getSignature(
         jwt: String,
@@ -949,33 +937,68 @@ class KeyStoreRestoreViewModel : ViewModel() {
         hashAlgo: HashingAlgorithm,
         signAlgo: SigningAlgorithm
     ): String {
-        logd("KeyStoreRestoreViewModel", "Getting signature for JWT")
-        logd("KeyStoreRestoreViewModel", "JWT: $jwt")
+        logd("KeyStoreRestoreViewModel", "Generating signature using wallet module PrivateKey")
+        logd("KeyStoreRestoreViewModel", "Hash algorithm: $hashAlgo, Sign algorithm: $signAlgo")
+        
         val storage = getStorage()
-        logd("KeyStoreRestoreViewModel", "Got storage")
-
-        val key = PrivateKey.create(storage).apply {
-            logd("KeyStoreRestoreViewModel", "Created new PrivateKey instance")
-            // Convert hex string to bytes
+        
+        // Create PrivateKey instance from wallet module
+        val key = com.flow.wallet.keys.PrivateKey.create(storage).apply {
             val keyBytes = privateKey.hexToBytes()
-            logd("KeyStoreRestoreViewModel", "Converted private key to bytes")
-            importPrivateKey(keyBytes, KeyFormat.RAW)
-            logd("KeyStoreRestoreViewModel", "Imported private key")
+            logd("KeyStoreRestoreViewModel", "Importing private key with ${keyBytes.size} bytes")
+            importPrivateKey(keyBytes, com.flow.wallet.keys.KeyFormat.RAW)
         }
 
-        // Use the old format for domain tag and signing
+        // Use the wallet module's domain tag and signing
         val domainTagBytes = DomainTag.User.bytes
         val jwtBytes = jwt.encodeToByteArray()
-        logd("KeyStoreRestoreViewModel", "Domain tag bytes: ${domainTagBytes.joinToString("") { "%02x".format(it) }}")
-        logd("KeyStoreRestoreViewModel", "JWT bytes: ${jwtBytes.joinToString("") { "%02x".format(it) }}")
-
         val dataToSign = domainTagBytes + jwtBytes
+        
         logd("KeyStoreRestoreViewModel", "Data to sign length: ${dataToSign.size}")
-        logd("KeyStoreRestoreViewModel", "Data to sign: ${dataToSign.joinToString("") { "%02x".format(it) }}")
-
-        val signature = key.sign(dataToSign, signAlgo, hashAlgo).toHexString()
+        
+        // Sign using the wallet module's signing method
+        val signatureBytes = key.sign(dataToSign, signAlgo, hashAlgo)
+        
+        // Remove recovery ID if present (wallet module includes it, but server expects standard 64-byte signature)
+        val finalSignatureBytes = if (signatureBytes.size == 65) {
+            logd("KeyStoreRestoreViewModel", "Removing recovery ID from 65-byte signature")
+            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        } else {
+            logd("KeyStoreRestoreViewModel", "Using signature as-is (${signatureBytes.size} bytes)")
+            signatureBytes
+        }
+        
+        val signature = finalSignatureBytes.joinToString("") { "%02x".format(it) }
+        
         logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
         logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
+        
+        return signature
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private suspend fun getSignatureOld(
+        jwt: String,
+        privateKey: String,
+        hashAlgo: HashAlgorithm,
+        signAlgo: SignatureAlgorithm
+    ): String {
+        logd("KeyStoreRestoreViewModel", "Generating signature using legacy SDK method")
+        logd("KeyStoreRestoreViewModel", "Hash algorithm: $hashAlgo, Sign algorithm: $signAlgo")
+        
+        checkSecurityProvider()
+        updateSecurityProvider()
+        
+        // Sign using the legacy SDK
+        val signatureBytes = Crypto.getSigner(
+            privateKey = Crypto.decodePrivateKey(privateKey, signAlgo),
+            hashAlgo = hashAlgo
+        ).sign(com.nftco.flow.sdk.DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+        
+        val signature = signatureBytes.bytesToHex()
+        logd("KeyStoreRestoreViewModel", "Generated legacy signature: $signature")
+        logd("KeyStoreRestoreViewModel", "Legacy signature length: ${signature.length}")
+        
         return signature
     }
 }
