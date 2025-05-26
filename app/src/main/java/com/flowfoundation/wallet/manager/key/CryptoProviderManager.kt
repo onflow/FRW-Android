@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.manager.key.PrivateKeyCryptoProvider
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flow.wallet.CryptoProvider
@@ -58,22 +59,17 @@ object CryptoProviderManager {
 
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
-                logd("CryptoProviderManager", "Creating prefix-based crypto provider")
                 val privateKey = PrivateKey.create(storage)
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                // Create a proper KeyWallet
+                
+                // Create a proper KeyWallet directly with the PrivateKey
                 val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
+                    privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
+                
+                // For prefix-based accounts, we use PrivateKeyCryptoProvider instead of BackupCryptoProvider
+                PrivateKeyCryptoProvider(privateKey, wallet)
             }
 
             // Handle active accounts
@@ -165,20 +161,16 @@ object CryptoProviderManager {
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
                 val privateKey = PrivateKey.create(storage)
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                // Create a proper KeyWallet
+                
+                // Create a proper KeyWallet directly with the PrivateKey
                 val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
+                    privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
+                
+                // For prefix-based accounts, we use PrivateKeyCryptoProvider instead of BackupCryptoProvider
+                PrivateKeyCryptoProvider(privateKey, wallet)
             }
 
             // Handle other accounts
@@ -223,20 +215,16 @@ object CryptoProviderManager {
             // Handle prefix-based accounts
             if (switchAccount.prefix.isNullOrBlank().not()) {
                 val privateKey = PrivateKey.create(storage)
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = privateKey.exportPrivateKey(KeyFormat.RAW).toString(Charsets.UTF_8),
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                // Create a proper KeyWallet
+                
+                // Create a proper KeyWallet directly with the PrivateKey
                 val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
+                    privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
+                
+                // For prefix-based accounts, we use PrivateKeyCryptoProvider instead of BackupCryptoProvider
+                PrivateKeyCryptoProvider(privateKey, wallet)
             }
 
             // Handle other accounts
