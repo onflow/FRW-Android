@@ -558,7 +558,9 @@ object WalletManager {
                                 
                                 // Use the wallet's fetchAccountByAddress method to get the account directly
                                 // from the Flow network, bypassing the key indexer
-                                newWallet.fetchAccountByAddress(blockchain.address!!, chainId)
+                                runBlocking {
+                                    newWallet.fetchAccountByAddress(blockchain.address!!, chainId)
+                                }
                                 logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
                             }
                         } catch (e: Exception) {
