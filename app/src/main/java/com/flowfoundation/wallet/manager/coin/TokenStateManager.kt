@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckLinkedAccountTokenL
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofitApi
@@ -17,6 +18,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
+import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
 object TokenStateManager {
@@ -88,19 +90,32 @@ object TokenStateManager {
     private suspend fun fetchLinkedAccountStateSync() {
         logd(TAG, "fetchLinkedAccountStateSync() called")
         val coinList = FlowCoinListManager.coinList()
-        logd(TAG, "fetchLinkedAccountStateSync: Checking ${coinList.size} coins")
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        logd(TAG, "fetchLinkedAccountStateSync: Checking ${coinList.size} coins for address: $selectedAddress")
         
+        // Get token permissions
         val enabledToken = cadenceCheckLinkedAccountTokenListEnabled()
         if (enabledToken == null) {
             logw(TAG, "fetchLinkedAccountStateSync: cadenceCheckLinkedAccountTokenListEnabled returned null")
             return
         }
-        
         logd(TAG, "fetchLinkedAccountStateSync: Found ${enabledToken.size} enabled tokens: $enabledToken")
         
+        // Get token balances
+        val balanceMap = cadenceQueryTokenListBalanceWithAddress(selectedAddress)
+        if (balanceMap == null) {
+            logw(TAG, "fetchLinkedAccountStateSync: cadenceQueryTokenListBalanceWithAddress returned null")
+            return
+        }
+        logd(TAG, "fetchLinkedAccountStateSync: Found ${balanceMap.size} token balances: $balanceMap")
+        
         coinList.forEach { coin ->
-            val isEnable = enabledToken.containsKey(coin.contractId())
-            logd(TAG, "fetchLinkedAccountStateSync: ${coin.symbol} (${coin.contractId()}) -> enabled: $isEnable")
+            val hasPermission = enabledToken.containsKey(coin.contractId())
+            val balance = balanceMap[coin.contractId()] ?: BigDecimal.ZERO
+            // Only enable tokens that have permission AND balance > 0 (similar to EVM filtering)
+            val isEnable = hasPermission && balance > BigDecimal.ZERO
+            
+            logd(TAG, "fetchLinkedAccountStateSync: ${coin.symbol} (${coin.contractId()}) -> permission: $hasPermission, balance: $balance, enabled: $isEnable")
             
             val oldState = tokenStateList.firstOrNull {
                 it.isSameCoin(coin.contractId())
