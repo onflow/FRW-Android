@@ -60,7 +60,7 @@ object FlowCadenceApi {
         }
     }
 
-    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.FINAL): Account {
+    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.SEALED): Account {
         logd(TAG, "Getting account for address: $address")
         try {
             val account = get().getAccount(address, blockHeight, sealed)
