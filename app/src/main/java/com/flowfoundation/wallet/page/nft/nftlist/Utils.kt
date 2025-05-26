@@ -12,6 +12,8 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.model.*
 import com.flowfoundation.wallet.utils.image.SvgModel
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.wallet.toAddress
 import java.net.URLEncoder
 import kotlin.math.min
 
@@ -118,7 +120,15 @@ fun nftWalletAddress(): String {
 //    if (BuildConfig.DEBUG) {
 //        return "0x95601dba5c2506eb"
 //    }
-    return WalletManager.selectedWalletAddress()
+    val rawAddress = WalletManager.selectedWalletAddress()
+    val formattedAddress = rawAddress.toAddress()
+    
+    // Log for debugging
+    logd("nftWalletAddress", "Raw address: '$rawAddress'")
+    logd("nftWalletAddress", "Formatted address: '$formattedAddress'")
+    
+    // Return the formatted address with 0x prefix
+    return formattedAddress
 }
 
 fun Nft.isDomain() = media?.firstOrNull { it.uri.contains("flowns.org") && it.uri.contains(".meow") } != null

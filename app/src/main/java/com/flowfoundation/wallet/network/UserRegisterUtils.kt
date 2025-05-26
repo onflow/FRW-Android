@@ -148,14 +148,16 @@ suspend fun registerOutblock(
                                 }
                                 
                                 if (chainId != null && !blockchain.address.isNullOrBlank()) {
-                                    logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
+                                    // Ensure address has 0x prefix before fetching
+                                    val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
+                                    logd(TAG, "Fetching account $address from ${blockchain.chainId} using Flow API")
                                     
                                     // Use the wallet's fetchAccountByAddress method to get the account directly
                                     // from the Flow network, bypassing the key indexer
                                     runBlocking {
-                                        wallet.fetchAccountByAddress(blockchain.address!!, chainId)
+                                        wallet.fetchAccountByAddress(address, chainId)
                                     }
-                                    logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
+                                    logd(TAG, "Successfully fetched and added account $address to wallet")
                                 }
                             } catch (e: Exception) {
                                 logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")

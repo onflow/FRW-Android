@@ -75,10 +75,26 @@ suspend fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
 }
 
 suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceGetTokenBalanceStorage()")
+    val walletAddress = WalletManager.selectedWalletAddress()
+    logd(TAG, "cadenceGetTokenBalanceStorage() walletAddress: '$walletAddress'")
+    
+    // Check if we have a valid wallet address before proceeding
+    if (walletAddress.isBlank()) {
+        logd(TAG, "cadenceGetTokenBalanceStorage: No wallet address available, skipping")
+        return null
+    }
+    
+    val formattedAddress = walletAddress.toAddress()
+    logd(TAG, "cadenceGetTokenBalanceStorage() formatted address: '$formattedAddress'")
+    
+    // Additional check to ensure the address is not just "0x" or invalid
+    if (formattedAddress == "0x" || formattedAddress.length < 10) {
+        logd(TAG, "cadenceGetTokenBalanceStorage: Invalid wallet address format '$formattedAddress', skipping")
+        return null
+    }
+    
     val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
-        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(formattedAddress) }
     }
     logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
@@ -94,20 +110,52 @@ suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal
 }
 
 suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled()")
-    val result = CadenceScript.CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(walletAddress) }
+    val walletAddress = WalletManager.selectedWalletAddress()
+    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled() walletAddress: '$walletAddress'")
+    
+    // Check if we have a valid wallet address before proceeding
+    if (walletAddress.isBlank()) {
+        logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled: No wallet address available, skipping")
+        return null
     }
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
+    
+    val formattedAddress = walletAddress.toAddress()
+    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled() formatted address: '$formattedAddress'")
+    
+    // Additional check to ensure the address is not just "0x" or invalid
+    if (formattedAddress == "0x" || formattedAddress.length < 10) {
+        logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled: Invalid wallet address format '$formattedAddress', skipping")
+        return null
+    }
+    
+    val result = CadenceScript.CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED.executeCadence {
+        arg { Cadence.address(formattedAddress) }
+    }
+    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled address:$formattedAddress :: response:${result?.encode()}")
     return result?.decode<Map<String, Boolean>>()
 }
 
 suspend fun cadenceQueryTokenListBalance(): Map<String, BigDecimal>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceQueryTokenListBalance()")
+    val walletAddress = WalletManager.selectedWalletAddress()
+    logd(TAG, "cadenceQueryTokenListBalance() walletAddress: '$walletAddress'")
+    
+    // Check if we have a valid wallet address before proceeding
+    if (walletAddress.isBlank()) {
+        logd(TAG, "cadenceQueryTokenListBalance: No wallet address available, skipping")
+        return null
+    }
+    
+    val formattedAddress = walletAddress.toAddress()
+    logd(TAG, "cadenceQueryTokenListBalance() formatted address: '$formattedAddress'")
+    
+    // Additional check to ensure the address is not just "0x" or invalid
+    if (formattedAddress == "0x" || formattedAddress.length < 10) {
+        logd(TAG, "cadenceQueryTokenListBalance: Invalid wallet address format '$formattedAddress', skipping")
+        return null
+    }
+    
     val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(formattedAddress) }
     }
     logd(TAG, "cadenceQueryTokenListBalance response:${result?.encode()}")
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
@@ -123,11 +171,27 @@ suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String
 }
 
 suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): BigDecimal? {
-    val walletAddress = (address ?: WalletManager.selectedWalletAddress()).toAddress()
-    logd(TAG, "cadenceQueryTokenBalance()")
+    val walletAddress = address ?: WalletManager.selectedWalletAddress()
+    logd(TAG, "cadenceQueryTokenBalance() walletAddress: '$walletAddress'")
+    
+    // Check if we have a valid wallet address before proceeding
+    if (walletAddress.isBlank()) {
+        logd(TAG, "cadenceQueryTokenBalance: No wallet address available, skipping")
+        return null
+    }
+    
+    val formattedAddress = walletAddress.toAddress()
+    logd(TAG, "cadenceQueryTokenBalance() formatted address: '$formattedAddress'")
+    
+    // Additional check to ensure the address is not just "0x" or invalid
+    if (formattedAddress == "0x" || formattedAddress.length < 10) {
+        logd(TAG, "cadenceQueryTokenBalance: Invalid wallet address format '$formattedAddress', skipping")
+        return null
+    }
+    
     val script = CadenceScript.CADENCE_GET_BALANCE
     val result = coin.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(formattedAddress) }
     }
     logd(TAG, "cadenceQueryTokenBalance response:${result?.encode()}")
     return result?.parseBigDecimal()
@@ -177,20 +241,52 @@ suspend fun cadenceNftEnabled(nft: NftCollection): String? {
 }
 
 suspend fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
-    logd(TAG, "cadenceCheckNFTListEnabled()")
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val walletAddress = WalletManager.selectedWalletAddress()
+    logd(TAG, "cadenceCheckNFTListEnabled() walletAddress: '$walletAddress'")
+    
+    // Check if we have a valid wallet address before proceeding
+    if (walletAddress.isBlank()) {
+        logd(TAG, "cadenceCheckNFTListEnabled: No wallet address available, skipping")
+        return null
+    }
+    
+    val formattedAddress = walletAddress.toAddress()
+    logd(TAG, "cadenceCheckNFTListEnabled() formatted address: '$formattedAddress'")
+    
+    // Additional check to ensure the address is not just "0x" or invalid
+    if (formattedAddress == "0x" || formattedAddress.length < 10) {
+        logd(TAG, "cadenceCheckNFTListEnabled: Invalid wallet address format '$formattedAddress', skipping")
+        return null
+    }
+    
     val result = CadenceScript.CADENCE_CHECK_NFT_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(formattedAddress) }
     }
     logd(TAG, "cadenceCheckNFTListEnabled response:${result?.encode()}")
     return result?.decode<Map<String, Boolean>>()
 }
 
 suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
-    logd(TAG, "cadenceGetNFTBalanceStorage()")
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val walletAddress = WalletManager.selectedWalletAddress()
+    logd(TAG, "cadenceGetNFTBalanceStorage() walletAddress: '$walletAddress'")
+    
+    // Check if we have a valid wallet address before proceeding
+    if (walletAddress.isBlank()) {
+        logd(TAG, "cadenceGetNFTBalanceStorage: No wallet address available, skipping")
+        return null
+    }
+    
+    val formattedAddress = walletAddress.toAddress()
+    logd(TAG, "cadenceGetNFTBalanceStorage() formatted address: '$formattedAddress'")
+    
+    // Additional check to ensure the address is not just "0x" or invalid
+    if (formattedAddress == "0x" || formattedAddress.length < 10) {
+        logd(TAG, "cadenceGetNFTBalanceStorage: Invalid wallet address format '$formattedAddress', skipping")
+        return null
+    }
+    
     val result = CadenceScript.CADENCE_GET_NFT_BALANCE_STORAGE.executeCadence {
-        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(formattedAddress) }
     }
     logd(TAG, "cadenceGetNFTBalanceStorage response:${result?.encode()}")
     return result?.decode<Map<String, Int>>()

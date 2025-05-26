@@ -86,7 +86,7 @@ object AccountManager {
                 val accountList = AccountCacheManager.read()
                 if (accountList.isNullOrEmpty()) {
                     // Instead of going to the server, jump straight to the
-                    // restore screen (or show the “import keystore” UI).
+                    // restore screen (or show the "import keystore" UI).
                     logd(TAG, "No cached account – require keystore/seed restore")
                     return@ioScope
                 } else {
@@ -465,6 +465,19 @@ object AccountManager {
 
     fun switch(account: Account, onFinish: () -> Unit) {
         logd(TAG, "switch() called. Switching to account: $account")
+        
+        // Check if we're already on this account
+        if (account.isActive && currentAccount?.userInfo?.username == account.userInfo.username) {
+            logd(TAG, "Account is already active, but still triggering navigation")
+            // Instead of early return, still trigger the navigation to main app
+            uiScope {
+                clearUserCache()
+                MainActivity.relaunch(Env.getApp(), true)
+            }
+            onFinish()
+            return
+        }
+        
         ioScope {
             if (isSwitching) {
                 logd(TAG, "Already switching accounts, aborting switch.")
@@ -519,100 +532,112 @@ object AccountManager {
     }
 
     private suspend fun switchAccount(account: Account, callback: (isSuccess: Boolean) -> Unit) {
-        if (!setToAnonymous()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
-            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-        val service = retrofit().create(ApiService::class.java)
-        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(account)
-        if (cryptoProvider == null) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
-            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val resp = service.login(
-            LoginRequest(
-                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                accountKey = AccountKey(
-                    publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                ),
-                deviceInfo = deviceInfoRequest
+        try {
+            if (!setToAnonymous()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+                ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
+                callback.invoke(false)
+                return
+            }
+            val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+            val service = retrofit().create(ApiService::class.java)
+            val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(account)
+            if (cryptoProvider == null) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+                ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
+                callback.invoke(false)
+                return
+            }
+            val resp = service.login(
+                LoginRequest(
+                    signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+                    accountKey = AccountKey(
+                        publicKey = cryptoProvider.getPublicKey(),
+                        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                    ),
+                    deviceInfo = deviceInfoRequest
+                )
             )
-        )
-        if (resp.data?.customToken.isNullOrBlank()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
-            callback.invoke(false)
-        } else {
-            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                if (isSuccess) {
-                    setRegistered()
-                    if (account.prefix == null && account.keyStoreInfo == null) {
-                        Wallet.store().resume()
+            if (resp.data?.customToken.isNullOrBlank()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+                callback.invoke(false)
+            } else {
+                firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                    if (isSuccess) {
+                        setRegistered()
+                        if (account.prefix == null && account.keyStoreInfo == null) {
+                            Wallet.store().resume()
+                        }
+                        callback.invoke(true)
+                    } else {
+                        loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                        callback.invoke(false)
                     }
-                    callback.invoke(true)
-                } else {
-                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
-                    callback.invoke(false)
                 }
             }
+        } catch (e: Exception) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "Exception during account switch: ${e.message}")
+            logd(TAG, "Account switch exception: ${e.stackTraceToString()}")
+            callback.invoke(false)
         }
     }
 
     private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
-        if (!setToAnonymous()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
-            ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-        val service = retrofit().create(ApiService::class.java)
-        val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
-        if (cryptoProvider == null) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
-            ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
-            callback.invoke(false)
-            return
-        }
-        val resp = service.login(
-            LoginRequest(
-                signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                accountKey = AccountKey(
-                    publicKey = cryptoProvider.getPublicKey(),
-                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                ),
-                deviceInfo = deviceInfoRequest
+        try {
+            if (!setToAnonymous()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+                ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
+                callback.invoke(false)
+                return
+            }
+            val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+            val service = retrofit().create(ApiService::class.java)
+            val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
+            if (cryptoProvider == null) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+                ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
+                callback.invoke(false)
+                return
+            }
+            val resp = service.login(
+                LoginRequest(
+                    signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
+                    accountKey = AccountKey(
+                        publicKey = cryptoProvider.getPublicKey(),
+                        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                    ),
+                    deviceInfo = deviceInfoRequest
+                )
             )
-        )
-        if (resp.data?.customToken.isNullOrBlank()) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
-            callback.invoke(false)
-        } else {
-            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                if (isSuccess) {
-                    setRegistered()
-                    if (switchAccount.prefix == null) {
-                        Wallet.store().resume()
-                    } else {
-                        firebaseUid()?.let { userId ->
-                            userPrefixes.removeAll { it.userId == userId}
-                            userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
-                            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+            if (resp.data?.customToken.isNullOrBlank()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+                callback.invoke(false)
+            } else {
+                firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                    if (isSuccess) {
+                        setRegistered()
+                        if (switchAccount.prefix == null) {
+                            Wallet.store().resume()
+                        } else {
+                            firebaseUid()?.let { userId ->
+                                userPrefixes.removeAll { it.userId == userId}
+                                userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
+                                UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                            }
                         }
+                        callback.invoke(true)
+                    } else {
+                        loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                        callback.invoke(false)
                     }
-                    callback.invoke(true)
-                } else {
-                    loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
-                    callback.invoke(false)
                 }
             }
+        } catch (e: Exception) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "Exception during LocalSwitchAccount switch: ${e.message}")
+            logd(TAG, "LocalSwitchAccount switch exception: ${e.stackTraceToString()}")
+            callback.invoke(false)
         }
     }
 

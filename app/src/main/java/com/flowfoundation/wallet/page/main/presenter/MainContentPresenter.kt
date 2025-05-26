@@ -41,8 +41,10 @@ class MainContentPresenter(
     }
 
     suspend fun checkAndShowContent() {
-        val hasValidKeyStore = AccountManager.list().any { !it.keyStoreInfo.isNullOrBlank() }
-        if (isRegistered() && isUserSignIn() && hasValidKeyStore) {
+        val hasValidAccount = AccountManager.list().any { 
+            !it.keyStoreInfo.isNullOrBlank() || !it.prefix.isNullOrBlank() 
+        }
+        if (isRegistered() && isUserSignIn() && hasValidAccount) {
             showMainContent()
         } else {
             showUnregisteredFragment()

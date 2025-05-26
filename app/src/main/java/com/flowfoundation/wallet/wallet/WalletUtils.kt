@@ -108,6 +108,9 @@ fun createWalletFromServer() {
     }
 }
 
-fun String.toAddress(): String = "0x" + removeAddressPrefix()
+fun String.toAddress(): String {
+    val cleaned = removeAddressPrefix()
+    return if (cleaned.startsWith("0x")) cleaned else "0x$cleaned"
+}
 
 fun String.removeAddressPrefix(): String = this.removePrefix("0x0x").removePrefix("0x").removePrefix("Fx")

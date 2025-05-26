@@ -71,22 +71,24 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
     }
     
     private fun fetchTransactions(walletAddress: String) {
+        // Ensure address has 0x prefix
+        val formattedAddress = if (walletAddress.startsWith("0x")) walletAddress else "0x$walletAddress"
         logd("TransactionRecordViewModel", "Checking if EVM account is selected: ${WalletManager.isEVMAccountSelected()}")
         
         if (WalletManager.isEVMAccountSelected()) {
-            logd("TransactionRecordViewModel", "EVM account selected. Fetching EVM transfer records for address: '$walletAddress'")
+            logd("TransactionRecordViewModel", "EVM account selected. Fetching EVM transfer records for address: '$formattedAddress'")
             ioScope {
                 try {
                     val service = retrofit(network = chainNetWorkString()).create(ApiService::class.java)
                     logd("TransactionRecordViewModel", "Making API call to get EVM transfer records...")
-                    val resp = service.getEVMTransferRecord(walletAddress)
+                    val resp = service.getEVMTransferRecord(formattedAddress)
                     logd("TransactionRecordViewModel", "EVM transfer record response received. Status: ${resp.status}, Transactions: ${resp.trxs?.size ?: 0}")
                     val data = mutableListOf<Any>().apply {
                         addAll(resp.trxs.orEmpty())
                     }
                     logd("TransactionRecordViewModel", "EVM transfer records processed: ${data.size} items")
                     if ((resp.trxs?.size ?: 0) > LIMIT) {
-                        data.add(TransactionViewMoreModel(walletAddress))
+                        data.add(TransactionViewMoreModel(formattedAddress))
                         logd("TransactionRecordViewModel", "Added 'View More' option for EVM transfers")
                     }
                     logd("TransactionRecordViewModel", "Posting EVM transaction data to UI: ${data.size} items")
@@ -104,13 +106,13 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
                 }
             }
         } else {
-            logd("TransactionRecordViewModel", "Flow account selected. Fetching transfer records for address: '$walletAddress'")
+            logd("TransactionRecordViewModel", "Flow account selected. Fetching transfer records for address: '$formattedAddress'")
             ioScope {
                 try {
                     logd("TransactionRecordViewModel", "Creating API service for Flow transfers")
                     val service = retrofit(network = chainNetWorkString()).create(ApiService::class.java)
                     logd("TransactionRecordViewModel", "Making API call to get Flow transfer records...")
-                    val resp = service.getTransferRecord(walletAddress, limit = LIMIT)
+                    val resp = service.getTransferRecord(formattedAddress, limit = LIMIT)
                     logd("TransactionRecordViewModel", "Transfer record response received. Status: ${resp.status}, Message: ${resp.message}")
                     logd("TransactionRecordViewModel", "Response data: Total=${resp.data?.total}, Next=${resp.data?.next}, Transactions=${resp.data?.transactions?.size ?: 0}")
                     
@@ -132,7 +134,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
                     }
                     
                     if ((resp.data?.total ?: 0) > LIMIT) {
-                        data.add(TransactionViewMoreModel(walletAddress))
+                        data.add(TransactionViewMoreModel(formattedAddress))
                         logd("TransactionRecordViewModel", "Added 'View More' option for Flow transfers")
                     }
                     

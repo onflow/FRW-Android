@@ -361,6 +361,7 @@ object WalletManager {
         logd(TAG, "Getting selected wallet address")
         val pref = selectedWalletAddressRef.get().toAddress()
         logd(TAG, "Current selected address: '$pref'")
+        logd(TAG, "Raw address before toAddress(): '${selectedWalletAddressRef.get()}'")
         
         if (pref.isBlank()) {
             logd(TAG, "WARNING: Selected address is blank")
@@ -375,6 +376,30 @@ object WalletManager {
         // If we have a selected address in preferences, use it even if no wallet exists yet
         if (selectedWalletAddressRef.get().isNotBlank()) {
             logd(TAG, "Using selected address from preferences: '${selectedWalletAddressRef.get()}'")
+            
+            // Debug: Check account type and server wallet data
+            val account = AccountManager.get()
+            if (account != null) {
+                logd(TAG, "Current account type - prefix: ${account.prefix != null}, keystore: ${account.keyStoreInfo != null}")
+                if (account.wallet != null) {
+                    logd(TAG, "Server wallet data:")
+                    account.wallet!!.wallets?.forEach { walletData ->
+                        walletData.blockchain?.forEach { blockchain ->
+                            logd(TAG, "  Server address: '${blockchain.address}' (${blockchain.address.length} chars) for ${blockchain.chainId}")
+                        }
+                    }
+                }
+                
+                // Also check what the local wallet thinks the address is
+                val localWallet = currentWallet
+                if (localWallet != null) {
+                    logd(TAG, "Local wallet addresses:")
+                    localWallet.accounts.values.flatten().forEach { acc ->
+                        logd(TAG, "  Local address: '${acc.address}' (${acc.address.length} chars)")
+                    }
+                }
+            }
+            
             return selectedWalletAddressRef.get()
         }
 
@@ -547,13 +572,13 @@ object WalletManager {
                 account.wallet?.wallets?.forEach { walletData ->
                     walletData.blockchain?.forEach { blockchain ->
                         try {
-                            val chainId = when (blockchain.chainId?.lowercase()) {
+                            val chainId = when (blockchain.chainId.lowercase()) {
                                 "mainnet" -> ChainId.Mainnet
                                 "testnet" -> ChainId.Testnet
                                 else -> null
                             }
                             
-                            if (chainId != null && !blockchain.address.isNullOrBlank()) {
+                            if (chainId != null && blockchain.address.isNotBlank()) {
                                 logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
                                 
                                 // Use the wallet's fetchAccountByAddress method to get the account directly
