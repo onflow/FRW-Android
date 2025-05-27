@@ -102,8 +102,28 @@ object CryptoProviderManager {
                 } else {
                     Log.d(TAG, "  Prefix-based: Missing local public key or wallet address to determine on-chain signing algorithm. Using default: $determinedSigningAlgorithm")
                 }
-                Log.d(TAG, "  Prefix-based: Instantiating PrivateKeyCryptoProvider with determined SigningAlgorithm: $determinedSigningAlgorithm")
-                PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm)
+                
+                // Also determine the hashing algorithm from the on-chain key
+                val determinedHashingAlgorithm = if (currentProviderPublicKey != null && account.wallet?.walletAddress() != null) {
+                    try {
+                        val onChainAccount = runBlocking { FlowCadenceApi.getAccount(account.wallet!!.walletAddress()!!) }
+                        val onChainKey = onChainAccount.keys?.find { acctKey ->
+                            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
+                            val providerPubKeyHex = currentProviderPublicKey.removePrefix("0x").lowercase()
+                            val providerPubKeyStripped = if (providerPubKeyHex.startsWith("04") && providerPubKeyHex.length == 130) providerPubKeyHex.substring(2) else providerPubKeyHex
+                            acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
+                        }
+                        onChainKey?.hashingAlgorithm
+                    } catch (e: Exception) {
+                        Log.d(TAG, "  Prefix-based: Error fetching hashing algorithm: ${e.message}")
+                        null
+                    }
+                } else {
+                    null
+                }
+                
+                Log.d(TAG, "  Prefix-based: Instantiating PrivateKeyCryptoProvider with determined algorithms: signing=$determinedSigningAlgorithm, hashing=${determinedHashingAlgorithm ?: "default"}")
+                PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm, determinedHashingAlgorithm)
             }
             // Handle active accounts (typically uses global mnemonic)
             else if (account.isActive) {
@@ -125,8 +145,10 @@ object CryptoProviderManager {
                 } else {
                     SigningAlgorithm.ECDSA_P256
                 }
-                logd(TAG, "  Active account using determined signing algorithm: $signingAlgorithm")
-                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
+                // Get the hashing algorithm from the on-chain key as well
+                val hashingAlgorithm = accountKeys?.find { it.signingAlgorithm == signingAlgorithm }?.hashingAlgorithm
+                logd(TAG, "  Active account using determined algorithms: signing=$signingAlgorithm, hashing=${hashingAlgorithm ?: "default"}")
+                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm, hashingAlgorithm)
             }
             // Handle inactive accounts (may use wallet-specific mnemonic)
             else {
@@ -155,8 +177,10 @@ object CryptoProviderManager {
                 } else {
                     SigningAlgorithm.ECDSA_P256
                 }
-                logd(TAG, "  Inactive account using determined signing algorithm: $signingAlgorithm")
-                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
+                // Get the hashing algorithm from the on-chain key as well
+                val hashingAlgorithm = accountKeys?.find { it.signingAlgorithm == signingAlgorithm }?.hashingAlgorithm
+                logd(TAG, "  Inactive account using determined algorithms: signing=$signingAlgorithm, hashing=${hashingAlgorithm ?: "default"}")
+                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm, hashingAlgorithm)
             }
         } catch (e: WalletError) {
             logd(TAG, "Wallet error during provider generation: ${e.message}")

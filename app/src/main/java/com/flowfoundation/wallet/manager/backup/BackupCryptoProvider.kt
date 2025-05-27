@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.backup
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.KeyWallet
+import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.Signer
@@ -16,7 +17,8 @@ import org.onflow.flow.models.SigningAlgorithm
 class BackupCryptoProvider(
     private val seedPhraseKey: SeedPhraseKey,
     private val keyWallet: KeyWallet? = null,
-    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1
+    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1,
+    private val hashingAlgorithm: HashingAlgorithm? = null // Dynamic hashing algorithm from on-chain key
 ) : CryptoProvider {
 
     /**
@@ -60,7 +62,10 @@ class BackupCryptoProvider(
      */
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
-        return seedPhraseKey.sign(data, signingAlgorithm, HashingAlgorithm.SHA3_256).toHexString()
+        // Use the dynamically determined hashing algorithm if available,
+        // otherwise fall back to the provider's default
+        val effectiveHashingAlgorithm = hashingAlgorithm ?: getHashAlgorithm()
+        return seedPhraseKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm).toHexString()
     }
 
     /**
@@ -68,26 +73,54 @@ class BackupCryptoProvider(
      * @return Signer implementation
      */
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        logd("BackupCryptoProvider", "Creating KMM Signer with signingAlgorithm: $signingAlgorithm, hashingAlgorithm: $hashingAlgorithm")
         return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd("BackupCryptoProvider", "KMM Signer.sign(transaction, bytes) called")
+                logd("BackupCryptoProvider", "  Address: $address")
+                logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
+                logd("BackupCryptoProvider", "  Transaction: ${transaction?.id ?: "null"}")
+                logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
+                logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
+                logd("BackupCryptoProvider", "  Using hashing algorithm: $hashingAlgorithm")
+                
+                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                return signature
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd("BackupCryptoProvider", "KMM Signer.sign(bytes) called")
+                logd("BackupCryptoProvider", "  Address: $address")
+                logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
+                logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
+                logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
+                logd("BackupCryptoProvider", "  Using hashing algorithm: $hashingAlgorithm")
+                
+                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                return signature
             }
         }
     }
 
     /**
      * Get the hashing algorithm used by this provider
-     * @return SHA3_256 hashing algorithm
+     * @return The configured hashing algorithm or a sensible default
      */
     override fun getHashAlgorithm(): HashingAlgorithm {
-        return HashingAlgorithm.SHA3_256
+        // Return the dynamically determined hashing algorithm if available
+        return hashingAlgorithm ?: run {
+            // Fallback to sensible defaults based on signing algorithm
+            when (signingAlgorithm) {
+                SigningAlgorithm.ECDSA_secp256k1 -> HashingAlgorithm.SHA2_256
+                SigningAlgorithm.ECDSA_P256 -> HashingAlgorithm.SHA3_256
+                else -> HashingAlgorithm.SHA3_256
+            }
+        }
     }
 
     /**

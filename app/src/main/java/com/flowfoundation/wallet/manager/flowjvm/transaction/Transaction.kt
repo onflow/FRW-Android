@@ -604,28 +604,104 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     logd(TAG, "--- End of argument encoding verification ---")
 
     // Get the KMM Signer directly, configured with the correct hashing algorithm
+    logd(TAG, "Getting KMM Signer from CryptoProvider with hashing algorithm: $keyOnChainHashingAlgorithm")
+    
+    // Add detailed logging about the CryptoProvider type
+    logd(TAG, "CryptoProvider instance type: ${cryptoProvider.javaClass.name}")
+    logd(TAG, "CryptoProvider getHashAlgorithm(): ${cryptoProvider.getHashAlgorithm()}")
+    logd(TAG, "CryptoProvider getSignatureAlgorithm(): ${cryptoProvider.getSignatureAlgorithm()}")
+    
     val kmmSigner = cryptoProvider.getSigner(keyOnChainHashingAlgorithm).apply {
+        logd(TAG, "Setting signer address to: ${flowAccount.address.removeHexPrefix()}")
         this.address = flowAccount.address.removeHexPrefix()
+        logd(TAG, "Setting signer keyIndex to: ${currentKey.index.toInt()}")
         this.keyIndex = currentKey.index.toInt()
+        logd(TAG, "KMM Signer configured - address: $address, keyIndex: $keyIndex")
+        
+        // Log the Signer type
+        logd(TAG, "KMM Signer instance type: ${this.javaClass.name}")
+        logd(TAG, "KMM Signer superclass: ${this.javaClass.superclass?.name}")
+        logd(TAG, "KMM Signer interfaces: ${this.javaClass.interfaces.map { it.name }}")
+    }
+    
+    // Test the signer directly before using it in Transaction.sign()
+    logd(TAG, "Testing Signer directly with sample data...")
+    try {
+        val testData = "test123".toByteArray()
+        logd(TAG, "Calling kmmSigner.sign() directly with test data...")
+        val testSignature = kmmSigner.sign(testData)
+        logd(TAG, "Direct signer test successful. Signature length: ${testSignature.size}")
+    } catch (e: Exception) {
+        loge(TAG, "Direct signer test failed: ${e.message}")
+        loge(TAG, "Stack trace: ${e.stackTraceToString()}")
     }
 
     // Use Flow KMM's TransactionBuilder and its buildAndSign() method
     logd(TAG, "Building transaction using Flow KMM TransactionBuilder and buildAndSign()")
-    return org.onflow.flow.models.TransactionBuilder(
-        script = script,
-        arguments = builder.arguments,
-        gasLimit = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(builder.limit!!)
-    ).apply {
-        withReferenceBlockId(referenceBlockId)
-        withPayer(payer)
-        withProposalKey(
-            address = flowAccount.address.removeHexPrefix(),
-            keyIndex = currentKey.index.toInt(),
-            sequenceNumber = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(currentKey.sequenceNumber.toInt())
-        )
-        withAuthorizers(authorizers)
-        withSigners(listOf(kmmSigner)) // Pass the KMM-compatible signer
-    }.buildAndSign()
+    logd(TAG, "Pre-buildAndSign transaction details:")
+    logd(TAG, "  - Script length: ${script.length} chars")
+    logd(TAG, "  - Arguments count: ${builder.arguments.size}")
+    logd(TAG, "  - Gas limit: ${builder.limit}")
+    logd(TAG, "  - Reference block ID: $referenceBlockId")
+    logd(TAG, "  - Payer: $payer")
+    logd(TAG, "  - Proposal key: address=${flowAccount.address.removeHexPrefix()}, keyIndex=${currentKey.index.toInt()}, seqNum=${currentKey.sequenceNumber.toInt()}")
+    logd(TAG, "  - Authorizers: $authorizers")
+    logd(TAG, "  - Signer: address=${kmmSigner.address}, keyIndex=${kmmSigner.keyIndex}")
+    
+    val result = try {
+        logd(TAG, "Calling KMM TransactionBuilder.buildAndSign()...")
+        
+        // Instead of using buildAndSign(), build manually and sign with our controlled signers
+        logd(TAG, "Building transaction manually to ensure our CryptoProvider signing is used...")
+        val builtTransaction = org.onflow.flow.models.TransactionBuilder(
+            script = script,
+            arguments = builder.arguments,
+            gasLimit = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(builder.limit!!)
+        ).apply {
+            withReferenceBlockId(referenceBlockId)
+            withPayer(payer)
+            withProposalKey(
+                address = flowAccount.address.removeHexPrefix(),
+                keyIndex = currentKey.index.toInt(),
+                sequenceNumber = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(currentKey.sequenceNumber.toInt())
+            )
+            withAuthorizers(authorizers)
+        }.build() // Build but don't sign yet
+        
+        logd(TAG, "Built transaction, now manually signing with our CryptoProvider signer...")
+        
+        // Manually sign using our controlled signer to ensure proper algorithm usage
+        logd(TAG, "About to call Transaction.sign() with signers: [${kmmSigner.address}:${kmmSigner.keyIndex}]")
+        logd(TAG, "Transaction before signing - payloadSignatures: ${builtTransaction.payloadSignatures.size}, envelopeSignatures: ${builtTransaction.envelopeSignatures.size}")
+        
+        val signedTransaction = builtTransaction.sign(listOf(kmmSigner))
+        
+        logd(TAG, "Transaction.sign() completed")
+        logd(TAG, "Transaction after signing - payloadSignatures: ${signedTransaction.payloadSignatures.size}, envelopeSignatures: ${signedTransaction.envelopeSignatures.size}")
+        
+        signedTransaction
+    } catch (e: Exception) {
+        loge(TAG, "ERROR in manual build and sign: ${e.javaClass.simpleName}: ${e.message}")
+        loge(TAG, "Stack trace: ${e.stackTraceToString()}")
+        if (e.cause != null) {
+            loge(TAG, "Caused by: ${e.cause?.javaClass?.simpleName}: ${e.cause?.message}")
+        }
+        throw e
+    }
+    
+    logd(TAG, "buildAndSign() completed successfully")
+    logd(TAG, "Result transaction details:")
+    logd(TAG, "  - ID: ${result.id}")
+    logd(TAG, "  - Payload signatures: ${result.payloadSignatures.size}")
+    logd(TAG, "  - Envelope signatures: ${result.envelopeSignatures.size}")
+    result.payloadSignatures.forEachIndexed { index, sig ->
+        logd(TAG, "  - Payload sig $index: address=${sig.address}, keyIndex=${sig.keyIndex}, signature=${sig.signature.take(20)}...")
+    }
+    result.envelopeSignatures.forEachIndexed { index, sig ->
+        logd(TAG, "  - Envelope sig $index: address=${sig.address}, keyIndex=${sig.keyIndex}, signature=${sig.signature.take(20)}...")
+    }
+    
+    return result
 }
 
 suspend fun Transaction.addFreeGasEnvelope(): Transaction {

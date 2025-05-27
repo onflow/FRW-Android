@@ -66,16 +66,36 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        logd(TAG, "getSigner() called with hashingAlgorithm: $hashingAlgorithm")
         return object : org.onflow.flow.models.Signer {
             override var address: String = keyInfo.get("address").asString
             override var keyIndex: Int = keyInfo.get("keyId").asInt
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd(TAG, "*** KEYSTORE SIGNER: sign(transaction, bytes) called ***")
+                logd(TAG, "  Address: $address")
+                logd(TAG, "  KeyIndex: $keyIndex")
+                logd(TAG, "  Transaction ID: ${transaction?.id ?: "null"}")
+                logd(TAG, "  Bytes to sign (${bytes.size} bytes): ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
+                logd(TAG, "  Using signing algorithm: $signingAlgorithm")
+                logd(TAG, "  Using hashing algorithm: $hashingAlgorithm")
+                
+                val signature = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd(TAG, "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                return signature
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd(TAG, "*** KEYSTORE SIGNER: sign(bytes) called ***")
+                logd(TAG, "  Address: $address")
+                logd(TAG, "  KeyIndex: $keyIndex")
+                logd(TAG, "  Bytes to sign (${bytes.size} bytes): ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
+                logd(TAG, "  Using signing algorithm: $signingAlgorithm")
+                logd(TAG, "  Using hashing algorithm: $hashingAlgorithm")
+                
+                val signature = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                logd(TAG, "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                return signature
             }
         }
     }

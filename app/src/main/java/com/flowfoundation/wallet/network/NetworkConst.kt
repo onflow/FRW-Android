@@ -30,7 +30,7 @@ fun retrofit(
         readTimeout(20, TimeUnit.SECONDS)
         writeTimeout(20, TimeUnit.SECONDS)
 
-        if (isTesting()) {
+        if (isTesting() || isDev()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
     }.build()
@@ -59,7 +59,7 @@ fun cadenceScriptApi(): Retrofit {
         readTimeout(20, TimeUnit.SECONDS)
         writeTimeout(20, TimeUnit.SECONDS)
 
-        if (isTesting()) {
+        if (isTesting() || isDev()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
     }.build()
@@ -78,7 +78,7 @@ fun retrofitWithHost(host: String, disableConverter: Boolean = false, ignoreAuth
         readTimeout(20, TimeUnit.SECONDS)
         writeTimeout(20, TimeUnit.SECONDS)
 
-        if (isTesting()) {
+        if (isTesting() || isDev()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
     }.build()
