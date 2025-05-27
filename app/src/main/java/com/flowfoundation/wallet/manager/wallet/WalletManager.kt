@@ -224,24 +224,36 @@ object WalletManager {
             if (networkAccount != null) {
                 logd(TAG, "Found account for $currentNetwork: ${networkAccount.address}")
                 
-                // Only update the selected wallet address if:
-                // 1. No address is currently selected, OR
-                // 2. The current address is not valid (not a child account, not EVM, not parent account)
                 val currentSelected = selectedWalletAddressRef.get()
-                val isValidSelection = currentSelected.isNotBlank() && (
-                    isChildAccount(currentSelected) || 
-                    EVMWalletManager.isEVMWalletAddress(currentSelected) ||
-                    currentWallet!!.accounts.values.flatten().any { it.address.equals(currentSelected, ignoreCase = true) }
-                )
-                
-                // If the current selected address is not the one for the current network,
-                // or if it's blank or invalid, then update to the networkAccount.address.
-                if (currentSelected.isBlank() || !isValidSelection || !networkAccount.address.equals(currentSelected, ignoreCase = true)) {
-                    logd(TAG, "Updating selected address to network account: ${networkAccount.address}")
+                // Call isChildAccount for its logging side effect, and store the result.
+                val isSelectedActuallyChild = isChildAccount(currentSelected)
+                val isSelectedActuallyEvm = EVMWalletManager.isEVMWalletAddress(currentSelected)
+                // 'wallet' here is the non-null currentWallet from the outer let scope
+                val isSelectedActuallyParentFlow = wallet.accounts.values.flatten().any { it.address.equals(currentSelected, ignoreCase = true) }
+
+                val isOverallValidSelection = currentSelected.isNotBlank() && (isSelectedActuallyChild || isSelectedActuallyEvm || isSelectedActuallyParentFlow)
+
+                if (!isOverallValidSelection) {
+                    logd(TAG, "No valid address selected or selection is of unknown type (${currentSelected}), setting network account: ${networkAccount.address}")
                     selectedWalletAddressRef.set(networkAccount.address)
                     updateSelectedWalletAddress(networkAccount.address)
                 } else {
-                    logd(TAG, "Valid address already selected and matches network: $currentSelected, keeping it")
+                    // currentSelected is a valid type (Child, EVM, or ParentFlow)
+                    if (isSelectedActuallyParentFlow && !isSelectedActuallyChild && !isSelectedActuallyEvm) {
+                        // It's a Parent Flow account (and not simultaneously a child/EVM type).
+                        // Check if it matches the current network's primary Flow account.
+                        if (!networkAccount.address.equals(currentSelected, ignoreCase = true)) {
+                            logd(TAG, "Selected Parent Flow account $currentSelected is for a different network (current: $currentNetwork), switching to ${networkAccount.address}")
+                            selectedWalletAddressRef.set(networkAccount.address)
+                            updateSelectedWalletAddress(networkAccount.address)
+                        } else {
+                            logd(TAG, "Selected Parent Flow account $currentSelected matches current network $currentNetwork, keeping it")
+                        }
+                    } else {
+                        // It's a Child Account or EVM Account (or a Parent Flow account that is also child/EVM, though unlikely).
+                        // These selections should be respected regardless of the primary Flow network.
+                        logd(TAG, "Keeping explicitly selected Child/EVM/specialized account: $currentSelected")
+                    }
                 }
             } else {
                 logd(TAG, "No account found for network: $currentNetwork")
