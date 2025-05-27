@@ -114,6 +114,8 @@ data class NftCollection(
     val evmAddress: String?,
     @SerializedName("flowIdentifier")
     val flowIdentifier: String?,
+    @SerializedName("externalURL")
+    val externalURL: String?,
 ) : Parcelable {
 
     fun getNFTIdentifier(): String {
