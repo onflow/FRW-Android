@@ -14,6 +14,10 @@ import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.utils.logd
 
+// Add extension function for ByteArray to hex string conversion
+fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }
+fun List<Byte>.toHexString(): String = joinToString("") { "%02x".format(it) }
+
 class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoProvider {
     private val TAG = "PrivateKeyStoreCryptoProvider"
     private val keyInfo: JsonObject = Gson().fromJson(keystoreInfo, JsonObject::class.java)
@@ -65,6 +69,17 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         return signatureBytes.joinToString("") { String.format("%02x", it) } 
     }
 
+    // Helper method for signing raw bytes
+    private suspend fun sign(data: ByteArray): ByteArray {
+        logd(TAG, "[KEYSTORE] sign() input data (${data.size} bytes): ${data.take(32).toHexString()}...")
+        logd(TAG, "[KEYSTORE] Using signAlgo: $signingAlgorithm, hashAlgo: ${getHashAlgorithm()}")
+        
+        val result = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
+        
+        logd(TAG, "[KEYSTORE] sign() result (${result.size} bytes): ${result.toHexString()}")
+        return result
+    }
+
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
         logd(TAG, "getSigner() called with hashingAlgorithm: $hashingAlgorithm")
         return object : org.onflow.flow.models.Signer {
@@ -72,30 +87,46 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             override var keyIndex: Int = keyInfo.get("keyId").asInt
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                logd(TAG, "*** KEYSTORE SIGNER: sign(transaction, bytes) called ***")
+                logd(TAG, "*** KEYSTORE SIGNER: sign(transaction, bytes) called - TRUSTWALLET CORE ***")
                 logd(TAG, "  Address: $address")
                 logd(TAG, "  KeyIndex: $keyIndex")
-                logd(TAG, "  Transaction ID: ${transaction?.id ?: "null"}")
-                logd(TAG, "  Bytes to sign (${bytes.size} bytes): ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
-                logd(TAG, "  Using signing algorithm: $signingAlgorithm")
-                logd(TAG, "  Using hashing algorithm: $hashingAlgorithm")
+                logd(TAG, "  HashingAlgorithm: $hashingAlgorithm")
+                logd(TAG, "  Input bytes length: ${bytes.size}")
+                logd(TAG, "  Input bytes (first 32): ${bytes.take(32).toHexString()}")
                 
-                val signature = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
-                logd(TAG, "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                val signature = this@PrivateKeyStoreCryptoProvider.sign(bytes)
+                logd(TAG, "  TrustWallet signature result: ${signature.toHexString()}")
                 return signature
             }
-
+            
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                logd(TAG, "*** KEYSTORE SIGNER: sign(bytes) called ***")
+                logd(TAG, "*** KEYSTORE SIGNER: sign(bytes) called - TRUSTWALLET CORE ***")
                 logd(TAG, "  Address: $address")
-                logd(TAG, "  KeyIndex: $keyIndex")
-                logd(TAG, "  Bytes to sign (${bytes.size} bytes): ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
-                logd(TAG, "  Using signing algorithm: $signingAlgorithm")
-                logd(TAG, "  Using hashing algorithm: $hashingAlgorithm")
+                logd(TAG, "  KeyIndex: $keyIndex") 
+                logd(TAG, "  HashingAlgorithm: $hashingAlgorithm")
+                logd(TAG, "  Input bytes length: ${bytes.size}")
+                logd(TAG, "  Input bytes (first 32): ${bytes.take(32).toHexString()}")
                 
-                val signature = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
-                logd(TAG, "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                val signature = this@PrivateKeyStoreCryptoProvider.sign(bytes)
+                logd(TAG, "  TrustWallet signature result: ${signature.toHexString()}")
                 return signature
+            }
+            
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
+                logd(TAG, "*** KEYSTORE SIGNER: signWithDomain() called - TRUSTWALLET CORE ***")
+                logd(TAG, "  Domain: ${domain.toHexString()}")
+                logd(TAG, "  Bytes: ${bytes.take(32).toHexString()}")
+                return sign(domain + bytes)
+            }
+            
+            override suspend fun signAsUser(bytes: ByteArray): ByteArray {
+                logd(TAG, "*** KEYSTORE SIGNER: signAsUser() called - TRUSTWALLET CORE ***") 
+                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.User.bytes)
+            }
+            
+            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
+                logd(TAG, "*** KEYSTORE SIGNER: signAsTransaction() called - TRUSTWALLET CORE ***")
+                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.Transaction.bytes)
             }
         }
     }
