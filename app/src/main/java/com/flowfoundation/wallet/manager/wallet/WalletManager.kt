@@ -234,12 +234,14 @@ object WalletManager {
                     currentWallet!!.accounts.values.flatten().any { it.address.equals(currentSelected, ignoreCase = true) }
                 )
                 
-                if (currentSelected.isBlank() || !isValidSelection) {
-                    logd(TAG, "No valid address selected, setting network account: ${networkAccount.address}")
+                // If the current selected address is not the one for the current network,
+                // or if it's blank or invalid, then update to the networkAccount.address.
+                if (currentSelected.isBlank() || !isValidSelection || !networkAccount.address.equals(currentSelected, ignoreCase = true)) {
+                    logd(TAG, "Updating selected address to network account: ${networkAccount.address}")
                     selectedWalletAddressRef.set(networkAccount.address)
                     updateSelectedWalletAddress(networkAccount.address)
                 } else {
-                    logd(TAG, "Valid address already selected: $currentSelected, keeping it")
+                    logd(TAG, "Valid address already selected and matches network: $currentSelected, keeping it")
                 }
             } else {
                 logd(TAG, "No account found for network: $currentNetwork")
