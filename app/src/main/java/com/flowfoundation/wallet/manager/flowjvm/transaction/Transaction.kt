@@ -26,6 +26,9 @@ import java.security.Provider
 import java.security.Security
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import org.onflow.flow.infrastructure.Cadence
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.getFlowAddress
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 
 private const val TAG = "Transaction"
 
@@ -280,8 +283,27 @@ suspend fun Transaction.addLocalSignatures(): Transaction {
     logd("Transaction", "Current CryptoProvider: ${cryptoProvider::class.java.name}")
     val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
     val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
-    val currentKey = accountKeys.findLast { it.publicKey == providerPublicKey }
-        ?: throw InvalidKeyException("get account key error")
+    logd(TAG, providerPublicKey)
+
+    // Flow may store public keys **without** the uncompressed "04" prefix, while
+    // crypto providers (especially P-256) often return them *with* that prefix.
+    // If a direct match fails, we therefore also try matching after removing
+    // the leading 0x04 byte.
+
+    val providerPubRaw = providerPublicKey.removeHexPrefix().lowercase()
+    // If the key is an uncompressed 65-byte SEC1 encoded key (starts with 0x04),
+    // drop that first byte (2 hex chars) to compare with the 64-byte on-chain
+    // representation.
+    val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) {
+        providerPubRaw.substring(2)
+    } else {
+        providerPubRaw
+    }
+
+    val currentKey = accountKeys.findLast { accKey ->
+        val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
+        accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
+    } ?: throw InvalidKeyException("Get account key error")
 
     val signer = createSigner(
         address = proposalKey.address,
@@ -297,8 +319,20 @@ suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         ?: throw RuntimeException("get account error")
     val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
-    val currentKey = accountKeys.findLast { it.publicKey == cryptoProvider.getPublicKey() }
-        ?: throw InvalidKeyException("get account key error")
+    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
+    logd(TAG, "Provider public key for envelope: $providerPublicKey")
+
+    val providerPubRaw = providerPublicKey.removeHexPrefix().lowercase()
+    val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) {
+        providerPubRaw.substring(2)
+    } else {
+        providerPubRaw
+    }
+
+    val currentKey = accountKeys.findLast { accKey ->
+        val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
+        accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
+    } ?: throw InvalidKeyException("Get account key error for envelope signature: Provider key $providerPublicKey not found on account ${account.address}")
 
     val signer = createSigner(
         address = payer,
@@ -417,50 +451,79 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
     logd(TAG, "prepare builder:$builder")
     val walletAddress = builder.walletAddress?.toAddress().orEmpty()
     
-    val account = FlowCadenceApi.getAccount(walletAddress)
-    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-        ?: throw RuntimeException("get account error")
-    val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
-    logd(TAG, accountKeys)
-    logd(TAG, cryptoProvider.getPublicKey())
-    
-    // Normalize the crypto provider's public key by adding 0x prefix if missing
-    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
-    logd(TAG, providerPublicKey)
+    val flowAccount = FlowCadenceApi.getAccount(walletAddress)
 
-    val currentKey = accountKeys.findLast { it.publicKey == providerPublicKey }
-        ?: throw InvalidKeyException("Get account key error")
+    val currentNetworkName = chainNetWorkString()
+    logd(TAG, "Current network for account lookup: $currentNetworkName. Target transaction address: $walletAddress")
+
+    val localAccountInstance = AccountManager.list().find { acc ->
+        // Use the new extension function to get the account's address for the current network
+        val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress() // Normalize for comparison
+        logd(TAG, "Iterating AccountManager.list(): Checking local account '${acc.userInfo.username}', its address for $currentNetworkName is '$accFlowAddress'")
+        accFlowAddress == walletAddress
+    }
+
+    if (localAccountInstance == null) {
+        throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
+    }
+
+    logd(TAG, "Successfully found local account ${localAccountInstance.userInfo.username} for address $walletAddress. Generating CryptoProvider.")
+    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
+        ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username} (address $walletAddress)")
+    
+    val accountKeys = flowAccount.keys ?: throw InvalidKeyException("On-chain account $walletAddress has no keys")
+    logd(TAG, "On-chain keys for $walletAddress: $accountKeys")
+    logd(TAG, "Provider public key from local account ${localAccountInstance.userInfo.username} (for $walletAddress): ${cryptoProvider.getPublicKey()}")
+    
+    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
+    logd(TAG, "Normalized provider public key: $providerPublicKey")
+
+    val providerPubRaw = providerPublicKey.removeHexPrefix().lowercase()
+    val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) {
+        providerPubRaw.substring(2)
+    } else {
+        providerPubRaw
+    }
+
+    val currentKey = accountKeys.findLast { accKey ->
+        val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
+        accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
+    } ?: throw InvalidKeyException(
+        "Get account key error: Provider key $providerPublicKey (raw: $providerPubRaw, stripped: $providerPubStripped) " +
+        "from local account ${localAccountInstance.userInfo.username} (for $walletAddress) " +
+        "not found among on-chain keys for $walletAddress: ${accountKeys.map { it.publicKey + " (raw: " + it.publicKey.removeHexPrefix().lowercase() + ")" } }"
+    )
+
+    logd(TAG, "Found matching key for $walletAddress on-chain: index ${currentKey.index}, seqNo ${currentKey.sequenceNumber}")
 
     val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
     val authorizers = when {
         builder.isBridgePayer -> {
-            listOf(account.address.removeHexPrefix(), payer)
+            listOf(flowAccount.address.removeHexPrefix(), payer)
         }
         builder.authorizers.isNullOrEmpty() -> {
-            listOf(account.address.removeHexPrefix())
+            listOf(flowAccount.address.removeHexPrefix())
         }
         else -> {
-            builder.authorizers?.map { it.removeHexPrefix() } ?: listOf(account.address.removeHexPrefix())
+            builder.authorizers?.map { it.removeHexPrefix() } ?: listOf(flowAccount.address.removeHexPrefix())
         }
     }
 
     val referenceBlockId = FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix()
     val script = builder.script.orEmpty()
     
-    // Use Flow KMM Cadence arguments directly (no conversion needed)
     val arguments = builder.arguments
-    logd(TAG, "Flow KMM arguments: $arguments")
+    logd(TAG, "Flow KMM arguments from builder: $arguments")
+    logd(TAG, "Arguments to be passed to KMM TransactionBuilder: size=${arguments.size}, content=$arguments")
     
     val gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
 
-    // Create local signer from crypto provider
     val localSigner = createSigner(
-        address = account.address.removeHexPrefix(),
+        address = flowAccount.address.removeHexPrefix(),
         keyIndex = currentKey.index.toInt(),
         signer = cryptoProvider.getSigner()
     )
 
-    // Use Flow KMM's TransactionBuilder with buildAndSign for clean serialization
     val signedTransaction = TransactionBuilder(
         script = script,
         arguments = arguments,
@@ -469,7 +532,7 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         withReferenceBlockId(referenceBlockId)
         withPayer(payer)
         withProposalKey(
-            address = account.address.removeHexPrefix(),
+            address = flowAccount.address.removeHexPrefix(),
             keyIndex = currentKey.index.toInt(),
             sequenceNumber = BigInteger.fromInt(currentKey.sequenceNumber.toInt())
         )

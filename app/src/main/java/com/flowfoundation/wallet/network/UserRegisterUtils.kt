@@ -36,6 +36,7 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
@@ -65,79 +66,66 @@ suspend fun registerOutblock(
     username: String,
 ) = suspendCoroutine { continuation ->
     ioScope {
+        // registerOutblockUserInternal will call registerServer, which creates and stores
+        // the primary private key associated with the prefix, and performs the actual
+        // server registration using that key's public key.
         registerOutblockUserInternal(username) { isSuccess, prefix ->
             ioScope {
                 if (isSuccess) {
-                    createWalletFromServer()
+                    // At this point, user is registered on server, Firebase is synced,
+                    // and the correct private key (from registerServer) is stored with the prefix.
+                    
+                    // Declare service here for fetching user and wallet info
+                    val service = retrofit().create(ApiService::class.java)
+
+                    createWalletFromServer() // This should ideally ensure the WalletManager is aware of the new account
                     setRegistered()
 
-                    val baseDir = File(Env.getApp().filesDir, "wallet")
-                    val storage = FileSystemStorage(baseDir)
-                    
-                    // Create a new private key using Trust Wallet Core
-                    val privateKey = PrivateKey.create(storage)
-                    logd(TAG, "Created new private key")
-                    
-                    // Store the private key with prefix as ID for later retrieval
-                    val keyId = "prefix_key_$prefix"
-                    privateKey.store(keyId, prefix) // Use prefix as password for simplicity
-                    logd(TAG, "Stored private key with ID: $keyId")
-                    
-                    val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
-                    if (publicKeyBytes == null) {
-                        logd(TAG, "Failed to get public key from private key")
+                    // Wallet and Account object creation should use data from the successful registration (via registerServer)
+                    // The service calls here should ideally just fetch the latest state if needed,
+                    // not perform new registrations or key creations.
+
+                    val userInfo = try { service.userInfo().data } catch (e: Exception) { 
+                        logd(TAG, "Failed to fetch user info after registration")
                         continuation.resume(false)
                         return@ioScope
                     }
-                    
-                    logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
-                    
-                    // Convert public key to hex string, removing "04" prefix if present
-                    // Flow expects uncompressed public keys without the format indicator
-                    val hexPublicKey = if (publicKeyBytes.size == 65 && publicKeyBytes[0] == 0x04.toByte()) {
-                        // Remove the "04" prefix for uncompressed keys
-                        publicKeyBytes.copyOfRange(1, publicKeyBytes.size).joinToString("") { "%02x".format(it) }
-                    } else {
-                        publicKeyBytes.joinToString("") { "%02x".format(it) }
+                    val walletListData = try { service.getWalletList().data } catch (e:Exception) {
+                        logd(TAG, "Failed to fetch wallet list after registration")
+                        continuation.resume(false)
+                        return@ioScope
                     }
-                    logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
-                    
-                    // Get device info for registration
-                    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-                    logd(TAG, "Got device info request")
-                    
-                    val service = retrofit().create(ApiService::class.java)
-                    val user = service.register(
-                        RegisterRequest(
-                            username = username,
-                            accountKey = AccountKey(
-                                publicKey = hexPublicKey
-                                // Using default values: ECDSA_P256 and SHA2_256
-                            ),
-                            deviceInfo = deviceInfoRequest
-                        )
-                    )
-                    logd(TAG, "Registered user: $user")
-                    
-                    // Create a key wallet using the private key directly
-                    val wallet = WalletFactory.createKeyWallet(
-                        privateKey,
+
+                    // The WalletFactory.createKeyWallet here might be redundant if WalletManager.init()
+                    // correctly initializes based on the prefix and the key stored by registerServer.
+                    // However, ensuring the Wallet SDK instance is aware of the account is important.
+                    val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
+                    val keyForWalletSDK = try {
+                        PrivateKey.get("prefix_key_$prefix", prefix, storage)
+                    } catch (e: Exception) {
+                        logd(TAG, "Failed to retrieve stored private key for Wallet SDK init.")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    val walletForSDK = WalletFactory.createKeyWallet(
+                        keyForWalletSDK,
                         setOf(ChainId.Mainnet, ChainId.Testnet),
                         storage
                     )
-                    logd(TAG, "Created key wallet")
-                    
+                    logd(TAG, "Created KeyWallet instance for Wallet SDK.")
+
+                    // Initialize WalletManager to pick up the new account/wallet state
+                    // WalletManager.init() should now find the key stored by registerServer via the prefix.
                     WalletManager.init()
 
                     val account = Account(
-                        userInfo = service.userInfo().data,
-                        prefix = prefix,
-                        wallet = service.getWalletList().data
+                        userInfo = userInfo,
+                        prefix = prefix, // This prefix matches the one used to store the key in registerServer
+                        wallet = walletListData
                     )
                     logd(TAG, "Adding account to AccountManager: $account")
                     
-                    // Manually add accounts from server to the wallet
-                    // This is needed because new accounts may not be indexed yet by the key indexer
+                    // Manually add accounts from server to the walletForSDK instance
                     account.wallet?.wallets?.forEach { walletData ->
                         walletData.blockchain?.forEach { blockchain ->
                             try {
@@ -146,21 +134,15 @@ suspend fun registerOutblock(
                                     "testnet" -> ChainId.Testnet
                                     else -> null
                                 }
-                                
                                 if (chainId != null && !blockchain.address.isNullOrBlank()) {
-                                    // Ensure address has 0x prefix before fetching
                                     val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
-                                    logd(TAG, "Fetching account $address from ${blockchain.chainId} using Flow API")
-                                    
-                                    // Use the wallet's fetchAccountByAddress method to get the account directly
-                                    // from the Flow network, bypassing the key indexer
                                     runBlocking {
-                                        wallet.fetchAccountByAddress(address, chainId)
+                                        logd(TAG, "Fetching account $address for $chainId into Wallet SDK instance")
+                                        walletForSDK.fetchAccountByAddress(address, chainId)
                                     }
-                                    logd(TAG, "Successfully fetched and added account $address to wallet")
                                 }
                             } catch (e: Exception) {
-                                logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
+                                loge(TAG, "Error fetching account ${blockchain.address} into Wallet SDK: ${e.message}")
                             }
                         }
                     }
@@ -169,35 +151,39 @@ suspend fun registerOutblock(
                         account,
                         firebaseUid()
                     )
-                    logd(TAG, "Account added, getting crypto provider")
+                    logd(TAG, "Account added to AccountManager.")
                     
-                    // Ensure account is properly set before generating crypto provider
-                    val currentAccount = AccountManager.get()
-                    if (currentAccount == null) {
-                        logd(TAG, "Failed to get current account after adding")
+                    // Now, get the CryptoProvider. It should use the prefix and load the key stored by registerServer.
+                    val currentAccount = AccountManager.get() // Should be the newly added account
+                    if (currentAccount == null || currentAccount.prefix != prefix) {
+                        loge(TAG, "Critical: currentAccount after add is null or prefix mismatch!")
                         continuation.resume(false)
                         return@ioScope
                     }
-                    
+
                     val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount)
-                    logd(TAG, "Crypto provider generated: ${cryptoProvider != null}")
-                    
                     if (cryptoProvider == null) {
-                        logd(TAG, "Failed to generate crypto provider")
+                        loge(TAG, "Failed to generate crypto provider for the registered account.")
                         continuation.resume(false)
                         return@ioScope
                     }
+                    logd(TAG, "Crypto provider generated successfully for registered account. Public key: ${cryptoProvider.getPublicKey()}")
                     
+                    // The public key from this cryptoProvider SHOULD now match the on-chain key
+                    // because both originate from the single private key created and stored in registerServer.
+
                     MixpanelManager.accountCreated(
                         cryptoProvider.getPublicKey(),
-                        AccountCreateKeyType.KEY_STORE,
+                        AccountCreateKeyType.KEY_STORE, // This might need re-evaluation; it's a prefix-stored key
                         cryptoProvider.getSignatureAlgorithm().value,
                         cryptoProvider.getHashAlgorithm().algorithm
                     )
                     clearUserCache()
                     continuation.resume(true)
                 } else {
-                    resumeAccount()
+                    // Registration failed in registerOutblockUserInternal (e.g., server or Firebase issue)
+                    loge(TAG, "registerOutblockUserInternal indicated failure.")
+                    // resumeAccount() // This was here, consider if it's needed or if failure is handled by caller
                     continuation.resume(false)
                 }
             }

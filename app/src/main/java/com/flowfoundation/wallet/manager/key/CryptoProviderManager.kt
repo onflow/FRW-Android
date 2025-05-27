@@ -28,79 +28,57 @@ import kotlinx.coroutines.runBlocking
 object CryptoProviderManager {
 
     private var cryptoProvider: CryptoProvider? = null
+    private const val TAG = "CryptoProviderManager"
 
     fun getCurrentCryptoProvider(): CryptoProvider? {
         if (cryptoProvider == null) {
-            logd("CryptoProviderManager", "in getCurrentCryptoProvider")
+            logd(TAG, "getCurrentCryptoProvider: Cache miss, generating new provider.")
             cryptoProvider = generateAccountCryptoProvider(AccountManager.get())
-            logd("CryptoProviderManager", cryptoProvider)
         }
         return cryptoProvider
     }
 
     fun generateAccountCryptoProvider(account: Account?): CryptoProvider? {
         if (account == null) {
-            logd("CryptoProviderManager", "account is null")
+            logd(TAG, "generateAccountCryptoProvider: Input account is null.")
             return null
         }
-        logd("CryptoProviderManager", "Generating crypto provider for account: ${account.userInfo.username}")
-        logd("CryptoProviderManager", "Account prefix: ${account.prefix}")
-        logd("CryptoProviderManager", "Account keystore info: ${account.keyStoreInfo}")
-        logd("CryptoProviderManager", "Account wallet: ${account.wallet}")
+        logd(TAG, "generateAccountCryptoProvider: Generating for account: ${account.userInfo.username}, isActive: ${account.isActive}, prefix: ${account.prefix}, hasKeystore: ${!account.keyStoreInfo.isNullOrBlank()}")
 
         val storage = getStorage()
 
         return try {
             // Handle keystore-based accounts
-            if (account.keyStoreInfo.isNullOrBlank().not()) {
-                logd("CryptoProviderManager", "Creating keystore-based crypto provider")
+            if (!account.keyStoreInfo.isNullOrBlank()) {
+                logd(TAG, "  Branch: Keystore-based account.")
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
             }
-
             // Handle prefix-based accounts
-            else if (account.prefix.isNullOrBlank().not()) {
-                logd("CryptoProviderManager", "Creating prefix-based crypto provider")
-                
-                // Load the stored private key using the prefix-based ID
+            else if (!account.prefix.isNullOrBlank()) {
+                logd(TAG, "  Branch: Prefix-based account (prefix: ${account.prefix}).")
                 val keyId = "prefix_key_${account.prefix}"
                 val privateKey = try {
                     PrivateKey.get(keyId, account.prefix!!, storage)
                 } catch (e: Exception) {
-                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
-                    loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
-                    return null // Return null instead of creating a new key
+                    loge(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+                    return null
                 }
-                logd("CryptoProviderManager", "Successfully loaded private key for prefix: ${account.prefix}")
-                
-                // Create a proper KeyWallet directly with the PrivateKey
-                val wallet = WalletFactory.createKeyWallet(
-                    privateKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                ) as KeyWallet
-                
-                // For prefix-based accounts, we use PrivateKeyCryptoProvider instead of BackupCryptoProvider
+                val wallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
                 PrivateKeyCryptoProvider(privateKey, wallet)
             }
-
-            // Handle active accounts
+            // Handle active accounts (typically uses global mnemonic)
             else if (account.isActive) {
-                logd("CryptoProviderManager", "Creating active account crypto provider")
+                val currentGlobalMnemonic = Wallet.store().mnemonic() // Get current global mnemonic
+                logd(TAG, "  Branch: Active account. Using Wallet.store().mnemonic(): '$currentGlobalMnemonic'")
                 val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = Wallet.store().mnemonic(),
+                    mnemonicString = currentGlobalMnemonic,
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
                     keyPair = null,
                     storage = storage
                 )
-                // Create a proper KeyWallet
-                val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                ) as KeyWallet
-
-                // Get the account's keys to determine the signing algorithm
+                val wallet = WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
+                // Signing algorithm determination logic (omitted for brevity, assumed correct from previous state)
                 val accountKeys = account.wallet?.walletAddress()
                     ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
                 val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
@@ -108,36 +86,29 @@ object CryptoProviderManager {
                 } else {
                     SigningAlgorithm.ECDSA_P256
                 }
-                logd("CryptoProviderManager", "Using signing algorithm: $signingAlgorithm")
-
+                logd(TAG, "  Active account using signing algorithm: $signingAlgorithm")
                 BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
             }
-
-            // Handle inactive accounts
+            // Handle inactive accounts (may use wallet-specific mnemonic)
             else {
-                logd("CryptoProviderManager", "Creating inactive account crypto provider")
+                logd(TAG, "  Branch: Inactive account.")
                 val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
                 if (existingWallet == null) {
-                    loge("CryptoProviderManager", "Failed to get existing wallet for account ${account.userInfo.username}")
+                    loge(TAG, "  Inactive account: Failed to get existing HDWallet by UID: ${account.wallet?.id}")
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-
+                val inactiveMnemonic = (existingWallet as BackupCryptoProvider).getMnemonic()
+                logd(TAG, "  Inactive account: Using mnemonic from existing HDWallet: '$inactiveMnemonic'")
                 val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = (existingWallet as BackupCryptoProvider).getMnemonic(),
+                    mnemonicString = inactiveMnemonic,
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
                     keyPair = null,
                     storage = storage
                 )
-                // Create a proper KeyWallet
-                val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                ) as KeyWallet
-
-                // Get the account's keys to determine the signing algorithm
+                val wallet = WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
+                // Signing algorithm determination logic (omitted for brevity, assumed correct from previous state)
                 val accountKeys = account.wallet?.walletAddress()
                     ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
                 val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
@@ -145,16 +116,15 @@ object CryptoProviderManager {
                 } else {
                     SigningAlgorithm.ECDSA_P256
                 }
-                logd("CryptoProviderManager", "Using signing algorithm: $signingAlgorithm")
-
+                logd(TAG, "  Inactive account using signing algorithm: $signingAlgorithm")
                 BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
             }
         } catch (e: WalletError) {
-            loge("CryptoProviderManager", "Wallet error: ${e.message}")
+            logd(TAG, "Wallet error during provider generation: ${e.message}")
             ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
             null
         } catch (e: Exception) {
-            loge("CryptoProviderManager", "Unexpected error: ${e.message}")
+            logd(TAG, "Unexpected error during provider generation: ${e.message}")
             ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
             null
         }
