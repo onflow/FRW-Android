@@ -24,6 +24,7 @@ import com.flowfoundation.wallet.utils.loge
 import org.onflow.flow.ChainId
 import org.onflow.flow.models.SigningAlgorithm
 import kotlinx.coroutines.runBlocking
+import android.util.Log
 
 object CryptoProviderManager {
 
@@ -38,6 +39,7 @@ object CryptoProviderManager {
         return cryptoProvider
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun generateAccountCryptoProvider(account: Account?): CryptoProvider? {
         if (account == null) {
             logd(TAG, "generateAccountCryptoProvider: Input account is null.")
@@ -50,8 +52,11 @@ object CryptoProviderManager {
         return try {
             // Handle keystore-based accounts
             if (!account.keyStoreInfo.isNullOrBlank()) {
-                logd(TAG, "  Branch: Keystore-based account.")
-                PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
+                logd(TAG, "  Branch: Keystore-based account. Info (first 100 chars): ${account.keyStoreInfo!!.take(100)}")
+                val provider = PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
+                // Log the algorithms the provider determined from the keystore info
+                logd(TAG, "  Keystore-based: Provider initialized with actual signAlgo: ${provider.getSignatureAlgorithm()}, actual hashAlgo: ${provider.getHashAlgorithm()} (from keystore info)")
+                return provider
             }
             // Handle prefix-based accounts
             else if (!account.prefix.isNullOrBlank()) {
@@ -64,7 +69,41 @@ object CryptoProviderManager {
                     return null
                 }
                 val wallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                PrivateKeyCryptoProvider(privateKey, wallet)
+                
+                // Determine the correct signing algorithm for this private key
+                val currentProviderPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() 
+                    ?: privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256 // Default
+                Log.d(TAG, "  Prefix-based: currentProviderPublicKey from local private key: $currentProviderPublicKey")
+                Log.d(TAG, "  Prefix-based: account.wallet?.walletAddress() for on-chain lookup: ${account.wallet?.walletAddress()}")
+
+                if (currentProviderPublicKey != null && account.wallet?.walletAddress() != null) {
+                    try {
+                        val onChainAccount = runBlocking { FlowCadenceApi.getAccount(account.wallet!!.walletAddress()!!) }
+                        Log.d(TAG, "  Prefix-based: Fetched on-chain account for ${account.wallet!!.walletAddress()!!}: ${onChainAccount.address}")
+                        val onChainKey = onChainAccount.keys?.find { acctKey ->
+                            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
+                            val providerPubKeyHex = currentProviderPublicKey.removePrefix("0x").lowercase()
+                            // Handle potential "04" prefix for uncompressed keys from some secp256k1 derivations
+                            val providerPubKeyStripped = if (providerPubKeyHex.startsWith("04") && providerPubKeyHex.length == 130) providerPubKeyHex.substring(2) else providerPubKeyHex
+                            val isMatch = acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
+                            if (isMatch) Log.d(TAG, "  Prefix-based: Matched on-chain key: index=${acctKey.index}, pub=${acctKey.publicKey}, signAlgo=${acctKey.signingAlgorithm}")
+                            isMatch
+                        }
+                        if (onChainKey != null) {
+                            determinedSigningAlgorithm = onChainKey.signingAlgorithm
+                            Log.d(TAG, "  Prefix-based: Successfully determined on-chain signing algorithm: $determinedSigningAlgorithm for key index ${onChainKey.index}")
+                        } else {
+                            Log.d(TAG, "  Prefix-based: Could NOT find matching on-chain key for $currentProviderPublicKey. Using default signing algorithm: $determinedSigningAlgorithm")
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "  Prefix-based account: Error fetching on-chain key details to determine signing algorithm: ${e.message}. Using default.")
+                    }
+                } else {
+                    Log.d(TAG, "  Prefix-based: Missing local public key or wallet address to determine on-chain signing algorithm. Using default: $determinedSigningAlgorithm")
+                }
+                Log.d(TAG, "  Prefix-based: Instantiating PrivateKeyCryptoProvider with determined SigningAlgorithm: $determinedSigningAlgorithm")
+                PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm)
             }
             // Handle active accounts (typically uses global mnemonic)
             else if (account.isActive) {
@@ -86,7 +125,7 @@ object CryptoProviderManager {
                 } else {
                     SigningAlgorithm.ECDSA_P256
                 }
-                logd(TAG, "  Active account using signing algorithm: $signingAlgorithm")
+                logd(TAG, "  Active account using determined signing algorithm: $signingAlgorithm")
                 BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
             }
             // Handle inactive accounts (may use wallet-specific mnemonic)
@@ -116,7 +155,7 @@ object CryptoProviderManager {
                 } else {
                     SigningAlgorithm.ECDSA_P256
                 }
-                logd(TAG, "  Inactive account using signing algorithm: $signingAlgorithm")
+                logd(TAG, "  Inactive account using determined signing algorithm: $signingAlgorithm")
                 BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm)
             }
         } catch (e: WalletError) {

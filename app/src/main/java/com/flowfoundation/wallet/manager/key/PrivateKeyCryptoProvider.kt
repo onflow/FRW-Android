@@ -47,17 +47,17 @@ class PrivateKeyCryptoProvider(
         return signatureBytes.toHexString()
     }
 
-    override fun getSigner(): Signer {
-        return object : Signer {
+    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return privateKey.sign(bytes, signingAlgorithm, getHashAlgorithm())
+                return privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return privateKey.sign(bytes, signingAlgorithm, getHashAlgorithm())
+                return privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
         }
     }

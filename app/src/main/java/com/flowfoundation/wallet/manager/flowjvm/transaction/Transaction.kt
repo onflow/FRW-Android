@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm.transaction
 
+import com.flow.wallet.CryptoProvider
 import com.google.gson.Gson
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
@@ -18,17 +19,13 @@ import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
-import com.flow.wallet.CryptoProvider
+import org.onflow.flow.models.HashingAlgorithm
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.onflow.flow.models.*
-import java.security.Provider
-import java.security.Security
-import com.ionspin.kotlin.bignum.integer.BigInteger
-import org.onflow.flow.infrastructure.Cadence
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import org.onflow.flow.infrastructure.getTypeName
 
 private const val TAG = "Transaction"
 
@@ -52,6 +49,19 @@ suspend fun sendTransaction(
             tx = tx.addLocalEnvelopeSignatures()
         }
         logd(TAG, "Tx after envelope signatures: $tx")
+
+        // Sanitize all signatures to ensure signerIndex uses the default (-1) to be omitted by serializer
+        tx = tx.copy(
+            payloadSignatures = tx.payloadSignatures.map {
+                TransactionSignature(address = it.address, keyIndex = it.keyIndex, signature = it.signature /* default signerIndex = -1 */)
+            }.distinctBy { "${it.address}-${it.keyIndex}-${it.signature}" } // Ensure distinctness after re-mapping
+             .sortedWith(compareBy<TransactionSignature> { it.address }.thenBy { it.keyIndex }), // Apply KMM sorting
+            envelopeSignatures = tx.envelopeSignatures.map {
+                TransactionSignature(address = it.address, keyIndex = it.keyIndex, signature = it.signature /* default signerIndex = -1 */)
+            }.distinctBy { "${it.address}-${it.keyIndex}-${it.signature}" } // Ensure distinctness after re-mapping
+             .sortedWith(compareBy<TransactionSignature> { it.address }.thenBy { it.keyIndex }) // Apply KMM sorting
+        )
+        logd(TAG, "Tx after final sanitization of signerIndex: $tx")
 
         logd(TAG, "sendTransaction to flow chain")
         val result = tx.send()
@@ -176,40 +186,45 @@ suspend fun sendTransactionWithMultiSignature(
     builder: TransactionBuilder.() -> Unit,
     providers: List<CryptoProvider>
 ): String {
-    logd(TAG, "sendTransaction prepare")
-    val transBuilder = TransactionBuilder().apply { builder(this) }
-    val account = FlowCadenceApi.getAccount(transBuilder.walletAddress?.toAddress().orEmpty())
-    val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
-    val restoreProposalKey = accountKeys.firstOrNull { providers.first().getPublicKey() == it.publicKey } 
-        ?: throw InvalidKeyException("get account key error")
-    var tx = prepareWithMultiSignature(
-        walletAddress = account.address,
-        restoreProposalKey = restoreProposalKey,
-        builder = transBuilder,
+    logd(TAG, "sendTransactionWithMultiSignature prepare")
+    val appBuilder = TransactionBuilder().apply { builder(this) }
+
+    // prepareAndSignWithMultiSignature will use KMM's buildAndSign(), handling payload and local payer envelope.
+    var tx = prepareAndSignWithMultiSignature(
+        appBuilder = appBuilder,
+        providers = providers
     )
 
-    // Sign with each provider
-    providers.forEach { cryptoProvider ->
-        val signer = createSigner(
-            address = tx.proposalKey.address,
-            keyIndex = accountKeys.first { cryptoProvider.getPublicKey() == it.publicKey }.index.toInt(),
-            signer = cryptoProvider.getSigner()
-        )
-        tx = tx.signPayload(listOf(signer))
-    }
-
-    // Add envelope signatures if needed
-    if (tx.envelopeSignatures.isEmpty()) {
-        tx = if (isGasFree()) {
-            logd(TAG, "sendTransaction request free gas envelope")
-            tx.addFreeGasEnvelope()
+    // If gas is free (external payer), we still need to add the free gas envelope signature externally.
+    // buildAndSign would not have handled this as the payer isn't in the local providers list.
+    if (isGasFree()) {
+        // Ensure payer in tx matches the expected free gas payer before adding its signature
+        val expectedFreeGasPayer = AppConfig.payer().address.removeHexPrefix()
+        if (tx.payer.removeHexPrefix() == expectedFreeGasPayer) {
+            logd(TAG, "sendTransactionWithMultiSignature: Adding free gas envelope as payer is external.")
+            tx = tx.addFreeGasEnvelope()
         } else {
-            logd(TAG, "sendTransaction sign envelope")
-            tx.addLocalEnvelopeSignatures()
+            logd(TAG, "sendTransactionWithMultiSignature: Gas is free, but tx.payer (${tx.payer}) doesn't match AppConfig payer ($expectedFreeGasPayer). Skipping addFreeGasEnvelope.")
+        }
+    } else {
+        // If not gas-free, and the local payer's envelope was somehow not added by buildAndSign 
+        // (e.g. if payer was specified but not part of `providers`), this would be a fallback.
+        // However, with buildAndSign, this should ideally not be needed if the local payer is among the signers.
+        if (tx.envelopeSignatures.none { it.address.removeHexPrefix() == tx.payer.removeHexPrefix() }) {
+            val localPayerAddress = appBuilder.walletAddress?.toAddress()?.removeHexPrefix()
+            if (tx.payer.removeHexPrefix() == localPayerAddress) {
+                 logd(TAG, "sendTransactionWithMultiSignature: Payer is local but no envelope signature found from buildAndSign. Attempting addLocalEnvelopeSignatures.")
+                 // This implies the payer's CryptoProvider might not have been in `providers` or buildAndSign didn't cover it.
+                 // This situation needs careful review of how local payer is handled in `providers` for multi-sig.
+                 // For now, retain the local signature attempt as a fallback.
+                 tx = tx.addLocalEnvelopeSignatures() 
+            } else {
+                logd(TAG, "sendTransactionWithMultiSignature: Payer (${tx.payer}) is not the local wallet address ($localPayerAddress) and not free gas. No envelope added.")
+            }
         }
     }
 
-    logd(TAG, "sendTransaction to flow chain")
+    logd(TAG, "sendTransactionWithMultiSignature to flow chain")
     val result = tx.send()
     val txID = result.id
     logd(TAG, "transaction id:$${txID}")
@@ -237,81 +252,145 @@ suspend fun sendTransactionWithMultiSignature(
     return txID ?: throw RuntimeException("Failed to get transaction ID")
 }
 
-private fun createSigner(
-    address: String,
-    keyIndex: Int,
-    signer: Signer
-): Signer {
-    return object : Signer {
-        override var address: String = address
-        override var keyIndex: Int = keyIndex
+// Renamed from prepareWithMultiSignature and refactored
+suspend fun prepareAndSignWithMultiSignature(
+    appBuilder: TransactionBuilder, // The app-level builder
+    providers: List<CryptoProvider> // The list of local crypto providers for signing
+): Transaction {
+    logd(TAG, "prepareAndSignWithMultiSignature builder: $appBuilder")
 
-        override suspend fun sign(transaction: Transaction?, bytes: ByteArray): ByteArray {
-            return signer.sign(bytes)
+    val proposerAddress = appBuilder.walletAddress?.toAddress()
+        ?: throw IllegalArgumentException("Wallet address (proposer) is required for multi-signature.")
+    
+    val flowAccount = FlowCadenceApi.getAccount(proposerAddress)
+    val accountKeys = flowAccount.keys 
+        ?: throw InvalidKeyException("On-chain account $proposerAddress has no keys")
+
+    // Determine the proposal key. For multi-sig, this is often the first provider's key or a designated one.
+    // Here, we try to find a key on-chain that matches the first provider.
+    // This logic might need to be more flexible depending on exact multi-sig key rotation/management.
+    val firstProviderPublicKey = providers.firstOrNull()?.getPublicKey()?.ensureHexFormat()
+        ?: throw IllegalArgumentException("At least one crypto provider is required for multi-signature proposal key selection.")
+
+    val designatedProposalKey = accountKeys.findLast { accKey ->
+        val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
+        val providerPubRaw = firstProviderPublicKey.removeHexPrefix().lowercase()
+        val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) providerPubRaw.substring(2) else providerPubRaw
+        accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
+    } ?: throw InvalidKeyException("Proposal key matching first provider ($firstProviderPublicKey) not found on account $proposerAddress")
+    
+    logd(TAG, "Designated proposal key for multi-sig: index ${designatedProposalKey.index}, seqNo ${designatedProposalKey.sequenceNumber}")
+
+    // Create KMM signers for all payload providers
+    val kmmSigners = providers.mapNotNull { cryptoProviderInstance -> // Renamed to avoid conflict with outer cryptoProvider if any
+        val providerPublicKey = cryptoProviderInstance.getPublicKey().ensureHexFormat()
+        val onChainKey = accountKeys.findLast { accKey ->
+            val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
+            val currentProviderPubRaw = providerPublicKey.removeHexPrefix().lowercase()
+            val currentProviderPubStripped = if (currentProviderPubRaw.startsWith("04") && currentProviderPubRaw.length == 130) currentProviderPubRaw.substring(2) else currentProviderPubRaw
+            accPubRaw == currentProviderPubRaw || accPubRaw == currentProviderPubStripped
         }
+        if (onChainKey == null) {
+            loge(TAG, "Key for crypto provider ${cryptoProviderInstance.getPublicKey()} not found on account $proposerAddress. Skipping this signer.")
+            null
+        } else {
+            val keyOnChainHashingAlgorithm = onChainKey.hashingAlgorithm // KMM HashingAlgorithm
+            logd(TAG, "Using KMM hashing algorithm ${keyOnChainHashingAlgorithm.name} for multi-sig provider ${cryptoProviderInstance.getPublicKey()} (key index ${onChainKey.index}) on account $proposerAddress")
+            
+            // cryptoProviderInstance is com.flow.wallet.CryptoProvider
+            val signerInstance: org.onflow.flow.models.Signer = cryptoProviderInstance.getSigner(keyOnChainHashingAlgorithm)
+            signerInstance.address = proposerAddress.removeHexPrefix()
+            signerInstance.keyIndex = onChainKey.index.toInt()
+            signerInstance // Return the configured KMM Signer
+        }
+    }.distinctBy { "${it.address}-${it.keyIndex}" } // `it` here is org.onflow.flow.models.Signer
 
-        override suspend fun sign(bytes: ByteArray): ByteArray = signer.sign(bytes)
+    if (kmmSigners.isEmpty() && providers.isNotEmpty()) {
+        throw InvalidKeyException("None of the provided crypto providers have a matching key on account $proposerAddress.")
+    } else if (kmmSigners.isEmpty() && providers.isEmpty()) {
+        throw IllegalArgumentException("At least one crypto provider is required for multi-signature.")
     }
+
+    val actualPayerAddress = (appBuilder.payer?.removeHexPrefix()
+        ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else proposerAddress.removeHexPrefix())).orEmpty()
+
+    val authorizers = when {
+        appBuilder.isBridgePayer -> listOf(proposerAddress.removeHexPrefix(), actualPayerAddress)
+        appBuilder.authorizers.isNullOrEmpty() -> listOf(proposerAddress.removeHexPrefix())
+        else -> appBuilder.authorizers?.map { it.removeHexPrefix() } ?: listOf(proposerAddress.removeHexPrefix())
+    }.distinct() // Ensure authorizers are distinct
+
+    logd(TAG, "prepareAndSignWithMultiSignature: proposer=$proposerAddress, payer=$actualPayerAddress, authorizers=$authorizers")
+    logd(TAG, "prepareAndSignWithMultiSignature: KMM Signers for buildAndSign (${kmmSigners.size}): ${kmmSigners.joinToString { it.address + "-" + it.keyIndex }}")
+
+    // Use Flow KMM's TransactionBuilder and its buildAndSign() method
+    return org.onflow.flow.models.TransactionBuilder(
+        script = appBuilder.script.orEmpty(),
+        arguments = appBuilder.arguments,
+        gasLimit = com.ionspin.kotlin.bignum.integer.BigInteger.fromLong(appBuilder.limit?.toLong() ?: 9999L)
+    ).apply {
+        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix())
+        withPayer(actualPayerAddress)
+        withProposalKey(
+            address = proposerAddress.removeHexPrefix(),
+            keyIndex = designatedProposalKey.index.toInt(),
+            sequenceNumber = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(designatedProposalKey.sequenceNumber.toInt())
+        )
+        withAuthorizers(authorizers)
+        withSigners(kmmSigners) // Pass all KMM-compatible signers
+    }.buildAndSign()
 }
 
 suspend fun Transaction.send(): Transaction {
     logd(TAG, "Sending transaction: $this")
 
-    val result = FlowCadenceApi.sendTransaction(this)
-    logd(TAG, "Received transaction result (pending): $result")
+    val submittedTxId: String = try {
+        // This call might throw MissingFieldException if KMM SDK tries to parse
+        // the Access Node's POST /transactions response as a full Transaction object.
+        val responseTransaction = FlowCadenceApi.sendTransaction(this)
+        responseTransaction.id ?: throw RuntimeException("Transaction ID was null in response from sendTransaction. Full response: $responseTransaction")
+    } catch (e: kotlinx.serialization.MissingFieldException) {
+        logd(TAG, "MissingFieldException while parsing sendTransaction response. This indicates KMM SDK may not expect the Access Node's response format for POST /transactions. The transaction might have succeeded or failed with the node. The original error from the node, if any, is often in the cause or message.")
+        // The actual error from the node (like "invalid signature") is often in e.cause's message.
+        val rawErrorMessage = e.cause?.message ?: e.message ?: "Unknown error during sendTransaction response parsing"
 
-    return result.id?.let { id ->
-        // Wait until the transaction is SEALED or EXPIRED before fetching the full payload
-        val seal = FlowCadenceApi.waitForSeal(id)
-        logd(TAG, "Transaction sealed. Status=${seal.status}, Execution=${seal.execution}")
+        if (rawErrorMessage.contains(""""code": 400""") && rawErrorMessage.contains("invalid signature")) {
+            throw RuntimeException("Flow Access Node rejected transaction: Invalid Signature. Raw response: $rawErrorMessage", e)
+        }
+        
+        // Attempt to gracefully handle by extracting ID if possible, otherwise rethrow a more informative error.
+        // This is speculative, as the transaction might have failed.
+        // A more robust solution would involve FlowCadenceApi.sendTransaction returning a dedicated response type.
+        loge(TAG, "Transaction submission status uncertain due to response parsing error. Raw error: $rawErrorMessage")
+        throw RuntimeException("Failed to parse Flow Access Node response after sending transaction. The transaction may or may not have been processed. Raw error: $rawErrorMessage", e)
+        
+    } catch (e: RuntimeException) {
+        // Catch other runtime exceptions, specifically looking for the "invalid signature" message
+        // that might be directly thrown if KMM's error handling passes it through.
+        if (e.message?.contains("Invalid Flow argument: invalid transaction: invalid signature") == true) {
+            logd(TAG, "Transaction rejected by Flow Access Node: Invalid Signature. Details: ${e.message}")
+            // Re-throw with a clear message, keeping the cause
+            throw RuntimeException("Flow Access Node rejected transaction: Invalid Signature. Details: ${e.message}", e)
+        }
+        // Re-throw other RuntimeExceptions
+        throw e
+    }
 
-        logd(TAG, "Fetching full transaction $id after seal")
-        val tx = FlowCadenceApi.getTransaction(id)
-        logd(TAG, "Retrieved full transaction: $tx")
-        tx
-    } ?: throw RuntimeException("Failed to get transaction ID")
+    logd(TAG, "Transaction submitted or ID extracted, assumed ID: $submittedTxId")
+
+    // Wait for seal using the extracted ID
+    val seal = FlowCadenceApi.waitForSeal(submittedTxId)
+    logd(TAG, "Transaction sealed. Status=${seal.status}, Execution=${seal.execution}")
+
+    logd(TAG, "Fetching full transaction $submittedTxId after seal")
+    // Fetch the canonical transaction details from the network
+    val fullTx = FlowCadenceApi.getTransaction(submittedTxId)
+    logd(TAG, "Retrieved full transaction: $fullTx")
+    return fullTx
 }
 
 suspend fun Transaction.waitForSeal(): TransactionResult {
     return FlowCadenceApi.waitForSeal(id ?: throw RuntimeException("Transaction has no ID"))
-}
-
-suspend fun Transaction.addLocalSignatures(): Transaction {
-    val account = FlowCadenceApi.getAccount(proposalKey.address)
-    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-        ?: throw RuntimeException("get crypto provider error")
-    logd("Transaction", "Current CryptoProvider: ${cryptoProvider::class.java.name}")
-    val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
-    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
-    logd(TAG, providerPublicKey)
-
-    // Flow may store public keys **without** the uncompressed "04" prefix, while
-    // crypto providers (especially P-256) often return them *with* that prefix.
-    // If a direct match fails, we therefore also try matching after removing
-    // the leading 0x04 byte.
-
-    val providerPubRaw = providerPublicKey.removeHexPrefix().lowercase()
-    // If the key is an uncompressed 65-byte SEC1 encoded key (starts with 0x04),
-    // drop that first byte (2 hex chars) to compare with the 64-byte on-chain
-    // representation.
-    val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) {
-        providerPubRaw.substring(2)
-    } else {
-        providerPubRaw
-    }
-
-    val currentKey = accountKeys.findLast { accKey ->
-        val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
-        accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
-    } ?: throw InvalidKeyException("Get account key error")
-
-    val signer = createSigner(
-        address = proposalKey.address,
-        keyIndex = currentKey.index.toInt(),
-        signer = cryptoProvider.getSigner()
-    )
-
-    return signPayload(listOf(signer))
 }
 
 suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
@@ -334,13 +413,17 @@ suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
         accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
     } ?: throw InvalidKeyException("Get account key error for envelope signature: Provider key $providerPublicKey not found on account ${account.address}")
 
-    val signer = createSigner(
-        address = payer,
-        keyIndex = currentKey.index.toInt(),
-        signer = cryptoProvider.getSigner()
-    )
+    // Determine the correct hashing algorithm for the key being used for the envelope
+    val keyOnChainHashingAlgorithm = currentKey.hashingAlgorithm
+    logd(TAG, "Using KMM hashing algorithm ${keyOnChainHashingAlgorithm.name} for local envelope signature for key index ${currentKey.index}")
 
-    return signEnvelope(listOf(signer))
+    val kmmSigner: org.onflow.flow.models.Signer = cryptoProvider.getSigner(keyOnChainHashingAlgorithm).apply {
+        // `this` here refers to the KMM Signer returned by getSigner
+        this.address = payer // Payer of the transaction is the address for this envelope signature
+        this.keyIndex = currentKey.index.toInt()
+    }
+
+    return signEnvelope(listOf(kmmSigner))
 }
 
 suspend fun Transaction.buildPayerSignable(): PayerSignable? {
@@ -415,30 +498,6 @@ suspend fun Transaction.buildBridgeFeePayerSignable(): PayerSignable? {
     )
 }
 
-/**
- * fix: java.security.NoSuchAlgorithmException: no such algorithm: ECDSA for provider BC
- */
-fun updateSecurityProvider() {
-    // Web3j will set up the provider lazily when it's first used.
-    val provider: Provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) ?: return
-    if (provider.javaClass == BouncyCastleProvider::class.java) {
-        // BC with same package name, shouldn't happen in real life.
-        return
-    }
-    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
-    Security.insertProviderAt(BouncyCastleProvider(), 1)
-}
-
-/**
- * fix: java.security.NoSuchProviderException: no such provider: BC
- */
-fun checkSecurityProvider() {
-    val provider = Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)
-    if (provider == null) {
-        Security.insertProviderAt(BouncyCastleProvider(), 1)
-    }
-}
-
 private fun String.ensureHexFormat(): String {
     return if (startsWith("0x")) this else "0x$this"
 }
@@ -448,29 +507,38 @@ private fun String.removeHexPrefix(): String {
 }
 
 suspend fun prepare(builder: TransactionBuilder): Transaction {
-    logd(TAG, "prepare builder:$builder")
+    // Log inputs from the app-level TransactionBuilder first
+    logd(TAG, "--- prepare() called by sendTransaction/sendBridgeTransaction ---")
+    logd(TAG, "App-level builder input - scriptId: ${builder.scriptId}")
+    logd(TAG, "App-level builder input - script content: [${builder.script?.take(100)?.replace("\n", "<NL>")}...]") // Log first 100 chars of script
+    logd(TAG, "App-level builder input - arguments (${builder.arguments.size}): ${builder.arguments.map { it.getTypeName() + ":" + it.value?.toString()?.take(60) }}")
+    logd(TAG, "App-level builder input - walletAddress: ${builder.walletAddress}")
+    logd(TAG, "App-level builder input - payer: ${builder.payer}")
+    logd(TAG, "App-level builder input - limit: ${builder.limit}")
+
+    // Get wallet address and account info
     val walletAddress = builder.walletAddress?.toAddress().orEmpty()
+    logd(TAG, "prepare target walletAddress (from builder.walletAddress): $walletAddress")
     
     val flowAccount = FlowCadenceApi.getAccount(walletAddress)
 
     val currentNetworkName = chainNetWorkString()
     logd(TAG, "Current network for account lookup: $currentNetworkName. Target transaction address: $walletAddress")
 
+    // Find local account instance
     val localAccountInstance = AccountManager.list().find { acc ->
-        // Use the new extension function to get the account's address for the current network
-        val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress() // Normalize for comparison
+        val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress()
         logd(TAG, "Iterating AccountManager.list(): Checking local account '${acc.userInfo.username}', its address for $currentNetworkName is '$accFlowAddress'")
         accFlowAddress == walletAddress
-    }
-
-    if (localAccountInstance == null) {
-        throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
-    }
+    } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
 
     logd(TAG, "Successfully found local account ${localAccountInstance.userInfo.username} for address $walletAddress. Generating CryptoProvider.")
+    
+    // Get crypto provider
     val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
         ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username} (address $walletAddress)")
     
+    // Get account keys and find matching key
     val accountKeys = flowAccount.keys ?: throw InvalidKeyException("On-chain account $walletAddress has no keys")
     logd(TAG, "On-chain keys for $walletAddress: $accountKeys")
     logd(TAG, "Provider public key from local account ${localAccountInstance.userInfo.username} (for $walletAddress): ${cryptoProvider.getPublicKey()}")
@@ -494,8 +562,13 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         "not found among on-chain keys for $walletAddress: ${accountKeys.map { it.publicKey + " (raw: " + it.publicKey.removeHexPrefix().lowercase() + ")" } }"
     )
 
-    logd(TAG, "Found matching key for $walletAddress on-chain: index ${currentKey.index}, seqNo ${currentKey.sequenceNumber}")
+    logd(TAG, "Found matching key for $walletAddress on-chain: index ${currentKey.index}, seqNo ${currentKey.sequenceNumber}, hashAlgo: ${currentKey.hashingAlgorithm.name}")
 
+    // Determine the correct hashing algorithm from the on-chain key
+    val keyOnChainHashingAlgorithm = currentKey.hashingAlgorithm // This is org.onflow.flow.models.HashingAlgorithm
+    logd(TAG, "Using KMM hashing algorithm ${keyOnChainHashingAlgorithm.name} for key ${currentKey.index} on account $walletAddress")
+
+    // Determine payer and authorizers
     val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
     val authorizers = when {
         builder.isBridgePayer -> {
@@ -509,78 +582,50 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
         }
     }
 
+    // Get reference block ID
     val referenceBlockId = FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix()
     val script = builder.script.orEmpty()
-    
-    val arguments = builder.arguments
-    logd(TAG, "Flow KMM arguments from builder: $arguments")
-    logd(TAG, "Arguments to be passed to KMM TransactionBuilder: size=${arguments.size}, content=$arguments")
-    
-    val gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
+    logd(TAG, "Cadence script for TransactionBuilder: $script")
 
-    val localSigner = createSigner(
-        address = flowAccount.address.removeHexPrefix(),
-        keyIndex = currentKey.index.toInt(),
-        signer = cryptoProvider.getSigner()
-    )
+    // Log each argument and its encoded form
+    logd(TAG, "--- Verifying argument encoding before passing to KMM TransactionBuilder ---")
+    builder.arguments.forEachIndexed { index, arg ->
+        val encodedValue = try {
+            arg.encode()
+        } catch (e: Exception) {
+            loge(TAG, "ERROR encoding argument $index  value: ${arg.value}): ${e.message}")
+            "ERROR_ENCODING"
+        }
+        logd(TAG, "Arg $index: , Value=${arg.value}, EncodedForm='${encodedValue}'")
+        if (encodedValue.isEmpty()) {
+            logd(TAG, "CRITICAL: Argument $index  encoded to an EMPTY STRING!")
+        }
+    }
+    logd(TAG, "--- End of argument encoding verification ---")
 
-    val signedTransaction = TransactionBuilder(
+    // Get the KMM Signer directly, configured with the correct hashing algorithm
+    val kmmSigner = cryptoProvider.getSigner(keyOnChainHashingAlgorithm).apply {
+        this.address = flowAccount.address.removeHexPrefix()
+        this.keyIndex = currentKey.index.toInt()
+    }
+
+    // Use Flow KMM's TransactionBuilder and its buildAndSign() method
+    logd(TAG, "Building transaction using Flow KMM TransactionBuilder and buildAndSign()")
+    return org.onflow.flow.models.TransactionBuilder(
         script = script,
-        arguments = arguments,
-        gasLimit = gasLimit
+        arguments = builder.arguments,
+        gasLimit = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(builder.limit!!)
     ).apply {
         withReferenceBlockId(referenceBlockId)
         withPayer(payer)
         withProposalKey(
             address = flowAccount.address.removeHexPrefix(),
             keyIndex = currentKey.index.toInt(),
-            sequenceNumber = BigInteger.fromInt(currentKey.sequenceNumber.toInt())
+            sequenceNumber = com.ionspin.kotlin.bignum.integer.BigInteger.fromInt(currentKey.sequenceNumber.toInt())
         )
         withAuthorizers(authorizers)
-        withSigners(listOf(localSigner))
+        withSigners(listOf(kmmSigner)) // Pass the KMM-compatible signer
     }.buildAndSign()
-    
-    logd(TAG, "Built and signed transaction: $signedTransaction")
-    return signedTransaction
-}
-
-suspend fun prepareWithMultiSignature(
-    walletAddress: String,
-    restoreProposalKey: AccountPublicKey,
-    builder: TransactionBuilder
-): Transaction {
-    logd(TAG, "prepare builder:$builder")
-
-    val payer = builder.payer?.removeHexPrefix() ?: (if (isGasFree()) AppConfig.payer().address.removeHexPrefix() else builder.walletAddress?.removeHexPrefix()).orEmpty()
-    val authorizers = when {
-        builder.isBridgePayer -> {
-            // For bridge payer transactions, we need both the proposer and payer as authorizers
-            listOf(walletAddress.removeHexPrefix(), payer)
-        }
-        builder.authorizers.isNullOrEmpty() -> {
-            listOf(walletAddress.removeHexPrefix())
-        }
-        else -> {
-            builder.authorizers?.map { it.removeHexPrefix() } ?: listOf(walletAddress.removeHexPrefix())
-        }
-    }
-
-    // Note: For multi-signature transactions, we still build without signing
-    // since the signers will be added separately in sendTransactionWithMultiSignature
-    return TransactionBuilder(
-        script = builder.script.orEmpty(),
-        arguments = builder.arguments,
-        gasLimit = BigInteger.fromLong(builder.limit?.toLong() ?: 9999L)
-    ).apply {
-        withReferenceBlockId(FlowCadenceApi.getBlockHeader(null).id.removeHexPrefix())
-        withPayer(payer)
-        withProposalKey(
-            address = walletAddress.removeHexPrefix(),
-            keyIndex = restoreProposalKey.index.toInt(),
-            sequenceNumber = BigInteger.fromInt(restoreProposalKey.sequenceNumber.toInt())
-        )
-        withAuthorizers(authorizers)
-    }.build()
 }
 
 suspend fun Transaction.addFreeGasEnvelope(): Transaction {

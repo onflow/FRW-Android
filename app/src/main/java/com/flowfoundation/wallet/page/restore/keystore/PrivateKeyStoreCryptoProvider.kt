@@ -65,19 +65,17 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         return signatureBytes.joinToString("") { String.format("%02x", it) } 
     }
 
-    override fun getSigner(): Signer {
-        return object : Signer {
+    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        return object : org.onflow.flow.models.Signer {
             override var address: String = keyInfo.get("address").asString
             override var keyIndex: Int = keyInfo.get("keyId").asInt
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                // Use the already loaded privateKey and determined signing/hashing algorithms
-                return privateKey.sign(bytes, signingAlgorithm, getHashAlgorithm())
+                return privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                // Use the already loaded privateKey and determined signing/hashing algorithms
-                return privateKey.sign(bytes, signingAlgorithm, getHashAlgorithm())
+                return privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
         }
     }

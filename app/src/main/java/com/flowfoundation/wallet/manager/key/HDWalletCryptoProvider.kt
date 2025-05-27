@@ -32,17 +32,17 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
         return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
     }
 
-    override fun getSigner(): Signer {
-        return object : Signer {
+    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256)
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
             }
         }
     }

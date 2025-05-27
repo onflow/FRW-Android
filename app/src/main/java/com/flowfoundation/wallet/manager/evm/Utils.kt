@@ -29,6 +29,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import org.onflow.flow.models.FlowAddress
+import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.bytesToHex
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
@@ -195,7 +196,7 @@ suspend fun signTypedData(data: ByteArray): String {
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
     val signableData = DomainTag.USER_DOMAIN_TAG + data
-    val sign = cryptoProvider.getSigner().sign(signableData)
+    val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA3_256).sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
 
@@ -215,7 +216,7 @@ suspend fun signEthereumMessage(message: String): String {
 
     val hashedData = hashPersonalMessage(message.toByteArray())
     val signableData = DomainTag.USER_DOMAIN_TAG + hashedData
-    val sign = cryptoProvider.getSigner().sign(signableData)
+    val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA3_256).sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
 

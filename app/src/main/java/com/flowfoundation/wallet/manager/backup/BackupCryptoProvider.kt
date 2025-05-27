@@ -67,17 +67,17 @@ class BackupCryptoProvider(
      * Get a Signer implementation for transaction signing
      * @return Signer implementation
      */
-    override fun getSigner(): Signer {
-        return object : Signer {
+    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, signingAlgorithm, HashingAlgorithm.SHA3_256)
+                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, signingAlgorithm, HashingAlgorithm.SHA3_256)
+                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
         }
     }
