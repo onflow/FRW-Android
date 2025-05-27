@@ -47,20 +47,13 @@ import retrofit2.HttpException
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.wallet.WalletFactory
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
 import com.flowfoundation.wallet.manager.wallet.walletAddress
-import com.flowfoundation.wallet.network.model.BlockchainData
-import com.flowfoundation.wallet.network.model.WalletData
-import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.utils.logd
 import com.nftco.flow.sdk.HashAlgorithm
 import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
 import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 
@@ -127,8 +120,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 logd("KeyStoreRestoreViewModel", "Initialized WalletManager")
 
                 // Get public keys and format them correctly
-                val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
+                val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
                 logd("KeyStoreRestoreViewModel", "Generated public keys - P256: $p1PublicKey, K1: $k1PublicKey")
 
                 if (address.isEmpty()) {

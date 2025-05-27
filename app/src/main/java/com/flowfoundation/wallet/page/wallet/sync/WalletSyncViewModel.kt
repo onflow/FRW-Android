@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.wallet.sync
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowChainId
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import com.reown.sign.client.Sign
@@ -13,6 +12,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import org.onflow.flow.ChainId
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.suspendCoroutine
 
@@ -30,7 +30,7 @@ class WalletSyncViewModel : ViewModel() {
                 return@viewModelIOScope
             }
             loge(WalletSyncViewModel::class.java.simpleName, "paringURI::${uri}")
-            val drawable = uri?.toQRDrawable(withScale = true)
+            val drawable = uri.toQRDrawable(withScale = true)
             qrCodeLiveData.postValue(drawable)
         }
     }
@@ -40,8 +40,8 @@ class WalletSyncViewModel : ViewModel() {
         val namespaces = mapOf(
             "flow" to Sign.Model.Namespace.Proposal(
                 chains = listOf("flow:${
-                    if (isTestnet()) FlowChainId.TESTNET 
-                    else FlowChainId.MAINNET}"),
+                    if (isTestnet()) ChainId.Testnet 
+                    else ChainId.Mainnet}"),
                 methods = WalletConnectMethod.entries.map { it.value },
                 events = listOf("chainChanged", "accountsChanged"),
             )
