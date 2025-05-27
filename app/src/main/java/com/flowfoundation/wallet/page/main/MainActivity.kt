@@ -81,8 +81,8 @@ class MainActivity : BaseActivity() {
 
     private fun configurationInstabugBugReport() {
         BugReporting.setOnInvokeCallback {
-            DebugViewerDataSource.generateDebugMessageFile(this)?.let {
-                Instabug.addFileAttachment(it, "log.txt")
+            DebugViewerDataSource.generateDebugZipFile(this)?.let {
+                Instabug.addFileAttachment(it, "log.zip")
             }
             BugReporting.setOnDismissCallback { _, _ ->
                 Instabug.clearFileAttachment()
