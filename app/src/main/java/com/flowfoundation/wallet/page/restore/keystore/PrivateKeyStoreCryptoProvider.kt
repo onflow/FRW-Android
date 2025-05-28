@@ -121,12 +121,12 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: signAsUser() called - TRUSTWALLET CORE ***") 
-                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.User.bytes)
+                return signWithDomain(bytes, DomainTag.User.bytes)
             }
             
             override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: signAsTransaction() called - TRUSTWALLET CORE ***")
-                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.Transaction.bytes)
+                return signWithDomain(bytes, DomainTag.Transaction.bytes)
             }
         }
     }

@@ -19,7 +19,6 @@ import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
-import org.onflow.flow.models.HashingAlgorithm
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.onflow.flow.models.*
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -394,36 +393,98 @@ suspend fun Transaction.waitForSeal(): TransactionResult {
 }
 
 suspend fun Transaction.addLocalEnvelopeSignatures(): Transaction {
-    val account = FlowCadenceApi.getAccount(payer)
+    // `this` is the transaction object.
+    // It has `this.payer`, `this.proposalKey.address`, and `this.proposalKey.keyIndex`.
+
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-        ?: throw RuntimeException("get account error")
-    val accountKeys = account.keys ?: throw InvalidKeyException("Account has no keys")
-    val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
-    logd(TAG, "Provider public key for envelope: $providerPublicKey")
+        ?: throw RuntimeException("Current crypto provider is null for local envelope signing.")
 
-    val providerPubRaw = providerPublicKey.removeHexPrefix().lowercase()
-    val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) {
-        providerPubRaw.substring(2)
+    val signingAddress = this.payer // The envelope is signed by the payer.
+    val keyIndexForSigning: Int
+    val hashingAlgorithmForSigning: org.onflow.flow.models.HashingAlgorithm
+
+    logd(TAG, "addLocalEnvelopeSignatures: Tx Payer=${this.payer}, Tx ProposalAddress=${this.proposalKey.address}, Tx ProposalKeyIndex=${this.proposalKey.keyIndex}")
+
+    // Check if the payer of this transaction is also its proposer.
+    // In non-gas-free scenarios, this should typically be true.
+    if (this.payer.removeHexPrefix().equals(this.proposalKey.address.removeHexPrefix(), ignoreCase = true)) {
+        // Payer is the Proposer. The envelope signature MUST cover the transaction's designated proposal key.
+        keyIndexForSigning = this.proposalKey.keyIndex
+        logd(TAG, "Payer is Proposer. Using tx.proposalKey.keyIndex ($keyIndexForSigning) for envelope signature.")
+
+        // Verify that the current cryptoProvider can actually sign for this specific proposal key index
+        // on the payer's (proposer's) account, and get its hashing algorithm.
+        val payerAccount = FlowCadenceApi.getAccount(this.payer) // Payer is proposer here
+        val payerAccountKeys = payerAccount.keys
+            ?: throw InvalidKeyException("Payer account ${this.payer} has no keys for proposal key verification.")
+
+        val targetProposalKeyOnAccount = payerAccountKeys.find { it.index.toInt() == keyIndexForSigning }
+            ?: throw InvalidKeyException(
+                "Transaction's proposal key (index $keyIndexForSigning) not found on payer/proposer account ${this.payer}. " +
+                "On-chain keys: ${payerAccountKeys.joinToString { accKey -> "idx:${accKey.index} pub:${accKey.publicKey.take(10)}..." }}"
+            )
+
+        // Compare the current app crypto provider's public key with the on-chain public key of the target proposal key.
+        val providerPublicKeyFromApp = cryptoProvider.getPublicKey().ensureHexFormat()
+        val providerPubRawLower = providerPublicKeyFromApp.removeHexPrefix().lowercase()
+        // KMM AccountKey.publicKey is raw (no 0x) and for P256, often without the leading "04".
+        // Provider's key might have "04" if it's uncompressed P256.
+        val providerPubStrippedLower = if (providerPubRawLower.startsWith("04") && providerPubRawLower.length == 130) {
+            providerPubRawLower.substring(2)
+        } else {
+            providerPubRawLower
+        }
+
+        val onChainProposalKeyPubRawLower = targetProposalKeyOnAccount.publicKey.lowercase() // KMM stores it raw
+
+        val providerMatchesTargetKey = (onChainProposalKeyPubRawLower == providerPubRawLower ||
+                                        onChainProposalKeyPubRawLower == providerPubStrippedLower)
+
+        if (!providerMatchesTargetKey) {
+            throw InvalidKeyException(
+                "Current crypto provider (pubKey raw: $providerPubRawLower, stripped: $providerPubStrippedLower) does not match the public key " +
+                "of the transaction's proposal key (account: ${this.payer}, keyIndex: $keyIndexForSigning, on-chain pubKey raw: $onChainProposalKeyPubRawLower). " +
+                "Cannot sign envelope for proposal key."
+            )
+        }
+        hashingAlgorithmForSigning = targetProposalKeyOnAccount.hashingAlgorithm
+        logd(TAG, "Verified current provider can sign for tx.proposalKey. Using on-chain hashing algorithm: ${hashingAlgorithmForSigning.name}")
+
     } else {
-        providerPubRaw
+        // Payer is different from Proposer.
+        // This is an unusual state for addLocalEnvelopeSignatures if isGasFree() is false,
+        // as it implies an external, non-gas-station entity is paying, but we're trying to sign with the local user's key.
+        // This branch is kept for structural completeness but might indicate a misconfiguration if hit in a typical local-payer flow.
+        logd(TAG, "Payer (${this.payer}) is different from Proposer (${this.proposalKey.address}) in addLocalEnvelopeSignatures. This is unusual for a non-gas-free transaction.")
+        logd(TAG, "Attempting to find current local provider's key on the specified payer's account (${this.payer}).")
+
+        val externalPayerAccount = FlowCadenceApi.getAccount(this.payer)
+        val externalPayerAccountKeys = externalPayerAccount.keys ?: throw InvalidKeyException("Specified payer account ${this.payer} has no keys.")
+        val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
+        val providerPubRaw = providerPublicKey.removeHexPrefix().lowercase()
+        val providerPubStripped = if (providerPubRaw.startsWith("04") && providerPubRaw.length == 130) providerPubRaw.substring(2) else providerPubRaw
+
+        val currentLocalProvidersKeyOnExternalPayerAccount = externalPayerAccountKeys.findLast { accKey ->
+            val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
+            accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
+        } ?: throw InvalidKeyException("Current local crypto provider's key ($providerPublicKey) not found on the specified (external) payer account ${this.payer}.")
+
+        keyIndexForSigning = currentLocalProvidersKeyOnExternalPayerAccount.index.toInt()
+        hashingAlgorithmForSigning = currentLocalProvidersKeyOnExternalPayerAccount.hashingAlgorithm
+        logd(TAG, "Found current local provider's key on the specified payer account ${this.payer}: keyIndex=$keyIndexForSigning, hashAlgo=${hashingAlgorithmForSigning.name}")
     }
 
-    val currentKey = accountKeys.findLast { accKey ->
-        val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
-        accPubRaw == providerPubRaw || accPubRaw == providerPubStripped
-    } ?: throw InvalidKeyException("Get account key error for envelope signature: Provider key $providerPublicKey not found on account ${account.address}")
+    logd(TAG, "Final KMM Signer for local envelope: address=${signingAddress.removeHexPrefix()}, keyIndex=$keyIndexForSigning, hashAlgo=${hashingAlgorithmForSigning.name}")
 
-    // Determine the correct hashing algorithm for the key being used for the envelope
-    val keyOnChainHashingAlgorithm = currentKey.hashingAlgorithm
-    logd(TAG, "Using KMM hashing algorithm ${keyOnChainHashingAlgorithm.name} for local envelope signature for key index ${currentKey.index}")
-
-    val kmmSigner: org.onflow.flow.models.Signer = cryptoProvider.getSigner(keyOnChainHashingAlgorithm).apply {
-        // `this` here refers to the KMM Signer returned by getSigner
-        this.address = payer // Payer of the transaction is the address for this envelope signature
-        this.keyIndex = currentKey.index.toInt()
+    val kmmSigner: org.onflow.flow.models.Signer = cryptoProvider.getSigner(hashingAlgorithmForSigning).apply {
+        this.address = signingAddress.removeHexPrefix() // Payer address
+        this.keyIndex = keyIndexForSigning
     }
 
-    return signEnvelope(listOf(kmmSigner))
+    // This will sign the envelope. If the KMM SDK's signEnvelope clears payload signatures,
+    // this envelope signature (now correctly targeted at the proposalKey if payer==proposer)
+    // will be the one covering the proposal requirement.
+    return this.signEnvelope(listOf(kmmSigner))
 }
 
 suspend fun Transaction.buildPayerSignable(): PayerSignable? {

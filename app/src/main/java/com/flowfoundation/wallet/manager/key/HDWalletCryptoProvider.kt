@@ -38,13 +38,29 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
+                return signRawBytes(bytes, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
+                return signRawBytes(bytes, hashingAlgorithm)
+            }
+            
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
+                return seedPhraseKey.sign(domain + bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
+            }
+            
+            override suspend fun signAsUser(bytes: ByteArray): ByteArray {
+                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.User.bytes)
+            }
+            
+            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
+                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.Transaction.bytes)
             }
         }
+    }
+
+    private suspend fun signRawBytes(hashedData: ByteArray, hashingAlgorithm: HashingAlgorithm): ByteArray {
+        return seedPhraseKey.signHash(hashedData, SigningAlgorithm.ECDSA_P256)
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {

@@ -79,7 +79,7 @@ class BackupCryptoProvider(
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "KMM Signer.sign(transaction, bytes) called")
+                logd("BackupCryptoProvider", "KMM Signer.sign(transaction, bytes) called - FIXED NO DOUBLE HASH")
                 logd("BackupCryptoProvider", "  Address: $address")
                 logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
                 logd("BackupCryptoProvider", "  Transaction: ${transaction?.id ?: "null"}")
@@ -87,24 +87,59 @@ class BackupCryptoProvider(
                 logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
                 logd("BackupCryptoProvider", "  Using hashing algorithm: $hashingAlgorithm")
                 
-                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                // CRITICAL FIX: bytes are already hashed by KMM SDK, sign them directly
+                val signature = signRawBytes(bytes, hashingAlgorithm)
                 logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
                 return signature
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "KMM Signer.sign(bytes) called")
+                logd("BackupCryptoProvider", "KMM Signer.sign(bytes) called - FIXED NO DOUBLE HASH")
                 logd("BackupCryptoProvider", "  Address: $address")
                 logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
                 logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
                 logd("BackupCryptoProvider", "  Using hashing algorithm: $hashingAlgorithm")
                 
-                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                // CRITICAL FIX: bytes are already hashed by KMM SDK, sign them directly
+                val signature = signRawBytes(bytes, hashingAlgorithm)
                 logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
                 return signature
             }
+            
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
+                logd("BackupCryptoProvider", "KMM Signer.signWithDomain() called")
+                logd("BackupCryptoProvider", "  Domain: ${domain.take(32).joinToString("") { "%02x".format(it) }}...")
+                logd("BackupCryptoProvider", "  Bytes: ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
+                // For domain signing, we need to hash the domain + bytes combination
+                return seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
+            }
+            
+            override suspend fun signAsUser(bytes: ByteArray): ByteArray {
+                logd("BackupCryptoProvider", "KMM Signer.signAsUser() called")
+                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.User.bytes)
+            }
+            
+            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
+                logd("BackupCryptoProvider", "KMM Signer.signAsTransaction() called")
+                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.Transaction.bytes)
+            }
         }
+    }
+
+    /**
+     * Sign raw bytes without additional hashing (for KMM SDK transaction signing)
+     * The bytes are already hashed by the KMM SDK
+     */
+    private suspend fun signRawBytes(hashedData: ByteArray, hashingAlgorithm: HashingAlgorithm): ByteArray {
+        logd("BackupCryptoProvider", "[BACKUP] signRawBytes() - input is already hashed (${hashedData.size} bytes): ${hashedData.take(32).joinToString("") { "%02x".format(it) }}...")
+        logd("BackupCryptoProvider", "[BACKUP] Using signAlgo: $signingAlgorithm with SeedPhraseKey.signHash()")
+        
+        // Use the new signHash method from SeedPhraseKey to sign already-hashed data
+        val signature = seedPhraseKey.signHash(hashedData, signingAlgorithm)
+        
+        logd("BackupCryptoProvider", "[BACKUP] signRawBytes() result (${signature.size} bytes): ${signature.joinToString("") { "%02x".format(it) }}")
+        return signature
     }
 
     /**
