@@ -53,6 +53,10 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
             title1.text = R.string.transaction_to.res2String()
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
             nameView.text = data.title
+            ivClose.setOnClickListener {
+                approveCallback?.invoke(false)
+                dismiss()
+            }
             actionButton.setOnProcessing {
                 approveCallback?.invoke(true)
                 dismiss()

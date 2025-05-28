@@ -29,7 +29,6 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.utils.toast
 import kotlinx.coroutines.withTimeoutOrNull
 
-
 private val TAG = WalletConnect::class.java.simpleName
 
 private const val projectId = BuildConfig.WALLET_CONNECT_PROJECT_ID
@@ -65,12 +64,16 @@ class WalletConnect {
                 }
 
                 isInitialized()
-            } ?: false
+            } == true
         }
         return true
     }
 
     fun pair(uri: String) {
+        if (!CoreClient.Pairing.validatePairingUri(uri)) {
+            logd(TAG, "Invalid pairing URI: $uri")
+            return
+        }
         if (pairingInProgress) {
             logd(TAG, "Pairing already in progress, ignoring new pairing request")
             return
@@ -109,7 +112,7 @@ class WalletConnect {
                     loge(e)
                     // Continue with pairing anyway
                 }
-                
+
                 // Add a short delay to ensure cleanup has time to complete
                 delay(500)
 

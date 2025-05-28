@@ -1,7 +1,6 @@
 package com.flowfoundation.wallet.page.browser.widgets
 
 import android.annotation.SuppressLint
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -11,8 +10,8 @@ import android.text.SpannableString
 import android.text.style.UnderlineSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.ValueCallback
 import android.webkit.WebResourceError
@@ -20,16 +19,16 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.ColorInt
+import com.crowdin.platform.Crowdin
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.evm.loadInitJS
 import com.flowfoundation.wallet.manager.evm.loadProviderJS
-import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFilePicker
-import com.flowfoundation.wallet.page.component.deeplinking.getWalletConnectUri
+import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
+import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
@@ -41,7 +40,6 @@ import com.flowfoundation.wallet.widgets.webview.JS_QUERY_WINDOW_COLOR
 import com.flowfoundation.wallet.widgets.webview.JsInterface
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.executeJs
-import java.net.URISyntaxException
 
 @SuppressLint("SetJavaScriptEnabled")
 class LilicoWebView : WebView {
@@ -55,16 +53,16 @@ class LilicoWebView : WebView {
 
     private var blockedUrl: String? = null
 
-    constructor(context: Context) : super(context) {
+    constructor(context: Context) : super(Crowdin.wrapContext(context)) {
         initWebView()
     }
 
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(context: Context, attrs: AttributeSet?) : super(Crowdin.wrapContext(context), attrs) {
         initWebView()
     }
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
+        Crowdin.wrapContext(context),
         attrs,
         defStyleAttr
     ) {
@@ -77,7 +75,7 @@ class LilicoWebView : WebView {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-
+        
         // Disable hardware acceleration for this WebView to prevent some layout issues
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         initBlockedViewLayout()
@@ -126,8 +124,7 @@ class LilicoWebView : WebView {
                     }
                 }
 
-                blockedViewLayout = LayoutInflater.from(context)
-                    .inflate(R.layout.layout_blocked_view, parent, false)
+                blockedViewLayout = LayoutInflater.from(context).inflate(R.layout.layout_blocked_view, parent, false)
 
                 val layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -274,71 +271,44 @@ class LilicoWebView : WebView {
             request: WebResourceRequest?
         ): Boolean {
             isLoading = true
-            request?.url?.let {
-                logd(TAG, "shouldOverrideUrlLoading URL: $it, scheme: ${it.scheme}")
 
-                if (it.scheme == "wc") {
-                    logd(TAG, "Handling WalletConnect URI")
-                    WalletConnect.get().pair(it.toString())
-                    return true
-                } else if ((it.scheme == "frw" || it.scheme == "fcw") && it.path?.startsWith("/wc") == true) {
-                    logd(TAG, "Handling ${it.scheme}://wc URI")
-                    val uri = getWalletConnectUri(it)
-                    uri?.let { wcUri ->
-                        WalletConnect.get().pair(wcUri)
-                    }
-                    return true
-                } else if (it.scheme == "intent") {
-                    return try {
-                        logd(TAG, "Handling Intent URI")
-                        val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
-                        if (intent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(intent)
-                        }
-                        true
-                    } catch (e: URISyntaxException) {
-                        e.printStackTrace()
-                        false
-                    }
-                } else if (it.scheme == "tg") {
-                    val openTg = Intent(Intent.ACTION_VIEW, it)
-                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // Handle null request or URL
+            if (request?.url == null) {
+                logd(TAG, "shouldOverrideUrlLoading: Request or URL is null")
+                return super.shouldOverrideUrlLoading(view, request)
+            }
 
-                    try {
-                        context.startActivity(openTg)
-                    } catch (e: Exception) {
-                        Toast.makeText(context, R.string.telegram_not_installed, Toast.LENGTH_SHORT).show()
-                    }
+            val uri = request.url
+            logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
 
-                    // Stop the WebView navigation to avoid looping
-                    view?.stopLoading()
-                    view?.clearHistory()
-                    return true
-                } else if (it.host == "link.lilico.app" || it.host == "frw-link.lilico.app" || it
-                        .host == "fcw-link.lilico.app" || it.host == "link.wallet.flow.com"
-                ) {
-                    logd(TAG, "Handling wallet link URI")
-                    safeRun {
-                        val wcUri = getWalletConnectUri(it)
-                        wcUri?.let { uri ->
-                            logd(TAG, "Wallet Connect URI: $uri")
-                            WalletConnect.get().pair(uri)
-                        }
-                    }
-                    return true
-                } else if (it.toString() == "about:blank#blocked") {
-                    return true
-                }
-                uiScope {
-                    if (BlockManager.isBlocked(it.toString())) {
-                        logd(TAG, "URL blocked: $url")
-                        showBlockedViewLayout(it.toString())
-                        loadUrl("about:blank#blocked")
-                        isLoading = false
-                        return@uiScope
-                    }
+            // Check if it's an about:blank#blocked URL (internal for blocked pages)
+            if (uri.toString() == "about:blank#blocked") {
+                return true
+            }
+
+            // Check if URL is blocked - this must be done on UI thread
+            uiScope {
+                if (BlockManager.isBlocked(uri.toString())) {
+                    logd(TAG, "URL blocked: $uri")
+                    showBlockedViewLayout(uri.toString())
+                    loadUrl("about:blank#blocked")
+                    isLoading = false
                 }
             }
+
+            // Process URI with UriHandler
+            val handled = UriHandler.processUri(context, uri)
+            if (handled) {
+                // If URI was handled by UriHandler, stop WebView navigation
+                view?.stopLoading()
+                if (uri.scheme == DeepLinkScheme.TG.scheme) {
+                    // For Telegram URLs, also clear history to avoid loops
+                    view?.clearHistory()
+                }
+                return true
+            }
+
+            // If the URL wasn't handled by our custom handlers, let WebView handle it
             return super.shouldOverrideUrlLoading(view, request)
         }
     }

@@ -12,6 +12,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.google.gson.annotations.SerializedName
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
+import com.reown.sign.client.utils.generateApprovedNamespaces
 
 private const val TAG = "WalletConnectUtils"
 private const val ETHEREUM_NETWORK = "eip155"
@@ -26,8 +27,19 @@ fun Sign.Model.SessionProposal.approveSession() {
     namespaces.putAll(optionalNamespaces.map { item ->
         pair(item)
     }.toMap())
+
     logd(TAG, "approveSession: $namespaces")
-    SignClient.approveSession(Sign.Params.Approve(proposerPublicKey, namespaces)) { error -> loge(error.throwable) }
+
+    val sessionNamespaces = generateApprovedNamespaces(this, namespaces)
+
+    SignClient.approveSession(
+        Sign.Params.Approve(
+            proposerPublicKey = proposerPublicKey,
+            namespaces = sessionNamespaces
+        )
+    ) { error ->
+        loge(error.throwable)
+    }
 }
 
 private fun pair(
