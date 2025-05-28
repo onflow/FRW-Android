@@ -136,6 +136,7 @@ private class AddressActionDialog(
             }
             with(create()) {
                 dialog = this
+                window?.setBackgroundDrawableResource(R.color.background)
                 show()
             }
         }
