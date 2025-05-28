@@ -105,16 +105,16 @@ class WalletConnect {
                 }
                 
                 // Clean up all active sessions before pairing
-//                try {
-//                    cleanupActiveSessions()
-//                } catch (e: Exception) {
-//                    loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
-//                    loge(e)
-//                    // Continue with pairing anyway
-//                }
-//
-//                // Add a short delay to ensure cleanup has time to complete
-//                delay(500)
+                try {
+                    cleanupActiveSessions()
+                } catch (e: Exception) {
+                    loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
+                    loge(e)
+                    // Continue with pairing anyway
+                }
+
+                // Add a short delay to ensure cleanup has time to complete
+                delay(500)
 
                 logd(TAG, "CoreClient.Relay isConnectionAvailable: ${isConnectionAvailable.value}")
                 
