@@ -75,7 +75,7 @@ class LilicoWebView : WebView {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-
+        
         // Disable hardware acceleration for this WebView to prevent some layout issues
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         initBlockedViewLayout()
@@ -124,8 +124,7 @@ class LilicoWebView : WebView {
                     }
                 }
 
-                blockedViewLayout = LayoutInflater.from(context)
-                    .inflate(R.layout.layout_blocked_view, parent, false)
+                blockedViewLayout = LayoutInflater.from(context).inflate(R.layout.layout_blocked_view, parent, false)
 
                 val layoutParams = FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -272,13 +271,13 @@ class LilicoWebView : WebView {
             request: WebResourceRequest?
         ): Boolean {
             isLoading = true
-            
+
             // Handle null request or URL
             if (request?.url == null) {
                 logd(TAG, "shouldOverrideUrlLoading: Request or URL is null")
                 return super.shouldOverrideUrlLoading(view, request)
             }
-            
+
             val uri = request.url
             logd(TAG, "shouldOverrideUrlLoading URL: $uri, scheme: ${uri.scheme}")
 
@@ -286,7 +285,7 @@ class LilicoWebView : WebView {
             if (uri.toString() == "about:blank#blocked") {
                 return true
             }
-            
+
             // Check if URL is blocked - this must be done on UI thread
             uiScope {
                 if (BlockManager.isBlocked(uri.toString())) {
@@ -296,7 +295,7 @@ class LilicoWebView : WebView {
                     isLoading = false
                 }
             }
-            
+
             // Process URI with UriHandler
             val handled = UriHandler.processUri(context, uri)
             if (handled) {
@@ -308,7 +307,7 @@ class LilicoWebView : WebView {
                 }
                 return true
             }
-            
+
             // If the URL wasn't handled by our custom handlers, let WebView handle it
             return super.shouldOverrideUrlLoading(view, request)
         }

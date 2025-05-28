@@ -13,8 +13,6 @@ import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
-import com.flowfoundation.wallet.utils.Env
-import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -28,8 +26,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 private const val TAG = "DeepLinkingDispatch"
 
