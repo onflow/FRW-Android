@@ -23,7 +23,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
 
     private val binding by lazy { LayoutKeyListItemBinding.bind(view) }
 
-    private var isExpanded = false
+    private var isExpanded = true
 
     @SuppressLint("SetTextI18n")
     override fun bind(model: AccountKey) {
@@ -83,6 +83,12 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             cvTitleCard.setOnClickListener {
                 toggleContent()
             }
+            if (model.revoked || model.isRevoking) {
+                srlSwipeLayout.setLockDrag(true)
+                srlSwipeLayout.close(false)
+            } else {
+                srlSwipeLayout.setLockDrag(false)
+            }
             tvRevoke.setOnClickListener {
                 if (model.isCurrentDevice) {
                     toast(msgRes = R.string.can_not_revoke)
@@ -106,7 +112,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
     private fun toggleContent() {
         isExpanded = isExpanded.not()
         with(binding) {
-            fbToggle.setImageResource(if(isExpanded) {
+            fbToggle.setImageResource(if (isExpanded) {
                 R.drawable.ic_key_list_collapse
             } else {
                 R.drawable.ic_key_list_expand
