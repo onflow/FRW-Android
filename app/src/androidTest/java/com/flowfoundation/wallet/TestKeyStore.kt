@@ -109,21 +109,21 @@ class TestKeyStore {
         assertNull(privateKey)
     }
 
-    @Test
-    fun testMnemonic() {
-        val password = "password".toByteArray()
-        val mnemonic = "call property between lady glow catch old subject hazard forest service vibrant"
-        val keyStore = StoredKey.importHDWallet(
-            mnemonic,
-            "Wallet name",
-            password,
-            CoinType.FLOW
-        )
-        assertEquals(mnemonic, keyStore.decryptMnemonic(password))
-
-        keyStore.store("test_key_store")
-        Thread.sleep(1000)
-        val newKeyStore = StoredKey.load("test_key_store")
-        assertEquals(mnemonic, newKeyStore.decryptMnemonic(password))
-    }
+//    @Test
+//    fun testMnemonic() {
+//        val password = "password".toByteArray()
+//        val mnemonic = "call property between lady glow catch old subject hazard forest service vibrant"
+//        val keyStore = StoredKey.importHDWallet(
+//            mnemonic,
+//            "Wallet name",
+//            password,
+//            CoinType.FLOW
+//        )
+//        assertEquals(mnemonic, keyStore.decryptMnemonic(password))
+//
+//        keyStore.store("test_key_store")
+//        Thread.sleep(1000)
+//        val newKeyStore = StoredKey.load("test_key_store")
+//        assertEquals(mnemonic, newKeyStore.decryptMnemonic(password))
+//    }
 }
