@@ -4,7 +4,6 @@ import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
-import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 
 class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
@@ -38,11 +37,11 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return signRawBytes(bytes, hashingAlgorithm)
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return signRawBytes(bytes, hashingAlgorithm)
+                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
             }
             
             override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
@@ -50,17 +49,13 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
             }
             
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
-                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.User.bytes)
+                return signWithDomain(bytes, DomainTag.User.bytes)
             }
             
             override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
-                return signWithDomain(bytes, org.onflow.flow.models.DomainTag.Transaction.bytes)
+                return signWithDomain(bytes, DomainTag.Transaction.bytes)
             }
         }
-    }
-
-    private suspend fun signRawBytes(hashedData: ByteArray, hashingAlgorithm: HashingAlgorithm): ByteArray {
-        return seedPhraseKey.signHash(hashedData, SigningAlgorithm.ECDSA_P256)
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
