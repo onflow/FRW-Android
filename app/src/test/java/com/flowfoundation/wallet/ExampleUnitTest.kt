@@ -1,7 +1,9 @@
 package com.flowfoundation.wallet
 
-import com.nftco.flow.sdk.Flow
-import com.nftco.flow.sdk.simpleFlowScript
+import kotlinx.coroutines.runBlocking
+import org.onflow.flow.ChainId
+import org.onflow.flow.FlowApi
+import org.onflow.flow.infrastructure.Cadence
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -12,30 +14,24 @@ import org.junit.Test
  */
 class ExampleUnitTest {
     @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
-    }
-
-    @Test
     fun testScript() {
         println("===========> method: testScript()")
-        val accessApi = Flow.newAccessApi(HOST_TESTNET, 9000)
-        println("===========> start ping")
-        accessApi.ping()
-        println("===========> end ping")
-        val response = accessApi.simpleFlowScript {
-            script {
-                """
+        val api = FlowApi(ChainId.Testnet)
+        println("===========> start script execution")
+        
+        runBlocking {
+            val response = api.executeScript(
+                script = """
                     access(all) fun main(): String {
                         return "Hello World"
                     }
-                """
-            }
+                """.trimIndent()
+            )
+            println("===========> response: ${response}")
+            
+            // The response should be a Cadence String value
+            val stringValue = response as Cadence.Value.StringValue
+            assertEquals("Hello World", stringValue.value)
         }
-        println("===========> response:${response}")
-    }
-
-    companion object{
-        const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
     }
 }

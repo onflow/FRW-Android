@@ -1,13 +1,13 @@
 package com.flowfoundation.wallet.utils
 
 import android.util.Log
+import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.analytics.reportErrorToDebugView
 import com.flowfoundation.wallet.firebase.analytics.reportException
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.instabug.library.logging.InstabugLog
 import com.instabug.library.Instabug
-import com.nftco.flow.sdk.FlowException
 import retrofit2.HttpException
 
 private const val MAX_LOG_LENGTH = 3500
@@ -54,7 +54,7 @@ fun reportCadenceErrorToDebugView(cadence: String, throwable: Throwable?) {
     val params = mapOf(
         "cadence" to cadence,
         "message" to throwable?.message.orEmpty(),
-        "cause" to (throwable as? FlowException)?.cause.toString()
+        "cause" to (throwable as? WalletError)?.cause.toString()
     )
     DebugViewerDataSource.error(title, params.toString())
 }

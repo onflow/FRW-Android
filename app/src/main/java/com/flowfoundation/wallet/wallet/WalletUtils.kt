@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.wallet
 
-import com.nftco.flow.sdk.DomainTag.normalize
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
@@ -13,6 +12,7 @@ import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flow.wallet.errors.WalletError
 import org.onflow.flow.ChainId
+import org.onflow.flow.models.DomainTag
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 
@@ -61,7 +61,7 @@ fun getKeyWallet(): KeyWallet {
     }
 }
 
-suspend fun sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user")): String {
+suspend fun sign(text: String, domainTag: ByteArray = DomainTag.User.bytes): String {
     return try {
         getKeyWallet()
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
@@ -73,23 +73,6 @@ suspend fun sign(text: String, domainTag: ByteArray = normalize("FLOW-V0.0-user"
         ""
     } catch (e: Exception) {
         loge("WalletUtils", "Unexpected error signing text: ${e.message}")
-        ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
-        ""
-    }
-}
-
-suspend fun signData(data: ByteArray): String {
-    return try {
-        getKeyWallet()
-        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-            ?: throw WalletError.InitHDWalletFailed
-        cryptoProvider.signData(data)
-    } catch (e: WalletError) {
-        loge("WalletUtils", "Failed to sign data: ${e.message}")
-        ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
-        ""
-    } catch (e: Exception) {
-        loge("WalletUtils", "Unexpected error signing data: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.UNEXPECTED_ERROR, e)
         ""
     }

@@ -22,12 +22,12 @@ import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.cadence.toJsonElement
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.onflow.flow.infrastructure.toJsonElement
+import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.bytesToHex
@@ -195,7 +195,7 @@ suspend fun signTypedData(data: ByteArray): String {
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
-    val signableData = DomainTag.USER_DOMAIN_TAG + data
+    val signableData = DomainTag.User.bytes + data
     val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA3_256).sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
@@ -215,7 +215,7 @@ suspend fun signEthereumMessage(message: String): String {
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
     val hashedData = hashPersonalMessage(message.toByteArray())
-    val signableData = DomainTag.USER_DOMAIN_TAG + hashedData
+    val signableData = DomainTag.User.bytes + hashedData
     val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA3_256).sign(signableData)
     val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
     val encoded = RlpEncoder.encode(rlpList)
