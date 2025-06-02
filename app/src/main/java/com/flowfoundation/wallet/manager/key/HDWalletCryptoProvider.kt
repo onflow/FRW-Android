@@ -6,7 +6,11 @@ import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 
-class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoProvider {
+class HDWalletCryptoProvider(
+    private val seedPhraseKey: SeedPhraseKey,
+    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_P256,
+    private val hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA2_256
+) : CryptoProvider {
 
     fun getMnemonic(): String {
         return seedPhraseKey.mnemonic.joinToString(" ")
@@ -14,12 +18,12 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
+        return seedPhraseKey.publicKey(signingAlgorithm)?.toHexString() ?: ""
     }
 
     @OptIn(ExperimentalStdlibApi::class)
     fun getPrivateKey(): String {
-        return seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
+        return seedPhraseKey.privateKey(signingAlgorithm)?.toHexString() ?: ""
     }
 
     override suspend fun getUserSignature(jwt: String): String {
@@ -28,7 +32,7 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
 
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
-        return seedPhraseKey.sign(data, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).toHexString()
+        return seedPhraseKey.sign(data, signingAlgorithm, hashingAlgorithm).toHexString()
     }
 
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
@@ -37,15 +41,15 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
+                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
+                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
             }
             
             override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
-                return seedPhraseKey.sign(domain + bytes, SigningAlgorithm.ECDSA_P256, hashingAlgorithm)
+                return seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
             }
             
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
@@ -59,11 +63,11 @@ class HDWalletCryptoProvider(private val seedPhraseKey: SeedPhraseKey) : CryptoP
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
-        return HashingAlgorithm.SHA3_256
+        return hashingAlgorithm
     }
 
     override fun getSignatureAlgorithm(): SigningAlgorithm {
-        return SigningAlgorithm.ECDSA_P256
+        return signingAlgorithm
     }
 
     override fun getKeyWeight(): Int {

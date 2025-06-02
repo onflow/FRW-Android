@@ -73,7 +73,6 @@ import java.util.zip.GZIPInputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import org.onflow.flow.models.Transaction
-import com.ionspin.kotlin.bignum.integer.BigInteger
 import com.ionspin.kotlin.bignum.integer.toBigInteger
 
 private const val TAG = "WalletConnectRequestDispatcher"
