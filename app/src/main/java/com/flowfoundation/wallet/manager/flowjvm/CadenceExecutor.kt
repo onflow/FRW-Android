@@ -503,7 +503,7 @@ suspend fun cadenceQueryCOATokenBalance(): BigDecimal? {
 suspend fun cadenceFundFlowToCOAAccount(amount: BigDecimal): String? {
     logd(TAG, "cadenceFundFlowToCOAAccount()")
     val transactionId = CadenceScript.CADENCE_FUND_COA_FLOW_BALANCE.transactionByMainWallet {
-        arg { ufix64Safe(amount) }
+        arg { Cadence.ufix64(amount.toDouble()) }
     }
     logd(TAG, "cadenceFundFlowToCOAAccount() transactionId:$transactionId")
     return transactionId
