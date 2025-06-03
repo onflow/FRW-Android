@@ -46,17 +46,18 @@ class PrivateKeyCryptoProvider(
         logd(TAG, "signData called. dataSize=${data.size} bytes, signAlgo=$signingAlgorithm, hashAlgo=$effectiveHashingAlgorithm")
         val signatureBytes = privateKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm)
         
+        // NOTE: Recovery ID trimming now handled in Flow-Wallet-Kit PrivateKey.sign()
         // Remove recovery ID if present (Flow expects 64-byte signatures)
-        val finalSignature = if (signatureBytes.size == 65) {
-            logd(TAG, "Removing recovery ID from 65-byte signature")
-            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-        } else {
-            logd(TAG, "Using signature as-is (${signatureBytes.size} bytes)")
-            signatureBytes
-        }
+        // val finalSignature = if (signatureBytes.size == 65) {
+        //     logd(TAG, "Removing recovery ID from 65-byte signature")
+        //     signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        // } else {
+        //     logd(TAG, "Using signature as-is (${signatureBytes.size} bytes)")
+        //     signatureBytes
+        // }
         
-        logd(TAG, "Final signature generated. size=${finalSignature.size} bytes")
-        return finalSignature.toHexString()
+        logd(TAG, "Signature generated. size=${signatureBytes.size} bytes")
+        return signatureBytes.toHexString()
     }
 
     /**
@@ -81,17 +82,18 @@ class PrivateKeyCryptoProvider(
                 
                 val signatureBytes = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
                 
+                // NOTE: Recovery ID trimming now handled in Flow-Wallet-Kit PrivateKey.sign()
                 // Remove recovery ID if present (Flow expects 64-byte signatures)
-                val finalSignature = if (signatureBytes.size == 65) {
-                    logd("PrivateKeyCryptoProvider", "  Removing recovery ID from 65-byte signature")
-                    signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-                } else {
-                    logd("PrivateKeyCryptoProvider", "  Using signature as-is (${signatureBytes.size} bytes)")
-                    signatureBytes
-                }
+                // val finalSignature = if (signatureBytes.size == 65) {
+                //     logd("PrivateKeyCryptoProvider", "  Removing recovery ID from 65-byte signature")
+                //     signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                // } else {
+                //     logd("PrivateKeyCryptoProvider", "  Using signature as-is (${signatureBytes.size} bytes)")
+                //     signatureBytes
+                // }
                 
-                logd("PrivateKeyCryptoProvider", "  Final signature (${finalSignature.size} bytes): ${finalSignature.take(32).joinToString("") { "%02x".format(it) }}...")
-                return finalSignature
+                logd("PrivateKeyCryptoProvider", "  Generated signature (${signatureBytes.size} bytes): ${signatureBytes.take(32).joinToString("") { "%02x".format(it) }}...")
+                return signatureBytes
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
@@ -104,17 +106,18 @@ class PrivateKeyCryptoProvider(
                 
                 val signatureBytes = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
                 
+                // NOTE: Recovery ID trimming now handled in Flow-Wallet-Kit PrivateKey.sign()
                 // Remove recovery ID if present (Flow expects 64-byte signatures)
-                val finalSignature = if (signatureBytes.size == 65) {
-                    logd("PrivateKeyCryptoProvider", "  Removing recovery ID from 65-byte signature")
-                    signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-                } else {
-                    logd("PrivateKeyCryptoProvider", "  Using signature as-is (${signatureBytes.size} bytes)")
-                    signatureBytes
-                }
+                // val finalSignature = if (signatureBytes.size == 65) {
+                //     logd("PrivateKeyCryptoProvider", "  Removing recovery ID from 65-byte signature")
+                //     signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                // } else {
+                //     logd("PrivateKeyCryptoProvider", "  Using signature as-is (${signatureBytes.size} bytes)")
+                //     signatureBytes
+                // }
                 
-                logd("PrivateKeyCryptoProvider", "  Final signature (${finalSignature.size} bytes): ${finalSignature.take(32).joinToString("") { "%02x".format(it) }}...")
-                return finalSignature
+                logd("PrivateKeyCryptoProvider", "  Generated signature (${signatureBytes.size} bytes): ${signatureBytes.take(32).joinToString("") { "%02x".format(it) }}...")
+                return signatureBytes
             }
             
             override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
