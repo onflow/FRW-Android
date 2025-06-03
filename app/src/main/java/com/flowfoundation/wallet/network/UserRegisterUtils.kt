@@ -58,6 +58,11 @@ import org.onflow.flow.models.SigningAlgorithm
 import com.google.common.io.BaseEncoding
 import org.onflow.flow.models.HashingAlgorithm
 import kotlinx.coroutines.runBlocking
+import com.flow.wallet.crypto.BIP39
+import com.flowfoundation.wallet.utils.readWalletPassword
+import com.flowfoundation.wallet.utils.storeWalletPassword
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 private const val TAG = "UserRegisterUtils"
 
@@ -246,6 +251,25 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
     val storage = FileSystemStorage(baseDir)
     
     try {
+        // Generate and store mnemonic globally for seed phrase backup support
+        val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
+        logd(TAG, "Generated new 12-word mnemonic for backup support")
+        
+        val passwordMap = try {
+            val pref = readWalletPassword()
+            if (pref.isBlank()) {
+                HashMap<String, String>()
+            } else {
+                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+            }
+        } catch (e: Exception) {
+            HashMap<String, String>()
+        }
+        
+        // Store mnemonic globally (this will make it accessible via Wallet.store().mnemonic())
+        storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
+        logd(TAG, "Stored mnemonic globally for backup support")
+        
         // Create a new private key
         val privateKey = PrivateKey.create(storage)
         logd(TAG, "Created new private key for registration")
