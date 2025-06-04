@@ -5,9 +5,12 @@ import android.view.View
 import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentWalletCreateUsernameBinding
+import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.landing.LandingActivity
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -15,6 +18,11 @@ import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.uiScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class WalletCreateUsernamePresenter(
     private val fragment: Fragment,
@@ -83,8 +91,29 @@ class WalletCreateUsernamePresenter(
 
     private fun onCreateUserCallback(isSuccess: Boolean) {
         if (isSuccess) {
-            MixpanelManager.accountCreationStart()
-            LandingActivity.launch(binding.root.context)
+            fragment.lifecycleScope.launch {
+                var validJwt = false
+                var retryCount = 0
+                val maxRetries = 5
+
+                while (!validJwt && retryCount < maxRetries) {
+                    val jwt = getFirebaseJwt(true)
+                    validJwt = jwt.isNotEmpty() && isUserSignIn()
+                    if (!validJwt) {
+                        delay(500)
+                        retryCount++
+                    }
+                }
+                uiScope {
+                    if (validJwt) {
+                        MixpanelManager.accountCreationStart()
+                        LandingActivity.launch(binding.root.context)
+                    } else {
+                        toast(R.string.register_error)
+                        binding.nextButton.setProgressVisible(false)
+                    }
+                }
+            }
         } else {
             binding.nextButton.setProgressVisible(false)
         }
