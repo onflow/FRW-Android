@@ -83,7 +83,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             cvTitleCard.setOnClickListener {
                 toggleContent()
             }
-            if (model.revoked || model.isRevoking) {
+            if (model.revoked || model.isRevoking || model.isCurrentDevice) {
                 srlSwipeLayout.setLockDrag(true)
                 srlSwipeLayout.close(false)
             } else {

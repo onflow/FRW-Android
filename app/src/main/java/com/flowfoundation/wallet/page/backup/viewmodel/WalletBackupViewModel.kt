@@ -57,6 +57,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 return@viewModelIOScope
             }
             val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
+            val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
             uiScope {
                 val keys = account?.keys ?: emptyList()
                 val keyList = backupKeyList.mapNotNull { info ->
@@ -65,7 +66,8 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             BackupKey(
                                 it.id,
                                 info,
-                                isRevoking = false
+                                isRevoking = false,
+                                isCurrentKey = info.pubKey.publicKey == currentKey
                             )
                         }
                 }
