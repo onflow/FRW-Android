@@ -26,6 +26,8 @@ class WalletSyncViewModel : ViewModel() {
             val uri = try {
                 wcFetchPairUriInternal()
             } catch (e: Exception) {
+                loge(WalletSyncViewModel::class.java.simpleName, "Failed to fetch pairing URI: ${e.message}")
+                loge(e)
                 qrCodeLiveData.postValue(null)
                 return@viewModelIOScope
             }
@@ -39,9 +41,7 @@ class WalletSyncViewModel : ViewModel() {
         val atomicReference = AtomicReference(continuation)
         val namespaces = mapOf(
             "flow" to Sign.Model.Namespace.Proposal(
-                chains = listOf("flow:${
-                    if (isTestnet()) ChainId.Testnet 
-                    else ChainId.Mainnet}"),
+                chains = listOf(if (isTestnet()) "flow:testnet" else "flow:mainnet"),
                 methods = WalletConnectMethod.entries.map { it.value },
                 events = listOf("chainChanged", "accountsChanged"),
             )
