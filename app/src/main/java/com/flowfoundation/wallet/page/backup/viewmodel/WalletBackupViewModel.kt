@@ -172,16 +172,6 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 } ?: emptyList()
                 logd(TAG, "Key device list size: ${keyDeviceList.size}")
 
-                // Log all device keys to understand the mapping
-                logd(TAG, "=== ALL DEVICE KEYS FROM API ===")
-                keyDeviceList.forEachIndexed { index, keyDevice ->
-                    logd(
-                        TAG,
-                        "  [$index] Device ID: '${keyDevice.device?.id}', PubKey: '${keyDevice.pubKey.publicKey}'"
-                    )
-                }
-                logd(TAG, "=== END DEVICE KEYS ===")
-
                 val account = FlowAddress(
                     WalletManager.wallet()?.walletAddress().orEmpty()
                 ).lastBlockAccount()
@@ -193,12 +183,6 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                     logd(TAG, "Processing device: ${device.id}")
 
                     if (deviceKey != null) {
-                        logd(
-                            TAG,
-                            "  Found device key - API pubKey: '${deviceKey.pubKey.publicKey}'"
-                        )
-                        logd(TAG, "  Device key belongs to device ID: '${deviceKey.device?.id}'")
-
                         val unRevokedDevice = keys.firstOrNull { accountKey ->
                             val accountPubKey = accountKey.publicKey.removePrefix("0x")
                             val devicePubKey = deviceKey.pubKey.publicKey.removePrefix("0x")
@@ -228,16 +212,8 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             )
 
                             val keyId = if (isSameKeyAsCurrentDevice) {
-                                logd(
-                                    TAG,
-                                    "    🔑 Same key as current device - setting keyId to null but keeping in list"
-                                )
                                 null
                             } else {
-                                logd(
-                                    TAG,
-                                    "    ✅ Different key - adding device to list with keyId: ${unRevokedDevice.index}"
-                                )
                                 unRevokedDevice.index.toInt()
                             }
 
