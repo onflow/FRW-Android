@@ -3,13 +3,19 @@ package com.flowfoundation.wallet.manager.account
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.WalletListData
+import com.flowfoundation.wallet.network.model.WalletData
+import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flow.wallet.Network
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import kotlinx.coroutines.delay
+import org.onflow.flow.ChainId
 import java.lang.ref.WeakReference
 import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
@@ -25,21 +31,56 @@ object WalletFetcher {
 
     fun fetch() {
         ioScope {
-//            WalletManager.wallet()?.let { dispatchListeners(it) }
             var dataReceived = false
             var firstAttempt = true
             var timer: Timer? = null
             while (!dataReceived) {
                 delay(5000)
                 runCatching {
-                    val resp = apiService.getWalletList()
-
-                    // request success & wallet list is empty (wallet not create finish)
-                    if (resp.status == 200 && !resp.data?.walletAddress().isNullOrBlank()) {
-                        AccountManager.updateWalletInfo(resp.data!!)
+                    // Get current user's public key from crypto provider
+                    val currentAccount = AccountManager.get()
+                    val cryptoProvider = currentAccount?.let { 
+                        CryptoProviderManager.generateAccountCryptoProvider(it)
+                    }
+                    
+                    if (cryptoProvider == null) {
+                        logd(TAG, "No crypto provider available, cannot fetch wallet using key indexer")
+                        return@runCatching
+                    }
+                    
+                    val publicKey = cryptoProvider.getPublicKey()
+                    val chainId = when (chainNetWorkString()) {
+                        "mainnet" -> ChainId.Mainnet
+                        "testnet" -> ChainId.Testnet
+                        else -> ChainId.Mainnet
+                    }
+                    
+                    logd(TAG, "Fetching wallet using key indexer for public key: $publicKey")
+                    
+                    // Use key indexer to find accounts
+                    val keyIndexerResponse = Network.findAccount(publicKey, chainId)
+                    
+                    if (keyIndexerResponse.accounts.isNotEmpty()) {
+                        // Convert key indexer response to WalletListData format for compatibility
+                        val account = keyIndexerResponse.accounts.first()
+                        val blockchainData = BlockchainData(
+                            address = account.address,
+                            chainId = chainNetWorkString()
+                        )
+                        val walletData = WalletData(
+                            blockchain = listOf(blockchainData),
+                            name = "Flow Wallet"
+                        )
+                        val walletListData = WalletListData(
+                            id = currentAccount?.userInfo?.username ?: "user",
+                            username = currentAccount?.userInfo?.username ?: "user",
+                            wallets = listOf(walletData)
+                        )
+                        
+                        AccountManager.updateWalletInfo(walletListData)
                         EVMWalletManager.updateEVMAddress()
                         delay(300)
-                        dispatchListeners(resp.data)
+                        dispatchListeners(walletListData)
                         dataReceived = true
                         timer?.cancel()
                         timer = null
@@ -53,6 +94,7 @@ object WalletFetcher {
                         firstAttempt = false
                     }
                 }.onFailure {
+                    logd(TAG, "Key indexer fetch failed: ${it.message}")
                     ErrorReporter.reportWithMixpanel(WalletError.FETCH_FAILED, it)
                 }
             }

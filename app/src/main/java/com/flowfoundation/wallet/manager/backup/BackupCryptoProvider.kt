@@ -64,7 +64,19 @@ class BackupCryptoProvider(
         // Use the dynamically determined hashing algorithm if available,
         // otherwise fall back to the provider's default
         val effectiveHashingAlgorithm = hashingAlgorithm ?: getHashAlgorithm()
-        return seedPhraseKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm).toHexString()
+        val signatureBytes = seedPhraseKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm)
+        
+        // Recovery ID trimming - ensure consistency with other providers
+        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+        val finalSignature = if (signatureBytes.size == 65) {
+            logd("BackupCryptoProvider", "Trimming recovery ID from 65-byte signature for $signingAlgorithm")
+            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        } else {
+            logd("BackupCryptoProvider", "Using signature as-is (${signatureBytes.size} bytes)")
+            signatureBytes
+        }
+        
+        return finalSignature.toHexString()
     }
 
     /**

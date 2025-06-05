@@ -22,9 +22,6 @@ interface ApiService {
     @POST("/retoken")
     suspend fun uploadPushToken(@Body token: Map<String, String>): CommonResponse
 
-    @GET("/v2/user/wallet")
-    suspend fun getWalletList(): WalletListResponse
-
     @GET("/v1/user/manualaddress")
     suspend fun manualAddress(): CommonResponse
 

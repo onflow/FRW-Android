@@ -47,6 +47,7 @@ import retrofit2.HttpException
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
@@ -651,18 +652,26 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                         val userInfo = service.userInfo().data
                                         logd("KeyStoreRestoreViewModel", "Got user info: $userInfo")
 
-                                        logd("KeyStoreRestoreViewModel", "Getting wallet list")
-                                        val walletListResponse = service.getWalletList()
-                                        logd("KeyStoreRestoreViewModel", "Got wallet list: $walletListResponse")
+                                        // Use key indexer instead of deprecated getWalletList()
+                                        logd("KeyStoreRestoreViewModel", "Using key indexer to find wallet address")
+                                        val publicKey = formattedPublicKey.removePrefix("0x")
+                                        val chainId = when (chainNetWorkString()) {
+                                            "mainnet" -> ChainId.Mainnet
+                                            "testnet" -> ChainId.Testnet
+                                            else -> ChainId.Mainnet
+                                        }
+                                        
+                                        val keyIndexerResponse = com.flow.wallet.Network.findAccount(publicKey, chainId)
+                                        logd("KeyStoreRestoreViewModel", "Key indexer response: $keyIndexerResponse")
 
-                                        finalWalletAddress = walletListResponse.data?.walletAddress()
+                                        finalWalletAddress = keyIndexerResponse.accounts.firstOrNull()?.address
 
                                         if (finalWalletAddress.isNullOrBlank()) {
-                                            logd("KeyStoreRestoreViewModel", "WARNING: No wallet address found in wallet list after login.")
+                                            logd("KeyStoreRestoreViewModel", "WARNING: No wallet address found in key indexer after login.")
                                             loginProcessCallback.invoke(false)
                                             return@ioScope
                                         }
-                                        logd("KeyStoreRestoreViewModel", "Wallet address from list: '$finalWalletAddress'")
+                                        logd("KeyStoreRestoreViewModel", "Wallet address from key indexer: '$finalWalletAddress'")
 
                                         var determinedKeyId = 0
                                         var determinedWeight = 1000

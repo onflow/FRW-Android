@@ -32,7 +32,17 @@ class HDWalletCryptoProvider(
 
     @OptIn(ExperimentalStdlibApi::class)
     override suspend fun signData(data: ByteArray): String {
-        return seedPhraseKey.sign(data, signingAlgorithm, hashingAlgorithm).toHexString()
+        val signatureBytes = seedPhraseKey.sign(data, signingAlgorithm, hashingAlgorithm)
+        
+        // Recovery ID trimming - ensure consistency with other providers
+        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+        val finalSignature = if (signatureBytes.size == 65) {
+            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        } else {
+            signatureBytes
+        }
+        
+        return finalSignature.toHexString()
     }
 
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {

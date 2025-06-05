@@ -40,6 +40,59 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
 
     init {
         logd(TAG, "Init keystore provider. signAlgo=${keyInfo.get("signAlgo").asInt}, hashAlgo=${keyInfo.get("hashAlgo").asInt}, address=${keyInfo.get("address").asString}")
+        logd(TAG, "KeyStore info details:")
+        logd(TAG, "  Address: ${keyInfo.get("address").asString}")
+        logd(TAG, "  Public Key (from keystore): ${keyInfo.get("publicKey").asString}")
+        logd(TAG, "  Private Key length: ${keyInfo.get("privateKey").asString.length}")
+        logd(TAG, "  Sign Algorithm: ${keyInfo.get("signAlgo").asInt} -> $signingAlgorithm")
+        logd(TAG, "  Hash Algorithm: ${keyInfo.get("hashAlgo").asInt}")
+        logd(TAG, "  Key ID: ${keyInfo.get("keyId").asInt}")
+        logd(TAG, "  Weight: ${keyInfo.get("weight").asInt}")
+        
+        // Verify keystore consistency: check if private key generates the same public key
+        verifyKeystoreConsistency()
+    }
+    
+    private fun verifyKeystoreConsistency() {
+        try {
+            logd(TAG, "=== KEYSTORE CONSISTENCY VERIFICATION ===")
+            val keystorePublicKey = keyInfo.get("publicKey").asString
+            logd(TAG, "Keystore stored public key: $keystorePublicKey")
+            
+            // Get the public key derived from the private key
+            val derivedPublicKey = privateKey.publicKey(signingAlgorithm)?.toHexString()
+            logd(TAG, "Public key derived from private key: $derivedPublicKey")
+            
+            if (derivedPublicKey != null) {
+                val keystoreClean = keystorePublicKey.removePrefix("0x").lowercase()
+                val derivedClean = derivedPublicKey.removePrefix("0x").lowercase()
+                
+                // Handle potential "04" prefix for uncompressed keys
+                val derivedStripped = if (derivedClean.startsWith("04") && derivedClean.length == 130) {
+                    derivedClean.substring(2)
+                } else {
+                    derivedClean
+                }
+                
+                logd(TAG, "Keystore public key (clean): $keystoreClean")
+                logd(TAG, "Derived public key (clean): $derivedClean") 
+                logd(TAG, "Derived public key (stripped): $derivedStripped")
+                
+                val match = keystoreClean == derivedClean || keystoreClean == derivedStripped
+                logd(TAG, "Public key consistency check: ${if (match) "PASS" else "FAIL"}")
+                
+                if (!match) {
+                    logd(TAG, "ERROR: Private key does not generate the public key stored in keystore!")
+                    logd(TAG, "This indicates corrupted keystore data or incorrect key derivation.")
+                }
+            } else {
+                logd(TAG, "ERROR: Could not derive public key from private key")
+            }
+            
+            logd(TAG, "=== END KEYSTORE CONSISTENCY VERIFICATION ===")
+        } catch (e: Exception) {
+            logd(TAG, "Exception during keystore consistency verification: ${e.message}")
+        }
     }
 
     fun getKeyStoreInfo(): String {
@@ -55,18 +108,38 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override fun getPublicKey(): String {
-        return "0x${keyInfo.get("publicKey").asString}"
+        val rawPublicKey = keyInfo.get("publicKey").asString
+        val formattedPublicKey = "0x${rawPublicKey}"
+        logd(TAG, "getPublicKey() -> formatting '$rawPublicKey' to '$formattedPublicKey'")
+        return formattedPublicKey
     }
 
     override suspend fun getUserSignature(jwt: String): String {
+        logd(TAG, "getUserSignature called with JWT length: ${jwt.length}")
         return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
     override suspend fun signData(data: ByteArray): String {
         logd(TAG, "signData called. dataSize=${data.size} bytes, signAlgo=$signingAlgorithm, hashAlgo=${getHashAlgorithm()}")
+        logd(TAG, "Data to sign (first 32 bytes): ${data.take(32).joinToString("") { "%02x".format(it) }}")
+        
         val signatureBytes = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
-        logd(TAG, "Signature generated. size=${signatureBytes.size} bytes")
-        return signatureBytes.joinToString("") { String.format("%02x", it) } 
+        logd(TAG, "Raw signature from privateKey.sign(): size=${signatureBytes.size} bytes")
+        
+        // Recovery ID trimming - ensure consistency with account switching flow
+        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+        val finalSignature = if (signatureBytes.size == 65) {
+            logd(TAG, "Trimming recovery ID from 65-byte signature for $signingAlgorithm")
+            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        } else {
+            logd(TAG, "Using signature as-is (${signatureBytes.size} bytes)")
+            signatureBytes
+        }
+        
+        val hexSignature = finalSignature.joinToString("") { String.format("%02x", it) }
+        logd(TAG, "Final signature generated: $hexSignature")
+        logd(TAG, "Final signature length: ${hexSignature.length} chars (${finalSignature.size} bytes)")
+        return hexSignature
     }
 
     // Helper method for signing raw bytes
@@ -76,8 +149,18 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         
         val result = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
         
-        logd(TAG, "[KEYSTORE] sign() result (${result.size} bytes): ${result.toHexString()}")
-        return result
+        // Recovery ID trimming - ensure consistency with account switching flow
+        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+        val finalResult = if (result.size == 65) {
+            logd(TAG, "[KEYSTORE] Trimming recovery ID from 65-byte signature for $signingAlgorithm")
+            result.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        } else {
+            logd(TAG, "[KEYSTORE] Using signature as-is (${result.size} bytes)")
+            result
+        }
+        
+        logd(TAG, "[KEYSTORE] sign() result (${finalResult.size} bytes): ${finalResult.toHexString()}")
+        return finalResult
     }
 
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {

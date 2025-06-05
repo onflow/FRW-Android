@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.clearUserCache
@@ -33,15 +34,14 @@ import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.getUploadedAddressSet
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.read
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setRegistered
-import com.flowfoundation.wallet.utils.setUploadedAddressSet
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
@@ -49,17 +49,25 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.nftco.flow.sdk.AddressRegistry
+import com.nftco.flow.sdk.FlowAddress
+import com.flow.wallet.CryptoProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
-import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.utils.read
+import com.flowfoundation.wallet.utils.setUploadedAddressSet
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.SigningAlgorithm
 import org.onflow.flow.models.hexToBytes
+import org.onflow.flow.models.toHexString
 
 object AccountManager {
     private val TAG = AccountManager::class.java.simpleName
@@ -501,6 +509,7 @@ object AccountManager {
                     }
                 } else {
                     isSwitching = false
+                    loge(TAG, "Account switch failed, showing error toast")
                     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
                 }
                 logd(TAG, "switch() completed. Current account: $currentAccount")
@@ -525,6 +534,7 @@ object AccountManager {
                     }
                 } else {
                     isSwitching = false
+                    loge(TAG, "LocalSwitchAccount switch failed, showing error toast")
                     toast(msgRes = R.string.resume_login_error, duration = Toast.LENGTH_LONG)
                 }
                 onFinish()
@@ -549,14 +559,77 @@ object AccountManager {
                 callback.invoke(false)
                 return
             }
+            
+            // Debug the CryptoProvider being used
+            logd(TAG, "CryptoProvider details:")
+            logd(TAG, "  Type: ${cryptoProvider.javaClass.simpleName}")
+            logd(TAG, "  Public Key: ${cryptoProvider.getPublicKey()}")
+            logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
+            logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
+            logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
+            
+            // Check what's actually registered on-chain for this account
+            try {
+                verifyOnChainAccount(account, cryptoProvider)
+            } catch (e: Exception) {
+                logd(TAG, "Failed to verify on-chain account: ${e.message}")
+            }
+            
+            // Get JWT with force refresh to avoid token expiration issues
+            val jwt = getFirebaseJwt(true)
+            logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
+            
+            val publicKey = cryptoProvider.getPublicKey()
+            
+            // Debug signature generation step by step
+            logd(TAG, "Starting signature generation...")
+            logd(TAG, "  JWT (first 50 chars): ${jwt.take(50)}...")
+            
+            val signature = cryptoProvider.getUserSignature(jwt)
+            
+            logd(TAG, "Signature generation completed:")
+            logd(TAG, "  Generated signature: $signature")
+            logd(TAG, "  Signature length: ${signature.length} chars (${signature.length / 2} bytes)")
+            
+            val accountKey = AccountKey(
+                publicKey = publicKey,
+                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+            )
+            
+            logd(TAG, "Account switch request details:")
+            logd(TAG, "  Public Key: $publicKey")
+            logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
+            logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
+            logd(TAG, "  Signature length: ${signature.length}")
+            logd(TAG, "  Account: ${account.userInfo.username} (${account.wallet?.walletAddress()})")
+            
+            // Validate signature locally for debugging
+            validateSignatureLocally(cryptoProvider, jwt, signature)
+            
+            // Check public key format
+            val originalPublicKey = publicKey
+            val cleanPublicKey = publicKey.removePrefix("0x")
+            logd(TAG, "Public key validation:")
+            logd(TAG, "  Original: $originalPublicKey")
+            logd(TAG, "  Clean (no 0x): $cleanPublicKey")
+            logd(TAG, "  Length: ${cleanPublicKey.length} characters (${cleanPublicKey.length / 2} bytes)")
+            
+            // For ECDSA_secp256k1, public key should be 64 bytes (128 hex chars) without 0x prefix
+            val expectedLength = when (cryptoProvider.getSignatureAlgorithm()) {
+                SigningAlgorithm.ECDSA_secp256k1 -> 128
+                SigningAlgorithm.ECDSA_P256 -> 128
+                else -> -1
+            }
+            
+            if (expectedLength > 0 && cleanPublicKey.length != expectedLength) {
+                loge(TAG, "Public key length mismatch: expected $expectedLength, got ${cleanPublicKey.length}")
+            }
+            
             val resp = service.login(
                 LoginRequest(
-                    signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                    accountKey = AccountKey(
-                        publicKey = cryptoProvider.getPublicKey(),
-                        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                    ),
+                    signature = signature,
+                    accountKey = accountKey,
                     deviceInfo = deviceInfoRequest
                 )
             )
@@ -577,6 +650,28 @@ object AccountManager {
                     }
                 }
             }
+        } catch (e: retrofit2.HttpException) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "HTTP Exception during account switch: ${e.code()} - ${e.message()}")
+            
+            // Try to get the response body for more details
+            try {
+                val errorBody = e.response()?.errorBody()?.string()
+                loge(tag = "SWITCH_ACCOUNT", msg = "Server response body: $errorBody")
+            } catch (bodyException: Exception) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "Could not read error response body: ${bodyException.message}")
+            }
+            
+            if (e.code() == 404) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "Server returned 404 - possible signature verification failure")
+                logd(TAG, "This might be due to:")
+                logd(TAG, "  1. Public key mismatch between client and server")
+                logd(TAG, "  2. Signature verification failure on server side")
+                logd(TAG, "  3. JWT token issues or expiration")
+                logd(TAG, "  4. Account not found on server")
+            }
+            
+            loge(tag = "SWITCH_ACCOUNT", msg = "Invoking callback with isSuccess=false due to HTTP ${e.code()}")
+            callback.invoke(false)
         } catch (e: Exception) {
             loge(tag = "SWITCH_ACCOUNT", msg = "Exception during account switch: ${e.message}")
             logd(TAG, "Account switch exception: ${e.stackTraceToString()}")
@@ -584,61 +679,71 @@ object AccountManager {
         }
     }
 
-    private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
+    /**
+     * Verify what's actually registered on-chain for this account
+     */
+    private suspend fun verifyOnChainAccount(account: Account, cryptoProvider: CryptoProvider) {
         try {
-            if (!setToAnonymous()) {
-                loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
-                ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
-                callback.invoke(false)
+            logd(TAG, "=== ON-CHAIN ACCOUNT VERIFICATION ===")
+            val address = account.wallet?.walletAddress()
+            if (address == null) {
+                logd(TAG, "No wallet address available for verification")
                 return
             }
-            val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-            val service = retrofit().create(ApiService::class.java)
-            val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
-            if (cryptoProvider == null) {
-                loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
-                ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
-                callback.invoke(false)
-                return
-            }
-            val resp = service.login(
-                LoginRequest(
-                    signature = cryptoProvider.getUserSignature(getFirebaseJwt()),
-                    accountKey = AccountKey(
-                        publicKey = cryptoProvider.getPublicKey(),
-                        hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                        signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                    ),
-                    deviceInfo = deviceInfoRequest
-                )
-            )
-            if (resp.data?.customToken.isNullOrBlank()) {
-                loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
-                callback.invoke(false)
-            } else {
-                firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                    if (isSuccess) {
-                        setRegistered()
-                        if (switchAccount.prefix == null) {
-                            Wallet.store().resume()
-                        } else {
-                            firebaseUid()?.let { userId ->
-                                userPrefixes.removeAll { it.userId == userId}
-                                userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
-                                UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
-                            }
-                        }
-                        callback.invoke(true)
-                    } else {
-                        loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
-                        callback.invoke(false)
+            
+            logd(TAG, "Checking on-chain account for address: $address")
+            val onChainAccount = FlowCadenceApi.getAccount(address)
+            logd(TAG, "On-chain account address: ${onChainAccount.address}")
+            logd(TAG, "On-chain account keys count: ${onChainAccount.keys?.size ?: 0}")
+            
+            val clientPublicKey = cryptoProvider.getPublicKey().removePrefix("0x").lowercase()
+            logd(TAG, "Client public key (clean): $clientPublicKey")
+            
+            onChainAccount.keys?.forEachIndexed { index, key ->
+                logd(TAG, "On-chain key [$index]:")
+                logd(TAG, "  Index: ${key.index}")
+                logd(TAG, "  Public Key: ${key.publicKey}")
+                logd(TAG, "  Signing Algorithm: ${key.signingAlgorithm}")
+                logd(TAG, "  Hashing Algorithm: ${key.hashingAlgorithm}")
+                logd(TAG, "  Weight: ${key.weight}")
+                logd(TAG, "  Sequence Number: ${key.sequenceNumber}")
+                logd(TAG, "  Revoked: ${key.revoked}")
+                
+                val onChainPublicKey = key.publicKey.removePrefix("0x").lowercase()
+                val match = onChainPublicKey == clientPublicKey
+                logd(TAG, "  Matches client key: $match")
+                
+                if (match) {
+                    logd(TAG, "  ✓ FOUND MATCHING KEY ON-CHAIN!")
+                    logd(TAG, "  Checking algorithm consistency:")
+                    logd(TAG, "    Client signing algo: ${cryptoProvider.getSignatureAlgorithm()}")
+                    logd(TAG, "    On-chain signing algo: ${key.signingAlgorithm}")
+                    logd(TAG, "    Client hashing algo: ${cryptoProvider.getHashAlgorithm()}")
+                    logd(TAG, "    On-chain hashing algo: ${key.hashingAlgorithm}")
+                    
+                    if (cryptoProvider.getSignatureAlgorithm() != key.signingAlgorithm) {
+                        logd(TAG, "    ⚠️ SIGNING ALGORITHM MISMATCH!")
+                    }
+                    if (cryptoProvider.getHashAlgorithm() != key.hashingAlgorithm) {
+                        logd(TAG, "    ⚠️ HASHING ALGORITHM MISMATCH!")
                     }
                 }
             }
+            
+            val hasMatchingKey = onChainAccount.keys?.any { 
+                it.publicKey.removePrefix("0x").lowercase() == clientPublicKey 
+            } ?: false
+            
+            if (!hasMatchingKey) {
+                logd(TAG, "❌ NO MATCHING PUBLIC KEY FOUND ON-CHAIN!")
+                logd(TAG, "This explains why verification fails on the server.")
+            } else {
+                logd(TAG, "✓ Matching public key found on-chain")
+            }
+            
+            logd(TAG, "=== END ON-CHAIN ACCOUNT VERIFICATION ===")
         } catch (e: Exception) {
-            loge(tag = "SWITCH_ACCOUNT", msg = "Exception during LocalSwitchAccount switch: ${e.message}")
-            logd(TAG, "LocalSwitchAccount switch exception: ${e.stackTraceToString()}")
-            callback.invoke(false)
+            logd(TAG, "Exception during on-chain verification: ${e.message}")
         }
     }
 
@@ -681,6 +786,165 @@ object AccountManager {
         userPrefixes.clear()
         switchAccounts.clear()
         AccountCacheManager.cache(emptyList())
+    }
+
+    /**
+     * Debug function to validate signature locally before sending to server
+     * This helps identify if the issue is with signature generation or server verification
+     */
+    private fun validateSignatureLocally(cryptoProvider: CryptoProvider, jwt: String, signature: String): Boolean {
+        return try {
+            logd(TAG, "Validating signature locally...")
+            val publicKeyBytes = cryptoProvider.getPublicKey().removePrefix("0x").hexToBytes()
+            val domainTag = DomainTag.User.bytes
+            val jwtBytes = jwt.encodeToByteArray()
+            val messageToVerify = domainTag + jwtBytes
+            
+            // For local validation, we'd need access to the verification logic
+            // This is mainly for debugging and logging purposes
+            logd(TAG, "Local signature validation details:")
+            logd(TAG, "  Domain tag: ${domainTag.toHexString()}")
+            logd(TAG, "  JWT bytes length: ${jwtBytes.size}")
+            logd(TAG, "  Message to verify length: ${messageToVerify.size}")
+            logd(TAG, "  Public key bytes length: ${publicKeyBytes.size}")
+            logd(TAG, "  Signature: $signature")
+            logd(TAG, "  Signature bytes length: ${signature.length / 2}")
+            
+            // We can't easily verify without implementing the full crypto verification
+            // but we can check basic properties
+            val expectedSignatureLength = when (cryptoProvider.getSignatureAlgorithm()) {
+                SigningAlgorithm.ECDSA_P256, SigningAlgorithm.ECDSA_secp256k1 -> 128 // 64 bytes * 2 hex chars
+                else -> -1
+            }
+            
+            if (expectedSignatureLength > 0 && signature.length != expectedSignatureLength) {
+                loge(TAG, "Signature length mismatch: expected $expectedSignatureLength, got ${signature.length}")
+                return false
+            }
+            
+            logd(TAG, "Basic signature validation passed")
+            true
+        } catch (e: Exception) {
+            loge(TAG, "Local signature validation failed: ${e.message}")
+            false
+        }
+    }
+
+    private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
+        try {
+            if (!setToAnonymous()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "set to anonymous failed")
+                ErrorReporter.reportWithMixpanel(AccountError.SET_ANONYMOUS_FAILED)
+                callback.invoke(false)
+                return
+            }
+            val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+            val service = retrofit().create(ApiService::class.java)
+            val cryptoProvider = CryptoProviderManager.getSwitchAccountCryptoProvider(switchAccount)
+            if (cryptoProvider == null) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "get cryptoProvider failed")
+                ErrorReporter.reportWithMixpanel(AccountError.GET_CRYPTO_PROVIDER_FAILED)
+                callback.invoke(false)
+                return
+            }
+            
+            // Debug the CryptoProvider being used
+            logd(TAG, "CryptoProvider details:")
+            logd(TAG, "  Type: ${cryptoProvider.javaClass.simpleName}")
+            logd(TAG, "  Public Key: ${cryptoProvider.getPublicKey()}")
+            logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
+            logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
+            logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
+            
+            // Get JWT with force refresh to avoid token expiration issues
+            val jwt = getFirebaseJwt(true)
+            logd(TAG, "Retrieved JWT for local account switch (length: ${jwt.length})")
+            
+            val publicKey = cryptoProvider.getPublicKey()
+            
+            // Debug signature generation step by step
+            logd(TAG, "Starting signature generation...")
+            logd(TAG, "  JWT (first 50 chars): ${jwt.take(50)}...")
+            
+            val signature = cryptoProvider.getUserSignature(jwt)
+            
+            logd(TAG, "Signature generation completed:")
+            logd(TAG, "  Generated signature: $signature")
+            logd(TAG, "  Signature length: ${signature.length} chars (${signature.length / 2} bytes)")
+            
+            val accountKey = AccountKey(
+                publicKey = publicKey,
+                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+            )
+            
+            logd(TAG, "Local account switch request details:")
+            logd(TAG, "  Public Key: $publicKey")
+            logd(TAG, "  Hash Algorithm: ${cryptoProvider.getHashAlgorithm()}")
+            logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
+            logd(TAG, "  Signature length: ${signature.length}")
+            logd(TAG, "  Account: ${switchAccount.username} (${switchAccount.address})")
+            
+            // Validate signature locally for debugging
+            validateSignatureLocally(cryptoProvider, jwt, signature)
+            
+            val resp = service.login(
+                LoginRequest(
+                    signature = signature,
+                    accountKey = accountKey,
+                    deviceInfo = deviceInfoRequest
+                )
+            )
+            if (resp.data?.customToken.isNullOrBlank()) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+                callback.invoke(false)
+            } else {
+                firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                    if (isSuccess) {
+                        setRegistered()
+                        if (switchAccount.prefix == null) {
+                            Wallet.store().resume()
+                        } else {
+                            firebaseUid()?.let { userId ->
+                                userPrefixes.removeAll { it.userId == userId}
+                                userPrefixes.add(UserPrefix(userId, switchAccount.prefix))
+                                UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+                            }
+                        }
+                        callback.invoke(true)
+                    } else {
+                        loge(tag = "SWITCH_ACCOUNT", msg = "get firebase login failed :: ${resp.data.customToken}")
+                        callback.invoke(false)
+                    }
+                }
+            }
+        } catch (e: retrofit2.HttpException) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "HTTP Exception during LocalSwitchAccount switch: ${e.code()} - ${e.message()}")
+            
+            // Try to get the response body for more details
+            try {
+                val errorBody = e.response()?.errorBody()?.string()
+                loge(tag = "SWITCH_ACCOUNT", msg = "Server response body: $errorBody")
+            } catch (bodyException: Exception) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "Could not read error response body: ${bodyException.message}")
+            }
+            
+            if (e.code() == 404) {
+                loge(tag = "SWITCH_ACCOUNT", msg = "Server returned 404 - possible signature verification failure")
+                logd(TAG, "This might be due to:")
+                logd(TAG, "  1. Public key mismatch between client and server")
+                logd(TAG, "  2. Signature verification failure on server side")
+                logd(TAG, "  3. JWT token issues or expiration")
+                logd(TAG, "  4. Account not found on server")
+            }
+            
+            loge(tag = "SWITCH_ACCOUNT", msg = "Invoking callback with isSuccess=false due to HTTP ${e.code()}")
+            callback.invoke(false)
+        } catch (e: Exception) {
+            loge(tag = "SWITCH_ACCOUNT", msg = "Exception during LocalSwitchAccount switch: ${e.message}")
+            logd(TAG, "LocalSwitchAccount switch exception: ${e.stackTraceToString()}")
+            callback.invoke(false)
+        }
     }
 }
 

@@ -195,15 +195,25 @@ object CryptoProviderManager {
 
     fun getSwitchAccountCryptoProvider(account: Account): CryptoProvider? {
         val storage = getStorage()
+        
+        logd("CryptoProviderManager", "getSwitchAccountCryptoProvider called for account: ${account.userInfo.username}")
+        logd("CryptoProviderManager", "  keyStoreInfo present: ${!account.keyStoreInfo.isNullOrBlank()}")
+        logd("CryptoProviderManager", "  prefix present: ${!account.prefix.isNullOrBlank()}")
+        logd("CryptoProviderManager", "  wallet ID: ${account.wallet?.id}")
 
         return try {
             // Handle keystore-based accounts
             if (account.keyStoreInfo.isNullOrBlank().not()) {
+                logd("CryptoProviderManager", "Creating PrivateKeyStoreCryptoProvider for keystore-based account")
+                logd("CryptoProviderManager", "  keyStoreInfo length: ${account.keyStoreInfo!!.length}")
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
             }
 
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
+                logd("CryptoProviderManager", "Creating PrivateKeyCryptoProvider for prefix-based account")
+                logd("CryptoProviderManager", "  prefix: ${account.prefix}")
+                
                 // Load the stored private key using the prefix-based ID
                 val keyId = "prefix_key_${account.prefix}"
                 val privateKey = try {
@@ -227,6 +237,7 @@ object CryptoProviderManager {
 
             // Handle other accounts
             else {
+                logd("CryptoProviderManager", "Creating BackupCryptoProvider for mnemonic-based account")
                 val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
                 if (existingWallet == null) {
                     loge("CryptoProviderManager", "Failed to get existing wallet for account ${account.userInfo.username}")

@@ -59,6 +59,7 @@ import com.google.common.io.BaseEncoding
 import org.onflow.flow.models.HashingAlgorithm
 import kotlinx.coroutines.runBlocking
 import com.flow.wallet.crypto.BIP39
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.google.gson.Gson
@@ -67,6 +68,7 @@ import com.google.gson.reflect.TypeToken
 private const val TAG = "UserRegisterUtils"
 
 // register one step, create user & create wallet
+@OptIn(ExperimentalStdlibApi::class)
 suspend fun registerOutblock(
     username: String,
 ) = suspendCoroutine { continuation ->
@@ -95,8 +97,52 @@ suspend fun registerOutblock(
                         continuation.resume(false)
                         return@ioScope
                     }
-                    val walletListData = try { service.getWalletList().data } catch (e:Exception) {
-                        logd(TAG, "Failed to fetch wallet list after registration")
+                    
+                    // Use key indexer instead of deprecated getWalletList()
+                    val walletListData = try {
+                        // Get the public key from the stored private key
+                        val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
+                        val keyForWalletSDK = PrivateKey.get("prefix_key_$prefix", prefix, storage)
+                        val publicKeyBytes = keyForWalletSDK.publicKey(SigningAlgorithm.ECDSA_P256)
+                        val publicKeyHex = publicKeyBytes?.toHexString()?.removePrefix("0x") ?: ""
+                        
+                        val chainId = when (chainNetWorkString()) {
+                            "mainnet" -> ChainId.Mainnet
+                            "testnet" -> ChainId.Testnet
+                            else -> ChainId.Mainnet
+                        }
+                        
+                        logd(TAG, "Using key indexer to find wallet for public key: $publicKeyHex")
+                        val keyIndexerResponse = com.flow.wallet.Network.findAccount(publicKeyHex, chainId)
+                        
+                        if (keyIndexerResponse.accounts.isNotEmpty()) {
+                            // Convert key indexer response to WalletListData format
+                            val account = keyIndexerResponse.accounts.first()
+                            val blockchainData = com.flowfoundation.wallet.network.model.BlockchainData(
+                                address = account.address,
+                                chainId = chainNetWorkString()
+                            )
+                            val walletData = com.flowfoundation.wallet.network.model.WalletData(
+                                blockchain = listOf(blockchainData),
+                                name = "Flow Wallet"
+                            )
+                            com.flowfoundation.wallet.network.model.WalletListData(
+                                id = userInfo?.username ?: "user",
+                                username = userInfo?.username ?: "user",
+                                wallets = listOf(walletData)
+                            )
+                        } else {
+                            logd(TAG, "No accounts found in key indexer for registered user")
+                            null
+                        }
+                    } catch (e: Exception) {
+                        logd(TAG, "Failed to fetch wallet using key indexer after registration: ${e.message}")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    
+                    if (walletListData == null) {
+                        logd(TAG, "No wallet data found for registered user")
                         continuation.resume(false)
                         return@ioScope
                     }
