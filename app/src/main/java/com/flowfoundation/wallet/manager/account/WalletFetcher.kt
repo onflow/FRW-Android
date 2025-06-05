@@ -34,6 +34,20 @@ object WalletFetcher {
             var dataReceived = false
             var firstAttempt = true
             var timer: Timer? = null
+            
+            // Helper function to trigger manual address creation
+            fun triggerManualAddressIfNeeded() {
+                if (firstAttempt) {
+                    timer = Timer()
+                    timer!!.scheduleAtFixedRate(0, 20000) {
+                        ioScope {
+                            apiService.manualAddress()
+                        }
+                    }
+                    firstAttempt = false
+                }
+            }
+            
             while (!dataReceived) {
                 delay(5000)
                 runCatching {
@@ -84,14 +98,41 @@ object WalletFetcher {
                         dataReceived = true
                         timer?.cancel()
                         timer = null
-                    } else if (firstAttempt) {
-                        timer = Timer()
-                        timer!!.scheduleAtFixedRate(0, 20000) {
-                            ioScope {
-                                apiService.manualAddress()
+                    } else {
+                        logd(TAG, "Key indexer returned empty accounts, trying API fallback")
+                        
+                        // Fallback: Try to get wallet data from API if key indexer doesn't have it yet
+                        try {
+                            val walletListData = apiService.getWalletList().data
+                            if (walletListData != null && !walletListData.wallets.isNullOrEmpty()) {
+                                // Check if we have actual blockchain addresses
+                                val hasAddresses = walletListData.wallets?.any { wallet ->
+                                    wallet.blockchain?.any { blockchain ->
+                                        !blockchain.address.isNullOrBlank()
+                                    } == true
+                                } == true
+                                
+                                if (hasAddresses) {
+                                    logd(TAG, "Successfully got wallet data from API fallback")
+                                    AccountManager.updateWalletInfo(walletListData)
+                                    EVMWalletManager.updateEVMAddress()
+                                    delay(300)
+                                    dispatchListeners(walletListData)
+                                    dataReceived = true
+                                    timer?.cancel()
+                                    timer = null
+                                } else {
+                                    logd(TAG, "API returned wallet data but without addresses, continuing to manual address approach")
+                                    triggerManualAddressIfNeeded()
+                                }
+                            } else {
+                                logd(TAG, "API returned empty wallet data, continuing to manual address approach")
+                                triggerManualAddressIfNeeded()
                             }
+                        } catch (e: Exception) {
+                            logd(TAG, "API fallback failed: ${e.message}, continuing to manual address approach")
+                            triggerManualAddressIfNeeded()
                         }
-                        firstAttempt = false
                     }
                 }.onFailure {
                     logd(TAG, "Key indexer fetch failed: ${it.message}")
