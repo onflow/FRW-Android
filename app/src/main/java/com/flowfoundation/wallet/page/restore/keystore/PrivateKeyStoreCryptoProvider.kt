@@ -109,8 +109,13 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
 
     override fun getPublicKey(): String {
         val rawPublicKey = keyInfo.get("publicKey").asString
-        val formattedPublicKey = "0x${rawPublicKey}"
-        logd(TAG, "getPublicKey() -> formatting '$rawPublicKey' to '$formattedPublicKey'")
+        // Match the format used in keystore restore: remove "04" prefix if present, no "0x" prefix for server
+        val formattedPublicKey = if (rawPublicKey.startsWith("04")) {
+            rawPublicKey.substring(2)
+        } else {
+            rawPublicKey
+        }
+        logd(TAG, "getPublicKey() -> formatting '$rawPublicKey' to '$formattedPublicKey' (no 0x prefix for server)")
         return formattedPublicKey
     }
 

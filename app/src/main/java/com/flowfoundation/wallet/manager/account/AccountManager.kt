@@ -568,13 +568,6 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Key Weight: ${cryptoProvider.getKeyWeight()}")
             
-            // Check what's actually registered on-chain for this account
-            try {
-                verifyOnChainAccount(account, cryptoProvider)
-            } catch (e: Exception) {
-                logd(TAG, "Failed to verify on-chain account: ${e.message}")
-            }
-            
             // Get JWT with force refresh to avoid token expiration issues
             val jwt = getFirebaseJwt(true)
             logd(TAG, "Retrieved JWT for account switch (length: ${jwt.length})")
@@ -603,28 +596,6 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Signature length: ${signature.length}")
             logd(TAG, "  Account: ${account.userInfo.username} (${account.wallet?.walletAddress()})")
-            
-            // Validate signature locally for debugging
-            validateSignatureLocally(cryptoProvider, jwt, signature)
-            
-            // Check public key format
-            val originalPublicKey = publicKey
-            val cleanPublicKey = publicKey.removePrefix("0x")
-            logd(TAG, "Public key validation:")
-            logd(TAG, "  Original: $originalPublicKey")
-            logd(TAG, "  Clean (no 0x): $cleanPublicKey")
-            logd(TAG, "  Length: ${cleanPublicKey.length} characters (${cleanPublicKey.length / 2} bytes)")
-            
-            // For ECDSA_secp256k1, public key should be 64 bytes (128 hex chars) without 0x prefix
-            val expectedLength = when (cryptoProvider.getSignatureAlgorithm()) {
-                SigningAlgorithm.ECDSA_secp256k1 -> 128
-                SigningAlgorithm.ECDSA_P256 -> 128
-                else -> -1
-            }
-            
-            if (expectedLength > 0 && cleanPublicKey.length != expectedLength) {
-                loge(TAG, "Public key length mismatch: expected $expectedLength, got ${cleanPublicKey.length}")
-            }
             
             val resp = service.login(
                 LoginRequest(
@@ -679,74 +650,6 @@ object AccountManager {
         }
     }
 
-    /**
-     * Verify what's actually registered on-chain for this account
-     */
-    private suspend fun verifyOnChainAccount(account: Account, cryptoProvider: CryptoProvider) {
-        try {
-            logd(TAG, "=== ON-CHAIN ACCOUNT VERIFICATION ===")
-            val address = account.wallet?.walletAddress()
-            if (address == null) {
-                logd(TAG, "No wallet address available for verification")
-                return
-            }
-            
-            logd(TAG, "Checking on-chain account for address: $address")
-            val onChainAccount = FlowCadenceApi.getAccount(address)
-            logd(TAG, "On-chain account address: ${onChainAccount.address}")
-            logd(TAG, "On-chain account keys count: ${onChainAccount.keys?.size ?: 0}")
-            
-            val clientPublicKey = cryptoProvider.getPublicKey().removePrefix("0x").lowercase()
-            logd(TAG, "Client public key (clean): $clientPublicKey")
-            
-            onChainAccount.keys?.forEachIndexed { index, key ->
-                logd(TAG, "On-chain key [$index]:")
-                logd(TAG, "  Index: ${key.index}")
-                logd(TAG, "  Public Key: ${key.publicKey}")
-                logd(TAG, "  Signing Algorithm: ${key.signingAlgorithm}")
-                logd(TAG, "  Hashing Algorithm: ${key.hashingAlgorithm}")
-                logd(TAG, "  Weight: ${key.weight}")
-                logd(TAG, "  Sequence Number: ${key.sequenceNumber}")
-                logd(TAG, "  Revoked: ${key.revoked}")
-                
-                val onChainPublicKey = key.publicKey.removePrefix("0x").lowercase()
-                val match = onChainPublicKey == clientPublicKey
-                logd(TAG, "  Matches client key: $match")
-                
-                if (match) {
-                    logd(TAG, "  ✓ FOUND MATCHING KEY ON-CHAIN!")
-                    logd(TAG, "  Checking algorithm consistency:")
-                    logd(TAG, "    Client signing algo: ${cryptoProvider.getSignatureAlgorithm()}")
-                    logd(TAG, "    On-chain signing algo: ${key.signingAlgorithm}")
-                    logd(TAG, "    Client hashing algo: ${cryptoProvider.getHashAlgorithm()}")
-                    logd(TAG, "    On-chain hashing algo: ${key.hashingAlgorithm}")
-                    
-                    if (cryptoProvider.getSignatureAlgorithm() != key.signingAlgorithm) {
-                        logd(TAG, "    ⚠️ SIGNING ALGORITHM MISMATCH!")
-                    }
-                    if (cryptoProvider.getHashAlgorithm() != key.hashingAlgorithm) {
-                        logd(TAG, "    ⚠️ HASHING ALGORITHM MISMATCH!")
-                    }
-                }
-            }
-            
-            val hasMatchingKey = onChainAccount.keys?.any { 
-                it.publicKey.removePrefix("0x").lowercase() == clientPublicKey 
-            } ?: false
-            
-            if (!hasMatchingKey) {
-                logd(TAG, "❌ NO MATCHING PUBLIC KEY FOUND ON-CHAIN!")
-                logd(TAG, "This explains why verification fails on the server.")
-            } else {
-                logd(TAG, "✓ Matching public key found on-chain")
-            }
-            
-            logd(TAG, "=== END ON-CHAIN ACCOUNT VERIFICATION ===")
-        } catch (e: Exception) {
-            logd(TAG, "Exception during on-chain verification: ${e.message}")
-        }
-    }
-
     private suspend fun setToAnonymous(): Boolean {
         if (!isAnonymousSignIn()) {
             Firebase.auth.signOut()
@@ -786,48 +689,6 @@ object AccountManager {
         userPrefixes.clear()
         switchAccounts.clear()
         AccountCacheManager.cache(emptyList())
-    }
-
-    /**
-     * Debug function to validate signature locally before sending to server
-     * This helps identify if the issue is with signature generation or server verification
-     */
-    private fun validateSignatureLocally(cryptoProvider: CryptoProvider, jwt: String, signature: String): Boolean {
-        return try {
-            logd(TAG, "Validating signature locally...")
-            val publicKeyBytes = cryptoProvider.getPublicKey().removePrefix("0x").hexToBytes()
-            val domainTag = DomainTag.User.bytes
-            val jwtBytes = jwt.encodeToByteArray()
-            val messageToVerify = domainTag + jwtBytes
-            
-            // For local validation, we'd need access to the verification logic
-            // This is mainly for debugging and logging purposes
-            logd(TAG, "Local signature validation details:")
-            logd(TAG, "  Domain tag: ${domainTag.toHexString()}")
-            logd(TAG, "  JWT bytes length: ${jwtBytes.size}")
-            logd(TAG, "  Message to verify length: ${messageToVerify.size}")
-            logd(TAG, "  Public key bytes length: ${publicKeyBytes.size}")
-            logd(TAG, "  Signature: $signature")
-            logd(TAG, "  Signature bytes length: ${signature.length / 2}")
-            
-            // We can't easily verify without implementing the full crypto verification
-            // but we can check basic properties
-            val expectedSignatureLength = when (cryptoProvider.getSignatureAlgorithm()) {
-                SigningAlgorithm.ECDSA_P256, SigningAlgorithm.ECDSA_secp256k1 -> 128 // 64 bytes * 2 hex chars
-                else -> -1
-            }
-            
-            if (expectedSignatureLength > 0 && signature.length != expectedSignatureLength) {
-                loge(TAG, "Signature length mismatch: expected $expectedSignatureLength, got ${signature.length}")
-                return false
-            }
-            
-            logd(TAG, "Basic signature validation passed")
-            true
-        } catch (e: Exception) {
-            loge(TAG, "Local signature validation failed: ${e.message}")
-            false
-        }
     }
 
     private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {
@@ -884,9 +745,6 @@ object AccountManager {
             logd(TAG, "  Sign Algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
             logd(TAG, "  Signature length: ${signature.length}")
             logd(TAG, "  Account: ${switchAccount.username} (${switchAccount.address})")
-            
-            // Validate signature locally for debugging
-            validateSignatureLocally(cryptoProvider, jwt, signature)
             
             val resp = service.login(
                 LoginRequest(
