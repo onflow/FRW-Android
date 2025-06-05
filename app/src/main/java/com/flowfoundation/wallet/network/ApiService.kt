@@ -19,6 +19,9 @@ interface ApiService {
     @GET("/v1/user/check")
     suspend fun checkUsername(@Query("username") username: String): UsernameCheckResponse
 
+    @GET("/v2/user/wallet")
+    suspend fun getWalletList(): WalletListResponse
+
     @POST("/retoken")
     suspend fun uploadPushToken(@Body token: Map<String, String>): CommonResponse
 

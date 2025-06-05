@@ -98,45 +98,11 @@ suspend fun registerOutblock(
                         return@ioScope
                     }
                     
-                    // Use key indexer instead of deprecated getWalletList()
-                    val walletListData = try {
-                        // Get the public key from the stored private key
-                        val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-                        val keyForWalletSDK = PrivateKey.get("prefix_key_$prefix", prefix, storage)
-                        val publicKeyBytes = keyForWalletSDK.publicKey(SigningAlgorithm.ECDSA_P256)
-                        val publicKeyHex = publicKeyBytes?.toHexString()?.removePrefix("0x") ?: ""
-                        
-                        val chainId = when (chainNetWorkString()) {
-                            "mainnet" -> ChainId.Mainnet
-                            "testnet" -> ChainId.Testnet
-                            else -> ChainId.Mainnet
-                        }
-                        
-                        logd(TAG, "Using key indexer to find wallet for public key: $publicKeyHex")
-                        val keyIndexerResponse = com.flow.wallet.Network.findAccount(publicKeyHex, chainId)
-                        
-                        if (keyIndexerResponse.accounts.isNotEmpty()) {
-                            // Convert key indexer response to WalletListData format
-                            val account = keyIndexerResponse.accounts.first()
-                            val blockchainData = com.flowfoundation.wallet.network.model.BlockchainData(
-                                address = account.address,
-                                chainId = chainNetWorkString()
-                            )
-                            val walletData = com.flowfoundation.wallet.network.model.WalletData(
-                                blockchain = listOf(blockchainData),
-                                name = "Flow Wallet"
-                            )
-                            com.flowfoundation.wallet.network.model.WalletListData(
-                                id = userInfo?.username ?: "user",
-                                username = userInfo?.username ?: "user",
-                                wallets = listOf(walletData)
-                            )
-                        } else {
-                            logd(TAG, "No accounts found in key indexer for registered user")
-                            null
-                        }
+                    // Use the reliable getWalletList API call that gets account info directly from server
+                    val walletListData = try { 
+                        service.getWalletList().data 
                     } catch (e: Exception) {
-                        logd(TAG, "Failed to fetch wallet using key indexer after registration: ${e.message}")
+                        logd(TAG, "Failed to fetch wallet list after registration")
                         continuation.resume(false)
                         return@ioScope
                     }
@@ -147,9 +113,8 @@ suspend fun registerOutblock(
                         return@ioScope
                     }
 
-                    // The WalletFactory.createKeyWallet here might be redundant if WalletManager.init()
-                    // correctly initializes based on the prefix and the key stored by registerServer.
-                    // However, ensuring the Wallet SDK instance is aware of the account is important.
+                    // Now that we have the wallet data with account address, use fetchAccountByAddress 
+                    // to populate the wallet SDK with the account details from Flow network
                     val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
                     val keyForWalletSDK = try {
                         PrivateKey.get("prefix_key_$prefix", prefix, storage)
@@ -158,52 +123,54 @@ suspend fun registerOutblock(
                         continuation.resume(false)
                         return@ioScope
                     }
+                    
                     val walletForSDK = WalletFactory.createKeyWallet(
                         keyForWalletSDK,
                         setOf(ChainId.Mainnet, ChainId.Testnet),
                         storage
                     )
-                    logd(TAG, "Created KeyWallet instance for Wallet SDK.")
-
-                    // Initialize WalletManager to pick up the new account/wallet state
-                    // WalletManager.init() should now find the key stored by registerServer via the prefix.
-                    WalletManager.init()
-
-                    val account = Account(
-                        userInfo = userInfo,
-                        prefix = prefix, // This prefix matches the one used to store the key in registerServer
-                        wallet = walletListData
-                    )
-                    logd(TAG, "Adding account to AccountManager: $account")
                     
-                    // Manually add accounts from server to the walletForSDK instance
-                    account.wallet?.wallets?.forEach { walletData ->
+                    val chainId = when (chainNetWorkString()) {
+                        "mainnet" -> ChainId.Mainnet
+                        "testnet" -> ChainId.Testnet
+                        else -> ChainId.Mainnet
+                    }
+                    
+                    // Use fetchAccountByAddress to populate wallet SDK with account from Flow network
+                    walletListData.wallets?.forEach { walletData ->
                         walletData.blockchain?.forEach { blockchain ->
                             try {
-                                val chainId = when (blockchain.chainId?.lowercase()) {
+                                val chainIdForBlockchain = when (blockchain.chainId?.lowercase()) {
                                     "mainnet" -> ChainId.Mainnet
                                     "testnet" -> ChainId.Testnet
                                     else -> null
                                 }
-                                if (chainId != null && !blockchain.address.isNullOrBlank()) {
+                                if (chainIdForBlockchain != null && !blockchain.address.isNullOrBlank()) {
                                     val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
-                                    runBlocking {
-                                        logd(TAG, "Fetching account $address for $chainId into Wallet SDK instance")
-                                        walletForSDK.fetchAccountByAddress(address, chainId)
-                                    }
+                                    logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with account $address")
+                                    walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
+                                    logd(TAG, "Successfully populated wallet SDK with account from Flow network")
                                 }
                             } catch (e: Exception) {
-                                loge(TAG, "Error fetching account ${blockchain.address} into Wallet SDK: ${e.message}")
+                                logd(TAG, "Warning: Could not fetch account ${blockchain.address} into Wallet SDK: ${e.message}")
+                                // Continue anyway, we have the wallet data from server
                             }
                         }
                     }
                     
                     AccountManager.add(
-                        account,
+                        Account(
+                            userInfo = userInfo,
+                            prefix = prefix, // This prefix matches the one used to store the key in registerServer
+                            wallet = walletListData
+                        ),
                         firebaseUid()
                     )
                     logd(TAG, "Account added to AccountManager.")
                     
+                    // Initialize WalletManager to pick up the new account/wallet state
+                    WalletManager.init()
+
                     // Now, get the CryptoProvider. It should use the prefix and load the key stored by registerServer.
                     val currentAccount = AccountManager.get() // Should be the newly added account
                     if (currentAccount == null || currentAccount.prefix != prefix) {
