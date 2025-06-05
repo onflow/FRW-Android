@@ -180,36 +180,21 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
 
                 deviceInfoList.forEach { device ->
                     val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
-                    logd(TAG, "Processing device: ${device.id}")
-
                     if (deviceKey != null) {
                         val unRevokedDevice = keys.firstOrNull { accountKey ->
                             val accountPubKey = accountKey.publicKey.removePrefix("0x")
                             val devicePubKey = deviceKey.pubKey.publicKey.removePrefix("0x")
                             val isRevoked = accountKey.revoked
-
-                            logd(
-                                TAG,
-                                "    Comparing normalized keys - Device: '$devicePubKey', Account: '$accountPubKey', revoked: $isRevoked"
-                            )
-                            logd(TAG, "    Normalized keys match: ${devicePubKey == accountPubKey}")
-
                             accountPubKey == devicePubKey && !isRevoked
                         }
 
                         if (unRevokedDevice != null) {
                             val currentKey =
                                 CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
-                            logd(TAG, "    Current device public key: '$currentKey'")
 
-                            // Restore main branch logic: devices with same key as current get null keyId but are still added
                             val devicePubKey = unRevokedDevice.publicKey.removePrefix("0x")
                             val currentKeyNormalized = currentKey?.removePrefix("0x")
                             val isSameKeyAsCurrentDevice = devicePubKey == currentKeyNormalized
-                            logd(
-                                TAG,
-                                "    Device key matches current key: $isSameKeyAsCurrentDevice"
-                            )
 
                             val keyId = if (isSameKeyAsCurrentDevice) {
                                 null
