@@ -18,9 +18,9 @@ import com.flowfoundation.wallet.page.backup.model.BackupKey
 import com.flowfoundation.wallet.page.backup.model.BackupListTitle
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.DeviceKeyModel
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import okhttp3.internal.filterList
 import org.onflow.flow.models.FlowAddress
 
 
@@ -36,6 +36,8 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
 
     private val seedPhraseList = mutableListOf<Any>()
 
+    private val TAG = "WalletBackupViewModel"
+
     init {
         TransactionStateManager.addOnTransactionStateChange(this)
     }
@@ -47,98 +49,249 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
 
     private fun loadBackupList() {
         viewModelIOScope(this) {
-            val service = retrofit().create(ApiService::class.java)
-            val response = service.getKeyDeviceInfo()
-            val backupKeyList =
-                response.data.result?.filter { it.backupInfo != null && it.backupInfo.type >= 0 }
-            if (backupKeyList.isNullOrEmpty()) {
-                BackupListManager.clear()
-                backupListLiveData.postValue(emptyList())
-                seedPhraseListLiveData.postValue(emptyList())
-                return@viewModelIOScope
-            }
-            val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-            uiScope {
+            try {
+                logd(TAG, "Loading backup list...")
+                val service = retrofit().create(ApiService::class.java)
+                val response = service.getKeyDeviceInfo()
+                logd(TAG, "API Response: ${response.status}")
+
+                val backupKeyList = response.data.result?.filter {
+                    it.backupInfo != null && it.backupInfo.type >= 0
+                }
+                logd(TAG, "Filtered backup key list size: ${backupKeyList?.size}")
+
+                if (backupKeyList.isNullOrEmpty()) {
+                    logd(TAG, "No backup keys found, clearing lists")
+                    BackupListManager.clear()
+                    backupListLiveData.postValue(emptyList())
+                    seedPhraseListLiveData.postValue(emptyList())
+                    return@viewModelIOScope
+                }
+
+                val account = FlowAddress(
+                    WalletManager.wallet()?.walletAddress().orEmpty()
+                ).lastBlockAccount()
+                val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
                 val keys = account.keys ?: emptyList()
-                val keyList = backupKeyList.mapNotNull { info ->
-                    keys.lastOrNull { info.pubKey.publicKey == it.publicKey && it.revoked.not() }
-                        ?.let {
+                logd(TAG, "Account keys count: ${keys.size}")
+
+                uiScope {
+                    val keyList = backupKeyList.mapNotNull { info ->
+                        logd(TAG, "Processing backup key - API pubKey: '${info.pubKey.publicKey}'")
+
+                        val matchingKey = keys.lastOrNull { accountKey ->
+                            val accountPubKey = accountKey.publicKey.removePrefix("0x")
+                            val apiPubKey = info.pubKey.publicKey.removePrefix("0x")
+                            val isRevoked = accountKey.revoked
+
+                            logd(
+                                TAG,
+                                "  Comparing normalized keys - API: '$apiPubKey', Account: '$accountPubKey', revoked: $isRevoked"
+                            )
+                            logd(TAG, "  Normalized keys match: ${apiPubKey == accountPubKey}")
+
+                            apiPubKey == accountPubKey && !isRevoked
+                        }
+
+                        if (matchingKey != null) {
+                            logd(
+                                TAG,
+                                "  ✅ MATCH FOUND! Creating BackupKey with keyId: ${matchingKey.index}"
+                            )
                             BackupKey(
-                                it.index.toInt(),
+                                matchingKey.index.toInt(),
                                 info,
                                 isRevoking = false
                             )
+                        } else {
+                            logd(TAG, "  ❌ NO MATCH - skipping this backup key")
+                            null
                         }
+                    }
+                    logd(TAG, "Mapped key list size: ${keyList.size}")
+
+                    // Log current key for reference
+                    logd(TAG, "Current device key: '$currentKey'")
+
+                    // Log all account keys for debugging
+                    logd(TAG, "All account keys:")
+                    keys.forEachIndexed { index, key ->
+                        logd(
+                            TAG,
+                            "  [$index] pubKey: '${key.publicKey}', index: ${key.index}, revoked: ${key.revoked}"
+                        )
+                    }
+
+                    val multiKeyList = keyList.filter {
+                        it.info?.backupInfo?.type != BackupType.FULL_WEIGHT_SEED_PHRASE.index
+                    }
+                    logd(TAG, "Multi backup keys: ${multiKeyList.size}")
+
+                    BackupListManager.setBackupTypeList(multiKeyList)
+                    backupList.clear()
+                    backupList.addAll(multiKeyList)
+                    if (backupList.size > 0) {
+                        backupList.add(0, BackupListTitle.MULTI_BACKUP)
+                    }
+                    logd(TAG, "Final backup list size: ${backupList.size}")
+                    backupListLiveData.postValue(backupList)
+
+                    seedPhraseList.clear()
+                    val seedPhraseKeys = keyList.filter {
+                        it.info?.backupInfo?.type == BackupType.FULL_WEIGHT_SEED_PHRASE.index
+                    }
+                    seedPhraseList.addAll(seedPhraseKeys)
+                    if (seedPhraseList.isNotEmpty()) {
+                        seedPhraseList.add(0, BackupListTitle.FULL_WEIGHT_SEED_PHRASE)
+                    }
+                    logd(TAG, "Final seed phrase list size: ${seedPhraseList.size}")
+                    seedPhraseListLiveData.postValue(seedPhraseList)
                 }
-                val multiKeyList = keyList.filterList { info?.backupInfo?.type != BackupType.FULL_WEIGHT_SEED_PHRASE.index}
-                BackupListManager.setBackupTypeList(multiKeyList)
-                backupList.clear()
-                backupList.addAll(multiKeyList)
-                if (backupList.size > 0) {
-                    backupList.add(0, BackupListTitle.MULTI_BACKUP)
+            } catch (e: Exception) {
+                logd(TAG, "Error loading backup list")
+                uiScope {
+                    backupListLiveData.postValue(emptyList())
+                    seedPhraseListLiveData.postValue(emptyList())
                 }
-                backupListLiveData.postValue(backupList)
-                seedPhraseList.clear()
-                seedPhraseList.addAll(keyList.filterList { info?.backupInfo?.type == BackupType.FULL_WEIGHT_SEED_PHRASE.index})
-                if (seedPhraseList.isNotEmpty()) {
-                    seedPhraseList.add(0, BackupListTitle.FULL_WEIGHT_SEED_PHRASE)
-                }
-                seedPhraseListLiveData.postValue(seedPhraseList)
             }
         }
     }
 
     private fun loadDevices() {
         viewModelIOScope(this) {
-            val service = retrofit().create(ApiService::class.java)
-            val response = service.getDeviceList()
-            val deviceInfoList = response.data ?: emptyList()
+            try {
+                logd(TAG, "Loading device list...")
+                val service = retrofit().create(ApiService::class.java)
+                val response = service.getDeviceList()
+                val deviceInfoList = response.data ?: emptyList()
+                logd(TAG, "Device info list size: ${deviceInfoList.size}")
 
-            val infoResponse = service.getKeyDeviceInfo()
-            val keyDeviceList = infoResponse.data.result?.filter { it.backupInfo != null && it.backupInfo.type < 0 } ?: emptyList()
-            val account = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-            val keys = account.keys ?: emptyList()
-            val deviceList = mutableListOf<DeviceKeyModel>()
-            deviceInfoList.forEach { device ->
-                val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
-                if (deviceKey != null) {
-                    val unRevokedDevice = keys.firstOrNull {
-                        it.publicKey ==
-                                deviceKey.pubKey.publicKey && it.revoked.not()
-                    }
-                    if (unRevokedDevice != null) {
-                        val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
-                        val keyId = if (unRevokedDevice.publicKey == currentKey) null else unRevokedDevice.index
-                        if (keyId != null) {
+                val infoResponse = service.getKeyDeviceInfo()
+                val keyDeviceList = infoResponse.data.result?.filter {
+                    it.backupInfo != null && it.backupInfo.type < 0
+                } ?: emptyList()
+                logd(TAG, "Key device list size: ${keyDeviceList.size}")
+
+                // Log all device keys to understand the mapping
+                logd(TAG, "=== ALL DEVICE KEYS FROM API ===")
+                keyDeviceList.forEachIndexed { index, keyDevice ->
+                    logd(
+                        TAG,
+                        "  [$index] Device ID: '${keyDevice.device?.id}', PubKey: '${keyDevice.pubKey.publicKey}'"
+                    )
+                }
+                logd(TAG, "=== END DEVICE KEYS ===")
+
+                val account = FlowAddress(
+                    WalletManager.wallet()?.walletAddress().orEmpty()
+                ).lastBlockAccount()
+                val keys = account.keys ?: emptyList()
+                val deviceList = mutableListOf<DeviceKeyModel>()
+
+                deviceInfoList.forEach { device ->
+                    val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
+                    logd(TAG, "Processing device: ${device.id}")
+
+                    if (deviceKey != null) {
+                        logd(
+                            TAG,
+                            "  Found device key - API pubKey: '${deviceKey.pubKey.publicKey}'"
+                        )
+                        logd(TAG, "  Device key belongs to device ID: '${deviceKey.device?.id}'")
+
+                        val unRevokedDevice = keys.firstOrNull { accountKey ->
+                            val accountPubKey = accountKey.publicKey.removePrefix("0x")
+                            val devicePubKey = deviceKey.pubKey.publicKey.removePrefix("0x")
+                            val isRevoked = accountKey.revoked
+
+                            logd(
+                                TAG,
+                                "    Comparing normalized keys - Device: '$devicePubKey', Account: '$accountPubKey', revoked: $isRevoked"
+                            )
+                            logd(TAG, "    Normalized keys match: ${devicePubKey == accountPubKey}")
+
+                            accountPubKey == devicePubKey && !isRevoked
+                        }
+
+                        if (unRevokedDevice != null) {
+                            val currentKey =
+                                CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
+                            logd(TAG, "    Current device public key: '$currentKey'")
+
+                            // Restore main branch logic: devices with same key as current get null keyId but are still added
+                            val devicePubKey = unRevokedDevice.publicKey.removePrefix("0x")
+                            val currentKeyNormalized = currentKey?.removePrefix("0x")
+                            val isSameKeyAsCurrentDevice = devicePubKey == currentKeyNormalized
+                            logd(
+                                TAG,
+                                "    Device key matches current key: $isSameKeyAsCurrentDevice"
+                            )
+
+                            val keyId = if (isSameKeyAsCurrentDevice) {
+                                logd(
+                                    TAG,
+                                    "    🔑 Same key as current device - setting keyId to null but keeping in list"
+                                )
+                                null
+                            } else {
+                                logd(
+                                    TAG,
+                                    "    ✅ Different key - adding device to list with keyId: ${unRevokedDevice.index}"
+                                )
+                                unRevokedDevice.index.toInt()
+                            }
+
+                            // Always add to device list (main branch behavior), regardless of keyId
                             deviceList.add(
                                 DeviceKeyModel(
                                     deviceId = device.id,
-                                    keyId = keyId.toInt(),
+                                    keyId = keyId,
                                     deviceModel = device
                                 )
                             )
+                        } else {
+                            logd(TAG, "    ❌ NO MATCHING ACCOUNT KEY found for device")
                         }
+                    } else {
+                        logd(
+                            TAG,
+                            "  ❌ NO DEVICE KEY found in keyDeviceList for device ID: ${device.id}"
+                        )
+
+                        // Debug: show all available device IDs in keyDeviceList
+                        val availableDeviceIds = keyDeviceList.mapNotNull { it.device?.id }
+                        logd(TAG, "    Available device IDs in keyDeviceList: $availableDeviceIds")
                     }
                 }
-            }
-            uiScope {
-                if (deviceList.isEmpty().not()) {
-                    devices.clear()
-                    val currentDevice =
-                        deviceList.filterList { DeviceInfoManager.isCurrentDevice(deviceId) }
-                    if (currentDevice.isNotEmpty()) {
-                        devices.add(BackupListTitle.DEVICE_BACKUP)
-                        devices.addAll(currentDevice)
+                logd(TAG, "Final device list size: ${deviceList.size}")
+
+                uiScope {
+                    if (deviceList.isNotEmpty()) {
+                        devices.clear()
+                        val currentDevice = deviceList.filter {
+                            DeviceInfoManager.isCurrentDevice(it.deviceId)
+                        }
+                        if (currentDevice.isNotEmpty()) {
+                            devices.add(BackupListTitle.DEVICE_BACKUP)
+                            devices.addAll(currentDevice)
+                        }
+                        val otherDevice = deviceList.filter {
+                            !DeviceInfoManager.isCurrentDevice(it.deviceId)
+                        }.take(2)
+                        if (otherDevice.isNotEmpty()) {
+                            devices.add(BackupListTitle.OTHER_DEVICES)
+                            devices.addAll(otherDevice)
+                        }
+                        logd(TAG, "Final devices list for UI: ${devices.size}")
+                        devicesLiveData.postValue(devices)
+                    } else {
+                        logd(TAG, "No devices to display")
+                        devicesLiveData.postValue(emptyList())
                     }
-                    val otherDevice = deviceList.filterList {
-                        DeviceInfoManager.isCurrentDevice(deviceId).not()
-                    }.take(2)
-                    if (otherDevice.isNotEmpty()) {
-                        devices.add(BackupListTitle.OTHER_DEVICES)
-                        devices.addAll(otherDevice)
-                    }
-                    devicesLiveData.postValue(devices)
-                } else {
+                }
+            } catch (e: Exception) {
+                logd(TAG, "Error loading devices")
+                uiScope {
                     devicesLiveData.postValue(emptyList())
                 }
             }

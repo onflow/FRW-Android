@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.device.model.Device
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import okhttp3.internal.filterList
 import org.onflow.flow.models.FlowAddress
 
 
@@ -56,22 +55,25 @@ class DevicesViewModel : ViewModel() {
                 }
             }
             uiScope {
-                if (deviceList.isEmpty().not()) {
+                if (deviceList.isNotEmpty()) {
                     devices.clear()
-                    val currentDevice =
-                        deviceList.filterList { DeviceInfoManager.isCurrentDevice(deviceId) }
+                    val currentDevice = deviceList.filter { 
+                        DeviceInfoManager.isCurrentDevice(it.deviceId) 
+                    }
                     if (currentDevice.isNotEmpty()) {
-                        devices.add(DeviceTitle(R.string.current_device.res2String()))
+                        devices.add(DeviceTitle(R.string.device_backup.res2String()))
                         devices.addAll(currentDevice)
                     }
-                    val otherDevice = deviceList.filterList {
-                        DeviceInfoManager.isCurrentDevice(deviceId).not()
-                    }
+                    val otherDevice = deviceList.filter {
+                        !DeviceInfoManager.isCurrentDevice(it.deviceId)
+                    }.take(2)
                     if (otherDevice.isNotEmpty()) {
                         devices.add(DeviceTitle(R.string.other_devices.res2String()))
                         devices.addAll(otherDevice)
                     }
                     devicesLiveData.postValue(devices)
+                } else {
+                    devicesLiveData.postValue(emptyList())
                 }
             }
         }
