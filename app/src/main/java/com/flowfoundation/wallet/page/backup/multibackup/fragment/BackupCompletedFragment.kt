@@ -58,12 +58,14 @@ class BackupCompletedFragment : Fragment() {
     private val checkFinishReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             isGoogleDriveBackupSuccess = intent?.getBooleanExtra(EXTRA_SUCCESS, false) ?: false
+            android.util.Log.d("BackupCompleted", "Google Drive check finished: $isGoogleDriveBackupSuccess")
             backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.GOOGLE_DRIVE }?.let {
                 binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
                     setItemInfo(it, locationInfo, isGoogleDriveBackupSuccess)
                 }, 0)
             }
             isGoogleDriveCheckLoading = false
+            android.util.Log.d("BackupCompleted", "Google Drive loading set to false, calling checkLoadingStatus")
             checkLoadingStatus()
         }
     }
@@ -73,12 +75,14 @@ class BackupCompletedFragment : Fragment() {
             isDropboxBackupSuccess = intent?.getBooleanExtra(
                 com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS,
                 false) ?: false
+            android.util.Log.d("BackupCompleted", "Dropbox check finished: $isDropboxBackupSuccess")
             backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.DROPBOX }?.let {
                 binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
                     setItemInfo(it, locationInfo, isDropboxBackupSuccess)
                 }, 0)
             }
             isDropboxCheckLoading = false
+            android.util.Log.d("BackupCompleted", "Dropbox loading set to false, calling checkLoadingStatus")
             checkLoadingStatus()
         }
     }
@@ -106,9 +110,7 @@ class BackupCompletedFragment : Fragment() {
         )
         backupViewModel = ViewModelProvider(this.requireActivity())[MultiBackupViewModel::class.java].apply {
             locationInfoLiveData.observe(viewLifecycleOwner) { info ->
-                ioScope {
-                    setCompletedItemList(info)
-                }
+                setCompletedItemList(info)
             }
             getLocationInfo()
         }
@@ -136,28 +138,33 @@ class BackupCompletedFragment : Fragment() {
     }
 
     private fun checkLoadingStatus() {
+        android.util.Log.d("BackupCompleted", "checkLoadingStatus called - GoogleDrive: $isGoogleDriveCheckLoading, RecoveryPhrase: $isRecoveryPhraseCheckLoading, Dropbox: $isDropboxCheckLoading")
         if (isGoogleDriveCheckLoading || isRecoveryPhraseCheckLoading || isDropboxCheckLoading) {
             binding.lavLoading.visible()
             binding.btnNext.isEnabled = false
+            android.util.Log.d("BackupCompleted", "Still loading - button disabled")
         } else {
             binding.lavLoading.gone()
             binding.btnNext.isEnabled = true
+            android.util.Log.d("BackupCompleted", "All checks done - button enabled")
         }
     }
 
     private fun checkDropboxBackup(mnemnoic: String) {
         isDropboxCheckLoading = true
         isDropboxBackupSuccess = false
+        android.util.Log.d("BackupCompleted", "Starting Dropbox backup check")
         DropboxAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
     }
 
     private fun checkGoogleDriveBackup(mnemnoic: String) {
         isGoogleDriveCheckLoading = true
         isGoogleDriveBackupSuccess = false
+        android.util.Log.d("BackupCompleted", "Starting Google Drive backup check")
         GoogleDriveAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
     }
 
-    private suspend fun setCompletedItemList(locationInfo: LocationInfo?) {
+    private fun setCompletedItemList(locationInfo: LocationInfo?) {
         this.locationInfo = locationInfo
         with(binding) {
             tvOptionNote.gone()
@@ -171,7 +178,9 @@ class BackupCompletedFragment : Fragment() {
                         checkDropboxBackup(it.mnemonic)
                     }
                     else -> {
-                        checkRecoveryPhrase(it)
+                        ioScope {
+                            checkRecoveryPhrase(it)
+                        }
                     }
                 }
             }
@@ -181,6 +190,7 @@ class BackupCompletedFragment : Fragment() {
     private suspend fun checkRecoveryPhrase(item: BackupCompletedItem) {
         isRecoveryPhraseCheckLoading = true
         isRecoveryPhraseBackupSuccess = false
+        android.util.Log.d("BackupCompleted", "Starting Recovery Phrase backup check")
         val baseDir = File(Env.getApp().filesDir, "wallet")
         val seedPhraseKey = SeedPhraseKey(
             mnemonicString = item.mnemonic,
@@ -192,12 +202,26 @@ class BackupCompletedFragment : Fragment() {
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)
 
         val blockAccount = FlowAddress(WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty()).lastBlockAccount()
-        isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey } != null
-        binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
-            setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
-        })
-        isRecoveryPhraseCheckLoading = false
-        checkLoadingStatus()
+        
+        // Normalize public keys for comparison - remove prefixes and convert to lowercase
+        val backupPubKey = backupProvider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
+        
+        isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { key ->
+            val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
+            backupPubKey == onChainPubKey
+        } != null
+        
+        android.util.Log.d("BackupCompleted", "Recovery Phrase check finished: $isRecoveryPhraseBackupSuccess")
+        
+        // Update UI on main thread
+        requireActivity().runOnUiThread {
+            binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
+                setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
+            })
+            isRecoveryPhraseCheckLoading = false
+            android.util.Log.d("BackupCompleted", "Recovery Phrase loading set to false, calling checkLoadingStatus")
+            checkLoadingStatus()
+        }
     }
 
     private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {

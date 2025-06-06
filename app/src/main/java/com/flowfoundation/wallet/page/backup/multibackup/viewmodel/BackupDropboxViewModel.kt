@@ -118,7 +118,18 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
             backupCryptoProvider?.let {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
-                        arg { string(it.getPublicKey()) }
+                        val pubKeyWithPrefix = it.getPublicKey() // e.g., "04..."
+                        val pubKeyHexRaw = pubKeyWithPrefix.removePrefix("0x")
+                        
+                        // Flow's Cadence addKey script expects the publicKey string argument to be the
+                        // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
+                        val pubKeyForCadence = if (pubKeyHexRaw.startsWith("04") && pubKeyHexRaw.length == 130) {
+                            pubKeyHexRaw.substring(2)
+                        } else {
+                            pubKeyHexRaw
+                        }
+                        
+                        arg { string(pubKeyForCadence) }
                         arg { uint8(it.getSignatureAlgorithm().cadenceIndex.toUByte()) }
                         arg { uint8(it.getHashAlgorithm().cadenceIndex.toUByte()) }
                         arg { ufix64Safe(500) }

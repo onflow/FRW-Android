@@ -80,7 +80,15 @@ suspend fun checkGoogleDriveBackup(
     val wallet = AccountManager.get()?.wallet
     val exist = data.firstOrNull { it.userId == wallet?.id } != null
     val blockAccount = FlowAddress(wallet?.walletAddress().orEmpty()).lastBlockAccount()
-    val keyExist = blockAccount.keys?.firstOrNull { provider.getPublicKey() == it.publicKey } != null
+    
+    // Normalize public keys for comparison - remove prefixes and convert to lowercase
+    val providerPubKey = provider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
+    
+    val keyExist = blockAccount.keys?.firstOrNull { key ->
+        val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
+        providerPubKey == onChainPubKey
+    } != null
+    
     LocalBroadcastManager.getInstance(Env.getApp())
         .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_CHECK_FINISH).apply {
             putExtra(EXTRA_SUCCESS, exist && keyExist)
@@ -116,8 +124,15 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
     val wallet = account.wallet ?: throw RuntimeException("Wallet cannot be null")
     val exist = data.firstOrNull { it.userId == wallet.id }
     val blockAccount = FlowAddress(wallet.walletAddress().orEmpty()).lastBlockAccount()
-    val keyIndex =
-        blockAccount.keys?.findLast { provider.getPublicKey() == it.publicKey }?.index
+    
+    // Normalize public keys for comparison - remove prefixes and convert to lowercase
+    val providerPubKey = provider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
+    
+    val keyIndex = blockAccount.keys?.findLast { key ->
+        val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
+        providerPubKey == onChainPubKey
+    }?.index
+    
     val aesKey = sha256(getPinCode().toByteArray())
     val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
     if (exist == null) {

@@ -132,7 +132,18 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
     private suspend fun addPublicKey(accountKey: WCAccountKey): Boolean {
         try {
             val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
-                arg { string(accountKey.publicKey) }
+                val pubKeyWithPrefix = accountKey.publicKey // e.g., "04..."
+                val pubKeyHexRaw = pubKeyWithPrefix.removePrefix("0x")
+                
+                // Flow's Cadence addKey script expects the publicKey string argument to be the
+                // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
+                val pubKeyForCadence = if (pubKeyHexRaw.startsWith("04") && pubKeyHexRaw.length == 130) {
+                    pubKeyHexRaw.substring(2)
+                } else {
+                    pubKeyHexRaw
+                }
+                
+                arg { string(pubKeyForCadence) }
                 arg { uint8(accountKey.signAlgo.toUByte()) }
                 arg { uint8(accountKey.hashAlgo.toUByte()) }
                 arg { ufix64Safe(1000) }
