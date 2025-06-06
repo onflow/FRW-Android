@@ -54,11 +54,17 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 val service = retrofit().create(ApiService::class.java)
                 val response = service.getKeyDeviceInfo()
                 logd(TAG, "API Response: ${response.status}")
+                logd(TAG, "API Response data: ${response.data}")
 
                 val backupKeyList = response.data.result?.filter {
                     it.backupInfo != null && it.backupInfo.type >= 0
                 }
                 logd(TAG, "Filtered backup key list size: ${backupKeyList?.size}")
+                
+                // Log each backup key found
+                backupKeyList?.forEachIndexed { index, keyInfo ->
+                    logd(TAG, "  [$index] Backup: type=${keyInfo.backupInfo?.type}, name=${keyInfo.backupInfo?.name}, pubKey=${keyInfo.pubKey.publicKey}")
+                }
 
                 if (backupKeyList.isNullOrEmpty()) {
                     logd(TAG, "No backup keys found, clearing lists")

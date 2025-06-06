@@ -167,12 +167,22 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider?.let {
                 try {
+                    android.util.Log.d("BackupDropbox", "Starting registrationKeyList for Dropbox backup")
                     val deviceInfo = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
+                    val publicKey = it.getPublicKey()
+                    android.util.Log.d("BackupDropbox", "Public key for sync: $publicKey")
+                    android.util.Log.d("BackupDropbox", "Public key length: ${publicKey.length}")
+                    
+                    // Ensure the public key is in the correct format for the API (64 bytes, no 04 prefix)
+                    val normalizedPublicKey = publicKey.removePrefix("0x").removePrefix("04")
+                    android.util.Log.d("BackupDropbox", "Normalized public key for sync: $normalizedPublicKey")
+                    android.util.Log.d("BackupDropbox", "Normalized public key length: ${normalizedPublicKey.length}")
+                    
                     val resp = service.syncAccount(
                         AccountSyncRequest(
                             AccountKey(
-                                publicKey = it.getPublicKey(),
+                                publicKey = normalizedPublicKey,
                                 signAlgo = it.getSignatureAlgorithm().cadenceIndex,
                                 hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
@@ -184,6 +194,8 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                     )
+                    android.util.Log.d("BackupDropbox", "Sync response status: ${resp.status}")
+                    android.util.Log.d("BackupDropbox", "Sync response: $resp")
                     if (resp.status == 200) {
                         MixpanelManager.multiBackupCreated(MixpanelBackupProvider.DROPBOX)
                         backupStateLiveData.postValue(BackupDropboxState.BACKUP_SUCCESS)
@@ -191,7 +203,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                         backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                     }
                 } catch (e: Exception) {
-                    ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
+                    android.util.Log.e("BackupDropbox", "Registration failed", e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.DROPBOX)
                     backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                 }

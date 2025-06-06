@@ -146,12 +146,22 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider.let {
                 try {
+                    android.util.Log.d("BackupRecoveryPhrase", "Starting syncKeyInfo for Manual backup")
                     val deviceInfo = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
+                    val publicKey = it.getPublicKey()
+                    android.util.Log.d("BackupRecoveryPhrase", "Public key for sync: $publicKey")
+                    android.util.Log.d("BackupRecoveryPhrase", "Public key length: ${publicKey.length}")
+                    
+                    // Ensure the public key is in the correct format for the API (64 bytes, no 04 prefix)
+                    val normalizedPublicKey = publicKey.removePrefix("0x").removePrefix("04")
+                    android.util.Log.d("BackupRecoveryPhrase", "Normalized public key for sync: $normalizedPublicKey")
+                    android.util.Log.d("BackupRecoveryPhrase", "Normalized public key length: ${normalizedPublicKey.length}")
+                    
                     val resp = service.syncAccount(
                         AccountSyncRequest(
                             AccountKey(
-                                publicKey = it.getPublicKey(),
+                                publicKey = normalizedPublicKey,
                                 signAlgo = it.getSignatureAlgorithm().cadenceIndex,
                                 hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
@@ -163,9 +173,12 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                     )
+                    android.util.Log.d("BackupRecoveryPhrase", "Sync response status: ${resp.status}")
+                    android.util.Log.d("BackupRecoveryPhrase", "Sync response: $resp")
                     MixpanelManager.multiBackupCreated(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(resp.status == 200)
                 } catch (e: Exception) {
+                    android.util.Log.e("BackupRecoveryPhrase", "Sync failed", e)
                     ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(false)
