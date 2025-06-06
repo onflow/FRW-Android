@@ -64,6 +64,7 @@ import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
@@ -187,6 +188,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         toNext()
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun restoreWallet() {
         if (WalletManager.wallet()?.walletAddress() == restoreAddress) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
@@ -201,46 +203,81 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
         ioScope {
             try {
+                logd("MultiRestore", "Starting restoreWallet with ${mnemonicList.size} mnemonics")
                 val baseDir = File(Env.getApp().filesDir, "wallet")
                 val storage = FileSystemStorage(baseDir)
                 
-                // Create seed phrase key from the first mnemonic
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = mnemonicList.first(),
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
+                // Create and properly initialize seed phrase key from the first mnemonic
+                logd("MultiRestore", "Creating SeedPhraseKey from first mnemonic")
+                val firstMnemonic = mnemonicList.first()
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(firstMnemonic, storage)
                 
-                // Create a new wallet using the seed phrase key
-                WalletFactory.createKeyWallet(
-                    seedPhraseKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                )
+                // Force initialization and verify the key works
+                try {
+                    val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+                    logd("MultiRestore", "SeedPhraseKey initialized successfully, public key: ${publicKey?.toHexString()?.take(20)}...")
+                } catch (e: Exception) {
+                    android.util.Log.e("MultiRestore", "Failed to initialize SeedPhraseKey from first mnemonic", e)
+                    throw e
+                }
+                
+                // Create a new wallet using the properly initialized seed phrase key
+                logd("MultiRestore", "Creating KeyWallet from SeedPhraseKey")
+                val keyWallet = try {
+                    WalletFactory.createKeyWallet(
+                        seedPhraseKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        storage
+                    )
+                } catch (e: Exception) {
+                    android.util.Log.e("MultiRestore", "Failed to create KeyWallet", e)
+                    throw e
+                }
                 
                 // Initialize WalletManager with the new wallet
+                logd("MultiRestore", "Initializing WalletManager")
                 WalletManager.init()
                 
+                // Create the transaction to add the new key
+                logd("MultiRestore", "Creating private key for transaction")
                 val privateKey = PrivateKey.create(storage)
+                
+                logd("MultiRestore", "Executing add public key transaction")
+                
+                // Get the public key and normalize it (remove "04" prefix if present)
+                val rawPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
+                val normalizedPublicKey = if (rawPublicKey.startsWith("04") && rawPublicKey.length == 130) {
+                    rawPublicKey.substring(2) // Remove "04" prefix for Flow's decodeHex()
+                } else {
+                    rawPublicKey
+                }
+                logd("MultiRestore", "Public key for transaction: ${normalizedPublicKey.take(20)}... (length: ${normalizedPublicKey.length})")
+                
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
-                    arg { string(privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "") }
-                    arg { uint8(SigningAlgorithm.ECDSA_P256.ordinal.toUByte()) }
-                    arg { uint8(HashingAlgorithm.SHA2_256.ordinal.toUByte()) }
+                    arg { string(normalizedPublicKey) }
+                    arg { uint8(SigningAlgorithm.ECDSA_P256.cadenceIndex.toUByte()) }
+                    arg { uint8(HashingAlgorithm.SHA2_256.cadenceIndex.toUByte()) }
                     arg { ufix64Safe(1000) }
                 }
-                val transactionState = TransactionState(
-                    transactionId = txId!!,
-                    time = System.currentTimeMillis(),
-                    state = TransactionStatus.PENDING.ordinal,
-                    type = TransactionState.TYPE_ADD_PUBLIC_KEY,
-                    data = ""
-                )
-                currentTxId = txId
-                TransactionStateManager.newTransaction(transactionState)
-                pushBubbleStack(transactionState)
+                
+                if (txId != null) {
+                    logd("MultiRestore", "Transaction created successfully: $txId")
+                    val transactionState = TransactionState(
+                        transactionId = txId,
+                        time = System.currentTimeMillis(),
+                        state = TransactionStatus.PENDING.ordinal,
+                        type = TransactionState.TYPE_ADD_PUBLIC_KEY,
+                        data = ""
+                    )
+                    currentTxId = txId
+                    TransactionStateManager.newTransaction(transactionState)
+                    pushBubbleStack(transactionState)
+                } else {
+                    android.util.Log.e("MultiRestore", "Failed to create transaction - txId is null")
+                    throw RuntimeException("Failed to create add public key transaction")
+                }
             } catch (e: Exception) {
+                android.util.Log.e("MultiRestore", "restoreWallet failed", e)
                 loge(e)
                 if (e is IllegalStateException) {
                     ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
@@ -264,15 +301,9 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val privateKey = PrivateKey.create(storage)
                 val service = retrofit().create(ApiService::class.java)
                 
-                // Create seed phrase keys from mnemonics
+                // Create seed phrase keys from mnemonics with proper keyPair initialization
                 val seedPhraseKeys = mnemonicList.map { mnemonic ->
-                    SeedPhraseKey(
-                        mnemonicString = mnemonic,
-                        passphrase = "",
-                        derivationPath = "m/44'/539'/0'/0/0",
-                        keyPair = null,
-                        storage = storage
-                    )
+                    createSeedPhraseKeyWithKeyPair(mnemonic, storage)
                 }
                 
                 // Create providers from seed phrase keys
@@ -386,46 +417,88 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         restoreAddress = address
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private suspend fun CadenceScript.executeTransactionWithMultiKey(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
         val args = CadenceArgumentsBuilder().apply { arguments(this) }
         val baseDir = File(Env.getApp().filesDir, "wallet")
         val storage = FileSystemStorage(baseDir)
         
-        // Create seed phrase keys from mnemonics
-        val seedPhraseKeys = mnemonicList.map { mnemonic ->
-            SeedPhraseKey(
-                mnemonicString = mnemonic,
-                passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
-                keyPair = null,
-                storage = storage
-            )
-        }
-        
-        // Create providers from seed phrase keys
-        val providers = seedPhraseKeys.map { seedPhraseKey ->
-            val words = seedPhraseKey.mnemonic
-            if (words.size == 15) {
-                BackupCryptoProvider(seedPhraseKey)
-            } else {
-                HDWalletCryptoProvider(seedPhraseKey)
+        try {
+            logd("MultiRestore", "Creating seed phrase keys from ${mnemonicList.size} mnemonics")
+            
+            // Create and properly initialize seed phrase keys from mnemonics with keyPair
+            val seedPhraseKeys = mnemonicList.mapIndexed { index, mnemonic ->
+                logd("MultiRestore", "Creating SeedPhraseKey $index from mnemonic")
+                logd("MultiRestore", "Mnemonic $index word count: ${mnemonic.split(" ").size}")
+                
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
+                
+                // Verify the key works by testing key generation
+                try {
+                    val publicKeySecp256k1 = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+                    val privateKeySecp256k1 = seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_secp256k1)
+                    val publicKeyP256 = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)
+                    val privateKeyP256 = seedPhraseKey.privateKey(SigningAlgorithm.ECDSA_P256)
+                    
+                    logd("MultiRestore", "SeedPhraseKey $index initialized successfully")
+                    logd("MultiRestore", "  ECDSA_secp256k1 - public: ${publicKeySecp256k1?.toHexString()?.take(20)}..., private: ${if (privateKeySecp256k1 != null) "available" else "null"}")
+                    logd("MultiRestore", "  ECDSA_P256 - public: ${publicKeyP256?.toHexString()?.take(20)}..., private: ${if (privateKeyP256 != null) "available" else "null"}")
+                    
+                    if (publicKeySecp256k1 == null || privateKeySecp256k1 == null) {
+                        throw RuntimeException("SeedPhraseKey $index failed to generate ECDSA_secp256k1 keys")
+                    }
+                    if (publicKeyP256 == null || privateKeyP256 == null) {
+                        throw RuntimeException("SeedPhraseKey $index failed to generate ECDSA_P256 keys")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MultiRestore", "Failed to initialize SeedPhraseKey $index", e)
+                    throw RuntimeException("SeedPhraseKey $index initialization failed: ${e.message}", e)
+                }
+                
+                seedPhraseKey
             }
-        }
-        
-        return try {
-            sendTransactionWithMultiSignature(providers = providers, builder = {
+            
+            // Create providers from properly initialized seed phrase keys
+            val providers = seedPhraseKeys.mapIndexed { index, seedPhraseKey ->
+                logd("MultiRestore", "Creating crypto provider $index")
+                val words = seedPhraseKey.mnemonic
+                val provider = if (words.size == 15) {
+                    BackupCryptoProvider(seedPhraseKey)
+                } else {
+                    HDWalletCryptoProvider(seedPhraseKey)
+                }
+                
+                // Verify the provider can generate a public key
+                try {
+                    val providerPublicKey = provider.getPublicKey()
+                    logd("MultiRestore", "Provider $index public key: ${providerPublicKey.take(20)}...")
+                    if (providerPublicKey.isEmpty()) {
+                        throw RuntimeException("Provider $index generated empty public key")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("MultiRestore", "Provider $index failed to generate public key", e)
+                    throw RuntimeException("Provider $index public key generation failed: ${e.message}", e)
+                }
+                
+                provider
+            }
+            
+            logd("MultiRestore", "Sending transaction with ${providers.size} providers")
+            
+            return sendTransactionWithMultiSignature(providers = providers, builder = {
                 args.build().forEach { arg(it) }
                 walletAddress(restoreAddress)
                 script(this@executeTransactionWithMultiKey.getScript().addPlatformInfo())
             })
         } catch (e: Exception) {
+            android.util.Log.e("MultiRestore", "executeTransactionWithMultiKey failed", e)
             loge(e)
             reportCadenceErrorToDebugView(scriptId, e)
             if (e is InvalidKeyException) {
                 ErrorReporter.reportCriticalWithMixpanel(WalletError.QUERY_ACCOUNT_KEY_FAILED, e)
                 Instabug.show()
             }
-            null
+            return null
         }
     }
 
@@ -441,29 +514,51 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        logd("MultiRestore", "Creating BackupCryptoProvider")
+        
+        // Verify the seed phrase key is properly initialized
+        try {
+            val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+            logd("MultiRestore", "SeedPhraseKey verified, public key: ${publicKey?.toHexString()?.take(20)}...")
+        } catch (e: Exception) {
+            android.util.Log.e("MultiRestore", "SeedPhraseKey verification failed", e)
+            throw RuntimeException("SeedPhraseKey is not properly initialized", e)
+        }
+        
         val wallet = WalletFactory.createKeyWallet(
             seedPhraseKey,
             setOf(ChainId.Mainnet, ChainId.Testnet),
             getStorage()
         )
+        
+        // Use default algorithms - algorithm determination will happen in the transaction layer
+        logd("MultiRestore", "Using default algorithms for BackupCryptoProvider")
         return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     private fun restoreFromMnemonic(mnemonic: String) {
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = mnemonic,
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = getStorage()
-        )
-        createBackupCryptoProvider(seedPhraseKey)
         try {
+            logd("MultiRestore", "Starting restoreFromMnemonic with mnemonic length: ${mnemonic.length}")
+            
+            val seedPhraseKey = SeedPhraseKey(
+                mnemonicString = mnemonic,
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = getStorage()
+            )
+            
+            // Create the backup crypto provider with appropriate algorithms
+            val backupProvider = createBackupCryptoProvider(seedPhraseKey)
+            logd("MultiRestore", "Created BackupCryptoProvider with algorithms: ${backupProvider.getSignatureAlgorithm()}, ${backupProvider.getHashAlgorithm()}")
+            
             // Add the mnemonic to the transaction list
             addMnemonicToTransaction(mnemonic)
             restoreWallet()
         } catch (e: Exception) {
+            android.util.Log.e("MultiRestore", "restoreFromMnemonic failed", e)
             loge(e)
             ErrorReporter.reportWithMixpanel(BackupError.MNEMONIC_RESTORE_FAILED, e)
             restoreFailed()
@@ -487,6 +582,52 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             loge(e)
             ErrorReporter.reportWithMixpanel(BackupError.KEYSTORE_RESTORE_FAILED, e)
             restoreFailed()
+        }
+    }
+
+    /**
+     * Create a SeedPhraseKey with properly initialized keyPair
+     * This fixes the "Signing key is empty or not available" error
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun createSeedPhraseKeyWithKeyPair(mnemonic: String, storage: FileSystemStorage): SeedPhraseKey {
+        logd("MultiRestore", "Creating SeedPhraseKey with proper keyPair initialization")
+        
+        try {
+            // Create a simple dummy KeyPair to pass the null check in sign()
+            // The actual signing uses hdWallet.getKeyByCurve() internally, not this keyPair
+            val keyGenerator = java.security.KeyPairGenerator.getInstance("EC")
+            keyGenerator.initialize(256)
+            val dummyKeyPair = keyGenerator.generateKeyPair()
+            
+            logd("MultiRestore", "Created dummy KeyPair for null check")
+            
+            // Create SeedPhraseKey with the dummy keyPair
+            val seedPhraseKey = SeedPhraseKey(
+                mnemonicString = mnemonic,
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = dummyKeyPair,
+                storage = storage
+            )
+            
+            // Verify that the SeedPhraseKey can generate keys using its internal hdWallet
+            try {
+                val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
+                if (publicKey == null) {
+                    throw RuntimeException("SeedPhraseKey failed to generate public key")
+                }
+                logd("MultiRestore", "SeedPhraseKey successfully verified with public key: ${publicKey.toHexString().take(20)}...")
+            } catch (e: Exception) {
+                android.util.Log.e("MultiRestore", "SeedPhraseKey verification failed", e)
+                throw RuntimeException("SeedPhraseKey verification failed", e)
+            }
+            
+            return seedPhraseKey
+            
+        } catch (e: Exception) {
+            android.util.Log.e("MultiRestore", "Failed to create SeedPhraseKey", e)
+            throw RuntimeException("Failed to create SeedPhraseKey with proper keyPair", e)
         }
     }
 }

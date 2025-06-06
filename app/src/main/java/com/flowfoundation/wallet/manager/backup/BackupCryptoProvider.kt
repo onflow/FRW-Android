@@ -84,6 +84,11 @@ class BackupCryptoProvider(
      * @return Signer implementation
      */
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        logd("BackupCryptoProvider", "getSigner() called with hashingAlgorithm: $hashingAlgorithm")
+        // Use the provided hashing algorithm, or fall back to our configured one, or use a default
+        val effectiveHashingAlgorithm = hashingAlgorithm ?: this.hashingAlgorithm ?: getHashAlgorithm()
+        logd("BackupCryptoProvider", "Using effective hashing algorithm: $effectiveHashingAlgorithm")
+        
         return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
@@ -95,11 +100,16 @@ class BackupCryptoProvider(
                 logd("BackupCryptoProvider", "  Transaction: ${transaction?.id ?: "null"}")
                 logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
-                logd("BackupCryptoProvider", "  Using hashing algorithm: $hashingAlgorithm")
+                logd("BackupCryptoProvider", "  Using effective hashing algorithm: $effectiveHashingAlgorithm")
                 
-                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
-                logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
-                return signature
+                try {
+                    val signature = seedPhraseKey.sign(bytes, signingAlgorithm, effectiveHashingAlgorithm)
+                    logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                    return signature
+                } catch (e: Exception) {
+                    android.util.Log.e("BackupCryptoProvider", "Signing failed in transaction signer", e)
+                    throw e
+                }
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
@@ -108,19 +118,29 @@ class BackupCryptoProvider(
                 logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
                 logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
-                logd("BackupCryptoProvider", "  Using hashing algorithm: $hashingAlgorithm")
+                logd("BackupCryptoProvider", "  Using effective hashing algorithm: $effectiveHashingAlgorithm")
                 
-                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
-                logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
-                return signature
+                try {
+                    val signature = seedPhraseKey.sign(bytes, signingAlgorithm, effectiveHashingAlgorithm)
+                    logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
+                    return signature
+                } catch (e: Exception) {
+                    android.util.Log.e("BackupCryptoProvider", "Signing failed in KMM signer", e)
+                    throw e
+                }
             }
             
             override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
                 logd("BackupCryptoProvider", "KMM Signer.signWithDomain() called")
                 logd("BackupCryptoProvider", "  Domain: ${domain.take(32).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Bytes: ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
-                // For domain signing, we need to combine domain + bytes and let the SDK handle hashing
-                return seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
+                try {
+                    // For domain signing, we need to combine domain + bytes and let the SDK handle hashing
+                    return seedPhraseKey.sign(domain + bytes, signingAlgorithm, effectiveHashingAlgorithm)
+                } catch (e: Exception) {
+                    android.util.Log.e("BackupCryptoProvider", "Signing failed in signWithDomain", e)
+                    throw e
+                }
             }
             
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
