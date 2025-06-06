@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import org.onflow.flow.ChainId
+import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import kotlinx.coroutines.runBlocking
 import android.util.Log
@@ -193,6 +194,7 @@ object CryptoProviderManager {
         }
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun getSwitchAccountCryptoProvider(account: Account): CryptoProvider? {
         val storage = getStorage()
         
@@ -231,11 +233,41 @@ object CryptoProviderManager {
                     storage
                 ) as KeyWallet
                 
+                // Determine the correct signing algorithm for this private key from on-chain data
+                val currentProviderPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() 
+                    ?: privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256 // Default
+                var determinedHashingAlgorithm: HashingAlgorithm? = null
+                
+                if (currentProviderPublicKey != null && account.wallet?.walletAddress() != null) {
+                    try {
+                        val onChainAccount = runBlocking { FlowCadenceApi.getAccount(account.wallet!!.walletAddress()!!) }
+                        logd("CryptoProviderManager", "Fetched on-chain account for ${account.wallet!!.walletAddress()!!}")
+                        val onChainKey = onChainAccount.keys?.find { acctKey ->
+                            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
+                            val providerPubKeyHex = currentProviderPublicKey.removePrefix("0x").lowercase()
+                            val providerPubKeyStripped = if (providerPubKeyHex.startsWith("04") && providerPubKeyHex.length == 130) providerPubKeyHex.substring(2) else providerPubKeyHex
+                            val isMatch = acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
+                            if (isMatch) logd("CryptoProviderManager", "Matched on-chain key: index=${acctKey.index}, signAlgo=${acctKey.signingAlgorithm}, hashAlgo=${acctKey.hashingAlgorithm}")
+                            isMatch
+                        }
+                        if (onChainKey != null) {
+                            determinedSigningAlgorithm = onChainKey.signingAlgorithm
+                            determinedHashingAlgorithm = onChainKey.hashingAlgorithm
+                            logd("CryptoProviderManager", "Successfully determined on-chain algorithms: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
+                        } else {
+                            logd("CryptoProviderManager", "Could NOT find matching on-chain key. Using defaults.")
+                        }
+                    } catch (e: Exception) {
+                        loge("CryptoProviderManager", "Error fetching on-chain key details: ${e.message}. Using defaults.")
+                    }
+                }
+                
                 // For prefix-based accounts, we use PrivateKeyCryptoProvider instead of BackupCryptoProvider
-                PrivateKeyCryptoProvider(privateKey, wallet)
+                PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm, determinedHashingAlgorithm)
             }
 
-            // Handle other accounts
+            // Handle other accounts (mnemonic-based)
             else {
                 logd("CryptoProviderManager", "Creating BackupCryptoProvider for mnemonic-based account")
                 val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
@@ -258,7 +290,20 @@ object CryptoProviderManager {
                     setOf(ChainId.Mainnet, ChainId.Testnet),
                     storage
                 ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
+                
+                // Determine signing and hashing algorithms from on-chain data
+                val accountKeys = account.wallet?.walletAddress()
+                    ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
+                val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
+                    SigningAlgorithm.ECDSA_secp256k1
+                } else {
+                    SigningAlgorithm.ECDSA_P256
+                }
+                // Get the hashing algorithm from the on-chain key as well
+                val hashingAlgorithm = accountKeys?.find { it.signingAlgorithm == signingAlgorithm }?.hashingAlgorithm
+                logd("CryptoProviderManager", "Mnemonic-based account using determined algorithms: signing=$signingAlgorithm, hashing=${hashingAlgorithm ?: "default"}")
+                
+                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm, hashingAlgorithm)
             }
         } catch (e: WalletError) {
             loge("CryptoProviderManager", "Wallet error: ${e.message}")

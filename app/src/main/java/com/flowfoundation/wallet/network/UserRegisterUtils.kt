@@ -129,8 +129,8 @@ suspend fun registerOutblock(
                         setOf(ChainId.Mainnet, ChainId.Testnet),
                         storage
                     )
-                    
-                    val chainId = when (chainNetWorkString()) {
+
+                    when (chainNetWorkString()) {
                         "mainnet" -> ChainId.Mainnet
                         "testnet" -> ChainId.Testnet
                         else -> ChainId.Mainnet

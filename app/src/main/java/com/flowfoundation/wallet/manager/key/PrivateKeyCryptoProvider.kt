@@ -30,7 +30,15 @@ class PrivateKeyCryptoProvider(
     override fun getPublicKey(): String {
         val publicKeyBytes = privateKey.publicKey(signingAlgorithm)
         return if (publicKeyBytes != null) {
-            "0x${publicKeyBytes.toHexString()}"
+            val rawPublicKey = publicKeyBytes.toHexString()
+            // Match the format used in keystore restore: remove "04" prefix if present, no "0x" prefix for server
+            val formattedPublicKey = if (rawPublicKey.startsWith("04")) {
+                rawPublicKey.substring(2)
+            } else {
+                rawPublicKey
+            }
+            logd(TAG, "getPublicKey() -> formatting '$rawPublicKey' to '$formattedPublicKey' (no 0x prefix for server)")
+            formattedPublicKey
         } else {
             ""
         }
