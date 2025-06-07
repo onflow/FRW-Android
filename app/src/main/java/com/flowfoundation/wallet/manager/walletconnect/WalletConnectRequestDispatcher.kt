@@ -76,22 +76,69 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "WalletConnectRequestDispatcher"
 
 suspend fun WCRequest.dispatch() {
+    logd(TAG, "dispatch() called for method: $method")
+    logd(TAG, "Request details - ID: $requestId, Topic: $topic")
+    logd(TAG, "Supported Flow methods: ${WalletConnectMethod.getSupportedFlowMethod()}")
+    
     when (method) {
-        WalletConnectMethod.AUTHN.value -> respondAuthn()
-        WalletConnectMethod.AUTHZ.value -> respondAuthz()
-        WalletConnectMethod.PRE_AUTHZ.value -> respondPreAuthz()
-        WalletConnectMethod.USER_SIGNATURE.value -> respondUserSign()
-        WalletConnectMethod.SIGN_PAYER.value -> respondSignPayer()
-        WalletConnectMethod.SIGN_PROPOSER.value -> respondSignProposer()
-        WalletConnectMethod.ACCOUNT_INFO.value -> respondAccountInfo()
-        WalletConnectMethod.ADD_DEVICE_KEY.value -> respondAddDeviceKey()
-        WalletConnectMethod.PROXY_ACCOUNT.value -> respondProxyAccount()
-        WalletConnectMethod.PROXY_SIGN.value -> respondProxySign()
-        WalletConnectMethod.EVM_SIGN_MESSAGE.value -> evmSignMessage()
-        WalletConnectMethod.EVM_SEND_TRANSACTION.value -> evmSendTransaction()
+        WalletConnectMethod.AUTHN.value -> {
+            logd(TAG, "Dispatching to respondAuthn")
+            respondAuthn()
+        }
+        WalletConnectMethod.AUTHZ.value -> {
+            logd(TAG, "Dispatching to respondAuthz")
+            respondAuthz()
+        }
+        WalletConnectMethod.PRE_AUTHZ.value -> {
+            logd(TAG, "Dispatching to respondPreAuthz")
+            respondPreAuthz()
+        }
+        WalletConnectMethod.USER_SIGNATURE.value -> {
+            logd(TAG, "Dispatching to respondUserSign")
+            respondUserSign()
+        }
+        WalletConnectMethod.SIGN_PROPOSER.value -> {
+            logd(TAG, "Dispatching to respondSignProposer")
+            respondSignProposer()
+        }
+        WalletConnectMethod.ACCOUNT_INFO.value -> {
+            logd(TAG, "Dispatching to respondAccountInfo")
+            respondAccountInfo()
+        }
+        WalletConnectMethod.ADD_DEVICE_KEY.value -> {
+            logd(TAG, "Dispatching to respondAddDeviceKey")
+            respondAddDeviceKey()
+        }
+        WalletConnectMethod.PROXY_ACCOUNT.value -> {
+            logd(TAG, "Dispatching to respondProxyAccount")
+            respondProxyAccount()
+        }
+        WalletConnectMethod.PROXY_SIGN.value -> {
+            logd(TAG, "Dispatching to respondProxySign")
+            respondProxySign()
+        }
+        WalletConnectMethod.EVM_SIGN_MESSAGE.value -> {
+            logd(TAG, "Dispatching to evmSignMessage")
+            evmSignMessage()
+        }
+        WalletConnectMethod.EVM_SEND_TRANSACTION.value -> {
+            logd(TAG, "Dispatching to evmSendTransaction")
+            evmSendTransaction()
+        }
         WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
-        WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> evmSignTypedData()
-        WalletConnectMethod.WALLET_WATCH_ASSETS.value -> watchAssets()
+        WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> {
+            logd(TAG, "Dispatching to evmSignTypedData")
+            evmSignTypedData()
+        }
+        WalletConnectMethod.WALLET_WATCH_ASSETS.value -> {
+            logd(TAG, "Dispatching to watchAssets")
+            watchAssets()
+        }
+        else -> {
+            loge(TAG, "Unknown method: $method")
+            loge(TAG, "Available methods: ${WalletConnectMethod.values().map { it.value }}")
+            reject()
+        }
     }
 }
 
@@ -377,6 +424,17 @@ private suspend fun WCRequest.respondAuthz() {
     val message = signable.message ?: return
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
+    
+    // Check if this is a payer-only request (like iOS implementation)
+    // Roles can be null, so we need to check safely
+    val roles = signable.roles
+    if (roles != null && roles.payer && !roles.proposer && !roles.authorizer) {
+        logd(TAG, "Handling payer-only signing request")
+        handlePayerSigningRequest(signable, message)
+        return
+    }
+    
+    // Handle regular authz (proposer/authorizer) requests
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -407,6 +465,49 @@ private suspend fun WCRequest.respondAuthz() {
     }
 }
 
+private suspend fun WCRequest.handlePayerSigningRequest(signable: Signable, message: String) {
+    logd(TAG, "handlePayerSigningRequest() called with message: $message")
+    
+    try {
+        if (signable.voucher == null) {
+            loge(TAG, "Signable voucher is null for payer request")
+            reject()
+            return
+        }
+        
+        logd(TAG, "Executing HTTP function for payer signing")
+        val server = executeHttpFunction(
+            FUNCTION_SIGN_AS_PAYER, PayerSignable(
+                transaction = signable.voucher!!,
+                message = PayerSignable.Message(message)
+            )
+        )
+        logd(TAG, "HTTP function executed successfully")
+
+        safeRun {
+            val sigs = gson().fromJson(server, SignPayerResponse::class.java).envelopeSigs
+            logd(TAG, "Parsed signature response: address=${sigs.address}, keyId=${sigs.keyId}")
+            
+            val response = PollingResponse(
+                status = ResponseStatus.APPROVED,
+                data = PollingData(
+                    fType = "CompositeSignature",
+                    fVsn = "1.0.0",
+                    address = sigs.address,
+                    keyId = sigs.keyId,
+                    signature = sigs.sig,
+                )
+            )
+            logd(TAG, "Approving payer signature response")
+            approve(gson().toJson(response))
+            FclAuthzDialog.dismiss()
+        }
+    } catch (e: Exception) {
+        loge(TAG, "Error in handlePayerSigningRequest: ${e.message}")
+        loge(e)
+        reject()
+    }
+}
 
 private fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
@@ -436,7 +537,7 @@ private fun WCRequest.respondPreAuthz() {
                     uid =  "https://frw-link.lilico.app/wc",
                     identity = Identity(address = payerAddress, keyId = AppConfig.payer().keyId),
                     method = "WC/RPC",
-                    endpoint = WalletConnectMethod.SIGN_PAYER.value,
+                    endpoint = WalletConnectMethod.AUTHZ.value,
                 )
             ),
             authorization = listOf(
@@ -447,7 +548,7 @@ private fun WCRequest.respondPreAuthz() {
                     uid =  "https://frw-link.lilico.app/wc",
                     identity = Identity(address = walletAddress, keyId = keyId),
                     method = "WC/RPC",
-                    endpoint = WalletConnectMethod.SIGN_PROPOSER.value,
+                    endpoint = WalletConnectMethod.AUTHZ.value,
                 )
             ),
         )
@@ -485,34 +586,6 @@ private suspend fun WCRequest.respondUserSign() {
         }
     }
 }
-
-private suspend fun WCRequest.respondSignPayer() {
-    val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
-    val signable = json.firstOrNull() ?: return
-    val server = executeHttpFunction(
-        FUNCTION_SIGN_AS_PAYER, PayerSignable(
-            transaction = signable.voucher!!,
-            message = PayerSignable.Message(signable.message!!)
-        )
-    )
-
-    safeRun {
-        val sigs = gson().fromJson(server, SignPayerResponse::class.java).envelopeSigs
-        val response = PollingResponse(
-            status = ResponseStatus.APPROVED,
-            data = PollingData(
-                fType = "CompositeSignature",
-                fVsn = "1.0.0",
-                address = sigs.address,
-                keyId = sigs.keyId,
-                signature = sigs.sig,
-            )
-        )
-        approve(gson().toJson(response))
-        FclAuthzDialog.dismiss()
-    }
-}
-
 
 private suspend fun WCRequest.respondSignProposer() {
     val activity = topActivity() ?: return
