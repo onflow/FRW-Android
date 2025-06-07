@@ -76,10 +76,6 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "WalletConnectRequestDispatcher"
 
 suspend fun WCRequest.dispatch() {
-    logd(TAG, "dispatch() called for method: $method")
-    logd(TAG, "Request details - ID: $requestId, Topic: $topic")
-    logd(TAG, "Supported Flow methods: ${WalletConnectMethod.getSupportedFlowMethod()}")
-    
     when (method) {
         WalletConnectMethod.AUTHN.value -> respondAuthn()
         WalletConnectMethod.AUTHZ.value -> respondAuthz()
