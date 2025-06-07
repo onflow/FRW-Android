@@ -383,8 +383,7 @@ private suspend fun WCRequest.respondAuthz() {
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
     
-    // Check if this is a payer-only request (like iOS implementation)
-    // Roles can be null, so we need to check safely
+    // Check if this is a payer-only request
     val roles = signable.roles
     if (roles != null && roles.payer && !roles.proposer && !roles.authorizer) {
         logd(TAG, "Handling payer-only signing request")
