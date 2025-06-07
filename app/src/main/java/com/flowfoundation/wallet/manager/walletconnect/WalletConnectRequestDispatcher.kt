@@ -94,7 +94,6 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.EVM_SIGN_MESSAGE.value -> evmSignMessage()
         WalletConnectMethod.EVM_SEND_TRANSACTION.value -> evmSendTransaction()
         WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
-        WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
         WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> evmSignTypedData()
         WalletConnectMethod.WALLET_WATCH_ASSETS.value -> watchAssets()
         else -> {
