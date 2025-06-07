@@ -18,6 +18,19 @@ data class Signable(
     val message: String? = null,
     @SerializedName("voucher")
     var voucher: Voucher? = null,
+    @SerializedName("roles")
+    val roles: SignableRoles? = null,
+)
+
+data class SignableRoles(
+    @SerializedName("proposer")
+    val proposer: Boolean = false,
+    @SerializedName("authorizer")
+    val authorizer: Boolean = false,
+    @SerializedName("payer")
+    val payer: Boolean = false,
+    @SerializedName("param")
+    val param: Boolean = false,
 )
 
 data class AsArgument(
