@@ -7,7 +7,6 @@ import org.onflow.flow.models.bytesToHex
 import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import wallet.core.jni.*
@@ -164,9 +163,5 @@ class TestWallet {
             "74bae2badfff9e8193292978b07acb703ffafee2b81b551ab6dffa1135a144fd68e352ec7057eca55f5deac2307b8919797d0a7417cc4da983c5608a861afe9500"
 
         const val SECP256K1_TEST_PRIVATE_KEY = "9c33a65806715a537d7f67cf7bf8a020cbdac8a1019664a2fa34da42d1ddbc7d"
-
-        const val HOST_TESTNET = "access.devnet.nodes.onflow.org"
-
-        const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
     }
 }

@@ -51,6 +51,8 @@ class TestKeyStore {
         val password = "11111111"
         val pass = password.toByteArray()
         val keyStore = StoredKey.importJSON(json.toByteArray())
+        assertNotNull("Failed to import keystore from JSON", keyStore)
+        
         val privateKey = PrivateKey(keyStore.decryptPrivateKey(pass))
         val p1PublicKey = privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
 
@@ -90,10 +92,15 @@ class TestKeyStore {
         }
         """.trimIndent()
         val password =
-            "2d6eefbfbd4622efbfbdefbfbd516718efbfbdefbfbdefbfbdefbfbd59efbfbd30efbfbdefbfbd3a4348efbfbd2aefbfbdefbfbd49efbfbd27efbfbd0638efbfbdefbfbdefbfbd4cefbfbd6befbfbdefbfbd6defbfbdefbfbd63efbfbd5aefbfbd61262b70efbfbdefbfbdefbfbdefbfbdefbfbdc7aa373163417cefbfbdefbfbdefbfbd44efbfbdefbfbd1d10efbfbdefbfbdefbfbd61dc9e5b124befbfbd11efbfbdefbfbd2fefbfbdefbfbd3d7c574868efbfbdefbfbdefbfbd37043b7b5c1a436471592f02efbfbd18efbfbdefbfbd2befbfbdefbfbd7218efbfbd6a68efbfbdcb8e5f3328773ec48174efbfbd67efbfbdefbfbdefbfbdefbfbdefbfbd2a31efbfbd7f60efbfbdd884efbfbd57efbfbd25efbfbd590459efbfbd37efbfbd2bdca20fefbfbdefbfbdefbfbdefbfbd39450113efbfbdefbfbdefbfbd454671efbfbdefbfbdd49fefbfbd47efbfbdefbfbdefbfbdefbfbd00efbfbdefbfbdefbfbdefbfbd05203f4c17712defbfbd7bd1bbdc967902efbfbdc98a77efbfbd707a36efbfbd12efbfbdefbfbd57c78cefbfbdefbfbdefbfbd10efbfbdefbfbdefbfbde1a1bb08efbfbdefbfbd26efbfbdefbfbd58efbfbdefbfbdc4b1efbfbd295fefbfbd0eefbfbdefbfbdefbfbd0e6eefbfbd"
+            "2d6eefbfbd4622efbfbdefbfbd516718efbfbdefbfbdefbfbd4cefbfbd6befbfbdefbfbd6defbfbdefbfbd63efbfbd5aefbfbd61262b70efbfbdefbfbdefbfbdefbfbdefbfbdc7aa373163417cefbfbdefbfbdefbfbd44efbfbdefbfbd1d10efbfbdefbfbdefbfbd61dc9e5b124befbfbd11efbfbdefbfbd2fefbfbdefbfbd3d7c574868efbfbdefbfbdefbfbd37043b7b5c1a436471592f02efbfbd18efbfbdefbfbd2befbfbdefbfbd7218efbfbd6a68efbfbdcb8e5f3328773ec48174efbfbd67efbfbdefbfbdefbfbdefbfbdefbfbd2a31efbfbd7f60efbfbdd884efbfbd57efbfbd25efbfbd590459efbfbd37efbfbd2bdca20fefbfbdefbfbdefbfbdefbfbd39450113efbfbdefbfbdefbfbd454671efbfbdefbfbdd49fefbfbd47efbfbdefbfbdefbfbdefbfbd00efbfbdefbfbdefbfbdefbfbd05203f4c17712defbfbd7bd1bbdc967902efbfbdc98a77efbfbd707a36efbfbd12efbfbdefbfbd57c78cefbfbdefbfbdefbfbd10efbfbdefbfbdefbfbde1a1bb08efbfbdefbfbd26efbfbdefbfbd58efbfbdefbfbdc4b1efbfbd295fefbfbd0eefbfbdefbfbdefbfbd0e6eefbfbd"
         val pass = password.hexToBytes()
         val keyStore = StoredKey.importJSON(json.toByteArray())
+        
+        // Add null check to prevent NullPointerException
+        assertNotNull("Failed to import keystore from JSON", keyStore)
+        
         val privateKey = keyStore.decryptPrivateKey(pass)
+        assertNotNull("Failed to decrypt private key with provided password", privateKey)
         assertEquals(privateKey.bytesToHex(), "0x043c5429c7872502531708ec0d821c711691402caf37ef7ba78a8c506f10653b")
     }
 
@@ -109,21 +116,25 @@ class TestKeyStore {
         assertNull(privateKey)
     }
 
-//    @Test
-//    fun testMnemonic() {
-//        val password = "password".toByteArray()
-//        val mnemonic = "call property between lady glow catch old subject hazard forest service vibrant"
-//        val keyStore = StoredKey.importHDWallet(
-//            mnemonic,
-//            "Wallet name",
-//            password,
-//            CoinType.FLOW
-//        )
-//        assertEquals(mnemonic, keyStore.decryptMnemonic(password))
-//
-//        keyStore.store("test_key_store")
-//        Thread.sleep(1000)
-//        val newKeyStore = StoredKey.load("test_key_store")
-//        assertEquals(mnemonic, newKeyStore.decryptMnemonic(password))
-//    }
+    @Test
+    fun testMnemonic() {
+        val password = "password".toByteArray()
+        val mnemonic = "call property between lady glow catch old subject hazard forest service vibrant"
+        val keyStore = StoredKey.importHDWallet(
+            mnemonic,
+            "Wallet name",
+            password,
+            CoinType.ETHEREUM
+        )
+        
+        // Test that the mnemonic can be decrypted correctly
+        assertEquals(mnemonic, keyStore.decryptMnemonic(password))
+        
+        // Test that wrong password returns null
+        val wrongPassword = "wrongpassword".toByteArray()
+        assertNull(keyStore.decryptMnemonic(wrongPassword))
+        
+        // Test that the keystore was created successfully
+        assertNotNull(keyStore)
+    }
 }

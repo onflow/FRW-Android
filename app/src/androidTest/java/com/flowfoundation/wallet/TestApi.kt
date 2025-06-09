@@ -47,10 +47,7 @@ class TestApi {
     @Test
     fun testKeyStoreRegister() {
         CoroutineScope(Dispatchers.IO).launch {
-            val wallet = HDWallet("normal dune pole key case cradle unfold require tornado mercy hospital buyer", "")
-//            val privateKey = wallet.getDerivedKey(CoinType.ETHEREUM, 0, 0, 0)
-//            val publicKey = privateKey.publicKeyNist256p1.uncompressed().data().bytesToHex().removePrefix("04")
-
+            HDWallet("normal dune pole key case cradle unfold require tornado mercy hospital buyer", "")
             val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
             
             // Create storage for the new Flow Wallet Kit
