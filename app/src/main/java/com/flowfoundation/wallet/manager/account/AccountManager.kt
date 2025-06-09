@@ -1,12 +1,9 @@
 package com.flowfoundation.wallet.manager.account
 
 import android.widget.Toast
-import com.flow.wallet.KeyManager
-import com.flow.wallet.toFormatString
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
-import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.UserPrefixCacheManager
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
@@ -20,19 +17,15 @@ import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.OtherHostService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
-import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.error.AccountError
@@ -48,26 +41,12 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.AddressRegistry
-import com.nftco.flow.sdk.FlowAddress
-import com.flow.wallet.CryptoProvider
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import java.io.File
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import com.flowfoundation.wallet.manager.wallet.walletAddress
-import com.flowfoundation.wallet.utils.read
 import com.flowfoundation.wallet.utils.setUploadedAddressSet
-import org.onflow.flow.models.DomainTag
-import org.onflow.flow.models.SigningAlgorithm
 import org.onflow.flow.models.hexToBytes
-import org.onflow.flow.models.toHexString
 
 object AccountManager {
     private val TAG = AccountManager::class.java.simpleName
@@ -76,10 +55,6 @@ object AccountManager {
     private val listeners = CopyOnWriteArrayList<WeakReference<OnAccountUpdate>>()
     private val userInfoListeners = CopyOnWriteArrayList<WeakReference<OnUserInfoUpdate>>()
     private val walletDataListeners = CopyOnWriteArrayList<WeakReference<OnWalletDataUpdate>>()
-    private val userInfoReloadListeners = CopyOnWriteArrayList<WeakReference<OnUserInfoReload>>()
-    private val queryService by lazy {
-        retrofitWithHost("https://production.key-indexer.flow.com").create(OtherHostService::class.java)
-    }
     private val userPrefixes = mutableListOf<UserPrefix>()
     private val switchAccounts = mutableListOf<LocalSwitchAccount>()
 
@@ -101,7 +76,6 @@ object AccountManager {
                 } else {
                     val account = accountList.first()
                     currentAccount = account
-                    var walletRestored = false
 
                     // 1)  If there's no keystore, log once and bail out.
                     val keyStoreJson = account.keyStoreInfo
@@ -152,65 +126,6 @@ object AccountManager {
         uploadedAddressSet = getUploadedAddressSet().toMutableSet()
     }
 
-    private fun migrateAccount(): List<Account>? {
-        val oldAccounts = oldAccountsCache()
-        val newAccounts = AccountCacheManager.read()
-        if (oldAccounts.isEmpty()) {
-            return newAccounts?.toList()
-        }
-        if (newAccounts == null) {
-            return oldAccounts
-        }
-        val migrateMap = oldAccounts.associateBy { it.userInfo.username }.toMutableMap()
-
-        newAccounts.forEach { newAccount ->
-            val oldAccount = migrateMap[newAccount.userInfo.username]
-            if (oldAccount != null) {
-                val prefix = if (oldAccount.prefix.isNullOrBlank()) {
-                    newAccount.prefix
-                } else {
-                    oldAccount.prefix
-                }
-                migrateMap[newAccount.userInfo.username] = newAccount.copy(prefix = prefix)
-            } else {
-                migrateMap[newAccount.userInfo.username] = newAccount
-            }
-        }
-
-        return migrateMap.values.toList()
-    }
-
-    private suspend fun migratePrefixInfo(accountList: List<Account>?): List<Account>? {
-        return try {
-            userPrefixes.addAll(UserPrefixCacheManager.read() ?: emptyList())
-            val addressPrefixMap = getAddressPrefixMap()
-            accountList?.forEach { account ->
-                val userId = account.wallet?.id
-                val userPrefixInfo = userPrefixes.find { it.userId == userId }
-                if (userPrefixInfo != null) {
-                    account.prefix = userPrefixInfo.prefix
-                } else {
-                    val address = account.wallet?.walletAddress()
-                    val prefix = addressPrefixMap[address]
-                    if (!prefix.isNullOrEmpty()) {
-                        account.prefix = prefix
-                        if (!userId.isNullOrEmpty()) {
-                            userPrefixes.add(UserPrefix(userId, prefix))
-                            UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
-                        }
-                    }
-                }
-            }
-            getLocalPrefix(accountList, addressPrefixMap)
-            getLocalStoredKey(accountList)
-            accountList
-        } catch (e: Exception) {
-            ErrorReporter.reportWithMixpanel(AccountError.MIGRATE_PREFIX_FAILED, e)
-            loge(TAG, "Error during migration :: $e")
-            accountList
-        }
-    }
-
     fun getSwitchAccountList(): List<Any> {
         logd(TAG, "getSwitchAccountList() called")
         logd(TAG, "Current accounts: $accounts")
@@ -229,69 +144,7 @@ object AccountManager {
         return list
     }
 
-    private suspend fun getLocalStoredKey(accountList: List<Account>?): List<LocalSwitchAccount> = withContext(Dispatchers.IO) {
-        val list = mutableListOf<LocalSwitchAccount>()
-        val uidPublicKeyMap = AccountWalletManager.getUIDPublicKeyMap()
-        val jobs = uidPublicKeyMap.map { (uid, publicKey) ->
-            async {
-                val response = queryService.queryAddress(publicKey)
-                response.accounts.firstOrNull()?.let { account ->
-                    if (switchAccounts.any { it.address == account.address }) {
-                        return@let
-                    }
-                    if (accountList != null && accountList.any { it.wallet?.walletAddress() == account.address }) {
-                        return@let
-                    }
-                    var count = switchAccounts.size
-                    switchAccounts.add(LocalSwitchAccount(
-                        username = "Profile ${++count}",
-                        address = account.address,
-                        userId = uid
-                    ))
-                }
-            }
-        }
-        jobs.awaitAll()
-        return@withContext list
-    }
-
-    private fun getLocalPrefix(accountList: List<Account>?, addressPrefixMap: Map<String, String>){
-        val prefixesToRemove = accountList?.mapNotNull { it.prefix }.orEmpty()
-        val localPrefixMap = addressPrefixMap.filter { (_, prefix) ->  prefix !in prefixesToRemove}
-        var count = switchAccounts.size
-        switchAccounts.addAll(localPrefixMap.map { (address, prefix) ->
-            LocalSwitchAccount(
-                username = "Profile ${++count}",
-                address = address,
-                prefix = prefix
-            )
-        })
-    }
-
-    private suspend fun getAddressPrefixMap(): Map<String, String> = withContext(Dispatchers.IO) {
-        val map = mutableMapOf<String, String>()
-        val prefixes = KeyManager.getAllAliases().filter {
-            it.startsWith(KeyManager.KEYSTORE_ALIAS_PREFIX)
-        }.map {
-            it.removePrefix(KeyManager.KEYSTORE_ALIAS_PREFIX)
-        }
-        val jobs = prefixes.map { prefix ->
-            async {
-                val publicKey = KeyManager.getPublicKeyByPrefix(prefix)
-                if (publicKey != null) {
-                    val response = queryService.queryAddress(publicKey.toFormatString())
-                    response.accounts.forEach {
-                        map[it.address] = prefix
-                    }
-                }
-            }
-        }
-        jobs.awaitAll()
-        return@withContext map
-    }
-
     fun add(account: Account, uid: String? = null) {
-        logd(TAG, "add() called. Adding account: $account, uid: $uid")
         currentAccount = account
         logd(TAG, "Account added. Current account is now: $currentAccount")
         accounts.removeAll { it.userInfo.username == account.userInfo.username }
@@ -307,17 +160,14 @@ object AccountManager {
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
         }
         initEmojiAndEVMInfo()
-        logd(TAG, "Account added successfully")
     }
 
     fun get(): Account? {
         val account = currentAccount
-        logd(TAG, "get() returning account: $account")
         return account
     }
 
     fun wallet(): com.flow.wallet.wallet.Wallet? {
-        // Ask the source of truth first
         val wmWallet = WalletManager.wallet()
         if (wmWallet != null) return wmWallet
 
@@ -326,22 +176,14 @@ object AccountManager {
     }
 
     fun userInfo(): UserInfoData? {
-        logd(TAG, "userInfo() called")
-        logd(TAG, "Current account: $currentAccount")
-        logd(TAG, "Current account userInfo: ${currentAccount?.userInfo}")
-        logd(TAG, "Current account wallet address: ${currentAccount?.wallet?.walletAddress()}")
-        logd(TAG, "Current account prefix: ${currentAccount?.prefix}")
-        logd(TAG, "Current account isActive: ${currentAccount?.isActive}")
         return currentAccount?.userInfo
     }
 
     fun evmAddressData(): EVMAddressData? {
-        logd(TAG, "evmAddressData() called")
         return get()?.evmAddressData
     }
 
     fun emojiInfoList(): List<WalletEmojiInfo>? {
-        logd(TAG, "emojiInfoList() called")
         return get()?.walletEmojiList
     }
 
@@ -410,46 +252,8 @@ object AccountManager {
         AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
     }
 
-    private fun addAccountWithWallet(wallet: WalletListData) {
-        ioScope {
-            val service = retrofit().create(ApiService::class.java)
-            val userInfo = service.userInfo().data
-            add(Account(
-                userInfo = userInfo,
-                prefix = getCurrentAccountPrefix(wallet.id),
-                wallet = wallet
-            ), wallet.id)
-            WalletManager.walletUpdate()
-            uploadPushToken()
-            onUserInfoReload()
-        }
-    }
-
-    private fun getCurrentAccountPrefix(userId: String?): String {
-        return userPrefixes.find { it.userId == userId }?.prefix ?: KeyManager.getCurrentPrefix()
-    }
-
     fun addListener(callback: OnAccountUpdate) {
         uiScope { listeners.add(WeakReference(callback)) }
-    }
-
-    fun addUserInfoListener(callback: OnUserInfoUpdate) {
-        uiScope { userInfoListeners.add(WeakReference(callback)) }
-    }
-
-    fun addWalletDataListener(callback: OnWalletDataUpdate) {
-        uiScope { walletDataListeners.add(WeakReference(callback)) }
-    }
-
-    fun addUserInfoReloadListener(callback: OnUserInfoReload) {
-        uiScope { userInfoReloadListeners.add(WeakReference(callback)) }
-    }
-
-    private fun onUserInfoReload() {
-        uiScope {
-            userInfoReloadListeners.removeAll { it.get() == null}
-            userInfoReloadListeners.forEach {it.get()?.onUserInfoReload()}
-        }
     }
 
     fun isAddressUploaded(address: String): Boolean {
@@ -850,29 +654,3 @@ interface OnUserInfoReload {
     fun onUserInfoReload()
 }
 
-private fun oldAccountsCache(): List<Account> {
-    val cacheAccounts = CacheManager<Accounts>("${"accounts".hashCode()}", object : TypeToken<Accounts>() {}.type).read()
-    val accounts = mutableListOf<Account>()
-    cacheAccounts?.let {
-        accounts.addAll(it)
-    }
-    accountsCache()?.let {
-        accounts.addAll(it)
-    }
-    return accounts
-}
-
-private fun accountsCache(): List<Account>? {
-    val file = File(DATA_PATH, "${"accounts".hashCode()}")
-    val str = file.read()
-    if (str.isBlank()) {
-        return null
-    }
-
-    try {
-        return Gson().fromJson(str, Accounts::class.java)?.toList()
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return null
-}

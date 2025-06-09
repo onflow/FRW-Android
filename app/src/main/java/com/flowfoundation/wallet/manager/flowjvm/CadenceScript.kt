@@ -54,7 +54,6 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_STAKING_UNSATKED_RESTAKE("restakeUnstaked", CadenceScriptType.STAKING),
 
     // HYBRID_CUSTODY
-    CADENCE_QUERY_CHILD_ACCOUNT_META("getChildAccountMeta", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_UNLINK_CHILD_ACCOUNT("unlinkChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_EDIT_CHILD_ACCOUNT("editChildAccount", CadenceScriptType.HYBRID_CUSTODY),
     CADENCE_QUERY_CHILD_ACCOUNT_TOKENS("getAccessibleCoinInfo", CadenceScriptType.HYBRID_CUSTODY),

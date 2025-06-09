@@ -53,7 +53,6 @@ class PrivateKeyCryptoProvider(
         logd(TAG, "signData called. dataSize=${data.size} bytes, signAlgo=$signingAlgorithm, hashAlgo=$effectiveHashingAlgorithm")
         val signatureBytes = privateKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm)
         
-        // Recovery ID trimming - restore this logic since Flow-Wallet-Kit isn't handling it properly
         // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
         val finalSignature = if (signatureBytes.size == 65) {
             logd(TAG, "Trimming recovery ID from 65-byte signature for $signingAlgorithm")
@@ -89,7 +88,6 @@ class PrivateKeyCryptoProvider(
                 
                 val signatureBytes = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
                 
-                // Recovery ID trimming - restore this logic since Flow-Wallet-Kit isn't handling it properly
                 // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
                 val finalSignature = if (signatureBytes.size == 65) {
                     logd("PrivateKeyCryptoProvider", "  Trimming recovery ID from 65-byte signature for $signingAlgorithm")
@@ -113,7 +111,6 @@ class PrivateKeyCryptoProvider(
                 
                 val signatureBytes = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
                 
-                // Recovery ID trimming - restore this logic since Flow-Wallet-Kit isn't handling it properly
                 // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
                 val finalSignature = if (signatureBytes.size == 65) {
                     logd("PrivateKeyCryptoProvider", "  Trimming recovery ID from 65-byte signature for $signingAlgorithm")

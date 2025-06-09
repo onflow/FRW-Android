@@ -93,7 +93,7 @@ class BackupCryptoProvider(
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
         logd("BackupCryptoProvider", "getSigner() called with hashingAlgorithm: $hashingAlgorithm")
         // Use the provided hashing algorithm, or fall back to our configured one, or use a default
-        val effectiveHashingAlgorithm = hashingAlgorithm ?: this.hashingAlgorithm ?: getHashAlgorithm()
+        val effectiveHashingAlgorithm = hashingAlgorithm
         logd("BackupCryptoProvider", "Using effective hashing algorithm: $effectiveHashingAlgorithm")
         
         return object : org.onflow.flow.models.Signer {
@@ -114,7 +114,6 @@ class BackupCryptoProvider(
                     logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
                     return signature
                 } catch (e: Exception) {
-                    android.util.Log.e("BackupCryptoProvider", "Signing failed in transaction signer", e)
                     throw e
                 }
             }
@@ -132,7 +131,6 @@ class BackupCryptoProvider(
                     logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
                     return signature
                 } catch (e: Exception) {
-                    android.util.Log.e("BackupCryptoProvider", "Signing failed in KMM signer", e)
                     throw e
                 }
             }
@@ -145,7 +143,6 @@ class BackupCryptoProvider(
                     // For domain signing, we need to combine domain + bytes and let the SDK handle hashing
                     return seedPhraseKey.sign(domain + bytes, signingAlgorithm, effectiveHashingAlgorithm)
                 } catch (e: Exception) {
-                    android.util.Log.e("BackupCryptoProvider", "Signing failed in signWithDomain", e)
                     throw e
                 }
             }

@@ -481,31 +481,6 @@ object EVMWalletManager {
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
     }
-
-    fun clearCorruptedEVMAddress(network: String? = chainNetWorkString()) {
-        logd(TAG, "clearCorruptedEVMAddress called for network: $network")
-        val networkAddress = getNetworkAddress(network)
-        if (networkAddress != null) {
-            val currentAddress = evmAddressMap[networkAddress]
-            logd(TAG, "Clearing corrupted EVM address: '$currentAddress' for network address: '$networkAddress'")
-            evmAddressMap.remove(networkAddress)
-            AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
-            logd(TAG, "Corrupted EVM address cleared, attempting to fetch fresh address")
-            fetchEVMAddress { success ->
-                logd(TAG, "Fresh EVM address fetch result: $success")
-            }
-        }
-    }
-
-    fun validateAndRefreshEVMAddress(network: String? = chainNetWorkString()): Boolean {
-        val currentAddress = getEVMAddress(network)
-        if (currentAddress == null || !isValidEVMAddress(currentAddress)) {
-            logd(TAG, "EVM address validation failed, clearing and refreshing")
-            clearCorruptedEVMAddress(network)
-            return false
-        }
-        return true
-    }
 }
 
 @Serializable

@@ -130,7 +130,6 @@ class ChildAccountList(
     }
 
     private fun cache(): CacheManager<List<ChildAccount>> {
-        @Suppress("UNCHECKED_CAST")
         return CacheManager(
             "${address}.child_account_list".cacheFile(),
             object : TypeToken<List<ChildAccount>>() {}.type

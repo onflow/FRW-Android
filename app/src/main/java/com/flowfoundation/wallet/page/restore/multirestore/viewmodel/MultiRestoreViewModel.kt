@@ -61,12 +61,8 @@ import org.onflow.flow.models.TransactionStatus
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import com.flow.wallet.wallet.KeyWallet
-import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.manager.wallet.walletAddress
-import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
-import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import org.onflow.flow.models.DomainTag
 import com.google.gson.Gson
@@ -215,7 +211,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     logd("MultiRestore", "Successfully called MainActivity.relaunch()")
                 } catch (e: Exception) {
                     logd("MultiRestore", "ERROR in MainActivity.relaunch(): ${e.message}")
-                    android.util.Log.e("MultiRestore", "MainActivity.relaunch failed", e)
                     // Fallback: try to finish current activity and start MainActivity directly
                     try {
                         val intent = Intent(activity, MainActivity::class.java).apply {
@@ -226,7 +221,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         logd("MultiRestore", "Fallback navigation successful")
                     } catch (fallbackException: Exception) {
                         logd("MultiRestore", "Fallback navigation also failed: ${fallbackException.message}")
-                        android.util.Log.e("MultiRestore", "Fallback navigation failed", fallbackException)
                     }
                 }
             }
@@ -247,7 +241,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             logd("MultiRestore", "Successfully called MainActivity.relaunch() after account switch")
                         } catch (e: Exception) {
                             logd("MultiRestore", "ERROR in MainActivity.relaunch() after account switch: ${e.message}")
-                            android.util.Log.e("MultiRestore", "MainActivity.relaunch failed after account switch", e)
                             // Fallback: try to finish current activity and start MainActivity directly
                             try {
                                 val intent = Intent(act, MainActivity::class.java).apply {
@@ -258,7 +251,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 logd("MultiRestore", "Fallback navigation successful after account switch")
                             } catch (fallbackException: Exception) {
                                 logd("MultiRestore", "Fallback navigation also failed after account switch: ${fallbackException.message}")
-                                android.util.Log.e("MultiRestore", "Fallback navigation failed after account switch", fallbackException)
                             }
                         }
                     } ?: logd("MultiRestore", "ERROR: Activity is null after account switch")
@@ -273,7 +265,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val storage = FileSystemStorage(baseDir)
                 
                 // Create backup crypto providers from mnemonics for transaction authorization
-                val providers = mnemonicList.map { mnemonic ->
+                mnemonicList.map { mnemonic ->
                     val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
                     val words = mnemonic.split(" ")
                     if (words.size == 15) {
@@ -313,12 +305,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     logd("MultiRestore", "Starting transaction polling backup mechanism")
                     startTransactionPolling(txId)
                 } else {
-                    android.util.Log.e("MultiRestore", "Failed to create transaction - txId is null")
+                    logd("MultiRestore", "Failed to create transaction - txId is null")
                     throw RuntimeException("Failed to create add public key transaction")
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MultiRestore", "restoreWallet failed", e)
-                loge(e)
+                logd("MultiRestore", "restoreWallet failed")
                 if (e is IllegalStateException) {
                     ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
                 } else {
@@ -428,9 +419,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             }
             
             if (attempts >= maxAttempts) {
-                logd("MultiRestore", "Polling timeout reached for transaction $txId after ${maxAttempts} attempts")
-                logd("MultiRestore", "onTransactionStateChange() may not be working properly")
-                // Don't fail silently - this indicates a problem with transaction state management
+                logd("MultiRestore", "Polling timeout reached for transaction $txId after $maxAttempts attempts")
                 uiScope {
                     restoreFailed()
                 }
@@ -500,7 +489,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e("MultiRestore", "syncAccountInfo failed", e)
                 loge(e)
                 ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
             }
@@ -546,7 +534,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         throw RuntimeException("SeedPhraseKey $index failed to generate ECDSA_P256 keys")
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("MultiRestore", "Failed to initialize SeedPhraseKey $index", e)
                     throw RuntimeException("SeedPhraseKey $index initialization failed: ${e.message}", e)
                 }
                 
@@ -571,7 +558,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         throw RuntimeException("Provider $index generated empty public key")
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("MultiRestore", "Provider $index failed to generate public key", e)
                     throw RuntimeException("Provider $index public key generation failed: ${e.message}", e)
                 }
                 
@@ -586,7 +572,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 script(this@executeTransactionWithMultiKey.getScript().addPlatformInfo())
             })
         } catch (e: Exception) {
-            android.util.Log.e("MultiRestore", "executeTransactionWithMultiKey failed", e)
             loge(e)
             reportCadenceErrorToDebugView(scriptId, e)
             if (e is InvalidKeyException) {
@@ -595,30 +580,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             }
             return null
         }
-    }
-
-    @OptIn(ExperimentalStdlibApi::class)
-    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
-        logd("MultiRestore", "Creating BackupCryptoProvider")
-        
-        // Verify the seed phrase key is properly initialized
-        try {
-            val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-            logd("MultiRestore", "SeedPhraseKey verified, public key: ${publicKey?.toHexString()?.take(20)}...")
-        } catch (e: Exception) {
-            android.util.Log.e("MultiRestore", "SeedPhraseKey verification failed", e)
-            throw RuntimeException("SeedPhraseKey is not properly initialized", e)
-        }
-        
-        val wallet = WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            getStorage()
-        )
-        
-        // Use default algorithms - algorithm determination will happen in the transaction layer
-        logd("MultiRestore", "Using default algorithms for BackupCryptoProvider")
-        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     /**
@@ -650,19 +611,15 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             // Verify that the SeedPhraseKey can generate keys using its internal hdWallet
             try {
                 val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-                if (publicKey == null) {
-                    throw RuntimeException("SeedPhraseKey failed to generate public key")
-                }
+                    ?: throw RuntimeException("SeedPhraseKey failed to generate public key")
                 logd("MultiRestore", "SeedPhraseKey successfully verified with public key: ${publicKey.toHexString().take(20)}...")
             } catch (e: Exception) {
-                android.util.Log.e("MultiRestore", "SeedPhraseKey verification failed", e)
                 throw RuntimeException("SeedPhraseKey verification failed", e)
             }
             
             return seedPhraseKey
             
         } catch (e: Exception) {
-            android.util.Log.e("MultiRestore", "Failed to create SeedPhraseKey", e)
             throw RuntimeException("Failed to create SeedPhraseKey with proper keyPair", e)
         }
     }

@@ -28,8 +28,6 @@ import com.flowfoundation.wallet.utils.Env
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import wallet.core.jni.HDWallet
-
 
 const val WALLET_RESTORE_STEP_GUIDE = 0
 const val WALLET_RESTORE_STEP_DRIVE_USERNAME = 1

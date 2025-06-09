@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckLinkedAccountTokenListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenEnabled
-import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckTokenListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetTokenBalanceStorage
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenListBalanceWithAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager

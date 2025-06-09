@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
-import wallet.core.jni.HDWallet
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import java.io.File

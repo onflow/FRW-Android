@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
-import com.google.gson.reflect.TypeToken
 
 object BalanceManager {
     private val TAG = BalanceManager::class.java.simpleName

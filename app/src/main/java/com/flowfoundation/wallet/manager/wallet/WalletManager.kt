@@ -27,10 +27,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
-import org.onflow.flow.models.Account
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -38,7 +36,7 @@ object WalletManager {
     private val selectedWalletAddressRef = AtomicReference<String>("")
     private var currentWallet: Wallet? = null
     private var lastAddressCheck = 0L
-    private val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
+    private const val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
     private var isInitializing = false
     private val initializationLock = Object()
     private var isInitialized = false
@@ -132,9 +130,6 @@ object WalletManager {
                             logd(TAG, "  - ${blockchain.chainId}: ${blockchain.address}")
                         }
                     }
-                    
-                    // The wallet should work with these addresses - no need to wait for auto-discovery
-                    logd(TAG, "Wallet properly initialized with known addresses")
                     logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
@@ -164,7 +159,6 @@ object WalletManager {
             } catch (e: Exception) {
                 logd(TAG, "ERROR during wallet initialization: ${e.message}")
                 logd(TAG, "Error type: ${e.javaClass.simpleName}")
-                logd(TAG, "Attempting to continue anyway...")
             }
         }
 
@@ -260,7 +254,7 @@ object WalletManager {
             }
         }
 
-        logd(TAG, "Returning wallet: ${currentWallet}")
+        logd(TAG, "Returning wallet: $currentWallet")
         currentWallet
     }
 
@@ -623,7 +617,7 @@ object WalletManager {
                                 // Use the wallet's fetchAccountByAddress method to get the account directly
                                 // from the Flow network, bypassing the key indexer
                                 runBlocking {
-                                    newWallet.fetchAccountByAddress(blockchain.address!!, chainId)
+                                    newWallet.fetchAccountByAddress(blockchain.address, chainId)
                                 }
                                 logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
                             }

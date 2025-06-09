@@ -4,7 +4,6 @@ import android.text.format.DateUtils
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.manager.coin.model.TokenPrice
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitApi
@@ -19,7 +18,6 @@ import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
-import com.google.gson.reflect.TypeToken
 
 object CoinRateManager {
     private val TAG = CoinRateManager::class.java.simpleName

@@ -17,7 +17,7 @@ object AccountCacheManager{
     @WorkerThread
     fun read(): List<Account>? {
         val str = file.read()
-        logd(TAG, "read() called, returned ${str?.length ?: 0} characters, isBlank=${str.isBlank()}")
+        logd(TAG, "read() called, returned ${str.length} characters, isBlank=${str.isBlank()}")
         if (str.isBlank()) {
             logd(TAG, "Warning: Account cache exists but is empty")
             return null

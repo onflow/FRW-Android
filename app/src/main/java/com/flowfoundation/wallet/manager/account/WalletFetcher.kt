@@ -86,8 +86,8 @@ object WalletFetcher {
                             name = "Flow Wallet"
                         )
                         val walletListData = WalletListData(
-                            id = currentAccount?.userInfo?.username ?: "user",
-                            username = currentAccount?.userInfo?.username ?: "user",
+                            id = currentAccount.userInfo.username,
+                            username = currentAccount.userInfo.username,
                             wallets = listOf(walletData)
                         )
                         
@@ -106,11 +106,11 @@ object WalletFetcher {
                             val walletListData = apiService.getWalletList().data
                             if (walletListData != null && !walletListData.wallets.isNullOrEmpty()) {
                                 // Check if we have actual blockchain addresses
-                                val hasAddresses = walletListData.wallets?.any { wallet ->
+                                val hasAddresses = walletListData.wallets.any { wallet ->
                                     wallet.blockchain?.any { blockchain ->
-                                        !blockchain.address.isNullOrBlank()
+                                        blockchain.address.isNotBlank()
                                     } == true
-                                } == true
+                                }
                                 
                                 if (hasAddresses) {
                                     logd(TAG, "Successfully got wallet data from API fallback")

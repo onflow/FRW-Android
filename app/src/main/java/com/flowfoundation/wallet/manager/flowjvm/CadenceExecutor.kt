@@ -34,8 +34,8 @@ const val EVM_GAS_LIMIT = 30000000
 suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn"): String? {
     logd(TAG, "cadenceQueryAddressByDomainFlowns(): domain=$domain, root=$root")
     val result = CadenceScript.CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS.executeCadence {
-        arg { Cadence.string(domain) }
-        arg { Cadence.string(root) }
+        arg { string(domain) }
+        arg { string(root) }
     }
     logd(
         TAG,
@@ -47,7 +47,7 @@ suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn
 suspend fun cadenceQueryAddressByDomainFind(domain: String): String? {
     logd(TAG, "cadenceQueryAddressByDomainFind()")
     val result = CadenceScript.CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND.executeCadence {
-        arg { Cadence.string(domain) }
+        arg { string(domain) }
     }
     logd(TAG, "cadenceQueryAddressByDomainFind response:${result?.encode()}")
     return result?.decode<String>()
@@ -62,16 +62,6 @@ suspend fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
     }
     logd(TAG, "cadenceCheckTokenEnabled response:${result?.encode()}")
     return result?.decode<Boolean>()
-}
-
-suspend fun cadenceCheckTokenListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
-    logd(TAG, "cadenceCheckTokenListEnabled()")
-    val result = CadenceScript.CADENCE_CHECK_TOKEN_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(walletAddress) }
-    }
-    logd(TAG, "cadenceCheckTokenListEnabled address:$walletAddress :: response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
 }
 
 suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
@@ -133,32 +123,6 @@ suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
     }
     logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled address:$formattedAddress :: response:${result?.encode()}")
     return result?.decode<Map<String, Boolean>>()
-}
-
-suspend fun cadenceQueryTokenListBalance(): Map<String, BigDecimal>? {
-    val walletAddress = WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceQueryTokenListBalance() walletAddress: '$walletAddress'")
-    
-    // Check if we have a valid wallet address before proceeding
-    if (walletAddress.isBlank()) {
-        logd(TAG, "cadenceQueryTokenListBalance: No wallet address available, skipping")
-        return null
-    }
-    
-    val formattedAddress = walletAddress.toAddress()
-    logd(TAG, "cadenceQueryTokenListBalance() formatted address: '$formattedAddress'")
-    
-    // Additional check to ensure the address is not just "0x" or invalid
-    if (formattedAddress == "0x" || formattedAddress.length < 10) {
-        logd(TAG, "cadenceQueryTokenListBalance: Invalid wallet address format '$formattedAddress', skipping")
-        return null
-    }
-    
-    val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(formattedAddress) }
-    }
-    logd(TAG, "cadenceQueryTokenListBalance response:${result?.encode()}")
-    return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
 suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String, BigDecimal>? {
@@ -238,32 +202,6 @@ suspend fun cadenceNftEnabled(nft: NftCollection): String? {
     val transactionId = nft.formatCadence(script).transactionByMainWallet(script.scriptId) {}
     logd(TAG, "cadenceEnableToken() transactionId:$transactionId")
     return transactionId
-}
-
-suspend fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceCheckNFTListEnabled() walletAddress: '$walletAddress'")
-    
-    // Check if we have a valid wallet address before proceeding
-    if (walletAddress.isBlank()) {
-        logd(TAG, "cadenceCheckNFTListEnabled: No wallet address available, skipping")
-        return null
-    }
-    
-    val formattedAddress = walletAddress.toAddress()
-    logd(TAG, "cadenceCheckNFTListEnabled() formatted address: '$formattedAddress'")
-    
-    // Additional check to ensure the address is not just "0x" or invalid
-    if (formattedAddress == "0x" || formattedAddress.length < 10) {
-        logd(TAG, "cadenceCheckNFTListEnabled: Invalid wallet address format '$formattedAddress', skipping")
-        return null
-    }
-    
-    val result = CadenceScript.CADENCE_CHECK_NFT_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(formattedAddress) }
-    }
-    logd(TAG, "cadenceCheckNFTListEnabled response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
 }
 
 suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
@@ -563,7 +501,7 @@ suspend fun cadenceSendEVMV2Transaction(
 suspend fun cadenceGetNonce(address: String): BigDecimal? {
     logd(TAG, "cadenceGetNonce()")
     val result = CadenceScript.CADENCE_GET_NONCE.executeCadence {
-        arg { Cadence.string(address) }
+        arg { string(address) }
     }
     logd(TAG, "cadenceGetNonce response:${result?.encode()}")
     return result?.parseBigDecimal()
@@ -572,7 +510,7 @@ suspend fun cadenceGetNonce(address: String): BigDecimal? {
 suspend fun cadenceGetAssociatedFlowIdentifier(evmContractAddress: String): String? {
     logd(TAG, "cadenceGetAssociatedFlowIdentifier()")
     val result = CadenceScript.CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER.executeCadence {
-        arg { Cadence.string(evmContractAddress) }
+        arg { string(evmContractAddress) }
     }
     logd(TAG, "cadenceGetAssociatedFlowIdentifier response:${result?.encode()}")
     return result?.decode<String>()

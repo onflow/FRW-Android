@@ -21,7 +21,6 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.async
 
 private val TAG = WalletConnectDelegate::class.java.simpleName
 

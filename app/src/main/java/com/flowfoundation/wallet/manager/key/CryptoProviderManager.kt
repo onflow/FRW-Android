@@ -503,19 +503,15 @@ object CryptoProviderManager {
             // Verify that the SeedPhraseKey can generate keys using its internal hdWallet
             try {
                 val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-                if (publicKey == null) {
-                    throw RuntimeException("SeedPhraseKey failed to generate public key")
-                }
+                    ?: throw RuntimeException("SeedPhraseKey failed to generate public key")
                 logd(TAG, "SeedPhraseKey successfully verified with public key: ${publicKey.toHexString().take(20)}...")
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "SeedPhraseKey verification failed", e)
                 throw RuntimeException("SeedPhraseKey verification failed", e)
             }
             
             return seedPhraseKey
             
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to create SeedPhraseKey", e)
             throw RuntimeException("Failed to create SeedPhraseKey with proper keyPair", e)
         }
     }
