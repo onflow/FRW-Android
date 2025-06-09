@@ -30,12 +30,10 @@ fun Sign.Model.SessionProposal.approveSession() {
 
     logd(TAG, "approveSession: $namespaces")
 
-    val sessionNamespaces = generateApprovedNamespaces(this, namespaces)
-
     SignClient.approveSession(
         Sign.Params.Approve(
             proposerPublicKey = proposerPublicKey,
-            namespaces = sessionNamespaces
+            namespaces = namespaces
         )
     ) { error ->
         loge(error.throwable)
