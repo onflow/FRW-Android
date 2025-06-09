@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.network.retrofitEVM
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionViewMoreModel
 import com.flowfoundation.wallet.page.transaction.toTransactionRecord
 import com.flowfoundation.wallet.utils.ioScope
@@ -95,7 +96,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
             logd("TransactionRecordViewModel", "EVM account selected. Fetching EVM transfer records for address: '$formattedAddress'")
             ioScope {
                 try {
-                    val service = retrofit(network = chainNetWorkString()).create(ApiService::class.java)
+                    val service = retrofitEVM(network = chainNetWorkString()).create(ApiService::class.java)
                     logd("TransactionRecordViewModel", "Making API call to get EVM transfer records...")
                     val resp = service.getEVMTransferRecord(formattedAddress)
                     logd("TransactionRecordViewModel", "EVM transfer record response received. Status: ${resp.status}, Transactions: ${resp.trxs?.size ?: 0}")
