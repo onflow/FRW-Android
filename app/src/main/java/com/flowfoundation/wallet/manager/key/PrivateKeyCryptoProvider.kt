@@ -5,7 +5,6 @@ import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.wallet.KeyWallet
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
-import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.logd
 

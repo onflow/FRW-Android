@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.restore.multirestore.viewmodel
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -68,6 +69,11 @@ import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import org.onflow.flow.models.DomainTag
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.util.HashMap
+import com.flowfoundation.wallet.utils.readWalletPassword
+import com.flowfoundation.wallet.utils.storeWalletPassword
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -193,23 +199,69 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     @OptIn(ExperimentalStdlibApi::class)
     fun restoreWallet() {
         if (WalletManager.wallet()?.walletAddress() == restoreAddress) {
+            logd("MultiRestore", "Wallet already logged in for address: $restoreAddress")
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
-            val activity = BaseActivity.getCurrentActivity() ?: return
+            val activity = BaseActivity.getCurrentActivity()
+            logd("MultiRestore", "Current activity: ${activity?.javaClass?.simpleName}")
+            if (activity == null) {
+                logd("MultiRestore", "ERROR: Current activity is null, cannot navigate to dashboard")
+                return
+            }
             uiScope {
+                logd("MultiRestore", "Navigating to wallet dashboard after 1 second delay")
                 delay(1000)
-                MainActivity.relaunch(activity, clearTop = true)
+                try {
+                    MainActivity.relaunch(activity, clearTop = true)
+                    logd("MultiRestore", "Successfully called MainActivity.relaunch()")
+                } catch (e: Exception) {
+                    logd("MultiRestore", "ERROR in MainActivity.relaunch(): ${e.message}")
+                    android.util.Log.e("MultiRestore", "MainActivity.relaunch failed", e)
+                    // Fallback: try to finish current activity and start MainActivity directly
+                    try {
+                        val intent = Intent(activity, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        activity.startActivity(intent)
+                        activity.finish()
+                        logd("MultiRestore", "Fallback navigation successful")
+                    } catch (fallbackException: Exception) {
+                        logd("MultiRestore", "Fallback navigation also failed: ${fallbackException.message}")
+                        android.util.Log.e("MultiRestore", "Fallback navigation failed", fallbackException)
+                    }
+                }
             }
             return
         }
         val account = AccountManager.list().firstOrNull { it.wallet?.walletAddress() == restoreAddress }
         if (account != null) {
+            logd("MultiRestore", "Found existing account: ${account.userInfo.username} for address: $restoreAddress")
             val activity = BaseActivity.getCurrentActivity()
+            logd("MultiRestore", "Current activity for account switch: ${activity?.javaClass?.simpleName}")
             AccountManager.switch(account) {
                 uiScope {
                     activity?.let { act ->
+                        logd("MultiRestore", "Account switch successful, navigating to dashboard")
                         delay(500)
-                        MainActivity.relaunch(act, clearTop = true)
-                    }
+                        try {
+                            MainActivity.relaunch(act, clearTop = true)
+                            logd("MultiRestore", "Successfully called MainActivity.relaunch() after account switch")
+                        } catch (e: Exception) {
+                            logd("MultiRestore", "ERROR in MainActivity.relaunch() after account switch: ${e.message}")
+                            android.util.Log.e("MultiRestore", "MainActivity.relaunch failed after account switch", e)
+                            // Fallback: try to finish current activity and start MainActivity directly
+                            try {
+                                val intent = Intent(act, MainActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                }
+                                act.startActivity(intent)
+                                act.finish()
+                                logd("MultiRestore", "Fallback navigation successful after account switch")
+                            } catch (fallbackException: Exception) {
+                                logd("MultiRestore", "Fallback navigation also failed after account switch: ${fallbackException.message}")
+                                android.util.Log.e("MultiRestore", "Fallback navigation failed after account switch", fallbackException)
+                            }
+                        }
+                    } ?: logd("MultiRestore", "ERROR: Activity is null after account switch")
                 }
             }
             return
@@ -303,8 +355,33 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private fun startTransactionPolling(txId: String) {
         logd("MultiRestore", "Starting polling for transaction: $txId")
         ioScope {
+            // First, check if the transaction is already completed before starting polling
+            delay(2000) // Wait 2 seconds for initial transaction processing
+            
+            val initialCheck = TransactionStateManager.getTransactionStateList().find { 
+                it.transactionId == txId && it.type == TransactionState.TYPE_ADD_PUBLIC_KEY 
+            }
+            
+            if (initialCheck != null) {
+                logd("MultiRestore", "Initial check found transaction: ${initialCheck.transactionId}, state: ${initialCheck.state}, isSuccess: ${initialCheck.isSuccess()}")
+                if (initialCheck.isSuccess()) {
+                    logd("MultiRestore", "Transaction already completed, calling syncAccountInfo immediately")
+                    if (currentTxId == txId) {
+                        currentTxId = null
+                        syncAccountInfo()
+                    }
+                    return@ioScope
+                }
+            } else {
+                logd("MultiRestore", "Initial check: transaction not found in TransactionStateManager list")
+                logd("MultiRestore", "Current TransactionStateManager list size: ${TransactionStateManager.getTransactionStateList().size}")
+                TransactionStateManager.getTransactionStateList().forEach { tx ->
+                    logd("MultiRestore", "  Transaction in list: ${tx.transactionId}, type: ${tx.type}, state: ${tx.state}")
+                }
+            }
+            
             var attempts = 0
-            val maxAttempts = 30 // Poll for up to 5 minutes (30 * 10 seconds)
+            val maxAttempts = 6 // Reduce to 6 attempts (1 minute total: 6 × 10 seconds)
             
             while (attempts < maxAttempts) {
                 try {
@@ -312,6 +389,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     delay(10000) // Wait 10 seconds between checks
                     
                     val transactionList = TransactionStateManager.getTransactionStateList()
+                    logd("MultiRestore", "Polling: TransactionStateManager list size: ${transactionList.size}")
+                    
                     val transaction = transactionList.find { 
                         it.transactionId == txId && it.type == TransactionState.TYPE_ADD_PUBLIC_KEY 
                     }
@@ -330,7 +409,15 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                             break
                         }
                     } else {
-                        logd("MultiRestore", "Polling: transaction not found in list")
+                        logd("MultiRestore", "Polling: transaction $txId not found in list")
+                        // Log all transactions for debugging
+                        if (transactionList.isEmpty()) {
+                            logd("MultiRestore", "  Transaction list is empty")
+                        } else {
+                            transactionList.forEachIndexed { index, tx ->
+                                logd("MultiRestore", "  [$index] txId: ${tx.transactionId}, type: ${tx.type}, state: ${tx.state}")
+                            }
+                        }
                     }
                     
                     attempts++
@@ -341,7 +428,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             }
             
             if (attempts >= maxAttempts) {
-                logd("MultiRestore", "Polling timeout reached for transaction $txId")
+                logd("MultiRestore", "Polling timeout reached for transaction $txId after ${maxAttempts} attempts")
+                logd("MultiRestore", "onTransactionStateChange() may not be working properly")
+                // Don't fail silently - this indicates a problem with transaction state management
+                uiScope {
+                    restoreFailed()
+                }
             }
         }
     }
@@ -623,6 +715,32 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                         val keyId = "prefix_key_$prefix"
                                         privateKey.store(keyId, prefix)
                                         logd("MultiRestore", "Stored private key with ID: $keyId and prefix: $prefix")
+                                        
+                                        // Store the mnemonics globally for backup access and mark as multi-restore
+                                        val passwordMap = try {
+                                            val pref = readWalletPassword()
+                                            if (pref.isBlank()) {
+                                                HashMap<String, String>()
+                                            } else {
+                                                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+                                            }
+                                        } catch (e: Exception) {
+                                            HashMap<String, String>()
+                                        }
+                                        
+                                        // Store the first mnemonic as the global one for multi-restore support
+                                        val primaryMnemonic = mnemonicList.firstOrNull() ?: ""
+                                        passwordMap["global"] = primaryMnemonic
+                                        
+                                        // Store all mnemonics for multi-restore identification
+                                        mnemonicList.forEachIndexed { index, mnemonic ->
+                                            passwordMap["multi_restore_$index"] = mnemonic
+                                        }
+                                        passwordMap["multi_restore_count"] = mnemonicList.size.toString()
+                                        passwordMap["multi_restore_address"] = restoreAddress
+                                        
+                                        storeWalletPassword(Gson().toJson(passwordMap))
+                                        logd("MultiRestore", "Stored ${mnemonicList.size} mnemonics for multi-restore backup access")
                                         
                                         AccountManager.add(
                                             Account(
