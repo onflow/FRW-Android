@@ -42,7 +42,14 @@ class BackupCryptoProvider(
      */
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        return seedPhraseKey.publicKey(signingAlgorithm)?.toHexString() ?: ""
+        val rawPublicKey = seedPhraseKey.publicKey(signingAlgorithm)?.toHexString() ?: ""
+        // Match the format used by all other crypto providers: remove "04" prefix if present, no "0x" prefix for server
+        val formattedPublicKey = if (rawPublicKey.startsWith("04")) {
+            rawPublicKey.substring(2)
+        } else {
+            rawPublicKey
+        }
+        return formattedPublicKey
     }
 
     /**

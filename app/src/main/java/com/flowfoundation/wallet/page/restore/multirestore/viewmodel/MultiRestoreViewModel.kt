@@ -23,6 +23,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.RestoreType
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
+import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.AccountKeySignature
 import com.flowfoundation.wallet.network.model.AccountSignRequest
@@ -67,6 +68,7 @@ import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
+import wallet.core.jni.HDWallet
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -85,6 +87,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
     private var mnemonicData = ""
 
     init {
+        logd("MultiRestore", "MultiRestoreViewModel init - registering transaction state listener")
         TransactionStateManager.addOnTransactionStateChange(this)
     }
 
@@ -193,12 +196,23 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         if (WalletManager.wallet()?.walletAddress() == restoreAddress) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
-            activity.finish()
+            uiScope {
+                delay(1000)
+                MainActivity.relaunch(activity, clearTop = true)
+            }
             return
         }
         val account = AccountManager.list().firstOrNull { it.wallet?.walletAddress() == restoreAddress }
         if (account != null) {
-            AccountManager.switch(account){}
+            val activity = BaseActivity.getCurrentActivity()
+            AccountManager.switch(account) {
+                uiScope {
+                    activity?.let { act ->
+                        delay(500)
+                        MainActivity.relaunch(act, clearTop = true)
+                    }
+                }
+            }
             return
         }
         ioScope {
@@ -207,71 +221,45 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val baseDir = File(Env.getApp().filesDir, "wallet")
                 val storage = FileSystemStorage(baseDir)
                 
-                // Create and properly initialize seed phrase key from the first mnemonic
-                logd("MultiRestore", "Creating SeedPhraseKey from first mnemonic")
-                val firstMnemonic = mnemonicList.first()
-                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(firstMnemonic, storage)
-                
-                // Force initialization and verify the key works
-                try {
-                    val publicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)
-                    logd("MultiRestore", "SeedPhraseKey initialized successfully, public key: ${publicKey?.toHexString()?.take(20)}...")
-                } catch (e: Exception) {
-                    android.util.Log.e("MultiRestore", "Failed to initialize SeedPhraseKey from first mnemonic", e)
-                    throw e
+                // Create backup crypto providers from mnemonics - same ones used in syncAccountInfo
+                val providers = mnemonicList.map { mnemonic ->
+                    val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
+                    val words = mnemonic.split(" ")
+                    if (words.size == 15) {
+                        BackupCryptoProvider(seedPhraseKey)
+                    } else {
+                        HDWalletCryptoProvider(seedPhraseKey)
+                    }
                 }
                 
-                // Create a new wallet using the properly initialized seed phrase key
-                logd("MultiRestore", "Creating KeyWallet from SeedPhraseKey")
-                val keyWallet = try {
-                    WalletFactory.createKeyWallet(
-                        seedPhraseKey,
-                        setOf(ChainId.Mainnet, ChainId.Testnet),
-                        storage
-                    )
-                } catch (e: Exception) {
-                    android.util.Log.e("MultiRestore", "Failed to create KeyWallet", e)
-                    throw e
-                }
-                
-                // Initialize WalletManager with the new wallet
-                logd("MultiRestore", "Initializing WalletManager")
-                WalletManager.init()
-                
-                // Create the transaction to add the new key
-                logd("MultiRestore", "Creating private key for transaction")
-                val privateKey = PrivateKey.create(storage)
-                
-                logd("MultiRestore", "Executing add public key transaction")
-                
-                // Get the public key and normalize it (remove "04" prefix if present)
-                val rawPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
-                val normalizedPublicKey = if (rawPublicKey.startsWith("04") && rawPublicKey.length == 130) {
-                    rawPublicKey.substring(2) // Remove "04" prefix for Flow's decodeHex()
-                } else {
-                    rawPublicKey
-                }
-                logd("MultiRestore", "Public key for transaction: ${normalizedPublicKey.take(20)}... (length: ${normalizedPublicKey.length})")
+                // Use the first backup crypto provider's public key for the transaction
+                val primaryProvider = providers.first()
+                val publicKey = primaryProvider.getPublicKey()
+                logd("MultiRestore", "Using backup crypto provider public key: ${publicKey.take(20)}... (length: ${publicKey.length})")
                 
                 val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.executeTransactionWithMultiKey {
-                    arg { string(normalizedPublicKey) }
-                    arg { uint8(SigningAlgorithm.ECDSA_P256.cadenceIndex.toUByte()) }
-                    arg { uint8(HashingAlgorithm.SHA2_256.cadenceIndex.toUByte()) }
+                    arg { string(publicKey) }
+                    arg { uint8(primaryProvider.getSignatureAlgorithm().cadenceIndex.toUByte()) }
+                    arg { uint8(primaryProvider.getHashAlgorithm().cadenceIndex.toUByte()) }
                     arg { ufix64Safe(1000) }
                 }
                 
                 if (txId != null) {
                     logd("MultiRestore", "Transaction created successfully: $txId")
-                    val transactionState = TransactionState(
+                val transactionState = TransactionState(
                         transactionId = txId,
-                        time = System.currentTimeMillis(),
+                    time = System.currentTimeMillis(),
                         state = TransactionStatus.PENDING.ordinal,
-                        type = TransactionState.TYPE_ADD_PUBLIC_KEY,
-                        data = ""
-                    )
-                    currentTxId = txId
-                    TransactionStateManager.newTransaction(transactionState)
-                    pushBubbleStack(transactionState)
+                    type = TransactionState.TYPE_ADD_PUBLIC_KEY,
+                    data = ""
+                )
+                currentTxId = txId
+                TransactionStateManager.newTransaction(transactionState)
+                pushBubbleStack(transactionState)
+                    
+                    // Start polling as backup mechanism
+                    logd("MultiRestore", "Starting transaction polling backup mechanism")
+                    startTransactionPolling(txId)
                 } else {
                     android.util.Log.e("MultiRestore", "Failed to create transaction - txId is null")
                     throw RuntimeException("Failed to create add public key transaction")
@@ -293,22 +281,82 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
+    override fun onTransactionStateChange() {
+        logd("MultiRestore", "onTransactionStateChange() called")
+        val transactionList = TransactionStateManager.getTransactionStateList()
+        logd("MultiRestore", "Transaction list size: ${transactionList.size}")
+        val transaction =
+            transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
+        logd("MultiRestore", "Found ADD_PUBLIC_KEY transaction: ${transaction?.transactionId}")
+        transaction?.let { state ->
+            logd("MultiRestore", "Checking transaction ${state.transactionId} against currentTxId $currentTxId, isSuccess: ${state.isSuccess()}")
+            if (currentTxId == state.transactionId && state.isSuccess()) {
+                logd("MultiRestore", "Transaction succeeded, calling syncAccountInfo()")
+                currentTxId = null
+                syncAccountInfo()
+            } else {
+                logd("MultiRestore", "Transaction not ready: currentTxId match=${currentTxId == state.transactionId}, isSuccess=${state.isSuccess()}")
+            }
+        } ?: logd("MultiRestore", "No ADD_PUBLIC_KEY transaction found")
+    }
+
+    private fun startTransactionPolling(txId: String) {
+        logd("MultiRestore", "Starting polling for transaction: $txId")
+        ioScope {
+            var attempts = 0
+            val maxAttempts = 30 // Poll for up to 5 minutes (30 * 10 seconds)
+            
+            while (attempts < maxAttempts) {
+                try {
+                    logd("MultiRestore", "Polling attempt ${attempts + 1}/$maxAttempts for transaction $txId")
+                    delay(10000) // Wait 10 seconds between checks
+                    
+                    val transactionList = TransactionStateManager.getTransactionStateList()
+                    val transaction = transactionList.find { 
+                        it.transactionId == txId && it.type == TransactionState.TYPE_ADD_PUBLIC_KEY 
+                    }
+                    
+                    if (transaction != null) {
+                        logd("MultiRestore", "Polling found transaction: ${transaction.transactionId}, state: ${transaction.state}, isSuccess: ${transaction.isSuccess()}")
+                        if (transaction.isSuccess()) {
+                            logd("MultiRestore", "Polling detected successful transaction, triggering syncAccountInfo")
+                            if (currentTxId == txId) {
+                                currentTxId = null
+                                syncAccountInfo()
+                            }
+                            break
+                        } else if (transaction.isFailed()) {
+                            logd("MultiRestore", "Polling detected failed transaction")
+                            break
+                        }
+                    } else {
+                        logd("MultiRestore", "Polling: transaction not found in list")
+                    }
+                    
+                    attempts++
+                } catch (e: Exception) {
+                    logd("MultiRestore", "Polling error: ${e.message}")
+                    attempts++
+                }
+            }
+            
+            if (attempts >= maxAttempts) {
+                logd("MultiRestore", "Polling timeout reached for transaction $txId")
+            }
+        }
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
     private fun syncAccountInfo() {
         ioScope {
             try {
+                val service = retrofit().create(ApiService::class.java)
                 val baseDir = File(Env.getApp().filesDir, "wallet")
                 val storage = FileSystemStorage(baseDir)
-                val privateKey = PrivateKey.create(storage)
-                val service = retrofit().create(ApiService::class.java)
                 
-                // Create seed phrase keys from mnemonics with proper keyPair initialization
-                val seedPhraseKeys = mnemonicList.map { mnemonic ->
-                    createSeedPhraseKeyWithKeyPair(mnemonic, storage)
-                }
-                
-                // Create providers from seed phrase keys
-                val providers = seedPhraseKeys.map { seedPhraseKey ->
-                    val words = seedPhraseKey.mnemonic
+                val providers = mnemonicList.map { mnemonic ->
+                    val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
+                    val words = mnemonic.split(" ")
                     if (words.size == 15) {
                         BackupCryptoProvider(seedPhraseKey)
                     } else {
@@ -316,9 +364,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     }
                 }
                 
+                // Use the first backup crypto provider as the account key for signAccount
+                val primaryProvider = providers.first()
+                
                 val resp = service.signAccount(
                     AccountSignRequest(
-                        AccountKey(publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: ""),
+                        AccountKey(publicKey = primaryProvider.getPublicKey()),
                         providers.map {
                             val jwt = getFirebaseJwt()
                             AccountKeySignature(
@@ -326,15 +377,16 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                 signMessage = jwt,
                                 signature = it.getUserSignature(jwt),
                                 weight = it.getKeyWeight(),
-                                hashAlgo = it.getHashAlgorithm().ordinal,
-                                signAlgo = it.getSignatureAlgorithm().ordinal
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex
                             )
                         }.toList()
                     )
                 )
                 if (resp.status == 200) {
                     val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-                    login(privateKey) { isSuccess ->
+                    // Use the same primary backup crypto provider for login that we used for signAccount
+                    login(primaryProvider) { isSuccess ->
                         uiScope {
                             if (isSuccess) {
                                 MixpanelManager.accountRestore(restoreAddress, RestoreType.MULTI_BACKUP)
@@ -350,64 +402,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             } catch (e: Exception) {
                 ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
                 loge(e)
-            }
-        }
-    }
-
-    private fun login(privateKey: PrivateKey, callback: (isSuccess: Boolean) -> Unit) {
-        ioScope {
-            getFirebaseUid { uid ->
-                if (uid.isNullOrBlank()) {
-                    callback.invoke(false)
-                    return@getFirebaseUid
-                }
-                runBlocking {
-                    val catching = runCatching {
-                        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-                        val service = retrofit().create(ApiService::class.java)
-                        val jwt = getFirebaseJwt()
-                        val resp = service.login(
-                            LoginRequest(
-                                signature = privateKey.sign(jwt.encodeToByteArray(), SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA3_256).bytesToHex(),
-                                accountKey = AccountKey(
-                                    publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "",
-                                    hashAlgo = HashingAlgorithm.SHA3_256.ordinal,
-                                    signAlgo = SigningAlgorithm.ECDSA_P256.ordinal
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
-                        )
-                        if (resp.data?.customToken.isNullOrBlank()) {
-                            callback.invoke(false)
-                        } else {
-                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                                if (isSuccess) {
-                                    setRegistered()
-                                    setMultiBackupCreated()
-                                    ioScope {
-                                        AccountManager.add(
-                                            Account(
-                                                userInfo = service.userInfo().data,
-                                                prefix = privateKey.id
-                                            ),
-                                            firebaseUid()
-                                        )
-                                        clearUserCache()
-                                        callback.invoke(true)
-                                    }
-                                } else {
-                                    callback.invoke(false)
-                                }
-                            }
-                        }
-                    }
-
-                    if (catching.isFailure) {
-                        loge(catching.exceptionOrNull())
-                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, catching.exceptionOrNull())
-                        callback.invoke(false)
-                    }
-                }
             }
         }
     }
@@ -499,18 +493,6 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 Instabug.show()
             }
             return null
-        }
-    }
-
-    override fun onTransactionStateChange() {
-        val transactionList = TransactionStateManager.getTransactionStateList()
-        val transaction =
-            transactionList.lastOrNull { it.type == TransactionState.TYPE_ADD_PUBLIC_KEY }
-        transaction?.let { state ->
-            if (currentTxId == state.transactionId && state.isSuccess()) {
-                currentTxId = null
-                syncAccountInfo()
-            }
         }
     }
 
@@ -628,6 +610,79 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         } catch (e: Exception) {
             android.util.Log.e("MultiRestore", "Failed to create SeedPhraseKey", e)
             throw RuntimeException("Failed to create SeedPhraseKey with proper keyPair", e)
+        }
+    }
+
+    private fun login(cryptoProvider: Any, callback: (isSuccess: Boolean) -> Unit) {
+        ioScope {
+            getFirebaseUid { uid ->
+                if (uid.isNullOrBlank()) {
+                    callback.invoke(false)
+                    return@getFirebaseUid
+                }
+                runBlocking {
+                    val catching = runCatching {
+                        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+                        val service = retrofit().create(ApiService::class.java)
+                        val resp = service.login(
+                            LoginRequest(
+                                signature = when (cryptoProvider) {
+                                    is BackupCryptoProvider -> cryptoProvider.getUserSignature(getFirebaseJwt())
+                                    is HDWalletCryptoProvider -> cryptoProvider.getUserSignature(getFirebaseJwt())
+                                    else -> throw IllegalArgumentException("Unsupported crypto provider type")
+                                },
+                                accountKey = AccountKey(
+                                    publicKey = when (cryptoProvider) {
+                                        is BackupCryptoProvider -> cryptoProvider.getPublicKey()
+                                        is HDWalletCryptoProvider -> cryptoProvider.getPublicKey()
+                                        else -> throw IllegalArgumentException("Unsupported crypto provider type")
+                                    },
+                                    hashAlgo = when (cryptoProvider) {
+                                        is BackupCryptoProvider -> cryptoProvider.getHashAlgorithm().cadenceIndex
+                                        is HDWalletCryptoProvider -> cryptoProvider.getHashAlgorithm().cadenceIndex
+                                        else -> throw IllegalArgumentException("Unsupported crypto provider type")
+                                    },
+                                    signAlgo = when (cryptoProvider) {
+                                        is BackupCryptoProvider -> cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                                        is HDWalletCryptoProvider -> cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                                        else -> throw IllegalArgumentException("Unsupported crypto provider type")
+                                    }
+                                ),
+                                deviceInfo = deviceInfoRequest
+                            )
+                        )
+                        if (resp.data?.customToken.isNullOrBlank()) {
+                            callback.invoke(false)
+                        } else {
+                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                                if (isSuccess) {
+                                    setRegistered()
+                                    setMultiBackupCreated()
+                                    ioScope {
+                                        AccountManager.add(
+                                            Account(
+                                                userInfo = service.userInfo().data,
+                                                prefix = generatePrefix(restoreUserName)
+                                            ),
+                                            firebaseUid()
+                                        )
+                                        clearUserCache()
+                                        callback.invoke(true)
+                                    }
+                                } else {
+                                    callback.invoke(false)
+                                }
+                            }
+                        }
+                    }
+
+                    if (catching.isFailure) {
+                        loge(catching.exceptionOrNull())
+                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, catching.exceptionOrNull())
+                        callback.invoke(false)
+                    }
+                }
+            }
         }
     }
 }
