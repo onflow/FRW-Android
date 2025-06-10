@@ -87,11 +87,11 @@ class NFTFragmentPresenter(
                 when (position - 1) {
                     0 -> {
                         viewModel.toggleViewType(false)
-                        viewModel.toggleCollectionExpand()
+                        viewModel.toggleCollectionExpand(false)
                     }
                     1 -> {
                         viewModel.toggleViewType(true)
-                        viewModel.toggleCollectionExpand()
+                        viewModel.toggleCollectionExpand(true)
                     }
                 }
                 dismiss()
