@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.TransferRecordList
 import com.flowfoundation.wallet.network.retrofit
-import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.network.retrofitEVM
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionViewMoreModel
 import com.flowfoundation.wallet.page.transaction.toTransactionRecord
