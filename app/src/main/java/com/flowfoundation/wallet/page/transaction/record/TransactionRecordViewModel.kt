@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.TransferRecordList
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.network.retrofitApi
+import com.flowfoundation.wallet.network.retrofitEVM
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionViewMoreModel
 import com.flowfoundation.wallet.page.transaction.toTransactionRecord
 import com.flowfoundation.wallet.utils.viewModelIOScope
@@ -42,7 +43,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
     private suspend fun loadTransfer() {
 //        transferCountLiveData.postValue(getAccountTransferCount())
         if (WalletManager.isEVMAccountSelected()) {
-            val service = retrofitApi().create(ApiService::class.java)
+            val service = retrofitEVM().create(ApiService::class.java)
             val walletAddress = WalletManager.selectedWalletAddress()
             val resp = service.getEVMTransferRecord(walletAddress)
             val data = mutableListOf<Any>().apply {
