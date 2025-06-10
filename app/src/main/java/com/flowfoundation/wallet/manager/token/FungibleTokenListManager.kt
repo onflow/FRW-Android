@@ -163,7 +163,7 @@ object FungibleTokenListManager {
         }
     }
 
-    suspend fun updateTokenList(address: String = WalletManager.selectedWalletAddress()) {
+    suspend fun updateTokenList(address: String = WalletManager.selectedWalletAddress(), contractId: String? = null) {
         val provider = getProvider(address)
         currentTokenProvider = provider
 
@@ -187,6 +187,14 @@ object FungibleTokenListManager {
             for (existingToken in currentDisplayTokenList) {
                 freshTokensMap[existingToken.contractId()]?.let { updatedVersionOfExistingToken ->
                     updatedFinalTokens.add(updatedVersionOfExistingToken)
+                }
+            }
+            contractId?.let { targetId ->
+                freshTokensMap[targetId]?.takeIf { freshToken ->
+                    currentDisplayTokenList.none { it.contractId() == targetId }
+                }?.let { newToken ->
+                    updatedFinalTokens.add(newToken)
+                    logd(TAG, "Added new token by contractId: $targetId")
                 }
             }
 

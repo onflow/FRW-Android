@@ -114,7 +114,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenLi
                     val coin = state.tokenData()
 
                     if (state.isSuccess() && !FungibleTokenListManager.isTokenAdded(coin.contractId())) {
-                        FungibleTokenListManager.updateTokenList()
+                        FungibleTokenListManager.updateTokenList(contractId = coin.contractId())
                     }
                     val index = coinList.indexOfFirst { it.coin.isSameCoin(coin.contractId()) }
                     if (index >= 0) {
