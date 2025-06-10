@@ -11,6 +11,8 @@ data class BackupKey(
     val info: KeyDeviceInfo?,
     @SerializedName("is_revoking")
     val isRevoking: Boolean,
+    @SerializedName("is_current_key")
+    val isCurrentKey: Boolean
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
