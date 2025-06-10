@@ -5,16 +5,18 @@ import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.toFungibleToken
 import com.flowfoundation.wallet.network.retrofitApi
+import com.flowfoundation.wallet.network.retrofitEVM
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
 import com.flowfoundation.wallet.page.token.custom.model.TokenType
 import com.flowfoundation.wallet.page.token.custom.model.toFungibleToken
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 
 
 class EVMTokenListProvider(private val walletAddress: String): TokenListProvider {
 
     private var tokenList = mutableListOf<FungibleToken>()
-    private val service by lazy { retrofitApi().create(ApiService::class.java)  }
+    private val service by lazy { retrofitEVM().create(ApiService::class.java)  }
 
     init {
         ioScope {
@@ -27,6 +29,7 @@ class EVMTokenListProvider(private val walletAddress: String): TokenListProvider
         currency: Currency?,
         network: String?
     ): List<FungibleToken> {
+        logd("EVMTokenListProvider", "Getting list")
         val tokenResponse = service.getEVMTokenList(walletAddress, currency?.name, network)
         tokenList.clear()
         tokenList.addAll(
