@@ -35,8 +35,22 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     auth.signInWithCustomToken(token).addOnCompleteListener { task ->
         ioScope {
             clearUserCache()
-            uiScope { onComplete.invoke(task.isSuccessful, task.exception) }
-            getFirebaseMessagingToken()
+            if (task.isSuccessful) {
+                auth.currentUser?.getIdToken(true)?.addOnSuccessListener { result ->
+                    val jwt = result.token
+                    logd(TAG, "get token finish, token:${jwt}")
+                    uiScope {
+                        onComplete.invoke(true, null)
+                    }
+                    getFirebaseMessagingToken()
+                }?.addOnFailureListener { e ->
+                    uiScope { onComplete.invoke(false, e) }
+                }
+            } else {
+                uiScope {
+                    onComplete.invoke(false, task.exception)
+                }
+            }
         }
     }
 }
