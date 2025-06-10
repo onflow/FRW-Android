@@ -66,7 +66,6 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
 
     fun toggleCollectionExpand(isGridView: Boolean) {
         ioScope {
-            updateNftCollectionExpanded(!isCollectionExpanded)
             if (isGridView) {
                 updateNftCollectionExpanded(false)
             } else {
