@@ -29,8 +29,9 @@ class EVMTokenListProvider(private val walletAddress: String): TokenListProvider
         currency: Currency?,
         network: String?
     ): List<FungibleToken> {
-        logd("EVMTokenListProvider", "Getting list")
+
         val tokenResponse = service.getEVMTokenList(walletAddress, currency?.name, network)
+        logd("EVMTokenListProvider", "Getting list: ${tokenResponse.data}")
         tokenList.clear()
         tokenList.addAll(
             tokenResponse.data?.map { token ->
