@@ -139,7 +139,7 @@ object FungibleTokenListManager {
             tokenListCache[address]?.let { cachedList ->
                 if (cachedList.displayTokenList.isNotEmpty()) {
                     currentDisplayTokenList.clear()
-                    currentDisplayTokenList.addAll(cachedList.displayTokenList)
+                    currentDisplayTokenList.addAll(cachedList.displayTokenList.distinctBy { it.contractId() })
                     dispatchListeners()
                     logd(TAG, "Loaded token list from cache for address: $address")
                 }
@@ -175,7 +175,7 @@ object FungibleTokenListManager {
             val freshList = provider.getTokenList(address, currency, network)
 
             if (currentDisplayTokenList.isEmpty()) {
-                currentDisplayTokenList.addAll(freshList)
+                currentDisplayTokenList.addAll(freshList.distinctBy { it.contractId() })
                 updateDisplayTokenListCache(address)
                 dispatchListeners()
                 logd(TAG, "Initial load from provider for token list for address: $address. Count: ${currentDisplayTokenList.size}")
@@ -199,7 +199,7 @@ object FungibleTokenListManager {
             }
 
             currentDisplayTokenList.clear()
-            currentDisplayTokenList.addAll(updatedFinalTokens)
+            currentDisplayTokenList.addAll(updatedFinalTokens.distinctBy { it.contractId() })
             updateDisplayTokenListCache(address)
             logd(TAG, "Successfully updated token list for address: $address. Count: ${currentDisplayTokenList.size}")
             dispatchListeners()
