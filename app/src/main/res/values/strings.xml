@@ -768,4 +768,7 @@
     <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
     <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
     <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
+    <string name="add_evm_account">Add an %1$s account on Flow</string>
+    <string name="active_account">Active account</string>
+    <string name="add_account">Add account</string>
 </resources>
