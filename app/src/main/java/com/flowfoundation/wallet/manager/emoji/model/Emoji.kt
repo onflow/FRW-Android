@@ -23,12 +23,12 @@ enum class Emoji(val id: Int, val emoji: String, val defaultName: String, val co
 
         @JvmStatic
         fun getEmojiById(id: Int): String {
-            return Emoji.values().firstOrNull { it.id == id }?.emoji ?: PEACH.emoji
+            return Emoji.entries.firstOrNull { it.id == id }?.emoji ?: PEACH.emoji
         }
 
         @JvmStatic
         fun getEmojiColorRes(id: Int): Int {
-            return Emoji.values().firstOrNull { it.id == id }?.colorRes?.res2color() ?: R.color.transparent.res2color()
+            return Emoji.entries.firstOrNull { it.id == id }?.colorRes?.res2color() ?: R.color.transparent.res2color()
         }
     }
 }

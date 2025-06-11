@@ -211,4 +211,10 @@
     <color name="button_warning">#F29E0D</color>
     <color name="button_bg_secondary">#1E1E1F</color>
     <color name="bg_navi">#F0F0F0</color>
+
+    <color name="divider_25">#1A000000</color>
+    <color name="bg_card">#F2F2F7</color>
+    <color name="text_primary">#000D07</color>
+    <color name="text_secondary">#767676</color>
+    <color name="icon">#767676</color>
 </resources>

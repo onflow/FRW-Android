@@ -18,9 +18,8 @@ import com.flowfoundation.wallet.page.component.deeplinking.PendingActionHelper
 import com.flowfoundation.wallet.page.component.deeplinking.executePendingDeepLink
 import com.flowfoundation.wallet.page.dialog.common.RootDetectedDialog
 import com.flowfoundation.wallet.page.main.model.MainContentModel
-import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
-import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
+import com.flowfoundation.wallet.page.main.presenter.setupDrawerLayoutCompose
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
@@ -36,7 +35,6 @@ import com.instabug.library.Instabug
 class MainActivity : BaseActivity() {
 
     private lateinit var contentPresenter: MainContentPresenter
-    private lateinit var drawerLayoutPresenter: DrawerLayoutPresenter
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: MainActivityViewModel
@@ -59,10 +57,11 @@ class MainActivity : BaseActivity() {
             windowInsets
         }
         contentPresenter = MainContentPresenter(this, binding)
-        drawerLayoutPresenter = DrawerLayoutPresenter(binding.drawerLayout, binding.drawerLayoutContent)
+        setupDrawerLayoutCompose(binding.drawerLayout)
+        binding.drawerLayout.close()
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java].apply {
             changeTabLiveData.observe(this@MainActivity) { contentPresenter.bind(MainContentModel(onChangeTab = it)) }
-            openDrawerLayoutLiveData.observe(this@MainActivity) { drawerLayoutPresenter.bind(MainDrawerLayoutModel(openDrawer = it)) }
+            openDrawerLayoutLiveData.observe(this@MainActivity) { binding.drawerLayout.open() }
         }
         uiScope {
             isRegistered = isRegistered()
@@ -105,7 +104,6 @@ class MainActivity : BaseActivity() {
             if (isRegistered != isRegistered()) {
                 contentPresenter.checkAndShowContent()
             }
-            drawerLayoutPresenter.bind(MainDrawerLayoutModel(refreshData = true))
         }
     }
 

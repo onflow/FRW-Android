@@ -48,9 +48,9 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <include
-        layout="@layout/layout_main_drawer_layout"
-        android:id="@+id/drawer_layout_content"/>
+<!--    <include-->
+<!--        layout="@layout/layout_main_drawer_layout"-->
+<!--        android:id="@+id/drawer_layout_content"/>-->
 
     <FrameLayout
         android:id="@+id/fl_container"
