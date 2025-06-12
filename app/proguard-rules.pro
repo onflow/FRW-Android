@@ -201,6 +201,7 @@
 -keep class org.onflow.flow.models.** { *; }
 -keep enum org.onflow.flow.** { *; }
 
+-dontwarn coil3.PlatformContext
 -dontwarn java.lang.management.RuntimeMXBean
 -dontwarn com.google.ar.sceneform.animation.AnimationEngine
 -dontwarn com.google.ar.sceneform.animation.AnimationLibraryLoader

@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/home_page_background"
+    android:background="@drawable/bg_top_radius_32dp"
+    android:backgroundTint="@color/home_page_background"
     android:paddingBottom="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_info_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/home_page_background"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
