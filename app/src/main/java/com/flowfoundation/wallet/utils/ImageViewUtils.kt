@@ -7,7 +7,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.Transformation
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.page.nft.nftlist.getBase64SvgModel
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.net.URLEncoder
+import androidx.core.net.toUri
 
 
 fun ImageView.loadAvatar(url: String, placeholderEnable: Boolean = true, transformation: Transformation<Bitmap>? = null) {
@@ -25,11 +28,17 @@ fun String.svgToPng(): String {
 }
 
 fun String.parseBoringAvatar(): String {
-    val uriHost = Uri.parse(this).host ?: ""
-    if (uriHost.contains("boringavatars")) {
-        return this.replace(uriHost, "lilico.app/api/avatar")
-    }
-    return this
+    val originalUrl = runCatching { this.toHttpUrl() }.getOrNull() ?: return this
+
+    if (!originalUrl.host.contains("boringavatars")) return this
+
+    val newUrlBuilder = originalUrl.newBuilder()
+        .host("lilico.app")
+        .encodedPath("/api/avatar${originalUrl.encodedPath}")
+        .removeAllQueryParameters("square")
+        .addQueryParameter("square", "true")
+
+    return newUrlBuilder.build().toString()
 }
 
 private fun ImageView.loadAvatarNormal(url: String, placeholderEnable: Boolean = true, transformation: Transformation<Bitmap>? = null) {
