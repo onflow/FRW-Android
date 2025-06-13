@@ -101,17 +101,4 @@
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/iv_qr_code"/>
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="28dp"
-        android:layout_marginTop="40dp"
-        android:fontFamily="@font/inter"
-        android:gravity="center"
-        android:lineSpacingMultiplier="1.2"
-        android:text="@string/sync_note"
-        android:textColor="@color/accent_gray"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_sync_qr_code"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

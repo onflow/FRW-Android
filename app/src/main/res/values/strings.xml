@@ -513,8 +513,8 @@
     <string name="import_raw_key">From recovery phrase</string>
     <string name="import_raw_key_note">Select a legacy backup method</string>
     <string name="multi_restore">Multi-Restore</string>
-    <string name="multi_restore_title">From Multi-Backup</string>
-    <string name="multi_restore_note">Please Select 2 or More Backup Options</string>
+    <string name="multi_restore_title">From multi-backup</string>
+    <string name="multi_restore_note">Please select 2 or more backup options</string>
     <string name="connect_to_google_drive">Connect to Google Drive</string>
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
