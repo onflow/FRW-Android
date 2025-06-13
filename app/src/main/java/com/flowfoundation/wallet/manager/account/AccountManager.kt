@@ -63,33 +63,61 @@ object AccountManager {
 
     private var currentAccount: Account? = null
     private var currentWallet: com.flow.wallet.wallet.Wallet? = null
+    private var isInitialized = false
+    private var isInitializing = false
 
     fun init() {
+        synchronized(this) {
+            if (isInitialized || isInitializing) {
+                logd(TAG, "init() called but already initialized or initializing")
+                return
+            }
+            isInitializing = true
+        }
+        
+        logd(TAG, "Starting AccountManager initialization")
         accounts.clear()
         userPrefixes.clear()
         switchAccounts.clear()
+        currentAccount = null
+        currentWallet = null
+        
         ioScope {
             try {
+                // Load user prefixes first
+                val userPrefixList = UserPrefixCacheManager.read()
+                if (!userPrefixList.isNullOrEmpty()) {
+                    userPrefixes.addAll(userPrefixList)
+                    logd(TAG, "Loaded ${userPrefixes.size} user prefixes from cache")
+                }
+                
+                // Load accounts
                 val accountList = AccountCacheManager.read()
                 if (accountList.isNullOrEmpty()) {
-                    // Instead of going to the server, jump straight to the
-                    // restore screen (or show the "import keystore" UI).
-                    logd(TAG, "No cached account – require keystore/seed restore")
-                    return@ioScope
-                } else {
-                    val account = accountList.first()
-                    currentAccount = account
-
-                    // 1)  If there's no keystore, log once and bail out.
-                    val keyStoreJson = account.keyStoreInfo
-                    if (keyStoreJson.isNullOrBlank()) {
-                        logd(TAG, "Cached account has no keyStoreInfo – wallet cannot be restored")
-                        dispatchListeners(account)
-                        return@ioScope                      // leave currentWallet == null
+                    logd(TAG, "No cached accounts found - user needs to login/restore")
+                    synchronized(this@AccountManager) {
+                        isInitializing = false
+                        isInitialized = true
                     }
+                    return@ioScope
+                }
+                
+                logd(TAG, "Found ${accountList.size} cached accounts")
+                accounts.addAll(accountList)
+                
+                // Find the active account or use the first one
+                val activeAccount = accountList.firstOrNull { it.isActive } ?: accountList.first()
+                logd(TAG, "Setting active account: ${activeAccount.userInfo.username}")
+                
+                // Ensure only one account is marked as active
+                accounts.forEach { it.isActive = (it == activeAccount) }
+                currentAccount = activeAccount
 
+                // Restore wallet if we have keystore info
+                val keyStoreJson = activeAccount.keyStoreInfo
+                if (!keyStoreJson.isNullOrBlank()) {
+                    logd(TAG, "Restoring wallet from keystore info")
                     try {
-                        logd(TAG, "Restoring wallet from cached keyStoreInfo")
                         val ks = Gson().fromJson(keyStoreJson,
                             com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress::class.java)
 
@@ -108,25 +136,78 @@ object AccountManager {
                             getStorage()
                         )
 
-                        logd(TAG, "Wallet restored, address = ${currentWallet?.walletAddress()}")
+                        logd(TAG, "Wallet restored successfully, address = ${currentWallet?.walletAddress()}")
 
-                        // 2)  Nudge WalletManager so the app sees the wallet immediately.
-                        WalletManager.updateWallet(
-                            account.wallet!!
-                        )
+                        // Update WalletManager
+                        activeAccount.wallet?.let { WalletManager.updateWallet(it) }
+                        
                     } catch (e: Exception) {
-                        logd(TAG, "Failed to restore wallet from cached keyStoreInfo: $e")
+                        loge(TAG, "Failed to restore wallet from keystore: $e")
+                        // Don't fail initialization, but log the error
                         currentWallet = null
                     }
-                    currentAccount = account
-                    dispatchListeners(account)
+                } else if (!activeAccount.prefix.isNullOrBlank()) {
+                    logd(TAG, "Account uses prefix-based storage: ${activeAccount.prefix}")
+                } else {
+                    logd(TAG, "Warning: Account has neither keystore nor prefix - may need re-authentication")
                 }
+                
+                // Initialize uploaded address set
+                uploadedAddressSet = getUploadedAddressSet().toMutableSet()
+                
+                // Dispatch to listeners
+                dispatchListeners(activeAccount)
+                
+                synchronized(this@AccountManager) {
+                    isInitialized = true
+                    isInitializing = false
+                }
+                
+                logd(TAG, "AccountManager initialization completed successfully")
+                
             } catch (e: Exception) {
-                loge(TAG, "init error: $e")
+                loge(TAG, "AccountManager initialization failed: $e")
                 ErrorReporter.reportWithMixpanel(AccountError.INIT_FAILED, e)
+                
+                synchronized(this@AccountManager) {
+                    isInitializing = false
+                    // Don't set isInitialized = true on failure
+                }
+                
+                // Clear potentially corrupted state
+                accounts.clear()
+                userPrefixes.clear()
+                switchAccounts.clear()
+                currentAccount = null
+                currentWallet = null
+                
+                // Try to recover from backup or show login screen
+                retryInitialization()
             }
         }
-        uploadedAddressSet = getUploadedAddressSet().toMutableSet()
+    }
+    
+    private fun retryInitialization() {
+        logd(TAG, "Attempting to retry initialization with backup recovery")
+        ioScope {
+            try {
+                // Try to clear and reload from backup
+                AccountCacheManager.clearCache()
+                delay(1000) // Give some time
+                
+                // This will trigger the backup recovery mechanism
+                val recoveredAccounts = AccountCacheManager.read()
+                if (!recoveredAccounts.isNullOrEmpty()) {
+                    logd(TAG, "Successfully recovered accounts from backup")
+                    // Re-trigger initialization
+                    uiScope { init() }
+                } else {
+                    logd(TAG, "No accounts could be recovered - user needs to login")
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Retry initialization also failed: $e")
+            }
+        }
     }
 
     fun getSwitchAccountList(): List<Any> {
