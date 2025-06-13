@@ -125,6 +125,13 @@ object AccountEmojiManager {
             listeners.forEach { it.get()?.onEmojiUpdate(userName, address, emojiId, emojiName) }
         }
     }
+
+    fun clear() {
+        logd(TAG, "Clearing AccountEmojiManager state")
+        accountEmojiList.clear()
+        listeners.clear()
+        logd(TAG, "AccountEmojiManager state cleared")
+    }
 }
 
 interface OnEmojiUpdate {

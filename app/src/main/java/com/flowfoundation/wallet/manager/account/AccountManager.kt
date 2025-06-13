@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.manager.account
 
+import android.content.Intent
 import android.widget.Toast
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
@@ -47,6 +48,8 @@ import java.util.concurrent.CopyOnWriteArrayList
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.setUploadedAddressSet
 import org.onflow.flow.models.hexToBytes
+import kotlinx.coroutines.delay
+import com.flowfoundation.wallet.utils.storeWalletPassword
 
 object AccountManager {
     private val TAG = AccountManager::class.java.simpleName
@@ -193,18 +196,89 @@ object AccountManager {
     }
 
     fun removeCurrentAccount() {
+        logd(TAG, "removeCurrentAccount() called - performing comprehensive state reset")
         ioScope {
             val index = list().indexOfFirst { it.isActive }
             if (index < 0) {
+                logd(TAG, "No active account found to remove")
                 return@ioScope
             }
+            
+            logd(TAG, "Removing active account and clearing all related state")
+            
+            // Set Firebase to anonymous before clearing state
             setToAnonymous()
+            
+            // Clear the account from the list
             val account = accounts.removeAt(index)
+            logd(TAG, "Removed account: ${account.userInfo.username}")
+            
+            // Clear current account and wallet references
+            currentAccount = null
+            currentWallet = null
+            logd(TAG, "Cleared current account and wallet references")
+            
+            // Clear user prefixes
             userPrefixes.removeAll { it.userId == account.wallet?.id}
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
+            logd(TAG, "Cleared user prefixes")
+            
+            // Clear account cache
             AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+            logd(TAG, "Cleared account cache")
+            
+            // Clear WalletManager state
+            try {
+                WalletManager.clear()
+                logd(TAG, "Cleared WalletManager state")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing WalletManager: ${e.message}")
+            }
+            
+            // Clear CryptoProviderManager state
+            try {
+                CryptoProviderManager.clear()
+                logd(TAG, "Cleared CryptoProviderManager state")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing CryptoProviderManager: ${e.message}")
+            }
+            
+            // Clear EVM and emoji state
+            try {
+                EVMWalletManager.clear()
+                logd(TAG, "Cleared EVMWalletManager state")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing EVMWalletManager: ${e.message}")
+            }
+            
+            try {
+                AccountEmojiManager.clear()
+                logd(TAG, "Cleared AccountEmojiManager state")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing AccountEmojiManager: ${e.message}")
+            }
+            
+            // Clear any cached wallet passwords or multi-backup data
+            try {
+                val emptyPasswordMap = HashMap<String, String>()
+                storeWalletPassword(Gson().toJson(emptyPasswordMap))
+                logd(TAG, "Cleared wallet password cache")
+            } catch (e: Exception) {
+                logd(TAG, "Error clearing wallet password cache: ${e.message}")
+            }
+            
+            // Clear uploaded address set
+            uploadedAddressSet.clear()
+            setUploadedAddressSet(emptySet())
+            logd(TAG, "Cleared uploaded address set")
+            
             uiScope {
+                // Clear user cache
                 clearUserCache()
+                logd(TAG, "Cleared user cache")
+                
+                // Navigate to main activity (which should show the get started screen)
+                logd(TAG, "Relaunching MainActivity after account reset")
                 MainActivity.relaunch(Env.getApp(), true)
             }
         }
@@ -284,8 +358,24 @@ object AccountManager {
             logd(TAG, "Account is already active, but still triggering navigation")
             // Instead of early return, still trigger the navigation to main app
             uiScope {
-                clearUserCache()
-                MainActivity.relaunch(Env.getApp(), true)
+                try {
+                    clearUserCache()
+                    // Add a small delay to ensure proper state sync
+                    delay(200)
+                    MainActivity.relaunch(Env.getApp(), true)
+                    logd(TAG, "Successfully navigated to main app for already active account")
+                } catch (e: Exception) {
+                    logd(TAG, "Error navigating to main app for already active account: ${e.message}")
+                    // Try alternative navigation method
+                    try {
+                        val intent = Intent(Env.getApp(), MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        Env.getApp().startActivity(intent)
+                    } catch (fallbackException: Exception) {
+                        logd(TAG, "Fallback navigation also failed: ${fallbackException.message}")
+                    }
+                }
             }
             onFinish()
             return

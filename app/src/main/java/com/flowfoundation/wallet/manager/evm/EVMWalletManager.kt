@@ -481,6 +481,12 @@ object EVMWalletManager {
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
     }
+
+    fun clear() {
+        logd(TAG, "Clearing EVMWalletManager state")
+        evmAddressMap.clear()
+        logd(TAG, "EVMWalletManager state cleared")
+    }
 }
 
 @Serializable
