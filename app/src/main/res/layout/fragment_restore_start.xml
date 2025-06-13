@@ -1,30 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_restore_start"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_1">
+    android:background="@color/colorPrimaryVariant">
 
     <TextView
         android:id="@+id/tv_multi_restore_sub_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:fontFamily="@font/montsettat"
-        android:gravity="start"
+        android:gravity="center"
         android:text="@string/multi_restore_title"
         android:textColor="@color/text_2"
-        android:textStyle="bold"
         android:textSize="30sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_multi_restore_title"/>
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="24dp" />
 
     <TextView
         android:id="@+id/tv_multi_restore_desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:fontFamily="@font/inter"
+        android:gravity="center"
         android:textSize="14sp"
         android:layout_marginTop="16dp"
         android:layout_marginHorizontal="24dp"
@@ -38,23 +41,12 @@
         android:layout_height="68dp"
         android:layout_marginTop="24dp"
         android:layout_marginHorizontal="18dp"
+        android:foreground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_multi_restore_desc"
-        app:option_item_icon="@drawable/ic_backup_google_drive"
+        app:option_item_icon="@drawable/ic_google_drive"
         app:option_item_name="@string/google_drive"/>
-
-    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
-        android:id="@+id/oi_recovery_phrase"
-        android:layout_width="match_parent"
-        android:layout_height="68dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginHorizontal="18dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/oi_google_drive"
-        app:option_item_icon="@drawable/ic_backup_recovery_phrase"
-        app:option_item_name="@string/recovery_phrase"/>
 
     <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
         android:id="@+id/oi_dropbox"
@@ -62,11 +54,25 @@
         android:layout_height="68dp"
         android:layout_marginTop="12dp"
         android:layout_marginHorizontal="18dp"
+        android:foreground="@android:color/transparent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/oi_recovery_phrase"
-        app:option_item_icon="@drawable/ic_backup_dropbox"
+        app:layout_constraintTop_toBottomOf="@id/oi_google_drive"
+        app:option_item_icon="@drawable/ic_dropbox"
         app:option_item_name="@string/dropbox"/>
+
+    <com.flowfoundation.wallet.page.backup.multibackup.view.BackupOptionItem
+        android:id="@+id/oi_recovery_phrase"
+        android:layout_width="match_parent"
+        android:layout_height="68dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="18dp"
+        android:foreground="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/oi_dropbox"
+        app:option_item_icon="@drawable/ic_recovery_phrase"
+        app:option_item_name="@string/recovery_phrase"/>
 
     <com.flowfoundation.wallet.widgets.LoadingMaterialButton
         android:id="@+id/btn_next"
