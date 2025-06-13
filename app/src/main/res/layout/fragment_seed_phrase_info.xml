@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_seed_phrase_info"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryVariant">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -19,31 +20,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <androidx.constraintlayout.utils.widget.ImageFilterView
-                android:id="@+id/iv_seed_phrase"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:background="@drawable/bg_round_corner"
-                android:backgroundTint="@color/bg_1"
-                android:scaleType="centerInside"
-                android:src="@drawable/ic_restore_seed_phrase"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <TextView
-                android:id="@+id/tv_seed_phrase_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:fontFamily="@font/inter"
-                android:text="@string/seed_phrase"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/iv_seed_phrase"/>
-
             <TextView
                 android:id="@+id/tv_seed_phrase"
                 android:layout_width="wrap_content"
@@ -51,11 +27,12 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="24dp"
                 android:fontFamily="@font/inter"
+                android:textColor="@color/text_1"
                 android:text="@string/seed_phrase"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_seed_phrase_title"/>
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -74,7 +51,7 @@
                 android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="4dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/bg_1"
+                android:backgroundTint="@color/bg_card"
                 android:fontFamily="@font/inter"
                 android:gravity="top"
                 android:hint="@string/restore_seed_phrase_hint"
@@ -132,6 +109,7 @@
                 android:layout_marginTop="24dp"
                 android:fontFamily="@font/inter"
                 android:text="@string/address"
+                android:textColor="@color/text_1"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -145,7 +123,7 @@
                 android:layout_marginTop="4dp"
                 android:autofillHints="name"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/bg_1"
+                android:backgroundTint="@color/bg_card"
                 android:fontFamily="@font/inter"
                 android:gravity="start"
                 android:hint="@string/key_store_address_hint"
@@ -176,6 +154,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_seed_phrase_advanced_open"
+                    app:tint="@color/text_1"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 
@@ -185,6 +164,7 @@
                     android:layout_marginStart="8dp"
                     android:fontFamily="@font/inter"
                     android:text="@string/restore_seed_phrase_advanced"
+                    android:textColor="@color/text_1"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="@id/iv_advanced"
@@ -209,6 +189,7 @@
                     android:layout_marginStart="24dp"
                     android:fontFamily="@font/inter"
                     android:text="@string/restore_seed_derivation_path"
+                    android:textColor="@color/text_1"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -222,7 +203,7 @@
                     android:layout_marginTop="4dp"
                     android:autofillHints="name"
                     android:background="@drawable/bg_round_16dp"
-                    android:backgroundTint="@color/bg_1"
+                    android:backgroundTint="@color/bg_card"
                     android:fontFamily="@font/inter"
                     android:gravity="start"
                     android:hint="@string/restore_seed_phrase_derivation_path_hint"
@@ -246,6 +227,7 @@
                     android:layout_marginTop="24dp"
                     android:fontFamily="@font/inter"
                     android:text="@string/restore_seed_passphrase"
+                    android:textColor="@color/text_1"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
@@ -259,7 +241,7 @@
                     android:layout_marginTop="4dp"
                     android:autofillHints="name"
                     android:background="@drawable/bg_round_16dp"
-                    android:backgroundTint="@color/bg_1"
+                    android:backgroundTint="@color/bg_card"
                     android:fontFamily="@font/inter"
                     android:gravity="start"
                     android:hint="@string/restore_seed_phrase_passphrase_hint"
