@@ -115,7 +115,16 @@ class CadenceArgumentsBuilder {
         val value = if (number is Long || number is Int) {
             number.toFloat()
         } else number
-        val formattedValue = "%.8f".format(Locale.US, value).toDouble()
+        
+        // Use DecimalFormat to ensure proper decimal representation without scientific notation
+        val formattedValue = try {
+            val decimalFormat = java.text.DecimalFormat("0.00000000")
+            decimalFormat.format(value).toDouble()
+        } catch (e: Exception) {
+            // Fallback to the original approach
+            "%.8f".format(Locale.US, value).toDouble()
+        }
+        
         return Cadence.ufix64(formattedValue)
     }
 }
