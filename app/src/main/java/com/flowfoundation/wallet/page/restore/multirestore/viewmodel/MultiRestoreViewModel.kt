@@ -265,13 +265,16 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val storage = FileSystemStorage(baseDir)
                 
                 // Create backup crypto providers from mnemonics for transaction authorization
+                // Dynamically detect the correct signing algorithm by testing against on-chain keys
                 mnemonicList.map { mnemonic ->
                     val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
                     val words = mnemonic.split(" ")
+                    val detectedAlgorithm = detectSigningAlgorithm(seedPhraseKey, restoreAddress)
+                    
                     if (words.size == 15) {
-                        BackupCryptoProvider(seedPhraseKey)
+                        BackupCryptoProvider(seedPhraseKey, null, detectedAlgorithm)
                     } else {
-                        HDWalletCryptoProvider(seedPhraseKey)
+                        HDWalletCryptoProvider(seedPhraseKey, detectedAlgorithm)
                     }
                 }
                 
@@ -443,10 +446,12 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                 val providers = mnemonicList.map { mnemonic ->
                     val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
                     val words = mnemonic.split(" ")
+                    val detectedAlgorithm = detectSigningAlgorithm(seedPhraseKey, restoreAddress)
+                    
                     if (words.size == 15) {
-                        BackupCryptoProvider(seedPhraseKey)
+                        BackupCryptoProvider(seedPhraseKey, null, detectedAlgorithm)
                     } else {
-                        HDWalletCryptoProvider(seedPhraseKey)
+                        HDWalletCryptoProvider(seedPhraseKey, detectedAlgorithm)
                     }
                 }
                 
@@ -544,10 +549,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             val providers = seedPhraseKeys.mapIndexed { index, seedPhraseKey ->
                 logd("MultiRestore", "Creating crypto provider $index")
                 val words = seedPhraseKey.mnemonic
+                val detectedAlgorithm = detectSigningAlgorithm(seedPhraseKey, restoreAddress)
                 val provider = if (words.size == 15) {
-                    BackupCryptoProvider(seedPhraseKey)
+                    BackupCryptoProvider(seedPhraseKey, null, detectedAlgorithm)
                 } else {
-                    HDWalletCryptoProvider(seedPhraseKey)
+                    HDWalletCryptoProvider(seedPhraseKey, detectedAlgorithm)
                 }
                 
                 // Verify the provider can generate a public key
@@ -723,6 +729,78 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Detect the correct signing algorithm by testing both algorithms against on-chain keys
+     * This ensures backward compatibility with different backup versions
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    private suspend fun detectSigningAlgorithm(seedPhraseKey: SeedPhraseKey, address: String): SigningAlgorithm {
+        logd("MultiRestore", "Detecting signing algorithm for address: $address")
+        
+        val algorithms = listOf(SigningAlgorithm.ECDSA_secp256k1, SigningAlgorithm.ECDSA_P256)
+        
+        try {
+            // Get on-chain keys for comparison
+            val flowAccount = com.flowfoundation.wallet.manager.flow.FlowCadenceApi.getAccount(address)
+            val onChainKeys = flowAccount.keys?.toList() ?: run {
+                logd("MultiRestore", "No on-chain keys found, defaulting to ECDSA_P256")
+                return SigningAlgorithm.ECDSA_P256
+            }
+            
+            logd("MultiRestore", "Found ${onChainKeys.size} on-chain keys to test against")
+            
+            // Test each algorithm to see which one produces keys that match on-chain
+            for (algorithm in algorithms) {
+                try {
+                    val publicKey = seedPhraseKey.publicKey(algorithm)?.toHexString() ?: continue
+                    val formattedKey = if (publicKey.startsWith("04")) {
+                        publicKey.substring(2)
+                    } else {
+                        publicKey
+                    }.lowercase()
+                    
+                    logd("MultiRestore", "Testing $algorithm: generated key = ${formattedKey.take(20)}...")
+                    
+                    // Check if this key matches any on-chain key
+                    val hasMatch = onChainKeys.any { onChainKey ->
+                        val onChainFormatted = onChainKey.publicKey.removePrefix("0x").lowercase()
+                        val onChainStripped = if (onChainFormatted.startsWith("04")) {
+                            onChainFormatted.substring(2)
+                        } else {
+                            onChainFormatted
+                        }
+                        
+                        val matches = onChainFormatted == formattedKey || 
+                                     onChainStripped == formattedKey ||
+                                     onChainFormatted == "04$formattedKey"
+                        
+                        if (matches) {
+                            logd("MultiRestore", "✓ MATCH found with $algorithm! On-chain key index: ${onChainKey.index}")
+                            logd("MultiRestore", "  Generated: $formattedKey")
+                            logd("MultiRestore", "  On-chain:  $onChainFormatted")
+                        }
+                        
+                        matches
+                    }
+                    
+                    if (hasMatch) {
+                        logd("MultiRestore", "Using detected algorithm: $algorithm")
+                        return algorithm
+                    }
+                } catch (e: Exception) {
+                    logd("MultiRestore", "Error testing algorithm $algorithm: ${e.message}")
+                }
+            }
+            
+            logd("MultiRestore", "No matching algorithm found, defaulting to ECDSA_P256")
+            return SigningAlgorithm.ECDSA_P256
+            
+        } catch (e: Exception) {
+            logd("MultiRestore", "Error in algorithm detection: ${e.message}, defaulting to ECDSA_P256")
+            return SigningAlgorithm.ECDSA_P256
         }
     }
 }

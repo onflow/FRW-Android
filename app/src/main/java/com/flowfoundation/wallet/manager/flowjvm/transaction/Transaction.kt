@@ -282,11 +282,35 @@ suspend fun prepareAndSignWithMultiSignature(
 private fun findMatchingAccountKey(accountKeys: List<AccountPublicKey>, publicKey: String, address: String): AccountPublicKey {
     val pubRaw = publicKey.removeHexPrefix().lowercase()
     val pubStripped = if (pubRaw.startsWith("04") && pubRaw.length == 130) pubRaw.substring(2) else pubRaw
+    val pubWith04 = if (!pubRaw.startsWith("04") && pubRaw.length == 128) "04$pubRaw" else pubRaw
     
-    return accountKeys.findLast { accKey ->
+    logd(TAG, "findMatchingAccountKey: Looking for key match on account $address")
+    logd(TAG, "  Provider key: $publicKey -> normalized: $pubRaw")
+    
+    val matchingKey = accountKeys.findLast { accKey ->
         val accPubRaw = accKey.publicKey.removeHexPrefix().lowercase()
-        accPubRaw == pubRaw || accPubRaw == pubStripped
-    } ?: throw InvalidKeyException("Proposal key matching public key ($publicKey) not found on account $address")
+        val accPubStripped = if (accPubRaw.startsWith("04") && accPubRaw.length == 130) accPubRaw.substring(2) else accPubRaw
+        
+        // Try comprehensive matching for backward compatibility
+        val isMatch = accPubRaw == pubRaw || accPubRaw == pubStripped || 
+                     accPubStripped == pubRaw || accPubStripped == pubStripped ||
+                     accPubRaw == pubWith04 || accKey.publicKey.removeHexPrefix().lowercase() == pubWith04
+        
+        if (isMatch) {
+            logd(TAG, "  ✓ MATCH found! Key index ${accKey.index}")
+        }
+        
+        isMatch
+    }
+    
+    if (matchingKey == null) {
+        logd(TAG, "  ✗ NO MATCH found. Available keys:")
+        accountKeys.forEach { key ->
+            logd(TAG, "    Index ${key.index}: ${key.publicKey}")
+        }
+    }
+    
+    return matchingKey ?: throw InvalidKeyException("Proposal key matching public key ($publicKey) not found on account $address")
 }
 
 private fun createKMMSigner(cryptoProvider: CryptoProvider, accountKeys: List<AccountPublicKey>, address: String): Signer {
@@ -304,16 +328,27 @@ private fun createKMMSigner(cryptoProvider: CryptoProvider, accountKeys: List<Ac
 
 /**
  * Checks if a provider public key matches an on-chain account key
+ * Enhanced for backward compatibility with different public key formats
  */
 private fun isKeyMatch(providerPublicKey: String, onChainPublicKey: String): Boolean {
     val providerRaw = providerPublicKey.removeHexPrefix().lowercase()
     val onChainRaw = onChainPublicKey.removeHexPrefix().lowercase()
     
-    // Handle both compressed and uncompressed EC keys
+    // Handle both compressed and uncompressed EC keys with comprehensive format matching
     val providerStripped = if (providerRaw.startsWith("04") && providerRaw.length == 130) providerRaw.substring(2) else providerRaw
     val onChainStripped = if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
+    val providerWith04 = if (!providerRaw.startsWith("04") && providerRaw.length == 128) "04$providerRaw" else providerRaw
+    val onChainWith04 = if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
     
-    return onChainRaw == providerRaw || onChainRaw == providerStripped || onChainStripped == providerRaw
+    // Try all possible combinations for maximum backward compatibility
+    return onChainRaw == providerRaw || 
+           onChainRaw == providerStripped || 
+           onChainStripped == providerRaw || 
+           onChainStripped == providerStripped ||
+           onChainRaw == providerWith04 ||
+           onChainWith04 == providerRaw ||
+           onChainWith04 == providerStripped ||
+           onChainStripped == providerWith04
 }
 
 private fun determineAuthorizers(appBuilder: TransactionBuilder, proposerAddress: String, payerAddress: String): List<String> {
