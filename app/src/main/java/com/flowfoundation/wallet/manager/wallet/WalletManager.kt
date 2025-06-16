@@ -203,7 +203,6 @@ object WalletManager {
         }
 
         val currentNetwork = chainNetWorkString()
-        logd(TAG, "Current network: $currentNetwork")
 
         // Get the account for the current network
         currentWallet?.let { wallet ->
@@ -216,8 +215,6 @@ object WalletManager {
             }?.value?.firstOrNull()
 
             if (networkAccount != null) {
-                logd(TAG, "Found account for $currentNetwork: ${networkAccount.address}")
-                
                 val currentSelected = selectedWalletAddressRef.get()
                 // Call isChildAccount for its logging side effect, and store the result.
                 val isSelectedActuallyChild = isChildAccount(currentSelected)
@@ -237,24 +234,13 @@ object WalletManager {
                         // It's a Parent Flow account (and not simultaneously a child/EVM type).
                         // Check if it matches the current network's primary Flow account.
                         if (!networkAccount.address.equals(currentSelected, ignoreCase = true)) {
-                            logd(TAG, "Selected Parent Flow account $currentSelected is for a different network (current: $currentNetwork), switching to ${networkAccount.address}")
                             selectedWalletAddressRef.set(networkAccount.address)
                             updateSelectedWalletAddress(networkAccount.address)
-                        } else {
-                            logd(TAG, "Selected Parent Flow account $currentSelected matches current network $currentNetwork, keeping it")
                         }
-                    } else {
-                        // It's a Child Account or EVM Account (or a Parent Flow account that is also child/EVM, though unlikely).
-                        // These selections should be respected regardless of the primary Flow network.
-                        logd(TAG, "Keeping explicitly selected Child/EVM/specialized account: $currentSelected")
                     }
                 }
-            } else {
-                logd(TAG, "No account found for network: $currentNetwork")
             }
         }
-
-        logd(TAG, "Returning wallet: $currentWallet")
         currentWallet
     }
 
@@ -288,19 +274,15 @@ object WalletManager {
     fun childAccount(childAddress: String): ChildAccount? {
         // Normalize the input address by removing 0x prefix for comparison
         val normalizedInput = childAddress.removePrefix("0x")
-        logd(TAG, "Looking for child account with normalized address: '$normalizedInput' (original: '$childAddress')")
-        
+
         return childAccountMap.toMap().values.flatMap { it.get() }.firstOrNull {
             val normalizedStored = it.address.removePrefix("0x")
-            logd(TAG, "Comparing with stored child address: '${it.address}' (normalized: '$normalizedStored')")
             normalizedStored.equals(normalizedInput, ignoreCase = true)
         }
     }
 
     fun isChildAccount(address: String): Boolean {
-        logd(TAG, "Checking if address is child account: '$address'")
         val result = childAccount(address) != null
-        logd(TAG, "isChildAccount result: $result")
         return result
     }
 
@@ -328,43 +310,29 @@ object WalletManager {
     }
 
     fun selectWalletAddress(address: String): String {
-        logd(TAG, "Selecting wallet address: '$address'")
         if (address.isBlank()) {
             logd(TAG, "WARNING: Attempting to select blank address")
         }
         
         if (selectedWalletAddressRef.get().equals(address, ignoreCase = true)) {
-            logd(TAG, "Address already selected, returning network string")
             return chainNetWorkString()
         }
 
         selectedWalletAddressRef.set(address)
-        logd(TAG, "Updated selected wallet address to: '$address'")
         updateSelectedWalletAddress(address)
-        logd(TAG, "Updated selected wallet address in preferences")
 
-        // Add detailed logging about current wallet state
-        logd(TAG, "Current wallet state: ${currentWallet?.walletAddress()}")
-        logd(TAG, "Wallet accounts: ${currentWallet?.accounts?.values?.flatten()?.map { it.address }}")
-        
-        val account = wallet()?.accounts?.values?.flatten()?.firstOrNull { 
+        val account = wallet()?.accounts?.values?.flatten()?.firstOrNull {
             it.address.equals(address, ignoreCase = true) 
         }
         
-        logd(TAG, "Found matching account: ${account?.address}")
-        logd(TAG, "Account chain ID: ${account?.chainID}")
-        
         val networkStr = if (account == null) {
-            logd(TAG, "No matching account found in wallet, checking child accounts")
             val walletAddress = childAccountMap.values
                 .firstOrNull { child -> child.get().any { it.address.equals(address, true) } }?.address
 
-            logd(TAG, "Found wallet address in child accounts: $walletAddress")
-            
+
             wallet()?.accounts?.values?.flatten()?.firstOrNull { 
                 it.address.equals(walletAddress, ignoreCase = true) 
             }?.let { acc ->
-                logd(TAG, "Found account in child accounts, chain ID: ${acc.chainID}")
                 when (acc.chainID) {
                     ChainId.Mainnet -> "mainnet"
                     ChainId.Testnet -> "testnet"
@@ -372,7 +340,6 @@ object WalletManager {
                 }
             }
         } else {
-            logd(TAG, "Found matching account in wallet, chain ID: ${account.chainID}")
             when (account.chainID) {
                 ChainId.Mainnet -> "mainnet"
                 ChainId.Testnet -> "testnet"
@@ -380,7 +347,6 @@ object WalletManager {
             }
         }
 
-        logd(TAG, "Selected network string: ${networkStr ?: chainNetWorkString()}")
         return networkStr ?: chainNetWorkString()
     }
 
@@ -391,73 +357,40 @@ object WalletManager {
         }
         
         lastAddressCheck = currentTime
-        logd(TAG, "Getting selected wallet address")
         val pref = selectedWalletAddressRef.get().toAddress()
-        logd(TAG, "Current selected address: '$pref'")
-        logd(TAG, "Raw address before toAddress(): '${selectedWalletAddressRef.get()}'")
-        
+
         if (pref.isBlank()) {
             logd(TAG, "WARNING: Selected address is blank")
         }
         
         val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null || EVMWalletManager.isEVMWalletAddress(pref)
         if (isExist) {
-            logd(TAG, "Address exists in child accounts or EVM wallet, returning: '$pref'")
             return pref
         }
 
         // If we have a selected address in preferences, use it even if no wallet exists yet
         if (selectedWalletAddressRef.get().isNotBlank()) {
-            logd(TAG, "Using selected address from preferences: '${selectedWalletAddressRef.get()}'")
-            
-            // Debug: Check account type and server wallet data
-            val account = AccountManager.get()
-            if (account != null) {
-                logd(TAG, "Current account type - prefix: ${account.prefix != null}, keystore: ${account.keyStoreInfo != null}")
-                if (account.wallet != null) {
-                    logd(TAG, "Server wallet data:")
-                    account.wallet!!.wallets?.forEach { walletData ->
-                        walletData.blockchain?.forEach { blockchain ->
-                            logd(TAG, "  Server address: '${blockchain.address}' (${blockchain.address.length} chars) for ${blockchain.chainId}")
-                        }
-                    }
-                }
-                
-                // Also check what the local wallet thinks the address is
-                val localWallet = currentWallet
-                if (localWallet != null) {
-                    logd(TAG, "Local wallet addresses:")
-                    localWallet.accounts.values.flatten().forEach { acc ->
-                        logd(TAG, "  Local address: '${acc.address}' (${acc.address.length} chars)")
-                    }
-                }
-            }
-            
             return selectedWalletAddressRef.get()
         }
 
         val defaultAddress = wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty().apply {
             if (isNotBlank()) {
-                logd(TAG, "No valid selected address found, using default wallet address: '$this'")
                 selectedWalletAddressRef.set(this)
                 updateSelectedWalletAddress(this)
             } else {
                 logd(TAG, "WARNING: No default wallet address available")
             }
         }
-        logd(TAG, "Returning wallet address: '$defaultAddress'")
         return defaultAddress
     }
 
     fun clear() {
-        logd(TAG, "Clearing WalletManager state")
         synchronized(initializationLock) {
             selectedWalletAddressRef.set("")
             childAccountMap.clear()
             currentWallet = null
             lastAddressCheck = 0
             isInitialized = false
-            logd(TAG, "WalletManager state cleared")
         }
     }
 
