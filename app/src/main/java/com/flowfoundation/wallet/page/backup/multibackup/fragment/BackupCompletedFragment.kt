@@ -21,7 +21,6 @@ import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_CHECK_FINISH
 import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.LocationInfo
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.dialog.BackupFailedDialog
@@ -58,14 +57,12 @@ class BackupCompletedFragment : Fragment() {
     private val checkFinishReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             isGoogleDriveBackupSuccess = intent?.getBooleanExtra(EXTRA_SUCCESS, false) ?: false
-            android.util.Log.d("BackupCompleted", "Google Drive check finished: $isGoogleDriveBackupSuccess")
             backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.GOOGLE_DRIVE }?.let {
                 binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
                     setItemInfo(it, locationInfo, isGoogleDriveBackupSuccess)
                 }, 0)
             }
             isGoogleDriveCheckLoading = false
-            android.util.Log.d("BackupCompleted", "Google Drive loading set to false, calling checkLoadingStatus")
             checkLoadingStatus()
         }
     }
@@ -75,14 +72,12 @@ class BackupCompletedFragment : Fragment() {
             isDropboxBackupSuccess = intent?.getBooleanExtra(
                 com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS,
                 false) ?: false
-            android.util.Log.d("BackupCompleted", "Dropbox check finished: $isDropboxBackupSuccess")
             backupViewModel.getCompletedList().firstOrNull { it.type == BackupType.DROPBOX }?.let {
                 binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
                     setItemInfo(it, locationInfo, isDropboxBackupSuccess)
                 }, 0)
             }
             isDropboxCheckLoading = false
-            android.util.Log.d("BackupCompleted", "Dropbox loading set to false, calling checkLoadingStatus")
             checkLoadingStatus()
         }
     }
@@ -138,29 +133,24 @@ class BackupCompletedFragment : Fragment() {
     }
 
     private fun checkLoadingStatus() {
-        android.util.Log.d("BackupCompleted", "checkLoadingStatus called - GoogleDrive: $isGoogleDriveCheckLoading, RecoveryPhrase: $isRecoveryPhraseCheckLoading, Dropbox: $isDropboxCheckLoading")
         if (isGoogleDriveCheckLoading || isRecoveryPhraseCheckLoading || isDropboxCheckLoading) {
             binding.lavLoading.visible()
             binding.btnNext.isEnabled = false
-            android.util.Log.d("BackupCompleted", "Still loading - button disabled")
         } else {
             binding.lavLoading.gone()
             binding.btnNext.isEnabled = true
-            android.util.Log.d("BackupCompleted", "All checks done - button enabled")
         }
     }
 
     private fun checkDropboxBackup(mnemnoic: String) {
         isDropboxCheckLoading = true
         isDropboxBackupSuccess = false
-        android.util.Log.d("BackupCompleted", "Starting Dropbox backup check")
         DropboxAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
     }
 
     private fun checkGoogleDriveBackup(mnemnoic: String) {
         isGoogleDriveCheckLoading = true
         isGoogleDriveBackupSuccess = false
-        android.util.Log.d("BackupCompleted", "Starting Google Drive backup check")
         GoogleDriveAuthActivity.checkMultiBackup(requireContext(), mnemnoic)
     }
 
@@ -190,7 +180,6 @@ class BackupCompletedFragment : Fragment() {
     private suspend fun checkRecoveryPhrase(item: BackupCompletedItem) {
         isRecoveryPhraseCheckLoading = true
         isRecoveryPhraseBackupSuccess = false
-        android.util.Log.d("BackupCompleted", "Starting Recovery Phrase backup check")
         val baseDir = File(Env.getApp().filesDir, "wallet")
         val seedPhraseKey = SeedPhraseKey(
             mnemonicString = item.mnemonic,
@@ -211,15 +200,13 @@ class BackupCompletedFragment : Fragment() {
             backupPubKey == onChainPubKey
         } != null
         
-        android.util.Log.d("BackupCompleted", "Recovery Phrase check finished: $isRecoveryPhraseBackupSuccess")
-        
+
         // Update UI on main thread
         requireActivity().runOnUiThread {
             binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
                 setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
             })
             isRecoveryPhraseCheckLoading = false
-            android.util.Log.d("BackupCompleted", "Recovery Phrase loading set to false, calling checkLoadingStatus")
             checkLoadingStatus()
         }
     }
@@ -232,20 +219,6 @@ class BackupCompletedFragment : Fragment() {
             getStorage()
         )
         return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
-    }
-
-    private fun uploadToChain() {
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address ?: "",
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = getStorage()
-        )
-        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
-        // ... existing code ...
-    // to-do
-
     }
 
     override fun onDestroyView() {
