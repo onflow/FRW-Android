@@ -61,10 +61,8 @@ object FlowCadenceApi {
     }
 
     suspend fun getAccount(address: String, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.SEALED): Account {
-        logd(TAG, "Getting account for address: $address")
         try {
             val account = get().getAccount(address, blockHeight, sealed)
-            logd(TAG, "Account response: $account")
             if (account.address.isBlank() || account.balance.isBlank()) {
                 loge(TAG, "Invalid account response - missing required fields")
                 throw IllegalStateException("Invalid account response - missing required fields")
@@ -72,7 +70,6 @@ object FlowCadenceApi {
             return account
         } catch (e: Exception) {
             loge(TAG, "Error getting account: ${e.message}")
-            loge(TAG, "Error stack trace: ${e.stackTraceToString()}")
             throw e
         }
     }

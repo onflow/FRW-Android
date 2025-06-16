@@ -119,7 +119,6 @@ object AccountEmojiManager {
         emojiId: Int,
         emojiName: String
     ) {
-        logd(TAG, "dispatchListeners $address:$emojiId:$emojiName")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onEmojiUpdate(userName, address, emojiId, emojiName) }
@@ -127,10 +126,8 @@ object AccountEmojiManager {
     }
 
     fun clear() {
-        logd(TAG, "Clearing AccountEmojiManager state")
         accountEmojiList.clear()
         listeners.clear()
-        logd(TAG, "AccountEmojiManager state cleared")
     }
 }
 

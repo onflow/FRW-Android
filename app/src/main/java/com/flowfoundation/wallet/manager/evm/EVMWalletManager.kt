@@ -92,18 +92,14 @@ object EVMWalletManager {
         logd(TAG, "fetchEVMAddress()")
         ioScope {
             val address = cadenceQueryEVMAddress()
-            logd(TAG, "fetchEVMAddress cadence response: '$address'")
-            logd(TAG, "fetchEVMAddress address length: ${address?.length ?: 0}")
             if (address.isNullOrEmpty()) {
                 ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                 callback?.invoke(false)
             } else {
                 val networkAddress = getNetworkAddress()
-                logd(TAG, "fetchEVMAddress networkAddress: '$networkAddress'")
                 if (networkAddress != null) {
                     val formattedAddress = address.toAddress()
-                    logd(TAG, "fetchEVMAddress formatted address: '$formattedAddress'")
-                    
+
                     // Validate the address before storing it
                     if (!isValidEVMAddress(formattedAddress)) {
                         logd(TAG, "fetchEVMAddress received invalid address: '$formattedAddress'")
@@ -114,7 +110,6 @@ object EVMWalletManager {
                     
                     evmAddressMap[networkAddress] = formattedAddress
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
-                    logd(TAG, "fetchEVMAddress successfully stored address: '$formattedAddress'")
                     callback?.invoke(true)
                 } else {
                     ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
@@ -159,13 +154,6 @@ object EVMWalletManager {
             // Validate the address format - if it's corrupted, try to refresh it
             if (!isValidEVMAddress(checksumAddress)) {
                 logd(TAG, "Detected corrupted EVM address: $checksumAddress, attempting to refresh")
-                fetchEVMAddress { success ->
-                    if (success) {
-                        logd(TAG, "Successfully refreshed EVM address")
-                    } else {
-                        logd(TAG, "Failed to refresh EVM address")
-                    }
-                }
                 return null
             }
             checksumAddress
@@ -483,9 +471,7 @@ object EVMWalletManager {
     }
 
     fun clear() {
-        logd(TAG, "Clearing EVMWalletManager state")
         evmAddressMap.clear()
-        logd(TAG, "EVMWalletManager state cleared")
     }
 }
 

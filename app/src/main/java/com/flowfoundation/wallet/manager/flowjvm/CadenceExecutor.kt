@@ -66,8 +66,7 @@ suspend fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
 
 suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
     val walletAddress = WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceGetTokenBalanceStorage() walletAddress: '$walletAddress'")
-    
+
     // Check if we have a valid wallet address before proceeding
     if (walletAddress.isBlank()) {
         logd(TAG, "cadenceGetTokenBalanceStorage: No wallet address available, skipping")
@@ -75,8 +74,7 @@ suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
     }
     
     val formattedAddress = walletAddress.toAddress()
-    logd(TAG, "cadenceGetTokenBalanceStorage() formatted address: '$formattedAddress'")
-    
+
     // Additional check to ensure the address is not just "0x" or invalid
     if (formattedAddress == "0x" || formattedAddress.length < 10) {
         logd(TAG, "cadenceGetTokenBalanceStorage: Invalid wallet address format '$formattedAddress', skipping")
@@ -101,8 +99,7 @@ suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal
 
 suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
     val walletAddress = WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled() walletAddress: '$walletAddress'")
-    
+
     // Check if we have a valid wallet address before proceeding
     if (walletAddress.isBlank()) {
         logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled: No wallet address available, skipping")
@@ -110,8 +107,6 @@ suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
     }
     
     val formattedAddress = walletAddress.toAddress()
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled() formatted address: '$formattedAddress'")
-    
     // Additional check to ensure the address is not just "0x" or invalid
     if (formattedAddress == "0x" || formattedAddress.length < 10) {
         logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled: Invalid wallet address format '$formattedAddress', skipping")
@@ -136,8 +131,7 @@ suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String
 
 suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): BigDecimal? {
     val walletAddress = address ?: WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceQueryTokenBalance() walletAddress: '$walletAddress'")
-    
+
     // Check if we have a valid wallet address before proceeding
     if (walletAddress.isBlank()) {
         logd(TAG, "cadenceQueryTokenBalance: No wallet address available, skipping")
@@ -145,8 +139,7 @@ suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): B
     }
     
     val formattedAddress = walletAddress.toAddress()
-    logd(TAG, "cadenceQueryTokenBalance() formatted address: '$formattedAddress'")
-    
+
     // Additional check to ensure the address is not just "0x" or invalid
     if (formattedAddress == "0x" || formattedAddress.length < 10) {
         logd(TAG, "cadenceQueryTokenBalance: Invalid wallet address format '$formattedAddress', skipping")
@@ -206,8 +199,7 @@ suspend fun cadenceNftEnabled(nft: NftCollection): String? {
 
 suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
     val walletAddress = WalletManager.selectedWalletAddress()
-    logd(TAG, "cadenceGetNFTBalanceStorage() walletAddress: '$walletAddress'")
-    
+
     // Check if we have a valid wallet address before proceeding
     if (walletAddress.isBlank()) {
         logd(TAG, "cadenceGetNFTBalanceStorage: No wallet address available, skipping")
@@ -215,8 +207,7 @@ suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
     }
     
     val formattedAddress = walletAddress.toAddress()
-    logd(TAG, "cadenceGetNFTBalanceStorage() formatted address: '$formattedAddress'")
-    
+
     // Additional check to ensure the address is not just "0x" or invalid
     if (formattedAddress == "0x" || formattedAddress.length < 10) {
         logd(TAG, "cadenceGetNFTBalanceStorage: Invalid wallet address format '$formattedAddress', skipping")

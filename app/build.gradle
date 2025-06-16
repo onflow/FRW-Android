@@ -277,7 +277,7 @@ dependencies {
 
     implementation("com.ionspin.kotlin:bignum:0.3.10")
     implementation("com.ionspin.kotlin:bignum-serialization-kotlinx:0.3.10")
-    implementation("com.ionspin.kotlin:bignum:0.3.10-SNAPSHOT")
+    implementation("com.ionspin.kotlin:bignum:0.3.10")
 
     /** Google Drive **/
 

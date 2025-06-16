@@ -49,10 +49,8 @@ class ChildAccountList(
     }
 
     fun refresh() {
-        logd(TAG, "Starting refresh for address: $address")
         synchronized(refreshLock) {
             if (isRefreshing) {
-                logd(TAG, "Refresh already in progress, skipping")
                 return
             }
             isRefreshing = true
@@ -60,14 +58,12 @@ class ChildAccountList(
 
         ioScope {
             try {
-                logd(TAG, "Querying account metadata")
                 val accounts = queryAccountMeta(address)
                 if (accounts == null) {
                     logd(TAG, "No accounts returned from query")
                     return@ioScope
                 }
-                logd(TAG, "Found ${accounts.size} accounts")
-                
+
                 val oldAccounts = accountList.toList()
                 accounts.forEach { account -> 
                     account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0)
@@ -76,11 +72,9 @@ class ChildAccountList(
                 if (accounts.isNotEmpty()) {
                     accountList.clear()
                     accountList.addAll(accounts)
-                    logd(TAG, "Updated account list with ${accountList.size} accounts")
-                    
+
                     try {
                         cache().cache(ArrayList(accountList))
-                        logd(TAG, "Cached account list")
                     } catch (e: Exception) {
                         logd(TAG, "Error caching accounts: ${e.message}")
                     }
@@ -89,10 +83,8 @@ class ChildAccountList(
                 }
                 
                 dispatchAccountUpdateListener(address, accountList.toList())
-                logd(TAG, "Dispatched account update listener")
             } catch (e: Exception) {
                 logd(TAG, "Error during refresh: ${e.message}")
-                logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
             } finally {
                 synchronized(refreshLock) {
                     isRefreshing = false
@@ -102,7 +94,6 @@ class ChildAccountList(
     }
 
     private suspend fun queryAccountMeta(address: String): List<ChildAccount>? {
-        logd(TAG, "Fetching child accounts for address: $address")
         try {
             val wallet = WalletManager.wallet()
             val account = wallet?.accounts?.values?.flatten()?.firstOrNull { it.address == address }
@@ -112,8 +103,7 @@ class ChildAccountList(
             }
 
             val childAccounts = account.fetchChild()
-            logd(TAG, "Found ${childAccounts.size} child accounts")
-            
+
             return childAccounts.map { childAccount ->
                 ChildAccount(
                     address = childAccount.address.base16Value,
@@ -124,7 +114,6 @@ class ChildAccountList(
             }
         } catch (e: Exception) {
             logd(TAG, "Error fetching child accounts: ${e.message}")
-            logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
             return null
         }
     }

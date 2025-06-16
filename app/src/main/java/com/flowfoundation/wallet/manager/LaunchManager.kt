@@ -43,12 +43,10 @@ object LaunchManager {
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
         ioScope {
-            logd("LaunchManager", "About to initialize AccountManager")
-            safeRun { 
+            safeRun {
                 AccountManager.init() 
                 logd("LaunchManager", "AccountManager initialized successfully")
             }
-            logd("LaunchManager", "After AccountManager initialization")
         }
         refreshChainNetwork {
             safeRun { MixpanelManager.init(application) }
