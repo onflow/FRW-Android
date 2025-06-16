@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.uiScope
 import com.reown.android.internal.common.scope
 import com.reown.android.relay.WSSConnectionState
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -21,6 +22,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import android.widget.Toast
+import android.view.Gravity
+import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
+import com.flowfoundation.wallet.utils.toast
+import kotlinx.coroutines.withTimeoutOrNull
 
 private val TAG = WalletConnect::class.java.simpleName
 
@@ -31,7 +38,7 @@ class WalletConnect {
 
     private val isConnectionAvailable: StateFlow<Boolean> by lazy {
         combine(CoreClient.Relay.isNetworkAvailable, CoreClient.Relay.wssConnectionState) {
-            networkAvailable, wss -> networkAvailable == true && wss is WSSConnectionState.Connected
+                networkAvailable, wss -> networkAvailable == true && wss is WSSConnectionState.Connected
         }.stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
@@ -39,76 +46,166 @@ class WalletConnect {
         )
     }
 
-    fun pair(uri: String) {
-        logd(TAG, "CoreClient.Relay isConnectionAvailable :${isConnectionAvailable.value}")
-        if (!isConnectionAvailable.value) {
-            var job: kotlinx.coroutines.Job? = null
-            job = ioScope {
+    private var pairingInProgress = false
+
+    private suspend fun waitForInitialization(timeoutMs: Long = 10000): Boolean {
+        if (!isInitialized()) {
+            logd(TAG, "WalletConnect not initialized. Waiting for initialization...")
+            return withTimeoutOrNull(timeoutMs) {
+                var waitTime = 100L
                 var attempts = 0
-                val maxAttempts = 10
-                isConnectionAvailable.collect { isConnected ->
-                    if (isConnected) {
-                        delay(1000)
-                        logd(TAG, "Pair on connected")
-                        try {
-                            val pairingParams = Core.Params.Pair(uri)
-                            logd(TAG, "Attempting to pair with params: $pairingParams")
-                            CoreClient.Pairing.pair(pairingParams) { error ->
-                                loge(TAG, "Pairing error: ${error.throwable}")
-                            }
-                            logd(TAG, "Pairing completed, checking for active sessions")
-                            val sessions = SignClient.getListOfActiveSessions()
-                            logd(TAG, "Active sessions: ${sessions.size}")
-                        } catch (e: Exception) {
-                            loge(TAG, "Pairing exception: ${e.message}")
-                            loge(e)
-                        } finally {
-                            job?.cancel()
-                        }
-                    } else {
-                        attempts++
-                        if (attempts >= maxAttempts) {
-                            logd(TAG, "Pair on max attempts")
-                            try {
-                                val pairingParams = Core.Params.Pair(uri)
-                                logd(TAG, "Attempting to pair with params: $pairingParams")
-                                CoreClient.Pairing.pair(pairingParams) { error ->
-                                    loge(TAG, "Pairing error: ${error.throwable}")
-                                }
-                                logd(TAG, "Pairing completed, checking for active sessions")
-                                val sessions = SignClient.getListOfActiveSessions()
-                                logd(TAG, "Active sessions: ${sessions.size}")
-                            } catch (e: Exception) {
-                                loge(TAG, "Pairing exception: ${e.message}")
-                                loge(e)
-                            } finally {
-                                job?.cancel()
-                            }
-                            return@collect
-                        }
+                val maxAttempts = 20
+
+                while (!isInitialized() && attempts < maxAttempts) {
+                    logd(TAG, "Waiting for WalletConnect initialization, attempt ${attempts + 1} of $maxAttempts (waiting ${waitTime}ms)")
+                    delay(waitTime)
+                    attempts++
+                    waitTime = minOf(waitTime * 2, 1000)
+                }
+
+                isInitialized()
+            } == true
+        }
+        return true
+    }
+
+    fun pair(uri: String) {
+        if (!CoreClient.Pairing.validatePairingUri(uri)) {
+            logd(TAG, "Invalid pairing URI: $uri")
+            return
+        }
+        if (pairingInProgress) {
+            logd(TAG, "Pairing already in progress, ignoring new pairing request")
+            return
+        }
+
+        pairingInProgress = true
+
+        // Show connecting toast immediately when pairing starts
+        val activity = BaseActivity.getCurrentActivity()
+        if (activity != null) {
+            uiScope {
+                val toast = Toast.makeText(activity, R.string.connecting, Toast.LENGTH_SHORT)
+                toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, 0)
+                toast.show()
+            }
+        }
+
+        ioScope {
+            try {
+                // First, ensure WalletConnect is initialized
+                val initialized = waitForInitialization()
+                if (!initialized) {
+                    loge(TAG, "WalletConnect initialization timeout. Cannot proceed with pairing.")
+                    uiScope {
+                        toast(R.string.wallet_connect_initialization_error)
+                    }
+                    pairingInProgress = false
+                    return@ioScope
+                }
+
+                // Clean up all active sessions before pairing
+                try {
+                    cleanupActiveSessions()
+                } catch (e: Exception) {
+                    loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
+                    loge(e)
+                    // Continue with pairing anyway
+                }
+
+                // Add a short delay to ensure cleanup has time to complete
+                delay(500)
+
+                logd(TAG, "CoreClient.Relay isConnectionAvailable: ${isConnectionAvailable.value}")
+
+                if (!isConnectionAvailable.value) {
+                    logd(TAG, "Connection not available, attempting to establish connection")
+                    // Try to establish connection
+                    var connected = false
+                    for (attempt in 1..3) {
+                        logd(TAG, "Attempting to connect relay (attempt $attempt of 3)")
                         safeRun {
                             CoreClient.Relay.connect { error: Core.Model.Error ->
                                 loge(TAG, "CoreClient.Relay connect error: $error")
                             }
                         }
-                        delay(1000)
+
+                        // Wait for connection to establish
+                        for (i in 1..5) {
+                            if (isConnectionAvailable.value) {
+                                connected = true
+                                break
+                            }
+                            delay(300)
+                        }
+
+                        if (connected) break
+                    }
+
+                    if (!connected) {
+                        logd(TAG, "Failed to establish connection after multiple attempts")
+                        // Try pairing anyway as a last resort
+                    } else {
+                        // Add a short delay after connection is established
+                        delay(500)
                     }
                 }
-            }
-        } else {
-            try {
-                val pairingParams = Core.Params.Pair(uri)
-                logd(TAG, "Attempting to pair with params: $pairingParams")
-                CoreClient.Pairing.pair(pairingParams) { error ->
-                    loge(TAG, "Pairing error: ${error.throwable}")
+
+                // Proceed with pairing
+                logd(TAG, "Attempting to pair with URI: $uri")
+                try {
+                    val pairingParams = Core.Params.Pair(uri)
+                    CoreClient.Pairing.pair(pairingParams) { error ->
+                        loge(TAG, "Pairing error: ${error.throwable}")
+                        uiScope {
+                            try {
+                                toast(R.string.wallet_connect_pairing_error)
+                                logd(TAG, "Showed pairing error toast")
+                            } catch (e: Exception) {
+                                loge(TAG, "Failed to show pairing error toast: ${e.message}")
+                                loge(e)
+                            }
+                        }
+                    }
+                    logd(TAG, "Pairing request sent successfully")
+
+                    // Check if sessions were established after a short delay
+                    delay(1000)
+                    val sessions = SignClient.getListOfActiveSessions()
+                    logd(TAG, "Active sessions after pairing attempt: ${sessions.size}")
+                } catch (e: Exception) {
+                    loge(TAG, "Pairing exception: ${e.message}")
+                    loge(e)
+                    uiScope {
+                        try {
+                            toast(R.string.wallet_connect_pairing_error)
+                            logd(TAG, "Showed pairing exception toast")
+                        } catch (e: Exception) {
+                            loge(TAG, "Failed to show pairing exception toast: ${e.message}")
+                            loge(e)
+                        }
+                    }
+                } finally {
+                    pairingInProgress = false
                 }
-                logd(TAG, "Pairing completed, checking for active sessions")
-                val sessions = SignClient.getListOfActiveSessions()
-                logd(TAG, "Active sessions: ${sessions.size}")
             } catch (e: Exception) {
-                loge(TAG, "Pairing exception: ${e.message}")
+                loge(TAG, "Unexpected error during pairing process: ${e.message}")
                 loge(e)
+                pairingInProgress = false
             }
+        }
+    }
+
+    private suspend fun cleanupActiveSessions() {
+        val activeSessions = SignClient.getListOfActiveSessions()
+        logd(TAG, "Cleaning up all active sessions before pairing. Current count: ${activeSessions.size}")
+        activeSessions.forEach { session ->
+            logd(TAG, "Disconnecting session before pairing: ${session.topic}")
+            SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { error ->
+                loge(TAG, "Error disconnecting session: ${error.throwable}")
+            }
+            // Add a small delay between disconnects to prevent overwhelming the system
+            delay(100)
         }
     }
 
@@ -137,12 +234,26 @@ class WalletConnect {
 
     companion object {
         private var instance: WalletConnect? = null
+        private var initializationStarted = false
 
         fun init(application: Application) {
+            if (initializationStarted) {
+                logd(TAG, "WalletConnect initialization already started, skipping")
+                return
+            }
+
+            initializationStarted = true
             ioScope {
-                setup(application)
-                instance = WalletConnect().apply {
-                    initCombine()
+                try {
+                    setup(application)
+                    instance = WalletConnect().apply {
+                        initCombine()
+                    }
+                    logd(TAG, "WalletConnect successfully initialized")
+                } catch (e: Exception) {
+                    loge(TAG, "Error initializing WalletConnect: ${e.message}")
+                    loge(e)
+                    initializationStarted = false
                 }
             }
         }
@@ -159,7 +270,7 @@ private fun setup(application: Application) {
         description = "Digital wallet created for everyone.",
         url = "https://core.flow.com/",
         icons = listOf("https://lilico.app/fcw-logo.png"),
-        redirect = "flowwallet://wc",
+        redirect = null,
     )
     CoreClient.initialize(
         application = application,
@@ -183,8 +294,6 @@ private fun setup(application: Application) {
 
     SignClient.setWalletDelegate(WalletConnectDelegate())
     SignClient.setDappDelegate(WalletDappDelegate())
-
-//    RelayClient.connect { error -> logw(TAG, "connect error:$error") }
 }
 
 fun getWalletConnectPendingRequests(): List<Sign.Model.SessionRequest> {

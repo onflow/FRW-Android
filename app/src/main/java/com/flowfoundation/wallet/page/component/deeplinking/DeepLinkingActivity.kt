@@ -42,8 +42,4 @@ class DeepLinkingActivity : BaseActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        // Don't finish here, let the coroutine handle it
-    }
 }
