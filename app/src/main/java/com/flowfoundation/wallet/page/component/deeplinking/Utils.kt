@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.component.deeplinking
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
@@ -23,11 +22,7 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.time.withTimeoutOrNull
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
@@ -51,9 +46,16 @@ enum class DeepLinkPath(val path: String) {
 
 suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
     logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
-    val wcUri = getWalletConnectUri(uri)
-    if (wcUri?.startsWith("wc:") == true) {
-        logd(TAG, "Found WalletConnect URI: $wcUri")
+
+    // Try to handle with the new UriHandler first
+    if (uri.scheme == DeepLinkScheme.TG.scheme) {
+        UriHandler.processUri(context, uri)
+        return
+    }
+
+    // For backward compatibility, continue with the existing logic
+    val wcUri = UriHandler.extractWalletConnectUri(uri)
+    if (wcUri?.startsWith(DeepLinkScheme.WC.scheme + ":") == true) {
         val success = dispatchWalletConnect(uri)
         if (success) {
             logd(TAG, "WalletConnect dispatch completed successfully")
@@ -107,15 +109,15 @@ suspend fun executePendingDeepLink(uri: Uri) {
 // wc:83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c@2?relay-protocol=iridium&symKey=618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
 private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
-        val data = getWalletConnectUri(uri)
+        val data = UriHandler.extractWalletConnectUri(uri)
         logd(TAG, "dispatchWalletConnect: Processing URI: $uri")
         logd(TAG, "Extracted WalletConnect URI: $data")
-        
+
         if (data.isNullOrBlank() || !data.startsWith("wc:")) {
             loge(TAG, "Invalid WalletConnect URI format: $data")
             return@runCatching false
         }
-        
+
         logd(TAG, "Starting WalletConnect initialization check")
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, initializing...")
@@ -174,6 +176,7 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     }.getOrDefault(false)
 }
 
+@Deprecated("Use UriHandler.extractWalletConnectUri instead")
 fun getWalletConnectUri(uri: Uri): String? {
     return runCatching {
         val uriString = uri.toString()
@@ -185,9 +188,9 @@ fun getWalletConnectUri(uri: Uri): String? {
         } else {
             uri.getQueryParameter("uri")
         }
-        
+
         logd(TAG, "Extracted encoded URI: $wcUriEncoded")
-        
+
         wcUriEncoded?.let {
             if (it.contains("%")) {
                 val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
