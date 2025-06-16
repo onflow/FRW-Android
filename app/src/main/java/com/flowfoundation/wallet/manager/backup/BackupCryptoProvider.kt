@@ -111,7 +111,17 @@ class BackupCryptoProvider(
                 try {
                     val signature = seedPhraseKey.sign(bytes, signingAlgorithm, effectiveHashingAlgorithm)
                     logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
-                    return signature
+                    
+                    // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                    val finalSignature = if (signature.size == 65) {
+                        logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature for transaction signing")
+                        signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                    } else {
+                        logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes) for transaction signing")
+                        signature
+                    }
+                    
+                    return finalSignature
                 } catch (e: Exception) {
                     throw e
                 }
@@ -128,7 +138,17 @@ class BackupCryptoProvider(
                 try {
                     val signature = seedPhraseKey.sign(bytes, signingAlgorithm, effectiveHashingAlgorithm)
                     logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
-                    return signature
+                    
+                    // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                    val finalSignature = if (signature.size == 65) {
+                        logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature for KMM signing")
+                        signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                    } else {
+                        logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes) for KMM signing")
+                        signature
+                    }
+                    
+                    return finalSignature
                 } catch (e: Exception) {
                     throw e
                 }
@@ -140,7 +160,18 @@ class BackupCryptoProvider(
                 logd("BackupCryptoProvider", "  Bytes: ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
                 try {
                     // For domain signing, we need to combine domain + bytes and let the SDK handle hashing
-                    return seedPhraseKey.sign(domain + bytes, signingAlgorithm, effectiveHashingAlgorithm)
+                    val signature = seedPhraseKey.sign(domain + bytes, signingAlgorithm, effectiveHashingAlgorithm)
+                    
+                    // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                    val finalSignature = if (signature.size == 65) {
+                        logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature for domain signing")
+                        signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                    } else {
+                        logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes) for domain signing")
+                        signature
+                    }
+                    
+                    return finalSignature
                 } catch (e: Exception) {
                     throw e
                 }

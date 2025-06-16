@@ -58,15 +58,42 @@ class HDWalletCryptoProvider(
             override var keyIndex: Int = 0
             
             override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                
+                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                val finalSignature = if (signature.size == 65) {
+                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                } else {
+                    signature
+                }
+                
+                return finalSignature
             }
 
             override suspend fun sign(bytes: ByteArray): ByteArray {
-                return seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                
+                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                val finalSignature = if (signature.size == 65) {
+                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                } else {
+                    signature
+                }
+                
+                return finalSignature
             }
             
             override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
-                return seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
+                val signature = seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
+                
+                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                val finalSignature = if (signature.size == 65) {
+                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                } else {
+                    signature
+                }
+                
+                return finalSignature
             }
             
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
