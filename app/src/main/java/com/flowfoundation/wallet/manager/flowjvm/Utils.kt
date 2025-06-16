@@ -4,6 +4,7 @@ import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.utils.extensions.toSafeDecimal
 import com.flowfoundation.wallet.utils.logd
@@ -34,10 +35,7 @@ internal fun Map<String, String>?.parseBigDecimalMap(): Map<String, BigDecimal>?
 }
 
 fun addressVerify(address: String): Boolean {
-    if (!address.startsWith("0x")) {
-        return false
-    }
-    return true
+    return address.startsWith("0x")
 }
 
 fun Nft.formatCadence(cadenceScript: CadenceScript): String {
@@ -142,10 +140,66 @@ suspend fun FlowAddress.lastBlockAccount(): Account {
 
 @WorkerThread
 suspend fun FlowAddress.lastBlockAccountKeyId(): Int {
-    return lastBlockAccount().keys?.firstOrNull()?.index?.toInt() ?: 0
+    val account = lastBlockAccount()
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+    
+    if (cryptoProvider != null) {
+        val currentPublicKey = cryptoProvider.getPublicKey().removePrefix("0x").lowercase()
+        // Find a key that matches the current crypto provider and is not revoked
+        val matchingKey = account.keys?.firstOrNull { key ->
+            val keyPublicKey = key.publicKey.removePrefix("0x").lowercase()
+            !key.revoked && keyPublicKey == currentPublicKey
+        }
+        if (matchingKey != null) {
+            return matchingKey.index.toInt()
+        }
+        
+        // If we have a crypto provider but no matching non-revoked key, log error and return -1
+        logd("FlowUtils", "⚠️ WARNING: No valid non-revoked key found for current crypto provider on account ${this.formatted}")
+        logd("FlowUtils", "Available keys: ${account.keys?.map { "index=${it.index}, revoked=${it.revoked}, pubKey=${it.publicKey.take(10)}..." }}")
+        logd("FlowUtils", "Current provider public key: ${currentPublicKey.take(10)}...")
+        return -1
+    }
+    
+    // If no crypto provider available, fall back to first non-revoked key (legacy behavior)
+    val nonRevokedKey = account.keys?.firstOrNull { !it.revoked }
+    if (nonRevokedKey != null) {
+        return nonRevokedKey.index.toInt()
+    }
+    
+    // If all keys are revoked, return the first key's index (or 0 as fallback)
+    return account.keys?.firstOrNull()?.index?.toInt() ?: 0
+}
+
+@WorkerThread
+suspend fun FlowAddress.payerAccountKeyId(): Int {
+    // For payer accounts, we don't have the private keys, so we just return the first non-revoked key
+    val account = lastBlockAccount()
+    val nonRevokedKey = account.keys?.firstOrNull { !it.revoked }
+    if (nonRevokedKey != null) {
+        return nonRevokedKey.index.toInt()
+    }
+    
+    // If all keys are revoked, return the first key's index (or 0 as fallback)
+    return account.keys?.firstOrNull()?.index?.toInt() ?: 0
 }
 
 @WorkerThread
 suspend fun FlowAddress.currentKeyId(publicKey: String): Int {
-    return lastBlockAccount().keys?.firstOrNull { publicKey == it.publicKey }?.index?.toInt() ?: 0
+    val account = lastBlockAccount()
+    val normalizedPublicKey = publicKey.removePrefix("0x").lowercase()
+    // Find a key that matches the public key and is not revoked
+    val matchingKey = account.keys?.firstOrNull { key ->
+        val keyPublicKey = key.publicKey.removePrefix("0x").lowercase()
+        !key.revoked && keyPublicKey == normalizedPublicKey
+    }
+    if (matchingKey != null) {
+        return matchingKey.index.toInt()
+    }
+    
+    // If no matching non-revoked key found, log warning and return -1
+    logd("FlowUtils", "⚠️ WARNING: No valid non-revoked key found for public key ${normalizedPublicKey.take(10)}... on account ${this.formatted}")
+    logd("FlowUtils", "Available keys: ${account.keys?.map { "index=${it.index}, revoked=${it.revoked}, pubKey=${it.publicKey.take(10)}..." }}")
+    return -1
 }
+

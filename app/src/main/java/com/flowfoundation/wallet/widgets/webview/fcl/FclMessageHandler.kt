@@ -37,6 +37,8 @@ import com.ionspin.kotlin.bignum.integer.toBigInteger
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.reflect.Type
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
+import org.onflow.flow.models.FlowAddress
 
 private val TAG = FclMessageHandler::class.java.simpleName
 
@@ -262,6 +264,24 @@ class FclMessageHandler(
 
     private suspend fun signEnvelope(fcl: FclAuthzResponse, webView: WebView, callback: () -> Unit) {
         val voucher = fcl.body.voucher
+        
+        // Get the proper key ID instead of defaulting to 0
+        val proposerAddress = voucher.proposalKey.address ?: ""
+        val keyId = if (voucher.proposalKey.keyId != null) {
+            voucher.proposalKey.keyId!!
+        } else {
+            // Use the account's valid key ID instead of defaulting to 0
+            val validKeyId = FlowAddress(proposerAddress).lastBlockAccountKeyId()
+            if (validKeyId == -1) {
+                logd("FclMessageHandler", "⚠️ No valid key found for proposer $proposerAddress, cannot proceed")
+                callback.invoke()
+                readyToSignEnvelope = false
+                finishService()
+                return
+            }
+            validKeyId
+        }
+        
         val transaction = org.onflow.flow.models.Transaction(
             script = voucher.cadence ?: "",
             arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
@@ -269,8 +289,8 @@ class FclMessageHandler(
             gasLimit = (voucher.computeLimit ?: 9999).toBigInteger(),
             payer = voucher.payer ?: "",
             proposalKey = org.onflow.flow.models.ProposalKey(
-                address = voucher.proposalKey.address ?: "",
-                keyIndex = voucher.proposalKey.keyId ?: 0,
+                address = proposerAddress,
+                keyIndex = keyId,
                 sequenceNumber = (voucher.proposalKey.sequenceNum ?: 0).toBigInteger()
             ),
             authorizers = voucher.authorizers ?: emptyList()

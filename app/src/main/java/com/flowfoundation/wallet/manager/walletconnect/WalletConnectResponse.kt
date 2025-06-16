@@ -4,6 +4,7 @@ import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
+import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.wallet.toAddress
@@ -110,7 +111,7 @@ private suspend fun preAuthz(): String {
     "method": "WC/RPC",
     "data": {
       "address": "${AppConfig.payer().address.toAddress()}",
-      "keyId": ${FlowAddress(AppConfig.payer().address.toAddress()).lastBlockAccountKeyId()}
+      "keyId": ${FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId()}
     }
 }
     """.trimIndent()
