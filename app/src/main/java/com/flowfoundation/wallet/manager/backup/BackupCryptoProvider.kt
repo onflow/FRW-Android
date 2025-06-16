@@ -30,10 +30,9 @@ class BackupCryptoProvider(
 
     /**
      * Get the key weight for this provider
-     * @return Key weight value (1000 for full weight)
      */
     override fun getKeyWeight(): Int {
-        return 1000 // Full weight key
+        return 500
     }
 
     /**
