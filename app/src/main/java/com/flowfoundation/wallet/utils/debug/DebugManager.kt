@@ -19,7 +19,6 @@ object DebugManager {
     val applicationContext by lazy {
         Env.getApp()
     }
-    val isProductionBuild = false
 
     private lateinit var fragmentManagerRef: WeakReference<FragmentManager>
     lateinit var tweaks: List<DebugTweak<Any>>
@@ -94,21 +93,19 @@ object DebugManager {
     }
 
     fun toggleDebugTweaks() {
-        if (!isProductionBuild) {
-            debugTweaksFragment?.let {
-                it.dismiss(true)
-                debugTweaksFragment = null
-            } ?: run {
-                debugTweaksFragment = DebugTweaksFragment()
-                present(
-                    debugTweaksFragment!!,
-                    animated = true,
-                    enterAnimation = R.anim.enter_from_bottom
-                )
-                debugViewerFragment?.let {
-                    it.dismiss(false)
-                    present(it, false)
-                }
+        debugTweaksFragment?.let {
+            it.dismiss(true)
+            debugTweaksFragment = null
+        } ?: run {
+            debugTweaksFragment = DebugTweaksFragment()
+            present(
+                debugTweaksFragment!!,
+                animated = true,
+                enterAnimation = R.anim.enter_from_bottom
+            )
+            debugViewerFragment?.let {
+                it.dismiss(false)
+                present(it, false)
             }
         }
     }
