@@ -28,8 +28,6 @@ import com.google.gson.reflect.TypeToken
 import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flow.wallet.storage.StorageProtocol
-import com.flow.wallet.storage.FileSystemStorage
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 
 /**
  * A CryptoProvider that handles multi-restore accounts by combining multiple backup providers
@@ -84,13 +82,7 @@ class MultiRestoreCryptoProvider(
     fun getAllProviders(): List<BackupCryptoProvider> {
         return providers
     }
-    
-    /**
-     * Get the primary provider (first one, used for non-multi-sig operations)
-     */
-    fun getPrimaryProvider(): BackupCryptoProvider {
-        return primaryProvider
-    }
+
 }
 
 object CryptoProviderManager {
@@ -141,7 +133,176 @@ object CryptoProviderManager {
                     val multiRestoreAddress = passwordMap["multi_restore_address"] ?: ""
                     
                     logd(TAG, "  Multi-restore check: count=$multiRestoreCount, address=$multiRestoreAddress, account=${account.wallet?.walletAddress()}")
-                    multiRestoreCount > 0 && multiRestoreAddress == account.wallet?.walletAddress()
+                    
+                    // Only use multi-signature if we don't have a working device key with sufficient weight
+                    if (multiRestoreCount > 0 && multiRestoreAddress == account.wallet?.walletAddress()) {
+                        logd(TAG, "  Multi-restore account detected, checking device key availability...")
+                        
+                        // Check timing to help diagnose key indexer latency
+                        val restoreCompletedTime = passwordMap["multi_restore_completed_time"]?.toLongOrNull()
+                        if (restoreCompletedTime != null) {
+                            val timeSinceRestore = (System.currentTimeMillis() - restoreCompletedTime) / 1000
+                            logd(TAG, "  Time since restore completed: ${timeSinceRestore}s ago")
+                            if (timeSinceRestore < 60) {
+                                logd(TAG, "  ⏱️ Recent restore detected (<60s) - key indexer may still be processing")
+                            }
+                        } else {
+                            logd(TAG, "  No restore completion time recorded")
+                        }
+                        
+                        // Check if we have a device key that works and has sufficient weight
+                        val keyId = "prefix_key_${account.prefix}"
+                        val hasDeviceKey = try {
+                            val deviceKey = PrivateKey.get(keyId, account.prefix!!, storage)
+                            val devicePublicKey = deviceKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() 
+                                ?: deviceKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                            
+                            logd(TAG, "    Device key check: keyId=$keyId, prefix=${account.prefix}")
+                            
+                            // Test both signing algorithms for the device key
+                            val deviceKeyECDSA_P256 = try {
+                                val key = deviceKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                                logd(TAG, "    Device key ECDSA_P256 public key: $key")
+                                key
+                            } catch (e: Exception) {
+                                logd(TAG, "    Device key ECDSA_P256 failed: ${e.message}")
+                                null
+                            }
+                            
+                            val deviceKeyECDSA_secp256k1 = try {
+                                val key = deviceKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                                logd(TAG, "    Device key ECDSA_secp256k1 public key: $key")
+                                key
+                            } catch (e: Exception) {
+                                logd(TAG, "    Device key ECDSA_secp256k1 failed: ${e.message}")
+                                null
+                            }
+                            
+                            logd(TAG, "    Fetching on-chain account for address: ${account.wallet?.walletAddress()}")
+                            
+                            val onChainAccount = runBlocking { 
+                                FlowCadenceApi.getAccount(account.wallet?.walletAddress() ?: "")
+                            }
+                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
+                            
+                            logd(TAG, "    On-chain account has ${onChainKeys.size} total keys:")
+                            
+                            // Show recent keys (last 10) with more detail
+                            val recentKeys = onChainKeys.takeLast(10)
+                            recentKeys.forEachIndexed { index, key ->
+                                val actualIndex = onChainKeys.size - recentKeys.size + index
+                                logd(TAG, "      [$actualIndex] Key $actualIndex: weight=${key.weight}, revoked=${key.revoked}, pubKey=${key.publicKey.take(20)}...")
+                            }
+                            
+                            // Test device key matching with detailed format analysis
+                            var deviceKeyFound = false
+                            var bestMatch = ""
+                            var bestMatchInfo = ""
+
+                            listOf(deviceKeyECDSA_P256, deviceKeyECDSA_secp256k1).filterNotNull().forEach { devicePublicKey ->
+                                val signingAlgo = if (devicePublicKey == deviceKeyECDSA_P256) "ECDSA_P256" else "ECDSA_secp256k1"
+                                logd(TAG, "    Testing device key ($signingAlgo) against on-chain keys...")
+                                logd(TAG, "      Device key full: $devicePublicKey")
+                                logd(TAG, "      Device key length: ${devicePublicKey.length}")
+                                
+                                // Show different format variations
+                                val deviceRaw = devicePublicKey.removePrefix("0x").lowercase()
+                                val deviceStripped = if (deviceRaw.startsWith("04") && deviceRaw.length == 130) deviceRaw.substring(2) else deviceRaw
+                                val deviceWith04 = if (!deviceRaw.startsWith("04") && deviceRaw.length == 128) "04$deviceRaw" else deviceRaw
+                                
+                                logd(TAG, "      Device key variations:")
+                                logd(TAG, "        Raw: $deviceRaw")
+                                logd(TAG, "        Stripped: $deviceStripped")
+                                logd(TAG, "        With04: $deviceWith04")
+                                
+                                onChainKeys.forEachIndexed { index, onChainKey ->
+                                    if (!onChainKey.revoked && onChainKey.weight.toIntOrNull()?.let { it >= 1000 } == true) {
+                                        val onChainRaw = onChainKey.publicKey.removePrefix("0x").lowercase()
+                                        val onChainStripped = if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
+                                        val onChainWith04 = if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
+                                        
+                                        val isMatch = isKeyMatchRobust(devicePublicKey, onChainKey.publicKey)
+                                        
+                                        if (isMatch) {
+                                            logd(TAG, "        ✅ MATCH FOUND! Key $index ($signingAlgo)")
+                                            logd(TAG, "          On-chain: ${onChainKey.publicKey}")
+                                            logd(TAG, "          Device:   $devicePublicKey")
+                                            logd(TAG, "          Weight: ${onChainKey.weight}")
+                                            deviceKeyFound = true
+                                            bestMatch = onChainKey.publicKey
+                                            bestMatchInfo = "Key $index ($signingAlgo, weight=${onChainKey.weight})"
+                                        } else {
+                                            // Show detailed comparison for high-weight keys
+                                            logd(TAG, "        ❌ No match Key $index ($signingAlgo, weight=${onChainKey.weight}):")
+                                            logd(TAG, "          OnChain: ${onChainKey.publicKey.take(40)}...")
+                                            logd(TAG, "          Device:  ${devicePublicKey.take(40)}...")
+                                            
+                                            // Show format comparison
+                                            logd(TAG, "          Format comparison:")
+                                            logd(TAG, "            OnChain raw vs Device raw: ${onChainRaw == deviceRaw}")
+                                            logd(TAG, "            OnChain stripped vs Device stripped: ${onChainStripped == deviceStripped}")
+                                            logd(TAG, "            OnChain with04 vs Device with04: ${onChainWith04 == deviceWith04}")
+                                            
+                                            // Check similarity
+                                            val similarity = calculateSimilarity(onChainRaw, deviceRaw)
+                                            if (similarity > 0.8) {
+                                                logd(TAG, "            ⚠️ High similarity: ${(similarity * 100).toInt()}% - possible format issue")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (deviceKeyFound) {
+                                logd(TAG, "    ✅ DEVICE KEY FOUND ON-CHAIN: $bestMatchInfo")
+                                logd(TAG, "    Matched key: $bestMatch")
+                                true
+                            } else {
+                                logd(TAG, "    ❌ DEVICE KEY NOT FOUND ON-CHAIN")
+                                logd(TAG, "      This suggests either:")
+                                logd(TAG, "      1. Key indexer latency - device key may not be indexed yet")
+                                logd(TAG, "      2. Algorithm mismatch - key created with different algorithm")
+                                logd(TAG, "      3. Key format issue - encoding differences")
+                                logd(TAG, "      4. Different key stored locally vs on-chain")
+                                
+                                // Show what we're looking for vs what's available
+                                if (deviceKeyECDSA_P256 != null) {
+                                    logd(TAG, "      Looking for ECDSA_P256: ${deviceKeyECDSA_P256.take(40)}...")
+                                }
+                                if (deviceKeyECDSA_secp256k1 != null) {
+                                    logd(TAG, "      Looking for ECDSA_secp256k1: ${deviceKeyECDSA_secp256k1.take(40)}...")
+                                }
+                                
+                                logd(TAG, "      Available high-weight keys on-chain:")
+                                onChainKeys.forEachIndexed { index, key ->
+                                    if (!key.revoked && key.weight.toIntOrNull()?.let { it >= 1000 } == true) {
+                                        logd(TAG, "        Key $index: ${key.publicKey.take(40)}... (weight=${key.weight})")
+                                    }
+                                }
+                                false
+                            }
+                        } catch (e: Exception) {
+                            logd(TAG, "  Device key check failed: ${e.message}")
+                            logd(TAG, "  This could indicate:")
+                            logd(TAG, "    1. Device key not stored yet")
+                            logd(TAG, "    2. Key indexer latency") 
+                            logd(TAG, "    3. Storage/network error")
+                            false
+                        }
+                        
+                        if (hasDeviceKey) {
+                            logd(TAG, "  ✅ DECISION: Device key available with sufficient weight - using device key instead of multi-signature")
+                            logd(TAG, "  This means subsequent transactions will use fast single-signature with the 1000-weight device key")
+                            false // Don't use multi-restore, use device key
+                        } else {
+                            logd(TAG, "  ⚠️ DECISION: Device key not available or insufficient weight - using multi-signature")
+                            logd(TAG, "  This means subsequent transactions will use slower multi-signature with backup keys")
+                            logd(TAG, "  If this happens immediately after restore, it's likely due to key indexer latency")
+                            true // Use multi-restore
+                        }
+                    } else {
+                        false
+                    }
                 } catch (e: Exception) {
                     logd(TAG, "  Multi-restore check failed: ${e.message}")
                     false
@@ -658,5 +819,22 @@ object CryptoProviderManager {
                onChainWith04 == providerRaw ||
                onChainWith04 == providerStripped ||
                onChainStripped == providerWith04
+    }
+
+    /**
+     * Calculate similarity between two strings (0.0 to 1.0)
+     * Helps identify potential format issues
+     */
+    private fun calculateSimilarity(str1: String, str2: String): Double {
+        val maxLength = maxOf(str1.length, str2.length)
+        if (maxLength == 0) return 1.0
+        
+        var matches = 0
+        val minLength = minOf(str1.length, str2.length)
+        for (i in 0 until minLength) {
+            if (str1[i] == str2[i]) matches++
+        }
+        
+        return matches.toDouble() / maxLength
     }
 }
