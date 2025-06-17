@@ -70,7 +70,7 @@
     <string name="wrong_password">wrong password</string>
     <string name="word_not_found">Oops, word not found.</string>
     <string name="restore_mnemonic_tip">This is a 12 word phrase you were given when you created your previous wallet.</string>
-    <string name="multi_restore_mnemonic_tip">TThis is the 15 word phrase you were given when you created your backup.</string>
+    <string name="multi_restore_mnemonic_tip">This is the 15 word phrase you were given when you created your backup.</string>
     <string name="restore_with_mnemonic">Recovery phrase</string>
     <string name="restore_mnemonic_hint">Enter the Recovery Phrase</string>
     <string name="account_not_found">Account not Found</string>
@@ -340,6 +340,7 @@
     <string name="flow_coin_name">Flow</string>
     <string name="on_wallet_only">On Flow Wallet Only</string>
     <string name="confirm_your_stake">Confirm Your Stake</string>
+    <string name="confirm_import_wallet">Confirm which account to import</string>
     <string name="confirm_your_unstake">Confirm Your Unstake</string>
     <string name="staking">Staking</string>
     <string name="hold_to_stake">Hold to stake</string>
@@ -465,7 +466,7 @@
     <string name="login_with_registered_account">Registered Accounts</string>
     <string name="or">Or</string>
     <string name="sync_page_title">Open your Flow Wallet on Mobile App \n and Scan the QR Code to Sync your Wallet.</string>
-    <string name="sync_scan_qr_code">Scan QR Code with Mobile App</string>
+    <string name="sync_scan_qr_code">Scan QR code with mobile app</string>
     <string name="sync_note">Note: Your recovery phrase will NEVER go through Flow Wallet’s server. It is end-to-end encrypted and we can never read it.</string>
     <string name="wallet_confirm_desc">Find 1 Matching Wallet</string>
     <string name="wallet_confirmation">Wallet Confirmation</string>
@@ -556,7 +557,7 @@
     <string name="move_flow_to_evm_failed">Move Flow Token to EVM failed</string>
     <string name="move_nft_to_evm_failed">Move NFT to EVM failed</string>
     <string name="hide_browser_toolbar">Hide</string>
-    <string name="sync_in_processing">Scan Successfully \nSync in Processing...</string>
+    <string name="sync_in_processing">Scan successfully completed</string>
     <string name="view_more">View More</string>
     <string name="select_nft">Select NFTs</string>
     <string name="account">Account</string>
@@ -579,7 +580,7 @@
     <string name="features_coming">Features Coming Soon</string>
     <string name="quick_enable_evm">Quick Enable EVM</string>
     <string name="select_collection">Select Collection</string>
-    <string name="import_profile">Import Profile</string>
+    <string name="import_profile">Import profile</string>
     <string name="notification">Notification</string>
     <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
