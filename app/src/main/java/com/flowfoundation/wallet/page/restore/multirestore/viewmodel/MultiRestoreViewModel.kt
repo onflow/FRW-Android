@@ -226,7 +226,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
                 // Create backup crypto providers from mnemonics for transaction authorization
                 // Use detected algorithms for each provider
-                val providers = mnemonicList.map { mnemonic ->
+                mnemonicList.map { mnemonic ->
                     val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
                     val words = mnemonic.split(" ")
                     val algorithmPair = detectAlgorithms(seedPhraseKey, restoreAddress)
@@ -458,7 +458,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     )
                 )
                 if (resp.status == 200) {
-                    val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+                    BaseActivity.getCurrentActivity() ?: return@ioScope
                     // Add small delay to allow server database update to propagate
                     delay(2000)
                     logd("MultiRestore", "Server sync successful, proceeding with login using stored key")
@@ -769,7 +769,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
                     if (matchedKey != null) {
                         logd("MultiRestore", "✓ HIGH-WEIGHT KEY MATCH found with $signingAlgorithm! On-chain key index: ${matchedKey.index}")
-                        logd("MultiRestore", "  Generated: ${publicKey}")
+                        logd("MultiRestore", "  Generated: $publicKey")
                         logd("MultiRestore", "  On-chain:  ${matchedKey.publicKey}")
                         logd("MultiRestore", "  Key weight: ${matchedKey.weight} (sufficient for authorization)")
                         logd("MultiRestore", "  On-chain hashing algorithm: ${matchedKey.hashingAlgorithm}")
