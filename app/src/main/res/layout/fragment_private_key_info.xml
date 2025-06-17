@@ -4,33 +4,8 @@
     android:layout_height="match_parent"
     android:id="@+id/fragment_private_key_info"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <androidx.constraintlayout.utils.widget.ImageFilterView
-        android:id="@+id/iv_private_key"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="38dp"
-        android:background="@drawable/bg_round_corner"
-        android:backgroundTint="@color/bg_1"
-        android:scaleType="centerInside"
-        android:src="@drawable/ic_restore_private_key"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-    <TextView
-        android:id="@+id/tv_private_key_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:fontFamily="@font/inter"
-        android:text="@string/private_key"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iv_private_key"/>
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/colorPrimaryVariant">
 
     <TextView
         android:id="@+id/tv_private_key"
@@ -43,7 +18,7 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_private_key_title"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -63,7 +38,7 @@
         android:layout_marginTop="4dp"
         android:background="@drawable/bg_round_16dp"
         android:textCursorDrawable="@drawable/bg_edittext_cursor"
-        android:backgroundTint="@color/bg_1"
+        android:backgroundTint="@color/bg_card"
         android:fontFamily="@font/inter"
         android:hint="@string/restore_private_key_hint"
         android:imeOptions="actionNext"
@@ -98,7 +73,7 @@
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="4dp"
         android:background="@drawable/bg_round_16dp"
-        android:backgroundTint="@color/bg_1"
+        android:backgroundTint="@color/bg_card"
         android:fontFamily="@font/inter"
         android:hint="@string/key_store_address_hint"
         android:imeOptions="actionNext"

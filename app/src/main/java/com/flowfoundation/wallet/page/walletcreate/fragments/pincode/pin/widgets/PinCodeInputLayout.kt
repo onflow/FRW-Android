@@ -14,7 +14,7 @@ import com.flowfoundation.wallet.utils.extensions.res2color
 
 class PinCodeInputLayout : LinearLayout {
 
-    private val selectedColor by lazy { ColorStateList.valueOf(R.color.colorSecondary.res2color()) }
+    private val selectedColor by lazy { ColorStateList.valueOf(R.color.evm_on_flow_end_color.res2color()) }
     private val unselectedColor by lazy { ColorStateList.valueOf(R.color.border_3.res2color()) }
 
     private val keys = mutableListOf<KeyboardItem>()
