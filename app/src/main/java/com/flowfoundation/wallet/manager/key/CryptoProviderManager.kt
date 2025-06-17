@@ -28,6 +28,70 @@ import com.google.gson.reflect.TypeToken
 import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flow.wallet.storage.StorageProtocol
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+
+/**
+ * A CryptoProvider that handles multi-restore accounts by combining multiple backup providers
+ * to meet the signature weight threshold requirements
+ */
+class MultiRestoreCryptoProvider(
+    private val providers: List<BackupCryptoProvider>,
+    private val primaryProvider: BackupCryptoProvider
+) : CryptoProvider {
+    
+    private val TAG = "MultiRestoreCryptoProvider"
+    
+    init {
+        logd(TAG, "Initialized with ${providers.size} backup providers")
+        providers.forEachIndexed { index, provider ->
+            logd(TAG, "Provider $index: weight=${provider.getKeyWeight()}, algo=${provider.getSignatureAlgorithm()}")
+        }
+    }
+    
+    override fun getPublicKey(): String {
+        return primaryProvider.getPublicKey()
+    }
+    
+    override suspend fun getUserSignature(jwt: String): String {
+        return primaryProvider.getUserSignature(jwt)
+    }
+    
+    override suspend fun signData(data: ByteArray): String {
+        return primaryProvider.signData(data)
+    }
+    
+    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        return primaryProvider.getSigner(hashingAlgorithm)
+    }
+    
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return primaryProvider.getHashAlgorithm()
+    }
+    
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return primaryProvider.getSignatureAlgorithm()
+    }
+    
+    override fun getKeyWeight(): Int {
+        // Return the total weight of all providers
+        return providers.sumOf { it.getKeyWeight() }
+    }
+    
+    /**
+     * Get all backup providers for multi-signature transactions
+     */
+    fun getAllProviders(): List<BackupCryptoProvider> {
+        return providers
+    }
+    
+    /**
+     * Get the primary provider (first one, used for non-multi-sig operations)
+     */
+    fun getPrimaryProvider(): BackupCryptoProvider {
+        return primaryProvider
+    }
+}
 
 object CryptoProviderManager {
 
@@ -84,7 +148,7 @@ object CryptoProviderManager {
                 }
                 
                 if (isMultiRestoreAccount) {
-                    logd(TAG, "  MULTI-RESTORE ACCOUNT DETECTED: Using backup crypto provider for transactions")
+                    logd(TAG, "  MULTI-RESTORE ACCOUNT DETECTED: Creating multi-signature crypto provider")
                     
                     // Load mnemonics from stored multi-restore data
                     val pref = readWalletPassword()
@@ -99,53 +163,59 @@ object CryptoProviderManager {
                     logd(TAG, "  Multi-restore: Found ${mnemonics.size} stored mnemonics")
                     
                     if (mnemonics.isNotEmpty()) {
-                        // Create backup crypto providers and find one that matches an on-chain key
-                        val providers = mnemonics.map { mnemonic ->
-                            val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
-                            val wallet = WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                            val words = mnemonic.split(" ")
-                            if (words.size == 15) {
-                                BackupCryptoProvider(seedPhraseKey, wallet)
-                            } else {
-                                HDWalletCryptoProvider(seedPhraseKey)
-                            }
-                        }
-                        
-                        // Find the provider that matches an on-chain key
                         val accountAddress = account.wallet?.walletAddress()
                         if (accountAddress != null) {
                             try {
                                 val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
                                 logd(TAG, "  Multi-restore: Fetched on-chain account with ${onChainAccount.keys?.size} keys")
                                 
-                                for (provider in providers) {
-                                    val providerPublicKey = provider.getPublicKey()
-                                    val matchingKey = onChainAccount.keys?.find { accountKey ->
-                                        val accountPubKey = accountKey.publicKey.removePrefix("0x").lowercase()
-                                        val providerPubKey = providerPublicKey.lowercase()
-                                        val providerPubKeyStripped = if (providerPubKey.startsWith("04") && providerPubKey.length == 130) {
-                                            providerPubKey.substring(2)
+                                // Create providers from all mnemonics and detect their algorithms
+                                val providers = mnemonics.mapNotNull { mnemonic ->
+                                    try {
+                                        val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, storage)
+                                        
+                                        // Detect algorithms by matching against on-chain keys
+                                        val detectedAlgorithms = detectAlgorithmsForProvider(seedPhraseKey, onChainAccount.keys?.toList() ?: emptyList())
+                                        
+                                        val words = mnemonic.split(" ")
+                                        val provider = if (words.size == 15) {
+                                            BackupCryptoProvider(seedPhraseKey, null, detectedAlgorithms.signingAlgorithm, detectedAlgorithms.hashingAlgorithm)
                                         } else {
-                                            providerPubKey
+                                            HDWalletCryptoProvider(seedPhraseKey, detectedAlgorithms.signingAlgorithm, detectedAlgorithms.hashingAlgorithm)
                                         }
-                                        accountPubKey == providerPubKey || accountPubKey == providerPubKeyStripped
-                                    }
-                                    
-                                    if (matchingKey != null) {
-                                        logd(TAG, "  Multi-restore: Found matching provider for key index ${matchingKey.index} with algorithm ${matchingKey.signingAlgorithm}")
-                                        return provider
+                                        
+                                        // Verify this provider has a matching key on-chain
+                                        val providerPublicKey = provider.getPublicKey()
+                                        val matchingKey = onChainAccount.keys?.find { accountKey ->
+                                            isKeyMatchRobust(providerPublicKey, accountKey.publicKey) && !accountKey.revoked
+                                        }
+                                        
+                                        if (matchingKey != null) {
+                                            logd(TAG, "  Multi-restore: Provider matches on-chain key index ${matchingKey.index} with weight ${matchingKey.weight}")
+                                            provider as BackupCryptoProvider // Cast HDWalletCryptoProvider to BackupCryptoProvider if needed
+                                        } else {
+                                            logd(TAG, "  Multi-restore: Provider for mnemonic does not match any on-chain key, skipping")
+                                            null
+                                        }
+                                    } catch (e: Exception) {
+                                        logd(TAG, "  Multi-restore: Error creating provider for mnemonic: ${e.message}")
+                                        null
                                     }
                                 }
                                 
-                                logd(TAG, "  Multi-restore: No matching provider found, using first provider as fallback")
-                                return providers.first()
+                                if (providers.isNotEmpty()) {
+                                    val totalWeight = providers.sumOf { it.getKeyWeight() }
+                                    logd(TAG, "  Multi-restore: Created ${providers.size} providers with total weight $totalWeight")
+                                    
+                                    return MultiRestoreCryptoProvider(providers, providers.first())
+                                } else {
+                                    logd(TAG, "  Multi-restore: No valid providers created, falling back to standard prefix handling")
+                                }
                             } catch (e: Exception) {
-                                logd(TAG, "  Multi-restore: Error finding matching provider: ${e.message}, using first provider")
-                                return providers.first()
+                                logd(TAG, "  Multi-restore: Error processing multi-restore account: ${e.message}, using standard prefix handling")
                             }
                         } else {
-                            logd(TAG, "  Multi-restore: No account address, using first provider")
-                            return providers.first()
+                            logd(TAG, "  Multi-restore: No account address, using standard prefix handling")
                         }
                     } else {
                         logd(TAG, "  Multi-restore: No mnemonics found, falling back to standard prefix handling")
@@ -170,53 +240,64 @@ object CryptoProviderManager {
                 logd(TAG, "  Prefix-based: currentProviderPublicKey from local private key: $currentProviderPublicKey")
                 logd(TAG, "  Prefix-based: account.wallet?.walletAddress() for on-chain lookup: ${account.wallet?.walletAddress()}")
 
-                if (currentProviderPublicKey != null && account.wallet?.walletAddress() != null) {
-                    try {
-                        val onChainAccount = runBlocking { FlowCadenceApi.getAccount(account.wallet!!.walletAddress()!!) }
-                        logd(TAG, "  Prefix-based: Fetched on-chain account for ${account.wallet!!.walletAddress()!!}: ${onChainAccount.address}")
-                        val onChainKey = onChainAccount.keys?.find { acctKey ->
-                            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
-                            val providerPubKeyHex = currentProviderPublicKey.removePrefix("0x").lowercase()
-                            // Handle potential "04" prefix for uncompressed keys from some secp256k1 derivations
-                            val providerPubKeyStripped = if (providerPubKeyHex.startsWith("04") && providerPubKeyHex.length == 130) providerPubKeyHex.substring(2) else providerPubKeyHex
-                            val isMatch = acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
-                            if (isMatch) logd(TAG, "  Prefix-based: Matched on-chain key: index=${acctKey.index}, pub=${acctKey.publicKey}, signAlgo=${acctKey.signingAlgorithm}")
-                            isMatch
+                // Try to get on-chain account information to determine the correct signing algorithm
+                try {
+                    val accountAddress = account.wallet?.walletAddress()
+                    if (accountAddress != null) {
+                        val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
+                        val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
+                        
+                        // Test both signing algorithms to see which one matches the on-chain key
+                        val ecdsaP256PublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                        val ecdsaSecp256k1PublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                        
+                        logd(TAG, "  Prefix-based: Testing key matching...")
+                        logd(TAG, "    ECDSA_P256 key: ${ecdsaP256PublicKey?.take(20)}...")
+                        logd(TAG, "    ECDSA_secp256k1 key: ${ecdsaSecp256k1PublicKey?.take(20)}...")
+                        
+                        // Find matching on-chain key
+                        var matchedKey: org.onflow.flow.models.AccountPublicKey? = null
+                        
+                        if (ecdsaP256PublicKey != null) {
+                            matchedKey = onChainKeys.find { onChainKey ->
+                                val match = isKeyMatchRobust(ecdsaP256PublicKey, onChainKey.publicKey)
+                                if (match) {
+                                    logd(TAG, "    ✓ ECDSA_P256 key matches on-chain key index ${onChainKey.index}")
+                                    determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
+                                }
+                                match
+                            }
                         }
-                        if (onChainKey != null) {
-                            determinedSigningAlgorithm = onChainKey.signingAlgorithm
-                            logd(TAG, "  Prefix-based: Successfully determined on-chain signing algorithm: $determinedSigningAlgorithm for key index ${onChainKey.index}")
+                        
+                        if (matchedKey == null && ecdsaSecp256k1PublicKey != null) {
+                            matchedKey = onChainKeys.find { onChainKey ->
+                                val match = isKeyMatchRobust(ecdsaSecp256k1PublicKey, onChainKey.publicKey)
+                                if (match) {
+                                    logd(TAG, "    ✓ ECDSA_secp256k1 key matches on-chain key index ${onChainKey.index}")
+                                    determinedSigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1
+                                }
+                                match
+                            }
+                        }
+                        
+                        if (matchedKey != null) {
+                            logd(TAG, "  Prefix-based: Found matching on-chain key with algorithm: $determinedSigningAlgorithm")
+                            logd(TAG, "  Prefix-based: On-chain key hashing algorithm: ${matchedKey.hashingAlgorithm}")
+                            
+                            // Create the provider with the correct algorithms
+                            return PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm, matchedKey.hashingAlgorithm)
                         } else {
-                            logd(TAG, "  Prefix-based: Could NOT find matching on-chain key for $currentProviderPublicKey. Using default signing algorithm: $determinedSigningAlgorithm")
+                            logd(TAG, "  Prefix-based: Could NOT find matching on-chain key for ${account.prefix}. Using default signing algorithm: $determinedSigningAlgorithm")
                         }
-                    } catch (e: Exception) {
-                        loge(TAG, "  Prefix-based account: Error fetching on-chain key details to determine signing algorithm: ${e.message}. Using default.")
+                    } else {
+                        logd(TAG, "  Prefix-based: No account address available for on-chain key lookup")
                     }
-                } else {
-                    logd(TAG, "  Prefix-based: Missing local public key or wallet address to determine on-chain signing algorithm. Using default: $determinedSigningAlgorithm")
+                } catch (e: Exception) {
+                    logd(TAG, "  Prefix-based: Error during on-chain key lookup: ${e.message}. Using default algorithms.")
                 }
                 
-                // Also determine the hashing algorithm from the on-chain key
-                val determinedHashingAlgorithm = if (currentProviderPublicKey != null && account.wallet?.walletAddress() != null) {
-                    try {
-                        val onChainAccount = runBlocking { FlowCadenceApi.getAccount(account.wallet!!.walletAddress()!!) }
-                        val onChainKey = onChainAccount.keys?.find { acctKey ->
-                            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
-                            val providerPubKeyHex = currentProviderPublicKey.removePrefix("0x").lowercase()
-                            val providerPubKeyStripped = if (providerPubKeyHex.startsWith("04") && providerPubKeyHex.length == 130) providerPubKeyHex.substring(2) else providerPubKeyHex
-                            acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
-                        }
-                        onChainKey?.hashingAlgorithm
-                    } catch (e: Exception) {
-                        logd(TAG, "  Prefix-based: Error fetching hashing algorithm: ${e.message}")
-                        null
-                    }
-                } else {
-                    null
-                }
-                
-                logd(TAG, "  Prefix-based: Instantiating PrivateKeyCryptoProvider with determined algorithms: signing=$determinedSigningAlgorithm, hashing=${determinedHashingAlgorithm ?: "default"}")
-                PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                // Create provider with determined (or default) signing algorithm  
+                return PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm)
             }
             // Handle active accounts (typically uses global mnemonic)
             else if (account.isActive) {
@@ -514,5 +595,68 @@ object CryptoProviderManager {
         } catch (e: Exception) {
             throw RuntimeException("Failed to create SeedPhraseKey with proper keyPair", e)
         }
+    }
+
+    /**
+     * Data class to hold detected algorithm pair
+     */
+    private data class AlgorithmPair(
+        val signingAlgorithm: SigningAlgorithm,
+        val hashingAlgorithm: HashingAlgorithm
+    )
+    
+    /**
+     * Detect algorithms for a provider by testing against on-chain keys
+     */
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun detectAlgorithmsForProvider(
+        seedPhraseKey: SeedPhraseKey, 
+        onChainKeys: List<org.onflow.flow.models.AccountPublicKey>
+    ): AlgorithmPair {
+        val signingAlgorithms = listOf(SigningAlgorithm.ECDSA_secp256k1, SigningAlgorithm.ECDSA_P256)
+        
+        // Test each signing algorithm to find matching public key
+        for (signingAlgorithm in signingAlgorithms) {
+            try {
+                val publicKey = seedPhraseKey.publicKey(signingAlgorithm)?.toHexString() ?: continue
+                
+                // Check if this key matches any on-chain key
+                val matchedKey = onChainKeys.find { onChainKey ->
+                    !onChainKey.revoked && isKeyMatchRobust(publicKey, onChainKey.publicKey)
+                }
+                
+                if (matchedKey != null) {
+                    logd(TAG, "Detected algorithms: signing=$signingAlgorithm, hashing=${matchedKey.hashingAlgorithm}")
+                    return AlgorithmPair(signingAlgorithm, matchedKey.hashingAlgorithm)
+                }
+            } catch (e: Exception) {
+                // Continue to next algorithm
+            }
+        }
+        
+        // Default fallback
+        return AlgorithmPair(SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+    }
+    
+    /**
+     * Robust key matching logic
+     */
+    private fun isKeyMatchRobust(providerPublicKey: String, onChainPublicKey: String): Boolean {
+        val providerRaw = providerPublicKey.removePrefix("0x").lowercase()
+        val onChainRaw = onChainPublicKey.removePrefix("0x").lowercase()
+        
+        val providerStripped = if (providerRaw.startsWith("04") && providerRaw.length == 130) providerRaw.substring(2) else providerRaw
+        val onChainStripped = if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
+        val providerWith04 = if (!providerRaw.startsWith("04") && providerRaw.length == 128) "04$providerRaw" else providerRaw
+        val onChainWith04 = if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
+        
+        return onChainRaw == providerRaw || 
+               onChainRaw == providerStripped || 
+               onChainStripped == providerRaw || 
+               onChainStripped == providerStripped ||
+               onChainRaw == providerWith04 ||
+               onChainWith04 == providerRaw ||
+               onChainWith04 == providerStripped ||
+               onChainStripped == providerWith04
     }
 }
