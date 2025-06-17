@@ -499,7 +499,7 @@
     <string name="restore_seed_phrase_derivation_path_hint">Derivation path(m/44\'/539\'/0\'/0/0)</string>
     <string name="restore_seed_phrase_passphrase_hint">Passphrase (Optional)</string>
     <string name="restore_private_key_hint">Enter your private key</string>
-    <string name="key_store_json_hint">You can import the JSON file from other wallet (eg. Blockto)</string>
+    <string name="key_store_json_hint">You can import the JSON file from other wallet (eg. Blocto)</string>
     <string name="key_store_password_hint">Enter password for JSON file</string>
     <string name="key_store_address_hint">Enter your Flow address (Optional)</string>
     <string name="from_multi_backup">From Multi Backup</string>

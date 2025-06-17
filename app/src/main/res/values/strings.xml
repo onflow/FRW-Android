@@ -120,7 +120,7 @@
     <string name="invisible">Invisible</string>
     <string name="private_str">Private</string>
     <string name="reset_pin_code">Reset PIN Code</string>
-    <string name="private_key">Private Key</string>
+    <string name="private_key">Private key</string>
     <string name="verify_pin_code">Verify PIN Code</string>
     <string name="verify_pin">Verify your pin</string>
     <string name="verify_pin_tip">So we will secure your backup with PIN code.</string>
