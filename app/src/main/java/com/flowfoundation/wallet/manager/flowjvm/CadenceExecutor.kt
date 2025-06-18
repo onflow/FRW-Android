@@ -819,7 +819,17 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
                 e.message?.contains("IOException", ignoreCase = true) == true -> true
                 e.message?.contains("ConnectException", ignoreCase = true) == true -> true
                 e.message?.contains("SocketTimeoutException", ignoreCase = true) == true -> true
+                e.message?.contains("Channel was closed", ignoreCase = true) == true -> true
+                e.message?.contains("ClosedReceiveChannelException", ignoreCase = true) == true -> true
+                e.message?.contains("ClosedSendChannelException", ignoreCase = true) == true -> true
+                e.message?.contains("TLS", ignoreCase = true) == true -> true
                 e.cause?.message?.contains("Connection reset by peer", ignoreCase = true) == true -> true
+                e.cause?.message?.contains("Channel was closed", ignoreCase = true) == true -> true
+                e.cause?.message?.contains("ClosedReceiveChannelException", ignoreCase = true) == true -> true
+                // Check exception class names for Kotlin exceptions that might not have descriptive messages
+                e.javaClass.simpleName.contains("ClosedReceiveChannelException", ignoreCase = true) -> true
+                e.javaClass.simpleName.contains("ClosedSendChannelException", ignoreCase = true) -> true
+                e.cause?.javaClass?.simpleName?.contains("ClosedReceiveChannelException", ignoreCase = true) == true -> true
                 else -> false
             }
             
