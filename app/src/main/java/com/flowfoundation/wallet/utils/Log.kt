@@ -80,6 +80,8 @@ private fun isInstabugInitialized(): Boolean {
     } catch (e: Exception) {
         // If any exception occurs, assume Instabug is not initialized
         false
+    } catch (e: Error) {
+        false
     }
 }
 

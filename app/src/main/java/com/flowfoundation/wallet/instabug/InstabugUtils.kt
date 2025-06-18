@@ -72,7 +72,7 @@ fun instabugInitialize(application: Application) {
         report.setUserAttribute("Network", chainNetWorkString())
     }
     val configuration = ProactiveReportingConfigs.Builder()
-        .isEnabled(true) //Enable/disable
+        .isEnabled(false) // Disable to prevent background ANRs
         .setGapBetweenModals(20) // Time in seconds
         .setModalDelayAfterDetection(5) // Time in seconds
         .build()

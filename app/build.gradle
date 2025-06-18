@@ -314,8 +314,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-appcheck-debug'
     
     /** Instabug **/
-    implementation 'com.instabug.library:instabug:14.3.0'
-    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:14.3.0'
+    implementation 'com.instabug.library:instabug:15.0.1'
+    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
     /** firebase **/
 
     implementation "dev.chrisbanes:insetter-ktx:0.3.1"
