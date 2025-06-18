@@ -29,6 +29,7 @@ import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
+import com.flowfoundation.wallet.utils.ioScope
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -134,23 +135,32 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
                     
-                    runBlocking { 
-                        // Add timeout to prevent infinite hanging
-                        withTimeout(5000) { // 5 second timeout
-                            wallet.accountsFlow.first { accounts -> 
-                                logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
-                                accounts.isNotEmpty() 
+                    // Let the wallet initialize asynchronously in the background
+                    ioScope {
+                        try {
+                            // Add timeout to prevent infinite hanging
+                            withTimeout(5000) { // 5 second timeout
+                                wallet.accountsFlow.first { accounts -> 
+                                    logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
+                                    accounts.isNotEmpty() 
+                                }
                             }
-                        }
-                        logd(TAG, "Accounts discovered successfully!")
-                        logd(TAG, "Number of account chains: ${wallet.accounts.size}")
-                        wallet.accounts.forEach { (chainId, accounts) ->
-                            logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
-                            accounts.forEach { account ->
-                                logd(TAG, "  - Account address: ${account.address}")
+                            logd(TAG, "Accounts discovered successfully!")
+                            logd(TAG, "Number of account chains: ${wallet.accounts.size}")
+                            wallet.accounts.forEach { (chainId, accounts) ->
+                                logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
+                                accounts.forEach { account ->
+                                    logd(TAG, "  - Account address: ${account.address}")
+                                }
                             }
+                            logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
+                        } catch (e: TimeoutCancellationException) {
+                            logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
+                            logd(TAG, "Final wallet address: ${wallet.walletAddress()}")
+                        } catch (e: Exception) {
+                            logd(TAG, "ERROR during wallet initialization: ${e.message}")
+                            logd(TAG, "Error type: ${e.javaClass.simpleName}")
                         }
-                        logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
                     }
                 }
             } catch (e: TimeoutCancellationException) {
@@ -497,9 +507,10 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
                     
-                    try {
-                        // Wait for accounts to be loaded using flow's first() operation
-                        runBlocking { 
+                    // DON'T use runBlocking as it blocks the main thread
+                    // Instead, let the wallet initialize asynchronously in the background
+                    ioScope {
+                        try {
                             // Add timeout to prevent infinite hanging
                             withTimeout(5000) { // 5 second timeout
                                 newWallet.accountsFlow.first { accounts -> 
@@ -516,14 +527,14 @@ object WalletManager {
                                 }
                             }
                             logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
+                        } catch (e: TimeoutCancellationException) {
+                            logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
+                            logd(TAG, "Final wallet address: ${newWallet.walletAddress()}")
+                        } catch (e: Exception) {
+                            logd(TAG, "ERROR during wallet update: ${e.message}")
+                            logd(TAG, "Error type: ${e.javaClass.simpleName}")
+                            logd(TAG, "Attempting to continue anyway...")
                         }
-                    } catch (e: TimeoutCancellationException) {
-                        logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
-                        logd(TAG, "Final wallet address: ${newWallet.walletAddress()}")
-                    } catch (e: Exception) {
-                        logd(TAG, "ERROR during wallet update: ${e.message}")
-                        logd(TAG, "Error type: ${e.javaClass.simpleName}")
-                        logd(TAG, "Attempting to continue anyway...")
                     }
                 }
 
@@ -545,14 +556,17 @@ object WalletManager {
                             }
                             
                             if (chainId != null && blockchain.address.isNotBlank()) {
-                                logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
+                                logd(TAG, "Scheduling fetch for account ${blockchain.address} from ${blockchain.chainId}")
                                 
-                                // Use the wallet's fetchAccountByAddress method to get the account directly
-                                // from the Flow network, bypassing the key indexer
-                                runBlocking {
-                                    newWallet.fetchAccountByAddress(blockchain.address, chainId)
+                                // Use ioScope instead of runBlocking to avoid blocking main thread
+                                ioScope {
+                                    try {
+                                        newWallet.fetchAccountByAddress(blockchain.address, chainId)
+                                        logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
+                                    } catch (e: Exception) {
+                                        logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
+                                    }
                                 }
-                                logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
                             }
                         } catch (e: Exception) {
                             logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
