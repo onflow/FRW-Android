@@ -788,19 +788,68 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
             )
         }"
     )
-    return try {
-        FlowCadenceApi.executeCadenceScript {
-            script { this@executeCadence.addPlatformInfo().trimIndent() }
-            block()
+    
+    logd(TAG, "Starting Cadence script execution for: $scriptId")
+    
+    var lastException: Throwable? = null
+    val maxRetries = 3
+    var attempt = 0
+    
+    while (attempt < maxRetries) {
+        try {
+            logd(TAG, "Attempting to execute script $scriptId (attempt ${attempt + 1})")
+            val result = FlowCadenceApi.executeCadenceScript {
+                script { this@executeCadence.addPlatformInfo().trimIndent() }
+                block()
+            }
+            logd(TAG, "Successfully executed script $scriptId on attempt ${attempt + 1}")
+            return result
+        } catch (e: Throwable) {
+            lastException = e
+            logd(TAG, "Script $scriptId failed on attempt ${attempt + 1}: ${e.javaClass.simpleName} - ${e.message}")
+            
+            // Log the full stack trace for debugging
+            if (e.cause != null) {
+                logd(TAG, "Caused by: ${e.cause?.javaClass?.simpleName} - ${e.cause?.message}")
+            }
+            
+            // Check if this is a connection-related error that should be retried
+            val shouldRetry = when {
+                e.message?.contains("Connection reset by peer", ignoreCase = true) == true -> true
+                e.message?.contains("IOException", ignoreCase = true) == true -> true
+                e.message?.contains("ConnectException", ignoreCase = true) == true -> true
+                e.message?.contains("SocketTimeoutException", ignoreCase = true) == true -> true
+                e.cause?.message?.contains("Connection reset by peer", ignoreCase = true) == true -> true
+                else -> false
+            }
+            
+            attempt++
+            
+            if (shouldRetry && attempt < maxRetries) {
+                val delayMs = when (attempt) {
+                    1 -> 1000L  // 1 second
+                    2 -> 2000L  // 2 seconds  
+                    3 -> 3000L  // 3 seconds
+                    else -> 5000L
+                }
+                logd(TAG, "Network error on attempt $attempt for script $scriptId: ${e.message}. Retrying in ${delayMs}ms...")
+                kotlinx.coroutines.delay(delayMs)
+                continue
+            } else {
+                // Not retryable or max attempts reached
+                logd(TAG, "Script $scriptId failed permanently after $attempt attempts. Last error: ${e.message}")
+                break
+            }
         }
-    } catch (e: Throwable) {
-        val exception = ScriptExecutionException(scriptId, e)
-        loge(exception)
-        ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
-        MixpanelManager.scriptError(scriptId, e.cause?.message.orEmpty())
-        reportCadenceErrorToDebugView(scriptId, e)
-        return null
     }
+    
+    // All attempts failed
+    val exception = ScriptExecutionException(scriptId, lastException!!)
+    loge(exception)
+    ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
+    MixpanelManager.scriptError(scriptId, lastException?.cause?.message.orEmpty())
+    reportCadenceErrorToDebugView(scriptId, lastException!!)
+    return null
 }
 
 class ScriptExecutionException(
