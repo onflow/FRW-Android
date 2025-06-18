@@ -21,7 +21,6 @@ import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.scheduleAtFixedRate
 
-
 object WalletFetcher {
     private val TAG = WalletFetcher::class.java.simpleName
 
@@ -34,6 +33,8 @@ object WalletFetcher {
             var dataReceived = false
             var firstAttempt = true
             var timer: Timer? = null
+            var retryCount = 0
+            val maxRetries = 5
             
             // Helper function to trigger manual address creation
             fun triggerManualAddressIfNeeded() {
@@ -41,15 +42,19 @@ object WalletFetcher {
                     timer = Timer()
                     timer!!.scheduleAtFixedRate(0, 20000) {
                         ioScope {
-                            apiService.manualAddress()
+                            try {
+                                apiService.manualAddress()
+                            } catch (e: Exception) {
+                                logd(TAG, "Manual address creation failed: ${e.message}")
+                            }
                         }
                     }
                     firstAttempt = false
                 }
             }
             
-            while (!dataReceived) {
-                delay(5000)
+            while (!dataReceived && retryCount < maxRetries) {
+                delay(if (retryCount == 0) 1000 else 5000) // First attempt after 1s, then 5s
                 runCatching {
                     // Get current user's public key from crypto provider
                     val currentAccount = AccountManager.get()
@@ -69,7 +74,7 @@ object WalletFetcher {
                         else -> ChainId.Mainnet
                     }
                     
-                    logd(TAG, "Fetching wallet using key indexer for public key: $publicKey")
+                    logd(TAG, "Fetching wallet using key indexer for public key: $publicKey (attempt ${retryCount + 1})")
                     
                     // Use key indexer to find accounts
                     val keyIndexerResponse = Network.findAccount(publicKey, chainId)
@@ -98,6 +103,7 @@ object WalletFetcher {
                         dataReceived = true
                         timer?.cancel()
                         timer = null
+                        logd(TAG, "Successfully fetched wallet data from key indexer")
                     } else {
                         logd(TAG, "Key indexer returned empty accounts, trying API fallback")
                         
@@ -134,9 +140,32 @@ object WalletFetcher {
                             triggerManualAddressIfNeeded()
                         }
                     }
-                }.onFailure {
-                    logd(TAG, "Key indexer fetch failed: ${it.message}")
-                    ErrorReporter.reportWithMixpanel(WalletError.FETCH_FAILED, it)
+                }.onFailure { exception ->
+                    retryCount++
+                    val isNetworkError = when {
+                        exception.message?.contains("UnresolvedAddressException", ignoreCase = true) == true -> true
+                        exception.message?.contains("Connection refused", ignoreCase = true) == true -> true
+                        exception.message?.contains("No route to host", ignoreCase = true) == true -> true
+                        exception.message?.contains("Network is unreachable", ignoreCase = true) == true -> true
+                        exception.message?.contains("ConnectException", ignoreCase = true) == true -> true
+                        exception.message?.contains("SocketTimeoutException", ignoreCase = true) == true -> true
+                        exception.message?.contains("UnknownHostException", ignoreCase = true) == true -> true
+                        else -> false
+                    }
+                    
+                    if (isNetworkError) {
+                        logd(TAG, "Network error on attempt $retryCount/$maxRetries: ${exception.message}")
+                        if (retryCount >= maxRetries) {
+                            logd(TAG, "Max network retries exceeded, falling back to manual address creation")
+                            triggerManualAddressIfNeeded()
+                        }
+                    } else {
+                        logd(TAG, "Non-network error: ${exception.message}")
+                        ErrorReporter.reportWithMixpanel(WalletError.FETCH_FAILED, exception)
+                        if (retryCount >= maxRetries) {
+                            triggerManualAddressIfNeeded()
+                        }
+                    }
                 }
             }
         }
