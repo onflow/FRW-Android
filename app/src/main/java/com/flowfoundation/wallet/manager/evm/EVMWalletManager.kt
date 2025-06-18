@@ -439,6 +439,25 @@ object EVMWalletManager {
                 return
             }
 
+            // Add transaction to mini window (bubble stack) immediately
+            val transactionType = when {
+                operationName.contains("bridge nft") || operationName.contains("move") -> TransactionState.TYPE_MOVE_NFT
+                operationName.contains("transfer token") -> TransactionState.TYPE_TRANSFER_COIN
+                operationName.contains("fund") || operationName.contains("withdraw") || operationName.contains("bridge") -> TransactionState.TYPE_TRANSFER_COIN
+                else -> TransactionState.TYPE_TRANSACTION_DEFAULT
+            }
+            
+            val transactionState = TransactionState(
+                transactionId = txId,
+                time = System.currentTimeMillis(),
+                state = TransactionStatus.PENDING.ordinal,
+                type = transactionType,
+                data = operationName, // Store operation name as data for identification
+            )
+            TransactionStateManager.newTransaction(transactionState)
+            pushBubbleStack(transactionState)
+
+            // Monitor transaction completion in the background
             TransactionStateWatcher(txId).watch { result ->
                 when {
                     result.isExecuteFinished() -> {
