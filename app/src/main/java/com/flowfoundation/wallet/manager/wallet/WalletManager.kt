@@ -507,8 +507,6 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
                     
-                    // DON'T use runBlocking as it blocks the main thread
-                    // Instead, let the wallet initialize asynchronously in the background
                     ioScope {
                         try {
                             // Add timeout to prevent infinite hanging
