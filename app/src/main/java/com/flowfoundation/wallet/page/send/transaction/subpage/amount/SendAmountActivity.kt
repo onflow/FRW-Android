@@ -29,6 +29,8 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
     private lateinit var presenter: SendAmountPresenter
     private lateinit var viewModel: SendAmountViewModel
 
+    private var hasNavigatedBack = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySendAmountBinding.inflate(layoutInflater)
@@ -77,9 +79,14 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
     override fun onTransactionStateChange() {
         val transaction = TransactionStateManager.getLastVisibleTransaction() ?: return
         if (transaction.type == TransactionState.TYPE_TRANSFER_COIN) {
+            if (!hasNavigatedBack && transaction.isProcessing()) {
+                hasNavigatedBack = true
+                finish()
+                return
+            }
+            
             if (transaction.isSuccess()) {
                 toast(msgRes = R.string.send_success)
-                finish()
             } else if (transaction.isFailed()) {
                 toast(msgRes = R.string.send_failed)
             }

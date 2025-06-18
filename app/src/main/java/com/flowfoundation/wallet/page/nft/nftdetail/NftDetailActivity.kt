@@ -35,6 +35,7 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
     private lateinit var binding: ActivityNftDetailBinding
     private lateinit var presenter: NftDetailPresenter
     private lateinit var viewModel: NftDetailViewModel
+    private var hasNavigatedBack = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,9 +124,14 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         when (transaction.type) {
             TransactionState.TYPE_MOVE_NFT -> {
                 if (uniqueId == transaction.data) {
+                    if (!hasNavigatedBack && transaction.isProcessing()) {
+                        hasNavigatedBack = true
+                        finish()
+                        return
+                    }
+                    
                     if (transaction.isSuccess()) {
                         toast(msgRes = R.string.move_nft_success)
-                        finish()
                     } else if (transaction.isFailed()) {
                         toast(msgRes = R.string.move_nft_failed)
                     }
@@ -135,9 +141,14 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
                 try {
                     val model = Gson().fromJson(transaction.data, NftSendModel::class.java)
                     if (uniqueId == model.nft.uniqueId()) {
+                        if (!hasNavigatedBack && transaction.isProcessing()) {
+                            hasNavigatedBack = true
+                            finish()
+                            return
+                        }
+                        
                         if (transaction.isSuccess()) {
                             toast(msgRes = R.string.send_nft_success)
-                            finish()
                         } else if (transaction.isFailed()) {
                             toast(msgRes = R.string.send_nft_failed)
                         }
