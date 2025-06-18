@@ -21,45 +21,23 @@ class TransactionStateWatcher(
 ) {
 
     suspend fun watch(callback: (state: TransactionResult) -> Unit) {
-        var ret: TransactionResult? = null
-        var statusCode = -1
-        while (true) {
-            safeRunSuspend {
-                val result = try {
-                    checkNotNull(
-                        FlowCadenceApi.getTransactionResultById(transactionId)
-                    ) { "Transaction with that id not found" }
-                } catch (e: kotlinx.serialization.SerializationException) {
-                    logd(TAG, "Transaction result parsing failed for $transactionId due to JSON deserialization error: ${e.message}")
-                    throw e
-
-                } catch (e: RuntimeException) {
-                    if (e.message?.contains("Illegal input: Expected JsonPrimitive") == true || 
-                        e.message?.contains("serialization") == true ||
-                        e.message?.contains("deserialization") == true) {
-                        logd(TAG, "Transaction result parsing failed for $transactionId due to Flow SDK JSON parsing error: ${e.message}")
-                    }
-                    throw e
-                }
+        safeRunSuspend {
+            try {
+                val result = FlowCadenceApi.waitForSeal(transactionId)
+                callback.invoke(result)
                 
-                if (result.status!!.ordinal != statusCode) {
-                    statusCode = result.status!!.ordinal
-                    callback.invoke(result)
-                }
-                ret = result
-            }
-            val errorMsg = ret?.errorMessage
-
-            if (!statusCode.isProcessing() || !errorMsg.isNullOrBlank()) {
+                // Report the final result
                 MixpanelManager.transactionResult(
                     transactionId,
-                    statusCode.isProcessing().not() && errorMsg.isNullOrBlank(),
-                    ret?.errorMessage
+                    result.isSuccess(),
+                    result.errorMessage
                 )
-                uiScope {
-                    if (!errorMsg.isNullOrBlank()) {
-                        val errorCode = parseErrorCode(errorMsg)
-                        ErrorReporter.reportTransactionError(transactionId, errorCode ?: -1)
+                
+                // Handle storage errors
+                if (!result.errorMessage.isNullOrBlank()) {
+                    val errorCode = parseErrorCode(result.errorMessage!!)
+                    ErrorReporter.reportTransactionError(transactionId, errorCode ?: -1)
+                    uiScope {
                         when (errorCode) {
                             ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                                 BaseActivity.getCurrentActivity()?.let {
@@ -69,13 +47,31 @@ class TransactionStateWatcher(
                         }
                     }
                 }
-                break
+            } catch (e: Exception) {
+                logd(TAG, "Transaction $transactionId failed or timed out: ${e.message}")
+                
+                // Create a failed result and notify callback
+                val failedResult = TransactionResult(
+                    blockId = "",
+                    status = TransactionStatus.EXPIRED,
+                    statusCode = TransactionStatus.EXPIRED.ordinal,
+                    errorMessage = e.message ?: "Transaction timeout",
+                    computationUsed = "0",
+                    events = emptyList(),
+                    execution = null,
+                    links = null
+                )
+                callback.invoke(failedResult)
+                
+                // Report the failure
+                MixpanelManager.transactionResult(transactionId, false, e.message)
+                ErrorReporter.reportTransactionError(transactionId, -1)
             }
-
-            delay(500)
         }
     }
 
-    private fun Int.isProcessing() = this < TransactionStatus.SEALED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
+    private fun TransactionResult.isSuccess(): Boolean {
+        return status == TransactionStatus.SEALED && errorMessage.isNullOrBlank()
+    }
 
 }

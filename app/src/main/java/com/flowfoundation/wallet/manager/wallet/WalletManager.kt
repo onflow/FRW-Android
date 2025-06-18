@@ -29,7 +29,6 @@ import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
-import com.flowfoundation.wallet.utils.ioScope
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -67,7 +66,7 @@ object WalletManager {
         // Handle keystore-based accounts
         if (!account.keyStoreInfo.isNullOrBlank()) {
             logd(TAG, "Initializing keystore-based wallet")
-            
+
             /* 1. Build the key */
             val ks      = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
             val keyHex  = ks.privateKey.removePrefix("0x")
@@ -90,7 +89,7 @@ object WalletManager {
         // Handle prefix-based accounts
         else if (!account.prefix.isNullOrBlank()) {
             logd(TAG, "Initializing prefix-based wallet")
-            
+
             // Load the stored private key using the prefix-based ID
             val keyId = "prefix_key_${account.prefix}"
             val privateKey = try {
@@ -101,7 +100,7 @@ object WalletManager {
                 return false // Fail gracefully instead of creating a new key
             }
             logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
-            
+
             /* 2. Create the wallet */
             val newWallet = WalletFactory.createKeyWallet(
                 privateKey,
@@ -122,7 +121,7 @@ object WalletManager {
             try {
                 logd(TAG, "Wallet created, checking for existing account addresses...")
                 logd(TAG, "Account wallet data: ${account.wallet}")
-                
+
                 // Check if we already have account addresses from the server
                 if (account.wallet?.wallets?.isNotEmpty() == true) {
                     logd(TAG, "Found existing wallet addresses from server, using them:")
@@ -134,33 +133,24 @@ object WalletManager {
                     logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
-                    
-                    // Let the wallet initialize asynchronously in the background
-                    ioScope {
-                        try {
-                            // Add timeout to prevent infinite hanging
-                            withTimeout(5000) { // 5 second timeout
-                                wallet.accountsFlow.first { accounts -> 
-                                    logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
-                                    accounts.isNotEmpty() 
-                                }
+
+                    runBlocking {
+                        // Add timeout to prevent infinite hanging
+                        withTimeout(5000) { // 5 second timeout
+                            wallet.accountsFlow.first { accounts ->
+                                logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
+                                accounts.isNotEmpty()
                             }
-                            logd(TAG, "Accounts discovered successfully!")
-                            logd(TAG, "Number of account chains: ${wallet.accounts.size}")
-                            wallet.accounts.forEach { (chainId, accounts) ->
-                                logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
-                                accounts.forEach { account ->
-                                    logd(TAG, "  - Account address: ${account.address}")
-                                }
-                            }
-                            logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
-                        } catch (e: TimeoutCancellationException) {
-                            logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
-                            logd(TAG, "Final wallet address: ${wallet.walletAddress()}")
-                        } catch (e: Exception) {
-                            logd(TAG, "ERROR during wallet initialization: ${e.message}")
-                            logd(TAG, "Error type: ${e.javaClass.simpleName}")
                         }
+                        logd(TAG, "Accounts discovered successfully!")
+                        logd(TAG, "Number of account chains: ${wallet.accounts.size}")
+                        wallet.accounts.forEach { (chainId, accounts) ->
+                            logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
+                            accounts.forEach { account ->
+                                logd(TAG, "  - Account address: ${account.address}")
+                            }
+                        }
+                        logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
                     }
                 }
             } catch (e: TimeoutCancellationException) {
@@ -303,7 +293,7 @@ object WalletManager {
     fun changeNetwork() {
         val currentNetwork = chainNetWorkString()
         logd(TAG, "Changing network to: $currentNetwork")
-        
+
         // Get the first account for the current network
         val networkAccount = wallet()?.accounts?.entries?.firstOrNull { (chainId, _) ->
             when (currentNetwork) {
@@ -312,7 +302,7 @@ object WalletManager {
                 else -> false
             }
         }?.value?.firstOrNull()
-        
+
         networkAccount?.address?.let { address ->
             logd(TAG, "Selecting network account: $address")
             selectWalletAddress(address)
@@ -323,7 +313,7 @@ object WalletManager {
         if (address.isBlank()) {
             logd(TAG, "WARNING: Attempting to select blank address")
         }
-        
+
         if (selectedWalletAddressRef.get().equals(address, ignoreCase = true)) {
             return chainNetWorkString()
         }
@@ -332,16 +322,16 @@ object WalletManager {
         updateSelectedWalletAddress(address)
 
         val account = wallet()?.accounts?.values?.flatten()?.firstOrNull {
-            it.address.equals(address, ignoreCase = true) 
+            it.address.equals(address, ignoreCase = true)
         }
-        
+
         val networkStr = if (account == null) {
             val walletAddress = childAccountMap.values
                 .firstOrNull { child -> child.get().any { it.address.equals(address, true) } }?.address
 
 
-            wallet()?.accounts?.values?.flatten()?.firstOrNull { 
-                it.address.equals(walletAddress, ignoreCase = true) 
+            wallet()?.accounts?.values?.flatten()?.firstOrNull {
+                it.address.equals(walletAddress, ignoreCase = true)
             }?.let { acc ->
                 when (acc.chainID) {
                     ChainId.Mainnet -> "mainnet"
@@ -365,14 +355,14 @@ object WalletManager {
         if (currentTime - lastAddressCheck < ADDRESS_CACHE_DURATION) {
             return selectedWalletAddressRef.get()
         }
-        
+
         lastAddressCheck = currentTime
         val pref = selectedWalletAddressRef.get().toAddress()
 
         if (pref.isBlank()) {
             logd(TAG, "WARNING: Selected address is blank")
         }
-        
+
         val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null || EVMWalletManager.isEVMWalletAddress(pref)
         if (isExist) {
             return pref
@@ -425,7 +415,7 @@ object WalletManager {
 
                 val account = AccountManager.get()
                 logd(TAG, "Account from AccountManager: ${account?.wallet?.walletAddress()}")
-                
+
                 if (account == null) {
                     logd(TAG, "No account found in AccountManager")
                     return@synchronized
@@ -437,7 +427,7 @@ object WalletManager {
                 // Handle keystore-based accounts
                 if (!account.keyStoreInfo.isNullOrBlank()) {
                     logd(TAG, "Updating keystore-based wallet")
-                    
+
                     // Parse the keystore info to get the private key
                     val keystoreAddress = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
                     logd(TAG, "Got private key from keystore info")
@@ -463,7 +453,7 @@ object WalletManager {
                 // Handle prefix-based accounts
                 else if (!account.prefix.isNullOrBlank()) {
                     logd(TAG, "Updating prefix-based wallet")
-                    
+
                     // Load the stored private key using the prefix-based ID
                     val keyId = "prefix_key_${account.prefix}"
                     val privateKey = try {
@@ -474,7 +464,7 @@ object WalletManager {
                         return@synchronized
                     }
                     logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
-                    
+
                     // Create a new wallet using the private key
                     newWallet = WalletFactory.createKeyWallet(
                         privateKey,
@@ -487,11 +477,11 @@ object WalletManager {
                     logd(TAG, "Account has neither keystore info nor prefix, cannot update wallet")
                     return@synchronized
                 }
-                
+
                 // Wait for accounts to be loaded - but handle server addresses like initializeWallet
                 logd(TAG, "Wallet created, checking for existing account addresses...")
                 logd(TAG, "Account wallet data: ${account.wallet}")
-                
+
                 // Check if we already have account addresses from the server
                 if (account.wallet?.wallets?.isNotEmpty() == true) {
                     logd(TAG, "Found existing wallet addresses from server, using them:")
@@ -500,20 +490,21 @@ object WalletManager {
                             logd(TAG, "  - ${blockchain.chainId}: ${blockchain.address}")
                         }
                     }
-                    
+
                     // The wallet should work with these addresses - no need to wait for auto-discovery
                     logd(TAG, "Wallet properly initialized with known addresses")
                     logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
-                    
-                    ioScope {
-                        try {
+
+                    try {
+                        // Wait for accounts to be loaded using flow's first() operation
+                        runBlocking {
                             // Add timeout to prevent infinite hanging
                             withTimeout(5000) { // 5 second timeout
-                                newWallet.accountsFlow.first { accounts -> 
+                                newWallet.accountsFlow.first { accounts ->
                                     logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
-                                    accounts.isNotEmpty() 
+                                    accounts.isNotEmpty()
                                 }
                             }
                             logd(TAG, "Accounts discovered successfully!")
@@ -525,14 +516,14 @@ object WalletManager {
                                 }
                             }
                             logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
-                        } catch (e: TimeoutCancellationException) {
-                            logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
-                            logd(TAG, "Final wallet address: ${newWallet.walletAddress()}")
-                        } catch (e: Exception) {
-                            logd(TAG, "ERROR during wallet update: ${e.message}")
-                            logd(TAG, "Error type: ${e.javaClass.simpleName}")
-                            logd(TAG, "Attempting to continue anyway...")
                         }
+                    } catch (e: TimeoutCancellationException) {
+                        logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
+                        logd(TAG, "Final wallet address: ${newWallet.walletAddress()}")
+                    } catch (e: Exception) {
+                        logd(TAG, "ERROR during wallet update: ${e.message}")
+                        logd(TAG, "Error type: ${e.javaClass.simpleName}")
+                        logd(TAG, "Attempting to continue anyway...")
                     }
                 }
 
@@ -541,7 +532,7 @@ object WalletManager {
                 // Update the current wallet reference
                 currentWallet = newWallet
                 logd(TAG, "Updated current wallet reference")
-                
+
                 // Manually add accounts from server to the wallet
                 // This is needed because new accounts may not be indexed yet by the key indexer
                 account.wallet?.wallets?.forEach { walletData ->
@@ -552,19 +543,16 @@ object WalletManager {
                                 "testnet" -> ChainId.Testnet
                                 else -> null
                             }
-                            
+
                             if (chainId != null && blockchain.address.isNotBlank()) {
-                                logd(TAG, "Scheduling fetch for account ${blockchain.address} from ${blockchain.chainId}")
-                                
-                                // Use ioScope instead of runBlocking to avoid blocking main thread
-                                ioScope {
-                                    try {
-                                        newWallet.fetchAccountByAddress(blockchain.address, chainId)
-                                        logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
-                                    } catch (e: Exception) {
-                                        logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
-                                    }
+                                logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
+
+                                // Use the wallet's fetchAccountByAddress method to get the account directly
+                                // from the Flow network, bypassing the key indexer
+                                runBlocking {
+                                    newWallet.fetchAccountByAddress(blockchain.address, chainId)
                                 }
+                                logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
                             }
                         } catch (e: Exception) {
                             logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
@@ -579,7 +567,7 @@ object WalletManager {
                 // Refresh EVM wallet/account
 //                EVMWalletManager.init()
 //                logd(TAG, "Refreshed EVM wallet/account")
-                
+
                 // Update selected address if needed
                 val walletAddress = newWallet.walletAddress()
                 if (walletAddress != null && selectedWalletAddressRef.get().isBlank()) {
@@ -604,16 +592,16 @@ fun Wallet?.walletAddress(): String? {
     val selectedAddress = WalletManager.selectedWalletAddress()
     if (selectedAddress.isNotBlank()) {
         // Find the account that matches the selected address
-        val matchingAccount = this?.accounts?.values?.flatten()?.find { 
+        val matchingAccount = this?.accounts?.values?.flatten()?.find {
             it.address.equals(selectedAddress, ignoreCase = true) ||
-            it.address.equals("0x$selectedAddress", ignoreCase = true) ||
-            it.address.removePrefix("0x").equals(selectedAddress, ignoreCase = true)
+                    it.address.equals("0x$selectedAddress", ignoreCase = true) ||
+                    it.address.removePrefix("0x").equals(selectedAddress, ignoreCase = true)
         }
         if (matchingAccount != null) {
             return matchingAccount.address
         }
     }
-    
+
     // Fallback to account for current network instead of just any first account
     val currentNetwork = chainNetWorkString()
     val networkAccount = this?.accounts?.entries?.firstOrNull { (chainId, _) ->
@@ -623,12 +611,12 @@ fun Wallet?.walletAddress(): String? {
             else -> false
         }
     }?.value?.firstOrNull()
-    
+
     // If we found a network-specific account, return it
     if (networkAccount != null) {
         return networkAccount.address
     }
-    
+
     // Final fallback to any first account if no network match
     return null
 }

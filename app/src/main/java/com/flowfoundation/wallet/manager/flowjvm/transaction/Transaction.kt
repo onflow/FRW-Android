@@ -13,9 +13,11 @@ import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.InvalidKeyException
 import com.flowfoundation.wallet.utils.error.WalletError
+import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
+import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.vibrateTransaction
 import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
@@ -84,28 +86,44 @@ suspend fun sendTransaction(
         logd(TAG, "Tx after envelope signatures: $tx")
 
         logd(TAG, "sendTransaction to flow chain")
-        val result = tx.send()
-        val txID = result.id
+        val txID = tx.submitOnly() // Use submitOnly to get ID immediately
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
 
         if (txID != null) {
-            val txResult = result.waitForSeal()
-            val isSuccess = when (txResult.status) {
-                TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
-                TransactionStatus.EXPIRED -> false
-                TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
-                else -> false
-            }
+            // Add transaction for monitoring without blocking
+            ioScope {
+                safeRunSuspend {
+                    try {
+                        val txResult = FlowCadenceApi.waitForSeal(txID)
+                        val isSuccess = when (txResult.status) {
+                            TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
+                            TransactionStatus.EXPIRED -> false
+                            TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
+                            else -> false
+                        }
 
-            MixpanelManager.cadenceTransactionSigned(
-                cadence = tx.script,
-                txId = txID,
-                authorizers = tx.authorizers,
-                proposer = tx.proposalKey.address,
-                payer = tx.payer,
-                isSuccess = isSuccess
-            )
+                        MixpanelManager.cadenceTransactionSigned(
+                            cadence = tx.script,
+                            txId = txID,
+                            authorizers = tx.authorizers,
+                            proposer = tx.proposalKey.address,
+                            payer = tx.payer,
+                            isSuccess = isSuccess
+                        )
+                    } catch (e: Exception) {
+                        logd(TAG, "Transaction monitoring failed for $txID: ${e.message}")
+                        MixpanelManager.cadenceTransactionSigned(
+                            cadence = tx.script,
+                            txId = txID,
+                            authorizers = tx.authorizers,
+                            proposer = tx.proposalKey.address,
+                            payer = tx.payer,
+                            isSuccess = false
+                        )
+                    }
+                }
+            }
         }
         return txID
     } catch (e: Exception) {
@@ -150,28 +168,44 @@ suspend fun sendBridgeTransaction(
         tx = tx.addFreeBridgeFeeEnvelope()
 
         logd(TAG, "sendBridgeTransaction to flow chain")
-        val result = tx.send()
-        val txID = result.id
+        val txID = tx.submitOnly() // Use submitOnly to get ID immediately
         logd(TAG, "transaction id:$${txID}")
         vibrateTransaction()
 
         if (txID != null) {
-            val txResult = result.waitForSeal()
-            val isSuccess = when (txResult.status) {
-                TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
-                TransactionStatus.EXPIRED -> false
-                TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
-                else -> false
-            }
+            // Add transaction for monitoring without blocking
+            ioScope {
+                safeRunSuspend {
+                    try {
+                        val txResult = FlowCadenceApi.waitForSeal(txID)
+                        val isSuccess = when (txResult.status) {
+                            TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
+                            TransactionStatus.EXPIRED -> false
+                            TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
+                            else -> false
+                        }
 
-            MixpanelManager.cadenceTransactionSigned(
-                cadence = tx.script,
-                txId = txID,
-                authorizers = tx.authorizers,
-                proposer = tx.proposalKey.address,
-                payer = tx.payer,
-                isSuccess = isSuccess
-            )
+                        MixpanelManager.cadenceTransactionSigned(
+                            cadence = tx.script,
+                            txId = txID,
+                            authorizers = tx.authorizers,
+                            proposer = tx.proposalKey.address,
+                            payer = tx.payer,
+                            isSuccess = isSuccess
+                        )
+                    } catch (e: Exception) {
+                        logd(TAG, "Bridge transaction monitoring failed for $txID: ${e.message}")
+                        MixpanelManager.cadenceTransactionSigned(
+                            cadence = tx.script,
+                            txId = txID,
+                            authorizers = tx.authorizers,
+                            proposer = tx.proposalKey.address,
+                            payer = tx.payer,
+                            isSuccess = false
+                        )
+                    }
+                }
+            }
         }
         return txID
     } catch (e: Exception) {
@@ -227,28 +261,44 @@ suspend fun sendTransactionWithMultiSignature(
     }
 
     logd(TAG, "sendTransactionWithMultiSignature to flow chain")
-    val result = tx.send()
-    val txID = result.id
+    val txID = tx.submitOnly() // Use submitOnly to get ID immediately
     logd(TAG, "transaction id:$${txID}")
     vibrateTransaction()
 
     if (txID != null) {
-        val txResult = result.waitForSeal()
-        val isSuccess = when (txResult.status) {
-            TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
-            TransactionStatus.EXPIRED -> false
-            TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
-            else -> false
-        }
+        // Add transaction for monitoring without blocking
+        ioScope {
+            safeRunSuspend {
+                try {
+                    val txResult = FlowCadenceApi.waitForSeal(txID)
+                    val isSuccess = when (txResult.status) {
+                        TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
+                        TransactionStatus.EXPIRED -> false
+                        TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
+                        else -> false
+                    }
 
-        MixpanelManager.cadenceTransactionSigned(
-            cadence = tx.script,
-            txId = txID,
-            authorizers = tx.authorizers,
-            proposer = tx.proposalKey.address,
-            payer = tx.payer,
-            isSuccess = isSuccess
-        )
+                    MixpanelManager.cadenceTransactionSigned(
+                        cadence = tx.script,
+                        txId = txID,
+                        authorizers = tx.authorizers,
+                        proposer = tx.proposalKey.address,
+                        payer = tx.payer,
+                        isSuccess = isSuccess
+                    )
+                } catch (e: Exception) {
+                    logd(TAG, "Multi-signature transaction monitoring failed for $txID: ${e.message}")
+                    MixpanelManager.cadenceTransactionSigned(
+                        cadence = tx.script,
+                        txId = txID,
+                        authorizers = tx.authorizers,
+                        proposer = tx.proposalKey.address,
+                        payer = tx.payer,
+                        isSuccess = false
+                    )
+                }
+            }
+        }
     }
 
     return txID ?: throw RuntimeException("Failed to get transaction ID")
@@ -794,4 +844,33 @@ suspend fun Transaction.addFreeBridgeFeeEnvelope(): Transaction {
     )
 
     return copy(envelopeSignatures = envelopeSignatures + newEnvelopeSignature)
+}
+
+suspend fun Transaction.submitOnly(): String {
+    logd(TAG, "Submitting transaction (without waiting for seal): $this")
+
+    val submittedTxId: String = try {
+        val responseTransaction = FlowCadenceApi.sendTransaction(this)
+        responseTransaction.id ?: throw RuntimeException("Transaction ID was null in response from sendTransaction. Full response: $responseTransaction")
+    } catch (e: kotlinx.serialization.MissingFieldException) {
+        logd(TAG, "MissingFieldException while parsing sendTransaction response. This indicates KMM SDK may not expect the Access Node's response format for POST /transactions.")
+        val rawErrorMessage = e.cause?.message ?: e.message ?: "Unknown error during sendTransaction response parsing"
+
+        if (rawErrorMessage.contains(""""code": 400""") && rawErrorMessage.contains("invalid signature")) {
+            throw RuntimeException("Flow Access Node rejected transaction: Invalid Signature. Raw response: $rawErrorMessage", e)
+        }
+        
+        loge(TAG, "Transaction submission status uncertain due to response parsing error. Raw error: $rawErrorMessage")
+        throw RuntimeException("Failed to parse Flow Access Node response after sending transaction. The transaction may or may not have been processed. Raw error: $rawErrorMessage", e)
+        
+    } catch (e: RuntimeException) {
+        if (e.message?.contains("Invalid Flow argument: invalid transaction: invalid signature") == true) {
+            logd(TAG, "Transaction rejected by Flow Access Node: Invalid Signature. Details: ${e.message}")
+            throw RuntimeException("Flow Access Node rejected transaction: Invalid Signature. Details: ${e.message}", e)
+        }
+        throw e
+    }
+
+    logd(TAG, "Transaction submitted with ID: $submittedTxId")
+    return submittedTxId
 }

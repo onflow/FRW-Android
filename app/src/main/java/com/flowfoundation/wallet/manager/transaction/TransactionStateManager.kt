@@ -80,7 +80,11 @@ object TransactionStateManager {
             return
         }
         stateData.data.add(transactionState)
+        
+        // Immediately update the bubble stack so mini window appears right away
         updateState(transactionState)
+        
+        // Start monitoring the transaction in the background
         loopState()
     }
 
@@ -101,49 +105,35 @@ object TransactionStateManager {
 
     private fun loopState() {
         ioScope {
-            var ret: TransactionResult
-            while (true) {
-                val stateQueue = stateData.unsealedState()
+            val stateQueue = stateData.unsealedState()
 
-                if (stateQueue.isEmpty()) {
-                    break
-                }
+            if (stateQueue.isEmpty()) {
+                return@ioScope
+            }
 
-                safeRunSuspend {
-                    for (state in stateQueue) {
-                        ret = try {
-                            checkNotNull(
-                                FlowCadenceApi.getTransactionResultById(state.transactionId)
-                            ) { "Transaction with that id not found" }
-                        } catch (e: kotlinx.serialization.SerializationException) {
-                            logd(TAG, "Transaction result parsing failed for ${state.transactionId} due to JSON deserialization error: ${e.message}")
-                            throw e
-                        } catch (e: RuntimeException) {
-                            if (e.message?.contains("Illegal input: Expected JsonPrimitive") == true || 
-                                e.message?.contains("serialization") == true ||
-                                e.message?.contains("deserialization") == true) {
-                                // Handle Flow SDK JSON parsing errors
-                                logd(
-                                    TAG,
-                                    "Transaction result parsing failed for ${state.transactionId} due to Flow SDK JSON parsing error: ${e.message}"
-                                )
-
+            // Process each transaction individually with waitForSeal for efficiency
+            stateQueue.forEach { state ->
+                ioScope {
+                    safeRunSuspend {
+                        try {
+                            // Use the efficient waitForSeal method instead of polling
+                            val ret = FlowCadenceApi.waitForSeal(state.transactionId)
+                            
+                            if (ret.status!!.ordinal != state.state) {
+                                state.state = ret.status!!.ordinal
+                                state.errorMsg = ret.errorMessage
+                                logd(TAG, "update state:${ret.status}")
+                                updateState(state)
                             }
-                            throw e
-                        }
-                        
-                        if (ret.status!!.ordinal != state.state) {
-                            state.state = ret.status!!.ordinal
-                            state.errorMsg = ret.errorMessage
-                            logd(TAG, "update state:${ret.status}")
-                            updateState(
-                                state
-                            )
+                        } catch (e: Exception) {
+                            logd(TAG, "Transaction ${state.transactionId} failed or timed out: ${e.message}")
+                            // Mark as failed
+                            state.state = TransactionStatus.EXPIRED.ordinal
+                            state.errorMsg = e.message
+                            updateState(state)
                         }
                     }
                 }
-
-                delay(500)
             }
         }
     }

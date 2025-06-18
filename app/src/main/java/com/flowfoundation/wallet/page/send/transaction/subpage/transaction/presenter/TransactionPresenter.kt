@@ -47,6 +47,8 @@ class TransactionPresenter(
 
     private fun updateSendState(isSuccess: Boolean) {
         if (isSuccess) {
+            uiScope { fragment.dismissAllowingStateLoss() }
+            
             ioScope {
                 val recentCache = recentTransactionCache().read() ?: AddressBookContactBookList(emptyList())
                 val list = recentCache.contacts.orEmpty().toMutableList()
@@ -54,7 +56,6 @@ class TransactionPresenter(
                 list.add(0, transaction.target)
                 recentCache.contacts = list
                 recentTransactionCache().cache(recentCache)
-                uiScope { fragment.dismissAllowingStateLoss() }
             }
         }
     }
