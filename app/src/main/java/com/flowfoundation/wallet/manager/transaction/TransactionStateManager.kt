@@ -29,8 +29,16 @@ import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.parcelize.Parcelize
 import org.onflow.flow.infrastructure.parseErrorCode
+import org.onflow.flow.websocket.FlowWebSocketClient
+import org.onflow.flow.websocket.FlowWebSocketTopic
+import org.onflow.flow.websocket.TransactionStatusPayload
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.WebSockets
 import java.lang.ref.WeakReference
 import kotlin.math.abs
 
@@ -45,12 +53,17 @@ object TransactionStateManager {
 
     private val txScriptMap = mutableMapOf<String, String>()
 
+    // WebSocket client for real-time transaction monitoring
+    private var webSocketClient: FlowWebSocketClient? = null
+    private val activeSubscriptions = mutableMapOf<String, String>() // txId -> subscriptionId
+
     fun reload() {
         ioScope {
             stateData = cache.read() ?: TransactionStateData(
                 mutableListOf()
             )
-            loopState()
+            // Start WebSocket monitoring for any existing unfinalized transactions
+            initializeWebSocketMonitoring()
         }
     }
 
@@ -79,11 +92,15 @@ object TransactionStateManager {
             return
         }
         stateData.data.add(transactionState)
+
+        // Immediately update the bubble stack so mini window appears right away
         updateState(transactionState)
-        loopState()
+
+        // Start WebSocket monitoring for this transaction
+        subscribeToTransaction(transactionState.transactionId)
     }
 
-    fun getLastVisibleTransaction(): TransactionState? {
+    fun getLastVisibleTransaction(): TransactionState? { // update to use final?
         return stateData.data.toList().firstOrNull {
             (it.state < TransactionStatus.FINALIZED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
                     || (it.state == TransactionStatus.FINALIZED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)
@@ -98,39 +115,193 @@ object TransactionStateManager {
         return stateData.data.toList().filter { it.isProcessing() }
     }
 
-    private fun loopState() {
+    private fun initializeWebSocketMonitoring() {
         ioScope {
-            val stateQueue = stateData.unsealedState()
+            val processingTransactions = stateData.unsealedState()
 
-            logd(TAG, "loopState: Found ${stateQueue.size} unsealed transactions to monitor")
-            if (stateQueue.isEmpty()) {
-                return@ioScope
+            logd(TAG, "initializeWebSocketMonitoring: Found ${processingTransactions.size} processing transactions")
+
+            if (processingTransactions.isNotEmpty()) {
+                ensureWebSocketConnection()
+                processingTransactions.forEach { state ->
+                    subscribeToTransaction(state.transactionId)
+                }
+            }
+        }
+    }
+
+    private suspend fun ensureWebSocketConnection() {
+        if (webSocketClient == null) {
+            logd(TAG, "Creating new WebSocket client for transaction monitoring")
+
+            try {
+                // Create HttpClient with WebSockets support (following flow-kmm test pattern)
+                val httpClient = HttpClient {
+                    install(WebSockets)
+                }
+
+                webSocketClient = FlowWebSocketClient(httpClient)
+                webSocketClient?.connect(FlowWebSocketClient.MAINNET_WS_URL)
+                logd(TAG, "WebSocket connected successfully")
+            } catch (e: Exception) {
+                logd(TAG, "Failed to connect WebSocket: ${e.message}")
+                webSocketClient = null
+                // Fall back to polling for existing transactions
+                fallbackToPolling()
+            }
+        }
+    }
+
+    private fun subscribeToTransaction(transactionId: String) {
+        ioScope {
+            try {
+                ensureWebSocketConnection()
+                val wsClient = webSocketClient
+
+                if (wsClient == null) {
+                    logd(TAG, "WebSocket not available, falling back to polling for $transactionId")
+                    fallbackToPollingForTransaction(transactionId)
+                    return@ioScope
+                }
+
+                logd(TAG, "Subscribing to WebSocket updates for transaction: $transactionId")
+
+                val subscription = wsClient.subscribeWithStrings(
+                    topic = FlowWebSocketTopic.TRANSACTION_STATUSES.value,
+                    arguments = mapOf("tx_id" to transactionId)
+                )
+
+                activeSubscriptions[transactionId] = subscription.subscriptionId
+                logd(TAG, "WebSocket subscription created: ${subscription.subscriptionId} for tx: $transactionId")
+
+                // Listen for status updates
+                subscription.events
+                    .onEach { response ->
+                        handleWebSocketTransactionUpdate(transactionId, response.payload)
+                    }
+                    .catch { e ->
+                        logd(TAG, "WebSocket subscription error for $transactionId: ${e.message}")
+                        // Remove failed subscription and fall back to polling
+                        activeSubscriptions.remove(transactionId)
+                        fallbackToPollingForTransaction(transactionId)
+                    }
+                    .launchIn(kotlinx.coroutines.GlobalScope)
+
+            } catch (e: Exception) {
+                logd(TAG, "Failed to subscribe to transaction $transactionId via WebSocket: ${e.message}")
+                fallbackToPollingForTransaction(transactionId)
+            }
+        }
+    }
+
+    private suspend fun handleWebSocketTransactionUpdate(transactionId: String, payload: kotlinx.serialization.json.JsonElement?) {
+        try {
+            if (payload == null) {
+                logd(TAG, "Received null payload for transaction $transactionId")
+                return
             }
 
-            // Process each transaction individually with waitForSeal for efficiency
+            logd(TAG, "WebSocket update received for transaction: $transactionId")
+            logd(TAG, "Payload: $payload")
+
+            // Parse the transaction status payload
+            val statusPayload = kotlinx.serialization.json.Json.decodeFromJsonElement(
+                TransactionStatusPayload.serializer(),
+                payload
+            )
+
+            val transactionResult = statusPayload.transactionResult
+            val newStatus = transactionResult.status
+
+            logd(TAG, "WebSocket: Transaction $transactionId status = $newStatus (ordinal=${newStatus?.ordinal})")
+
+            // Find the transaction state
+            val state = getTransactionStateById(transactionId)
+            if (state == null) {
+                logd(TAG, "WebSocket: Transaction $transactionId not found in state manager")
+                return
+            }
+
+            // Update state if it changed
+            if (newStatus != null && newStatus.ordinal != state.state) {
+                logd(TAG, "WebSocket: Updating transaction $transactionId from state ${state.state} to ${newStatus.ordinal}")
+                state.state = newStatus.ordinal
+                state.errorMsg = transactionResult.errorMessage
+                updateState(state)
+
+                // If transaction is finished, unsubscribe
+                if (!state.isProcessing()) {
+                    unsubscribeFromTransaction(transactionId)
+                }
+            } else {
+                logd(TAG, "WebSocket: No state change for transaction $transactionId")
+            }
+
+        } catch (e: Exception) {
+            logd(TAG, "Error handling WebSocket update for $transactionId: ${e.message}")
+            logd(TAG, "Exception details: ${e.javaClass.simpleName} - ${e.stackTraceToString()}")
+        }
+    }
+
+    private suspend fun unsubscribeFromTransaction(transactionId: String) {
+        val subscriptionId = activeSubscriptions.remove(transactionId)
+        if (subscriptionId != null) {
+            try {
+                webSocketClient?.unsubscribe(subscriptionId)
+                logd(TAG, "Unsubscribed from WebSocket updates for transaction: $transactionId")
+            } catch (e: Exception) {
+                logd(TAG, "Error unsubscribing from transaction $transactionId: ${e.message}")
+            }
+        }
+
+        // Close WebSocket if no more active subscriptions
+        if (activeSubscriptions.isEmpty()) {
+            closeWebSocketConnection()
+        }
+    }
+
+    private suspend fun closeWebSocketConnection() {
+        try {
+            webSocketClient?.close()
+            webSocketClient = null
+            logd(TAG, "WebSocket connection closed")
+        } catch (e: Exception) {
+            logd(TAG, "Error closing WebSocket connection: ${e.message}")
+        }
+    }
+
+    // Fallback to polling when WebSocket is not available
+    private fun fallbackToPolling() {
+        ioScope {
+            val stateQueue = stateData.unsealedState()
             stateQueue.forEach { state ->
-                logd(TAG, "loopState: Starting monitoring for transaction ${state.transactionId} (current state=${state.state})")
-                ioScope {
-                    safeRunSuspend {
-                        try {
-                            logd(TAG, "loopState: Calling waitForSeal for ${state.transactionId}")
-                            val ret = FlowCadenceApi.waitForSeal(state.transactionId)
-                            logd(TAG, "loopState: waitForSeal returned for ${state.transactionId} - status=${ret.status}, ordinal=${ret.status?.ordinal}")
-                            
-                            if (ret.status!!.ordinal != state.state) {
-                                logd(TAG, "loopState: State changed for ${state.transactionId} from ${state.state} to ${ret.status!!.ordinal}")
-                                state.state = ret.status!!.ordinal
-                                state.errorMsg = ret.errorMessage
-                                updateState(state)
-                            } else {
-                                logd(TAG, "loopState: No state change for ${state.transactionId}")
-                            }
-                        } catch (e: Exception) {
-                            logd(TAG, "loopState: Error monitoring transaction ${state.transactionId}: ${e.message}")
-                            state.state = TransactionStatus.EXPIRED.ordinal
-                            state.errorMsg = e.message
-                            updateState(state)
-                        }
+                fallbackToPollingForTransaction(state.transactionId)
+            }
+        }
+    }
+
+    private fun fallbackToPollingForTransaction(transactionId: String) {
+        ioScope {
+            safeRunSuspend {
+                try {
+                    logd(TAG, "Fallback polling: Calling waitForSeal for $transactionId")
+                    val ret = FlowCadenceApi.waitForSeal(transactionId)
+                    logd(TAG, "Fallback polling: waitForSeal returned for $transactionId - status=${ret.status}, ordinal=${ret.status?.ordinal}")
+
+                    val state = getTransactionStateById(transactionId)
+                    if (state != null && ret.status!!.ordinal != state.state) {
+                        logd(TAG, "Fallback polling: State changed for $transactionId from ${state.state} to ${ret.status!!.ordinal}")
+                        state.state = ret.status!!.ordinal
+                        state.errorMsg = ret.errorMessage
+                        updateState(state)
+                    }
+                } catch (e: Exception) {
+                    logd(TAG, "Fallback polling failed for $transactionId: ${e.message}")
+                    val state = getTransactionStateById(transactionId)
+                    if (state != null) {
+                        state.state = TransactionStatus.EXPIRED.ordinal
+                        state.errorMsg = e.message
+                        updateState(state)
                     }
                 }
             }
