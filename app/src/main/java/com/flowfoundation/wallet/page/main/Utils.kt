@@ -108,9 +108,9 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
         // Try to get wallet multiple times if it's null
         var wallet = WalletManager.wallet()
         var retryCount = 0
-        while (wallet == null && retryCount < 3) {
+        while (wallet == null && retryCount < 5) {
             Log.d("DrawerLayoutPresenter", "Wallet is null, retry attempt ${retryCount + 1}")
-            kotlinx.coroutines.delay(100) // Wait 100ms between retries
+            kotlinx.coroutines.delay(200)
             wallet = WalletManager.wallet()
             retryCount++
         }
@@ -126,7 +126,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
         Log.d("DrawerLayoutPresenter", "Current network: $currentNetwork")
 
         // Filter accounts for current network
-        val networkAccounts = wallet.accounts.entries.firstOrNull { (chainId, _) ->
+        var networkAccounts = wallet.accounts.entries.firstOrNull { (chainId, _) ->
             when (currentNetwork) {
                 NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
                 NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
@@ -134,7 +134,57 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
         }?.value ?: emptyList()
 
+        if (networkAccounts.isEmpty()) {
+            Log.d("DrawerLayoutPresenter", "No network accounts found, waiting for account discovery...")
+            kotlinx.coroutines.delay(1000)
+            wallet = WalletManager.wallet()
+            networkAccounts = wallet?.accounts?.entries?.firstOrNull { (chainId, _) ->
+                when (currentNetwork) {
+                    NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                    NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                    else -> false
+                }
+            }?.value ?: emptyList()
+        }
+
         Log.d("DrawerLayoutPresenter", "Found ${networkAccounts.size} accounts for network: $currentNetwork")
+
+        if (networkAccounts.isEmpty()) {
+            Log.d("DrawerLayoutPresenter", "No accounts found in wallet, checking server data...")
+            val account = AccountManager.get()
+            val serverWallets = account?.wallet?.wallets?.filter { walletData ->
+                walletData.blockchain?.any { blockchain ->
+                    blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+                } == true
+            }
+            
+            if (!serverWallets.isNullOrEmpty()) {
+                Log.d("DrawerLayoutPresenter", "Using server wallet data as fallback")
+                val list = serverWallets.map { walletData ->
+                    WalletData(
+                        blockchain = walletData.blockchain?.filter { 
+                            it.chainId.equals(currentNetwork, true) 
+                        },
+                        name = userInfo.username
+                    )
+                }.filterNotNull()
+
+                if (list.isNotEmpty()) {
+                    uiScope {
+                        Log.d("DrawerLayoutPresenter", "Updating UI with ${list.size} server wallet accounts")
+                        llMainAccount.removeAllViews()
+
+                        list.forEach { walletItem ->
+                            val itemView = LayoutInflater.from(root.context)
+                                .inflate(R.layout.item_wallet_list_main_account, llMainAccount, false)
+                            (itemView as ViewGroup).setupWallet(walletItem, userInfo)
+                            llMainAccount.addView(itemView)
+                        }
+                    }
+                    return@ioScope
+                }
+            }
+        }
 
         val list = mutableListOf<WalletData?>().apply {
             val mainWalletAddress = networkAccounts.firstOrNull()?.address
@@ -154,7 +204,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
         }.filterNotNull()
 
         if (list.isEmpty()) {
-            Log.d("DrawerLayoutPresenter", "Wallet list is empty after filtering")
+            Log.d("DrawerLayoutPresenter", "Wallet list is empty after filtering - accounts may still be loading")
             return@ioScope
         }
 
@@ -205,7 +255,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
             
             Log.d("DrawerLayoutPresenter", "Setting up linked accounts")
-            this.setupLinkedAccount(wallet, userInfo)
+            wallet?.let { this.setupLinkedAccount(it, userInfo) }
         }
 
         Log.d("DrawerLayoutPresenter", "Fetching balances for ${addressList.size} addresses")
@@ -245,9 +295,56 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
         }
     }
     
+    // Get main wallet address with fallbacks
+    var mainWalletAddress = wallet.walletAddress()
+    Log.d("DrawerLayoutPresenter", "Initial wallet address from wallet.walletAddress(): $mainWalletAddress")
+    
+    if (mainWalletAddress.isNullOrBlank()) {
+        Log.d("DrawerLayoutPresenter", "wallet.walletAddress() returned null, trying fallbacks...")
+        
+        // Try to get from current network accounts
+        val currentNetwork = chainNetWorkString()
+        val networkAccount = wallet.accounts.entries.firstOrNull { (chainId, _) ->
+            when (currentNetwork) {
+                NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                else -> false
+            }
+        }?.value?.firstOrNull()
+        
+        if (networkAccount != null) {
+            mainWalletAddress = networkAccount.address
+            Log.d("DrawerLayoutPresenter", "Using network account address: $mainWalletAddress")
+        } else {
+            // Try to get from server data
+            val account = AccountManager.get()
+            val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
+                walletData.blockchain?.any { blockchain ->
+                    blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+                } == true
+            }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
+            
+            if (!serverAddress.isNullOrBlank()) {
+                mainWalletAddress = serverAddress
+                Log.d("DrawerLayoutPresenter", "Using server address: $mainWalletAddress")
+            } else {
+                // Final fallback - any account
+                val anyAccount = wallet.accounts.values.flatten().firstOrNull()
+                if (anyAccount != null) {
+                    mainWalletAddress = anyAccount.address
+                    Log.d("DrawerLayoutPresenter", "Using fallback account: $mainWalletAddress")
+                }
+            }
+        }
+    }
+    
     // Check child accounts
-    val childAccounts = WalletManager.childAccountList(wallet.walletAddress())?.get()
-    Log.d("DrawerLayoutPresenter", "Child accounts count: ${childAccounts?.size ?: 0}")
+    val childAccounts = if (!mainWalletAddress.isNullOrBlank()) {
+        WalletManager.childAccountList(mainWalletAddress)?.get()
+    } else {
+        null
+    }
+    Log.d("DrawerLayoutPresenter", "Child accounts count: ${childAccounts?.size ?: 0} for address: $mainWalletAddress")
     
     childAccounts?.forEach { childAccount ->
         Log.d("DrawerLayoutPresenter", "Processing child account: ${childAccount.address}, name: ${childAccount.name}")
@@ -260,7 +357,7 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
         }
     }
     
-    val hasLinkedAccounts = llLinkedAccount.size > 0
+    val hasLinkedAccounts = llLinkedAccount.childCount > 0
     Log.d("DrawerLayoutPresenter", "Has linked accounts: $hasLinkedAccounts")
     tvLinkedAccount.setVisible(hasLinkedAccounts)
 }
@@ -368,7 +465,20 @@ private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
     Log.d("Utils", "walletData called with address: '$this'")
     Log.d("Utils", "Main wallet address: '${wallet?.walletAddress()}'")
     
-    return if (wallet?.walletAddress() == this) {
+    // Check if this is the main wallet address
+    val isMainWallet = if (wallet?.walletAddress() == this) {
+        true
+    } else {
+        // Additional check: see if this address matches any account in the wallet
+        val matchingAccount = wallet?.accounts?.values?.flatten()?.find { account ->
+            account.address.equals(this, ignoreCase = true) ||
+            account.address.equals("0x$this", ignoreCase = true) ||
+            account.address.removePrefix("0x").equals(this.removePrefix("0x"), ignoreCase = true)
+        }
+        matchingAccount != null
+    }
+    
+    return if (isMainWallet) {
         Log.d("Utils", "Creating main wallet data for: '$this'")
         val selectedAddress = WalletManager.selectedWalletAddress()
         Log.d("Utils", "Main account - selected address: '$selectedAddress', current address: '$this'")
@@ -376,7 +486,9 @@ private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
             address = this,
             name = userInfo.username,
             icon = userInfo.avatar,
-            isSelected = selectedAddress == this
+            isSelected = selectedAddress.equals(this, ignoreCase = true) ||
+                        selectedAddress.equals("0x$this", ignoreCase = true) ||
+                        selectedAddress.removePrefix("0x").equals(this.removePrefix("0x"), ignoreCase = true)
         )
     } else {
         // child account

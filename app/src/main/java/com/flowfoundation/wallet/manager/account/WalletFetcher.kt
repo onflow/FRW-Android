@@ -22,6 +22,8 @@ import java.lang.ref.WeakReference
 import java.util.Timer
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.scheduleAtFixedRate
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.Lifecycle
 
 object WalletFetcher {
     private val TAG = WalletFetcher::class.java.simpleName
@@ -215,6 +217,13 @@ object WalletFetcher {
 
     private fun dispatchListeners(wallet: WalletListData) {
         logd(TAG, "dispatchListeners:$wallet")
+        
+        // FIXED: Check if app is in foreground before dispatching to prevent ANR in background
+        if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            logd(TAG, "App is in background, deferring wallet update to prevent ANR")
+            return
+        }
+        
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onWalletDataUpdate(wallet) }

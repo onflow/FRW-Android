@@ -29,6 +29,12 @@ import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.uiScope
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -41,15 +47,48 @@ object WalletManager {
     private val initializationLock = Object()
     private var isInitialized = false
 
+    // Add a job reference and callback mechanism
+    private var initializationJob: kotlinx.coroutines.Job? = null
+    private val walletReadyCallbacks = mutableListOf<() -> Unit>()
+
+    private fun triggerWalletReadyCallbacks() {
+        walletReadyCallbacks.forEach { it.invoke() }
+        walletReadyCallbacks.clear()
+    }
+
+    fun onWalletReady(callback: () -> Unit) {
+        synchronized(initializationLock) {
+            if (isInitialized) {
+                callback.invoke()
+            } else {
+                walletReadyCallbacks.add(callback)
+            }
+        }
+    }
+
     fun init() {
         synchronized(initializationLock) {
             if (isInitializing || isInitialized) return
             isInitializing = true
             try {
-                if (initializeWallet()) {
-                    isInitialized = true          // mark ready ***after*** success
+                // FIXED: Run wallet initialization on background thread but allow UI to wait
+                val initJob = ioScope {
+                    if (initializeWallet()) {
+                        synchronized(initializationLock) {
+                            isInitialized = true
+                        }
+                        // Notify UI that wallet is ready
+                        uiScope {
+                            // Trigger a drawer refresh after successful initialization
+                            triggerWalletReadyCallbacks()
+                        }
+                    }
                 }
-            } finally { isInitializing = false }
+                // Store the job for potential waiting
+                initializationJob = initJob
+            } finally { 
+                isInitializing = false 
+            }
         }
     }
 
@@ -134,23 +173,32 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
 
-                    runBlocking {
-                        // Add timeout to prevent infinite hanging
-                        withTimeout(5000) { // 5 second timeout
-                            wallet.accountsFlow.first { accounts ->
-                                logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
-                                accounts.isNotEmpty()
+                    // FIXED: Keep core account discovery synchronous for UI dependency, but with timeout
+                    try {
+                        runBlocking {
+                            // Add timeout to prevent infinite hanging
+                            withTimeout(5000) { // 5 second timeout
+                                wallet.accountsFlow.first { accounts ->
+                                    logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
+                                    accounts.isNotEmpty()
+                                }
                             }
-                        }
-                        logd(TAG, "Accounts discovered successfully!")
-                        logd(TAG, "Number of account chains: ${wallet.accounts.size}")
-                        wallet.accounts.forEach { (chainId, accounts) ->
-                            logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
-                            accounts.forEach { account ->
-                                logd(TAG, "  - Account address: ${account.address}")
+                            logd(TAG, "Accounts discovered successfully!")
+                            logd(TAG, "Number of account chains: ${wallet.accounts.size}")
+                            wallet.accounts.forEach { (chainId, accounts) ->
+                                logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
+                                accounts.forEach { account ->
+                                    logd(TAG, "  - Account address: ${account.address}")
+                                }
                             }
+                            logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
                         }
-                        logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
+                    } catch (e: TimeoutCancellationException) {
+                        logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
+                        logd(TAG, "Final wallet address: ${wallet.walletAddress()}")
+                    } catch (e: Exception) {
+                        logd(TAG, "ERROR during wallet initialization: ${e.message}")
+                        logd(TAG, "Error type: ${e.javaClass.simpleName}")
                     }
                 }
             } catch (e: TimeoutCancellationException) {
@@ -497,8 +545,8 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
 
+                    // FIXED: Keep core account discovery synchronous for UI dependency, but with timeout
                     try {
-                        // Wait for accounts to be loaded using flow's first() operation
                         runBlocking {
                             // Add timeout to prevent infinite hanging
                             withTimeout(5000) { // 5 second timeout
@@ -533,29 +581,30 @@ object WalletManager {
                 currentWallet = newWallet
                 logd(TAG, "Updated current wallet reference")
 
-                // Manually add accounts from server to the wallet
+                // Manually add accounts from server to the wallet (keep this async as it's not critical)
                 // This is needed because new accounts may not be indexed yet by the key indexer
                 account.wallet?.wallets?.forEach { walletData ->
                     walletData.blockchain?.forEach { blockchain ->
-                        try {
-                            val chainId = when (blockchain.chainId.lowercase()) {
-                                "mainnet" -> ChainId.Mainnet
-                                "testnet" -> ChainId.Testnet
-                                else -> null
-                            }
-
-                            if (chainId != null && blockchain.address.isNotBlank()) {
-                                logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
-
-                                // Use the wallet's fetchAccountByAddress method to get the account directly
-                                // from the Flow network, bypassing the key indexer
-                                runBlocking {
-                                    newWallet.fetchAccountByAddress(blockchain.address, chainId)
+                        // FIXED: Use ioScope for async account fetching to prevent ANR
+                        ioScope {
+                            try {
+                                val chainId = when (blockchain.chainId.lowercase()) {
+                                    "mainnet" -> ChainId.Mainnet
+                                    "testnet" -> ChainId.Testnet
+                                    else -> null
                                 }
-                                logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
+
+                                if (chainId != null && blockchain.address.isNotBlank()) {
+                                    logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
+
+                                    // Use the wallet's fetchAccountByAddress method to get the account directly
+                                    // from the Flow network, bypassing the key indexer
+                                    newWallet.fetchAccountByAddress(blockchain.address, chainId)
+                                    logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
+                                }
+                            } catch (e: Exception) {
+                                logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
                             }
-                        } catch (e: Exception) {
-                            logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
                         }
                     }
                 }
@@ -564,10 +613,6 @@ object WalletManager {
                 refreshChildAccount(newWallet)
                 logd(TAG, "Refreshed child accounts for address $newWallet")
 
-                // Refresh EVM wallet/account
-//                EVMWalletManager.init()
-//                logd(TAG, "Refreshed EVM wallet/account")
-
                 // Update selected address if needed
                 val walletAddress = newWallet.walletAddress()
                 if (walletAddress != null && selectedWalletAddressRef.get().isBlank()) {
@@ -575,9 +620,14 @@ object WalletManager {
                     selectWalletAddress(walletAddress)
                 }
 
-                // Force a wallet update
+                // Force a wallet update and notify listeners
                 walletUpdate()
                 logd(TAG, "Triggered wallet update")
+                
+                // FIXED: Trigger callbacks to notify UI that wallet is ready
+                uiScope {
+                    triggerWalletReadyCallbacks()
+                }
             } catch (e: Exception) {
                 logd(TAG, "Error updating wallet: ${e.message}")
                 logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
@@ -588,36 +638,48 @@ object WalletManager {
 
 // Extension functions for backward compatibility
 fun Wallet?.walletAddress(): String? {
-    // Return the currently selected address, not just the first account
-    val selectedAddress = WalletManager.selectedWalletAddress()
-    if (selectedAddress.isNotBlank()) {
-        // Find the account that matches the selected address
-        val matchingAccount = this?.accounts?.values?.flatten()?.find {
-            it.address.equals(selectedAddress, ignoreCase = true) ||
-                    it.address.equals("0x$selectedAddress", ignoreCase = true) ||
-                    it.address.removePrefix("0x").equals(selectedAddress, ignoreCase = true)
-        }
-        if (matchingAccount != null) {
-            return matchingAccount.address
-        }
-    }
-
-    // Fallback to account for current network instead of just any first account
+    if (this == null) return null
+    
     val currentNetwork = chainNetWorkString()
-    val networkAccount = this?.accounts?.entries?.firstOrNull { (chainId, _) ->
-        when (currentNetwork) {
+    logd("WalletManager", "Getting wallet address for network: $currentNetwork")
+    
+    // First try to find account for current network
+    val networkAccount = this.accounts.entries.firstOrNull { (chainId, accounts) ->
+        val isNetworkMatch = when (currentNetwork) {
             NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
             NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
             else -> false
         }
+        logd("WalletManager", "Checking chainId: $chainId, isNetworkMatch: $isNetworkMatch, accounts: ${accounts.size}")
+        isNetworkMatch
     }?.value?.firstOrNull()
 
-    // If we found a network-specific account, return it
     if (networkAccount != null) {
+        logd("WalletManager", "Found network account: ${networkAccount.address}")
         return networkAccount.address
     }
 
-    // Final fallback to any first account if no network match
+    // If no wallet accounts are loaded yet, fall back to server data
+    val account = AccountManager.get()
+    val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
+        walletData.blockchain?.any { blockchain ->
+            blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+        } == true
+    }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
+
+    if (!serverAddress.isNullOrBlank()) {
+        logd("WalletManager", "Using server wallet address: $serverAddress")
+        return serverAddress
+    }
+
+    // Final fallback to any account available
+    val anyAccount = this.accounts.values.flatten().firstOrNull()
+    if (anyAccount != null) {
+        logd("WalletManager", "Using fallback account: ${anyAccount.address}")
+        return anyAccount.address
+    }
+
+    logd("WalletManager", "No wallet address available")
     return null
 }
 

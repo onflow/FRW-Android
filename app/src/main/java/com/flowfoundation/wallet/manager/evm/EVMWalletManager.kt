@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
@@ -43,6 +45,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
 import org.onflow.flow.models.TransactionStatus
 import kotlinx.serialization.Serializable
+import org.onflow.flow.ChainId
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
 
@@ -120,9 +123,31 @@ object EVMWalletManager {
     }
 
     private fun getNetworkAddress(network: String? = chainNetWorkString()): String? {
-        return WalletManager.wallet()?.let {
-            AccountManager.get()?.wallet?.chainNetworkWallet(network)?.address()
+        // First try to get from WalletManager.wallet()
+        val wallet = WalletManager.wallet()
+        if (wallet != null) {
+            val walletAddress = wallet.walletAddress()
+            if (!walletAddress.isNullOrBlank()) {
+                return walletAddress
+            }
+            
+            // If wallet.walletAddress() returns null, try to get directly from wallet accounts
+            val currentNetwork = network ?: chainNetWorkString()
+            val networkAccount = wallet.accounts.entries.firstOrNull { (chainId, _) ->
+                when (currentNetwork) {
+                    NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                    NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                    else -> false
+                }
+            }?.value?.firstOrNull()
+            
+            if (networkAccount != null) {
+                return networkAccount.address
+            }
         }
+        
+        // Fallback to AccountManager server data
+        return AccountManager.get()?.wallet?.chainNetworkWallet(network)?.address()
     }
 
     fun showEVMAccount(network: String?): Boolean {
