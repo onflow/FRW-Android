@@ -60,7 +60,7 @@ object FlowCadenceApi {
         }
     }
 
-    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.SEALED): Account {
+    suspend fun getAccount(address: String, blockHeight: String? = null, sealed: BlockStatus = BlockStatus.FINAL): Account {
         try {
             val account = get().getAccount(address, blockHeight, sealed)
             if (account.address.isBlank() || account.balance.isBlank()) {

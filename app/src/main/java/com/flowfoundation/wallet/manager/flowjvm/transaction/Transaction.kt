@@ -97,6 +97,7 @@ suspend fun sendTransaction(
                     try {
                         val txResult = FlowCadenceApi.waitForSeal(txID)
                         val isSuccess = when (txResult.status) {
+                            TransactionStatus.FINALIZED -> txResult.execution == TransactionExecution.success
                             TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
                             TransactionStatus.EXPIRED -> false
                             TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
@@ -179,6 +180,7 @@ suspend fun sendBridgeTransaction(
                     try {
                         val txResult = FlowCadenceApi.waitForSeal(txID)
                         val isSuccess = when (txResult.status) {
+                            TransactionStatus.FINALIZED -> txResult.execution == TransactionExecution.success
                             TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
                             TransactionStatus.EXPIRED -> false
                             TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success
@@ -272,6 +274,7 @@ suspend fun sendTransactionWithMultiSignature(
                 try {
                     val txResult = FlowCadenceApi.waitForSeal(txID)
                     val isSuccess = when (txResult.status) {
+                        TransactionStatus.FINALIZED -> txResult.execution == TransactionExecution.success
                         TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success
                         TransactionStatus.EXPIRED -> false
                         TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success

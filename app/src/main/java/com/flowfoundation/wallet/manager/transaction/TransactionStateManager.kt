@@ -90,8 +90,8 @@ object TransactionStateManager {
 
     fun getLastVisibleTransaction(): TransactionState? { // update to use final?
         return stateData.data.toList().firstOrNull {
-            (it.state < TransactionStatus.SEALED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
-                    || (it.state == TransactionStatus.SEALED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)
+            (it.state < TransactionStatus.FINALIZED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
+                    || (it.state == TransactionStatus.FINALIZED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)
         }
     }
 
@@ -107,26 +107,34 @@ object TransactionStateManager {
         ioScope {
             val stateQueue = stateData.unsealedState()
 
+            logd(TAG, "loopState: Found ${stateQueue.size} unsealed transactions to monitor")
             if (stateQueue.isEmpty()) {
                 return@ioScope
             }
 
             // Process each transaction individually with waitForSeal for efficiency
             stateQueue.forEach { state ->
+                logd(TAG, "loopState: Starting monitoring for transaction ${state.transactionId} (current state=${state.state})")
                 ioScope {
                     safeRunSuspend {
                         try {
+                            logd(TAG, "loopState: Calling waitForSeal for ${state.transactionId}")
                             // Use the efficient waitForSeal method instead of polling
                             val ret = FlowCadenceApi.waitForSeal(state.transactionId)
+                            logd(TAG, "loopState: waitForSeal returned for ${state.transactionId} - status=${ret.status}, ordinal=${ret.status?.ordinal}")
                             
                             if (ret.status!!.ordinal != state.state) {
+                                logd(TAG, "loopState: State changed for ${state.transactionId} from ${state.state} to ${ret.status!!.ordinal}")
                                 state.state = ret.status!!.ordinal
                                 state.errorMsg = ret.errorMessage
                                 logd(TAG, "update state:${ret.status}")
                                 updateState(state)
+                            } else {
+                                logd(TAG, "loopState: No state change for ${state.transactionId} - still ${state.state}")
                             }
                         } catch (e: Exception) {
                             logd(TAG, "Transaction ${state.transactionId} failed or timed out: ${e.message}")
+                            logd(TAG, "Exception details: ${e.javaClass.simpleName} - ${e.stackTraceToString()}")
                             // Mark as failed
                             state.state = TransactionStatus.EXPIRED.ordinal
                             state.errorMsg = e.message
@@ -185,10 +193,17 @@ object TransactionStateManager {
     }
 
     private fun TransactionStateData.unsealedState(): List<TransactionState> {
-        return data.toList().filter { it.state.isProcessing() }
+        val allTransactions = data.toList()
+        logd(TAG, "unsealedState: Total transactions in cache: ${allTransactions.size}")
+        allTransactions.forEach { tx ->
+            logd(TAG, "unsealedState: TX ${tx.transactionId.take(8)}... state=${tx.state} isProcessing=${tx.state.isProcessing()}")
+        }
+        val result = allTransactions.filter { it.state.isProcessing() }
+        logd(TAG, "unsealedState: Returning ${result.size} processing transactions")
+        return result
     }
 
-    private fun Int.isProcessing() = this < TransactionStatus.SEALED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
+    private fun Int.isProcessing() = this < TransactionStatus.FINALIZED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 }
 
 interface OnTransactionStateChange {
@@ -262,7 +277,7 @@ data class TransactionState(
 
     fun contact() = if (type == TYPE_TRANSFER_COIN) coinData().target else nftData().target
 
-    fun isSuccess() = state == TransactionStatus.SEALED.ordinal && errorMsg.isNullOrBlank()
+    fun isSuccess() = state >= TransactionStatus.FINALIZED.ordinal && errorMsg.isNullOrBlank()
 
     fun isFailed(): Boolean {
         if (isProcessing()) {
@@ -274,7 +289,7 @@ data class TransactionState(
         return !errorMsg.isNullOrBlank()
     }
 
-    fun isProcessing() = state < TransactionStatus.SEALED.ordinal
+    fun isProcessing() = state < TransactionStatus.FINALIZED.ordinal
 
     private fun isExpired() = state == TransactionStatus.EXPIRED.ordinal
 
@@ -289,8 +304,8 @@ data class TransactionState(
     fun progress(): Float {
         return when (state) {
             TransactionStatus.UNKNOWN.ordinal, TransactionStatus.PENDING.ordinal -> 0.25f
-            TransactionStatus.FINALIZED.ordinal -> 0.50f
-            TransactionStatus.EXECUTED.ordinal -> 0.75f
+            TransactionStatus.FINALIZED.ordinal -> 1.0f
+            TransactionStatus.EXECUTED.ordinal -> 1.0f
             TransactionStatus.SEALED.ordinal-> 1.0f
             else -> 0.0f
         }
