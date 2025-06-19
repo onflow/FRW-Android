@@ -81,11 +81,19 @@ suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
         return null
     }
     
-    val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
-        arg { Cadence.address(formattedAddress) }
+    return try {
+        logd(TAG, "cadenceGetTokenBalanceStorage: Executing script for address: $formattedAddress")
+        val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
+            arg { Cadence.address(formattedAddress) }
+        }
+        logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
+        result?.decode<Map<String, String>>().parseBigDecimalMap()
+    } catch (e: Exception) {
+        loge(TAG, "cadenceGetTokenBalanceStorage failed for address $formattedAddress: ${e.message}")
+        loge(TAG, "Script: ${CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.getScript().take(200)}...")
+        e.printStackTrace()
+        null
     }
-    logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
-    return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
 suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal>? {

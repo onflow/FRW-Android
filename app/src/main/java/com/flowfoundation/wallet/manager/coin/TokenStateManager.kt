@@ -129,12 +129,37 @@ object TokenStateManager {
     }
 
     private suspend fun fetchStateSync() {
-        val coinList = FlowCoinListManager.coinList()
-        val enabledToken = cadenceGetTokenBalanceStorage()
-        if (enabledToken == null) {
-            logw(TAG, "fetch error")
-            return
+        try {
+            logd(TAG, "fetchStateSync: Starting token state fetch")
+            val coinList = FlowCoinListManager.coinList()
+            logd(TAG, "fetchStateSync: Found ${coinList.size} coins to check")
+            
+            val enabledToken = cadenceGetTokenBalanceStorage()
+            if (enabledToken == null) {
+                logw(TAG, "fetchStateSync: cadenceGetTokenBalanceStorage returned null - retrying once")
+                // Retry once after a short delay
+                kotlinx.coroutines.delay(1000)
+                val retryResult = cadenceGetTokenBalanceStorage()
+                if (retryResult == null) {
+                    logw(TAG, "fetchStateSync: Retry also failed - using cached state if available")
+                    // Use cached token state instead of failing completely
+                    return
+                } else {
+                    logd(TAG, "fetchStateSync: Retry succeeded with ${retryResult.size} tokens")
+                    processCoinList(coinList, retryResult)
+                }
+            } else {
+                logd(TAG, "fetchStateSync: Successfully got ${enabledToken.size} enabled tokens")
+                processCoinList(coinList, enabledToken)
+            }
+        } catch (e: Exception) {
+            logw(TAG, "fetchStateSync: Exception occurred: ${e.message}")
+            e.printStackTrace()
+            // Continue with cached state instead of crashing
         }
+    }
+    
+    private fun processCoinList(coinList: List<FlowCoin>, enabledToken: Map<String, BigDecimal>) {
         coinList.forEach { coin ->
             val isEnable = enabledToken.containsKey(coin.getFTIdentifier())
             val oldState = tokenStateList.firstOrNull {
@@ -142,8 +167,10 @@ object TokenStateManager {
             }
             tokenStateList.remove(oldState)
             tokenStateList.add(TokenState(coin.symbol, coin.address, isEnable, coin.contractId()))
+            
+            logd(TAG, "fetchStateSync: ${coin.symbol} (${coin.getFTIdentifier()}) -> enabled: $isEnable")
         }
-        logd("WalletFragmentViewModel", "tokenStateList::${tokenStateList.size}")
+        logd(TAG, "fetchStateSync: Final tokenStateList size: ${tokenStateList.size}")
         dispatchListeners()
         tokenStateCache().cache(TokenStateCache(tokenStateList.toList()))
     }
