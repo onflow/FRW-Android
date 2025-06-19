@@ -73,12 +73,12 @@ class ExploreViewModel : ViewModel() {
         val dApps = Gson().fromJson<List<DAppModel>>(json, object : TypeToken<List<DAppModel>>() {}.type).filter {
             if (isTestnet()) !it.testnetUrl.isNullOrBlank() else !it.url.isNullOrBlank()
         }
-        val tags = dApps.map { it.category }.distinct()
-            .map { DAppTagModel(it, dappTag == it) }.toMutableList().apply {
+        val tags = dApps.map { it.category.lowercase() }.distinct()
+            .map { DAppTagModel(it, dappTag.equals(it, ignoreCase = true)) }.toMutableList().apply {
                 add(0, DAppTagModel(R.string.all.res2String(), isShowAllDapps()))
             }
         dAppTagsLiveData.postValue(tags)
-        dAppsLiveData.postValue(if (isShowAllDapps()) dApps else dApps.filter { it.category == dappTag })
+        dAppsLiveData.postValue(if (isShowAllDapps()) dApps else dApps.filter { it.category.equals(dappTag, ignoreCase = true)})
     }
 
     private fun isShowAllDapps() = dappTag == null || dappTag == R.string.all.res2String()
