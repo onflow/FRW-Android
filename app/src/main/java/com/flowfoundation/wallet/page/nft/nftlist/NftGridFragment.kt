@@ -48,6 +48,8 @@ internal class NftGridFragment : Fragment() {
             }
             addItemDecoration(
                 GridSpaceItemDecoration(
+                    top = dividerSize,
+                    bottom = dividerSize / 2,
                     vertical = dividerSize,
                     horizontal = dividerSize,
                     start = dividerSize,

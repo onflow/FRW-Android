@@ -56,7 +56,14 @@ class CollectionContentPresenter(
                 }
             }
             addItemDecoration(
-                GridSpaceItemDecoration(vertical = dividerSize, horizontal = dividerSize)
+                GridSpaceItemDecoration(
+                    top = dividerSize,
+                    bottom = dividerSize / 2,
+                    vertical = dividerSize,
+                    horizontal = dividerSize,
+                    start = dividerSize,
+                    end = dividerSize
+                )
             )
             minimumHeight = screenHeight - 222.dp2px().toInt()
         }

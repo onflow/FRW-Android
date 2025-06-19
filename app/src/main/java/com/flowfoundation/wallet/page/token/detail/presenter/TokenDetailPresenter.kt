@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.staking.stakingCount
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
@@ -41,6 +42,14 @@ import com.flowfoundation.wallet.utils.toHumanReadableSIPrefixes
 import com.flowfoundation.wallet.utils.uiScope
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
+import com.flowfoundation.wallet.page.token.detail.TokenDetailActivity
+import com.flowfoundation.wallet.page.token.detail.widget.TokenDetailPopupMenu
+import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
+import com.flowfoundation.wallet.utils.extensions.dp2px
+import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.logd
 
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,
@@ -58,7 +67,7 @@ class TokenDetailPresenter(
             Glide.with(iconView).load(coin.icon()).into(iconView)
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener {
-                TransactionSendActivity.launch(activity, coinContractId = coin.contractId())
+                TransactionSendActivity.launch(activity, coinContractId = coin.contractId(), sourceTab = HomeTab.WALLET)
             }
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {
@@ -84,7 +93,7 @@ class TokenDetailPresenter(
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
-                        MoveTokenDialog().showDialog(activity, coin.contractId())
+                        MoveTokenDialog().showDialog(activity, coin.contractId(), HomeTab.WALLET)
                     }
                 } else {
                     EnableEVMActivity.launch(activity)

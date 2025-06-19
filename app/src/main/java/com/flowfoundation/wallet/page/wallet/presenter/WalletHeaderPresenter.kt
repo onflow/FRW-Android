@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.page.notification.model.DisplayType
 import com.flowfoundation.wallet.page.notification.model.Priority
 import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
@@ -76,7 +77,7 @@ class WalletHeaderPresenter(
             val count = if (model.coinCount > 0 ) model.coinCount else FlowCoinListManager.coinList().count { TokenStateManager.isTokenAdded(it) }
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
-            cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
+            cvSend.setOnClickListener { TransactionSendActivity.launch(view.context, sourceTab = HomeTab.WALLET) }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address

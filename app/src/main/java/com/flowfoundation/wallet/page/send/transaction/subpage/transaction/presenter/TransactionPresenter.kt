@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
+import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionDialog
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionViewModel
@@ -47,6 +48,12 @@ class TransactionPresenter(
 
     private fun updateSendState(isSuccess: Boolean) {
         if (isSuccess) {
+            // Notify SendAmountActivity that transaction was submitted
+            val activity = fragment.activity
+            if (activity is SendAmountActivity) {
+                activity.onTransactionSubmitted()
+            }
+            
             uiScope { fragment.dismissAllowingStateLoss() }
             
             ioScope {

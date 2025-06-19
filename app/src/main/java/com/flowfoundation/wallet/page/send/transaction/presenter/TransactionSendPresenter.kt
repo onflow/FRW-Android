@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.AddressBookViewModel
 import com.flowfoundation.wallet.page.address.isAddressBookAutoSearch
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.scan.METAMASK_ETH_SCHEME
 import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewModel
 import com.flowfoundation.wallet.page.send.transaction.adapter.TransactionSendPageAdapter
@@ -41,6 +42,7 @@ class TransactionSendPresenter(
     private val fragmentManager: FragmentManager,
     private val binding: LayoutSendAddressSelectBinding,
     private val coinContractId: String? = null,
+    private val sourceTab: HomeTab? = null,
 ) : BasePresenter<TransactionSendModel> {
     private val activity by lazy { findActivity(binding.root) as FragmentActivity }
 
@@ -187,7 +189,11 @@ class TransactionSendPresenter(
         if (WalletManager.isChildAccountSelected()) {
             return
         }
-        SendAmountActivity.launch(activity, address, coinContractId)
+        launchSendAmountActivity(address)
+    }
+
+    private fun launchSendAmountActivity(address: AddressBookContact) {
+        SendAmountActivity.launch(activity, address, coinContractId, sourceTab = sourceTab)
     }
 
     private fun onSearchFocusChange(hasFocus: Boolean) {

@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.wallpaper.OnWallpaperChange
 import com.flowfoundation.wallet.manager.wallpaper.WallpaperManager
 import com.flowfoundation.wallet.page.dialog.common.BackupTipsDialog
 import com.flowfoundation.wallet.page.scan.dispatchScanResult
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.wallet.model.WalletCoinItemModel
 import com.flowfoundation.wallet.page.wallet.model.WalletFragmentModel
 import com.flowfoundation.wallet.page.wallet.presenter.WalletFragmentPresenter
@@ -48,7 +49,9 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        barcodeLauncher = registerBarcodeLauncher { result -> dispatchScanResult(requireContext(), result.orEmpty()) }
+        barcodeLauncher = registerBarcodeLauncher { result -> 
+            dispatchScanResult(requireContext(), result.orEmpty(), HomeTab.WALLET) 
+        }
         WalletNotificationManager.addListener(this)
         WallpaperManager.addListener(this)
     }

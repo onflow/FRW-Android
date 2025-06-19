@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.ioScope
@@ -249,7 +250,8 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
                 it,
                 AddressBookContact(address = recipient.toAddress()),
                 FlowCoinListManager.getFlowCoinContractId(),
-                value?.toString()
+                value?.toString(),
+                sourceTab = HomeTab.WALLET // Default to wallet tab for deeplinks
             )
         }
     }
