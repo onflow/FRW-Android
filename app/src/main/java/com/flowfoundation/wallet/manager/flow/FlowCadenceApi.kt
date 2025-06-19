@@ -78,10 +78,6 @@ object FlowCadenceApi {
         return get().getBlockHeader(id, blockHeight, sealed)
     }
 
-    suspend fun getTransactionResultById(transactionId: String): TransactionResult {
-        return get().getTransactionResult(transactionId)
-    }
-
     suspend fun getTransaction(transactionId: String): Transaction {
         return get().getTransaction(transactionId)
     }

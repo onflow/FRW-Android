@@ -212,27 +212,79 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
         }
 
-        // FIXED: Add retry mechanism for child accounts loading
+        // FIXED: Add retry mechanism for child accounts loading - optimized
         val mainAccountAddress = networkAccounts.firstOrNull()?.address
         var childAccounts: List<ChildAccount>? = null
         if (mainAccountAddress != null) {
-            // Try multiple times to get child accounts
+            // Try multiple times to get child accounts with smart timing
             var childRetryCount = 0
             while (childAccounts == null && childRetryCount < 3) {
                 try {
                     childAccounts = WalletManager.childAccountList(mainAccountAddress)?.get()
                     if (childAccounts.isNullOrEmpty()) {
                         logd("DrawerLayoutPresenter", "Child accounts empty, retry attempt ${childRetryCount + 1}")
-                        delay(500) // Wait for child accounts to load
+                        
+                        // Force refresh child accounts if they're empty on first attempt
+                        if (childRetryCount == 0) {
+                            logd("DrawerLayoutPresenter", "Force refreshing child accounts in main refresh")
+                            WalletManager.childAccountList(mainAccountAddress)?.refresh()
+                        }
+                        
+                        // Progressive delay - start fast, get slower
+                        val delayTime = when (childRetryCount) {
+                            0 -> 300L  // Quick first retry
+                            1 -> 600L  // Medium second retry  
+                            else -> 1000L // Longer final retry
+                        }
+                        delay(delayTime)
                         childRetryCount++
                         childAccounts = null // Reset to try again
                     } else {
+                        logd("DrawerLayoutPresenter", "Successfully loaded ${childAccounts.size} child accounts")
                         break // Successfully got child accounts
                     }
                 } catch (e: Exception) {
                     logd("DrawerLayoutPresenter", "Error getting child accounts, retry attempt ${childRetryCount + 1}: ${e.message}")
-                    delay(500)
+                    
+                    // Only force refresh on first error to avoid excessive calls
+                    if (childRetryCount == 0) {
+                        try {
+                            WalletManager.childAccountList(mainAccountAddress)?.refresh()
+                        } catch (refreshError: Exception) {
+                            logd("DrawerLayoutPresenter", "Error force refreshing child accounts in main: ${refreshError.message}")
+                        }
+                    }
+                    
+                    delay(500L) // Fixed moderate delay for errors
                     childRetryCount++
+                }
+            }
+            
+            // Simplified fallback - only try direct fetch if we have no accounts and it's worth it
+            if (childAccounts.isNullOrEmpty() && childRetryCount >= 3) {
+                logd("DrawerLayoutPresenter", "Attempting direct child account fetch as final fallback")
+                try {
+                    val directWallet = WalletManager.wallet()
+                    val directAccount = directWallet?.accounts?.values?.flatten()?.firstOrNull { it.address == mainAccountAddress }
+                    directAccount?.let { account ->
+                        // Use withTimeoutOrNull to prevent hanging
+                        val directChildAccounts = kotlinx.coroutines.withTimeoutOrNull(3000L) {
+                            account.fetchChild()
+                        }
+                        if (!directChildAccounts.isNullOrEmpty()) {
+                            childAccounts = directChildAccounts.map { childAccount ->
+                                ChildAccount(
+                                    address = childAccount.address.base16Value,
+                                    name = childAccount.name ?: "Child Account",
+                                    icon = childAccount.icon.orEmpty().ifBlank { "https://lilico.app/placeholder-2.0.png" },
+                                    description = childAccount.description
+                                )
+                            }
+                            logd("DrawerLayoutPresenter", "Direct fetch found ${childAccounts?.size} child accounts")
+                        }
+                    }
+                } catch (e: Exception) {
+                    logd("DrawerLayoutPresenter", "Direct child account fetch failed: ${e.message}")
                 }
             }
         }
@@ -409,29 +461,29 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     tvLinkedAccount.setVisible(hasLinkedAccounts)
 }
 
-// Add async version that can safely handle retries in background
+// Add async version that can safely handle retries in background - optimized for performance
 private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
     wallet: com.flow.wallet.wallet.Wallet,
     userInfo: UserInfoData
 ) {
     logd("DrawerLayoutPresenter", "Setting up linked accounts asynchronously")
-
+    
     llLinkedAccount.childCount
     var hasNewAccounts = false
     
-    // Check EVM account with proper async retry mechanism
+    // Check EVM account with quick retry mechanism
     val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
     if (showEVMAccount) {
         var evmAccount: EVMAccount? = null
         var evmRetryCount = 0
         
-        // Retry mechanism for EVM account (safe in background thread)
-        while (evmAccount == null && evmRetryCount < 3) {
+        // Quick retry mechanism for EVM account
+        while (evmAccount == null && evmRetryCount < 2) { // Reduced from 3 to 2 retries
             try {
                 evmAccount = EVMWalletManager.getEVMAccount()
                 if (evmAccount == null) {
                     logd("DrawerLayoutPresenter", "EVM account null in async, retry attempt ${evmRetryCount + 1}")
-                    delay(300) // Safe async delay
+                    delay(200) // Reduced delay
                     evmRetryCount++
                 } else {
                     logd("DrawerLayoutPresenter", "EVM account successfully loaded in async: ${evmAccount.address}")
@@ -439,7 +491,7 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
                 }
             } catch (e: Exception) {
                 logd("DrawerLayoutPresenter", "Error getting EVM account in async, retry attempt ${evmRetryCount + 1}: ${e.message}")
-                delay(300)
+                delay(200) // Reduced delay
                 evmRetryCount++
             }
         }
@@ -486,17 +538,24 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
         }?.value?.firstOrNull()?.address
     }
     
-    // Check child accounts with proper async retry mechanism
+    // Check child accounts with optimized retry mechanism
     if (!mainWalletAddress.isNullOrBlank()) {
         var childAccounts: List<ChildAccount>? = null
         var childRetryCount = 0
         
-        while (childAccounts == null && childRetryCount < 3) {
+        while (childAccounts == null && childRetryCount < 2) { // Reduced from 3 to 2 retries
             try {
                 childAccounts = WalletManager.childAccountList(mainWalletAddress)?.get()
                 if (childAccounts.isNullOrEmpty()) {
                     logd("DrawerLayoutPresenter", "Child accounts empty in async, retry attempt ${childRetryCount + 1}")
-                    delay(500) // Safe async delay
+                    
+                    // Force refresh child accounts if they're empty on first attempt only
+                    if (childRetryCount == 0) {
+                        logd("DrawerLayoutPresenter", "Force refreshing child accounts on first retry")
+                        WalletManager.childAccountList(mainWalletAddress)?.refresh()
+                    }
+                    
+                    delay(500) // Reduced delay
                     childRetryCount++
                     childAccounts = null // Reset to try again
                 } else {
@@ -505,18 +564,36 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
                 }
             } catch (e: Exception) {
                 logd("DrawerLayoutPresenter", "Error getting child accounts in async, retry attempt ${childRetryCount + 1}: ${e.message}")
-                delay(500)
+                
+                // Only refresh on first error
+                if (childRetryCount == 0) {
+                    try {
+                        WalletManager.childAccountList(mainWalletAddress)?.refresh()
+                    } catch (refreshError: Exception) {
+                        logd("DrawerLayoutPresenter", "Error force refreshing child accounts: ${refreshError.message}")
+                    }
+                }
+                
+                delay(500) // Reduced delay
                 childRetryCount++
             }
         }
         
         // Check if we need to add child accounts to UI
         childAccounts?.forEach { childAccount ->
+            // Better duplicate detection - normalize addresses for comparison
+            val normalizedChildAddress = childAccount.address.removePrefix("0x").lowercase()
             val childAlreadyExists = (0 until llLinkedAccount.childCount).any { index ->
                 val childView = llLinkedAccount.getChildAt(index)
                 val addressView = childView.findViewById<TextView>(R.id.wallet_address_view)
-                addressView?.text?.toString()?.contains(childAccount.address.toAddress()) == true
+                val existingAddress = addressView?.text?.toString()?.removePrefix("0x")?.lowercase() ?: ""
+                
+                // Check both full address and shortened address formats
+                existingAddress.contains(normalizedChildAddress) || 
+                normalizedChildAddress.contains(existingAddress.take(8)) // Check first 8 chars for shortened addresses
             }
+            
+            logd("DrawerLayoutPresenter", "Child account ${childAccount.address} already exists: $childAlreadyExists")
             
             if (!childAlreadyExists) {
                 hasNewAccounts = true
@@ -527,6 +604,8 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
                         logd("DrawerLayoutPresenter", "Adding child account to UI asynchronously: ${data.address}, name: ${data.name}")
                         childView.setupWalletItem(data)
                         llLinkedAccount.addView(childView)
+                    } ?: run {
+                        logd("DrawerLayoutPresenter", "Failed to create wallet data for child account: ${childAccount.address}")
                     }
                 }
             }

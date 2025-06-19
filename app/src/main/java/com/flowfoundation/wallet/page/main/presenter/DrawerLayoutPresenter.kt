@@ -236,14 +236,40 @@ class DrawerLayoutPresenter(
             bindData()
             bindEVMInfo()
             
-            // FIXED: Add delayed refresh to ensure all accounts are loaded
+            // FIXED: Add delayed refresh to ensure all accounts are loaded - optimized for responsiveness
             ioScope {
-                // Wait a bit for any pending account loads to complete
-                kotlinx.coroutines.delay(500)
-                
-                // Perform a secondary refresh to catch any accounts that might have loaded late
-                logd(TAG, "Performing secondary refresh after drawer open")
+                // Quick initial refresh
                 binding.refreshWalletList(refreshBalance = false)
+                
+                // Short delay for immediate missing accounts
+                kotlinx.coroutines.delay(300)
+                
+                // Check if child accounts are missing and need quick refresh
+                val wallet = WalletManager.wallet()
+                val mainAddress = wallet?.accounts?.values?.flatten()?.firstOrNull()?.address
+                if (mainAddress != null) {
+                    val currentLinkedCount = binding.llLinkedAccount.childCount
+                    logd(TAG, "Current linked accounts in UI: $currentLinkedCount")
+                    
+                    // Only do expensive operations if accounts are actually missing
+                    if (currentLinkedCount == 0) {
+                        logd(TAG, "No linked accounts visible, doing targeted refresh")
+                        
+                        // Quick check for cached child accounts
+                        val childAccountList = WalletManager.childAccountList(mainAddress)
+                        val cachedChildAccounts = childAccountList?.get() ?: emptyList()
+                        
+                        if (cachedChildAccounts.isEmpty()) {
+                            logd(TAG, "No cached child accounts, triggering background refresh")
+                            // Non-blocking background refresh
+                            childAccountList?.refresh()
+                        }
+                        
+                        // Give a short time for refresh then update UI
+                        kotlinx.coroutines.delay(500)
+                        binding.refreshWalletList(refreshBalance = false)
+                    }
+                }
             }
         }
 
@@ -270,18 +296,38 @@ class DrawerLayoutPresenter(
             logd(TAG, "Child account: ${account.address}, name: ${account.name}")
         }
         
-        // FIXED: Add debouncing to prevent excessive refreshes
+        // FIXED: Add debouncing to prevent excessive refreshes and ensure UI update
         ioScope {
             // Wait a brief moment to allow for other potential updates
             kotlinx.coroutines.delay(200)
             
-            // Check if the drawer is currently open before refreshing
-            uiScope {
-                if (drawer.isDrawerOpen(binding.root)) {
-                    logd(TAG, "Drawer is open, refreshing wallet list for child account update")
-                    binding.refreshWalletList()
-                } else {
-                    logd(TAG, "Drawer is closed, skipping refresh for child account update")
+            // Always refresh if we have accounts, regardless of drawer state
+            if (accounts.isNotEmpty()) {
+                logd(TAG, "Refreshing wallet list due to child account update with ${accounts.size} accounts")
+                binding.refreshWalletList()
+                
+                // Double-check that the accounts actually appear in the UI
+                kotlinx.coroutines.delay(500)
+                uiScope {
+                    val currentLinkedCount = binding.llLinkedAccount.childCount
+                    logd(TAG, "After child account update, linked accounts in UI: $currentLinkedCount")
+                    
+                    if (currentLinkedCount == 0 && accounts.isNotEmpty()) {
+                        logd(TAG, "Child accounts not showing in UI, forcing another refresh")
+                        ioScope {
+                            binding.refreshWalletList()
+                        }
+                    }
+                }
+            } else {
+                // Check if the drawer is currently open before refreshing
+                uiScope {
+                    if (drawer.isDrawerOpen(binding.root)) {
+                        logd(TAG, "Drawer is open, refreshing wallet list for child account update")
+                        binding.refreshWalletList()
+                    } else {
+                        logd(TAG, "Drawer is closed, skipping refresh for child account update")
+                    }
                 }
             }
         }

@@ -865,8 +865,8 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
     val exception = ScriptExecutionException(scriptId, lastException!!)
     loge(exception)
     ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
-    MixpanelManager.scriptError(scriptId, lastException?.cause?.message.orEmpty())
-    reportCadenceErrorToDebugView(scriptId, lastException!!)
+    MixpanelManager.scriptError(scriptId, lastException.cause?.message.orEmpty())
+    reportCadenceErrorToDebugView(scriptId, lastException)
     return null
 }
 

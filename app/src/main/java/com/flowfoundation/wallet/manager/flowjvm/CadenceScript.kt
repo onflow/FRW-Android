@@ -20,12 +20,8 @@ enum class CadenceScript(val scriptId: String, val type: CadenceScriptType) {
     CADENCE_TRANSFER_TOKEN("transferTokensV3", CadenceScriptType.FT),
     CADENCE_ADD_TOKEN("addToken", CadenceScriptType.FT),
     CADENCE_GET_TOKEN_LIST_BALANCE("getTokenListBalance", CadenceScriptType.FT),
-    CADENCE_CHECK_TOKEN_LIST_ENABLED("isTokenListEnabled", CadenceScriptType.FT),
     CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED("isLinkedAccountTokenListEnabled", CadenceScriptType.FT),
     CADENCE_GET_TOKEN_BALANCE_STORAGE("getTokenBalanceStorage", CadenceScriptType.FT),
-
-    // NFT
-    CADENCE_CHECK_NFT_LIST_ENABLED("checkNFTListEnabled", CadenceScriptType.NFT),
 
     // COLLECTION
     CADENCE_NFT_ENABLE("enableNFTStorage", CadenceScriptType.COLLECTION),

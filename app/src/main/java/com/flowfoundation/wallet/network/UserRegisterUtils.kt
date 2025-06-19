@@ -2,9 +2,10 @@ package com.flowfoundation.wallet.network
 
 import android.webkit.WebStorage
 import android.widget.Toast
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
+import com.flow.wallet.crypto.BIP39
+import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -15,6 +16,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -29,6 +31,7 @@ import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
+import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.cleanBackupMnemonicPreference
 import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.error.AccountError
@@ -37,38 +40,29 @@ import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.setRegistered
+import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
-import com.flow.wallet.keys.PrivateKey
-import com.flow.wallet.storage.FileSystemStorage
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
+import org.onflow.flow.ChainId
+import org.onflow.flow.models.SigningAlgorithm
+import java.io.File
 import java.security.MessageDigest
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import com.flowfoundation.wallet.utils.Env
-import java.io.File
-import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.keys.KeyFormat
-import com.flow.wallet.wallet.WalletFactory
-import org.onflow.flow.ChainId
-import org.onflow.flow.models.SigningAlgorithm
-import com.google.common.io.BaseEncoding
-import org.onflow.flow.models.HashingAlgorithm
-import kotlinx.coroutines.runBlocking
-import com.flow.wallet.crypto.BIP39
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.utils.readWalletPassword
-import com.flowfoundation.wallet.utils.storeWalletPassword
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 private const val TAG = "UserRegisterUtils"
 
 // register one step, create user & create wallet
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun registerOutblock(
     username: String,
 ) = suspendCoroutine { continuation ->
@@ -140,12 +134,12 @@ suspend fun registerOutblock(
                     walletListData.wallets?.forEach { walletData ->
                         walletData.blockchain?.forEach { blockchain ->
                             try {
-                                val chainIdForBlockchain = when (blockchain.chainId?.lowercase()) {
+                                val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
                                     "mainnet" -> ChainId.Mainnet
                                     "testnet" -> ChainId.Testnet
                                     else -> null
                                 }
-                                if (chainIdForBlockchain != null && !blockchain.address.isNullOrBlank()) {
+                                if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
                                     val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
                                     logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with account $address")
                                     walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)

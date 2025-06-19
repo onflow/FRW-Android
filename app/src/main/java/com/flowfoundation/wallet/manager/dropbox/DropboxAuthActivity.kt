@@ -21,10 +21,6 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import java.io.File
-import com.flow.wallet.wallet.KeyWallet
-import com.flow.wallet.wallet.WalletFactory
-import com.flowfoundation.wallet.utils.Env.getStorage
-import org.onflow.flow.ChainId
 
 class DropboxAuthActivity : AppCompatActivity() {
     private val isLogin by lazy { intent.getBooleanExtra(EXTRA_LOGIN, false) }
@@ -137,24 +133,6 @@ class DropboxAuthActivity : AppCompatActivity() {
                 putExtra(EXTRA_SUCCESS, success)
             }
         )
-    }
-
-    private suspend fun uploadDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
-        val wallet = WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            getStorage()
-        )
-        uploadDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
-    }
-
-    private suspend fun checkDropboxBackup(dbxClient: DbxClientV2, seedPhraseKey: SeedPhraseKey) {
-        val wallet = WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            getStorage()
-        )
-        checkDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
     }
 
     companion object {

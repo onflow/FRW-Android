@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.network
 
 import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
-import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -149,12 +148,6 @@ interface ApiService {
         @Query("provider") market: String,
         @Query("pair") coinPair: String
     ): CryptowatchSummaryResponse
-
-    @GET("/v1/flowns/prepare")
-    suspend fun claimDomainPrepare(): ClaimDomainPrepareResponse
-
-    @POST("/v1/flowns/signature")
-    suspend fun claimDomainSignature(@Body params: PayerSignable): ClaimDomainSignatureResponse
 
     @GET("/v1/account/tokentransfers")
     suspend fun getTransferRecordByToken(

@@ -154,7 +154,7 @@ object CryptoProviderManager {
                         val keyId = "prefix_key_${account.prefix}"
                         val hasDeviceKey = try {
                             val deviceKey = PrivateKey.get(keyId, account.prefix!!, storage)
-                            val devicePublicKey = deviceKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString() 
+                            deviceKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
                                 ?: deviceKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
                             
                             logd(TAG, "    Device key check: keyId=$keyId, prefix=${account.prefix}")
