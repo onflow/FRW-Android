@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.NetworkUtils
+import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flow.wallet.Network
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -55,6 +57,34 @@ object WalletFetcher {
             
             while (!dataReceived && retryCount < maxRetries) {
                 delay(if (retryCount == 0) 1000 else 5000) // First attempt after 1s, then 5s
+                
+                // Check network connectivity before attempting
+                val context = Env.getApp()
+                if (!NetworkUtils.isNetworkAvailable(context)) {
+                    logd(TAG, "No network connection available on attempt ${retryCount + 1}")
+                    retryCount++
+                    if (retryCount >= maxRetries) {
+                        logd(TAG, "Max retries exceeded due to network unavailability")
+                        triggerManualAddressIfNeeded()
+                    }
+                    continue
+                }
+                
+                val networkType = NetworkUtils.getNetworkTypeInfo(context)
+                logd(TAG, "Network available: $networkType")
+                
+                // Test key indexer connectivity
+                val isMainnet = chainNetWorkString() == "mainnet"
+                if (!NetworkUtils.testKeyIndexerConnectivity(isMainnet)) {
+                    logd(TAG, "Key indexer connectivity test failed on attempt ${retryCount + 1}")
+                    retryCount++
+                    if (retryCount >= maxRetries) {
+                        logd(TAG, "Max retries exceeded due to key indexer unreachability")
+                        triggerManualAddressIfNeeded()
+                    }
+                    continue
+                }
+                
                 runCatching {
                     // Get current user's public key from crypto provider
                     val currentAccount = AccountManager.get()
@@ -155,8 +185,16 @@ object WalletFetcher {
                     
                     if (isNetworkError) {
                         logd(TAG, "Network error on attempt $retryCount/$maxRetries: ${exception.message}")
+                        
+                        // Add specific handling for DNS resolution issues
+                        if (exception.message?.contains("UnresolvedAddressException", ignoreCase = true) == true) {
+                            logd(TAG, "DNS resolution failed. Please check network connectivity and DNS settings.")
+                            logd(TAG, "Attempting to connect to key indexer: ${if (chainNetWorkString() == "mainnet") "production.key-indexer.flow.com" else "staging.key-indexer.flow.com"}")
+                        }
+                        
                         if (retryCount >= maxRetries) {
-                            logd(TAG, "Max network retries exceeded, falling back to manual address creation")
+                            logd(TAG, "Max network retries exceeded. Key indexer may be unreachable.")
+                            logd(TAG, "Falling back to manual address creation. User may need to verify network connectivity.")
                             triggerManualAddressIfNeeded()
                         }
                     } else {
