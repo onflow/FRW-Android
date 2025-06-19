@@ -198,7 +198,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                 try {
                     val globalMnemonic = Wallet.store().mnemonic()
                     logd("BackupSeedPhraseVM", "  Global mnemonic for active account: '$globalMnemonic'")
-                    logd("BackupSeedPhraseVM", "  Global mnemonic length: ${globalMnemonic?.split(" ")?.size} words")
+                    logd("BackupSeedPhraseVM", "  Global mnemonic length: ${globalMnemonic.split(" ")?.size} words")
                 } catch (e: Exception) {
                     logd("BackupSeedPhraseVM", "  Error getting global mnemonic: ${e.message}")
                 }
@@ -236,7 +236,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                         // Debug on-chain account keys first
                         logd("BackupSeedPhraseVM", "=== ON-CHAIN ACCOUNT KEYS DEBUG ===")
                         val walletAddress = WalletManager.selectedWalletAddress()
-                        if (walletAddress != null && currentCryptoProvider != null) {
+                        if (currentCryptoProvider != null) {
                             try {
                                 val onChainAccount = FlowCadenceApi.getAccount(walletAddress)
                                 logd("BackupSeedPhraseVM", "On-chain account: ${onChainAccount.address}")
@@ -326,7 +326,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                             return@withTimeout
                         }
                         val transactionState = TransactionState(
-                            transactionId = txId!!,
+                            transactionId = txId,
                             time = System.currentTimeMillis(),
                             state = TransactionStatus.PENDING.ordinal,
                             type = TransactionState.TYPE_ADD_PUBLIC_KEY,

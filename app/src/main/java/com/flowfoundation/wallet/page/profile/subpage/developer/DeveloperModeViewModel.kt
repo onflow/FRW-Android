@@ -67,8 +67,8 @@ class DeveloperModeViewModel : ViewModel() {
                             name = "Flow Wallet"
                         )
                         val walletListData = WalletListData(
-                            id = currentAccount?.userInfo?.username ?: "user",
-                            username = currentAccount?.userInfo?.username ?: "user",
+                            id = currentAccount.userInfo.username,
+                            username = currentAccount.userInfo.username,
                             wallets = listOf(walletData)
                         )
                         
