@@ -93,7 +93,7 @@ class TokenDetailPresenter(
             llEvmMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
                     uiScope {
-                        MoveTokenDialog().showDialog(activity, coin.contractId(), HomeTab.WALLET)
+                        MoveTokenDialog().showDialog(activity, coin.contractId())
                     }
                 } else {
                     EnableEVMActivity.launch(activity)
