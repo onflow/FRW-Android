@@ -12,7 +12,6 @@ import com.crowdin.platform.util.inflateWithCrowdin
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityNftDetailBinding
-import com.flowfoundation.wallet.manager.nft.NftCollectionState
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -26,10 +25,7 @@ import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.presenter.NftDetailPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
-import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.utils.isNightMode
-import com.flowfoundation.wallet.utils.toast
-import com.google.gson.Gson
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import org.onflow.flow.models.TransactionStatus
 

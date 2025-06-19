@@ -11,9 +11,7 @@ import android.text.Spanned
 import android.text.TextPaint
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.graphics.ColorUtils
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
@@ -55,6 +53,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.parseAvatarUrl
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.utils.uiScope
@@ -71,23 +70,23 @@ class DrawerLayoutPresenter(
     private val walletUpdateLock = Object()
 
     init {
-        Log.d(TAG, "Initializing DrawerLayoutPresenter")
+        logd(TAG, "Initializing DrawerLayoutPresenter")
         drawer.addDrawerListener(DrawerListener())
 
         with(binding.root.layoutParams) {
             width = (ScreenUtils.getScreenWidth() * 0.8f).toInt()
             binding.root.layoutParams = this
         }
-        Log.d(TAG, "Drawer width set to: ${binding.root.layoutParams.width}")
+        logd(TAG, "Drawer width set to: ${binding.root.layoutParams.width}")
 
         // Set initial lock mode
         ioScope {
             val wallet = WalletManager.wallet()
-            Log.d(TAG, "Wallet state: ${if (wallet == null) "null" else "not null"}")
+            logd(TAG, "Wallet state: ${if (wallet == null) "null" else "not null"}")
             val address = wallet?.walletAddress()
-            Log.d(TAG, "Wallet address: $address")
+            logd(TAG, "Wallet address: $address")
             val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
-            Log.d(TAG, "Initial drawer lock mode set to: $lockMode, address is ${if (address.isNullOrBlank()) "null/blank" else "present"}")
+            logd(TAG, "Initial drawer lock mode set to: $lockMode, address is ${if (address.isNullOrBlank()) "null/blank" else "present"}")
             drawer.setDrawerLockMode(lockMode)
         }
 
@@ -110,21 +109,21 @@ class DrawerLayoutPresenter(
         }
 
         bindData()
-        Log.d(TAG, "Initial wallet list refresh")
+        logd(TAG, "Initial wallet list refresh")
         
         // FIXED: Use wallet ready callback to ensure proper timing
         WalletManager.onWalletReady {
-            Log.d(TAG, "Wallet is ready, refreshing drawer")
+            logd(TAG, "Wallet is ready, refreshing drawer")
             binding.refreshWalletList(true)
             uiScope {
                 val address = WalletManager.wallet()?.walletAddress()
                 val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
-                Log.d(TAG, "Updating drawer lock mode to: $lockMode after wallet ready")
+                logd(TAG, "Updating drawer lock mode to: $lockMode after wallet ready")
                 drawer.setDrawerLockMode(lockMode)
             }
         }
 
-        Log.d(TAG, "Adding listeners for account updates")
+        logd(TAG, "Adding listeners for account updates")
         AccountEmojiManager.addListener(this)
         ChildAccountList.addAccountUpdateListener(this)
         WalletFetcher.addListener(this)
@@ -163,7 +162,7 @@ class DrawerLayoutPresenter(
     }
 
     private fun bindData() {
-        Log.d(TAG, "Binding data to drawer")
+        logd(TAG, "Binding data to drawer")
         uiScope {
             with(binding.tvNetwork) {
                 val network = chainNetWorkString()
@@ -179,14 +178,14 @@ class DrawerLayoutPresenter(
         }
         ioScope {
             val userInfo = AccountManager.userInfo()
-            Log.d(TAG, "User info: ${userInfo?.nickname}, avatar: ${userInfo?.avatar}")
+            logd(TAG, "User info: ${userInfo?.nickname}, avatar: ${userInfo?.avatar}")
             
             uiScope {
                 with(binding) {
                     nickNameView.text = userInfo?.nickname ?: ""
 
                     val avatarUrl = userInfo?.avatar?.parseAvatarUrl()
-                    Log.d(TAG, "Avatar URL: $avatarUrl")
+                    logd(TAG, "Avatar URL: $avatarUrl")
                     val avatar = if (avatarUrl?.contains("flovatar.com") == true) {
                         avatarUrl.svgToPng()
                     } else {
@@ -233,14 +232,24 @@ class DrawerLayoutPresenter(
     private inner class DrawerListener : DrawerLayout.SimpleDrawerListener() {
         override fun onDrawerOpened(drawerView: View) {
             super.onDrawerOpened(drawerView)
-            Log.d(TAG, "Drawer opened")
+            logd(TAG, "Drawer opened")
             bindData()
             bindEVMInfo()
+            
+            // FIXED: Add delayed refresh to ensure all accounts are loaded
+            ioScope {
+                // Wait a bit for any pending account loads to complete
+                kotlinx.coroutines.delay(500)
+                
+                // Perform a secondary refresh to catch any accounts that might have loaded late
+                logd(TAG, "Performing secondary refresh after drawer open")
+                binding.refreshWalletList(refreshBalance = false)
+            }
         }
 
         override fun onDrawerClosed(drawerView: View) {
             super.onDrawerClosed(drawerView)
-            Log.d(TAG, "Drawer closed")
+            logd(TAG, "Drawer closed")
         }
 
         override fun onDrawerStateChanged(newState: Int) {
@@ -251,36 +260,51 @@ class DrawerLayoutPresenter(
                 DrawerLayout.STATE_SETTLING -> "SETTLING"
                 else -> "UNKNOWN"
             }
-            Log.d(TAG, "Drawer state changed to: $stateString")
+            logd(TAG, "Drawer state changed to: $stateString")
         }
     }
 
     override fun onChildAccountUpdate(parentAddress: String, accounts: List<ChildAccount>) {
-        Log.d(TAG, "Child accounts updated. Parent: $parentAddress, accounts count: ${accounts.size}")
+        logd(TAG, "Child accounts updated. Parent: $parentAddress, accounts count: ${accounts.size}")
         accounts.forEach { account ->
-            Log.d(TAG, "Child account: ${account.address}, name: ${account.name}")
+            logd(TAG, "Child account: ${account.address}, name: ${account.name}")
         }
-        binding.refreshWalletList()
+        
+        // FIXED: Add debouncing to prevent excessive refreshes
+        ioScope {
+            // Wait a brief moment to allow for other potential updates
+            kotlinx.coroutines.delay(200)
+            
+            // Check if the drawer is currently open before refreshing
+            uiScope {
+                if (drawer.isDrawerOpen(binding.root)) {
+                    logd(TAG, "Drawer is open, refreshing wallet list for child account update")
+                    binding.refreshWalletList()
+                } else {
+                    logd(TAG, "Drawer is closed, skipping refresh for child account update")
+                }
+            }
+        }
     }
 
     override fun onWalletDataUpdate(wallet: WalletListData) {
-        Log.d(TAG, "Wallet data updated: ${wallet.walletAddress()}")
+        logd(TAG, "Wallet data updated: ${wallet.walletAddress()}")
         val address = wallet.walletAddress()
         if (address.isNullOrBlank()) {
-            Log.d(TAG, "Received wallet update with null/blank address")
+            logd(TAG, "Received wallet update with null/blank address")
             return
         }
 
         synchronized(walletUpdateLock) {
             if (isUpdatingWallet) {
-                Log.d(TAG, "Wallet update already in progress, skipping")
+                logd(TAG, "Wallet update already in progress, skipping")
                 return
             }
 
             isUpdatingWallet = true
             ioScope {
                 try {
-                    Log.d(TAG, "Starting wallet update process")
+                    logd(TAG, "Starting wallet update process")
                     // Update the wallet first
                     WalletManager.updateWallet(wallet)
                     
@@ -289,7 +313,7 @@ class DrawerLayoutPresenter(
                     var currentWallet = WalletManager.wallet()
                     
                     while (currentWallet == null && retryCount < 3) {
-                        Log.d(TAG, "Waiting for wallet initialization, attempt ${retryCount + 1}")
+                        logd(TAG, "Waiting for wallet initialization, attempt ${retryCount + 1}")
                         kotlinx.coroutines.delay(100)
                         currentWallet = WalletManager.wallet()
                         retryCount++
@@ -297,14 +321,14 @@ class DrawerLayoutPresenter(
                     
                     uiScope {
                         if (currentWallet != null) {
-                            Log.d(TAG, "Wallet initialized successfully with address: ${currentWallet.walletAddress()}")
+                            logd(TAG, "Wallet initialized successfully with address: ${currentWallet.walletAddress()}")
                             val lockMode = DrawerLayout.LOCK_MODE_UNLOCKED
-                            Log.d(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
+                            logd(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
                             drawer.setDrawerLockMode(lockMode)
-                            Log.d(TAG, "Refreshing wallet list")
+                            logd(TAG, "Refreshing wallet list")
                             binding.refreshWalletList(true)
                         } else {
-                            Log.d(TAG, "Failed to initialize wallet after $retryCount attempts")
+                            logd(TAG, "Failed to initialize wallet after $retryCount attempts")
                         }
                     }
                 } catch (e: Exception) {
@@ -312,14 +336,14 @@ class DrawerLayoutPresenter(
                     Log.e(TAG, "Error stack trace: ${e.stackTraceToString()}")
                 } finally {
                     isUpdatingWallet = false
-                    Log.d(TAG, "Wallet update process completed")
+                    logd(TAG, "Wallet update process completed")
                 }
             }
         }
     }
 
     override fun onEmojiUpdate(userName: String, address: String, emojiId: Int, emojiName: String) {
-        Log.d(TAG, "Emoji updated for user: $userName, address: $address, emoji: $emojiName")
+        logd(TAG, "Emoji updated for user: $userName, address: $address, emoji: $emojiName")
         binding.refreshWalletList()
     }
 

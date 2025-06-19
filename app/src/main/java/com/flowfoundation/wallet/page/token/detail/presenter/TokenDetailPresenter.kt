@@ -42,14 +42,6 @@ import com.flowfoundation.wallet.utils.toHumanReadableSIPrefixes
 import com.flowfoundation.wallet.utils.uiScope
 import com.zackratos.ultimatebarx.ultimatebarx.addNavigationBarBottomPadding
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
-import com.flowfoundation.wallet.page.token.detail.TokenDetailActivity
-import com.flowfoundation.wallet.page.token.detail.widget.TokenDetailPopupMenu
-import com.flowfoundation.wallet.page.transaction.record.TransactionRecordActivity
-import com.flowfoundation.wallet.utils.extensions.dp2px
-import com.flowfoundation.wallet.utils.extensions.res2String
-import com.flowfoundation.wallet.utils.extensions.res2color
-import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.logd
 
 class TokenDetailPresenter(
     private val activity: AppCompatActivity,

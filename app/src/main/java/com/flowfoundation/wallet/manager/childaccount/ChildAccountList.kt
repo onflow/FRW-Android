@@ -51,6 +51,7 @@ class ChildAccountList(
     fun refresh() {
         synchronized(refreshLock) {
             if (isRefreshing) {
+                logd(TAG, "Refresh already in progress for address: $address")
                 return
             }
             isRefreshing = true
@@ -58,9 +59,30 @@ class ChildAccountList(
 
         ioScope {
             try {
-                val accounts = queryAccountMeta(address)
+                var retryCount = 0
+                var accounts: List<ChildAccount>? = null
+                
+                // FIXED: Add retry mechanism for querying account metadata
+                while (accounts == null && retryCount < 3) {
+                    try {
+                        accounts = queryAccountMeta(address)
+                        if (accounts == null) {
+                            logd(TAG, "No accounts returned from query, retry attempt ${retryCount + 1}")
+                            kotlinx.coroutines.delay(500) // Wait before retry
+                            retryCount++
+                        } else {
+                            logd(TAG, "Successfully fetched ${accounts.size} child accounts")
+                            break
+                        }
+                    } catch (e: Exception) {
+                        logd(TAG, "Error during queryAccountMeta retry ${retryCount + 1}: ${e.message}")
+                        kotlinx.coroutines.delay(500)
+                        retryCount++
+                    }
+                }
+                
                 if (accounts == null) {
-                    logd(TAG, "No accounts returned from query")
+                    logd(TAG, "Failed to fetch child accounts after $retryCount retries")
                     return@ioScope
                 }
 
@@ -75,6 +97,7 @@ class ChildAccountList(
 
                     try {
                         cache().cache(ArrayList(accountList))
+                        logd(TAG, "Successfully cached ${accounts.size} child accounts")
                     } catch (e: Exception) {
                         logd(TAG, "Error caching accounts: ${e.message}")
                     }
@@ -83,6 +106,7 @@ class ChildAccountList(
                 }
                 
                 dispatchAccountUpdateListener(address, accountList.toList())
+                logd(TAG, "Child account refresh completed successfully")
             } catch (e: Exception) {
                 logd(TAG, "Error during refresh: ${e.message}")
             } finally {
