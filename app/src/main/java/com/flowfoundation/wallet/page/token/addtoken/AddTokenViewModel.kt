@@ -97,10 +97,10 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, TokenStateChang
                     }
                     val index = coinList.indexOfFirst { it.coin.isSameCoin(coin.contractId()) }
                     if (index >= 0) {
-                        val isAdded = TokenStateManager.isTokenAdded(coin)
+                        val isAdded = TokenStateManager.isTokenAdded(coin) || state.isSuccess()
                         coinList[index] = TokenItem(
                             coin = coinList[index].coin,
-                            isAdding = !state.isFailed() && !isAdded,
+                            isAdding = state.isProcessing() && !isAdded,
                             isAdded = isAdded,
                         )
                     }

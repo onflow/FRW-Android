@@ -93,10 +93,10 @@ class NftCollectionListViewModel : ViewModel(), OnTransactionStateChange, NftCol
                 if (state.type == TransactionState.TYPE_ENABLE_NFT) {
                     val coin = state.nftCollectionData()
                     val index = collectionList.indexOfFirst { it.collection.contractId() == coin.contractId() }
-                    val isAdded = NftCollectionStateManager.isTokenAdded(coin.contractId())
+                    val isAdded = NftCollectionStateManager.isTokenAdded(coin.contractId()) || state.isSuccess()
                     collectionList[index] = NftCollectionItem(
                         collection = collectionList[index].collection,
-                        isAdding = !state.isFailed() && !isAdded,
+                        isAdding = state.isProcessing() && !isAdded,
                         isAdded = isAdded,
                     )
                 }
