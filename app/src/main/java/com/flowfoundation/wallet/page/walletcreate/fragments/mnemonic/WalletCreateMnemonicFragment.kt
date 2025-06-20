@@ -13,7 +13,6 @@ import com.flowfoundation.wallet.databinding.FragmentWalletCreateMnemonicBinding
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_CLOUD_PWD
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_MNEMONIC_CHECK
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
-import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration

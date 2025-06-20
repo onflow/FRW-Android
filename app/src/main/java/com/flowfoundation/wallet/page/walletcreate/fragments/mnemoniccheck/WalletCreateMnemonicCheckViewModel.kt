@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import wallet.core.jni.Mnemonic
 
 class WalletCreateMnemonicCheckViewModel : ViewModel() {
 

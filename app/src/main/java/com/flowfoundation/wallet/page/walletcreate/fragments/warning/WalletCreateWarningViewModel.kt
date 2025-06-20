@@ -2,16 +2,11 @@ package com.flowfoundation.wallet.page.walletcreate.fragments.warning
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.utils.viewModelIOScope
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flow.wallet.crypto.BIP39
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.ChainId
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.util.Locale
 
 class WalletCreateWarningViewModel : ViewModel() {
 

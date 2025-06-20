@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.manager.walletconnect
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.AppConfig
-import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
 import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod

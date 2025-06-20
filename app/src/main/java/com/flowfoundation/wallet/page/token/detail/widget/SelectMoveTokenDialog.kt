@@ -12,7 +12,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.swap.dialog.select.TokenListAdapter
 import com.flowfoundation.wallet.page.token.detail.model.MoveToken
 import com.flowfoundation.wallet.utils.extensions.dp2px

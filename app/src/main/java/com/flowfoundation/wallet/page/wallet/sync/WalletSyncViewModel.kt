@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import org.onflow.flow.ChainId
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.suspendCoroutine
 

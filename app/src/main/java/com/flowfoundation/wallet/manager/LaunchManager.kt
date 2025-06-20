@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.manager.app.PageLifecycleObserver
 import com.flowfoundation.wallet.manager.app.refreshChainNetwork
 import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi

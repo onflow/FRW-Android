@@ -35,7 +35,6 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.TimeoutCancellationException
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 import java.io.File
-import wallet.core.jni.HDWallet
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.wallet.Wallet

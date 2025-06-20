@@ -1,9 +1,7 @@
 package com.flowfoundation.wallet.cache
 
 import androidx.annotation.WorkerThread
-import com.flowfoundation.wallet.manager.account.UserPrefix
 import com.flowfoundation.wallet.manager.token.DisplayTokenListCache
-import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.DISPLAY_TOKEN_PATH
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter

@@ -44,8 +44,6 @@ import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.bug.BugReporting
-import com.instabug.library.OnSdkDismissCallback
 
 class ProfileFragmentPresenter(
     private val fragment: ProfileFragment,
