@@ -19,8 +19,10 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
 
     val estimateOut = data.tokenOutAmount
     val amountOutMin = estimateOut * (1.0f - slippageRate).toBigDecimal()
-    val storageIn = viewModel.fromCoin()!!.storagePath
-    val storageOut = viewModel.toCoin()!!.storagePath
+    val storageIn = viewModel.fromCoin()?.flowStoragePath
+    val storageOut = viewModel.toCoin()?.flowStoragePath
+    val outBalancePath = viewModel.toCoin()?.flowBalancePath
+    val outReceiverPath = viewModel.toCoin()?.flowReceiverPath
 
     val estimateIn = data.tokenInAmount
     val amountInMax = estimateIn / (1.0f - slippageRate).toBigDecimal()
@@ -29,12 +31,12 @@ suspend fun swapSend(data: SwapEstimateResponse.Data): String? {
         swapPaths = tokenKeyFlatSplitPath,
         tokenInMax = amountInMax,
         tokenOutMin = amountOutMin,
-        tokenInVaultPath = storageIn?.vault?.split("/")?.last() ?: "",
+        tokenInVaultPath = storageIn?.split("/")?.last() ?: "",
         tokenOutSplit = amountOutSplit,
         tokenInSplit = amountInSplit,
-        tokenOutVaultPath = storageOut?.vault?.split("/")?.last() ?: "",
-        tokenOutReceiverPath = storageOut?.receiver?.split("/")?.last() ?: "",
-        tokenOutBalancePath = storageOut?.balance?.split("/")?.last() ?: "",
+        tokenOutVaultPath = storageOut?.split("/")?.last() ?: "",
+        tokenOutReceiverPath = outReceiverPath?.split("/")?.last() ?: "",
+        tokenOutBalancePath = outBalancePath?.split("/")?.last() ?: "",
         deadline = deadline,
     )
 }

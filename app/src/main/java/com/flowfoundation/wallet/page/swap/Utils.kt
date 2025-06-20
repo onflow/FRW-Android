@@ -9,7 +9,7 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivitySwapBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoin
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.network.model.SwapEstimateResponse
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -29,14 +29,14 @@ fun ActivitySwapBinding.bindInputListener() {
     bindToListener()
 }
 
-fun ActivitySwapBinding.updateFromCoin(coin: FlowCoin) {
-    Glide.with(fromCoinIcon).load(coin.icon()).into(fromCoinIcon)
+fun ActivitySwapBinding.updateFromCoin(coin: FungibleToken) {
+    Glide.with(fromCoinIcon).load(coin.tokenIcon()).into(fromCoinIcon)
     fromCoinName.text = coin.symbol.uppercase()
     legalCheck()
 }
 
-fun ActivitySwapBinding.updateToCoin(coin: FlowCoin) {
-    Glide.with(toCoinIcon).load(coin.icon()).into(toCoinIcon)
+fun ActivitySwapBinding.updateToCoin(coin: FungibleToken) {
+    Glide.with(toCoinIcon).load(coin.tokenIcon()).into(toCoinIcon)
     toCoinName.text = coin.symbol.uppercase()
     toButton.strokeWidth = 0
     legalCheck()
@@ -86,7 +86,8 @@ fun ActivitySwapBinding.updateEstimate(data: SwapEstimateResponse.Data) {
     val amountIn = data.routes.firstOrNull()?.routeAmountIn ?: return
     val amountOut = data.routes.firstOrNull()?.routeAmountOut ?: return
     convertView.setVisible(true)
-    convertView.text = "1 ${fromCoin.symbol.uppercase()} ≈ ${(amountOut / amountIn).format()} ${toCoin.symbol.uppercase()}"
+    convertView.text =
+        "1 ${fromCoin.symbol.uppercase()} ≈ ${(amountOut / amountIn).format()} ${toCoin.symbol.uppercase()}"
 }
 
 private fun ActivitySwapBinding.bindFromListener() {
@@ -134,7 +135,10 @@ fun ActivitySwapBinding.onCoinRateUpdate() {
 
 private fun ActivitySwapBinding.updateAmountPrice() {
     val amount = fromInput.text.toString().toSafeDecimal()
-    priceAmountView.text = (viewModel().fromCoinRate() * amount).formatPrice(includeSymbol = true, includeSymbolSpace = true)
+    priceAmountView.text = (viewModel().fromCoinRate() * amount).formatPrice(
+        includeSymbol = true,
+        includeSymbolSpace = true
+    )
 }
 
 private fun ActivitySwapBinding.legalCheck() {

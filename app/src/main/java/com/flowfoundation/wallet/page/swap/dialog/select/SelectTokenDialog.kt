@@ -10,16 +10,8 @@ import android.view.inputmethod.EditorInfo
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.page.token.detail.model.MoveToken
-import com.flowfoundation.wallet.page.token.detail.provider.EVMAccountTokenProvider
-import com.flowfoundation.wallet.page.token.detail.provider.FlowAccountTokenProvider
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -27,12 +19,12 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import java.math.BigDecimal
 
-class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
+class SelectTokenDialog : BottomSheetDialogFragment() {
 
     companion object {
         private const val TAG = "SelectTokenDialog"
@@ -41,13 +33,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
 
     private var selectedCoin: String? = null
     private var disableCoin: String? = null
-    private var result: Continuation<FlowCoin?>? = null
+    private var result: Continuation<FungibleToken?>? = null
     private var currentSearchKeyword: String = ""
     private var moveFromAddress: String? = null
-    private var availableTokens: List<MoveToken> = emptyList()
+    private var availableTokens: List<FungibleToken> = emptyList()
     private var lastClickTime: Long = 0
     private val CLICK_DEBOUNCE_TIME = 500L // 500ms debounce time
-    private var initialAvailableCoins: List<FlowCoin>? = null
+    private var initialAvailableCoins: List<FungibleToken>? = null
     private var pendingUpdate: Boolean = false
     private var lastUpdateTime: Long = 0
     private val UI_UPDATE_DEBOUNCE_TIME = 100L // 100ms debounce for UI updates
@@ -57,19 +49,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
     private val adapter by lazy {
         TokenListAdapter(selectedCoin, disableCoin) { token ->
             if (!isClickValid()) return@TokenListAdapter
-            result?.resume(token.tokenInfo)
+            result?.resume(token)
             dismiss()
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        CoinRateManager.addListener(this)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
-        CoinRateManager.removeListener(this)
         isShowing = false
     }
 
@@ -78,49 +64,7 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         isShowing = false
     }
 
-    private fun calculateDollarValue(token: MoveToken): BigDecimal? {
-        val rate = CoinRateManager.coinRate(token.tokenInfo.contractId())
-        return when {
-            // If we have a rate, use it
-            rate != null && rate > BigDecimal.ZERO -> {
-                token.tokenBalance * rate
-            }
-            // For USDC tokens, use 1:1 rate
-            token.tokenInfo.symbol.contains("USDC", ignoreCase = true) -> {
-                token.tokenBalance
-            }
-            // For WFLOW and stFlow, try to use FLOW rate
-            token.tokenInfo.symbol.equals("WFLOW", ignoreCase = true) || 
-            token.tokenInfo.symbol.equals("stFlow", ignoreCase = true) -> {
-                val flowRate = CoinRateManager.coinRate("A.1654653399040a61.FlowToken")
-                if (flowRate != null && flowRate > BigDecimal.ZERO) {
-                    token.tokenBalance * flowRate
-                } else null
-            }
-            // No rate available
-            else -> null
-        }
-    }
-
-    private fun updateTokensWithDollarValues(tokens: List<MoveToken>): List<MoveToken> {
-        return tokens.map { token ->
-            val dollarValue = calculateDollarValue(token)
-            token.copy(dollarValue = dollarValue)
-        }
-    }
-
-    override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
-        // When rates update, recalculate dollar values and refresh the adapter
-        uiScope {
-            val updatedTokens = updateTokensWithDollarValues(availableTokens)
-            if (updatedTokens != availableTokens) {
-                availableTokens = updatedTokens
-                scheduleUiUpdate(updatedTokens)
-            }
-        }
-    }
-
-    private fun scheduleUiUpdate(tokens: List<MoveToken>) {
+    private fun scheduleUiUpdate(tokens: List<FungibleToken>) {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastUpdateTime < UI_UPDATE_DEBOUNCE_TIME) {
             pendingUpdate = true
@@ -184,7 +128,7 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         // Show initial data from availableTokens
         val tokensToShow = initialAvailableCoins?.let { coins ->
             availableTokens.filter { token ->
-                coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
+                coins.any { coin -> coin.contractId() == token.contractId() }
             }
         } ?: availableTokens
         adapter.setNewDiffData(tokensToShow)
@@ -199,22 +143,13 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
             try {
                 // Only update prices for existing tokens
                 if (availableTokens.isNotEmpty()) {
-                    // Fetch rates for all tokens at once
-                    CoinRateManager.fetchCoinListRate(availableTokens.map { it.tokenInfo })
-                    
-                    // Calculate dollar values and update the list
-                    val tokensWithDollarValues = updateTokensWithDollarValues(availableTokens)
-
-                    // Update availableTokens with new values
-                    availableTokens = tokensWithDollarValues
-                    
                     uiScope {
                         // If we have initialAvailableCoins, filter the tokens before showing
                         val tokensToShow = initialAvailableCoins?.let { coins ->
-                            tokensWithDollarValues.filter { token ->
-                                coins.any { coin -> coin.contractId() == token.tokenInfo.contractId() }
+                            availableTokens.filter.filter { token ->
+                                coins.any { coin -> coin.contractId() == token.contractId() }
                             }
-                        } ?: tokensWithDollarValues
+                        } ?: availableTokens.filter
                         scheduleUiUpdate(tokensToShow)
                     }
                 }
@@ -230,8 +165,7 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
             availableTokens
         } else {
             availableTokens.filter { token ->
-                token.tokenInfo.name.lowercase().contains(keyword.lowercase()) || 
-                token.tokenInfo.symbol.lowercase().contains(keyword.lowercase())
+                token.name.lowercase().contains(keyword.lowercase()) || token.symbol.lowercase().contains(keyword.lowercase())
             }
         }
         scheduleUiUpdate(filteredTokens)
@@ -250,8 +184,8 @@ class SelectTokenDialog : BottomSheetDialogFragment(), OnCoinRateUpdate {
         disableCoin: String?,
         fragmentManager: FragmentManager,
         moveFromAddress: String?,
-        availableCoins: List<FlowCoin>? = null,
-        initialTokens: List<MoveToken>? = null
+        availableCoins: List<FungibleToken>? = null,
+        initialTokens: List<FungibleToken>? = null
     ) = suspendCoroutine { result ->
         // Check if dialog is already showing or if it's too soon after last show
         if (isShowing || fragmentManager.findFragmentByTag(TAG) != null) {
