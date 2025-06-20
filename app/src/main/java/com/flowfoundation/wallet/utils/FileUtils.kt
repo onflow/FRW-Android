@@ -19,7 +19,7 @@ val DATA_PATH: File = File(getApp().dataDir, "data").apply { if (!exists()) mkdi
 val ACCOUNT_PATH: File = File(getApp().filesDir, "account").apply { if (!exists()) mkdirs() }
 val USER_PREFIX_PATH: File = File(getApp().filesDir, "prefix").apply { if (!exists()) mkdirs() }
 val CUSTOM_TOKEN_PATH: File = File(getApp().filesDir, "token").apply { if (!exists()) mkdirs() }
-val DISPLAY_TOKEN_PATH: File = File(getApp().filesDir, "display_token").apply { if (!exists()) mkdirs() }
+val DISPLAY_TOKEN_PATH: File = File(getApp().filesDir, "display").apply { if (!exists()) mkdirs() }
 
 val CACHE_VIDEO_PATH: File = File(CACHE_PATH, "video").apply { if (!exists()) mkdirs() }
 

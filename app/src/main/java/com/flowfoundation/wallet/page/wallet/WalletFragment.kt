@@ -119,7 +119,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
             if (isBackupGoogleDrive() || isBackupManually() || isMultiBackupCreated()) {
                 isBackupShown = false
             } else {
-                val sumCoin = coinList.map { it.balance }.fold(BigDecimal.ZERO) { sum, balance -> sum + balance }
+                val sumCoin = coinList.map { it.token.tokenBalance() }.fold(BigDecimal.ZERO) { sum, balance -> sum + balance }
                 if (sumCoin > BigDecimal(0.001)) {
                     isBackupShown = true
                     if (isShowBackupDialog()) {
