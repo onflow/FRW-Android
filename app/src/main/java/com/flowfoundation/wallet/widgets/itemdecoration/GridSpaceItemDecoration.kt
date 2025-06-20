@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import java.util.*
-import kotlin.math.roundToInt
 
 class GridSpaceItemDecoration(
     @Dimension(unit = Dimension.DP) private val start: Double = 0.0,
@@ -50,29 +49,28 @@ class GridSpaceItemDecoration(
 
         val isRtl = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault()) == ViewCompat.LAYOUT_DIRECTION_RTL
 
-        // Simplified spacing calculation to prevent overlapping
-        val leftSpacing = if (spanIndex == 0) {
-            start.dp2px()
-        } else {
-            (horizontal / 2).dp2px()
+        // Simplified and more consistent spacing calculation
+        val leftSpacing = when {
+            spanSize == spanCount -> 0.0 // Full-width items (like headers)
+            spanIndex == 0 -> start.dp2px() // First column
+            else -> (horizontal / 2).dp2px() // Middle columns
         }
         
-        val rightSpacing = if (spanIndex + spanSize == spanCount) {
-            end.dp2px()
-        } else {
-            (horizontal / 2).dp2px()
+        val rightSpacing = when {
+            spanSize == spanCount -> 0.0 // Full-width items (like headers)
+            spanIndex + spanSize == spanCount -> end.dp2px() // Last column
+            else -> (horizontal / 2).dp2px() // Middle columns
         }
         
-        val topSpacing = if (spanGroupIndex == 0) {
-            top.dp2px()
-        } else {
-            (vertical / 2).dp2px()
+        val topSpacing = when {
+            spanGroupIndex == 0 -> top.dp2px() // First row
+            else -> vertical.dp2px() // Other rows
         }
         
         val bottomSpacing = if (isLastRow(position, itemCount, spanSizeLookup, spanCount)) {
             bottom.dp2px()
         } else {
-            (vertical / 2).dp2px()
+            0.0
         }
 
         val (left, right) = if (isRtl) {
@@ -102,6 +100,10 @@ class GridSpaceItemDecoration(
 
     override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         // Empty implementation - no drawing needed for spacing decoration
+    }
+
+    fun setDividerVisibleCheck(dividerVisibleCheck: DividerVisibleCheck) {
+        this.dividerVisibleCheck = dividerVisibleCheck
     }
 }
 

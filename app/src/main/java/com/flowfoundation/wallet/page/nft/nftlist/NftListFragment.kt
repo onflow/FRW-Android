@@ -43,6 +43,14 @@ internal class NftListFragment : Fragment() {
 
     private val dividerSize by lazy { R.dimen.nft_list_divider_size.res2dip().toDouble() }
 
+    // Responsive grid spacing dimensions
+    private val horizontalSpacing by lazy { R.dimen.nft_grid_horizontal_spacing.res2dip().toDouble() }
+    private val verticalSpacing by lazy { R.dimen.nft_grid_vertical_spacing.res2dip().toDouble() }
+    private val startSpacing by lazy { R.dimen.nft_grid_start_spacing.res2dip().toDouble() }
+    private val endSpacing by lazy { R.dimen.nft_grid_end_spacing.res2dip().toDouble() }
+    private val topSpacing by lazy { R.dimen.nft_grid_top_spacing.res2dip().toDouble() }
+    private val bottomSpacing by lazy { R.dimen.nft_grid_bottom_spacing.res2dip().toDouble() }
+
     private val selectionPresenter by lazy { SelectionItemPresenter(binding.topSelectionHeader) }
 
     private val collectionTabsPresenter by lazy { CollectionTabsPresenter(binding.collectionTabs) }
@@ -142,12 +150,12 @@ internal class NftListFragment : Fragment() {
             }
             addItemDecoration(
                 GridSpaceItemDecoration(
-                    top = dividerSize,
-                    bottom = dividerSize / 2,
-                    vertical = dividerSize,
-                    horizontal = dividerSize,
-                    start = dividerSize,
-                    end = dividerSize
+                    top = topSpacing,
+                    bottom = bottomSpacing,
+                    vertical = verticalSpacing,
+                    horizontal = horizontalSpacing,
+                    start = startSpacing,
+                    end = endSpacing
                 )
             )
         }
