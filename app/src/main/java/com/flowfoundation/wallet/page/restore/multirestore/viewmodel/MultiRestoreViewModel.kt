@@ -797,7 +797,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
                     if (matchedKey != null) {
                         logd("MultiRestore", "✓ KEY MATCH found with $signingAlgorithm! On-chain key index: ${matchedKey.index}")
-                        logd("MultiRestore", "  Generated: ${publicKey}")
+                        logd("MultiRestore", "  Generated: $publicKey")
                         logd("MultiRestore", "  On-chain:  ${matchedKey.publicKey}")
                         logd("MultiRestore", "  Key weight: ${matchedKey.weight} ${if (matchedKey.weight.toIntOrNull()?.let { it >= 1000 } == true) "(sufficient)" else "(insufficient - may need additional signatures)"}")
                         logd("MultiRestore", "  On-chain hashing algorithm: ${matchedKey.hashingAlgorithm}")

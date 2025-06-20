@@ -887,10 +887,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val storage = getStorage()
         
         // Create PrivateKey instance from wallet module
-        val key = com.flow.wallet.keys.PrivateKey.create(storage).apply {
+        val key = PrivateKey.create(storage).apply {
             val keyBytes = privateKey.hexToBytes()
             logd("KeyStoreRestoreViewModel", "Importing private key with ${keyBytes.size} bytes")
-            importPrivateKey(keyBytes, com.flow.wallet.keys.KeyFormat.RAW)
+            importPrivateKey(keyBytes, KeyFormat.RAW)
         }
 
         // Use the wallet module's domain tag and signing

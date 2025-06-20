@@ -7,7 +7,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
-import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivitySendAmountBinding
@@ -18,11 +17,10 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.SendAmountModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.presenter.SendAmountPresenter
 import com.flowfoundation.wallet.utils.isNightMode
-import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.models.TransactionStatus
 
 class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
@@ -40,7 +38,7 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        android.util.Log.d("SendAmountActivity", "onCreate: sourceTabIndex=$sourceTabIndex")
+        logd("SendAmountActivity", "onCreate: sourceTabIndex=$sourceTabIndex")
         binding = ActivitySendAmountBinding.inflate(layoutInflater)
         setContentView(binding.root)
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyStatusBar()
@@ -72,26 +70,26 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
 
     override fun onTransactionStateChange() {
         val transaction = TransactionStateManager.getLastVisibleTransaction() ?: return
-        android.util.Log.d("SendAmountActivity", "Transaction state change: type=${transaction.type}, state=${transaction.state}, isProcessing=${transaction.isProcessing()}, hasNavigatedBack=$hasNavigatedBack, sourceTabIndex=$sourceTabIndex")
+        logd("SendAmountActivity", "Transaction state change: type=${transaction.type}, state=${transaction.state}, isProcessing=${transaction.isProcessing()}, hasNavigatedBack=$hasNavigatedBack, sourceTabIndex=$sourceTabIndex")
         
         if (transaction.type == TransactionState.TYPE_TRANSFER_COIN) {
             // Check if transaction is either processing, finalized, executed, or sealed
             if (!hasNavigatedBack && (transaction.isProcessing() || transaction.isFinalized() || transaction.isExecuted() || transaction.isSealed())) {
                 hasNavigatedBack = true
-                android.util.Log.d("SendAmountActivity", "Navigating back due to transaction state: ${transaction.state}")
+                logd("SendAmountActivity", "Navigating back due to transaction state: ${transaction.state}")
                 
                 // Navigate back to the original tab if we have one
                 if (sourceTabIndex != -1) {
-                    val sourceTab = HomeTab.values().getOrNull(sourceTabIndex)
+                    val sourceTab = HomeTab.entries.getOrNull(sourceTabIndex)
                     if (sourceTab != null) {
-                        android.util.Log.d("SendAmountActivity", "Navigating to source tab: $sourceTab")
+                        logd("SendAmountActivity", "Navigating to source tab: $sourceTab")
                         navigateToTab(sourceTab)
                         return
                     }
                 }
                 
                 // Fallback to just finishing the activity safely
-                android.util.Log.d("SendAmountActivity", "No source tab, just finishing activity")
+                logd("SendAmountActivity", "No source tab, just finishing activity")
                 finish()
                 return
             }
@@ -103,16 +101,16 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
     private fun TransactionState.isSealed(): Boolean = state == TransactionStatus.SEALED.ordinal
 
     private fun navigateToTab(tab: HomeTab) {
-        android.util.Log.d("SendAmountActivity", "Attempting to navigate to tab: $tab")
+        logd("SendAmountActivity", "Attempting to navigate to tab: $tab")
         
         // Check if we're already finishing to avoid duplicate finish requests
         if (isFinishing || isDestroyed) {
-            android.util.Log.d("SendAmountActivity", "Activity already finishing, skipping navigation")
+            logd("SendAmountActivity", "Activity already finishing, skipping navigation")
             return
         }
         
         // Always launch MainActivity with the target tab and use safer flags
-        android.util.Log.d("SendAmountActivity", "Launching MainActivity with tab: $tab and clearing task stack")
+        logd("SendAmountActivity", "Launching MainActivity with tab: $tab and clearing task stack")
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("extra_target_tab", tab.index)
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -120,7 +118,7 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
         
         try {
             startActivity(intent)
-            android.util.Log.d("SendAmountActivity", "Successfully started MainActivity, now finishing")
+            logd("SendAmountActivity", "Successfully started MainActivity, now finishing")
             finish()
         } catch (e: Exception) {
             android.util.Log.e("SendAmountActivity", "Error launching MainActivity: ${e.message}")
@@ -130,34 +128,34 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
 
     fun onTransactionSubmitted() {
         // Called when a transaction is submitted to trigger delayed navigation
-        android.util.Log.d("SendAmountActivity", "Transaction submitted, setting up delayed navigation")
+        logd("SendAmountActivity", "Transaction submitted, setting up delayed navigation")
         setupNavigationOnTransactionSubmit()
     }
 
     private fun setupNavigationOnTransactionSubmit() {
         // Set up a delayed navigation that will trigger shortly after transaction submission
         // This ensures we navigate back even if the activity becomes inactive before transaction completion
-        android.util.Log.d("SendAmountActivity", "Setting up delayed navigation with sourceTabIndex: $sourceTabIndex")
+        logd("SendAmountActivity", "Setting up delayed navigation with sourceTabIndex: $sourceTabIndex")
         
         // Post with a short delay to allow transaction to be submitted
         Handler(Looper.getMainLooper()).postDelayed({
             if (!hasNavigatedBack && !isFinishing && !isDestroyed) {
-                android.util.Log.d("SendAmountActivity", "Executing delayed navigation")
+                logd("SendAmountActivity", "Executing delayed navigation")
                 hasNavigatedBack = true
                 
                 if (sourceTabIndex != -1) {
-                    val sourceTab = HomeTab.values().getOrNull(sourceTabIndex)
+                    val sourceTab = HomeTab.entries.getOrNull(sourceTabIndex)
                     if (sourceTab != null) {
-                        android.util.Log.d("SendAmountActivity", "Delayed navigation to source tab: $sourceTab")
+                        logd("SendAmountActivity", "Delayed navigation to source tab: $sourceTab")
                         navigateToTab(sourceTab)
                         return@postDelayed
                     }
                 }
                 
-                android.util.Log.d("SendAmountActivity", "Delayed navigation: finishing activity")
+                logd("SendAmountActivity", "Delayed navigation: finishing activity")
                 finish()
             } else {
-                android.util.Log.d("SendAmountActivity", "Skipping delayed navigation: hasNavigatedBack=$hasNavigatedBack, isFinishing=$isFinishing, isDestroyed=$isDestroyed")
+                logd("SendAmountActivity", "Skipping delayed navigation: hasNavigatedBack=$hasNavigatedBack, isFinishing=$isFinishing, isDestroyed=$isDestroyed")
             }
         }, 3000) // Increased to 3 seconds to reduce race condition chance
     }

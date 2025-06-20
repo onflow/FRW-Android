@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.network.model.BackupInfoRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.backup.model.BackupType
 import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseOption
-import com.flowfoundation.wallet.page.backup.multibackup.model.BackupRecoveryPhraseState
 import com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic.MnemonicModel
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.error.BackupError
@@ -32,16 +31,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
-import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.utils.Env
 import java.io.File
 import wallet.core.jni.HDWallet
-import com.flow.wallet.wallet.KeyWallet
-import com.flow.wallet.wallet.WalletFactory
-import com.flowfoundation.wallet.utils.Env.getStorage
-import org.onflow.flow.ChainId
-import com.flowfoundation.wallet.manager.account.AccountWalletManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
@@ -50,8 +43,6 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
     val mnemonicListLiveData = MutableLiveData<List<MnemonicModel>>()
 
     val optionChangeLiveData = MutableLiveData<BackupRecoveryPhraseOption>()
-
-    val stateLiveData = MutableLiveData<BackupRecoveryPhraseState>()
 
     private val backupCryptoProvider: BackupCryptoProvider = run {
         val baseDir = File(Env.getApp().filesDir, "wallet")
@@ -146,17 +137,17 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider.let {
                 try {
-                    android.util.Log.d("BackupRecoveryPhrase", "Starting syncKeyInfo for Manual backup")
+                    logd("BackupRecoveryPhrase", "Starting syncKeyInfo for Manual backup")
                     val deviceInfo = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
                     val publicKey = it.getPublicKey()
-                    android.util.Log.d("BackupRecoveryPhrase", "Public key for sync: $publicKey")
-                    android.util.Log.d("BackupRecoveryPhrase", "Public key length: ${publicKey.length}")
+                    logd("BackupRecoveryPhrase", "Public key for sync: $publicKey")
+                    logd("BackupRecoveryPhrase", "Public key length: ${publicKey.length}")
                     
                     // Ensure the public key is in the correct format for the API (64 bytes, no 04 prefix)
                     val normalizedPublicKey = publicKey.removePrefix("0x").removePrefix("04")
-                    android.util.Log.d("BackupRecoveryPhrase", "Normalized public key for sync: $normalizedPublicKey")
-                    android.util.Log.d("BackupRecoveryPhrase", "Normalized public key length: ${normalizedPublicKey.length}")
+                    logd("BackupRecoveryPhrase", "Normalized public key for sync: $normalizedPublicKey")
+                    logd("BackupRecoveryPhrase", "Normalized public key length: ${normalizedPublicKey.length}")
                     
                     val resp = service.syncAccount(
                         AccountSyncRequest(
@@ -173,8 +164,8 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                     )
-                    android.util.Log.d("BackupRecoveryPhrase", "Sync response status: ${resp.status}")
-                    android.util.Log.d("BackupRecoveryPhrase", "Sync response: $resp")
+                    logd("BackupRecoveryPhrase", "Sync response status: ${resp.status}")
+                    logd("BackupRecoveryPhrase", "Sync response: $resp")
                     MixpanelManager.multiBackupCreated(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(resp.status == 200)
                 } catch (e: Exception) {
@@ -203,64 +194,4 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
         }
     }
 
-    fun createBackup(mnemonic: String) {
-        val words = mnemonic.split(" ")
-        val baseDir = File(Env.getApp().filesDir, "wallet")
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = mnemonic,
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = FileSystemStorage(baseDir)
-        )
-        if (words.size == 15) {
-            BackupCryptoProvider(seedPhraseKey)
-        } else {
-            HDWalletCryptoProvider(seedPhraseKey)
-        }
-        stateLiveData.postValue(BackupRecoveryPhraseState.BACKUP_SUCCESS)
-    }
-
-    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
-        // Create a proper KeyWallet
-        val wallet = WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            getStorage()
-        )
-        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
-    }
-
-    fun getBackupCryptoProvider(): BackupCryptoProvider {
-        val currentWallet = WalletManager.wallet() ?: throw IllegalStateException("No wallet available")
-
-        // Get the first account's address to identify the wallet
-        val walletAddress = currentWallet.accounts.values.flatten().firstOrNull()?.address
-            ?: throw IllegalStateException("No accounts available in wallet")
-            
-        // Get the crypto provider from AccountWalletManager
-        val cryptoProvider = AccountWalletManager.getHDWalletByUID(walletAddress)
-            ?: throw IllegalStateException("Failed to get crypto provider for wallet")
-            
-        // Create a new SeedPhraseKey with the mnemonic from the crypto provider
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = (cryptoProvider as BackupCryptoProvider).getMnemonic(),
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = getStorage()
-        )
-        return createBackupCryptoProvider(seedPhraseKey)
-    }
-
-    fun getBackupCryptoProvider(mnemonic: String): BackupCryptoProvider {
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = mnemonic,
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = getStorage()
-        )
-        return createBackupCryptoProvider(seedPhraseKey)
-    }
 }

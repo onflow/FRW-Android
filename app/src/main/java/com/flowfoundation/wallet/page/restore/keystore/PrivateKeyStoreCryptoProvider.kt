@@ -8,7 +8,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
-import org.onflow.flow.models.Signer
 import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.hexToBytes

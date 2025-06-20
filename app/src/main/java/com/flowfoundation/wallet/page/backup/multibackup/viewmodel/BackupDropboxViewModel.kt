@@ -39,6 +39,7 @@ import wallet.core.jni.HDWallet
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
@@ -167,17 +168,17 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider?.let {
                 try {
-                    android.util.Log.d("BackupDropbox", "Starting registrationKeyList for Dropbox backup")
+                    logd("BackupDropbox", "Starting registrationKeyList for Dropbox backup")
                     val deviceInfo = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
                     val publicKey = it.getPublicKey()
-                    android.util.Log.d("BackupDropbox", "Public key for sync: $publicKey")
-                    android.util.Log.d("BackupDropbox", "Public key length: ${publicKey.length}")
+                    logd("BackupDropbox", "Public key for sync: $publicKey")
+                    logd("BackupDropbox", "Public key length: ${publicKey.length}")
                     
                     // Ensure the public key is in the correct format for the API (64 bytes, no 04 prefix)
                     val normalizedPublicKey = publicKey.removePrefix("0x").removePrefix("04")
-                    android.util.Log.d("BackupDropbox", "Normalized public key for sync: $normalizedPublicKey")
-                    android.util.Log.d("BackupDropbox", "Normalized public key length: ${normalizedPublicKey.length}")
+                    logd("BackupDropbox", "Normalized public key for sync: $normalizedPublicKey")
+                    logd("BackupDropbox", "Normalized public key length: ${normalizedPublicKey.length}")
                     
                     val resp = service.syncAccount(
                         AccountSyncRequest(
@@ -194,8 +195,8 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                     )
-                    android.util.Log.d("BackupDropbox", "Sync response status: ${resp.status}")
-                    android.util.Log.d("BackupDropbox", "Sync response: $resp")
+                    logd("BackupDropbox", "Sync response status: ${resp.status}")
+                    logd("BackupDropbox", "Sync response: $resp")
                     if (resp.status == 200) {
                         MixpanelManager.multiBackupCreated(MixpanelBackupProvider.DROPBOX)
                         backupStateLiveData.postValue(BackupDropboxState.BACKUP_SUCCESS)
