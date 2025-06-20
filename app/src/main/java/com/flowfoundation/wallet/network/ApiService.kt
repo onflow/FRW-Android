@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.network.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -217,4 +218,18 @@ interface ApiService {
 
     @POST("/api/evm/decodeData")
     suspend fun getEVMTransactionDecodeData(@Body params: TransactionDecodeParams): TransactionDecodeDataResponse
+
+    @GET("/api/v4/evm/tokens/ft/{address}")
+    suspend fun getEVMTokenList(
+        @Path("address") address: String,
+        @Query("currency") currency: String?,
+        @Query("network") network: String?
+    ): EVMTokenListResponse
+
+    @GET("/api/v4/cadence/tokens/ft/{address}")
+    suspend fun getFlowTokenList(
+        @Path("address") address: String,
+        @Query("currency") currency: String?,
+        @Query("network") network: String?
+    ): FlowTokenListResponse
 }

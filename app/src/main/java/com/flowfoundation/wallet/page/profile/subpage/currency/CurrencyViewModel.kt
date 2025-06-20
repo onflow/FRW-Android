@@ -18,7 +18,7 @@ class CurrencyViewModel : ViewModel() {
     fun load() {
         ioScope {
             flag = flag.ifEmpty { getCurrencyFlag() }
-            dataLiveData.postValue(Currency.values().map { CurrencyItemModel(it, isSelected = it.flag == flag) })
+            dataLiveData.postValue(Currency.entries.map { CurrencyItemModel(it, isSelected = it.flag == flag) })
         }
     }
 

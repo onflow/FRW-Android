@@ -11,7 +11,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.LayoutMainDrawerLayoutBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -20,7 +19,6 @@ import com.flowfoundation.wallet.manager.app.networkId
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMAccount
@@ -29,6 +27,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceGetAllFlowBalance
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
@@ -654,9 +653,9 @@ private fun ViewGroup.setupWallet(
         FlowLoadingDialog(context).show()
         WalletManager.selectWalletAddress(data.address)
         
-        // Refresh balances immediately after selecting wallet address
-        logd("Utils", "Triggering BalanceManager.refresh() after main wallet address selection")
-        BalanceManager.refresh()
+        // Refresh tokens immediately after selecting wallet address
+        logd("Utils", "Triggering FungibleTokenListManager.reload() after main wallet address selection")
+        FungibleTokenListManager.reload()
         
         ioScope {
             delay(200)
@@ -664,11 +663,9 @@ private fun ViewGroup.setupWallet(
             clearCacheDir()
             clearWebViewCache()
             setMeowDomainClaimed(false)
-            TokenStateManager.clear()
+            FungibleTokenListManager.clear()
             NftCollectionStateManager.clear()
             TransactionStateManager.reload()
-            FlowCoinListManager.reload()
-            BalanceManager.clear()
             StakingManager.clear()
             CryptoProviderManager.clear()
             delay(1000)
@@ -834,9 +831,9 @@ private fun View.setupWalletItem(
         
         val newNetwork = WalletManager.selectWalletAddress(data.address.toAddress())
         
-        // Refresh balances immediately after selecting wallet address
-        logd("Utils", "Triggering BalanceManager.refresh() after wallet address selection")
-        BalanceManager.refresh()
+        // Refresh tokens immediately after selecting wallet address
+        logd("Utils", "Triggering FungibleTokenListManager.reload() after wallet address selection")
+        FungibleTokenListManager.reload()
 
         if (newNetwork != chainNetWorkString()) {
             // network change
@@ -861,11 +858,9 @@ private fun View.setupWalletItem(
                 clearCacheDir()
                 clearWebViewCache()
                 setMeowDomainClaimed(false)
-                TokenStateManager.clear()
+                FungibleTokenListManager.clear()
                 NftCollectionStateManager.clear()
                 TransactionStateManager.reload()
-                FlowCoinListManager.reload()
-                BalanceManager.clear()
                 StakingManager.clear()
                 CryptoProviderManager.clear()
                 delay(1000)

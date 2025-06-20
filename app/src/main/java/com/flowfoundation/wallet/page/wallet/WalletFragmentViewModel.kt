@@ -5,10 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.Balance
-import com.flowfoundation.wallet.manager.account.BalanceManager
 import com.flowfoundation.wallet.manager.account.OnAccountUpdate
-import com.flowfoundation.wallet.manager.account.OnBalanceUpdate
 import com.flowfoundation.wallet.manager.account.OnUserInfoReload
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
@@ -18,12 +15,14 @@ import com.flowfoundation.wallet.manager.coin.CoinRateManager
 import com.flowfoundation.wallet.manager.coin.FlowCoin
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.coin.OnCoinRateUpdate
-import com.flowfoundation.wallet.manager.coin.TokenStateChangeListener
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.price.CurrencyUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingInfoUpdateListener
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListUpdateListener
+import com.flowfoundation.wallet.manager.token.FungibleTokenUpdateListener
+import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.BlockchainData
@@ -42,8 +41,8 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
-class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate, OnBalanceUpdate, OnCoinRateUpdate,
-    TokenStateChangeListener, CurrencyUpdateListener, StakingInfoUpdateListener,
+class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate, OnCoinRateUpdate,
+    FungibleTokenListUpdateListener, FungibleTokenUpdateListener, CurrencyUpdateListener, StakingInfoUpdateListener,
     OnUserInfoReload {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
@@ -54,9 +53,9 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
     init {
         AccountManager.addListener(this)
         WalletFetcher.addListener(this)
-        TokenStateManager.addListener(this)
+        FungibleTokenListManager.addTokenListUpdateListener(this)
+        FungibleTokenListManager.addTokenUpdateListener(this)
         CoinRateManager.addListener(this)
-        BalanceManager.addListener(this)
         CurrencyManager.addCurrencyUpdateListener(this)
         StakingManager.addStakingInfoUpdateListener(this)
     }
@@ -80,14 +79,22 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
         loadCoinInfo(false)
     }
 
-    override fun onBalanceUpdate(coin: FlowCoin, balance: Balance) {
-        logd(TAG, "onBalanceUpdate:$balance")
-        updateCoinBalance(balance)
+    override fun onTokenUpdated(token: FungibleToken) {
+        logd(TAG, "onTokenUpdated:$token")
+        updateTokenBalance(token)
     }
 
-    override fun onTokenStateChange() {
-        logd(TAG, "onTokenStateChange()")
-        loadCoinList()
+    override fun onTokenListUpdated(list: List<FungibleToken>) {
+        logd(TAG, "onTokenListUpdated(): ${list.size}")
+        loadTokenList(list)
+    }
+
+    override fun onTokenDisplayUpdated(token: FungibleToken, isAdd: Boolean) {
+        if (isAdd) {
+            addTokenToList(token)
+        } else {
+            removeTokenFromList(token)
+        }
     }
 
     override fun onCoinRateUpdate(coin: FlowCoin, price: BigDecimal, quoteChange: Float) {
@@ -161,7 +168,7 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
                     while (retryCount < 10) { // Max 10 retries (5 seconds)
                         val walletAddress = WalletManager.selectedWalletAddress()
                         if (walletAddress.isNotBlank() && walletAddress.length > 10) {
-                            TokenStateManager.fetchState()
+                            FungibleTokenListManager.reload()
                             break
                         } else {
                             kotlinx.coroutines.delay(500)
@@ -178,18 +185,23 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
         }
     }
 
-    private fun loadCoinList() {
+    private fun loadTokenList(tokens: List<FungibleToken>) {
         viewModelIOScope(this) {
-            val coinList =
-                FlowCoinListManager.coinList().filter { TokenStateManager.isTokenAdded(it) }
-            logd(TAG, "coinList :: ${coinList.size}")
-            if (coinList.isEmpty()) {
+            logd(TAG, "tokenList :: ${tokens.size}")
+            if (tokens.isEmpty()) {
                 return@viewModelIOScope
             }
 
             val isHideBalance = isHideWalletBalance()
             val currency = getCurrencyFlag()
             uiScope {
+                // Convert FungibleTokens to FlowCoins for backwards compatibility with existing UI
+                val coinList = tokens.mapNotNull { token ->
+                    FlowCoinListManager.coinList().firstOrNull { coin ->
+                        coin.contractId() == token.contractId()
+                    }
+                }
+
                 val coinToAdd =
                     coinList.filter { coin -> dataList.none { it.coin.isSameCoin(coin.contractId()) } }
                 val coinToRemove =
@@ -212,7 +224,6 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
                 }
             }
 
-            BalanceManager.refresh()
             CoinRateManager.refresh()
             if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
                 StakingManager.refresh()
@@ -220,21 +231,46 @@ class WalletFragmentViewModel : ViewModel(), OnAccountUpdate, OnWalletDataUpdate
         }
     }
 
-    private fun updateCoinBalance(balance: Balance) {
+    private fun updateTokenBalance(token: FungibleToken) {
         val oldItem = dataList.firstOrNull {
-            val isMatch = balance.isSameCoin(it.coin)
-            isMatch
+            it.coin.contractId() == token.contractId()
         }
         
         if (oldItem == null) {
             return
         }
         
-        val item = oldItem.copy(balance = balance.balance)
+        val item = oldItem.copy(balance = token.tokenBalance())
         dataList[dataList.indexOf(oldItem)] = item
         sortDataList()
         dataListLiveData.value = dataList
         updateWalletHeader()
+    }
+
+    private fun addTokenToList(token: FungibleToken) {
+        val coin = FlowCoinListManager.coinList().firstOrNull { it.contractId() == token.contractId() } ?: return
+        val isHideBalance = isHideWalletBalance()
+        val currency = getCurrencyFlag()
+        
+        val newItem = WalletCoinItemModel(
+            coin, coin.address, token.tokenBalance(),
+            BigDecimal.ZERO, isHideBalance = isHideBalance, currency = currency,
+            isStaked = StakingManager.isStaked(),
+            stakeAmount = StakingManager.stakingCount(),
+        )
+        
+        dataList.add(newItem)
+        sortDataList()
+        dataListLiveData.value = dataList
+        updateWalletHeader(count = dataList.size)
+    }
+
+    private fun removeTokenFromList(token: FungibleToken) {
+        val removed = dataList.removeAll { it.coin.contractId() == token.contractId() }
+        if (removed) {
+            dataListLiveData.value = dataList
+            updateWalletHeader(count = dataList.size)
+        }
     }
 
     private fun updateCoinRate(

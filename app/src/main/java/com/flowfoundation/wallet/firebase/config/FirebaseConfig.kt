@@ -40,6 +40,5 @@ fun fetchLatestFirebaseConfig() {
 }
 
 private fun onConfigLoadFinish() {
-    FlowCoinListManager.reload()
     AppConfig.sync()
 }

@@ -10,7 +10,7 @@ import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityTransactionSendBinding
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.page.address.AddressBookFragment
 import com.flowfoundation.wallet.page.address.AddressBookViewModel
 import com.flowfoundation.wallet.page.main.HomeTab
@@ -81,7 +81,7 @@ class TransactionSendActivity : BaseActivity() {
         private const val EXTRA_COIN_CONTRACT_ID = "extra_coin_contract_id"
         private const val EXTRA_SOURCE_TAB = "extra_source_tab"
         
-        fun launch(context: Context, coinContractId: String = FlowCoinListManager.getFlowCoinContractId(), sourceTab: HomeTab? = null) {
+        fun launch(context: Context, coinContractId: String = FungibleTokenListManager.getFlowTokenContractId(), sourceTab: HomeTab? = null) {
             context.startActivity(Intent(context, TransactionSendActivity::class.java).apply {
                 putExtra(EXTRA_COIN_CONTRACT_ID, coinContractId)
                 sourceTab?.let { putExtra(EXTRA_SOURCE_TAB, it.index) }

@@ -7,6 +7,7 @@ import android.webkit.URLUtil
 import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
@@ -58,7 +59,7 @@ fun dispatchScanResult(context: Context, result: String, sourceTab: HomeTab? = n
                 SendAmountActivity.launch(
                     context,
                     AddressBookContact(address = addressText.toAddress()),
-                    FlowCoinListManager.getFlowCoinContractId(),
+                    FungibleTokenListManager.getFlowTokenContractId(),
                     sourceTab = sourceTab
                 )
             }
@@ -70,7 +71,7 @@ fun dispatchScanResult(context: Context, result: String, sourceTab: HomeTab? = n
                 SendAmountActivity.launch(
                     context,
                     AddressBookContact(address = text.toAddress()),
-                    FlowCoinListManager.getFlowCoinContractId(),
+                    FungibleTokenListManager.getFlowTokenContractId(),
                     sourceTab = sourceTab
                 )
             }
