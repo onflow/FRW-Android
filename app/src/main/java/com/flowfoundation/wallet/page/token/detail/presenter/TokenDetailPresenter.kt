@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.detail.presenter
 
 import android.annotation.SuppressLint
+import android.graphics.Paint
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
@@ -14,10 +15,10 @@ import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.isLilico
 import com.flowfoundation.wallet.manager.staking.stakingCount
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
-import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
@@ -57,8 +58,10 @@ class TokenDetailPresenter(
             Glide.with(iconView).load(token.tokenIcon()).into(iconView)
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener {
-                TransactionSendActivity.launch(activity, coinContractId = token.contractId(), sourceTab = HomeTab.WALLET)
+                TransactionSendActivity.launch(activity, coinContractId = token.contractId())
             }
+            ivVerified.setVisible(token.isVerified)
+            clVerifiedTip.setVisible(token.isVerified.not())
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
@@ -123,6 +126,22 @@ class TokenDetailPresenter(
         }
         bindAccessible(token)
         bindStorageInfo(token)
+        bindVerifiedInfo(token)
+    }
+
+    private fun bindVerifiedInfo(token: FungibleToken) {
+        binding.securityWrapper.visible()
+        binding.tvVerifiedInfo.text = if (token.isVerified) R.string.yes.res2String() else R.string.no.res2String()
+        binding.tvContractAddress.text = token.tokenAddress()
+        binding.tvContractAddress.paintFlags = binding.tvContractAddress.paintFlags or Paint.UNDERLINE_TEXT_FLAG
+        binding.tvContractAddress.setOnClickListener {
+            val url = if (token.tokenType == FungibleTokenType.FLOW || token.isFlowToken()) {
+                "https://www.flowscan.io/ft/token/${token.tokenIdentifier()}"
+            } else {
+                "https://evm.flowscan.io/token/${token.tokenAddress()}"
+            }
+            openBrowser(activity, url)
+        }
     }
 
     @SuppressLint("SetTextI18n")

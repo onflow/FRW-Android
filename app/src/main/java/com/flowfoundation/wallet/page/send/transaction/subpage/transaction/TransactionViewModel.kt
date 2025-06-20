@@ -78,7 +78,7 @@ class TransactionViewModel : ViewModel(), FungibleTokenUpdateListener {
         viewModelIOScope(this) {
             val toAddress = transaction.target.address.orEmpty().toAddress()
             val fromAddress = transaction.fromAddress
-            MixpanelManager.transferFT(fromAddress, toAddress, token.symbol.orEmpty(), transaction.amount.toPlainString(), token.tokenIdentifier())Add commentMore actions
+            MixpanelManager.transferFT(fromAddress, toAddress, token.symbol.orEmpty(), transaction.amount.toPlainString(), token.tokenIdentifier())
                     if (token.isFlowToken()) {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {

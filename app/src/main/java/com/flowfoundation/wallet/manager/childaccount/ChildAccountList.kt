@@ -1,17 +1,17 @@
 package com.flowfoundation.wallet.manager.childaccount
 
 import android.os.Parcelable
-import com.flowfoundation.wallet.R
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.cache.cacheFile
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.utils.extensions.res2String
+import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
+import com.flowfoundation.wallet.manager.flowjvm.executeCadence
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import kotlinx.parcelize.Parcelize
+import org.onflow.flow.infrastructure.Cadence
 import java.lang.ref.WeakReference
-import com.google.gson.reflect.TypeToken
+
 
 private val TAG = ChildAccountList::class.java.simpleName
 
@@ -19,20 +19,9 @@ class ChildAccountList(
     val address: String,
 ) {
     private val accountList = mutableListOf<ChildAccount>()
-    private var isRefreshing = false
-    private val refreshLock = Any()
 
     init {
-        logd(TAG, "Initializing ChildAccountList for address: $address")
-        ioScope { 
-            try {
-                val cachedAccounts = cache().read().orEmpty()
-                logd(TAG, "Loaded ${cachedAccounts.size} accounts from cache")
-                accountList.addAll(cachedAccounts)
-            } catch (e: Exception) {
-                logd(TAG, "Error loading cached accounts: ${e.message}")
-            }
-        }
+        ioScope { accountList.addAll(cache().read()?.accountList.orEmpty()) }
         refresh()
     }
 
@@ -45,107 +34,37 @@ class ChildAccountList(
         } else {
             localAccount.pinTime = System.currentTimeMillis()
         }
-        cache().cache(ArrayList(accountList))
+        cache().cache(ChildAccountCache(accountList.toList()))
     }
 
     fun refresh() {
-        synchronized(refreshLock) {
-            if (isRefreshing) {
-                logd(TAG, "Refresh already in progress for address: $address")
-                return
-            }
-            isRefreshing = true
-        }
-
         ioScope {
-            try {
-                var retryCount = 0
-                var accounts: List<ChildAccount>? = null
-                
-                // FIXED: Add retry mechanism for querying account metadata
-                while (accounts == null && retryCount < 3) {
-                    try {
-                        accounts = queryAccountMeta(address)
-                        if (accounts == null) {
-                            logd(TAG, "No accounts returned from query, retry attempt ${retryCount + 1}")
-                            kotlinx.coroutines.delay(500) // Wait before retry
-                            retryCount++
-                        } else {
-                            logd(TAG, "Successfully fetched ${accounts.size} child accounts")
-                            break
-                        }
-                    } catch (e: Exception) {
-                        logd(TAG, "Error during queryAccountMeta retry ${retryCount + 1}: ${e.message}")
-                        kotlinx.coroutines.delay(500)
-                        retryCount++
-                    }
-                }
-                
-                if (accounts == null) {
-                    logd(TAG, "Failed to fetch child accounts after $retryCount retries")
-                    return@ioScope
-                }
+            val accounts = queryAccountMeta(address) ?: return@ioScope
+            val oldAccounts = accountList.toList()
+            accounts.forEach { account -> account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0) }
+            accountList.clear()
+            accountList.addAll(accounts)
+            cache().cache(ChildAccountCache(accountList.toList()))
+            dispatchAccountUpdateListener(address, accountList.toList())
 
-                val oldAccounts = accountList.toList()
-                accounts.forEach { account -> 
-                    account.pinTime = (oldAccounts.firstOrNull { it.address == account.address }?.pinTime ?: 0)
-                }
-                
-                if (accounts.isNotEmpty()) {
-                    accountList.clear()
-                    accountList.addAll(accounts)
-
-                    try {
-                        cache().cache(ArrayList(accountList))
-                        logd(TAG, "Successfully cached ${accounts.size} child accounts")
-                    } catch (e: Exception) {
-                        logd(TAG, "Error caching accounts: ${e.message}")
-                    }
-                } else {
-                    logd(TAG, "No accounts to update, keeping existing list")
-                }
-                
-                dispatchAccountUpdateListener(address, accountList.toList())
-                logd(TAG, "Child account refresh completed successfully")
-            } catch (e: Exception) {
-                logd(TAG, "Error during refresh: ${e.message}")
-            } finally {
-                synchronized(refreshLock) {
-                    isRefreshing = false
-                }
-            }
+            logd(TAG, "refresh: $address, ${accountList.size}")
         }
     }
+
+//    private fun queryAccountList(): List<String> {
+//        val result = CADENCE_QUERY_CHILD_ACCOUNT_LIST.executeCadence { arg { address(address) } }
+//        return result.parseAddressList()
+//    }
 
     private suspend fun queryAccountMeta(address: String): List<ChildAccount>? {
-        try {
-            val wallet = WalletManager.wallet()
-            val account = wallet?.accounts?.values?.flatten()?.firstOrNull { it.address == address }
-            if (account == null) {
-                logd(TAG, "No account found for address: $address")
-                return null
-            }
-
-            val childAccounts = account.fetchChild()
-
-            return childAccounts.map { childAccount ->
-                ChildAccount(
-                    address = childAccount.address.base16Value,
-                    name = childAccount.name ?: R.string.default_child_account_name.res2String(),
-                    icon = childAccount.icon.orEmpty().ifBlank { "https://lilico.app/placeholder-2.0.png" },
-                    description = childAccount.description
-                )
-            }
-        } catch (e: Exception) {
-            logd(TAG, "Error fetching child accounts: ${e.message}")
-            return null
-        }
+        val result = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_META.executeCadence { arg { Cadence.address(address) } }
+        return result?.encode()?.parseAccountMetas()
     }
 
-    private fun cache(): CacheManager<List<ChildAccount>> {
+    private fun cache(): CacheManager<ChildAccountCache> {
         return CacheManager(
-            "${address}.child_account_list".cacheFile(),
-            object : TypeToken<List<ChildAccount>>() {}.type
+            "${address}.child_accounts".cacheFile(),
+            ChildAccountCache::class.java,
         )
     }
 
@@ -167,6 +86,7 @@ interface ChildAccountUpdateListenerCallback {
     fun onChildAccountUpdate(parentAddress: String, accounts: List<ChildAccount>)
 }
 
+
 @Parcelize
 data class ChildAccount(
     @SerializedName("address")
@@ -180,3 +100,8 @@ data class ChildAccount(
     @SerializedName("description")
     val description: String? = null,
 ) : Parcelable
+
+data class ChildAccountCache(
+    @SerializedName("accountList")
+    val accountList: List<ChildAccount> = emptyList(),
+)

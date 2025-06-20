@@ -72,7 +72,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractId, contractName)
+        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(
+            uniqueId,
+            contractId,
+            contractName
+        )
         with(binding) {
             btnMove.isEnabled = nft != null
             btnMove.setOnClickListener {
@@ -93,10 +97,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             child.address.takeIf { address -> address != fromAddress }
                         }?.toMutableList() ?: mutableListOf()
                     addressList.add(parentAddress)
-                    if (it.canBridgeToEVM()) {
-                        EVMWalletManager.getEVMAddress()?.let { evmAddress ->
-                            addressList.add(evmAddress)
-                        }
+                    EVMWalletManager.getEVMAddress()?.let { evmAddress ->
+                        addressList.add(evmAddress)
                     }
                     configureToLayoutAction(addressList)
                 }
@@ -119,17 +121,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             child.address
                         }?.toMutableList() ?: mutableListOf()
 
-                    if (it.canBridgeToEVM()) {
-                        val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
-                        addressList.add(0, evmAddress)
-                        needMoveFee = true
-                        layoutToAccount.setAccountInfo(evmAddress)
-                    } else if (addressList.isNotEmpty()) {
-                        WalletManager.childAccount(addressList[0])?.let { child ->
-                            needMoveFee = false
-                            layoutToAccount.setAccountInfo(child.address)
-                        }
-                    }
+                    val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
+                    addressList.add(0, evmAddress)
+                    needMoveFee = true
+                    layoutToAccount.setAccountInfo(evmAddress)
                     configureToLayoutAction(addressList)
                 }
             }
@@ -222,7 +217,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 }
                             }
                         }
-                    } else if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                    } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         EVMWalletManager.moveChildNFT(it, fromAddress, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -270,7 +265,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         }
                     }
                 } else {
-                    if (it.canBridgeToEVM() && EVMWalletManager.isEVMWalletAddress(toAddress)) {
+                    if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
                         EVMWalletManager.moveNFT(it, true) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -323,7 +318,14 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(childAddress, toAddress, nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.CHILD)
+            trackMoveNFT(
+                childAddress,
+                toAddress,
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.CHILD
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -345,7 +347,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
             if (identifier.isEmpty()) {
-                ErrorReporter.reportWithMixpanel(MoveError.INVALIDATE_IDENTIFIER, getCurrentCodeLocation())
+                ErrorReporter.reportWithMixpanel(
+                    MoveError.INVALIDATE_IDENTIFIER,
+                    getCurrentCodeLocation()
+                )
                 callback.invoke(false)
                 return
             }
@@ -354,7 +359,14 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(childAddress, WalletManager.wallet()?.walletAddress().orEmpty(), nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.FLOW)
+            trackMoveNFT(
+                childAddress,
+                WalletManager.wallet()?.walletAddress().orEmpty(),
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.FLOW
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -380,8 +392,15 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(WalletManager.wallet()?.walletAddress().orEmpty(), toAddress, nft
-                .getNFTIdentifier(), txId.orEmpty(), TransferAccountType.FLOW, TransferAccountType.CHILD)
+            trackMoveNFT(
+                WalletManager.wallet()?.walletAddress().orEmpty(),
+                toAddress,
+                nft
+                    .getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.FLOW,
+                TransferAccountType.CHILD
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())

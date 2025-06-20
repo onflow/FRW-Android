@@ -10,6 +10,7 @@ import android.view.inputmethod.EditorInfo
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.databinding.DialogSelectTokenBinding
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -19,7 +20,6 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecoration
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -70,7 +70,7 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             pendingUpdate = true
             return
         }
-        
+
         lastUpdateTime = currentTime
         pendingUpdate = false
         adapter.setNewDiffData(tokens)
@@ -146,10 +146,10 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
                     uiScope {
                         // If we have initialAvailableCoins, filter the tokens before showing
                         val tokensToShow = initialAvailableCoins?.let { coins ->
-                            availableTokens.filter.filter { token ->
+                            availableTokens.filter { token ->
                                 coins.any { coin -> coin.contractId() == token.contractId() }
                             }
-                        } ?: availableTokens.filter
+                        } ?: availableTokens
                         scheduleUiUpdate(tokensToShow)
                     }
                 }
@@ -192,7 +192,7 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             result.resume(null)
             return@suspendCoroutine
         }
-        
+
         isShowing = true
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin
