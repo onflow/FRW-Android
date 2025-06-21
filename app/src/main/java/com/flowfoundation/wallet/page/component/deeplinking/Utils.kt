@@ -11,10 +11,8 @@ import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
-import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
-import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
@@ -28,8 +26,6 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.math.BigDecimal
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 
 private const val TAG = "DeepLinkingDispatch"
 
@@ -103,7 +99,6 @@ suspend fun executePendingDeepLink(uri: Uri) {
     } else {
         toast(R.string.deeplink_login_failed)
     }
-
 }
 
 // https://lilico.app/?uri=wc%3A83ba9cb3adf9da4b573ae0c499d49be91995aa3e38b5d9a41649adfaf986040c%402%3Frelay-protocol%3Diridium%26symKey%3D618e22482db56c3dda38b52f7bfca9515cc307f413694c1d6d91931bbe00ae90
@@ -111,101 +106,84 @@ suspend fun executePendingDeepLink(uri: Uri) {
 private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
     return runCatching {
         val data = UriHandler.extractWalletConnectUri(uri)
-        logd(TAG, "dispatchWalletConnect: Processing URI: $uri")
-        logd(TAG, "Extracted WalletConnect URI: $data")
 
-        if (data.isNullOrBlank() || !data.startsWith("wc:")) {
+        if (data.isNullOrBlank() || !data.startsWith(DeepLinkScheme.WC.scheme + ":")) {
             loge(TAG, "Invalid WalletConnect URI format: $data")
+            uiScope {
+                toast(R.string.wallet_connect_pairing_error)
+            }
             return@runCatching false
         }
 
-        logd(TAG, "Starting WalletConnect initialization check")
+        // Initialize WalletConnect if needed
         if (!WalletConnect.isInitialized()) {
-            logd(TAG, "WalletConnect is not initialized, initializing...")
-            var result = false
-            ioScope {
-                val initResult = withTimeoutOrNull(3000) {
-                    var waitTime = 50L
-                    var attempts = 0
-                    val maxAttempts = 15
+            logd(TAG, "WalletConnect is not initialized, waiting for initialization...")
 
-                    while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
-                        logd(TAG, "Waiting for WalletConnect initialization (attempt $attempts)")
-                        delay(waitTime)
-                        attempts++
-                        waitTime = minOf(waitTime * 2, 500)
-                    }
+            // Wait for WalletConnect to initialize with timeout
+            val initialized = withTimeoutOrNull(10000) {
+                var waitTime = 200L
+                var attempts = 0
+                val maxAttempts = 10
 
-                    WalletConnect.isInitialized()
+                while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
+                    logd(TAG, "Waiting for WalletConnect initialization, attempt ${attempts + 1} of $maxAttempts")
+                    delay(waitTime)
+                    attempts++
+                    waitTime = minOf(waitTime * 2, 1000)
                 }
-                if (initResult == null) {
-                    loge(TAG, "WalletConnect initialization timeout")
-                    uiScope {
-                        toast(R.string.wallet_connect_error)
-                    }
-                    result = false
-                } else {
-                    try {
-                        logd(TAG, "WalletConnect initialized, attempting to pair")
-                        WalletConnect.get().pair(data.toString())
-                        logd(TAG, "WalletConnect pairing successful")
-                        // Wait for session proposal to be handled
-                        delay(2000) // Increased delay to ensure proposal is processed
-                        result = true
-                    } catch (e: Exception) {
-                        loge(TAG, "WalletConnect pairing failed: ${e.message}")
-                        loge(e)
-                        result = false
-                    }
+
+                WalletConnect.isInitialized()
+            } ?: false
+
+            if (!initialized) {
+                loge(TAG, "WalletConnect initialization failed or timed out")
+                uiScope {
+                    toast(R.string.wallet_connect_initialization_error)
                 }
+                return@runCatching false
             }
-            result
-        } else {
-            logd(TAG, "WalletConnect already initialized, attempting to pair")
-            try {
-                WalletConnect.get().pair(data.toString())
-                logd(TAG, "WalletConnect pairing successful")
-                // Wait for session proposal to be handled
-                delay(2000) // Increased delay to ensure proposal is processed
-                true
-            } catch (e: Exception) {
-                loge(TAG, "WalletConnect pairing failed: ${e.message}")
-                loge(e)
-                false
-            }
+
+            logd(TAG, "WalletConnect successfully initialized")
         }
-    }.getOrDefault(false)
+
+        // Get instance and proceed with pairing
+        try {
+            // Try to get an instance of WalletConnect and pair
+            val wcInstance = WalletConnect.get()
+
+            // Add a short delay to ensure all UI transitions are complete
+            delay(300)
+
+            // Call the improved pairing method
+            logd(TAG, "Initiating WalletConnect pairing with URI: $data")
+            wcInstance.pair(data)
+
+            // Return success immediately, but the actual connection will happen asynchronously
+            logd(TAG, "WalletConnect pairing initiated successfully")
+            return@runCatching true
+
+        } catch (e: Exception) {
+            loge(TAG, "Error during WalletConnect pairing: ${e.message}")
+            loge(e)
+            uiScope {
+                toast(R.string.wallet_connect_pairing_error)
+            }
+            return@runCatching false
+        }
+    }.getOrElse { e ->
+        loge(TAG, "Unexpected error in WalletConnect dispatch: ${e.message}")
+        loge(e)
+        uiScope {
+            toast(R.string.wallet_connect_generic_error)
+        }
+        false
+    }
 }
 
+// No longer needed, use UriHandler.extractWalletConnectUri instead
 @Deprecated("Use UriHandler.extractWalletConnectUri instead")
 fun getWalletConnectUri(uri: Uri): String? {
-    return runCatching {
-        val uriString = uri.toString()
-        logd(TAG, "getWalletConnectUri: Processing URI string: $uriString")
-
-        val uriParamStart = uriString.indexOf("uri=")
-        val wcUriEncoded = if (uriParamStart != -1) {
-            uriString.substring(uriParamStart + 4)
-        } else {
-            uri.getQueryParameter("uri")
-        }
-
-        logd(TAG, "Extracted encoded URI: $wcUriEncoded")
-
-        wcUriEncoded?.let {
-            if (it.contains("%")) {
-                val decoded = URLDecoder.decode(it, StandardCharsets.UTF_8.name())
-                logd(TAG, "Decoded URI: $decoded")
-                decoded
-            } else {
-                logd(TAG, "URI not encoded, using as is")
-                it
-            }
-        }
-    }.onFailure { e ->
-        loge(TAG, "Error processing WalletConnect URI: ${e.message}")
-        loge(e)
-    }.getOrNull()
+    return UriHandler.extractWalletConnectUri(uri)
 }
 
 private fun parseValue(value: String?): BigDecimal? {
@@ -250,8 +228,7 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
                 it,
                 AddressBookContact(address = recipient.toAddress()),
                 FungibleTokenListManager.getFlowTokenContractId(),
-                value?.toString(),
-                sourceTab = HomeTab.WALLET // Default to wallet tab for deeplinks
+                value?.toString()
             )
         }
     }
