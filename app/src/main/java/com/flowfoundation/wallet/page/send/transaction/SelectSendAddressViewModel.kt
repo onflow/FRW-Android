@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.cache.addressBookCache
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.retrofit

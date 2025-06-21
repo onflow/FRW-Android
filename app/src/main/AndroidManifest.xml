@@ -296,10 +296,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.profile.subpage.claimdomain.ClaimDomainActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.profile.subpage.walletconnect.session.WalletConnectSessionActivity"
             android:screenOrientation="portrait"/>
 
@@ -373,7 +369,6 @@
                 <data android:scheme="db-${dropboxKey}" />
 
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>

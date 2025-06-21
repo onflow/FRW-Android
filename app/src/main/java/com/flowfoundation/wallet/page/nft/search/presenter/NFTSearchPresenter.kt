@@ -93,7 +93,4 @@ class NFTSearchPresenter(
         binding.loadingLayout.setLoadingProgress(current, total)
     }
 
-    fun updateListType(type: NFTListType) {
-
-    }
 }

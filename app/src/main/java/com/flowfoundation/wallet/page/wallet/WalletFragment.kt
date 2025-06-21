@@ -48,7 +48,9 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        barcodeLauncher = registerBarcodeLauncher { result -> dispatchScanResult(requireContext(), result.orEmpty()) }
+        barcodeLauncher = registerBarcodeLauncher { result -> 
+            dispatchScanResult(requireContext(), result.orEmpty())
+        }
         WalletNotificationManager.addListener(this)
         WallpaperManager.addListener(this)
     }

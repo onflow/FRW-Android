@@ -17,7 +17,6 @@ import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.coin.CustomTokenManager
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
@@ -29,6 +28,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.service.MessagingService
 import com.flowfoundation.wallet.utils.getThemeMode
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.startServiceSafe
 import com.flowfoundation.wallet.utils.uiScope
@@ -41,13 +41,15 @@ object LaunchManager {
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
         ioScope {
-            safeRun { AccountManager.init() }
+            safeRun {
+                AccountManager.init() 
+                logd("LaunchManager", "AccountManager initialized successfully")
+            }
         }
         refreshChainNetwork {
             safeRun { MixpanelManager.init(application) }
             safeRun { WalletConnect.init(application) }
             safeRun { initFirebaseConfig() }
-            safeRun { FlowApi.refreshConfig() }
             safeRun { FlowCadenceApi.refreshConfig() }
             safeRun { asyncInit() }
             safeRun { firebaseInitialize(application) }

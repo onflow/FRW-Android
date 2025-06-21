@@ -30,8 +30,15 @@ import com.flowfoundation.wallet.page.backup.multibackup.viewmodel.MultiBackupVi
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
-import com.nftco.flow.sdk.FlowAddress
-import wallet.core.jni.HDWallet
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.utils.ioScope
+import org.onflow.flow.models.FlowAddress
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
+import java.io.File
 
 
 class BackupCompletedFragment : Fragment() {
@@ -161,25 +168,57 @@ class BackupCompletedFragment : Fragment() {
                         checkDropboxBackup(it.mnemonic)
                     }
                     else -> {
-                        checkRecoveryPhrase(it)
+                        ioScope {
+                            checkRecoveryPhrase(it)
+                        }
                     }
                 }
             }
         }
     }
 
-    private fun checkRecoveryPhrase(item: BackupCompletedItem) {
+    private suspend fun checkRecoveryPhrase(item: BackupCompletedItem) {
         isRecoveryPhraseCheckLoading = true
         isRecoveryPhraseBackupSuccess = false
-        val backupProvider = BackupCryptoProvider(HDWallet(item.mnemonic, ""))
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = item.mnemonic,
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        val backupProvider = createBackupCryptoProvider(seedPhraseKey)
 
-        val blockAccount = FlowAddress(WalletManager.wallet()?.walletAddress().orEmpty()).lastBlockAccount()
-        isRecoveryPhraseBackupSuccess = blockAccount?.keys?.firstOrNull { backupProvider.getPublicKey() == it.publicKey.base16Value } != null
-        binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
-            setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
-        })
-        isRecoveryPhraseCheckLoading = false
-        checkLoadingStatus()
+        val blockAccount = FlowAddress(WalletManager.wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty()).lastBlockAccount()
+        
+        // Normalize public keys for comparison - remove prefixes and convert to lowercase
+        val backupPubKey = backupProvider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
+        
+        isRecoveryPhraseBackupSuccess = blockAccount.keys?.firstOrNull { key ->
+            val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
+            backupPubKey == onChainPubKey
+        } != null
+        
+
+        // Update UI on main thread
+        requireActivity().runOnUiThread {
+            binding.llItemLayout.addView(BackupCompletedItemView(requireContext()).apply {
+                setItemInfo(item, locationInfo, isRecoveryPhraseBackupSuccess)
+            })
+            isRecoveryPhraseCheckLoading = false
+            checkLoadingStatus()
+        }
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey): BackupCryptoProvider {
+        // Create a proper KeyWallet
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     override fun onDestroyView() {

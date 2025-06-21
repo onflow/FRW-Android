@@ -15,14 +15,13 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogWalletConfirmationBinding
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -36,6 +35,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 
 class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback,
@@ -132,15 +132,26 @@ class WalletConfirmationDialog : BottomSheetDialogFragment(), OnMapReadyCallback
     private suspend fun addPublicKey(accountKey: WCAccountKey): Boolean {
         try {
             val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
-                arg { string(accountKey.publicKey) }
-                arg { uint8(accountKey.signAlgo) }
-                arg { uint8(accountKey.hashAlgo) }
+                val pubKeyWithPrefix = accountKey.publicKey // e.g., "04..."
+                val pubKeyHexRaw = pubKeyWithPrefix.removePrefix("0x")
+                
+                // Flow's Cadence addKey script expects the publicKey string argument to be the
+                // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
+                val pubKeyForCadence = if (pubKeyHexRaw.startsWith("04") && pubKeyHexRaw.length == 130) {
+                    pubKeyHexRaw.substring(2)
+                } else {
+                    pubKeyHexRaw
+                }
+                
+                arg { string(pubKeyForCadence) }
+                arg { uint8(accountKey.signAlgo.toUByte()) }
+                arg { uint8(accountKey.hashAlgo.toUByte()) }
                 arg { ufix64Safe(1000) }
             }
             val transactionState = TransactionState(
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                 data = ""
             )

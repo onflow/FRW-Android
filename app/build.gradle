@@ -16,6 +16,19 @@ def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
 properties.load(inputStream)
 
+repositories {
+    google()
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+    maven {
+        url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
+        credentials {
+            username = properties.getProperty("gpr.user") as String?: System.getenv("TW_ACCESS_USER")
+            password = properties.getProperty("gpr.key") as String?: System.getenv("TW_ACCESS_TOKEN")
+        }
+    }
+}
+
 def apiKeysFile = project.rootProject.file("key.properties")
 def apiKeys = new Properties()
 if (apiKeysFile.exists()) {
@@ -165,6 +178,12 @@ android {
     packagingOptions {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/io.netty.versions.properties', 'META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'project.properties', 'META-INF/rxjava.properties', 'META-INF/ASL2.0', 'META-INF/atomicfu.kotlin_module']
+            pickFirsts += [
+                'lib/arm64-v8a/libTrustWalletCore.so',
+                'org/bouncycastle/x509/CertPathReviewerMessages_de.properties',
+                'org/bouncycastle/x509/CertPathReviewerMessages.properties',
+                'org/bouncycastle/x509/CertPathReviewerMessages_*.properties'
+            ]
         }
     }
 
@@ -176,18 +195,27 @@ android {
     }
 }
 
-//configurations.configureEach {
-//    resolutionStrategy.eachDependency {
-//        if (requested.group == "org.bouncycastle" && requested.name == "bcprov-jdk15on") {
-//            useTarget("org.bouncycastle:bcprov-jdk18on:1.77")
-//        }
-//    }
-//}
+configurations.all {
+    exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
+        force 'org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1'
+        force 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
+        force 'com.google.protobuf:protobuf-javalite:3.22.3'
+        force 'com.google.api.grpc:proto-google-common-protos:2.0.1'
+        force 'org.bouncycastle:bcprov-jdk18on:1.77'
+    }
+}
 
 dependencies {
-    api fileTree(dir: "libs", include: ["*.aar", "*.jar"])
+    api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     implementation project(':wallet')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
@@ -199,6 +227,12 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.8.8'
     implementation 'androidx.navigation:navigation-ui-ktx:2.8.8'
+
+    // HD Wallet implementation
+    implementation('com.trustwallet:wallet-core:4.3.2') {
+        exclude group: 'com.trustwallet', module: 'wallet-core-proto'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
 
     // room https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
     implementation "androidx.room:room-runtime:2.6.1"
@@ -232,18 +266,29 @@ dependencies {
     /** Google Drive **/
     implementation('com.google.api-client:google-api-client:1.23.0') {
         exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation 'com.google.android.gms:play-services-drive:17.0.0'
     implementation 'com.google.android.gms:play-services-auth:21.3.0'
-    implementation 'com.google.http-client:google-http-client:1.40.1'
-    implementation 'com.google.api-client:google-api-client-android:1.32.1'
+    implementation('com.google.http-client:google-http-client:1.40.1') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
+    implementation('com.google.api-client:google-api-client-android:1.32.1') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    }
     implementation('com.google.oauth-client:google-oauth-client-jetty:1.31.0') {
         exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation('com.google.apis:google-api-services-drive:v3-rev110-1.23.0') {
         exclude group: 'com.google.guava'
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
+
+    implementation("com.ionspin.kotlin:bignum:0.3.10")
+    implementation("com.ionspin.kotlin:bignum-serialization-kotlinx:0.3.10")
+    implementation("com.ionspin.kotlin:bignum:0.3.10")
 
     /** Google Drive **/
 
@@ -254,8 +299,8 @@ dependencies {
     /** ARCore **/
 
     /** Kotlin 相关 **/
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1'
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1"
     /** Kotlin 相关 **/
 
 
@@ -263,22 +308,25 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
-//    implementation ('com.google.firebase:firebase-inappmessaging-display-ktx') {
-//        exclude group: 'com.google.protobuf', module: 'protobuf-javalite'
-//        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
-//    }
+    implementation('com.google.firebase:firebase-inappmessaging-display-ktx') {
+        exclude group: 'com.google.protobuf', module: 'protobuf-java'
+        exclude group: 'com.google.api.grpc', module: 'proto-google-common-protos'
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
+    implementation('com.google.firebase:firebase-functions-ktx') {
+        exclude group: 'com.google.firebase', module: 'protolite-well-known-types'
+    }
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-storage-ktx'
     implementation 'com.google.firebase:firebase-config-ktx'
     implementation 'com.google.firebase:firebase-crashlytics'
-    implementation 'com.google.firebase:firebase-functions-ktx'
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
     implementation 'com.google.firebase:firebase-appcheck'
     implementation 'com.google.firebase:firebase-appcheck-debug'
     
     /** Instabug **/
-    implementation 'com.instabug.library:instabug:14.3.0'
-    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:14.3.0'
+    implementation 'com.instabug.library:instabug:15.0.1'
+    implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
     /** firebase **/
 
     implementation "dev.chrisbanes:insetter-ktx:0.3.1"
@@ -315,12 +363,19 @@ dependencies {
     implementation 'androidx.browser:browser:1.8.0'
 
     /** FLOW **/
-    // implementation "com.nftco:flow-jvm-sdk:0.7.3"
     implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.7") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
-    implementation 'com.github.onflow.flow-kmm:flow:0.0.1'
+    implementation 'com.github.onflow.flow-kmm:flow:0.0.24'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
+    
+     implementation "io.ktor:ktor-client-core:2.3.7"
+     implementation "io.ktor:ktor-client-cio:2.3.7"
+     implementation "io.ktor:ktor-client-websockets:2.3.7"
+     implementation "io.ktor:ktor-client-content-negotiation:2.3.7"
+     implementation "io.ktor:ktor-serialization-kotlinx-json:2.3.7"
+     implementation "io.ktor:ktor-client-logging:2.3.7"
+    
     implementation(platform("com.reown:android-bom:1.3.3"))
     implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
@@ -366,7 +421,7 @@ dependencies {
     testImplementation "org.robolectric:robolectric:4.11.1"
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
 }
 
 // Add after android {} block

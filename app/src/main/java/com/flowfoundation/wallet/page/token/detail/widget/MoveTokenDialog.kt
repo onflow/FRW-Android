@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
 import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
@@ -255,7 +256,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         ioScope {
             val provider = getProvider(moveFromAddress)
             currentTokenProvider = provider
-            
+
             // Get fresh token list with updated balances
             availableTokens = provider.getTokenList(moveFromAddress)
 
@@ -269,7 +270,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         ?: availableTokens.firstOrNull { it.tokenBalance() > BigDecimal.ZERO }
                         ?: availableTokens.first()
                 }
-                
+
                 uiScope {
                     if (token != null) {
                         updateSelectedToken(token)
@@ -295,7 +296,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
             val provider = getProvider(moveFromAddress)
             currentTokenProvider = provider
-            
+
             // Get fresh token list with updated balances
             availableTokens = provider.getFungibleTokenListSnapshot()
 

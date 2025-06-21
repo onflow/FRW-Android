@@ -5,6 +5,7 @@ import com.flowfoundation.wallet.manager.app.EVM_TESTNET
 import com.flowfoundation.wallet.manager.app.flowChainNetworkString
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.logd

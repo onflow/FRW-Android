@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- NFT Grid Spacing - Small screens (320dp+) -->
+    <dimen name="nft_grid_horizontal_spacing">14dp</dimen>
+    <dimen name="nft_grid_vertical_spacing">14dp</dimen>
+    <dimen name="nft_grid_start_spacing">14dp</dimen>
+    <dimen name="nft_grid_end_spacing">14dp</dimen>
+    <dimen name="nft_grid_top_spacing">14dp</dimen>
+    <dimen name="nft_grid_bottom_spacing">7dp</dimen>
+    
+    <!-- Reduce main divider size for small screens -->
+    <dimen name="nft_list_divider_size">14dp</dimen>
+</resources> 

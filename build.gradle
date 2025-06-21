@@ -1,9 +1,19 @@
+
+
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     repositories {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+//        maven {
+//            url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
+//            credentials {
+//                username = properties.getProperty("gpr.user") as String?: System.getenv("GITHUB_USER")
+//                password = properties.getProperty("gpr.key") as String?: System.getenv("GITHUB_TOKEN")
+//            }
+//        }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.7.3'
@@ -26,6 +36,13 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+//        maven {
+//            url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
+//            credentials {
+//                username = properties.getProperty("gpr.user") as String?: System.getenv("GITHUB_USER")
+//                password = properties.getProperty("gpr.key") as String?: System.getenv("GITHUB_TOKEN")
+//            }
+//        }
     }
 }
 

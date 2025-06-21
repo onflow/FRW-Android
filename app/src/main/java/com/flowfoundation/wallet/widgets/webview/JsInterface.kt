@@ -12,7 +12,7 @@ import com.flowfoundation.wallet.widgets.webview.fcl.FclMessageHandler
 import com.flowfoundation.wallet.widgets.webview.fcl.authzTransaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 
 class JsInterface(
     private val webView: LilicoWebView,
@@ -34,7 +34,7 @@ class JsInterface(
             val transactionState = TransactionState(
                 transactionId = tid,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.UNKNOWN.num,
+                state = TransactionStatus.UNKNOWN.ordinal,
                 type = TransactionState.TYPE_FCL_TRANSACTION,
                 data = Gson().toJson(authzTransaction),
             )

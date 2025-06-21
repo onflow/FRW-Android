@@ -9,13 +9,13 @@ import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
-import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.Signable
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.Identity
 import com.flowfoundation.wallet.manager.walletconnect.model.PollingData
 import com.flowfoundation.wallet.manager.walletconnect.model.PollingResponse
@@ -43,7 +43,6 @@ import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSendTransactionDialog
-import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.model.EvmTransaction
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignMessageDialog
 import com.flowfoundation.wallet.widgets.webview.evm.dialog.EVMSignTypedDataDialog
@@ -61,17 +60,20 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.hexToBytes
 import com.reown.sign.client.Sign
 import com.reown.sign.client.SignClient
 import kotlinx.coroutines.delay
 import okio.ByteString.Companion.decodeBase64
+import org.onflow.flow.infrastructure.Cadence
+import org.onflow.flow.models.FlowAddress
 import org.web3j.crypto.StructuredDataEncoder
 import java.lang.reflect.Type
 import java.util.zip.GZIPInputStream
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import org.onflow.flow.models.Transaction
+import com.ionspin.kotlin.bignum.integer.toBigInteger
 
 private const val TAG = "WalletConnectRequestDispatcher"
 
@@ -119,7 +121,9 @@ suspend fun WCRequest.evmSignTypedData() {
             model
         )
         EVMSignTypedDataDialog.observe { isApprove ->
-            if (isApprove) approve(signTypedData(hashData)) else reject()
+            ioScope {
+                if (isApprove) approve(signTypedData(hashData)) else reject()
+            }
         }
     }
 }
@@ -142,15 +146,17 @@ private suspend fun WCRequest.evmSendTransaction() {
             model
         )
         EVMSendTransactionDialog.observe { isApprove ->
-            if (isApprove) {
-                sendEthereumTransaction(transaction) { txHash ->
-                    if (txHash.isEmpty()) {
-                        reject()
-                    } else {
-                        approve(txHash)
+            ioScope {
+                if (isApprove) {
+                    sendEthereumTransaction(transaction) { txHash ->
+                        if (txHash.isEmpty()) {
+                            reject()
+                        } else {
+                            approve(txHash)
+                        }
                     }
-                }
-            } else reject()
+                } else reject()
+            }
         }
     }
 }
@@ -193,7 +199,9 @@ private suspend fun WCRequest.evmSignMessage() {
             model
         )
         EVMSignMessageDialog.observe { isApprove ->
-            if (isApprove) approve(signEthereumMessage(message)) else reject()
+            ioScope {
+                if (isApprove) approve(signEthereumMessage(message)) else reject()
+            }
         }
     }
 }
@@ -248,7 +256,7 @@ private suspend fun WCRequest.respondAuthn() {
         return
     }
     logd(TAG, "Using wallet address: $address")
-    
+
     val json = try {
         Gson().fromJson<List<SignableParams>>(params, object : TypeToken<List<SignableParams>>() {}.type)
     } catch (e: Exception) {
@@ -263,7 +271,7 @@ private suspend fun WCRequest.respondAuthn() {
         return
     }
     logd(TAG, "Signable params: $signable")
-    
+
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: run {
         loge(TAG, "No crypto provider found")
         reject()
@@ -271,9 +279,9 @@ private suspend fun WCRequest.respondAuthn() {
     }
     val keyId = cryptoProvider.let {
         FlowAddress(address).currentKeyId(it.getPublicKey())
-    } ?: 0
+    }
     logd(TAG, "Using keyId: $keyId")
-    
+
     try {
         // Check if we have an active session for this topic
         val activeSession = SignClient.getActiveSessionByTopic(topic)
@@ -307,7 +315,7 @@ private suspend fun WCRequest.respondAuthn() {
             walletConnectAuthnServiceResponse(address, keyId, signable.nonce, signable.appIdentifier)
         }
         logd(TAG, "Generated authn response: $services")
-        
+
         val response = Sign.Params.Response(
             sessionTopic = topic,
             jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcResult(requestId, services)
@@ -341,7 +349,7 @@ private suspend fun WCRequest.respondAuthn() {
                             // Don't reject here since the response was already sent successfully
                         }
                     }
-                }) { error -> 
+                }) { error ->
                     loge(TAG, "Failed to send response (attempt ${retryCount + 1}): ${error.throwable.message}")
                     loge(error.throwable)
                     retryCount++
@@ -377,6 +385,10 @@ private suspend fun WCRequest.respondAuthz() {
     val message = signable.message ?: return
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
+
+    // Clean address for Flow-KMM (remove "0x" prefix)
+    val cleanAddress = address.removePrefix("0x")
+
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -398,21 +410,25 @@ private suspend fun WCRequest.respondAuthz() {
         FclAuthzDialog.observe { isApprove ->
             ioScope {
                 val signature = cryptoProvider.signData(message.hexToBytes())
-                val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
+                val keyId = FlowAddress(cleanAddress).currentKeyId(cryptoProvider.getPublicKey())
 
-                if (isApprove) approve(fclAuthzResponse(address, signature, keyId)) else reject()
+                if (isApprove) approve(fclAuthzResponse(cleanAddress, signature, keyId)) else reject()
                 uiScope { FclAuthzDialog.dismiss() }
             }
         }
     }
 }
 
-
-private fun WCRequest.respondPreAuthz() {
+private suspend fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-    val keyId = FlowAddress(walletAddress).currentKeyId(cryptoProvider.getPublicKey())
+
+    // Clean addresses for Flow-KMM (remove "0x" prefix)
+    val cleanWalletAddress = walletAddress.removePrefix("0x")
+    val cleanPayerAddress = payerAddress.removePrefix("0x")
+
+    val keyId = FlowAddress(cleanWalletAddress).currentKeyId(cryptoProvider.getPublicKey())
 
     val response = PollingResponse(
         status = ResponseStatus.APPROVED,
@@ -424,7 +440,7 @@ private fun WCRequest.respondPreAuthz() {
                 fVsn = "1.0.0",
                 type = "authz",
                 uid =  "https://frw-link.lilico.app/wc",
-                identity = Identity(address = walletAddress, keyId = keyId),
+                identity = Identity(address = cleanWalletAddress, keyId = keyId),
                 method = "WC/RPC",
                 endpoint = WalletConnectMethod.AUTHZ.value,
             ),
@@ -434,7 +450,7 @@ private fun WCRequest.respondPreAuthz() {
                     fVsn = "1.0.0",
                     type = "authz",
                     uid =  "https://frw-link.lilico.app/wc",
-                    identity = Identity(address = payerAddress, keyId = AppConfig.payer().keyId),
+                    identity = Identity(address = cleanPayerAddress, keyId = AppConfig.payer().keyId),
                     method = "WC/RPC",
                     endpoint = WalletConnectMethod.SIGN_PAYER.value,
                 )
@@ -445,7 +461,7 @@ private fun WCRequest.respondPreAuthz() {
                     fVsn = "1.0.0",
                     type = "authz",
                     uid =  "https://frw-link.lilico.app/wc",
-                    identity = Identity(address = walletAddress, keyId = keyId),
+                    identity = Identity(address = cleanWalletAddress, keyId = keyId),
                     method = "WC/RPC",
                     endpoint = WalletConnectMethod.SIGN_PROPOSER.value,
                 )
@@ -460,6 +476,10 @@ private suspend fun WCRequest.respondUserSign() {
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val param = gson().fromJson<List<SignableMessage>>(params, object : TypeToken<List<SignableMessage>>() {}.type)?.firstOrNull()
     val message = param?.message ?: return
+
+    // Clean address for Flow-KMM (remove "0x" prefix)
+    val cleanAddress = address.removePrefix("0x")
+
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -480,8 +500,10 @@ private suspend fun WCRequest.respondUserSign() {
         )
 
         FclSignMessageDialog.observe { isApprove ->
-            if (isApprove) approve(fclSignMessageResponse(message, address)) else reject()
-            FclAuthzDialog.dismiss()
+            ioScope {
+                if (isApprove) approve(fclSignMessageResponse(message, cleanAddress)) else reject()
+                FclAuthzDialog.dismiss()
+            }
         }
     }
 }
@@ -489,10 +511,42 @@ private suspend fun WCRequest.respondUserSign() {
 private suspend fun WCRequest.respondSignPayer() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
+    val voucher = signable.voucher ?: return
+
+    // Validate required fields
+    val cadence = voucher.cadence ?: return
+    val refBlock = voucher.refBlock ?: return
+    val computeLimit = voucher.computeLimit ?: return
+    val payer = voucher.payer ?: return
+    val proposalKey = voucher.proposalKey
+    val proposerAddress = proposalKey.address ?: return
+    val proposerKeyId = proposalKey.keyId ?: return
+    val proposerSequenceNum = proposalKey.sequenceNum ?: return
+
+    // Clean addresses for Flow-KMM (remove "0x" prefix)
+    val cleanPayer = payer.removePrefix("0x")
+    val cleanProposerAddress = proposerAddress.removePrefix("0x")
+    val cleanAuthorizers = voucher.authorizers?.map { it.removePrefix("0x") } ?: emptyList()
+
+    val transaction = Transaction(
+        script = cadence,
+        arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
+        referenceBlockId = refBlock,
+        gasLimit = computeLimit.toBigInteger(),
+        payer = cleanPayer,
+        proposalKey = org.onflow.flow.models.ProposalKey(
+            address = cleanProposerAddress,
+            keyIndex = proposerKeyId,
+            sequenceNumber = proposerSequenceNum.toBigInteger()
+        ),
+        authorizers = cleanAuthorizers
+    )
+
+    val message = signable.message ?: return
     val server = executeHttpFunction(
         FUNCTION_SIGN_AS_PAYER, PayerSignable(
-            transaction = signable.voucher!!,
-            message = PayerSignable.Message(signable.message!!)
+            transaction = transaction,
+            message = PayerSignable.Message(message)
         )
     )
 
@@ -513,7 +567,6 @@ private suspend fun WCRequest.respondSignPayer() {
     }
 }
 
-
 private suspend fun WCRequest.respondSignProposer() {
     val activity = topActivity() ?: return
 
@@ -521,7 +574,18 @@ private suspend fun WCRequest.respondSignProposer() {
     val signable = params.toSignables(gson())
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-    val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
+
+    // Clean address for Flow-KMM (remove "0x" prefix)
+    val cleanAddress = address.removePrefix("0x")
+
+    logd(TAG, "WalletConnect Sign Proposer - Provider type: ${cryptoProvider.javaClass.simpleName}")
+    logd(TAG, "WalletConnect Sign Proposer - Signing algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
+    logd(TAG, "WalletConnect Sign Proposer - Hashing algorithm: ${cryptoProvider.getHashAlgorithm()}")
+    logd(TAG, "WalletConnect Sign Proposer - Public key: ${cryptoProvider.getPublicKey()}")
+    logd(TAG, "WalletConnect Sign Proposer - Message to sign: ${signable?.message}")
+    logd(TAG, "WalletConnect Sign Proposer - Clean address: $cleanAddress")
+
+    val keyId = FlowAddress(cleanAddress).currentKeyId(cryptoProvider.getPublicKey())
 
     val data = FclDialogModel(
         title = metaData?.name,
@@ -541,20 +605,25 @@ private suspend fun WCRequest.respondSignProposer() {
         data
     )
     FclAuthzDialog.observe { approve ->
-        if (approve) {
-            val response = PollingResponse(
-                status = ResponseStatus.APPROVED,
-                data = PollingData(
-                    fType = "CompositeSignature",
-                    fVsn = "1.0.0",
-                    address = address,
-                    keyId = keyId,
-                    signature = cryptoProvider.signData(signable?.message!!.hexToBytes())
+        ioScope {
+            if (approve) {
+                logd(TAG, "WalletConnect Sign Proposer - User approved, signing with signData()")
+                val signature = cryptoProvider.signData(signable?.message!!.hexToBytes())
+                logd(TAG, "WalletConnect Sign Proposer - Generated signature: $signature")
+                val response = PollingResponse(
+                    status = ResponseStatus.APPROVED,
+                    data = PollingData(
+                        fType = "CompositeSignature",
+                        fVsn = "1.0.0",
+                        address = cleanAddress,
+                        keyId = keyId,
+                        signature = signature
+                    )
                 )
-            )
-            approve(gson().toJson(response))
-        } else {
-            reject()
+                approve(gson().toJson(response))
+            } else {
+                reject()
+            }
         }
     }
 }
@@ -578,7 +647,6 @@ private class SignableDeserializer : JsonDeserializer<Signable> {
         return Gson().fromJson(obj, Signable::class.java)
     }
 }
-
 
 fun ungzip(content: ByteArray): String =
     GZIPInputStream(content.inputStream()).bufferedReader(Charsets.UTF_8).use { it.readText() }

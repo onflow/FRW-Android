@@ -135,7 +135,10 @@ fun ActivitySwapBinding.onCoinRateUpdate() {
 
 private fun ActivitySwapBinding.updateAmountPrice() {
     val amount = fromInput.text.toString().toSafeDecimal()
-    priceAmountView.text = (viewModel().fromCoinRate() * amount).formatPrice(includeSymbol = true, includeSymbolSpace = true)
+    priceAmountView.text = (viewModel().fromCoinRate() * amount).formatPrice(
+        includeSymbol = true,
+        includeSymbolSpace = true
+    )
 }
 
 private fun ActivitySwapBinding.legalCheck() {

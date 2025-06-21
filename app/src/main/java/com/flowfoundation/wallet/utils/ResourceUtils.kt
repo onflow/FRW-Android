@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.utils
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes

@@ -31,7 +31,7 @@ const val EXTRA_CONTENT = "extra_content"
 private const val AES_KEY = BuildConfig.DRIVE_AES_KEY
 
 @WorkerThread
-suspend fun uploadMnemonicToGoogleDrive(driveService: Drive, password: String) {
+fun uploadMnemonicToGoogleDrive(driveService: Drive, password: String) {
     try {
         logd(TAG, "uploadMnemonicToGoogleDrive")
         val driveServiceHelper = DriveServerHelper(driveService)

@@ -32,7 +32,7 @@ class TokenItemPresenter(
             // Display balance
             tokenAmount.text = "${model.tokenBalance().formatLargeBalanceNumber(isAbbreviation = true)} ${model.symbol.uppercase()}"
 
-            tokenPrice.text = model.tokenBalancePrice().formatPrice(includeSymbol = true, isAbbreviation = true)
+                    tokenPrice.text = model.tokenBalancePrice().formatPrice(includeSymbol = true, isAbbreviation = true)
             tokenPrice.setVisible(true)
         }
 

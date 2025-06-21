@@ -21,6 +21,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
@@ -39,7 +40,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 
 
 class MoveNFTDialog : BottomSheetDialogFragment() {
@@ -71,7 +72,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractId, contractName)
+        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(
+            uniqueId,
+            contractId,
+            contractName
+        )
         with(binding) {
             btnMove.isEnabled = nft != null
             btnMove.setOnClickListener {
@@ -313,7 +318,14 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(childAddress, toAddress, nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.CHILD)
+            trackMoveNFT(
+                childAddress,
+                toAddress,
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.CHILD
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -335,7 +347,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
             if (identifier.isEmpty()) {
-                ErrorReporter.reportWithMixpanel(MoveError.INVALIDATE_IDENTIFIER, getCurrentCodeLocation())
+                ErrorReporter.reportWithMixpanel(
+                    MoveError.INVALIDATE_IDENTIFIER,
+                    getCurrentCodeLocation()
+                )
                 callback.invoke(false)
                 return
             }
@@ -344,7 +359,14 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(childAddress, WalletManager.wallet()?.walletAddress().orEmpty(), nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.FLOW)
+            trackMoveNFT(
+                childAddress,
+                WalletManager.wallet()?.walletAddress().orEmpty(),
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.FLOW
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -370,8 +392,15 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(WalletManager.wallet()?.walletAddress().orEmpty(), toAddress, nft
-                .getNFTIdentifier(), txId.orEmpty(), TransferAccountType.FLOW, TransferAccountType.CHILD)
+            trackMoveNFT(
+                WalletManager.wallet()?.walletAddress().orEmpty(),
+                toAddress,
+                nft
+                    .getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.FLOW,
+                TransferAccountType.CHILD
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -389,7 +418,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_MOVE_NFT,
             data = nft.uniqueId(),
         )

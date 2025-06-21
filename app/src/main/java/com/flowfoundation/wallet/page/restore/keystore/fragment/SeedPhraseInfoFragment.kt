@@ -117,14 +117,10 @@ class SeedPhraseInfoFragment: Fragment() {
                     toast(msgRes = R.string.address_incorrect)
                     return@setOnClickListener
                 }
-                val derivationPath = etDerivationPath.text.toString().trim()
                 restoreViewModel.importSeedPhrase(
                     mnemonic,
-                    address,
                     passphrase,
-                    derivationPath.ifEmpty {
-                        "m/44'/539'/0'/0/0"
-                    }
+                    address,
                 )
             }
             btnImport.isEnabled = false

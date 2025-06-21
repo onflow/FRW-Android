@@ -12,14 +12,17 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import com.google.gson.reflect.TypeToken
 
 object NftFavoriteManager {
+
+    private val TAG = NftFavoriteManager::class.java.simpleName
 
     private val listeners = CopyOnWriteArrayList<WeakReference<OnNftFavoriteChangeListener>>()
 
     private val service by lazy { retrofit().create(ApiService::class.java) }
 
-    private val favoriteList = mutableListOf<Nft>()
+    private var favoriteList = mutableListOf<Nft>()
 
     fun addOnNftSelectionChangeListener(listener: OnNftFavoriteChangeListener) {
         listeners.add(WeakReference(listener))
@@ -33,9 +36,11 @@ object NftFavoriteManager {
     fun addFavorite(nft: Nft) {
         ioScope {
             val favorites = favoriteList().toMutableList()
-
-            dispatchListener(favorites.apply { add(0, nft) })
-            cache().cacheSync(FavoriteCache(favorites))
+            if (favorites.none { it.uniqueId() == nft.uniqueId() }) {
+                favorites.add(0, nft)
+                dispatchListener(favorites)
+                cache().cacheSync(FavoriteCache(favorites))
+            }
 
             val address = WalletManager.selectedWalletAddress()
             val resp = service.addNftFavorite(AddNftFavoriteRequest(address, nft.contractName(), nft.tokenId()))
@@ -49,21 +54,24 @@ object NftFavoriteManager {
         contractName ?: return
         tokenId ?: return
         ioScope {
-
             val favorites = favoriteList().toMutableList()
+            val originalSize = favorites.size
             favorites.removeAll { it.contractName() == contractName && it.tokenId() == tokenId }
-            val resp = updateFavorite(favorites.map { it.serverId() })
-            if (resp.status == 200) {
-                fetchFromServer()
+            
+            if (favorites.size < originalSize) {
+                dispatchListener(favorites)
+                cache().cacheSync(FavoriteCache(favorites))
+                val resp = updateFavorite(favorites.map { it.uniqueId() })
+                if (resp.status == 200) {
+                    fetchFromServer()
+                }
             }
-            dispatchListener(favorites)
-            cache().cacheSync(FavoriteCache(favorites))
         }
     }
 
     fun favoriteList() = if (favoriteList.isEmpty()) cache().read()?.nfts.orEmpty() else favoriteList.toList()
 
-    fun isFavoriteNft(nft: Nft) = favoriteList().firstOrNull { it.uniqueId() == nft.uniqueId() } != null
+    fun isFavoriteNft(nft: Nft) = favoriteList().any { it.uniqueId() == nft.uniqueId() }
 
     private suspend fun fetchFromServer() {
         val address = nftWalletAddress()
@@ -74,7 +82,6 @@ object NftFavoriteManager {
         val nfts = response.data?.nfts() ?: emptyList()
 
         cache().cacheSync(FavoriteCache(nfts))
-
         dispatchListener(nfts)
     }
 
@@ -82,7 +89,7 @@ object NftFavoriteManager {
         return service.updateFavorite(UpdateNftFavoriteRequest(ids.map { it.trim() }.distinct().joinToString(",")))
     }
 
-    private fun cache() = CacheManager("${nftWalletAddress()}_nft_favorite".cacheFile(), FavoriteCache::class.java)
+    private fun cache() = CacheManager<FavoriteCache>("${nftWalletAddress()}_nft_favorite".cacheFile(), object : TypeToken<FavoriteCache>() {}.type)
 
     private fun dispatchListener(nfts: List<Nft>) {
         favoriteList.clear()

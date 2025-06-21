@@ -7,7 +7,7 @@ import android.content.IntentFilter
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.dropbox.EXTRA_SUCCESS
@@ -15,7 +15,6 @@ import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_LOGIN_FINISH
 import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_UPLOAD_FINISH
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.transactionByMainWallet
-import com.flowfoundation.wallet.manager.flowjvm.ufix64Safe
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -33,7 +32,16 @@ import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.BackupError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.ioScope
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import java.io.File
 import wallet.core.jni.HDWallet
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.utils.logd
+import org.onflow.flow.ChainId
+import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
 
 class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
@@ -85,8 +93,25 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
     }
 
     fun createBackup() {
-        backupCryptoProvider = BackupCryptoProvider(HDWallet(160, ""))
+        val baseDir = File(Env.getApp().filesDir, "wallet")
+        val seedPhraseKey = SeedPhraseKey(
+            mnemonicString = HDWallet(160, "").mnemonic(),
+            passphrase = "",
+            derivationPath = "m/44'/539'/0'/0/0",
+            keyPair = null,
+            storage = FileSystemStorage(baseDir)
+        )
+        createBackupCryptoProvider(seedPhraseKey)
         backupStateLiveData.postValue(BackupDropboxState.UPLOAD_BACKUP)
+    }
+
+    private fun createBackupCryptoProvider(seedPhraseKey: SeedPhraseKey) {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        backupCryptoProvider = BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
     }
 
     fun uploadToChain() {
@@ -94,15 +119,26 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
             backupCryptoProvider?.let {
                 try {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
-                        arg { string(it.getPublicKey()) }
-                        arg { uint8(it.getSignatureAlgorithm().index) }
-                        arg { uint8(it.getHashAlgorithm().index) }
+                        val pubKeyWithPrefix = it.getPublicKey() // e.g., "04..."
+                        val pubKeyHexRaw = pubKeyWithPrefix.removePrefix("0x")
+                        
+                        // Flow's Cadence addKey script expects the publicKey string argument to be the
+                        // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
+                        val pubKeyForCadence = if (pubKeyHexRaw.startsWith("04") && pubKeyHexRaw.length == 130) {
+                            pubKeyHexRaw.substring(2)
+                        } else {
+                            pubKeyHexRaw
+                        }
+                        
+                        arg { string(pubKeyForCadence) }
+                        arg { uint8(it.getSignatureAlgorithm().cadenceIndex.toUByte()) }
+                        arg { uint8(it.getHashAlgorithm().cadenceIndex.toUByte()) }
                         arg { ufix64Safe(500) }
                     }
                     val transactionState = TransactionState(
                         transactionId = txId!!,
                         time = System.currentTimeMillis(),
-                        state = FlowTransactionStatus.PENDING.num,
+                        state = TransactionStatus.PENDING.ordinal,
                         type = TransactionState.TYPE_ADD_PUBLIC_KEY,
                         data = ""
                     )
@@ -132,14 +168,24 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
         ioScope {
             backupCryptoProvider?.let {
                 try {
+                    logd("BackupDropbox", "Starting registrationKeyList for Dropbox backup")
                     val deviceInfo = DeviceInfoManager.getDeviceInfoRequest()
                     val service = retrofit().create(ApiService::class.java)
+                    val publicKey = it.getPublicKey()
+                    logd("BackupDropbox", "Public key for sync: $publicKey")
+                    logd("BackupDropbox", "Public key length: ${publicKey.length}")
+                    
+                    // Ensure the public key is in the correct format for the API (64 bytes, no 04 prefix)
+                    val normalizedPublicKey = publicKey.removePrefix("0x").removePrefix("04")
+                    logd("BackupDropbox", "Normalized public key for sync: $normalizedPublicKey")
+                    logd("BackupDropbox", "Normalized public key length: ${normalizedPublicKey.length}")
+                    
                     val resp = service.syncAccount(
                         AccountSyncRequest(
                             AccountKey(
-                                publicKey = it.getPublicKey(),
-                                signAlgo = it.getSignatureAlgorithm().index,
-                                hashAlgo = it.getHashAlgorithm().index,
+                                publicKey = normalizedPublicKey,
+                                signAlgo = it.getSignatureAlgorithm().cadenceIndex,
+                                hashAlgo = it.getHashAlgorithm().cadenceIndex,
                                 weight = it.getKeyWeight()
                             ),
                             deviceInfo,
@@ -149,6 +195,8 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                             )
                         )
                     )
+                    logd("BackupDropbox", "Sync response status: ${resp.status}")
+                    logd("BackupDropbox", "Sync response: $resp")
                     if (resp.status == 200) {
                         MixpanelManager.multiBackupCreated(MixpanelBackupProvider.DROPBOX)
                         backupStateLiveData.postValue(BackupDropboxState.BACKUP_SUCCESS)
@@ -156,7 +204,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                         backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                     }
                 } catch (e: Exception) {
-                    ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
+                    android.util.Log.e("BackupDropbox", "Registration failed", e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.DROPBOX)
                     backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                 }

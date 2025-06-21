@@ -1,8 +1,8 @@
 package com.flowfoundation.wallet.utils.secret
 
 import com.flowfoundation.wallet.BuildConfig
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.bytesToHex
+import org.onflow.flow.models.hexToBytes
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec

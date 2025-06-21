@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.wallet.sync
 import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowChainId
 import com.reown.android.Core
 import com.reown.android.CoreClient
 import com.reown.sign.client.Sign
@@ -26,11 +25,13 @@ class WalletSyncViewModel : ViewModel() {
             val uri = try {
                 wcFetchPairUriInternal()
             } catch (e: Exception) {
+                loge(WalletSyncViewModel::class.java.simpleName, "Failed to fetch pairing URI: ${e.message}")
+                loge(e)
                 qrCodeLiveData.postValue(null)
                 return@viewModelIOScope
             }
             loge(WalletSyncViewModel::class.java.simpleName, "paringURI::${uri}")
-            val drawable = uri?.toQRDrawable(withScale = true)
+            val drawable = uri.toQRDrawable(withScale = true)
             qrCodeLiveData.postValue(drawable)
         }
     }
@@ -39,9 +40,7 @@ class WalletSyncViewModel : ViewModel() {
         val atomicReference = AtomicReference(continuation)
         val namespaces = mapOf(
             "flow" to Sign.Model.Namespace.Proposal(
-                chains = listOf("flow:${
-                    if (isTestnet()) FlowChainId.TESTNET 
-                    else FlowChainId.MAINNET}"),
+                chains = listOf(if (isTestnet()) "flow:testnet" else "flow:mainnet"),
                 methods = WalletConnectMethod.entries.map { it.value },
                 events = listOf("chainChanged", "accountsChanged"),
             )

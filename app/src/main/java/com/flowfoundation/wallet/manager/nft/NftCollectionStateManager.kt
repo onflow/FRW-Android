@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.cache.nftCollectionStateCache
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
-import com.flowfoundation.wallet.manager.flowjvm.cadenceCheckNFTListEnabled
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNFTBalanceStorage
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.ioScope

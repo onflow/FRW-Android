@@ -9,7 +9,6 @@ import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.SendBalanceModel
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import java.math.BigDecimal
 
 class SendAmountViewModel : ViewModel(), FungibleTokenUpdateListener {
     private lateinit var contact: AddressBookContact
@@ -75,4 +74,3 @@ class SendAmountViewModel : ViewModel(), FungibleTokenUpdateListener {
         }
     }
 }
-

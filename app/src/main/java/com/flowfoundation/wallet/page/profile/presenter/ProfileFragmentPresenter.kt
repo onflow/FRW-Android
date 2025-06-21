@@ -24,8 +24,6 @@ import com.flowfoundation.wallet.page.profile.model.ProfileFragmentModel
 import com.flowfoundation.wallet.page.profile.subpage.about.AboutActivity
 import com.flowfoundation.wallet.page.profile.subpage.accountsetting.AccountSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.avatar.ViewAvatarActivity
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.MeowDomainClaimedStateChangeListener
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.observeMeowDomainClaimedStateChange
 import com.flowfoundation.wallet.page.profile.subpage.currency.CurrencyListActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
@@ -35,7 +33,6 @@ import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccoun
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
-import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
@@ -45,24 +42,25 @@ import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.loadAvatar
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.bug.BugReporting
-import com.instabug.library.OnSdkDismissCallback
 
 class ProfileFragmentPresenter(
     private val fragment: ProfileFragment,
     private val binding: FragmentProfileBinding,
-) : BasePresenter<ProfileFragmentModel>, MeowDomainClaimedStateChangeListener {
+) : BasePresenter<ProfileFragmentModel> {
 
     private val context = fragment.requireContext()
     private var userInfo: UserInfoData? = null
 
     init {
+        logd("ProfileFragmentPresenter", "init called")
         binding.root.addStatusBarTopPadding()
         binding.userInfo.editButton.setOnClickListener {
             userInfo?.let { AccountSettingActivity.launch(fragment.requireContext(), it) }
         }
         binding.userInfo.nicknameView.setOnClickListener {
+            logd("ProfileFragmentPresenter", "nicknameView clicked")
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
         binding.notLoggedIn.root.setOnClickListener {
@@ -108,12 +106,13 @@ class ProfileFragmentPresenter(
         binding.group3.bugReport.setOnClickListener { Instabug.show() }
         binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
         binding.group4.switchAccountPreference.setOnClickListener {
+            logd("ProfileFragmentPresenter", "switchAccountPreference clicked")
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
 
         updatePreferenceState()
 //        updateClaimDomainState()
-        observeMeowDomainClaimedStateChange(this)
+//        observeMeowDomainClaimedStateChange(this)
     }
 
     override fun bind(model: ProfileFragmentModel) {
@@ -121,10 +120,6 @@ class ProfileFragmentPresenter(
         model.onResume?.let { updatePreferenceState() }
         model.inboxCount?.let { updateInboxCount(it) }
         updateNotificationPermissionStatus()
-    }
-
-    override fun onDomainClaimedStateChange(isClaimed: Boolean) {
-//        updateClaimDomainState()
     }
 
     private fun bindUserInfo(userInfo: UserInfoData) {

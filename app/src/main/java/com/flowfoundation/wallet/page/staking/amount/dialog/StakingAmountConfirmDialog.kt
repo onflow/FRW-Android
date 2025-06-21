@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogStakingAmountConfirmBinding
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.widgets.ButtonState
 import kotlinx.coroutines.delay
+import org.onflow.flow.infrastructure.Cadence.Companion.uint32
 
 class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
 
@@ -110,13 +111,13 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             }
             val txId = CadenceScript.CADENCE_STAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
-                arg { uint32(delegatorId) }
+                arg { uint32(delegatorId.toUInt()) }
                 arg { ufix64Safe(amount) }
             }
             val transactionState = TransactionState(
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_STAKE_FLOW,
                 data = ""
             )
@@ -143,13 +144,13 @@ class StakingAmountConfirmDialog : BottomSheetDialogFragment() {
             }
             val txId = CadenceScript.CADENCE_UNSTAKE_FLOW.transactionByMainWallet {
                 arg { string(data.provider.id) }
-                arg { uint32(delegatorId) }
+                arg { uint32(delegatorId.toUInt()) }
                 arg { ufix64Safe(amount) }
             }
             val transactionState = TransactionState(
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_STAKE_FLOW,
                 data = ""
             )

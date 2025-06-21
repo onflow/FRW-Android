@@ -11,8 +11,6 @@ import com.flowfoundation.wallet.page.explore.ExploreFragment
 import com.flowfoundation.wallet.page.explore.adapter.ExploreDAppAdapter
 import com.flowfoundation.wallet.page.explore.adapter.ExploreDAppTagsAdapter
 import com.flowfoundation.wallet.page.explore.model.ExploreModel
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.MeowDomainClaimedStateChangeListener
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.observeMeowDomainClaimedStateChange
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.location
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -23,7 +21,7 @@ import kotlinx.coroutines.delay
 class ExplorePresenter(
     private val fragment: ExploreFragment,
     private val binding: FragmentExploreBinding,
-) : BasePresenter<ExploreModel>, MeowDomainClaimedStateChangeListener {
+) : BasePresenter<ExploreModel> {
     private val dappAdapter by lazy { ExploreDAppAdapter() }
     private val dappTagAdapter by lazy { ExploreDAppTagsAdapter() }
 
@@ -54,7 +52,7 @@ class ExplorePresenter(
                 openBrowser(activity, searchBoxPosition = searchBox.root.location())
             }
         }
-        observeMeowDomainClaimedStateChange(this)
+        // observeMeowDomainClaimedStateChange(this)
     }
 
     override fun bind(model: ExploreModel) {
@@ -66,8 +64,5 @@ class ExplorePresenter(
         model.dAppTagList?.let {
             dappTagAdapter.setNewDiffData(it)
         }
-    }
-
-    override fun onDomainClaimedStateChange(isClaimed: Boolean) {
     }
 }

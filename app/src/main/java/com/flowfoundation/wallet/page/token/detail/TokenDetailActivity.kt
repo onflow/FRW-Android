@@ -38,7 +38,7 @@ class TokenDetailActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         currentToken = FungibleTokenListManager.getTokenById(contractId)
-        currentToken?.let { token ->
+                currentToken?.let { token ->
             binding = ActivityTokenDetailBinding.inflate(layoutInflater)
             setContentView(binding.root)
 

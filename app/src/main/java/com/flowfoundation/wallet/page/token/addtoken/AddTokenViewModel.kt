@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.token.addtoken
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.flowjvm.cadenceEnableToken
@@ -21,6 +20,7 @@ import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import org.onflow.flow.models.TransactionStatus
 
 class AddTokenViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenListUpdateListener {
 
@@ -94,7 +94,7 @@ class AddTokenViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenLi
                 val transactionState = TransactionState(
                     transactionId = transactionId,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_ADD_TOKEN,
                     data = Gson().toJson(coin)
                 )

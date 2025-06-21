@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.mixpanel
 
 import android.annotation.SuppressLint
 import android.app.Application
+import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountManager
@@ -9,12 +10,12 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.error.BaseError
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.loge
 import com.mixpanel.android.mpmetrics.MixpanelAPI
-import com.nftco.flow.sdk.FlowError
 import com.reown.android.internal.common.crypto.sha256
 import org.json.JSONArray
 import org.json.JSONObject
@@ -65,7 +66,7 @@ object MixpanelManager {
 
     fun identifyUserProfile() {
         identify(
-            firebaseUid() ?: WalletManager.wallet()?.id ?: AccountManager.userInfo()?.username ?: ""
+            firebaseUid() ?: WalletManager.wallet()?.walletAddress() ?: AccountManager.userInfo()?.username ?: ""
         )
     }
 
@@ -88,13 +89,13 @@ object MixpanelManager {
         trackEvent(EVENT_ERROR, properties)
     }
 
-    fun error(error: FlowError, locationInfo: String, errorMsg: String? = null) {
+    fun error(error: WalletError, locationInfo: String, errorMsg: String? = null) {
         val properties = JSONObject().apply {
             put(KEY_CODE, error.code)
             put(KEY_CATEGORY, error.javaClass.simpleName)
-            put(KEY_MESSAGE, errorMsg ?: error.name)
+            put(KEY_MESSAGE, errorMsg ?: error.message)
             put(KEY_EXTRA, locationInfo)
-            put(KEY_VALUE, error.name)
+            put(KEY_VALUE, error.message)
         }
         trackEvent(EVENT_ERROR, properties)
     }

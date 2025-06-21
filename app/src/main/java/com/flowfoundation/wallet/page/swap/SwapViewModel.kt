@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.page.swap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
@@ -109,7 +109,7 @@ class SwapViewModel : ViewModel(), FungibleTokenUpdateListener {
             val transactionState = TransactionState(
                 transactionId = txId,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                 data = Gson().toJson(data),
             )

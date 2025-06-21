@@ -18,9 +18,12 @@ open class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         logd("startup", "SplashActivity onCreate")
         uiScope {
+            logd("startup", isAccountV1DataExist())
             if (isAccountV1DataExist()) {
+                logd("startup", "Account data exists")
                 AccountMigrateActivity.launch(this)
             } else {
+                logd("startup", "Launching main activity")
                 MainActivity.launch(this)
             }
             overridePendingTransition(0, 0)

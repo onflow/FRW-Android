@@ -19,11 +19,8 @@ import com.flowfoundation.wallet.network.model.CadenceSecurityCheckResponse
 import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
-import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.isVisible
-import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.extensions.setVisible
-import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel

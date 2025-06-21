@@ -3,14 +3,12 @@ package com.flowfoundation.wallet.manager.emoji
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 
 
 object AccountEmojiManager {
-    private val TAG = AccountEmojiManager::class.java.simpleName
 
     private val listeners = CopyOnWriteArrayList<WeakReference<OnEmojiUpdate>>()
     private val accountEmojiList = mutableListOf<WalletEmojiInfo>()
@@ -119,11 +117,15 @@ object AccountEmojiManager {
         emojiId: Int,
         emojiName: String
     ) {
-        logd(TAG, "dispatchListeners $address:$emojiId:$emojiName")
         uiScope {
             listeners.removeAll { it.get() == null }
             listeners.forEach { it.get()?.onEmojiUpdate(userName, address, emojiId, emojiName) }
         }
+    }
+
+    fun clear() {
+        accountEmojiList.clear()
+        listeners.clear()
     }
 }
 

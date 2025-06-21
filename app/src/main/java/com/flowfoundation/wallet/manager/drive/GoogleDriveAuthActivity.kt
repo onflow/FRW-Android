@@ -14,7 +14,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccoun
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException
 import com.google.api.client.http.HttpRequestInitializer
 import com.google.api.client.http.javanet.NetHttpTransport
-import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.client.json.gson.GsonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -30,7 +30,13 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.google.android.gms.common.api.Scope
-import wallet.core.jni.HDWallet
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
+import com.flow.wallet.wallet.KeyWallet
+import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
+import java.io.File
 import java.util.*
 
 
@@ -108,7 +114,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                 credential.selectedAccount = account.account
                 val googleDriveService: Drive = Drive.Builder(
                     NetHttpTransport(),
-                    JacksonFactory.getDefaultInstance(),
+                    GsonFactory.getDefaultInstance(),
                     setHttpTimeout(credential),
                 ).setApplicationName("Drive API Migration").build()
 
@@ -144,10 +150,32 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                     isViewBackup -> viewFromGoogleDrive(googleDriveService)
                     isDeleteBackup -> deleteMnemonicFromGoogleDrive(googleDriveService)
                     isRestore || isRestoreWithSignOut -> restoreMnemonicFromGoogleDrive(googleDriveService)
-                    isMultiBackup -> uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(HDWallet(mnemonic, "")))
+                    isMultiBackup -> {
+                        val baseDir = File(Env.getApp().filesDir, "wallet")
+                        val storage = FileSystemStorage(baseDir)
+                        val seedPhraseKey = SeedPhraseKey(
+                            mnemonicString = mnemonic ?: "",
+                            passphrase = "",
+                            derivationPath = "m/44'/539'/0'/0/0",
+                            keyPair = null,
+                            storage = storage
+                        )
+                        uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey))
+                    }
                     isMultiRestoreWithSignOut -> restoreFromGoogleDrive(googleDriveService)
                     isLogin -> loginFinish()
-                    isCheckBackup -> checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(HDWallet(mnemonic, "")))
+                    isCheckBackup -> {
+                        val baseDir = File(Env.getApp().filesDir, "wallet")
+                        val storage = FileSystemStorage(baseDir)
+                        val seedPhraseKey = SeedPhraseKey(
+                            mnemonicString = mnemonic ?: "",
+                            passphrase = "",
+                            derivationPath = "m/44'/539'/0'/0/0",
+                            keyPair = null,
+                            storage = storage
+                        )
+                        checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey))
+                    }
                     else -> uploadMnemonicToGoogleDrive(googleDriveService, password)
                 }
                 finish()
@@ -171,6 +199,24 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
             httpRequest.connectTimeout = 3 * 60000
             httpRequest.readTimeout = 3 * 60000
         }
+    }
+
+    private suspend fun uploadGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
+    }
+
+    private suspend fun checkGoogleDriveBackup(googleDriveService: Drive, seedPhraseKey: SeedPhraseKey) {
+        val wallet = WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(ChainId.Mainnet, ChainId.Testnet),
+            getStorage()
+        )
+        checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet))
     }
 
     companion object {

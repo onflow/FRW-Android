@@ -13,10 +13,8 @@ import com.flowfoundation.wallet.databinding.FragmentWalletCreateMnemonicBinding
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_CLOUD_PWD
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_MNEMONIC_CHECK
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
-import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 
 class WalletCreateMnemonicFragment : Fragment() {
@@ -43,10 +41,16 @@ class WalletCreateMnemonicFragment : Fragment() {
         }
 
         with(binding) {
-            backupCloud.setOnClickListener { pageViewModel.changeStep(WALLET_CREATE_STEP_CLOUD_PWD) }
-            backupManually.setOnClickListener { pageViewModel.changeStep(WALLET_CREATE_STEP_MNEMONIC_CHECK) }
+            backupCloud.setOnClickListener { 
+                viewModel.createWallet() // Create the wallet before proceeding
+                pageViewModel.changeStep(WALLET_CREATE_STEP_CLOUD_PWD) 
+            }
+            backupManually.setOnClickListener { 
+                viewModel.createWallet() // Create the wallet before proceeding
+                pageViewModel.changeStep(WALLET_CREATE_STEP_MNEMONIC_CHECK) 
+            }
             copyButton.setOnClickListener {
-                textToClipboard(Wallet.store().mnemonic())
+                textToClipboard(viewModel.getMnemonic())
                 toast(msgRes = R.string.copied_to_clipboard)
             }
         }
@@ -55,6 +59,5 @@ class WalletCreateMnemonicFragment : Fragment() {
             mnemonicList.observe(viewLifecycleOwner) { adapter.setNewDiffData(it) }
             loadMnemonic()
         }
-        setRegistered()
     }
 }

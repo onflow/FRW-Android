@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.databinding.DialogSendConfirmBinding
 import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.network.model.AddressBookContactBookList
+import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionDialog
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionViewModel
@@ -47,6 +48,14 @@ class TransactionPresenter(
 
     private fun updateSendState(isSuccess: Boolean) {
         if (isSuccess) {
+            // Notify SendAmountActivity that transaction was submitted
+            val activity = fragment.activity
+            if (activity is SendAmountActivity) {
+                activity.onTransactionSubmitted()
+            }
+            
+            uiScope { fragment.dismissAllowingStateLoss() }
+            
             ioScope {
                 val recentCache = recentTransactionCache().read() ?: AddressBookContactBookList(emptyList())
                 val list = recentCache.contacts.orEmpty().toMutableList()
@@ -54,7 +63,6 @@ class TransactionPresenter(
                 list.add(0, transaction.target)
                 recentCache.contacts = list
                 recentTransactionCache().cache(recentCache)
-                uiScope { fragment.dismissAllowingStateLoss() }
             }
         }
     }
@@ -63,7 +71,7 @@ class TransactionPresenter(
     private fun setupAmount() {
         with(binding) {
             amountView.text = "${transaction.amount} ${token.symbol.uppercase()}"
-            coinNameView.text = token.name
+                    coinNameView.text = token.name
             Glide.with(coinIconView).load(token.tokenIcon()).into(coinIconView)
             uiScope {
                 storageTip.setInsufficientTip(

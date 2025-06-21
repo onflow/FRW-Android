@@ -2,16 +2,16 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.nftco.flow.sdk.FlowAddress
 import com.flowfoundation.wallet.manager.config.AppConfig
-import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
+import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
+import org.onflow.flow.models.FlowAddress
 
 @WorkerThread
-fun walletConnectAuthnServiceResponse(
+suspend fun walletConnectAuthnServiceResponse(
     address: String,
     keyId: Int,
     nonce: String?,
@@ -99,7 +99,7 @@ private fun userSign(address: String, keyId: Int): String {
     """.trimIndent()
 }
 
-private fun preAuthz(): String {
+private suspend fun preAuthz(): String {
     return """
 {
     "f_type": "Service",
@@ -110,13 +110,13 @@ private fun preAuthz(): String {
     "method": "WC/RPC",
     "data": {
       "address": "${AppConfig.payer().address.toAddress()}",
-      "keyId": ${FlowAddress(AppConfig.payer().address.toAddress()).lastBlockAccountKeyId()}
+      "keyId": ${FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId()}
     }
 }
     """.trimIndent()
 }
 
-private fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
+private suspend fun accountProof(address: String, keyId: Int, nonce: String?, appIdentifier: String?): String {
     if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) return ""
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
     val accountProofSign = cryptoProvider.signData(encodeAccountProof(

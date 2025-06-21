@@ -31,7 +31,7 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
 import org.web3j.abi.datatypes.Function
@@ -75,7 +75,7 @@ class TransactionViewModel : ViewModel(), FungibleTokenUpdateListener {
             val toAddress = transaction.target.address.orEmpty().toAddress()
             val fromAddress = transaction.fromAddress
             MixpanelManager.transferFT(fromAddress, toAddress, token.symbol.orEmpty(), transaction.amount.toPlainString(), token.tokenIdentifier())
-            if (token.isFlowToken()) {
+                    if (token.isFlowToken()) {
                 if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
                     if (isFlowAddress(toAddress)) {
                         if (WalletManager.isChildAccount(toAddress)) {
@@ -302,7 +302,7 @@ class TransactionViewModel : ViewModel(), FungibleTokenUpdateListener {
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_TRANSFER_COIN,
             data = Gson().toJson(transaction),
         )

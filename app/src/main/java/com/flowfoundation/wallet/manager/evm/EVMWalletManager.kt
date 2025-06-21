@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.manager.evm
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
+import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromCOA
@@ -27,6 +29,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
@@ -40,8 +43,9 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import kotlinx.serialization.Serializable
+import org.onflow.flow.ChainId
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
 
@@ -91,17 +95,27 @@ object EVMWalletManager {
         logd(TAG, "fetchEVMAddress()")
         ioScope {
             val address = cadenceQueryEVMAddress()
-            logd(TAG, "fetchEVMAddress address::$address")
             if (address.isNullOrEmpty()) {
                 ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                 callback?.invoke(false)
             } else {
                 val networkAddress = getNetworkAddress()
                 if (networkAddress != null) {
-                    evmAddressMap[networkAddress] = address.toAddress()
+                    val formattedAddress = address.toAddress()
+
+                    // Validate the address before storing it
+                    if (!isValidEVMAddress(formattedAddress)) {
+                        logd(TAG, "fetchEVMAddress received invalid address: '$formattedAddress'")
+                        ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
+                        callback?.invoke(false)
+                        return@ioScope
+                    }
+                    
+                    evmAddressMap[networkAddress] = formattedAddress
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
                     callback?.invoke(true)
                 } else {
+                    ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                     callback?.invoke(false)
                 }
             }
@@ -109,7 +123,31 @@ object EVMWalletManager {
     }
 
     private fun getNetworkAddress(network: String? = chainNetWorkString()): String? {
-       return WalletManager.wallet()?.chainNetworkWallet(network)?.address()
+        // First try to get from WalletManager.wallet()
+        val wallet = WalletManager.wallet()
+        if (wallet != null) {
+            val walletAddress = wallet.walletAddress()
+            if (!walletAddress.isNullOrBlank()) {
+                return walletAddress
+            }
+            
+            // If wallet.walletAddress() returns null, try to get directly from wallet accounts
+            val currentNetwork = network ?: chainNetWorkString()
+            val networkAccount = wallet.accounts.entries.firstOrNull { (chainId, _) ->
+                when (currentNetwork) {
+                    NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
+                    NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
+                    else -> false
+                }
+            }?.value?.firstOrNull()
+            
+            if (networkAccount != null) {
+                return networkAccount.address
+            }
+        }
+        
+        // Fallback to AccountManager server data
+        return AccountManager.get()?.wallet?.chainNetworkWallet(network)?.address()
     }
 
     fun showEVMAccount(network: String?): Boolean {
@@ -134,10 +172,36 @@ object EVMWalletManager {
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
         val address = evmAddressMap[getNetworkAddress(network)]
         return if (address.isNullOrBlank() || address == "0x") {
+            ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
             return null
         } else {
-            toChecksumEVMAddress(address)
+            val checksumAddress = toChecksumEVMAddress(address)
+            // Validate the address format - if it's corrupted, try to refresh it
+            if (!isValidEVMAddress(checksumAddress)) {
+                logd(TAG, "Detected corrupted EVM address: $checksumAddress, attempting to refresh")
+                return null
+            }
+            checksumAddress
         }
+    }
+
+    private fun isValidEVMAddress(address: String): Boolean {
+        // Check if address matches valid EVM address pattern and doesn't have suspicious patterns
+        if (!address.matches(Regex("^0x[a-fA-F0-9]{40}$"))) {
+            return false
+        }
+        
+        // Check for addresses with too many leading zeros (likely corrupted)
+        val hexPart = address.removePrefix("0x")
+        val leadingZeros = hexPart.takeWhile { it == '0' }.length
+        
+        // If more than 30 characters are zeros (out of 40), it's likely corrupted
+        if (leadingZeros > 30) {
+            logd(TAG, "Address appears corrupted due to excessive leading zeros: $leadingZeros")
+            return false
+        }
+        
+        return true
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
@@ -195,8 +259,7 @@ object EVMWalletManager {
             if (isEVMWalletAddress(toAddress)) {
                 if (WalletManager.isChildAccount(fromAddress)) {
                     // Linked Account -> COA
-                    bridgeTokenFromChildToCOA(token.tokenIdentifier(), amount, fromAddress,
-                        callback)
+                    bridgeTokenFromChildToCOA(token.tokenIdentifier(), amount, fromAddress, callback)
                 } else {
                     // Parent Flow -> COA
                     bridgeTokenFromFlowToCOA(token.tokenIdentifier(), amount, callback)
@@ -337,8 +400,7 @@ object EVMWalletManager {
         )
     }
 
-    suspend fun transferToken(token: FungibleToken, toAddress: String, amount: BigDecimal, callback:
-        (isSuccess: Boolean) -> Unit) {
+    suspend fun transferToken(token: FungibleToken, toAddress: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
         executeTransaction(
             action = { cadenceTransferToken(token, toAddress, amount.toDouble()) },
             operationName = "transfer token",
@@ -402,6 +464,25 @@ object EVMWalletManager {
                 return
             }
 
+            // Add transaction to mini window (bubble stack) immediately
+            val transactionType = when {
+                operationName.contains("bridge nft") || operationName.contains("move") -> TransactionState.TYPE_MOVE_NFT
+                operationName.contains("transfer token") -> TransactionState.TYPE_TRANSFER_COIN
+                operationName.contains("fund") || operationName.contains("withdraw") || operationName.contains("bridge") -> TransactionState.TYPE_TRANSFER_COIN
+                else -> TransactionState.TYPE_TRANSACTION_DEFAULT
+            }
+            
+            val transactionState = TransactionState(
+                transactionId = txId,
+                time = System.currentTimeMillis(),
+                state = TransactionStatus.PENDING.ordinal,
+                type = transactionType,
+                data = operationName, // Store operation name as data for identification
+            )
+            TransactionStateManager.newTransaction(transactionState)
+            pushBubbleStack(transactionState)
+
+            // Monitor transaction completion in the background
             TransactionStateWatcher(txId).watch { result ->
                 when {
                     result.isExecuteFinished() -> {
@@ -425,12 +506,16 @@ object EVMWalletManager {
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_MOVE_NFT,
             data = nft.uniqueId(),
         )
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
+    }
+
+    fun clear() {
+        evmAddressMap.clear()
     }
 }
 
