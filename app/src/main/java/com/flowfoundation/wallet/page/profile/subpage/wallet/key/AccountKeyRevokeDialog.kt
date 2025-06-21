@@ -9,11 +9,16 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogAccountKeyRevokeBinding
 import com.flowfoundation.wallet.manager.account.AccountKeyManager
+import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.ButtonState
+import org.onflow.flow.models.FlowAddress
 
 
 class AccountKeyRevokeDialog : BottomSheetDialogFragment() {
@@ -42,6 +47,14 @@ class AccountKeyRevokeDialog : BottomSheetDialogFragment() {
     private fun revokeKey() {
         ioScope {
             if (indexId < 0) {
+                return@ioScope
+            }
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return@ioScope
+            val address = WalletManager.wallet()?.walletAddress() ?: return@ioScope
+            val flowAddress = FlowAddress(address)
+            val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
+            if (keyIndex == indexId) {
+                toast(msgRes = R.string.revoke_failed)
                 return@ioScope
             }
             val isSuccess = AccountKeyManager.revokeAccountKey(indexId)
