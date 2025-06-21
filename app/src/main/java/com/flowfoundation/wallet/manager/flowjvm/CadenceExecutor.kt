@@ -1,8 +1,6 @@
 package com.flowfoundation.wallet.manager.flowjvm
 
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.formatCadence
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flow.CadenceScriptBuilder
@@ -16,6 +14,8 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.network.model.TokenInfo
+import com.flowfoundation.wallet.network.model.formatCadence
 import com.flowfoundation.wallet.page.address.FlowDomainServer
 import com.flowfoundation.wallet.utils.error.CadenceError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
@@ -25,7 +25,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logv
 import com.flowfoundation.wallet.utils.reportCadenceErrorToDebugView
 import com.flowfoundation.wallet.wallet.toAddress
-import org.onflow.flow.AddressRegistry
+import com.nftco.flow.sdk.Flow
 import org.onflow.flow.infrastructure.Cadence
 import org.onflow.flow.infrastructure.Cadence.Companion.string
 import java.math.BigDecimal
@@ -36,8 +36,8 @@ const val EVM_GAS_LIMIT = 30000000
 suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn"): String? {
     logd(TAG, "cadenceQueryAddressByDomainFlowns(): domain=$domain, root=$root")
     val result = CadenceScript.CADENCE_QUERY_ADDRESS_BY_DOMAIN_FLOWNS.executeCadence {
-        arg { string(domain) }
-        arg { string(root) }
+        arg { Cadence.string(domain) }
+        arg { Cadence.string(root) }
     }
     logd(
         TAG,
@@ -49,53 +49,20 @@ suspend fun cadenceQueryAddressByDomainFlowns(domain: String, root: String = "fn
 suspend fun cadenceQueryAddressByDomainFind(domain: String): String? {
     logd(TAG, "cadenceQueryAddressByDomainFind()")
     val result = CadenceScript.CADENCE_QUERY_ADDRESS_BY_DOMAIN_FIND.executeCadence {
-        arg { string(domain) }
+        arg { Cadence.string(domain) }
     }
     logd(TAG, "cadenceQueryAddressByDomainFind response:${result?.encode()}")
     return result?.decode<String>()
 }
 
-suspend fun cadenceCheckTokenEnabled(coin: FlowCoin): Boolean? {
-    logd(TAG, "cadenceCheckTokenEnabled() address:${coin.address}")
-    val walletAddress = WalletManager.selectedWalletAddress()
-    val script = CadenceScript.CADENCE_CHECK_TOKEN_IS_ENABLED
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
+suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    logd(TAG, "cadenceGetTokenBalanceStorage()")
+    val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
         arg { Cadence.address(walletAddress) }
     }
-    logd(TAG, "cadenceCheckTokenEnabled response:${result?.encode()}")
-    return result?.decode<Boolean>()
-}
-
-suspend fun cadenceGetTokenBalanceStorage(): Map<String, BigDecimal>? {
-    val walletAddress = WalletManager.selectedWalletAddress()
-
-    // Check if we have a valid wallet address before proceeding
-    if (walletAddress.isBlank()) {
-        logd(TAG, "cadenceGetTokenBalanceStorage: No wallet address available, skipping")
-        return null
-    }
-
-    val formattedAddress = walletAddress.toAddress()
-
-    // Additional check to ensure the address is not just "0x" or invalid
-    if (formattedAddress == "0x" || formattedAddress.length < 10) {
-        logd(TAG, "cadenceGetTokenBalanceStorage: Invalid wallet address format '$formattedAddress', skipping")
-        return null
-    }
-
-    return try {
-        logd(TAG, "cadenceGetTokenBalanceStorage: Executing script for address: $formattedAddress")
-        val result = CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.executeCadence {
-            arg { Cadence.address(formattedAddress) }
-        }
-        logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
-        result?.decode<Map<String, String>>().parseBigDecimalMap()
-    } catch (e: Exception) {
-        loge(TAG, "cadenceGetTokenBalanceStorage failed for address $formattedAddress: ${e.message}")
-        loge(TAG, "Script: ${CadenceScript.CADENCE_GET_TOKEN_BALANCE_STORAGE.getScript().take(200)}...")
-        e.printStackTrace()
-        null
-    }
+    logd(TAG, "cadenceGetTokenBalanceStorage response:${result?.encode()}")
+    return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
 suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal>? {
@@ -107,70 +74,13 @@ suspend fun cadenceGetAllFlowBalance(list: List<String>): Map<String, BigDecimal
     return result?.decode<Map<String, String>>().parseBigDecimalMap()
 }
 
-suspend fun cadenceCheckLinkedAccountTokenListEnabled(): Map<String, Boolean>? {
-    val walletAddress = WalletManager.selectedWalletAddress()
-
-    // Check if we have a valid wallet address before proceeding
-    if (walletAddress.isBlank()) {
-        logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled: No wallet address available, skipping")
-        return null
-    }
-
-    val formattedAddress = walletAddress.toAddress()
-    // Additional check to ensure the address is not just "0x" or invalid
-    if (formattedAddress == "0x" || formattedAddress.length < 10) {
-        logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled: Invalid wallet address format '$formattedAddress', skipping")
-        return null
-    }
-
-    val result = CadenceScript.CADENCE_CHECK_LINKED_ACCOUNT_TOKEN_LIST_ENABLED.executeCadence {
-        arg { Cadence.address(formattedAddress) }
-    }
-    logd(TAG, "cadenceCheckLinkedAccountTokenListEnabled address:$formattedAddress :: response:${result?.encode()}")
-    return result?.decode<Map<String, Boolean>>()
-}
-
-suspend fun cadenceQueryTokenListBalanceWithAddress(address: String): Map<String, BigDecimal>? {
-    logd(TAG, "cadenceQueryTokenListBalanceWithAddress()")
-    val result = CadenceScript.CADENCE_GET_TOKEN_LIST_BALANCE.executeCadence {
-        arg { Cadence.address(address) }
-    }
-    logd(TAG, "cadenceQueryTokenListBalanceWithAddress response:${result?.encode()}")
-    return result?.decode<Map<String, String>>().parseBigDecimalMap()
-}
-
-suspend fun cadenceQueryTokenBalance(coin: FlowCoin, address: String? = null): BigDecimal? {
-    val walletAddress = address ?: WalletManager.selectedWalletAddress()
-
-    // Check if we have a valid wallet address before proceeding
-    if (walletAddress.isBlank()) {
-        logd(TAG, "cadenceQueryTokenBalance: No wallet address available, skipping")
-        return null
-    }
-
-    val formattedAddress = walletAddress.toAddress()
-
-    // Additional check to ensure the address is not just "0x" or invalid
-    if (formattedAddress == "0x" || formattedAddress.length < 10) {
-        logd(TAG, "cadenceQueryTokenBalance: Invalid wallet address format '$formattedAddress', skipping")
-        return null
-    }
-
-    val script = CadenceScript.CADENCE_GET_BALANCE
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
-        arg { Cadence.address(formattedAddress) }
-    }
-    logd(TAG, "cadenceQueryTokenBalance response:${result?.encode()}")
-    return result?.parseBigDecimal()
-}
-
-suspend fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String?): BigDecimal? {
-    if (coin == null || address == null) {
+suspend fun cadenceQueryTokenBalanceWithAddress(token: FungibleToken?, address: String?): BigDecimal? {
+    if (token == null || address == null) {
         return null
     }
     logd(TAG, "cadenceQueryTokenBalanceWithAddress()")
     val script = CadenceScript.CADENCE_GET_BALANCE
-    val result = coin.formatCadence(script).executeCadence(script.scriptId) {
+    val result = token.formatCadence(script).executeCadence(script.scriptId) {
         arg { Cadence.address(address) }
     }
     logd(
@@ -180,7 +90,7 @@ suspend fun cadenceQueryTokenBalanceWithAddress(coin: FlowCoin?, address: String
     return result?.parseBigDecimal()
 }
 
-suspend fun cadenceEnableToken(coin: FlowCoin): String? {
+suspend fun cadenceEnableToken(coin: TokenInfo): String? {
     logd(TAG, "cadenceEnableToken()")
     val script = CadenceScript.CADENCE_ADD_TOKEN
     val transactionId = coin.formatCadence(script).transactionByMainWallet(script.scriptId) {}
@@ -207,25 +117,21 @@ suspend fun cadenceNftEnabled(nft: NftCollection): String? {
     return transactionId
 }
 
+suspend fun cadenceCheckNFTListEnabled(): Map<String, Boolean>? {
+    logd(TAG, "cadenceCheckNFTListEnabled()")
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
+    val result = CadenceScript.CADENCE_CHECK_NFT_LIST_ENABLED.executeCadence {
+        arg { Cadence.address(walletAddress) }
+    }
+    logd(TAG, "cadenceCheckNFTListEnabled response:${result?.encode()}")
+    return result?.decode<Map<String, Boolean>>()
+}
+
 suspend fun cadenceGetNFTBalanceStorage(): Map<String, Int>? {
-    val walletAddress = WalletManager.selectedWalletAddress()
-
-    // Check if we have a valid wallet address before proceeding
-    if (walletAddress.isBlank()) {
-        logd(TAG, "cadenceGetNFTBalanceStorage: No wallet address available, skipping")
-        return null
-    }
-
-    val formattedAddress = walletAddress.toAddress()
-
-    // Additional check to ensure the address is not just "0x" or invalid
-    if (formattedAddress == "0x" || formattedAddress.length < 10) {
-        logd(TAG, "cadenceGetNFTBalanceStorage: Invalid wallet address format '$formattedAddress', skipping")
-        return null
-    }
-
+    logd(TAG, "cadenceGetNFTBalanceStorage()")
+    val walletAddress = WalletManager.selectedWalletAddress().toAddress()
     val result = CadenceScript.CADENCE_GET_NFT_BALANCE_STORAGE.executeCadence {
-        arg { Cadence.address(formattedAddress) }
+        arg { Cadence.address(walletAddress) }
     }
     logd(TAG, "cadenceGetNFTBalanceStorage response:${result?.encode()}")
     return result?.decode<Map<String, Int>>()
@@ -442,7 +348,7 @@ suspend fun cadenceQueryCOATokenBalance(): BigDecimal? {
 suspend fun cadenceFundFlowToCOAAccount(amount: BigDecimal): String? {
     logd(TAG, "cadenceFundFlowToCOAAccount()")
     val transactionId = CadenceScript.CADENCE_FUND_COA_FLOW_BALANCE.transactionByMainWallet {
-        arg { Cadence.ufix64(amount.toDouble()) }
+        arg { ufix64Safe(amount) }
     }
     logd(TAG, "cadenceFundFlowToCOAAccount() transactionId:$transactionId")
     return transactionId
@@ -502,7 +408,7 @@ suspend fun cadenceSendEVMV2Transaction(
 suspend fun cadenceGetNonce(address: String): BigDecimal? {
     logd(TAG, "cadenceGetNonce()")
     val result = CadenceScript.CADENCE_GET_NONCE.executeCadence {
-        arg { string(address) }
+        arg { Cadence.string(address) }
     }
     logd(TAG, "cadenceGetNonce response:${result?.encode()}")
     return result?.parseBigDecimal()
@@ -511,7 +417,7 @@ suspend fun cadenceGetNonce(address: String): BigDecimal? {
 suspend fun cadenceGetAssociatedFlowIdentifier(evmContractAddress: String): String? {
     logd(TAG, "cadenceGetAssociatedFlowIdentifier()")
     val result = CadenceScript.CADENCE_GET_ASSOCIATED_FLOW_IDENTIFIER.executeCadence {
-        arg { string(evmContractAddress) }
+        arg { Cadence.string(evmContractAddress) }
     }
     logd(TAG, "cadenceGetAssociatedFlowIdentifier response:${result?.encode()}")
     return result?.decode<String>()
@@ -792,84 +698,25 @@ suspend fun String.executeCadence(scriptId: String, block: CadenceScriptBuilder.
     logv(
         TAG,
         "executeScript:\n${
-            AddressRegistry().processScript(
+            Flow.DEFAULT_ADDRESS_REGISTRY.processScript(
                 this,
-                chainId = AddressRegistry().defaultChainId
+                chainId = Flow.DEFAULT_CHAIN_ID
             )
         }"
     )
-
-    logd(TAG, "Starting Cadence script execution for: $scriptId")
-
-    var lastException: Throwable? = null
-    val maxRetries = 3
-    var attempt = 0
-
-    while (attempt < maxRetries) {
-        try {
-            logd(TAG, "Attempting to execute script $scriptId (attempt ${attempt + 1})")
-            val result = FlowCadenceApi.executeCadenceScript {
-                script { this@executeCadence.addPlatformInfo().trimIndent() }
-                block()
-            }
-            logd(TAG, "Successfully executed script $scriptId on attempt ${attempt + 1}")
-            return result
-        } catch (e: Throwable) {
-            lastException = e
-            logd(TAG, "Script $scriptId failed on attempt ${attempt + 1}: ${e.javaClass.simpleName} - ${e.message}")
-
-            // Log the full stack trace for debugging
-            if (e.cause != null) {
-                logd(TAG, "Caused by: ${e.cause?.javaClass?.simpleName} - ${e.cause?.message}")
-            }
-
-            // Check if this is a connection-related error that should be retried
-            val shouldRetry = when {
-                e.message?.contains("Connection reset by peer", ignoreCase = true) == true -> true
-                e.message?.contains("IOException", ignoreCase = true) == true -> true
-                e.message?.contains("ConnectException", ignoreCase = true) == true -> true
-                e.message?.contains("SocketTimeoutException", ignoreCase = true) == true -> true
-                e.message?.contains("Channel was closed", ignoreCase = true) == true -> true
-                e.message?.contains("ClosedReceiveChannelException", ignoreCase = true) == true -> true
-                e.message?.contains("ClosedSendChannelException", ignoreCase = true) == true -> true
-                e.message?.contains("TLS", ignoreCase = true) == true -> true
-                e.cause?.message?.contains("Connection reset by peer", ignoreCase = true) == true -> true
-                e.cause?.message?.contains("Channel was closed", ignoreCase = true) == true -> true
-                e.cause?.message?.contains("ClosedReceiveChannelException", ignoreCase = true) == true -> true
-                // Check exception class names for Kotlin exceptions that might not have descriptive messages
-                e.javaClass.simpleName.contains("ClosedReceiveChannelException", ignoreCase = true) -> true
-                e.javaClass.simpleName.contains("ClosedSendChannelException", ignoreCase = true) -> true
-                e.cause?.javaClass?.simpleName?.contains("ClosedReceiveChannelException", ignoreCase = true) == true -> true
-                else -> false
-            }
-
-            attempt++
-
-            if (shouldRetry && attempt < maxRetries) {
-                val delayMs = when (attempt) {
-                    1 -> 1000L  // 1 second
-                    2 -> 2000L  // 2 seconds
-                    3 -> 3000L  // 3 seconds
-                    else -> 5000L
-                }
-                logd(TAG, "Network error on attempt $attempt for script $scriptId: ${e.message}. Retrying in ${delayMs}ms...")
-                kotlinx.coroutines.delay(delayMs)
-                continue
-            } else {
-                // Not retryable or max attempts reached
-                logd(TAG, "Script $scriptId failed permanently after $attempt attempts. Last error: ${e.message}")
-                break
-            }
+    return try {
+        FlowCadenceApi.executeCadenceScript {
+            script { this@executeCadence.addPlatformInfo().trimIndent() }
+            block()
         }
+    } catch (e: Throwable) {
+        val exception = ScriptExecutionException(scriptId, e)
+        loge(exception)
+        ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
+        MixpanelManager.scriptError(scriptId, e.cause?.message.orEmpty())
+        reportCadenceErrorToDebugView(scriptId, e)
+        return null
     }
-
-    // All attempts failed
-    val exception = ScriptExecutionException(scriptId, lastException!!)
-    loge(exception)
-    ErrorReporter.reportWithMixpanel(CadenceError.EXECUTE_FAILED, exception)
-    MixpanelManager.scriptError(scriptId, lastException.cause?.message.orEmpty())
-    reportCadenceErrorToDebugView(scriptId, lastException)
-    return null
 }
 
 class ScriptExecutionException(
@@ -934,4 +781,3 @@ private fun devPrefix(): String {
         ""
     }
 }
-

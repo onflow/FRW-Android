@@ -62,6 +62,8 @@ class TokenDetailPresenter(
             }
             ivVerified.setVisible(token.isVerified)
             clVerifiedTip.setVisible(token.isVerified.not())
+            ivVerified.setVisible(token.isVerified)
+            clVerifiedTip.setVisible(token.isVerified.not())
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {

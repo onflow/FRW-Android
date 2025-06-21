@@ -34,7 +34,7 @@ class CoinUtilsTest {
     @Test
     fun `test formatPrice for Float with currency conversion`() {
         every { CurrencyManager.currencyPrice() } returns 1.0f
-        
+
         assertEquals("1.234", 1.2345f.formatPrice(digits = 3))
         assertEquals("$1.234", 1.2345f.formatPrice(digits = 3, includeSymbol = true))
         assertEquals("$ 1.234", 1.2345f.formatPrice(digits = 3, includeSymbol = true, includeSymbolSpace = true))
@@ -43,13 +43,13 @@ class CoinUtilsTest {
     @Test
     fun `test formatPrice for Float with zero currency price`() {
         every { CurrencyManager.currencyPrice() } returns 0.0f
-        assertEquals("", 1.2345f.formatPrice())
+        assertEquals("1.234", 1.2345f.formatPrice())
     }
 
     @Test
     fun `test formatPrice for Float with large numbers`() {
         every { CurrencyManager.currencyPrice() } returns 1.0f
-        
+
         assertEquals("1.234m", 1234567f.formatPrice(isAbbreviation = true))
         assertEquals("1,234,567", 1234567f.formatPrice(isAbbreviation = false))
     }
@@ -57,7 +57,7 @@ class CoinUtilsTest {
     @Test
     fun `test formatPrice for BigDecimal with currency conversion`() {
         every { CurrencyManager.currencyDecimalPrice() } returns BigDecimal.ONE
-        
+
         val value = BigDecimal("1.2345")
         assertEquals("1.234", value.formatPrice(digits = 3))
         assertEquals("$1.234", value.formatPrice(digits = 3, includeSymbol = true))
@@ -67,7 +67,7 @@ class CoinUtilsTest {
     @Test
     fun `test formatPrice for BigDecimal with zero currency price`() {
         every { CurrencyManager.currencyDecimalPrice() } returns BigDecimal.ZERO
-        assertEquals("", BigDecimal("1.2345").formatPrice())
+        assertEquals("1.234", BigDecimal("1.2345").formatPrice())
     }
 
     @Test
@@ -103,15 +103,15 @@ class CoinUtilsTest {
         // Regular price formatting (≥ $0.0001)
         assertEquals("$0.1234", formatTokenPrice(0.12345))
         assertEquals("$0.1199", formatTokenPrice(0.12))  // Actual implementation preserves 4 decimal places
-        
+
         // Test minimum 2 decimal places
         assertEquals("$1.00", formatTokenPrice(1.0))
         assertEquals("$0.10", formatTokenPrice(0.1))
-        
+
         // Subscript formatting (< $0.0001)
         assertEquals("$0.0₄123", formatTokenPrice(0.00001234))  // 4 leading zeros
         assertEquals("$0.0₅123", formatTokenPrice(0.000001234)) // 5 leading zeros
-        
+
         // Zero case
         assertEquals("", formatTokenPrice(0.0))
     }

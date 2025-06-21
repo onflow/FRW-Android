@@ -18,6 +18,8 @@ class AddTokenActivity : BaseActivity() {
     private lateinit var viewModel: AddTokenViewModel
     private lateinit var binding: ActivityAddTokenBinding
 
+    private val loadingDialog by lazy { FlowLoadingDialog(this) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddTokenBinding.inflate(layoutInflater)
@@ -28,8 +30,12 @@ class AddTokenActivity : BaseActivity() {
 
         presenter = AddTokenPresenter(this, binding)
         viewModel = ViewModelProvider(this)[AddTokenViewModel::class.java].apply {
-            tokenListLiveData.observe(this@AddTokenActivity) { presenter.bind(AddTokenModel(data = it)) }
+            tokenListLiveData.observe(this@AddTokenActivity) {
+                loadingDialog.dismiss()
+                presenter.bind(AddTokenModel(data = it))
+            }
             load()
+            loadingDialog.show()
         }
     }
 

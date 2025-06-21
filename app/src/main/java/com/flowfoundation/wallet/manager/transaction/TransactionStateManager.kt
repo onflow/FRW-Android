@@ -9,13 +9,13 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.cache.CacheManager
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
-import com.flowfoundation.wallet.manager.coin.FlowCoin
-import com.flowfoundation.wallet.manager.coin.TokenStateManager
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
+import com.flowfoundation.wallet.network.model.TokenInfo
 import com.flowfoundation.wallet.page.send.nft.NftSendModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.model.TransactionModel
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
@@ -334,7 +334,7 @@ object TransactionStateManager {
         }
         ioScope {
             if (state.type == TransactionState.TYPE_ADD_TOKEN && state.isSuccess()) {
-                TokenStateManager.fetchStateSingle(state.tokenData(), cache = true)
+                FungibleTokenListManager.updateTokenList()
             }
 
             if (state.type == TransactionState.TYPE_ENABLE_NFT && state.isSuccess()) {
@@ -429,7 +429,7 @@ data class TransactionState(
 
     fun nftData() = Gson().fromJson(data, NftSendModel::class.java)
 
-    fun tokenData() = Gson().fromJson(data, FlowCoin::class.java)
+    fun tokenData() = Gson().fromJson(data, TokenInfo::class.java)
 
     fun nftCollectionData() = Gson().fromJson(data, NftCollection::class.java)
 

@@ -151,7 +151,7 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                     cadenceQueryCOATokenBalance()
                 } else {
                     cadenceQueryTokenBalanceWithAddress(
-                        FlowCoinListManager.getFlowCoin(),
+                        FungibleTokenListManager.getFlowToken(),
                         address
                     )
                 } ?: BigDecimal.ZERO

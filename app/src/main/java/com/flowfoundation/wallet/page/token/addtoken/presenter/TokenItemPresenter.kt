@@ -6,7 +6,7 @@ import com.bumptech.glide.Glide
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
-import com.flowfoundation.wallet.databinding.ItemTokenListBinding
+import com.flowfoundation.wallet.databinding.ItemAddTokenListBinding
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenConfirmDialog
 import com.flowfoundation.wallet.page.token.addtoken.model.TokenItem
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -16,13 +16,14 @@ class TokenItemPresenter(
     private val view: View,
 ) : BaseViewHolder(view), BasePresenter<TokenItem> {
 
-    private val binding by lazy { ItemTokenListBinding.bind(view) }
+    private val binding by lazy { ItemAddTokenListBinding.bind(view) }
 
     override fun bind(model: TokenItem) {
         with(binding) {
-            nameView.text = model.coin.name
-            symbolView.text = model.coin.symbol.uppercase()
+            nameView.text = model.coin.tokenName()
+            symbolView.text = model.coin.tokenSymbol().uppercase()
             Glide.with(iconView).load(model.coin.icon()).into(iconView)
+            ivVerified.setVisible(model.coin.isVerified)
             stateButton.setOnClickListener {
                 if (model.isNormalState()) {
                     AddTokenConfirmDialog.show((findActivity(view) as FragmentActivity).supportFragmentManager, model.coin)

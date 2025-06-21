@@ -34,7 +34,17 @@ class AddTokenPresenter(
         binding.root.addStatusBarTopPadding()
         setupToolbar()
         setupEditText()
+        setupFilters()
         setupRecyclerView()
+    }
+
+    private fun setupFilters() {
+        with(binding) {
+            switchVerifiedToken.isChecked = false
+            switchVerifiedToken.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.switchVerifiedToken(isChecked)
+            }
+        }
     }
 
     override fun bind(model: AddTokenModel) {

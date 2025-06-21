@@ -19,11 +19,11 @@ class SendCoinPopupMenu(
 
     fun show() {
         ioScope {
-            val coinList = FlowCoinListManager.getEnabledCoinList()
+            val coinList = FungibleTokenListManager.getCurrentTokenListSnapshot()
             uiScope {
                 popupMenu(
                     view,
-                    items = coinList.map { PopupListView.ItemData(it.name, iconUrl = it.icon()) },
+                    items = coinList.map { PopupListView.ItemData(it.name, iconUrl = it.tokenIcon()) },
                     selectListener = { _, text -> onMenuItemClick(text) },
                 ).show()
             }
