@@ -27,8 +27,17 @@ fun Sign.Model.SessionProposal.approveSession() {
     namespaces.putAll(optionalNamespaces.map { item ->
         pair(item)
     }.toMap())
+
     logd(TAG, "approveSession: $namespaces")
-    SignClient.approveSession(Sign.Params.Approve(proposerPublicKey, namespaces)) { error -> loge(error.throwable) }
+
+    SignClient.approveSession(
+        Sign.Params.Approve(
+            proposerPublicKey = proposerPublicKey,
+            namespaces = namespaces
+        )
+    ) { error ->
+        loge(error.throwable)
+    }
 }
 
 private fun pair(

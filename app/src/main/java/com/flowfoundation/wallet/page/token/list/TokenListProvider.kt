@@ -15,4 +15,4 @@ interface TokenListProvider {
     fun deleteCustomToken(contractAddress: String)
     fun getWalletAddress(): String
     fun getFungibleTokenListSnapshot(): List<FungibleToken>
-} 
+}

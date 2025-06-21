@@ -31,7 +31,7 @@ class DeepLinkingActivity : BaseActivity() {
         }
 
         logd(TAG, "DeepLinkingActivity received uri: $uri")
-
+        
         // Check if it's a WalletConnect URI or Telegram URI
         if (uri.scheme == DeepLinkScheme.TG.scheme) {
             // Handle Telegram URI directly
@@ -39,14 +39,14 @@ class DeepLinkingActivity : BaseActivity() {
             finish()
             return
         }
-
+        
         // Check if it's a WalletConnect URI
         isWalletConnectUri = isWalletConnectUri(uri)
         logd(TAG, "URI is WalletConnect: $isWalletConnectUri")
-
+        
         // Launch MainActivity first
         MainActivity.launch(this)
-
+        
         ioScope {
             try {
                 // For WalletConnect URIs, we need a small delay to ensure MainActivity is ready
@@ -54,11 +54,11 @@ class DeepLinkingActivity : BaseActivity() {
                     logd(TAG, "Delaying WalletConnect processing to ensure MainActivity is ready")
                     delay(1000)
                 }
-
+                
                 // Use the new UriHandler to process the URI
                 dispatchDeepLinking(this@DeepLinkingActivity, uri)
                 logd(TAG, "DeepLinkingDispatch completed for uri: $uri")
-
+                
                 // For WalletConnect, wait a bit longer to ensure the connection dialog has time to show
                 if (isWalletConnectUri) {
                     logd(TAG, "Adding additional delay for WalletConnect to ensure dialog shows")
@@ -78,7 +78,7 @@ class DeepLinkingActivity : BaseActivity() {
 
     override fun onResume() {
         super.onResume()
-
+        
         // If processing is completed and this is a WalletConnect URI,
         // finish the activity as it's likely we've returned from MainActivity
         if (processingCompleted && isWalletConnectUri) {

@@ -115,7 +115,7 @@ object EVMWalletManager {
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
                     callback?.invoke(true)
                 } else {
-                    ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
+                    ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                     callback?.invoke(false)
                 }
             }
@@ -172,7 +172,7 @@ object EVMWalletManager {
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
         val address = evmAddressMap[getNetworkAddress(network)]
         return if (address.isNullOrBlank() || address == "0x") {
-            ErrorReporter.reportWithMixpanel(EVMError.GET_ADDRESS_FAILED, getCurrentCodeLocation())
+            ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
             return null
         } else {
             val checksumAddress = toChecksumEVMAddress(address)

@@ -57,7 +57,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_hide_dust_tip"
             />
-
+        
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:id="@+id/iv_hide_dust_tip"
             android:layout_width="16dp"

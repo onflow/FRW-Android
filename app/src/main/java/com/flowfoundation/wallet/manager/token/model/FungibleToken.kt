@@ -161,4 +161,4 @@ data class FungibleToken(
         const val SYMBOL_FLOW = "flow"
         const val SYMBOL_USDC = "usdc"
     }
-} 
+}

@@ -209,6 +209,10 @@
             android:name=".page.token.addtoken.AddTokenActivity"
             android:screenOrientation="portrait"/>
 
+        <activity
+            android:name=".page.token.manage.ManageTokenActivity"
+            android:screenOrientation="portrait"/>
+
         <activity android:name=".page.token.custom.AddCustomTokenActivity"
             android:screenOrientation="portrait"/>
 

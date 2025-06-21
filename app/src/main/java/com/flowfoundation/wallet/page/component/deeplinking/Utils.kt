@@ -43,13 +43,13 @@ enum class DeepLinkPath(val path: String) {
 
 suspend fun dispatchDeepLinking(context: Context, uri: Uri) {
     logd(TAG, "dispatchDeepLinking: Processing URI: $uri")
-
+    
     // Try to handle with the new UriHandler first
     if (uri.scheme == DeepLinkScheme.TG.scheme) {
         UriHandler.processUri(context, uri)
         return
     }
-
+    
     // For backward compatibility, continue with the existing logic
     val wcUri = UriHandler.extractWalletConnectUri(uri)
     if (wcUri?.startsWith(DeepLinkScheme.WC.scheme + ":") == true) {
@@ -114,27 +114,27 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
             }
             return@runCatching false
         }
-
+        
         // Initialize WalletConnect if needed
         if (!WalletConnect.isInitialized()) {
             logd(TAG, "WalletConnect is not initialized, waiting for initialization...")
-
+            
             // Wait for WalletConnect to initialize with timeout
             val initialized = withTimeoutOrNull(10000) {
                 var waitTime = 200L
                 var attempts = 0
                 val maxAttempts = 10
-
+                
                 while (!WalletConnect.isInitialized() && attempts < maxAttempts) {
                     logd(TAG, "Waiting for WalletConnect initialization, attempt ${attempts + 1} of $maxAttempts")
                     delay(waitTime)
                     attempts++
                     waitTime = minOf(waitTime * 2, 1000)
                 }
-
+                
                 WalletConnect.isInitialized()
             } ?: false
-
+            
             if (!initialized) {
                 loge(TAG, "WalletConnect initialization failed or timed out")
                 uiScope {
@@ -142,26 +142,26 @@ private suspend fun dispatchWalletConnect(uri: Uri): Boolean {
                 }
                 return@runCatching false
             }
-
+            
             logd(TAG, "WalletConnect successfully initialized")
         }
-
+        
         // Get instance and proceed with pairing
         try {
             // Try to get an instance of WalletConnect and pair
             val wcInstance = WalletConnect.get()
-
+            
             // Add a short delay to ensure all UI transitions are complete
             delay(300)
-
+            
             // Call the improved pairing method
             logd(TAG, "Initiating WalletConnect pairing with URI: $data")
             wcInstance.pair(data)
-
+            
             // Return success immediately, but the actual connection will happen asynchronously
             logd(TAG, "WalletConnect pairing initiated successfully")
             return@runCatching true
-
+        
         } catch (e: Exception) {
             loge(TAG, "Error during WalletConnect pairing: ${e.message}")
             loge(e)

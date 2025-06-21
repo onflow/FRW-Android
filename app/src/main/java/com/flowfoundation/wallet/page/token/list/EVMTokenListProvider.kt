@@ -73,4 +73,4 @@ class EVMTokenListProvider(private val walletAddress: String): TokenListProvider
     override fun getFlowToken(): FungibleToken? {
         return tokenList.firstOrNull { it.isFlowToken() }
     }
-} 
+}

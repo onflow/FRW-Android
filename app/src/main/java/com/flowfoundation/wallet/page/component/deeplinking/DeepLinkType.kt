@@ -12,9 +12,9 @@ enum class UniversalLinkHost(val host: String) {
 
     companion object {
         fun fromHost(host: String?): UniversalLinkHost? = entries.firstOrNull {
-            it.host.equals(host, ignoreCase = true)
+            it.host.equals(host, ignoreCase = true) 
         }
-
+        
         fun isKnownHost(host: String?): Boolean = fromHost(host) != null
     }
 }
@@ -31,12 +31,12 @@ enum class DeepLinkScheme(val scheme: String) {
     TG("tg"),
     HTTP("http"),
     HTTPS("https");
-
+    
     companion object {
         fun fromScheme(scheme: String?): DeepLinkScheme? = entries.firstOrNull {
-            it.scheme.equals(scheme, ignoreCase = true)
+            it.scheme.equals(scheme, ignoreCase = true) 
         }
-
+        
         fun isKnownScheme(scheme: String?): Boolean = fromScheme(scheme) != null
     }
-}
+} 

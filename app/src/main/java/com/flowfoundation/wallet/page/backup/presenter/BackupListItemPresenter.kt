@@ -36,6 +36,12 @@ class BackupListItemPresenter(private val view: View) : BaseViewHolder(view),
             clBackupContentLayout.setOnClickListener {
                 BackupDetailActivity.launch(view.context, model)
             }
+            if (model.isRevoking || model.isCurrentKey) {
+                srlSwipeLayout.setLockDrag(true)
+                srlSwipeLayout.close(false)
+            } else {
+                srlSwipeLayout.setLockDrag(false)
+            }
             tvDelete.setOnClickListener {
                 if (model.isRevoking) {
                     return@setOnClickListener

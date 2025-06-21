@@ -385,10 +385,10 @@ private suspend fun WCRequest.respondAuthz() {
     val message = signable.message ?: return
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-    
+
     // Clean address for Flow-KMM (remove "0x" prefix)
     val cleanAddress = address.removePrefix("0x")
-    
+
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -423,11 +423,11 @@ private suspend fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
     val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-    
+
     // Clean addresses for Flow-KMM (remove "0x" prefix)
     val cleanWalletAddress = walletAddress.removePrefix("0x")
     val cleanPayerAddress = payerAddress.removePrefix("0x")
-    
+
     val keyId = FlowAddress(cleanWalletAddress).currentKeyId(cryptoProvider.getPublicKey())
 
     val response = PollingResponse(
@@ -476,10 +476,10 @@ private suspend fun WCRequest.respondUserSign() {
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val param = gson().fromJson<List<SignableMessage>>(params, object : TypeToken<List<SignableMessage>>() {}.type)?.firstOrNull()
     val message = param?.message ?: return
-    
+
     // Clean address for Flow-KMM (remove "0x" prefix)
     val cleanAddress = address.removePrefix("0x")
-    
+
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -512,7 +512,7 @@ private suspend fun WCRequest.respondSignPayer() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
     val voucher = signable.voucher ?: return
-    
+
     // Validate required fields
     val cadence = voucher.cadence ?: return
     val refBlock = voucher.refBlock ?: return
@@ -522,12 +522,12 @@ private suspend fun WCRequest.respondSignPayer() {
     val proposerAddress = proposalKey.address ?: return
     val proposerKeyId = proposalKey.keyId ?: return
     val proposerSequenceNum = proposalKey.sequenceNum ?: return
-    
+
     // Clean addresses for Flow-KMM (remove "0x" prefix)
     val cleanPayer = payer.removePrefix("0x")
     val cleanProposerAddress = proposerAddress.removePrefix("0x")
     val cleanAuthorizers = voucher.authorizers?.map { it.removePrefix("0x") } ?: emptyList()
-    
+
     val transaction = Transaction(
         script = cadence,
         arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
@@ -574,17 +574,17 @@ private suspend fun WCRequest.respondSignProposer() {
     val signable = params.toSignables(gson())
     val address = WalletManager.wallet()?.walletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
-    
+
     // Clean address for Flow-KMM (remove "0x" prefix)
     val cleanAddress = address.removePrefix("0x")
-    
+
     logd(TAG, "WalletConnect Sign Proposer - Provider type: ${cryptoProvider.javaClass.simpleName}")
     logd(TAG, "WalletConnect Sign Proposer - Signing algorithm: ${cryptoProvider.getSignatureAlgorithm()}")
     logd(TAG, "WalletConnect Sign Proposer - Hashing algorithm: ${cryptoProvider.getHashAlgorithm()}")
     logd(TAG, "WalletConnect Sign Proposer - Public key: ${cryptoProvider.getPublicKey()}")
     logd(TAG, "WalletConnect Sign Proposer - Message to sign: ${signable?.message}")
     logd(TAG, "WalletConnect Sign Proposer - Clean address: $cleanAddress")
-    
+
     val keyId = FlowAddress(cleanAddress).currentKeyId(cryptoProvider.getPublicKey())
 
     val data = FclDialogModel(

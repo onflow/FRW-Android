@@ -75,6 +75,14 @@
             app:layout_constraintTop_toTopOf="@id/icon_view"
             tools:text="Pending"
             tools:visibility="visible"/>
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_close_circle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
@@ -447,11 +455,12 @@
         android:id="@+id/action_button"
         android:layout_width="match_parent"
         android:layout_height="54dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="10dp"
         app:cardBackgroundColor="@color/button_color"
         app:cardCornerRadius="12dp"
         app:cardElevation="3dp"
         app:defaultText="@string/hold_to_confirm"
         app:layout_constraintTop_toBottomOf="@id/content_wrapper"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:rippleColor="@color/primary10"/>
 </LinearLayout>

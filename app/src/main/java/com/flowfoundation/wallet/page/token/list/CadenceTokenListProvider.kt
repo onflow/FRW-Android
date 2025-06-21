@@ -1,6 +1,7 @@
 package com.flowfoundation.wallet.page.token.list
 
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.model.toFungibleToken
 import com.flowfoundation.wallet.network.retrofitApi
@@ -57,4 +58,4 @@ class CadenceTokenListProvider(private val walletAddress: String): TokenListProv
         return tokenList
     }
 
-} 
+}

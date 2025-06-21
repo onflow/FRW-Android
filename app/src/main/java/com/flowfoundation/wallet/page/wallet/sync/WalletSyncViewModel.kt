@@ -36,7 +36,7 @@ class WalletSyncViewModel : ViewModel() {
         }
     }
 
-    private suspend fun wcFetchPairUriInternal() = suspendCoroutine { continuation ->
+    private suspend fun wcFetchPairUriInternal() = suspendCoroutine<String> { continuation ->
         val atomicReference = AtomicReference(continuation)
         val namespaces = mapOf(
             "flow" to Sign.Model.Namespace.Proposal(

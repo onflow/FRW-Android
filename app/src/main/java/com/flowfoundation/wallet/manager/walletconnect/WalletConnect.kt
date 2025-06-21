@@ -38,7 +38,7 @@ class WalletConnect {
 
     private val isConnectionAvailable: StateFlow<Boolean> by lazy {
         combine(CoreClient.Relay.isNetworkAvailable, CoreClient.Relay.wssConnectionState) {
-                networkAvailable, wss -> networkAvailable == true && wss is WSSConnectionState.Connected
+            networkAvailable, wss -> networkAvailable == true && wss is WSSConnectionState.Connected
         }.stateIn(
             scope = scope,
             started = SharingStarted.Eagerly,
@@ -78,9 +78,9 @@ class WalletConnect {
             logd(TAG, "Pairing already in progress, ignoring new pairing request")
             return
         }
-
+        
         pairingInProgress = true
-
+        
         // Show connecting toast immediately when pairing starts
         val activity = BaseActivity.getCurrentActivity()
         if (activity != null) {
@@ -90,7 +90,7 @@ class WalletConnect {
                 toast.show()
             }
         }
-
+        
         ioScope {
             try {
                 // First, ensure WalletConnect is initialized
@@ -103,7 +103,7 @@ class WalletConnect {
                     pairingInProgress = false
                     return@ioScope
                 }
-
+                
                 // Clean up all active sessions before pairing
                 try {
                     cleanupActiveSessions()
@@ -117,7 +117,7 @@ class WalletConnect {
                 delay(500)
 
                 logd(TAG, "CoreClient.Relay isConnectionAvailable: ${isConnectionAvailable.value}")
-
+                
                 if (!isConnectionAvailable.value) {
                     logd(TAG, "Connection not available, attempting to establish connection")
                     // Try to establish connection
@@ -129,7 +129,7 @@ class WalletConnect {
                                 loge(TAG, "CoreClient.Relay connect error: $error")
                             }
                         }
-
+                        
                         // Wait for connection to establish
                         for (i in 1..5) {
                             if (isConnectionAvailable.value) {
@@ -138,10 +138,10 @@ class WalletConnect {
                             }
                             delay(300)
                         }
-
+                        
                         if (connected) break
                     }
-
+                    
                     if (!connected) {
                         logd(TAG, "Failed to establish connection after multiple attempts")
                         // Try pairing anyway as a last resort
@@ -150,7 +150,7 @@ class WalletConnect {
                         delay(500)
                     }
                 }
-
+                
                 // Proceed with pairing
                 logd(TAG, "Attempting to pair with URI: $uri")
                 try {
@@ -168,7 +168,7 @@ class WalletConnect {
                         }
                     }
                     logd(TAG, "Pairing request sent successfully")
-
+                    
                     // Check if sessions were established after a short delay
                     delay(1000)
                     val sessions = SignClient.getListOfActiveSessions()
@@ -241,7 +241,7 @@ class WalletConnect {
                 logd(TAG, "WalletConnect initialization already started, skipping")
                 return
             }
-
+            
             initializationStarted = true
             ioScope {
                 try {

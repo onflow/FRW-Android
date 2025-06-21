@@ -135,8 +135,8 @@ class CollectionContentPresenter(
             subtitleView.text = activity.getString(R.string.collectibles_count, collectionWrapper.count)
 
             toolbar.title = collection.name
-
-            collection.officialWebsite.let { url ->
+            exploreButton.setVisible(!collection.externalURL.isNullOrEmpty())
+            collection.externalURL?.let { url ->
                 exploreButton.setOnClickListener { openBrowser(activity, url) }
             }
         }

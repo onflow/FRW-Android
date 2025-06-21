@@ -148,6 +148,7 @@ class ProfileFragmentPresenter(
         ioScope {
             val isSignIn = isRegistered() && isUserSignIn()
             uiScope {
+                if (!fragment.isAdded) return@uiScope
                 with(binding) {
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
@@ -156,7 +157,9 @@ class ProfileFragmentPresenter(
                     group0.llBackupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.llSecurityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
-                    group2.themePreference.setDesc(if (isNightMode(fragment.requireActivity())) R.string.dark else R.string.light)
+                    group2.themePreference.setDesc(
+                        if (isNightMode(fragment.activity)) R.string.dark else R.string.light
+                    )
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
                     group0.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
                 }

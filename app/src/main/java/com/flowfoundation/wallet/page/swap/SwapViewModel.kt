@@ -159,6 +159,7 @@ class SwapViewModel : ViewModel(), FungibleTokenUpdateListener {
             }
         }
     }
+
 }
 
 enum class ExactToken {

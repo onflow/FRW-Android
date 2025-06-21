@@ -51,12 +51,12 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             ioScope {
                 var reconnectAttempts = 0
                 val maxReconnectAttempts = 3
-
+                
                 while (!isConnected && reconnectAttempts < maxReconnectAttempts) {
                     try {
                         delay(1000L * (reconnectAttempts + 1))
                         logd(TAG, "Reconnection attempt ${reconnectAttempts + 1} of $maxReconnectAttempts")
-
+                        
                         // Only clean up sessions if we're not processing a request
                         if (!isProcessingRequest) {
                             try {
@@ -77,7 +77,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         } else {
                             logd(TAG, "Skipping session cleanup while processing request")
                         }
-
+                        
                         CoreClient.Relay.connect { error: Core.Model.Error ->
                             loge(TAG, "CoreClient.Relay connect error: $error")
                         }
@@ -88,7 +88,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         reconnectAttempts++
                     }
                 }
-
+                
                 if (!isConnected) {
                     loge(TAG, "Failed to reconnect after $maxReconnectAttempts attempts")
                 }
@@ -121,7 +121,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     override fun onError(error: Sign.Model.Error) {
         logd(TAG, "onError() error:$error")
         loge(error.throwable)
-
+        
         // Show user-friendly error message
         uiScope {
             val errorMessage = when {
@@ -312,7 +312,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                                     data
                                 )
                             }
-
+                            
                             // Check if dialog was actually shown
                             if (approve) {
                                 isSessionApproved = true
@@ -327,7 +327,7 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                                         toast(R.string.wallet_connect_approval_error)
                                     }
                                 }
-
+                                
                                 // Show toast only if no redirect URL and browser is not active
                                 if (sessionProposal.redirect.isEmpty()) {
                                     logd(TAG, "No redirect URL, checking if browser is active")

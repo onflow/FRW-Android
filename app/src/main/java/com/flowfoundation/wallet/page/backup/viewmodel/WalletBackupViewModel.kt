@@ -107,7 +107,8 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             BackupKey(
                                 matchingKey.index.toInt(),
                                 info,
-                                isRevoking = false
+                                isRevoking = false,
+                                isCurrentKey = info.pubKey.publicKey == currentKey
                             )
                         } else {
                             logd(TAG, "  ❌ NO MATCH - skipping this backup key")

@@ -141,9 +141,19 @@
                                     android:visibility="gone" />
                             </androidx.appcompat.widget.LinearLayoutCompat>
                         </FrameLayout>
-
+                        
                         <androidx.constraintlayout.utils.widget.ImageFilterView
                             android:id="@+id/iv_verified"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="4dp"
+                            app:layout_constraintTop_toTopOf="@id/name_wrapper"
+                            app:layout_constraintBottom_toBottomOf="@id/name_wrapper"
+                            app:layout_constraintStart_toEndOf="@id/name_wrapper"
+                            android:src="@drawable/ic_verified"/>
+
+                        <androidx.constraintlayout.utils.widget.ImageFilterView
+                            android:id="@+id/iv_verified_secondary"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:layout_marginStart="4dp"

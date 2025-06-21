@@ -17,7 +17,6 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
-import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
 import com.flowfoundation.wallet.utils.uiScope
@@ -71,12 +70,6 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
                 flBlockedConnect.setOnClickListener {
                     result?.resume(true)
                     dismiss()
-                    // Redirect to external browser after approval
-                    data.url?.let { url ->
-                        uiScope {
-                            url.openInSystemBrowser(requireContext(), true)
-                        }
-                    }
                 }
             }
         }

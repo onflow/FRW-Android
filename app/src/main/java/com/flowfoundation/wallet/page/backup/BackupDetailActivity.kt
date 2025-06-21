@@ -27,6 +27,7 @@ import com.flowfoundation.wallet.manager.drive.EXTRA_CONTENT
 import com.flowfoundation.wallet.manager.drive.GoogleDriveAuthActivity
 import com.flowfoundation.wallet.manager.dropbox.ACTION_DROPBOX_VIEW_FINISH
 import com.flowfoundation.wallet.manager.dropbox.DropboxAuthActivity
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -48,7 +49,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
     private lateinit var binding: ActivityBackupDetailBinding
     private val backupKey by lazy {
         val keyInfo = intent.getStringExtra(EXTRA_BACKUP_KEY_INFO) ?: ""
-        Gson().fromJson(keyInfo, BackupKey::class.java) ?: null
+        Gson().fromJson(keyInfo, BackupKey::class.java)
     }
     private lateinit var mMap: GoogleMap
 
@@ -150,6 +151,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
             cvKeyCard.setOnClickListener {
                 securityOpen(AccountKeyActivity.launchIntent(this@BackupDetailActivity))
             }
+            btnDelete.setVisible(backupKey?.isCurrentKey == false)
             btnDelete.setOnClickListener {
                 backupKey?.let {
                     if (it.isRevoking) {
@@ -221,5 +223,10 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 MarkerOptions().position(initialLatLng)
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_location_mark)))
         }
+    }
+
+    private fun isCurrentDevice(publicKey: String): Boolean {
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+        return cryptoProvider?.getPublicKey() == publicKey
     }
 }

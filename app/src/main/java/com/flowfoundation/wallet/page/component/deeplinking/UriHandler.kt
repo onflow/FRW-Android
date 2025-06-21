@@ -23,18 +23,18 @@ object UriHandler {
      */
     fun processUri(context: Context, uri: Uri): Boolean {
         logd(TAG, "Processing URI: $uri")
-
+        
         // First check if it's a Telegram scheme
         if (handleTelegramUri(context, uri)) {
             return true
         }
-
+        
         // Check for WalletConnect URIs
         val wcUri = extractWalletConnectUri(uri)
         if (wcUri != null && wcUri.startsWith(DeepLinkScheme.WC.scheme + ":")) {
             return handleWalletConnectUri(context, wcUri)
         }
-
+        
         // Handle other deep links and universal links
         return when {
             uri.scheme == DeepLinkScheme.HTTP.scheme || uri.scheme == DeepLinkScheme.HTTPS.scheme -> {
@@ -51,7 +51,7 @@ object UriHandler {
             else -> false
         }
     }
-
+    
     /**
      * Handle Telegram deep links
      */
@@ -70,7 +70,7 @@ object UriHandler {
         }
         return false
     }
-
+    
     /**
      * Handle WalletConnect URIs
      */
@@ -92,18 +92,18 @@ object UriHandler {
             false
         }
     }
-
+    
     /**
      * Handle universal links (HTTP/HTTPS)
      */
     private fun handleUniversalLink(context: Context, uri: Uri): Boolean {
         val host = UniversalLinkHost.fromHost(uri.host) ?: return false
         logd(TAG, "Handling Universal Link for host: $host")
-
+        
         return when (host) {
-            UniversalLinkHost.LILICO,
-            UniversalLinkHost.FRW_LINK,
-            UniversalLinkHost.FCW_LINK,
+            UniversalLinkHost.LILICO, 
+            UniversalLinkHost.FRW_LINK, 
+            UniversalLinkHost.FCW_LINK, 
             UniversalLinkHost.WALLET_LINK -> {
                 // Process based on path
                 processWalletLinkPaths(context, uri)
@@ -119,14 +119,14 @@ object UriHandler {
             }
         }
     }
-
+    
     /**
      * Handle deep links (custom schemes)
      */
     private fun handleDeepLink(context: Context, uri: Uri): Boolean {
         val scheme = DeepLinkScheme.fromScheme(uri.scheme) ?: return false
         logd(TAG, "Handling Deep Link for scheme: $scheme")
-
+        
         return when (scheme) {
             DeepLinkScheme.WC -> {
                 // Direct WalletConnect URI
@@ -150,7 +150,7 @@ object UriHandler {
             }
         }
     }
-
+    
     /**
      * Process wallet link paths for actions like send, dapp, etc.
      */
@@ -161,7 +161,7 @@ object UriHandler {
         PendingActionHelper.savePendingDeepLink(context, uri)
         return true
     }
-
+    
     /**
      * Extract WalletConnect URI from various formats
      */
@@ -171,21 +171,21 @@ object UriHandler {
             if (uri.scheme == DeepLinkScheme.TG.scheme) {
                 return null
             }
-
+            
             val uriString = uri.toString()
-
+            
             // Direct WC URI
             if (uriString.startsWith(DeepLinkScheme.WC.scheme + ":")) {
                 return uriString
             }
-
+            
             val uriParamStart = uriString.indexOf("uri=")
             val wcUriEncoded = if (uriParamStart != -1) {
                 uriString.substring(uriParamStart + 4)
             } else {
                 uri.getQueryParameter("uri")
             }
-
+            
             wcUriEncoded?.let {
                 if (it.contains("%")) {
                     URLDecoder.decode(it, StandardCharsets.UTF_8.name())
@@ -199,4 +199,4 @@ object UriHandler {
             null
         }
     }
-}
+} 
