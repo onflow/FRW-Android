@@ -750,7 +750,7 @@
     <string name="return_to_browser_to_continue">Please return to the browser to continue your session.</string>
     <string name="manage_tokens">Manage Tokens</string>
     <string name="filters">Filters</string>
-    <string name="hide_dust_token">Hide dust tokens (&lt;0.01 USD Balance)</string>
+    <string name="hide_dust_token">Hide dust tokens</string>
     <string name="display_verified_token">Only show verified tokens</string>
     <string name="tokens">Tokens</string>
     <string name="verified">Verified</string>

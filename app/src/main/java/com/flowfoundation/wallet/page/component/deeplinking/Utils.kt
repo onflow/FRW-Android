@@ -7,7 +7,7 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.isUserSignIn
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.networkId
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
@@ -249,7 +249,7 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
             SendAmountActivity.launch(
                 it,
                 AddressBookContact(address = recipient.toAddress()),
-                FlowCoinListManager.getFlowCoinContractId(),
+                FungibleTokenListManager.getFlowTokenContractId(),
                 value?.toString(),
                 sourceTab = HomeTab.WALLET // Default to wallet tab for deeplinks
             )

@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.send.transaction.subpage.amount.widget
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountViewModel
 import com.flowfoundation.wallet.utils.findActivity

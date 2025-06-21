@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.page.token.manage.presenter
 
+import android.app.AlertDialog
 import android.graphics.Color
 import android.transition.Scene
 import android.transition.Slide
@@ -17,9 +18,11 @@ import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityManageTokenBinding
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.page.token.manage.HideDustTokenTipDialog
 import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity
 import com.flowfoundation.wallet.page.token.manage.adapter.ManageTokenAdapter
 import com.flowfoundation.wallet.page.token.manage.viewmodel.ManageTokenViewModel
+import com.flowfoundation.wallet.utils.debug.showDialog
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -64,6 +67,9 @@ class ManageTokenPresenter(
             switchVerifiedToken.isChecked = FungibleTokenListManager.isOnlyShowVerifiedTokens()
             switchVerifiedToken.setOnCheckedChangeListener { _, isChecked ->
                 FungibleTokenListManager.setOnlyShowVerifiedTokens(isChecked)
+            }
+            ivHideDustTip.setOnClickListener {
+                HideDustTokenTipDialog(activity).show()
             }
         }
     }

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.net.Uri
 import android.webkit.URLUtil
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
@@ -86,7 +85,7 @@ fun dispatchScanResult(context: Context, result: String, sourceTab: HomeTab? = n
                     SendAmountActivity.launch(
                         context,
                         AddressBookContact(address = address.toAddress()),
-                        FlowCoinListManager.getFlowCoinContractId(),
+                        FungibleTokenListManager.getFlowTokenContractId(),
                         amount?.toString(),
                         sourceTab = sourceTab
                     )

@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.databinding.ActivityAddTokenBinding
 import com.flowfoundation.wallet.page.token.addtoken.model.AddTokenModel
 import com.flowfoundation.wallet.page.token.addtoken.presenter.AddTokenPresenter
 import com.flowfoundation.wallet.utils.isNightMode
+import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 
 class AddTokenActivity : BaseActivity() {
 

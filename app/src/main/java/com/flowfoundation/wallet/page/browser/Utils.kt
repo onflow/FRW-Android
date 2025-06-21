@@ -143,14 +143,14 @@ fun ImageView.loadFavicon(url: String?) {
 // https://www.google.com/s2/favicons?domain=${domain}&sz=${size}
 // https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://test.find.xyz&size=256
 // https://double-indigo-crab.b-cdn.net/${url.host}/$size
+// https://icons.duckduckgo.com/ip3/\(url.host).ico
 fun String.toFavIcon(size: Int = 256): String {
     if (this.isBlank()) {
         return this
     }
     return try {
         val url = URL(this)
-        "https://double-indigo-crab.b-cdn.net/${url.host}/$size"
-        // "https://www.google.com/s2/favicons?domain=${url.host}&sz=${size}"
+        "https://icons.duckduckgo.com/ip3/${url.host}.ico"
     } catch (e: Exception) {
         this
     }
@@ -167,4 +167,3 @@ fun openInFlowEVMScan(activity: Activity, transactionId: String) {
 class BrowserParams(
     val searchBoxPosition: Point? = null,
 )
-

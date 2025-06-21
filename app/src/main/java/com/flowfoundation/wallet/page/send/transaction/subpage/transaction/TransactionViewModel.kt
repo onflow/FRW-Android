@@ -3,8 +3,6 @@ package com.flowfoundation.wallet.page.send.transaction.subpage.transaction
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.coin.CoinRateManager
-import com.flowfoundation.wallet.manager.coin.FlowCoinListManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTFromCOA
 import com.flowfoundation.wallet.manager.flowjvm.cadenceBridgeChildFTToCOA
@@ -68,9 +66,7 @@ class TransactionViewModel : ViewModel(), FungibleTokenUpdateListener {
                     userInfoLiveData.postValue(userInfo.apply { address = it })
                 }
             }
-
-            val flow = FlowCoinListManager.coinList().first { it.isSameCoin(transaction.coinId) }
-            CoinRateManager.fetchCoinRate(flow)
+            FungibleTokenListManager.updateTokenInfo(transaction.coinId)
         }
     }
 
