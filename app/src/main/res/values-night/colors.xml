@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#242430</color>
     <color name="colorPrimaryVariant">@color/deep_bg</color>
-    <color name="colorSecondary">#41CC5D</color>
+    <color name="colorSecondary">#00EF8B</color>
 
     <color name="text_sub">#D2D2D2</color>
 
@@ -69,6 +69,8 @@
     <color name="image_bg">@color/neutrals10</color>
     <color name="stake">#60C293</color>
     <color name="stake_12">#1c60C293</color>
+
+    <color name="evm_on_flow_end_color">#00EF8B</color>
 
     <color name="profile_card_divider">#14FFFFFF</color>
     <color name="welcome_page_text">#FFFFFF</color>

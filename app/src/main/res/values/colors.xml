@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#ffffff</color>
     <color name="colorPrimaryVariant">#ffffff</color>
-    <color name="colorSecondary">#41CC5D</color>
+    <color name="colorSecondary">#00B877</color>
     <color name="text_sub">#565A69</color>
     <color name="text_light">#000000</color>
     <color name="contrast_text">#4D000000</color>
@@ -161,7 +161,7 @@
 
     <color name="bg_skip">#26000000</color>
     <color name="evm_on_flow_start_color">#627EEA</color>
-    <color name="evm_on_flow_end_color">#00EF8B</color>
+    <color name="evm_on_flow_end_color">#00B877</color>
 
     <color name="move_nft_start_color">#857AFF</color>
     <color name="move_nft_cover_color">#4d00199D</color>
