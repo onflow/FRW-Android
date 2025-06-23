@@ -151,7 +151,7 @@
         android:maxLines="1"
         android:paddingHorizontal="16dp"
         android:text="@string/landing_tips"
-        android:textColor="@color/accent_green"
+        android:textColor="@color/colorSecondary"
         android:textSize="14sp"
         app:layout_constrainedWidth="true"
         app:layout_constraintTop_toBottomOf="@id/tv_secure_design_text"

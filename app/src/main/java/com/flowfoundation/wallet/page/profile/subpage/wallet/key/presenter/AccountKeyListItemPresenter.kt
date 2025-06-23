@@ -55,7 +55,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
                 statusColor = R.color.accent_orange.res2color()
             } else if (weight >= 1000){
                 statusType = R.string.full_access.res2String()
-                statusColor = R.color.accent_green.res2color()
+                statusColor = R.color.colorSecondary.res2color()
             } else {
                 statusType = R.string.multi_sign.res2String()
                 statusColor = R.color.text_3.res2color()
@@ -67,7 +67,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             val progress = weight / 1000f
             pbKeyWeight.max = 100
             if (progress > 1) {
-                pbKeyWeight.progressTintList = ColorStateList.valueOf(R.color.accent_green
+                pbKeyWeight.progressTintList = ColorStateList.valueOf(R.color.colorSecondary
                     .res2color())
                 pbKeyWeight.progress = 100
             } else {

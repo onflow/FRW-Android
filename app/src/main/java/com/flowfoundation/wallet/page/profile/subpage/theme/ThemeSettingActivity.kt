@@ -94,7 +94,7 @@ class ThemeSettingActivity : BaseActivity(), OnWallpaperChange {
                     FadeAnimationBackground(
                         imageRes = wallpaper.drawableId,
                         itemPerRow = 8,
-                        colorInt = R.color.accent_green.res2color()
+                        colorInt = R.color.colorSecondary.res2color()
                     )
                 }
             }

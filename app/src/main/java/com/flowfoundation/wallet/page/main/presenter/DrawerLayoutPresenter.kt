@@ -107,7 +107,7 @@ class DrawerLayoutPresenter(
             val start = binding.tvEvmTitle.paint.measureText(text.substring(0, index))
             binding.tvEvmTitle.text = SpannableStringBuilder(text).apply {
                 val startColor = R.color.evm_on_flow_start_color.res2color()
-                val endColor = R.color.evm_on_flow_end_color.res2color()
+                val endColor = R.color.colorSecondary.res2color()
                 val gradientTextWidth = binding.tvEvmTitle.paint.measureText(text)
                 val shader = LinearGradient(
                     start, 0f, gradientTextWidth, 0f,

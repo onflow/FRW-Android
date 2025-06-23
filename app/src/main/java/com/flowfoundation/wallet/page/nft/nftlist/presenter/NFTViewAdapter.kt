@@ -57,7 +57,7 @@ class NFTViewAdapter(
             title.text = text
 
             val tintColor = if (position - 1 == selectedIndex)
-                ContextCompat.getColor(context, R.color.accent_green)
+                ContextCompat.getColor(context, R.color.colorSecondary)
             else
                 ContextCompat.getColor(context, R.color.text_light)
 

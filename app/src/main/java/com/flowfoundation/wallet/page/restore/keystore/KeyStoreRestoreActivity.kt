@@ -28,28 +28,22 @@ import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 
 class KeyStoreRestoreActivity : BaseActivity() {
 
-    private lateinit var restoreViewModel: KeyStoreRestoreViewModel
     private lateinit var binding: ActivityRestoreKeyStoreBinding
-    private var currentOption: KeyStoreOption? = null
-
-    private val isPrivateKey by lazy {
-        intent.getBooleanExtra(EXTRA_RESTORE_PRIVATE_KEY, false)
-    }
-
-    private val isSeedPhrase by lazy {
-        intent.getBooleanExtra(EXTRA_RESTORE_SEED_PHRASE, false)
-    }
-
+    private lateinit var restoreViewModel: KeyStoreRestoreViewModel
     private val loadingDialog by lazy { FlowLoadingDialog(this) }
+    private var currentOption: KeyStoreOption? = null
+    private val isKeyStore by lazy { intent.getBooleanExtra(EXTRA_IS_KEYSTORE, false) }
+    private val isPrivateKey by lazy { intent.getBooleanExtra(EXTRA_IS_PRIVATE_KEY, false) }
+    private val isSeedPhrase by lazy { intent.getBooleanExtra(EXTRA_IS_SEED_PHRASE, false) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRestoreKeyStoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        UltimateBarX.with(this).fitWindow(true).colorRes(R.color.bg_2)
-            .light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).colorRes(R.color.bg_1).light(!isNightMode(this)).applyStatusBar()
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
         setupToolbar()
+
         restoreViewModel = ViewModelProvider(this)[KeyStoreRestoreViewModel::class.java].apply {
             addressListLiveData.observe(this@KeyStoreRestoreActivity) { list ->
                 if (list.isNotEmpty()) {
@@ -90,9 +84,13 @@ class KeyStoreRestoreActivity : BaseActivity() {
         }
     }
 
+    fun updateToolbarTitle(option: KeyStoreOption) {
+        supportActionBar?.setTitle(option.titleResId)
+    }
+
     @SuppressLint("CommitTransaction")
     private fun onOptionChange(option: KeyStoreOption) {
-        val transition = createTransition(currentOption, option)
+        val transition = createTransition(option)
         val fragment = when (option) {
             KeyStoreOption.INPUT_KEYSTORE_INFO -> PrivateKeyStoreInfoFragment()
             KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> PrivateKeyInfoFragment()
@@ -102,11 +100,14 @@ class KeyStoreRestoreActivity : BaseActivity() {
         fragment.enterTransition = transition
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment).commit()
+        
+        // Update toolbar title
+        updateToolbarTitle(option)
+        
         currentOption = option
     }
 
     private fun createTransition(
-        currentOption: KeyStoreOption?,
         option: KeyStoreOption
     ): Transition {
         if (currentOption == null) {
@@ -114,7 +115,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
         }
         val transition = MaterialSharedAxis(MaterialSharedAxis.X, true)
 
-        transition.addTarget(currentOption.layoutId)
+        transition.addTarget(currentOption!!.layoutId)
         transition.addTarget(option.layoutId)
         return transition
     }
@@ -137,22 +138,29 @@ class KeyStoreRestoreActivity : BaseActivity() {
     }
 
     companion object {
-        private const val EXTRA_RESTORE_PRIVATE_KEY = "extra_restore_private_key"
-        private const val EXTRA_RESTORE_SEED_PHRASE = "extra_restore_seed_phrase"
+        private const val EXTRA_IS_KEYSTORE = "EXTRA_IS_KEYSTORE"
+        private const val EXTRA_IS_PRIVATE_KEY = "EXTRA_IS_PRIVATE_KEY"
+        private const val EXTRA_IS_SEED_PHRASE = "EXTRA_IS_SEED_PHRASE"
+
+        fun launch(context: Context) {
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java))
+        }
 
         fun launchKeyStore(context: Context) {
-            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java))
+            context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
+                putExtra(EXTRA_IS_KEYSTORE, true)
+            })
         }
 
         fun launchPrivateKey(context: Context) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
-                putExtra(EXTRA_RESTORE_PRIVATE_KEY, true)
+                putExtra(EXTRA_IS_PRIVATE_KEY, true)
             })
         }
 
         fun launchSeedPhrase(context: Context) {
             context.startActivity(Intent(context, KeyStoreRestoreActivity::class.java).apply {
-                putExtra(EXTRA_RESTORE_SEED_PHRASE, true)
+                putExtra(EXTRA_IS_SEED_PHRASE, true)
             })
         }
     }

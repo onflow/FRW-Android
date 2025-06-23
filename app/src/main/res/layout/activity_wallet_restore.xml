@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/background">
+    android:background="@color/colorPrimaryVariant">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -15,35 +15,22 @@
 
     <TextView
         android:id="@+id/tv_title_green"
+        android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/montsettat"
-        android:layout_marginStart="24dp"
-        android:text="@string/import_str"
-        android:textColor="@color/accent_green"
-        android:textSize="30sp"
+        android:text="@string/import_wallet"
+        android:textColor="@color/text_light"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/tv_title"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"/>
-
-    <TextView
-        android:id="@+id/tv_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:fontFamily="@font/montsettat"
-        android:layout_marginStart="10dp"
-        android:text="@string/wallet"
-        android:textColor="@color/text_2"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toEndOf="@id/tv_title_green"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"/>
 
     <TextView
         android:id="@+id/tv_desc"
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
@@ -51,7 +38,7 @@
         android:layout_marginHorizontal="24dp"
         android:textColor="@color/note"
         android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_title"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_title_green"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -74,14 +61,14 @@
                 android:paddingVertical="24dp"
                 android:paddingHorizontal="32dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/line_light"
+                android:backgroundTint="@color/bg_card"
                 app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_devices"
-                    android:tint="@color/accent_green"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -96,7 +83,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textColor="@color/accent_gray"
                     android:text="@string/from_device_backup_note"/>
 
@@ -112,14 +99,14 @@
                 android:paddingVertical="24dp"
                 android:paddingHorizontal="32dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/line_light"
+                android:backgroundTint="@color/bg_card"
                 app:layout_constraintTop_toBottomOf="@id/ll_import_from_device">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_settings_backup"
-                    android:tint="@color/accent_green"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -134,7 +121,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textColor="@color/accent_gray"
                     android:text="@string/from_multi_backup_note"/>
 
@@ -150,14 +137,14 @@
                 android:paddingVertical="24dp"
                 android:paddingHorizontal="32dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/line_light"
+                android:backgroundTint="@color/bg_card"
                 app:layout_constraintTop_toBottomOf="@id/ll_import_from_backup">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_key_type_recovery_phrase"
-                    android:tint="@color/accent_green"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -172,7 +159,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textColor="@color/accent_gray"
                     android:text="@string/from_raw_key_note"/>
             </androidx.appcompat.widget.LinearLayoutCompat>

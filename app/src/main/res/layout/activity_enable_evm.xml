@@ -79,7 +79,7 @@
         android:layout_marginHorizontal="@dimen/activity_padding"
         android:layout_marginBottom="4dp"
         android:text="@string/enable"
-        android:backgroundTint="@color/accent_green"
+        android:backgroundTint="@color/colorSecondary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/tv_more"/>

@@ -82,7 +82,7 @@ class BackupDropboxPinCodePresenter(
                     R.string.create_pin.res2String()
                 },
                 R.string.pin.res2String(),
-                R.color.accent_green.res2color()
+                R.color.colorSecondary.res2color()
             )
             pinTip.setSpannableText(
                 if (isVerifyPinCode) {
@@ -93,7 +93,7 @@ class BackupDropboxPinCodePresenter(
                     R.string.backup_pin_tip.res2String()
                 },
                 R.string.pin.res2String(),
-                R.color.accent_green.res2color()
+                R.color.colorSecondary.res2color()
             )
         }
     }

@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@color/bg_1"
-            app:title="@string/multi_restore"
+            app:title="@string/import_wallet"
             app:titleCentered="true"
             app:titleTextAppearance="@style/ToolbarTextAppearance"/>
 

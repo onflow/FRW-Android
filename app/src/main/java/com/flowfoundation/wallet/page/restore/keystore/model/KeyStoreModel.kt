@@ -41,9 +41,9 @@ data class KeystoreAddress(
     val signAlgo: Int
 )
 
-enum class KeyStoreOption(val layoutId: Int) {
-    INPUT_KEYSTORE_INFO(R.id.fragment_private_key_store_info),
-    INPUT_PRIVATE_KEY_INFO(R.id.fragment_private_key_info),
-    INPUT_SEED_PHRASE_INFO(R.id.fragment_seed_phrase_info),
-    CREATE_USERNAME(R.id.fragment_private_key_store_username)
+enum class KeyStoreOption(val layoutId: Int, val titleResId: Int) {
+    INPUT_KEYSTORE_INFO(R.id.fragment_private_key_store_info, R.string.key_store),
+    INPUT_PRIVATE_KEY_INFO(R.id.fragment_private_key_info, R.string.private_key),
+    INPUT_SEED_PHRASE_INFO(R.id.fragment_seed_phrase_info, R.string.recovery_phrase),
+    CREATE_USERNAME(R.id.fragment_private_key_store_username, R.string.create_wallet)
 }

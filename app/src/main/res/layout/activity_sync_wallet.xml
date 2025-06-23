@@ -51,7 +51,7 @@
         android:textStyle="bold"
         android:textSize="14sp"
         android:lineSpacingMultiplier="1.1"
-        android:textColor="@color/accent_green"
+        android:textColor="@color/colorSecondary"
         android:text="@string/sync_in_processing"
         android:background="@drawable/bg_qr_code"
         android:backgroundTint="@color/black_60"
@@ -65,8 +65,8 @@
         android:id="@+id/progress_bar"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:indeterminateTint="@color/accent_green"
-        android:progressTint="@color/accent_green"
+        android:indeterminateTint="@color/colorSecondary"
+        android:progressTint="@color/colorSecondary"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/iv_qr_code"
         app:layout_constraintEnd_toEndOf="@id/iv_qr_code"
@@ -100,18 +100,5 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/iv_qr_code"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="28dp"
-        android:layout_marginTop="40dp"
-        android:fontFamily="@font/inter"
-        android:gravity="center"
-        android:lineSpacingMultiplier="1.2"
-        android:text="@string/sync_note"
-        android:textColor="@color/accent_gray"
-        android:textSize="14sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_sync_qr_code"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

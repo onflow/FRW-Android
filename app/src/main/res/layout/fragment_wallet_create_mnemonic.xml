@@ -38,7 +38,7 @@
             android:fontFamily="@font/montsettat"
             android:layout_marginStart="10dp"
             android:text="@string/phrase"
-            android:textColor="@color/accent_green"
+            android:textColor="@color/colorSecondary"
             android:textSize="36sp"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent"

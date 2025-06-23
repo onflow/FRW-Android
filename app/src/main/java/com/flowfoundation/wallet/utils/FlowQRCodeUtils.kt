@@ -39,7 +39,7 @@ fun String.toQRDrawable(
         }
         colors {
             dark = QrVectorColor.Solid(R.color.black_80.res2color())
-            ball = QrVectorColor.Solid(if(isEVM) R.color.evm.res2color() else R.color.accent_green.res2color())
+            ball = QrVectorColor.Solid(if(isEVM) R.color.evm.res2color() else R.color.colorSecondary.res2color())
             frame = QrVectorColor.Solid(R.color.black_80.res2color())
         }
         shapes {

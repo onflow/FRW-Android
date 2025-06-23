@@ -173,7 +173,7 @@
                                 android:layout_marginEnd="8dp"
                                 android:fontFamily="@font/inter"
                                 android:text="@string/move"
-                                android:textColor="@color/accent_green"
+                                android:textColor="@color/colorSecondary"
                                 android:textSize="14sp" />
 
                             <ImageView

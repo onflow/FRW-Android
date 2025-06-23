@@ -28,16 +28,6 @@ class ViewPinCodePresenter(
 
     init {
         with(binding) {
-            pinTitle.setSpannableText(
-                R.string.verify_pin.res2String(),
-                R.string.pin.res2String(),
-                R.color.accent_green.res2color()
-            )
-            pinTip.setSpannableText(
-                R.string.enter_verify_pin_tip.res2String(),
-                R.string.pin.res2String(),
-                R.color.accent_green.res2color()
-            )
             pinKeyboard.setOnKeyboardActionListener { onKeyPressed(it) }
             pinKeyboard.bindKeys(keyboardT9Normal, KeyboardType.T9)
             pinKeyboard.show()

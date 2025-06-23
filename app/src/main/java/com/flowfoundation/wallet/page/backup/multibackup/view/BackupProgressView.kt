@@ -41,7 +41,7 @@ class BackupProgressView @JvmOverloads constructor(
             ivFirstOption.setImageResource(getBackupOptionIcon(option, isCompleted))
             if (isCompleted) {
                 ivFirstSelected.visible()
-                lineOne.setBackgroundResource(R.color.accent_green)
+                lineOne.setBackgroundResource(R.color.colorSecondary)
                 ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_green)
             } else {
                 ivFirstSelected.gone()
@@ -119,7 +119,7 @@ class BackupProgressView @JvmOverloads constructor(
                     updateThirdOption(
                         thirdOption,
                         isCompleted,
-                        if (isCompleted) R.color.accent_green else R.color.bg_3
+                        if (isCompleted) R.color.colorSecondary else R.color.bg_3
                     )
                     ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
@@ -137,11 +137,11 @@ class BackupProgressView @JvmOverloads constructor(
         with(binding) {
             ivFirstOption.setImageResource(getBackupOptionIcon(firstOption, isFirstCompleted))
             ivFirstSelected.setVisible(isFirstCompleted)
-            lineOne.setBackgroundResource(if (isFirstCompleted) R.color.accent_green else R.color.bg_3)
+            lineOne.setBackgroundResource(if (isFirstCompleted) R.color.colorSecondary else R.color.bg_3)
 
             ivSecondOption.setImageResource(getBackupOptionIcon(secondOption, isSecondCompleted))
             ivSecondSelected.setVisible(isSecondCompleted)
-            lineTwo.setBackgroundResource(if (isSecondCompleted) R.color.accent_green else R.color.bg_3)
+            lineTwo.setBackgroundResource(if (isSecondCompleted) R.color.colorSecondary else R.color.bg_3)
         }
     }
 

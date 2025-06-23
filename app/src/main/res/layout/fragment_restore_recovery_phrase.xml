@@ -26,10 +26,12 @@
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/montsettat"
                 android:text="@string/restore_with_mnemonic"
+                android:gravity="center"
                 android:textColor="@color/text"
-                android:textSize="28sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
@@ -37,6 +39,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
+                android:gravity="center"
                 android:text="@string/multi_restore_mnemonic_tip"
                 android:textColor="@color/text_light"
                 android:textSize="14sp"
@@ -51,7 +54,6 @@
                 android:layout_marginBottom="40dp"
                 android:autofillHints="name"
                 android:gravity="top"
-                android:hint="@string/restore_mnemonic_hint"
                 android:textColorHint="@color/neutrals9"
                 android:textSize="18sp"
                 app:layout_constraintDimensionRatio="16:5"

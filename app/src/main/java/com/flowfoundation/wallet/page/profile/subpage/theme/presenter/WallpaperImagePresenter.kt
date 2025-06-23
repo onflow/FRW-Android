@@ -37,7 +37,7 @@ class WallpaperImagePresenter(
                     FadeAnimationBackground(
                         imageRes = model.drawableId,
                         itemPerRow = 8,
-                        colorInt = R.color.accent_green.res2color()
+                        colorInt = R.color.colorSecondary.res2color()
                     )
                 }
             }

@@ -66,7 +66,7 @@
                     android:layout_height="16dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_tips"
-                    android:tint="@color/accent_green"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:id="@+id/tv_inaccessible_tip"
@@ -76,7 +76,7 @@
                     android:layout_weight="1"
                     android:gravity="start"
                     android:text="@string/inaccessible_token_tip"
-                    android:textColor="@color/accent_green"
+                    android:textColor="@color/colorSecondary"
                     android:textSize="12sp"/>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
