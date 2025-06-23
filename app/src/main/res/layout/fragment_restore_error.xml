@@ -81,7 +81,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_multi_2"
+            android:src="@drawable/ic_multi_3"
             app:tint="@color/colorSecondary" />
 
         <TextView
@@ -112,7 +112,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_multi_3"
+            android:src="@drawable/ic_multi_4"
             app:tint="@color/colorSecondary" />
 
         <TextView
