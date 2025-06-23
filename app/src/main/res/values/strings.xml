@@ -477,7 +477,7 @@
     <string name="create_multi_backup">Create Multi-Backup</string>
     <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
     <string name="multi_backup">Multi-Backup</string>
-    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
+    <string name="full_weight_seed_phrase">Seed Phrase Backup</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
