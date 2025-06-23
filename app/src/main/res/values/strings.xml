@@ -35,14 +35,14 @@
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
     <string name="grid">Grid</string>
-    <string name="create_pin">Create a PIN</string>
+    <string name="create_pin">Create a pin</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
     <string name="reset_pin">Please type\nyour new PIN</string>
     <string name="reset_check_pin">Please type\nyour new PIN again</string>
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
-    <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>
+    <string name="backup_pin_tip">Your backup will be secured using your pin.</string>
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="home">Home</string>
     <string name="explore">Explore</string>

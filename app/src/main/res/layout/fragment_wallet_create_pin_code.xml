@@ -9,21 +9,22 @@
 
     <TextView
         android:id="@+id/title_1"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:fontFamily="@font/montsettat"
+        android:fontFamily="@font/inter"
         android:text="@string/create_pin"
         android:textColor="@color/text"
-        android:textSize="36sp"
+        android:textSize="24sp"
         android:paddingHorizontal="@dimen/activity_padding"
         android:textStyle="bold"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/title_2"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/title_2"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="72dp"
@@ -31,6 +32,7 @@
         android:textColor="@color/text_sub"
         android:paddingHorizontal="@dimen/activity_padding"
         android:textSize="14sp"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/pin_input"
         app:layout_constraintStart_toStartOf="parent"/>
 

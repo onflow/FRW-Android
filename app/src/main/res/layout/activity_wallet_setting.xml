@@ -289,7 +289,7 @@
                 android:layout_marginHorizontal="16dp"
                 android:autoSizeMinTextSize="10sp"
                 android:autoSizeTextType="uniform"
-                android:fontFamily="@font/montsettat"
+                android:fontFamily="@font/inter"
                 android:maxLines="1"
                 android:text="@string/claim_free_domain"
                 android:textColor="@color/neutrals3"

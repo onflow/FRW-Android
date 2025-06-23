@@ -24,7 +24,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:fontFamily="@font/montsettat"
+                android:fontFamily="@font/inter"
                 android:text="@string/restore_with_mnemonic"
                 android:textColor="@color/text"
                 android:textSize="28sp"

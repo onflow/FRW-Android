@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
-        android:fontFamily="@font/montsettat"
+        android:fontFamily="@font/inter"
         android:textColor="@color/text"
         android:textSize="16sp"
         android:textStyle="bold"

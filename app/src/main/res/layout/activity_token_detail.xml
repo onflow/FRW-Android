@@ -124,7 +124,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="12dp"
                                     android:layout_marginEnd="6dp"
-                                    android:fontFamily="@font/montsettat"
+                                    android:fontFamily="@font/inter"
                                     android:lineSpacingMultiplier="1.1"
                                     android:maxWidth="150dp"
                                     android:textColor="@color/neutrals1"

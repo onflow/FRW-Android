@@ -131,7 +131,7 @@
             android:backgroundTint="@color/background"
             android:layout_marginTop="20dp"
             android:digits="01234567890."
-            android:fontFamily="@font/montsettat"
+            android:fontFamily="@font/inter"
             android:hint="@string/enter_amount"
             android:imeOptions="actionNext"
             android:importantForAutofill="no"
