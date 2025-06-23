@@ -130,7 +130,7 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                     statusColor = R.color.accent_orange.res2color()
                 } else if (weight >= 1000){
                     statusType = "Full Access"
-                    statusColor = R.color.accent_green.res2color()
+                    statusColor = R.color.colorSecondary.res2color()
                 } else {
                     statusType = "Multi-sign"
                     statusColor = R.color.text_3.res2color()

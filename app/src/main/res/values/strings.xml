@@ -493,7 +493,7 @@
     <string name="from_key_store">From Keystore</string>
     <string name="from_key_store_note">Import keystore file (Blocto Backup).</string>
     <string name="key_store">Keystore</string>
-    <string name="seed_phrase">Seed Phrase</string>
+    <string name="seed_phrase">Recovery Phrase</string>
     <string name="restore_seed_phrase_advanced">Advanced</string>
     <string name="restore_seed_derivation_path">Derivation Path</string>
     <string name="restore_seed_passphrase">Passphrase</string>

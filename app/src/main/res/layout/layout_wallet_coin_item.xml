@@ -79,7 +79,7 @@
             android:fontFamily="@font/inter_semi_bold"
             android:gravity="center"
             android:paddingHorizontal="8dp"
-            android:textColor="@color/accent_green"
+            android:textColor="@color/colorSecondary"
             android:textSize="12sp"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/coin_price"

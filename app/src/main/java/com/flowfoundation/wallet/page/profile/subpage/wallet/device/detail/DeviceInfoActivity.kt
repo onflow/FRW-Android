@@ -98,7 +98,7 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback, OnTransactionState
             statusColor = R.color.accent_orange.res2color()
         } else {
             statusType = "Full Access"
-            statusColor = R.color.accent_green.res2color()
+            statusColor = R.color.colorSecondary.res2color()
         }
         with(binding.tvStatusLabel) {
             text = statusType

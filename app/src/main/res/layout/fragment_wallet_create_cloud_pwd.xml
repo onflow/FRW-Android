@@ -38,7 +38,7 @@
                 android:layout_marginBottom="36dp"
                 android:fontFamily="@font/montsettat"
                 android:text="@string/password"
-                android:textColor="@color/accent_green"
+                android:textColor="@color/colorSecondary"
                 android:textSize="36sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toTopOf="@id/title_3"

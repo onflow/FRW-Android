@@ -9,7 +9,7 @@
     app:cardBackgroundColor="@color/transparent"
     app:cardCornerRadius="36dp"
     app:cardElevation="0dp"
-    app:strokeColor="@color/accent_green"
+    app:strokeColor="@color/colorSecondary"
     app:strokeWidth="2dp"
     tools:layout_height="36dp">
 

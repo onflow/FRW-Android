@@ -68,7 +68,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_devices"
-                    android:tint="@color/evm_on_flow_end_color"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -106,7 +106,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_settings_backup"
-                    android:tint="@color/evm_on_flow_end_color"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -144,7 +144,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/ic_key_type_recovery_phrase"
-                    android:tint="@color/evm_on_flow_end_color"/>
+                    android:tint="@color/colorSecondary"/>
 
                 <TextView
                     android:layout_width="wrap_content"

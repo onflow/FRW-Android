@@ -51,7 +51,7 @@ class EnableEVMActivity : BaseActivity() {
                 val start = binding.tvTitleEvm.paint.measureText(text.substring(0, index))
                 binding.tvTitleEvm.text = SpannableStringBuilder(text).apply {
                     val startColor = R.color.evm_on_flow_start_color.res2color()
-                    val endColor = R.color.evm_on_flow_end_color.res2color()
+                    val endColor = R.color.colorSecondary.res2color()
                     val gradientTextWidth = binding.tvTitleEvm.paint.measureText(text)
                     val shader = LinearGradient(
                         start, 0f, gradientTextWidth, 0f,

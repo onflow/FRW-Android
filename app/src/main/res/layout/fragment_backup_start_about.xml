@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/inter"
                 android:gravity="start"
-                android:textColor="@color/accent_green"
+                android:textColor="@color/colorSecondary"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:text="@string/backup_start_about_content"

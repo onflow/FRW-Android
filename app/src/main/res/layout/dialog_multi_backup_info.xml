@@ -60,7 +60,7 @@
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:src="@drawable/ic_multi_1"
-            app:tint="@color/evm_on_flow_end_color" />
+            app:tint="@color/colorSecondary" />
 
         <TextView
             android:layout_width="0dp"
@@ -86,7 +86,7 @@
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:src="@drawable/ic_multi_2"
-            app:tint="@color/evm_on_flow_end_color" />
+            app:tint="@color/colorSecondary" />
 
         <TextView
             android:layout_width="0dp"
@@ -112,7 +112,7 @@
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:src="@drawable/ic_multi_3"
-            app:tint="@color/evm_on_flow_end_color" />
+            app:tint="@color/colorSecondary" />
 
         <TextView
             android:layout_width="0dp"
@@ -137,7 +137,7 @@
             android:layout_height="24dp"
             android:layout_marginEnd="16dp"
             android:src="@drawable/ic_multi_4"
-            app:tint="@color/evm_on_flow_end_color" />
+            app:tint="@color/colorSecondary" />
 
         <TextView
             android:layout_width="0dp"

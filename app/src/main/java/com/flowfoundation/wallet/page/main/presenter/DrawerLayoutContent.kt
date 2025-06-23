@@ -380,7 +380,7 @@ fun WalletAccountSection(
                 .border(
                     width = 1.dp,
                     color = colorResource(
-                        if (item.isSelected) R.color.accent_green else R.color.transparent
+                        if (item.isSelected) R.color.colorSecondary else R.color.transparent
                     ),
                     shape = CircleShape
                 )
@@ -495,7 +495,7 @@ fun LinkedAccountSection(
                 .border(
                     width = 1.dp,
                     color = colorResource(
-                        if (item.isSelected) R.color.accent_green else R.color.transparent
+                        if (item.isSelected) R.color.colorSecondary else R.color.transparent
                     ),
                     shape = CircleShape
                 )
@@ -642,7 +642,7 @@ fun ActiveAccountSection(
                 .border(
                     width = 1.dp,
                     color = colorResource(
-                        if (item.isSelected) R.color.accent_green else R.color.transparent
+                        if (item.isSelected) R.color.colorSecondary else R.color.transparent
                     ),
                     shape = CircleShape
                 )

@@ -124,7 +124,7 @@
                     android:layout_height="40dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_restore_seed_phrase"
-                    android:tint="@color/evm_on_flow_end_color"
+                    android:tint="@color/colorSecondary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
@@ -179,7 +179,7 @@
                     android:layout_height="40dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_restore_key_store"
-                    android:tint="@color/evm_on_flow_end_color"
+                    android:tint="@color/colorSecondary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
@@ -234,7 +234,7 @@
                     android:layout_height="40dp"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_restore_private_key"
-                    android:tint="@color/evm_on_flow_end_color"
+                    android:tint="@color/colorSecondary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>

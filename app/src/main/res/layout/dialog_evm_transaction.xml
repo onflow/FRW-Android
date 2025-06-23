@@ -301,7 +301,7 @@
                         android:layout_width="13dp"
                         android:layout_height="13dp"
                         android:src="@drawable/ic_circle_right_green"
-                        app:tint="@color/accent_green"
+                        app:tint="@color/colorSecondary"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="@id/tv_contact_title"
                         app:layout_constraintBottom_toBottomOf="@id/tv_contact_title"/>

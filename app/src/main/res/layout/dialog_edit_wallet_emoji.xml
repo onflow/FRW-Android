@@ -81,7 +81,7 @@
         style="@style/Button"
         android:layout_width="0dp"
         android:layout_marginTop="32dp"
-        android:backgroundTint="@color/accent_green"
+        android:backgroundTint="@color/colorSecondary"
         android:text="@string/save"
         android:textColor="@color/text_white"
         app:cornerRadius="12dp"

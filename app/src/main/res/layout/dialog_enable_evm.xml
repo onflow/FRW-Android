@@ -65,7 +65,7 @@
         android:layout_marginBottom="4dp"
         android:layout_marginTop="16dp"
         android:text="@string/enable"
-        android:backgroundTint="@color/accent_green"
+        android:backgroundTint="@color/colorSecondary"
         app:layout_constraintTop_toBottomOf="@id/tv_desc"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
