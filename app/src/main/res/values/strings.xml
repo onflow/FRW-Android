@@ -480,7 +480,7 @@
     <string name="full_weight_seed_phrase">Seed Phrase Backup</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
-    <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
+    <string name="multi_backup_tip">Select 2 or More Backup Options</string>
     <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
     <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
     <string name="registration_key_list">Registration KeyList</string>
@@ -519,8 +519,8 @@
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
-    <string name="create_device_backup_title">Sync your wallet between your devices</string>
-    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
+    <string name="create_device_backup_title">Scan to Connect to Another Device</string>
+    <string name="device_backup_note">Scan the QR code shown by the other device to connect.</string>
     <string name="create_device_backup_note">Utilise Your Device as a Backup Wallet to Safeguard and Restore Your Digital Assets with Ease</string>
     <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
     <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
@@ -532,7 +532,7 @@
     <string name="bug_report">Bug Report</string>
     <string name="wallet_already_logged_in">This wallet is already logged in</string>
     <string name="google_drive">Google Drive</string>
-    <string name="add_other_device">Add Other Device</string>
+    <string name="add_other_device">Add Another Device</string>
     <string name="revoke_device">Revoke Device</string>
     <string name="wrong_network">Switch Network</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
