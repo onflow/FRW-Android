@@ -40,7 +40,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRestoreKeyStoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        UltimateBarX.with(this).fitWindow(true).color(android.graphics.Color.BLACK).light(false).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).colorRes(R.color.bg_1).light(!isNightMode(this)).applyStatusBar()
         UltimateBarX.with(this).fitWindow(false).light(!isNightMode(this)).applyNavigationBar()
         setupToolbar()
 

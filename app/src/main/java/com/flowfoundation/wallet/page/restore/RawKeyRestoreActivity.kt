@@ -23,7 +23,7 @@ class RawKeyRestoreActivity: BaseActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRawKeyRestoreBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        UltimateBarX.with(this).fitWindow(true).colorRes(R.color.bg_2).light(!isNightMode(this)).applyStatusBar()
+        UltimateBarX.with(this).fitWindow(true).colorRes(R.color.bg_1).light(!isNightMode(this)).applyStatusBar()
         with(binding) {
 
             clImportFromGoogleDrive.setOnClickListener {
