@@ -664,7 +664,7 @@
     <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
-    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. This recovery phrase backup will have full control of your account.</string>
     <string name="keystore_select_account_tips">Choose an account you want to import</string>
     <string name="keystore_select_account_title">%1$d Accounts Found</string>
     <string name="keystore_no_account_title">No Account Found</string>

@@ -54,8 +54,8 @@
                 android:overScrollMode="never"
                 android:paddingVertical="19dp"
                 android:layout_marginHorizontal="25dp"
-                android:background="@drawable/bg_border_round_16dp"
-                android:backgroundTint="@color/button"
+                android:background="@drawable/bg_round_16dp"
+                android:backgroundTint="@color/bg_card"
                 app:layout_constraintTop_toTopOf="parent"
                 android:visibility="gone"
                 tools:itemCount="12"
@@ -72,7 +72,8 @@
                 android:layout_marginTop="20dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                app:layout_constraintStart_toStartOf="@id/mnemonic_container"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/mnemonic_container">
 
                 <androidx.constraintlayout.utils.widget.ImageFilterView
@@ -98,25 +99,37 @@
                 android:layout_marginHorizontal="25dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/bg_round_warning"
-                android:gravity="center_horizontal"
                 android:orientation="vertical"
                 android:padding="@dimen/activity_padding"
                 app:layout_constraintTop_toBottomOf="@id/copy_button">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:text="@string/do_not_share_secret"
-                    android:textColor="@color/error"
-                    android:textSize="16sp"
-                    android:textStyle="bold"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_alert_octagon"
+                        app:tint="@color/error"/>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/do_not_share_secret"
+                        android:textColor="@color/error"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center_horizontal"
+                    android:layout_marginStart="32dp"
                     android:text="@string/do_not_share_secret_desc"
                     android:textColor="@color/error"
                     android:textSize="14sp"/>

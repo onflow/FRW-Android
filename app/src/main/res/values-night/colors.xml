@@ -4,6 +4,8 @@
     <color name="colorPrimaryVariant">@color/deep_bg</color>
     <color name="colorSecondary">#00EF8B</color>
 
+    <color name="error">#F04438</color>
+
     <color name="text_sub">#D2D2D2</color>
 
     <color name="disable">#888888</color>
@@ -19,7 +21,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="landing_bg">#222222</color>
-    <color name="background">#121212</color>
+    <color name="background">#000000</color>
     <color name="select_tokens_dialog">#1E1E1F</color>
     <color name="button">#FAFAFA</color>
     <color name="button_text">#333333</color>

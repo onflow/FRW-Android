@@ -20,14 +20,15 @@
 
             <TextView
                 android:id="@+id/title_1"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montsettat"
                 android:text="@string/things_you"
                 android:textColor="@color/text_1"
-                android:textSize="36sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp"
+                android:gravity="center"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
 
@@ -39,77 +40,99 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/backup_seed_phrase_warning"
                 android:textColor="@color/info_text_3"
-                android:textSize="14sp"
+                android:textSize="12sp"
+                android:gravity="center"
                 app:layout_constraintTop_toBottomOf="@id/title_1"/>
 
-            <FrameLayout
+            <LinearLayout
                 android:id="@+id/warning_1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="34dp"
-                android:background="@drawable/bg_edittext"
-                android:backgroundTint="@color/colorSecondary"
+                android:background="@drawable/bg_round_16dp"
+                android:backgroundTint="@color/bg_card"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 app:layout_constraintTop_toBottomOf="@id/intro_text_2">
 
-                <CheckBox
-                    android:id="@+id/warning_check_1"
-                    style="@style/CheckBox"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:paddingStart="27dp"
+                    android:layout_weight="1"
                     android:fontFamily="@font/inter"
                     android:textSize="14sp"
                     android:textColor="@color/text_1"
                     android:text="@string/create_wallet_warning1"/>
-            </FrameLayout>
 
-            <FrameLayout
+                <CheckBox
+                    android:id="@+id/warning_check_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:background="@android:color/transparent"/>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/warning_2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_edittext"
-                android:backgroundTint="@color/colorSecondary"
+                android:background="@drawable/bg_round_16dp"
+                android:backgroundTint="@color/bg_card"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 app:layout_constraintTop_toBottomOf="@id/warning_1">
 
-                <CheckBox
-                    android:id="@+id/warning_check_2"
-                    style="@style/CheckBox"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:paddingStart="27dp"
+                    android:layout_weight="1"
                     android:fontFamily="@font/inter"
                     android:textSize="14sp"
                     android:textColor="@color/text_1"
                     android:text="@string/create_wallet_warning2"/>
-            </FrameLayout>
 
-            <FrameLayout
+                <CheckBox
+                    android:id="@+id/warning_check_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:background="@android:color/transparent"/>
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/warning_3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_edittext"
-                android:backgroundTint="@color/colorSecondary"
+                android:background="@drawable/bg_round_16dp"
+                android:backgroundTint="@color/bg_card"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="12dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 app:layout_constraintTop_toBottomOf="@id/warning_2">
 
-                <CheckBox
-                    android:id="@+id/warning_check_3"
-                    style="@style/CheckBox"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:paddingStart="27dp"
+                    android:layout_weight="1"
                     android:fontFamily="@font/inter"
                     android:textSize="14sp"
                     android:textColor="@color/text_1"
                     android:text="@string/create_wallet_warning3"/>
-            </FrameLayout>
+
+                <CheckBox
+                    android:id="@+id/warning_check_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:background="@android:color/transparent"/>
+            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.core.widget.NestedScrollView>
@@ -122,13 +145,12 @@
         android:layout_marginBottom="@dimen/wallet_create_button_margin"
         android:enabled="false"
         android:gravity="center"
-        android:text="@string/confirm"
+        android:text="@string/create_backup"
         app:iconGravity="textStart"
         app:iconPadding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="HardcodedText"/>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
