@@ -654,7 +654,7 @@
     <string name="backup_start_about_note_2">Two partial-weight keys must be used together to recover access to your account. Each key individually cannot be used.</string>
     <string name="backup_start_about_note_3">This means, that to recover access to your account, Flow Wallet requires access to two of your backups.</string>
     <string name="backup_start_about_note_4">Your backups are encrypted using your wallet PIN code. You must remember or write down your PIN code and store it in a safe place.</string>
-    <string name="restore_failed_note_1">The connection to Google Drive, iCloud or Dropbox was not successful.</string>
+    <string name="restore_failed_note_1">The connection to Google Drive or Dropbox was not successful.</string>
     <string name="restore_failed_note_2">One or more keys required to restore this account were not correct or failed.</string>
     <string name="restore_failed_note_3">The incorrect PIN code was used.</string>
 
