@@ -111,32 +111,17 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
 
     /**
      * Check if the given URL belongs to an EVM dApp
-     * Based on session proposal network requirements
+     * Based on session proposal analysis done in WalletConnectDelegate
      */
     private fun isEVMDapp(url: String?): Boolean {
         val data = this.data
         logd("FCLAUTH", "Checking isEVMDapp for: $data")
         
-        // Method 1: Check if this is explicitly flagged as EVM request
-        // This should be set by the session proposal handler based on requested namespaces
-        if (data?.network == null) {
-            // network=null typically indicates EVM dApp (like PunchSwap)
-            logd("FCLAUTH", "network=null detected, treating as EVM dApp")
-            return true
-        }
-        
-        // Flow dApps typically have network=mainnet or network=testnet
-        val flowNetworkIndicators = listOf("mainnet", "testnet")
-        if (flowNetworkIndicators.any { indicator ->
-            data.network.equals(indicator, ignoreCase = true)
-        }) {
-            logd("FCLAUTH", "Flow network indicator found: ${data.network}")
-            return false
-        }
-        
-        // Default case: if network is some other value, assume Flow
-        logd("FCLAUTH", "Unknown network type: ${data.network}, defaulting to Flow")
-        return false
+        // Simply check if this was flagged as EVM by session proposal analysis
+        // The WalletConnectDelegate sets network="evm" for EVM requests
+        val isEVM = data?.network == "evm"
+        logd("FCLAUTH", "Session proposal analysis result - isEVM: $isEVM")
+        return isEVM
     }
 
 }
