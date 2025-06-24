@@ -93,8 +93,15 @@ fun Nft.video(): String? {
 
 fun Nft.title(): String? = postMedia?.title
 
-fun Nft.websiteUrl(walletAddress: String) = "https://lilico" +
-        ".app/nft/$walletAddress/${collectionAddress}/${contractName()}?tokenId=${id}"
+fun Nft.websiteUrl(walletAddress: String): String? {
+    // Check if collection has an external URL
+    if (!collectionExternalURL.isNullOrBlank()) {
+        return collectionExternalURL
+    }
+    
+    // If no external URL is available, return null to indicate no web view option should be shown
+    return null
+}
 
 fun findSwipeRefreshLayout(view: View): SwipeRefreshLayout? {
     if (view.parent == null) return null

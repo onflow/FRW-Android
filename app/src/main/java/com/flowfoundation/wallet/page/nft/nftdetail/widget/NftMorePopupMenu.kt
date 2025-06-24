@@ -24,12 +24,20 @@ class NftMorePopupMenu(
 
     fun show() {
         uiScope {
+            val menuItems = mutableListOf<PopupListView.ItemData>()
+            
+            // Always show download option
+            menuItems.add(PopupListView.ItemData(R.string.download.res2String(), iconRes = R.drawable.ic_download, iconTint = color))
+            
+            // Only show "view on web" if URL is available
+            val address = WalletManager.selectedWalletAddress().orEmpty()
+            if (nft.websiteUrl(address) != null) {
+                menuItems.add(PopupListView.ItemData(R.string.view_on_web.res2String(), iconRes = R.drawable.ic_web, iconTint = color))
+            }
+            
             popupMenu(
                 view,
-                items = listOf(
-                    PopupListView.ItemData(R.string.download.res2String(), iconRes = R.drawable.ic_download, iconTint = color),
-                    PopupListView.ItemData(R.string.view_on_web.res2String(), iconRes = R.drawable.ic_web, iconTint = color),
-                ),
+                items = menuItems,
                 selectListener = { _, text -> onMenuItemClick(text) },
             ).show()
         }
