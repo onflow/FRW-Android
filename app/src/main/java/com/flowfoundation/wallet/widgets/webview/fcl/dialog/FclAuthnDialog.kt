@@ -14,11 +14,13 @@ import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import kotlin.coroutines.Continuation
@@ -40,7 +42,14 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
         val data = data ?: return
-        val address = WalletManager.selectedWalletAddress()
+        
+        // Determine if this is an EVM dApp and use appropriate address
+        val address = if (isEVMDapp()) {
+            EVMWalletManager.getEVMAddress() ?: WalletManager.selectedWalletAddress()
+        } else {
+            WalletManager.selectedWalletAddress()
+        }
+        
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
         with(binding) {
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
@@ -98,6 +107,37 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
             dismiss()
         }
         super.onResume()
+    }
+
+    /**
+     * Check if the given URL belongs to an EVM dApp
+     * Based on network parameter analysis: 
+     * - EVM dApps: network=null or explicit EVM values
+     * - Flow dApps: network=mainnet/testnet
+     */
+    private fun isEVMDapp(): Boolean {
+        val data = this.data
+        logd("FCLAUTH", "Checking isEVMDapp for: $data")
+        
+        // Method 1: Network Parameter Analysis (Most Reliable)
+        if (data?.network == null) {
+            // network=null typically indicates EVM dApp (like PunchSwap)
+            logd("FCLAUTH", "network=null detected, treating as EVM dApp")
+            return true
+        }
+        
+        // Flow dApps typically have network=mainnet or network=testnet
+        val flowNetworkIndicators = listOf("mainnet", "testnet")
+        if (flowNetworkIndicators.any { indicator ->
+            data.network.equals(indicator, ignoreCase = true)
+        }) {
+            logd("FCLAUTH", "Flow network indicator found: ${data.network}")
+            return false
+        }
+        
+        // Default case: if network is some other value, assume Flow
+        logd("FCLAUTH", "Unknown network type: ${data.network}, defaulting to Flow")
+        return false
     }
 
 }
