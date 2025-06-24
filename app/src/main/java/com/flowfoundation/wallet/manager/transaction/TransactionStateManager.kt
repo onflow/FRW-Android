@@ -26,6 +26,7 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRunSuspend
+import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.AuthzTransaction
 import kotlinx.coroutines.delay
@@ -318,6 +319,33 @@ object TransactionStateManager {
             uiScope {
                 delay(3000)
                 popBubbleStack(state)
+                
+                // Show completion toast based on transaction type and result
+                when (state.type) {
+                    TransactionState.TYPE_MOVE_NFT -> {
+                        if (state.isSuccess()) {
+                            toast(R.string.move_nft_success)
+                        } else {
+                            toast(R.string.move_nft_failed)
+                        }
+                    }
+                    TransactionState.TYPE_TRANSFER_NFT -> {
+                        if (state.isSuccess()) {
+                            toast(R.string.send_nft_success)
+                        } else {
+                            toast(R.string.send_nft_failed)
+                        }
+                    }
+                    TransactionState.TYPE_TRANSFER_COIN -> {
+                        if (state.isSuccess()) {
+                            toast(R.string.transfer_success)
+                        } else {
+                            toast(R.string.transfer_failed)
+                        }
+                    }
+                    // Add other transaction types as needed
+                }
+                
                 if (state.isFailed()) {
                     val errorCode = parseErrorCode(state.errorMsg.orEmpty())
                     ErrorReporter.reportTransactionError(state.transactionId, errorCode ?: -1)
