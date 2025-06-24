@@ -481,9 +481,9 @@
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
     <string name="multi_backup_tip">Select 2 or More Backup Options</string>
-    <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="upload_key_to_google_drive">Upload key to Google Drive</string>
     <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
-    <string name="registration_key_list">Registration KeyList</string>
+    <string name="registration_key_list">Key List Registration</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>

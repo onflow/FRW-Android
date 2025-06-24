@@ -8,7 +8,7 @@
 
     <TextView
         android:id="@+id/pin_title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:fontFamily="@font/inter"
@@ -17,12 +17,13 @@
         android:textSize="36sp"
         android:paddingHorizontal="@dimen/activity_padding"
         android:textStyle="bold"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/pin_tip"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/pin_tip"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="72dp"
@@ -30,6 +31,7 @@
         android:textColor="@color/text_sub"
         android:paddingHorizontal="@dimen/activity_padding"
         android:textSize="14sp"
+        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@id/pin_input"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -46,6 +48,5 @@
         android:layout_height="wrap_content"
         tools:layout_height="250dp"
         app:layout_constraintBottom_toBottomOf="parent"/>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
