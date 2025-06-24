@@ -58,6 +58,19 @@ fun reportCadenceErrorToDebugView(cadence: String, throwable: Throwable?) {
 private fun logWithLevel(tag: String?, msg: Any?, level: Int, instabugLog: (String) -> Unit) {
     log(tag, msg, level)
     instabugLog("${tag.orEmpty()}: ${msg?.toString().orEmpty()}")
+    val enhancedMessage = buildString {
+        append(msg?.toString() ?: "")
+
+        append("\n[Thread: ${Thread.currentThread().name}]")
+
+        if (level >= Log.WARN) {
+            val stackTrace = Thread.currentThread().stackTrace
+            if (stackTrace.size > 4) {
+                append("\n[Caller: ${stackTrace[4].className}.${stackTrace[4].methodName}:${stackTrace[4].lineNumber}]")
+            }
+        }
+    }
+    DebugViewerDataSource.log(level, tag, enhancedMessage)
 }
 
 private fun log(tag: String?, msg: Any?, level: Int) {
