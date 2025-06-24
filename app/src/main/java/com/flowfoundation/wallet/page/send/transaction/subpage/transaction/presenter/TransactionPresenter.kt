@@ -14,10 +14,13 @@ import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionDialog
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.TransactionViewModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.transaction.model.TransactionDialogModel
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.formatPrice
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.findActivity
 import java.math.BigDecimal
 
 class TransactionPresenter(
@@ -52,9 +55,19 @@ class TransactionPresenter(
             val activity = fragment.activity
             if (activity is SendAmountActivity) {
                 activity.onTransactionSubmitted()
+                uiScope { fragment.dismissAllowingStateLoss() }
+            } else {
+                // If not launched from SendAmountActivity, navigate back to wallet tab directly
+                uiScope { 
+                    fragment.dismissAllowingStateLoss()
+                    
+                    // Navigate back to the main wallet tab
+                    val rootActivity = findActivity(binding.root)
+                    if (rootActivity != null) {
+                        MainActivity.launch(rootActivity, HomeTab.WALLET)
+                    }
+                }
             }
-            
-            uiScope { fragment.dismissAllowingStateLoss() }
             
             ioScope {
                 val recentCache = recentTransactionCache().read() ?: AddressBookContactBookList(emptyList())

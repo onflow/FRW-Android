@@ -88,9 +88,9 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
                     }
                 }
                 
-                // Fallback to just finishing the activity safely
-                logd("SendAmountActivity", "No source tab, just finishing activity")
-                finish()
+                // Fallback to navigating to wallet tab (where FT tokens are displayed) instead of just finishing
+                logd("SendAmountActivity", "No source tab, navigating to wallet tab")
+                navigateToTab(HomeTab.WALLET)
                 return
             }
         }
@@ -152,8 +152,8 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
                     }
                 }
                 
-                logd("SendAmountActivity", "Delayed navigation: finishing activity")
-                finish()
+                logd("SendAmountActivity", "Delayed navigation: navigating to wallet tab")
+                navigateToTab(HomeTab.WALLET)
             } else {
                 logd("SendAmountActivity", "Skipping delayed navigation: hasNavigatedBack=$hasNavigatedBack, isFinishing=$isFinishing, isDestroyed=$isDestroyed")
             }

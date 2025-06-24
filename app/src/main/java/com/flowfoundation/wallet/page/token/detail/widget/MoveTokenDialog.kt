@@ -27,6 +27,8 @@ import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
 import com.flowfoundation.wallet.page.token.list.CadenceTokenListProvider
 import com.flowfoundation.wallet.page.token.list.EVMTokenListProvider
 import com.flowfoundation.wallet.page.token.list.TokenListProvider
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.MoveError
@@ -40,6 +42,7 @@ import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.findActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import java.math.BigDecimal
 import kotlin.coroutines.Continuation
@@ -374,6 +377,13 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         if (isSuccess) {
                             FungibleTokenListManager.updateTokenList()
                             result?.resume(true)
+                            
+                            // Navigate back to wallet tab after successful move
+                            val activity = findActivity(binding.root)
+                            if (activity != null) {
+                                MainActivity.launch(activity, HomeTab.WALLET)
+                            }
+                            
                             dismiss()
                         } else {
                             toast(R.string.move_flow_to_evm_failed)
@@ -387,6 +397,13 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         if (isSuccess) {
                             FungibleTokenListManager.updateTokenList()
                             result?.resume(true)
+                            
+                            // Navigate back to wallet tab after successful move
+                            val activity = findActivity(binding.root)
+                            if (activity != null) {
+                                MainActivity.launch(activity, HomeTab.WALLET)
+                            }
+                            
                             dismiss()
                         } else {
                             toast(R.string.move_flow_to_evm_failed)
@@ -400,6 +417,13 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         if (isSuccess) {
                             FungibleTokenListManager.updateTokenList()
                             result?.resume(true)
+                            
+                            // Navigate back to wallet tab after successful move
+                            val activity = findActivity(binding.root)
+                            if (activity != null) {
+                                MainActivity.launch(activity, HomeTab.WALLET)
+                            }
+                            
                             dismiss()
                         } else {
                             toast(R.string.move_flow_to_evm_failed)
