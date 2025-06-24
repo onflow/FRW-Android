@@ -30,16 +30,22 @@ import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.flowfoundation.wallet.widgets.ProgressDialog
+import kotlinx.coroutines.delay
 import org.onflow.flow.models.TransactionStatus
 
 
@@ -211,7 +217,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_failed)
                                 }
@@ -222,7 +228,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
                                 }
@@ -233,7 +239,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_failed)
                                 }
@@ -246,7 +252,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
                                 }
@@ -257,7 +263,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
                                 }
@@ -270,7 +276,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
                                 }
@@ -281,7 +287,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
+                                    successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_failed)
                                 }
@@ -424,6 +430,16 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         )
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
+    }
+
+    private fun successfulMoveNavigation(nft: Nft) {
+        dismissAllowingStateLoss()
+        
+        // Navigate back to the main NFTs tab
+        val activity = findActivity(binding.root)
+        if (activity != null) {
+            MainActivity.launch(activity, HomeTab.NFT)
+        }
     }
 
     companion object {

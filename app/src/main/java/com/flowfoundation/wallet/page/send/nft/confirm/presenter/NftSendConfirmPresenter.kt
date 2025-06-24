@@ -12,9 +12,12 @@ import com.flowfoundation.wallet.page.send.nft.confirm.NftSendConfirmViewModel
 import com.flowfoundation.wallet.page.send.nft.confirm.model.NftSendConfirmDialogModel
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindNft
 import com.flowfoundation.wallet.page.send.transaction.subpage.bindUserInfo
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.findActivity
 
 class NftSendConfirmPresenter(
     private val fragment: NftSendConfirmDialog,
@@ -47,7 +50,15 @@ class NftSendConfirmPresenter(
 
     private fun updateSendState(isSuccess: Boolean) {
         if (isSuccess) {
-            uiScope { fragment.dismissAllowingStateLoss() }
+            uiScope { 
+                fragment.dismissAllowingStateLoss()
+                
+                // Navigate back to the main NFTs tab
+                val activity = findActivity(binding.root)
+                if (activity != null) {
+                    MainActivity.launch(activity, HomeTab.NFT)
+                }
+            }
             
             ioScope {
                 val recentCache = recentTransactionCache().read() ?: AddressBookContactBookList(emptyList())

@@ -25,6 +25,7 @@ import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.presenter.NftDetailPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
+import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.utils.isNightMode
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import org.onflow.flow.models.TransactionStatus
@@ -113,22 +114,13 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
     override fun onTransactionStateChange() {
         val transaction = TransactionStateManager.getLastVisibleTransaction() ?: return
         
-        if (transaction.type == TransactionState.TYPE_TRANSFER_NFT || transaction.type == TransactionState.TYPE_NFT) {
+        if (transaction.type == TransactionState.TYPE_TRANSFER_NFT || transaction.type == TransactionState.TYPE_NFT || transaction.type == TransactionState.TYPE_MOVE_NFT) {
             // Check if transaction is either processing, finalized, executed, or sealed
             if (!hasNavigatedBack && (transaction.isProcessing() || transaction.isFinalized() || transaction.isExecuted() || transaction.isSealed())) {
                 hasNavigatedBack = true
                 
-                // Navigate back to the original tab if we have one
-                if (sourceTabIndex != -1) {
-                    val sourceTab = HomeTab.values().getOrNull(sourceTabIndex)
-                    if (sourceTab != null) {
-                        navigateToTab(sourceTab)
-                        return
-                    }
-                }
-                
-                // Fallback to just finishing the activity
-                finish()
+                // Navigate back to the collection page instead of the home tab
+                navigateToCollectionPage()
                 return
             }
         }
@@ -154,6 +146,29 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
             startActivity(intent)
             finish()
         } catch (e: Exception) {
+            finish()
+        }
+    }
+
+    private fun navigateToCollectionPage() {
+        // Check if we're already finishing to avoid duplicate finish requests
+        if (isFinishing || isDestroyed) {
+            return
+        }
+        
+        try {
+            // Navigate back to the main NFTs tab
+            MainActivity.launch(this, HomeTab.NFT)
+            finish()
+        } catch (e: Exception) {
+            // Fallback to original home tab navigation if main NFTs navigation fails
+            if (sourceTabIndex != -1) {
+                val sourceTab = HomeTab.values().getOrNull(sourceTabIndex)
+                if (sourceTab != null) {
+                    navigateToTab(sourceTab)
+                    return
+                }
+            }
             finish()
         }
     }
