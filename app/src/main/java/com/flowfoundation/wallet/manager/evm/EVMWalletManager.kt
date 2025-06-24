@@ -401,7 +401,8 @@ object EVMWalletManager {
             action = { cadenceFundFlowToCOAAccount(amount) },
             operationName = "fund flow to evm",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -410,7 +411,8 @@ object EVMWalletManager {
             action = { cadenceTransferToken(token, toAddress, amount.toDouble()) },
             operationName = "transfer token",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -419,7 +421,8 @@ object EVMWalletManager {
             action = { cadenceBridgeFTFromCOA(flowIdentifier, amount) },
             operationName = "bridge token from coa to flow",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -429,7 +432,8 @@ object EVMWalletManager {
             action = { cadenceBridgeChildFTToCOA(flowIdentifier, childAddress, amount) },
             operationName = "bridge token from child to coa",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -438,7 +442,8 @@ object EVMWalletManager {
             action = { cadenceBridgeFTToCOA(flowIdentifier, amount) },
             operationName = "bridge token from flow to coa",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -448,7 +453,8 @@ object EVMWalletManager {
             action = { cadenceBridgeChildFTFromCOA(flowIdentifier, toAddress, amount) },
             operationName = "bridge token from coa to child",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -457,7 +463,8 @@ object EVMWalletManager {
             action = { cadenceWithdrawTokenFromCOAAccount(amount, toAddress) },
             operationName = "withdraw flow from evm",
             token = token,
-            callback = callback
+            onTransactionIdReceived = { callback(true) },
+            callback = { }
         )
     }
 
@@ -465,6 +472,7 @@ object EVMWalletManager {
         crossinline action: suspend () -> String?,
         operationName: String,
         token: FungibleToken,
+        crossinline onTransactionIdReceived: () -> Unit = { },
         crossinline callback: (Boolean) -> Unit
     ) {
         try {
@@ -478,6 +486,9 @@ object EVMWalletManager {
                 callback(false)
                 return
             }
+
+            // Call the early callback when we get transaction ID
+            onTransactionIdReceived()
 
             // Add transaction to mini window (bubble stack) immediately
             val transactionType = when {
