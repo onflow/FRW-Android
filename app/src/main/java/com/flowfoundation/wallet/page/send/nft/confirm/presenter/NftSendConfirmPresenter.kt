@@ -30,7 +30,10 @@ class NftSendConfirmPresenter(
     private val contact by lazy { viewModel.sendModel.target }
 
     init {
-        binding.sendButton.button().setOnProcessing { viewModel.send() }
+        binding.sendButton.button().setOnProcessing { 
+            // Start the send transaction and wait for completion
+            viewModel.send()
+        }
         binding.nftWrapper.setVisible()
         binding.titleView.setText(R.string.send_nft)
     }
@@ -49,17 +52,16 @@ class NftSendConfirmPresenter(
     }
 
     private fun updateSendState(isSuccess: Boolean) {
+        // Dismiss dialog immediately upon TX submission (success or failure)
+        fragment.dismissAllowingStateLoss()
+        
+        // Navigate back to the main NFTs tab
+        val activity = findActivity(binding.root)
+        if (activity != null) {
+            MainActivity.launch(activity, HomeTab.NFT)
+        }
+        
         if (isSuccess) {
-            uiScope { 
-                fragment.dismissAllowingStateLoss()
-                
-                // Navigate back to the main NFTs tab
-                val activity = findActivity(binding.root)
-                if (activity != null) {
-                    MainActivity.launch(activity, HomeTab.NFT)
-                }
-            }
-            
             ioScope {
                 val recentCache = recentTransactionCache().read() ?: AddressBookContactBookList(emptyList())
                 val list = recentCache.contacts.orEmpty().toMutableList()

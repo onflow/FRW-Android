@@ -356,6 +356,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             return
         }
         binding.btnMove.setProgressVisible(true)
+        
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
             val token = currentToken
@@ -363,6 +364,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 ErrorReporter.reportWithMixpanel(MoveError.LOAD_TOKEN_INFO_FAILED, getCurrentCodeLocation())
                 uiScope {
                     binding.btnMove.setProgressVisible(false)
+                    toast(R.string.common_error_hint)
                 }
                 return@ioScope
             }
@@ -382,24 +384,40 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             )
 
             try {
-                // Keep dialog open until we get transaction ID
-                // The EVMWalletManager will call back when transaction ID is available
                 if (token.isFlowToken()) {
                     android.util.Log.d("MoveTokenDialog", "Calling EVMWalletManager.moveFlowToken")
                     EVMWalletManager.moveFlowToken(token, amount, from, to) { isSuccess ->
                         android.util.Log.d("MoveTokenDialog", "moveFlowToken callback: isSuccess = $isSuccess")
-                        // Dismiss dialog when operation completes (either success or failure)
                         uiScope {
-                            dismissAllowingStateLoss()
+                            binding.btnMove.setProgressVisible(false)
+                            if (isSuccess) {
+                                // Dismiss dialog and navigate back to wallet tab upon successful TX submission
+                                dismissAllowingStateLoss()
+                                val activity = findActivity(binding.root)
+                                if (activity != null) {
+                                    MainActivity.launch(activity, HomeTab.WALLET)
+                                }
+                            } else {
+                                toast(R.string.common_error_hint)
+                            }
                         }
                     }
                 } else {
                     android.util.Log.d("MoveTokenDialog", "Calling EVMWalletManager.moveBridgeToken")
                     EVMWalletManager.moveBridgeToken(token, amount, from, to) { isSuccess ->
                         android.util.Log.d("MoveTokenDialog", "moveBridgeToken callback: isSuccess = $isSuccess")
-                        // Dismiss dialog when operation completes (either success or failure)
                         uiScope {
-                            dismissAllowingStateLoss()
+                            binding.btnMove.setProgressVisible(false)
+                            if (isSuccess) {
+                                // Dismiss dialog and navigate back to wallet tab upon successful TX submission
+                                dismissAllowingStateLoss()
+                                val activity = findActivity(binding.root)
+                                if (activity != null) {
+                                    MainActivity.launch(activity, HomeTab.WALLET)
+                                }
+                            } else {
+                                toast(R.string.common_error_hint)
+                            }
                         }
                     }
                 }

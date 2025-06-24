@@ -111,6 +111,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     return@setOnClickListener
                 }
                 btnMove.setProgressVisible(true)
+                
                 ioScope {
                     viewModel.moveSelectedNFT(layoutFromAccount.getAccountAddress(), layoutToAccount.getAccountAddress()) {
                         isSuccess ->
@@ -118,6 +119,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                             btnMove.setProgressVisible(false)
                             if (isSuccess) {
                                 toast(msgRes = R.string.move_nft_success)
+                                // Dismiss dialog immediately upon successful TX submission
                                 result?.resume(true)
                                 dismissAllowingStateLoss()
                             } else {
@@ -340,7 +342,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 eligibleList.add(evmAddress)
             }
 
-            // Add the initial From address if it’s not the current From.
+            // Add the initial From address if it's not the current From.
             if (initialFromAddress != moveFromAddress && !eligibleList.contains(initialFromAddress)) {
                 eligibleList.add(initialFromAddress)
             }

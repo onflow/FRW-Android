@@ -209,6 +209,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 return
             }
             binding.btnMove.setProgressVisible(true)
+            
             ioScope {
                 val toAddress = binding.layoutToAccount.getAccountAddress()
                 if (isChildAccountSelected) {
@@ -217,6 +218,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_failed)
@@ -228,6 +230,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
@@ -239,6 +242,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_failed)
@@ -252,6 +256,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
@@ -263,6 +268,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
@@ -276,6 +282,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_to_evm_failed)
@@ -287,6 +294,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
+                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
                                 } else {
                                     toast(R.string.move_nft_failed)
