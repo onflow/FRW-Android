@@ -44,7 +44,7 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
         val data = data ?: return
         
         // Determine if this is an EVM dApp and use appropriate address
-        val address = if (isEVMDapp()) {
+        val address = if (isEVMDapp(data.url)) {
             EVMWalletManager.getEVMAddress() ?: WalletManager.selectedWalletAddress()
         } else {
             WalletManager.selectedWalletAddress()
@@ -111,15 +111,14 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
 
     /**
      * Check if the given URL belongs to an EVM dApp
-     * Based on network parameter analysis: 
-     * - EVM dApps: network=null or explicit EVM values
-     * - Flow dApps: network=mainnet/testnet
+     * Based on session proposal network requirements
      */
-    private fun isEVMDapp(): Boolean {
+    private fun isEVMDapp(url: String?): Boolean {
         val data = this.data
         logd("FCLAUTH", "Checking isEVMDapp for: $data")
         
-        // Method 1: Network Parameter Analysis (Most Reliable)
+        // Method 1: Check if this is explicitly flagged as EVM request
+        // This should be set by the session proposal handler based on requested namespaces
         if (data?.network == null) {
             // network=null typically indicates EVM dApp (like PunchSwap)
             logd("FCLAUTH", "network=null detected, treating as EVM dApp")
