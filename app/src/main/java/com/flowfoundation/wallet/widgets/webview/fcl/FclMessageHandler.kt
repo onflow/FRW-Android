@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -49,7 +50,6 @@ fun authzTransaction() = authzTransaction
 class FclMessageHandler(
     private val webView: LilicoWebView,
 ) {
-    private fun activity() = findActivity(webView) as FragmentActivity
 
     private fun wallet(): String {
         // Try getting from WalletManager first
@@ -88,6 +88,15 @@ class FclMessageHandler(
 
     fun onHandleMessage(message: String) {
         ioScope { dispatch(message) }
+    }
+
+    private fun activity(): FragmentActivity? {
+        val activity = findActivity(webView)
+        if (activity is FragmentActivity) {
+            return activity
+        }
+        val currentActivity = BaseActivity.getCurrentActivity()
+        return currentActivity as? FragmentActivity
     }
 
     private fun dispatch(message: String) {
@@ -154,8 +163,13 @@ class FclMessageHandler(
         }
         logd(TAG, "dispatchAuthn")
         fclResponse = fcl
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
         val approve = FclAuthnDialog().show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             FclDialogModel(title = webView.title, url = webView.url, logo = fcl.config?.app?.icon, network = fcl.config?.client?.network)
         )
         if (approve) {
@@ -196,6 +210,12 @@ class FclMessageHandler(
 
         logd(TAG, "dispatchSignMessage:${fcl.uniqueId()}")
 
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
+
         val data = FclDialogModel(
             signMessage = fcl.body?.message,
             url = webView.url,
@@ -203,13 +223,13 @@ class FclMessageHandler(
             logo = fcl.config?.app?.icon,
             network = fcl.config?.client?.network
         )
-        if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager, data)) {
+        if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             finishService()
             return
         }
 
         FclSignMessageDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             data
         )
         FclSignMessageDialog.observe { approve ->
@@ -223,13 +243,19 @@ class FclMessageHandler(
     private fun signAuthz(fcl: FclAuthzResponse) {
         val data = fcl.toFclDialogModel(webView)
 
-        if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager, data)) {
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
+
+        if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             finishService()
             return
         }
 
         FclAuthzDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             data,
         )
         FclAuthzDialog.observe { approve ->
@@ -244,12 +270,17 @@ class FclMessageHandler(
 
     private fun signPayload(fcl: FclAuthzResponse) {
         val data = fcl.toFclDialogModel(webView)
-        if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager, data)) {
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
+        if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             finishService()
             return
         }
         FclAuthzDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             data,
         )
         FclAuthzDialog.observe { approve ->

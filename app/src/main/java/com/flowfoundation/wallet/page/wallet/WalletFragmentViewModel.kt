@@ -87,7 +87,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             isStaked = StakingManager.isStaked(),
             stakeAmount = StakingManager.stakingCount()
         )
-        dataListLiveData.postValue(dataList)
+        dataListLiveData.postValue(dataList.toList())
     }
 
     fun onBalanceHideStateUpdate() {
@@ -171,7 +171,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                 })
                 logd(TAG, "loadCoinList dataList:${dataList.map { it.token.contractId() }}")
                 sortDataList()
-                dataListLiveData.postValue(dataList)
+                dataListLiveData.postValue(dataList.toList())
                 updateWalletHeader(count = dataList.size)
             }
             if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
@@ -194,7 +194,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                         )
                     )
                     sortDataList()
-                    dataListLiveData.postValue(dataList)
+                    dataListLiveData.postValue(dataList.toList())
                     updateWalletHeader(count = dataList.size)
                 }
             }
@@ -204,7 +204,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                 return
             }
             dataList.removeAt(index)
-            dataListLiveData.postValue(dataList)
+            dataListLiveData.postValue(dataList.toList())
             updateWalletHeader(count = dataList.size)
         }
     }
@@ -215,7 +215,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         val index = dataList.indexOf(oldItem)
         dataList[index] = oldItem.copy(token = token)
         sortDataList()
-        dataListLiveData.postValue(dataList)
+        dataListLiveData.postValue(dataList.toList())
         updateWalletHeader()
     }
 

@@ -26,12 +26,15 @@ import com.flowfoundation.wallet.utils.debug.DebugManager
 import com.flowfoundation.wallet.utils.debug.reload
 import com.flowfoundation.wallet.utils.debug.toDp
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -211,18 +214,26 @@ class DebugViewerTab(private val binding: DebugViewerRvBinding) :
 
 enum class DebugMessageCategory {
     LOG,
-    ERROR,
+    ERROR
 }
 
 data class DebugMessage(
     val title: String,
     val body: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val level: String = "INFO",
+    val threadName: String = Thread.currentThread().name,
+    val stackTrace: String? = null,
+    val metadata: Map<String, String> = emptyMap(),
     val titleColor: Int = R.color.text_1,
     val bodyColor: Int = R.color.text_2,
     var collapsed: Boolean = true
 )
 
 object DebugViewerDataSource {
+    private const val MAX_MESSAGES_PER_CATEGORY = 1000
+    private const val MAX_TOTAL_MESSAGES = 2000
+
     val list = MutableLiveData<Map<DebugMessageCategory, List<DebugMessage>>>()
 
     val categories: List<DebugMessageCategory>
@@ -235,13 +246,29 @@ object DebugViewerDataSource {
     }
 
     private fun append(category: DebugMessageCategory, message: DebugMessage) {
-        if (!DebugManager.isProductionBuild) {
-            mainScope.launch {
-                val map = list.value?.toMutableMap() ?: mutableMapOf()
-                val messages = map[category]?.toMutableList() ?: mutableListOf()
-                messages.add(message)
-                map[category] = messages
-                list.value = map
+        mainScope.launch {
+            val map = list.value?.toMutableMap() ?: mutableMapOf()
+            val messages = map[category]?.toMutableList() ?: mutableListOf()
+            messages.add(message)
+            if (messages.size > MAX_MESSAGES_PER_CATEGORY) {
+                messages.removeAt(0)
+            }
+            map[category] = messages
+            val totalMessages = map.values.sumOf { it.size }
+            if (totalMessages > MAX_TOTAL_MESSAGES) {
+                trimOldestMessages(map)
+            }
+            list.value = map
+        }
+    }
+
+    private fun trimOldestMessages(map: MutableMap<DebugMessageCategory, List<DebugMessage>>) {
+        while (map.values.sumOf { it.size } > MAX_TOTAL_MESSAGES) {
+            val categoryWithMostMessages = map.maxByOrNull { it.value.size }
+            categoryWithMostMessages?.let { (category, messages) ->
+                if (messages.isNotEmpty()) {
+                    map[category] = messages.drop(1)
+                }
             }
         }
     }
@@ -259,29 +286,120 @@ object DebugViewerDataSource {
     }
 
     fun log(priority: Int, tag: String?, message: String) {
-        if (!DebugManager.isProductionBuild) {
-            if (priority != Log.DEBUG) {
-                append(
-                    DebugMessageCategory.LOG,
-                    DebugMessage(
-                        tag ?: "",
-                        message,
-                        textColor(priority)
-                    )
-                )
-            }
-        }
+        append(
+            DebugMessageCategory.LOG,
+            DebugMessage(
+                title = tag ?: "",
+                body = message,
+                level = priorityToString(priority),
+                titleColor = textColor(priority)
+            )
+        )
     }
 
     fun error(title: String, message: String) {
         append(
             DebugMessageCategory.ERROR,
             DebugMessage(
-                title,
-                message,
-                textColor(Log.ERROR)
+                title = title,
+                body = message,
+                level = priorityToString(Log.ERROR),
+                titleColor = textColor(Log.ERROR)
             )
         )
+    }
+
+    private fun priorityToString(priority: Int): String {
+        return when (priority) {
+            Log.VERBOSE -> "VERBOSE"
+            Log.DEBUG -> "DEBUG"
+            Log.INFO -> "INFO"
+            Log.WARN -> "WARN"
+            Log.ERROR -> "ERROR"
+            else -> "UNKNOWN"
+        }
+    }
+
+    fun generateDebugZipFile(context: Context): Uri? {
+        try {
+            val debugMessage = list.value ?: return null
+            val zipFileName = "debug_logs_${System.currentTimeMillis()}.zip"
+            val zipFile = File(context.cacheDir, zipFileName)
+
+            ZipOutputStream(FileOutputStream(zipFile)).use { zipOut ->
+                addDebugMessagesToZip(zipOut, "debug_messages.txt", debugMessage)
+                debugMessage.forEach { (category, messages) ->
+                    if (messages.isNotEmpty()) {
+                        addCategoryLogsToZip(zipOut, "${category.name.lowercase()}_logs.txt", messages)
+                    }
+                }
+            }
+
+            return FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                zipFile
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    private fun addDebugMessagesToZip(
+        zipOut: ZipOutputStream,
+        fileName: String,
+        debugMessage: Map<DebugMessageCategory, List<DebugMessage>>
+    ) {
+        val entry = ZipEntry(fileName)
+        zipOut.putNextEntry(entry)
+
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("=== Flow Wallet Debug Log ===\n")
+        stringBuilder.append("Generated: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())}\n\n")
+
+        debugMessage.forEach { (category, messages) ->
+            stringBuilder.append("\n=== Category: ${category.name} ===\n")
+            messages.forEach { message ->
+                stringBuilder.append("\n[${java.text.SimpleDateFormat("HH:mm:ss.SSS", java.util.Locale.getDefault()).format(java.util.Date(message.timestamp))}] ")
+                stringBuilder.append("[${message.level}] ")
+                stringBuilder.append("[${message.threadName}] ")
+                stringBuilder.append("${message.title}\n")
+                stringBuilder.append("${message.body}\n")
+                if (message.metadata.isNotEmpty()) {
+                    stringBuilder.append("Metadata: ${message.metadata}\n")
+                }
+                if (message.stackTrace != null) {
+                    stringBuilder.append("Stack Trace:\n${message.stackTrace}\n")
+                }
+                stringBuilder.append("---\n")
+            }
+        }
+
+        zipOut.write(stringBuilder.toString().toByteArray())
+        zipOut.closeEntry()
+    }
+
+    private fun addCategoryLogsToZip(
+        zipOut: ZipOutputStream,
+        fileName: String,
+        messages: List<DebugMessage>
+    ) {
+        val entry = ZipEntry(fileName)
+        zipOut.putNextEntry(entry)
+
+        val stringBuilder = StringBuilder()
+        messages.forEach { message ->
+            stringBuilder.append("[${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", java.util.Locale.getDefault()).format(java.util.Date(message.timestamp))}] ")
+            stringBuilder.append("[${message.level}] ")
+            stringBuilder.append("${message.title}: ${message.body}\n")
+            if (message.metadata.isNotEmpty()) {
+                stringBuilder.append("  Metadata: ${message.metadata}\n")
+            }
+        }
+
+        zipOut.write(stringBuilder.toString().toByteArray())
+        zipOut.closeEntry()
     }
 
     fun generateDebugMessageFile(context: Context): Uri? {
