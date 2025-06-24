@@ -94,12 +94,26 @@ fun Nft.video(): String? {
 fun Nft.title(): String? = postMedia?.title
 
 fun Nft.websiteUrl(walletAddress: String): String? {
-    // Check if collection has an external URL
+    // First priority: Check if collection has an external URL
     if (!collectionExternalURL.isNullOrBlank()) {
         return collectionExternalURL
     }
     
-    // If no external URL is available, return null to indicate no web view option should be shown
+    // Second priority: Fallback URLs based on NFT type
+    // For Flow-EVM NFTs, use OpenSea profile
+    if (canBridgeToEVM() || !evmAddress.isNullOrBlank()) {
+        val evmAddr = getEVMAddress() ?: evmAddress
+        if (!evmAddr.isNullOrBlank()) {
+            return "https://opensea.io/$evmAddr"
+        }
+    }
+    
+    // For Flow NFTs, use FlowPort
+    if (canBridgeToFlow() || !flowIdentifier.isNullOrBlank()) {
+        return "https://port.flow.com/nfts/$walletAddress"
+    }
+    
+    // If no URL can be determined, return null to hide the option
     return null
 }
 
