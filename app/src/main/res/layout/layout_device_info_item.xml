@@ -15,7 +15,6 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         app:tint="@color/colorSecondary"
-        android:src="@drawable/ic_device_type_phone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
