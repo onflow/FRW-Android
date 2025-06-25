@@ -218,7 +218,6 @@ object WalletFetcher {
     private fun dispatchListeners(wallet: WalletListData) {
         logd(TAG, "dispatchListeners:$wallet")
         
-        // FIXED: Check if app is in foreground before dispatching to prevent ANR in background
         if (!ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             logd(TAG, "App is in background, deferring wallet update to prevent ANR")
             return

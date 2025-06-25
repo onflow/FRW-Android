@@ -67,7 +67,6 @@ object WalletManager {
             if (isInitializing || isInitialized) return
             isInitializing = true
             try {
-                // FIXED: Run wallet initialization on background thread but allow UI to wait
                 val initJob = ioScope {
                     if (initializeWallet()) {
                         synchronized(initializationLock) {
@@ -169,7 +168,6 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
 
-                    // FIXED: Keep core account discovery synchronous for UI dependency, but with timeout
                     try {
                         runBlocking {
                             // Add timeout to prevent infinite hanging
@@ -541,7 +539,6 @@ object WalletManager {
                 } else {
                     logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
 
-                    // FIXED: Keep core account discovery synchronous for UI dependency, but with timeout
                     try {
                         runBlocking {
                             // Add timeout to prevent infinite hanging
@@ -581,7 +578,6 @@ object WalletManager {
                 // This is needed because new accounts may not be indexed yet by the key indexer
                 account.wallet?.wallets?.forEach { walletData ->
                     walletData.blockchain?.forEach { blockchain ->
-                        // FIXED: Use ioScope for async account fetching to prevent ANR
                         ioScope {
                             try {
                                 val chainId = when (blockchain.chainId.lowercase()) {
@@ -620,7 +616,6 @@ object WalletManager {
                 walletUpdate()
                 logd(TAG, "Triggered wallet update")
                 
-                // FIXED: Trigger callbacks to notify UI that wallet is ready
                 uiScope {
                     triggerWalletReadyCallbacks()
                 }

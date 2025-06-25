@@ -210,7 +210,6 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
         }
 
-        // FIXED: Add retry mechanism for child accounts loading - optimized
         val mainAccountAddress = networkAccounts.firstOrNull()?.address
         var childAccounts: List<ChildAccount>? = null
         if (mainAccountAddress != null) {
@@ -258,7 +257,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
                 }
             }
             
-            // Simplified fallback - only try direct fetch if we have no accounts and it's worth it
+            // Simplified fallback - only try direct fetch if we have no accounts
             if (childAccounts.isNullOrEmpty() && childRetryCount >= 3) {
                 logd("DrawerLayoutPresenter", "Attempting direct child account fetch as final fallback")
                 try {
@@ -294,7 +293,6 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             logd("DrawerLayoutPresenter", "Added child account address: ${childAccount.address}")
         }
 
-        // FIXED: Add retry mechanism for EVM account loading
         var evmAddress: String? = null
         var evmRetryCount = 0
         while (evmAddress == null && evmRetryCount < 3) {
@@ -326,7 +324,6 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             return@ioScope
         }
         
-        // FIXED: Check if we already have UI elements and balances are 0 to prevent loops
         if (llMainAccount.childCount > 0 && !refreshBalance) {
             var hasAnyBalance = false
             for (i in 0 until llMainAccount.childCount) {
@@ -361,8 +358,7 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             logd("DrawerLayoutPresenter", "Setting up linked accounts")
             wallet?.let { this.setupLinkedAccount(it, userInfo) }
             
-            // FIXED: Also setup linked accounts with async retry in background
-            wallet?.let { 
+            wallet?.let {
                 ioScope {
                     // Attempt to load any missing accounts asynchronously
                     this@refreshWalletList.setupLinkedAccountAsync(it, userInfo)
@@ -698,7 +694,6 @@ private fun ViewGroup.setupWallet(
 
 @SuppressLint("SetTextI18n")
 private fun LayoutMainDrawerLayoutBinding.fetchAllBalancesAndUpdateUI(addressList: List<String>) {
-    // FIXED: Prevent excessive balance fetching that can cause issues when balance is 0
     if (addressList.isEmpty()) {
         logd("DrawerLayoutPresenter", "No addresses to fetch balances for, skipping")
         return

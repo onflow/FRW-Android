@@ -70,7 +70,6 @@ class DrawerLayoutPresenter(
     private var isUpdatingWallet = false
     private val walletUpdateLock = Object()
     
-    // FIXED: Add debouncing mechanism to prevent excessive refreshes
     private var lastRefreshTime = 0L
     private var refreshJob: Job? = null
     private val refreshDebounceMs = 1000L // 1 second debounce
@@ -119,7 +118,6 @@ class DrawerLayoutPresenter(
         bindData()
         logd(TAG, "Initial wallet list refresh")
         
-        // FIXED: Use wallet ready callback to ensure proper timing with debouncing
         WalletManager.onWalletReady {
             logd(TAG, "Wallet is ready, scheduling debounced refresh")
             scheduleDeboucedRefresh(true)
@@ -137,7 +135,6 @@ class DrawerLayoutPresenter(
         WalletFetcher.addListener(this)
     }
 
-    // FIXED: Add debounced refresh method to prevent excessive calls
     private fun scheduleDeboucedRefresh(refreshBalance: Boolean = false) {
         synchronized(refreshLock) {
             val currentTime = System.currentTimeMillis()
@@ -271,7 +268,6 @@ class DrawerLayoutPresenter(
             bindData()
             bindEVMInfo()
             
-            // FIXED: Use debounced refresh instead of multiple calls
             logd(TAG, "Drawer opened, scheduling debounced refresh")
             scheduleDeboucedRefresh(refreshBalance = false)
         }
@@ -299,7 +295,6 @@ class DrawerLayoutPresenter(
             logd(TAG, "Child account: ${account.address}, name: ${account.name}")
         }
         
-        // FIXED: Use debounced refresh to prevent excessive refreshes when balance is 0
         if (accounts.isNotEmpty()) {
             logd(TAG, "Child accounts available, scheduling debounced refresh")
             scheduleDeboucedRefresh(refreshBalance = false)
@@ -347,7 +342,6 @@ class DrawerLayoutPresenter(
                             logd(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
                             drawer.setDrawerLockMode(lockMode)
                             
-                            // FIXED: Use debounced refresh instead of direct call
                             logd(TAG, "Wallet updated, scheduling debounced refresh")
                             scheduleDeboucedRefresh(refreshBalance = true)
                         } else {
