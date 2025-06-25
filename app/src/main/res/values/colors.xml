@@ -150,7 +150,7 @@
     <color name="text_white">#FFFFFF</color>
     <color name="text_white_90">#E6FFFFFF</color>
     <color name="text_1">#000000</color>
-    <color name="text_2">#CC000000</color>
+    <color name="text_2">#000000CC</color>
     <color name="info_text_3">#99000000</color>
     <color name="text_3">#4D000000</color>
     <color name="text_4">#1A000000</color>
