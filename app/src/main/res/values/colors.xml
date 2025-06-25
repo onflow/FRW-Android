@@ -117,6 +117,7 @@
     <color name="colorSecondary_65">#a641CC5D</color>
     <color name="colorSecondary_80">#CC41CC5D</color>
     <color name="colorSecondary_95">#F241CC5D</color>
+    <color name="accent_green">#41CC5D</color>
     <color name="accent_blue">#579AF2</color>
     <color name="accent_gray">#8C9BAB</color>
     <color name="accent_red">#E54040</color>
