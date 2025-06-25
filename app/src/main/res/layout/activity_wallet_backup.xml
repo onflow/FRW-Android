@@ -40,22 +40,20 @@
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
                     android:orientation="vertical"
                     android:paddingHorizontal="24dp">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="79dp"
+                        android:layout_height="56dp"
                         android:layout_marginTop="24dp"
-                        android:src="@drawable/ic_devices"/>
+                        android:src="@drawable/ic_device_backup_start"/>
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
-                        android:gravity="center"
                         android:text="@string/create_device_backup"
                         android:textColor="@color/accent_blue"
                         android:textSize="20sp"
@@ -66,19 +64,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
-                        android:gravity="center"
                         android:lineSpacingMultiplier="1.1"
                         android:text="@string/create_device_backup_note"
-                        android:textColor="@color/accent_blue"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"/>
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="32dp"
-                        android:src="@drawable/ic_circle_with_right_arrow"
-                        app:tint="@color/accent_blue"/>
+
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -86,17 +77,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
+                    android:textSize="12sp"
                     android:gravity="center"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="4dp"
                     android:layout_gravity="end"
                     android:layout_marginTop="12dp"
                     android:layout_marginEnd="16dp"
-                    android:textColor="@color/info_success_green"
+                    android:textColor="@color/colorSecondary"
                     android:background="@drawable/bg_round_16dp"
-                    android:backgroundTint="@color/info_success_green_16"
+                    android:backgroundTint="@color/colorSecondaryTransparent10"
                     android:text="@string/recommended"/>
             </com.google.android.material.card.MaterialCardView>
 
@@ -115,26 +105,24 @@
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
                     android:orientation="vertical"
                     android:paddingHorizontal="24dp">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="131dp"
+                        android:layout_height="56dp"
                         android:layout_marginTop="24dp"
-                        android:src="@drawable/ic_settings_backup"
-                        app:tint="@color/accent_purple"/>
+                        android:src="@drawable/ic_multi_backup_start"
+                     />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
-                        android:gravity="center"
                         android:text="@string/create_multi_backup"
-                        android:textColor="@color/accent_purple"
-                        android:textSize="20sp"
+                        android:textColor="@color/text_light"
+                        android:textSize="24sp"
                         android:textStyle="bold"/>
 
                     <TextView
@@ -142,19 +130,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
-                        android:gravity="center"
                         android:text="@string/create_multi_backup_note"
                         android:lineSpacingMultiplier="1.1"
-                        android:textColor="@color/accent_purple"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"/>
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="32dp"
-                        android:src="@drawable/ic_circle_with_right_arrow"
-                        app:tint="@color/accent_purple"/>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -162,17 +141,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textStyle="bold"
-                    android:textSize="10sp"
+                    android:textSize="12sp"
                     android:gravity="center"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="4dp"
                     android:layout_gravity="end"
                     android:layout_marginTop="12dp"
                     android:layout_marginEnd="16dp"
-                    android:textColor="@color/info_success_green"
+                    android:textColor="@color/colorSecondary"
                     android:background="@drawable/bg_round_16dp"
-                    android:backgroundTint="@color/info_success_green_16"
+                    android:backgroundTint="@color/colorSecondaryTransparent10"
                     android:text="@string/recommended"/>
             </com.google.android.material.card.MaterialCardView>
 
@@ -191,26 +169,24 @@
                 <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
                     android:orientation="vertical"
                     android:paddingHorizontal="24dp">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="131dp"
+                        android:layout_height="56dp"
                         android:layout_marginTop="24dp"
-                        android:src="@drawable/ic_key_type_recovery_phrase"
-                        app:tint="@color/accent_gray"/>
+                        android:src="@drawable/ic_recovery_phrase_backup_start"
+                        />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
-                        android:gravity="center"
                         android:text="@string/create_seed_phrase_backup"
-                        android:textColor="@color/accent_gray"
-                        android:textSize="20sp"
+                        android:textColor="@color/text_light"
+                        android:textSize="24sp"
                         android:textStyle="bold"/>
 
                     <TextView
@@ -218,19 +194,12 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:fontFamily="@font/inter"
-                        android:gravity="center"
                         android:text="@string/create_seed_phrase_backup_note"
                         android:lineSpacingMultiplier="1.1"
-                        android:textColor="@color/accent_gray"
+                        android:textColor="@color/text_secondary"
                         android:textSize="12sp"/>
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginBottom="32dp"
-                        android:src="@drawable/ic_circle_with_right_arrow"
-                        app:tint="@color/accent_gray"/>
+
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
