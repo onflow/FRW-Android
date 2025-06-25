@@ -40,6 +40,7 @@ class BackupDropboxPresenter(
     init {
         with(binding) {
             backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_DROPBOX, false)
+            tvBackupStep.text = "Back up ${backupViewModel.getCurrentIndex() + 1}"
             clStatusLayout.visibility = View.GONE
             btnNext.setOnClickListener {
                 if (btnNext.isProgressVisible()) {

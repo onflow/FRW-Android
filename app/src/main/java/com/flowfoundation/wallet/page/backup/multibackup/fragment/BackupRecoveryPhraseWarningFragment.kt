@@ -46,6 +46,7 @@ class BackupRecoveryPhraseWarningFragment : Fragment() {
         }
         with(binding) {
             backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_RECOVERY_PHRASE, false)
+            tvBackupStep.text = "Back up ${backupViewModel.getCurrentIndex() + 1}"
             warningCheck1.setOnCheckedChangeListener { _, _ -> onCheckChanged() }
             warningCheck2.setOnCheckedChangeListener { _, _ -> onCheckChanged() }
             warningCheck3.setOnCheckedChangeListener { _, _ -> onCheckChanged() }
@@ -55,9 +56,6 @@ class BackupRecoveryPhraseWarningFragment : Fragment() {
             warning2.setOnClickListener { warningCheck2.isChecked = !warningCheck2.isChecked }
             warning3.setOnClickListener { warningCheck3.isChecked = !warningCheck3.isChecked }
             
-            tvLearnMore.setOnClickListener {
-                BackupAboutDialog().show(childFragmentManager, BackupAbout.ABOUT_RECOVERY_PHRASE)
-            }
             createButton.setOnClickListener {
                 createBackup()
             }
