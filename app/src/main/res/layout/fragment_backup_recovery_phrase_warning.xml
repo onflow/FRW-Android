@@ -23,7 +23,7 @@
         android:paddingHorizontal="12dp"
         android:paddingVertical="6dp"
         android:textColor="@color/colorSecondary"
-        android:textSize="12sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
