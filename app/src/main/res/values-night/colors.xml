@@ -3,6 +3,7 @@
     <color name="colorPrimary">#242430</color>
     <color name="colorPrimaryVariant">@color/deep_bg</color>
     <color name="colorSecondary">#00EF8B</color>
+    <color name="backupIconGreen">#ffffff</color>
     <color name="colorSecondaryTransparent10">#00EF8B1A</color>
 
     <color name="error">#F04438</color>

@@ -3,6 +3,7 @@
     <color name="colorPrimary">#ffffff</color>
     <color name="colorPrimaryVariant">#ffffff</color>
     <color name="colorSecondary">#00B877</color>
+    <color name="backupIconGreen">#00B877</color>
     <color name="colorSecondaryTransparent10">#00EF8B26</color>
     <color name="text_sub">#565A69</color>
     <color name="text_light">#000000</color>
