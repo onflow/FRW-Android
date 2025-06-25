@@ -57,6 +57,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.parseAvatarUrl
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.utils.uiScope
+import kotlinx.coroutines.Job
 
 class DrawerLayoutPresenter(
     private val drawer: DrawerLayout,
@@ -68,6 +69,13 @@ class DrawerLayoutPresenter(
     private val activity by lazy { findActivity(drawer) as FragmentActivity }
     private var isUpdatingWallet = false
     private val walletUpdateLock = Object()
+    
+    // FIXED: Add debouncing mechanism to prevent excessive refreshes
+    private var lastRefreshTime = 0L
+    private var refreshJob: Job? = null
+    private val refreshDebounceMs = 1000L // 1 second debounce
+    private var isRefreshing = false
+    private val refreshLock = Object()
 
     init {
         logd(TAG, "Initializing DrawerLayoutPresenter")
@@ -111,10 +119,10 @@ class DrawerLayoutPresenter(
         bindData()
         logd(TAG, "Initial wallet list refresh")
         
-        // FIXED: Use wallet ready callback to ensure proper timing
+        // FIXED: Use wallet ready callback to ensure proper timing with debouncing
         WalletManager.onWalletReady {
-            logd(TAG, "Wallet is ready, refreshing drawer")
-            binding.refreshWalletList(true)
+            logd(TAG, "Wallet is ready, scheduling debounced refresh")
+            scheduleDeboucedRefresh(true)
             uiScope {
                 val address = WalletManager.wallet()?.walletAddress()
                 val lockMode = if (address.isNullOrBlank()) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED
@@ -127,6 +135,33 @@ class DrawerLayoutPresenter(
         AccountEmojiManager.addListener(this)
         ChildAccountList.addAccountUpdateListener(this)
         WalletFetcher.addListener(this)
+    }
+
+    // FIXED: Add debounced refresh method to prevent excessive calls
+    private fun scheduleDeboucedRefresh(refreshBalance: Boolean = false) {
+        synchronized(refreshLock) {
+            val currentTime = System.currentTimeMillis()
+            
+            // If we're already refreshing or too soon since last refresh, skip
+            if (isRefreshing || (currentTime - lastRefreshTime) < refreshDebounceMs) {
+                logd(TAG, "Skipping refresh - too frequent or already refreshing")
+                return
+            }
+            
+            // Cancel any pending refresh
+            refreshJob?.cancel()
+            
+            refreshJob = ioScope {
+                try {
+                    isRefreshing = true
+                    lastRefreshTime = currentTime
+                    logd(TAG, "Executing debounced refresh")
+                    binding.refreshWalletList(refreshBalance)
+                } finally {
+                    isRefreshing = false
+                }
+            }
+        }
     }
 
     private fun initEVMLayoutTitle() {
@@ -236,41 +271,9 @@ class DrawerLayoutPresenter(
             bindData()
             bindEVMInfo()
             
-            // FIXED: Add delayed refresh to ensure all accounts are loaded - optimized for responsiveness
-            ioScope {
-                // Quick initial refresh
-                binding.refreshWalletList(refreshBalance = false)
-                
-                // Short delay for immediate missing accounts
-                kotlinx.coroutines.delay(300)
-                
-                // Check if child accounts are missing and need quick refresh
-                val wallet = WalletManager.wallet()
-                val mainAddress = wallet?.accounts?.values?.flatten()?.firstOrNull()?.address
-                if (mainAddress != null) {
-                    val currentLinkedCount = binding.llLinkedAccount.childCount
-                    logd(TAG, "Current linked accounts in UI: $currentLinkedCount")
-                    
-                    // Only do expensive operations if accounts are actually missing
-                    if (currentLinkedCount == 0) {
-                        logd(TAG, "No linked accounts visible, doing targeted refresh")
-                        
-                        // Quick check for cached child accounts
-                        val childAccountList = WalletManager.childAccountList(mainAddress)
-                        val cachedChildAccounts = childAccountList?.get() ?: emptyList()
-                        
-                        if (cachedChildAccounts.isEmpty()) {
-                            logd(TAG, "No cached child accounts, triggering background refresh")
-                            // Non-blocking background refresh
-                            childAccountList?.refresh()
-                        }
-                        
-                        // Give a short time for refresh then update UI
-                        kotlinx.coroutines.delay(500)
-                        binding.refreshWalletList(refreshBalance = false)
-                    }
-                }
-            }
+            // FIXED: Use debounced refresh instead of multiple calls
+            logd(TAG, "Drawer opened, scheduling debounced refresh")
+            scheduleDeboucedRefresh(refreshBalance = false)
         }
 
         override fun onDrawerClosed(drawerView: View) {
@@ -296,40 +299,12 @@ class DrawerLayoutPresenter(
             logd(TAG, "Child account: ${account.address}, name: ${account.name}")
         }
         
-        // FIXED: Add debouncing to prevent excessive refreshes and ensure UI update
-        ioScope {
-            // Wait a brief moment to allow for other potential updates
-            kotlinx.coroutines.delay(200)
-            
-            // Always refresh if we have accounts, regardless of drawer state
-            if (accounts.isNotEmpty()) {
-                logd(TAG, "Refreshing wallet list due to child account update with ${accounts.size} accounts")
-                binding.refreshWalletList()
-                
-                // Double-check that the accounts actually appear in the UI
-                kotlinx.coroutines.delay(500)
-                uiScope {
-                    val currentLinkedCount = binding.llLinkedAccount.childCount
-                    logd(TAG, "After child account update, linked accounts in UI: $currentLinkedCount")
-                    
-                    if (currentLinkedCount == 0 && accounts.isNotEmpty()) {
-                        logd(TAG, "Child accounts not showing in UI, forcing another refresh")
-                        ioScope {
-                            binding.refreshWalletList()
-                        }
-                    }
-                }
-            } else {
-                // Check if the drawer is currently open before refreshing
-                uiScope {
-                    if (drawer.isDrawerOpen(binding.root)) {
-                        logd(TAG, "Drawer is open, refreshing wallet list for child account update")
-                        binding.refreshWalletList()
-                    } else {
-                        logd(TAG, "Drawer is closed, skipping refresh for child account update")
-                    }
-                }
-            }
+        // FIXED: Use debounced refresh to prevent excessive refreshes when balance is 0
+        if (accounts.isNotEmpty()) {
+            logd(TAG, "Child accounts available, scheduling debounced refresh")
+            scheduleDeboucedRefresh(refreshBalance = false)
+        } else {
+            logd(TAG, "No child accounts available, skipping refresh")
         }
     }
 
@@ -371,8 +346,10 @@ class DrawerLayoutPresenter(
                             val lockMode = DrawerLayout.LOCK_MODE_UNLOCKED
                             logd(TAG, "Updating drawer lock mode to: $lockMode after wallet update")
                             drawer.setDrawerLockMode(lockMode)
-                            logd(TAG, "Refreshing wallet list")
-                            binding.refreshWalletList(true)
+                            
+                            // FIXED: Use debounced refresh instead of direct call
+                            logd(TAG, "Wallet updated, scheduling debounced refresh")
+                            scheduleDeboucedRefresh(refreshBalance = true)
                         } else {
                             logd(TAG, "Failed to initialize wallet after $retryCount attempts")
                         }
@@ -390,7 +367,7 @@ class DrawerLayoutPresenter(
 
     override fun onEmojiUpdate(userName: String, address: String, emojiId: Int, emojiName: String) {
         logd(TAG, "Emoji updated for user: $userName, address: $address, emoji: $emojiName")
-        binding.refreshWalletList()
+        scheduleDeboucedRefresh(refreshBalance = false)
     }
 
     private inner class ShaderSpan(private val shader: Shader) : ForegroundColorSpan(0) {

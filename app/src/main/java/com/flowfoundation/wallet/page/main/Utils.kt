@@ -325,6 +325,27 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             fetchAllBalancesAndUpdateUI(addressList)
             return@ioScope
         }
+        
+        // FIXED: Check if we already have UI elements and balances are 0 to prevent loops
+        if (llMainAccount.childCount > 0 && !refreshBalance) {
+            var hasAnyBalance = false
+            for (i in 0 until llMainAccount.childCount) {
+                val itemView = llMainAccount.getChildAt(i) as? ViewGroup ?: continue
+                val balanceView = itemView.findViewById<TextView>(R.id.wallet_balance_view) ?: continue
+                val balanceText = balanceView.text?.toString()
+                if (!balanceText.isNullOrBlank() && balanceText != "0 FLOW" && balanceText != "0.0 FLOW") {
+                    hasAnyBalance = true
+                    break
+                }
+            }
+            
+            // If all balances are 0 and we're not forcing a refresh, just update balances
+            if (!hasAnyBalance && addressList.isNotEmpty()) {
+                logd("DrawerLayoutPresenter", "All balances are 0, only fetching balance updates")
+                fetchAllBalancesAndUpdateUI(addressList)
+                return@ioScope
+            }
+        }
 
         uiScope {
             logd("DrawerLayoutPresenter", "Updating UI with ${list.size} main accounts")
@@ -677,28 +698,41 @@ private fun ViewGroup.setupWallet(
 
 @SuppressLint("SetTextI18n")
 private fun LayoutMainDrawerLayoutBinding.fetchAllBalancesAndUpdateUI(addressList: List<String>) {
+    // FIXED: Prevent excessive balance fetching that can cause issues when balance is 0
+    if (addressList.isEmpty()) {
+        logd("DrawerLayoutPresenter", "No addresses to fetch balances for, skipping")
+        return
+    }
+    
     ioScope {
-        val balanceMap = cadenceGetAllFlowBalance(addressList) ?: return@ioScope
-        uiScope {
-            for (i in 0 until llMainAccount.childCount) {
-                val itemView = llMainAccount.getChildAt(i) as? ViewGroup ?: continue
-                val balanceView = itemView.findViewById<TextView>(R.id.wallet_balance_view) ?: continue
-                val address = balanceView.tag as? String ?: continue
+        try {
+            logd("DrawerLayoutPresenter", "Fetching balances for ${addressList.size} addresses")
+            val balanceMap = cadenceGetAllFlowBalance(addressList) ?: return@ioScope
+            
+            uiScope {
+                for (i in 0 until llMainAccount.childCount) {
+                    val itemView = llMainAccount.getChildAt(i) as? ViewGroup ?: continue
+                    val balanceView = itemView.findViewById<TextView>(R.id.wallet_balance_view) ?: continue
+                    val address = balanceView.tag as? String ?: continue
 
-                balanceMap[address]?.let { balance ->
-                    balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
+                    balanceMap[address]?.let { balance ->
+                        balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
+                    }
+                }
+
+                for (i in 0 until llLinkedAccount.childCount) {
+                    val itemView = llLinkedAccount.getChildAt(i) as? ViewGroup ?: continue
+                    val balanceView = itemView.findViewById<TextView>(R.id.wallet_balance_view) ?: continue
+
+                    val fullAddress = balanceView.tag as? String ?: continue
+                    balanceMap[fullAddress]?.let { balance ->
+                        balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
+                    }
                 }
             }
-
-            for (i in 0 until llLinkedAccount.childCount) {
-                val itemView = llLinkedAccount.getChildAt(i) as? ViewGroup ?: continue
-                val balanceView = itemView.findViewById<TextView>(R.id.wallet_balance_view) ?: continue
-
-                val fullAddress = balanceView.tag as? String ?: continue
-                balanceMap[fullAddress]?.let { balance ->
-                    balanceView.text = "${balance.formatLargeBalanceNumber(isAbbreviation = true)} FLOW"
-                }
-            }
+        } catch (e: Exception) {
+            logd("DrawerLayoutPresenter", "Error fetching balances: ${e.message}")
+            // Don't trigger additional refreshes on balance fetch errors
         }
     }
 }
