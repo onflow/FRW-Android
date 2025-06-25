@@ -78,8 +78,8 @@ class BackupDropboxPresenter(
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
-                    viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
-                    tvUpload.setTextColor(R.color.text_2.res2color())
+                    viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.colorSecondary.res2color())
+                    tvUpload.setTextColor(R.color.text_light.res2color())
                     viewLine.setBackgroundColor(R.color.text_3.res2color())
                     viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.text_3.res2color())
                     tvRegistration.setTextColor(R.color.text_3.res2color())
@@ -89,8 +89,8 @@ class BackupDropboxPresenter(
                     btnNext.setProgressVisible(false)
                     tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
-                    viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.accent_red.res2color())
-                    tvUpload.setTextColor(R.color.accent_red.res2color())
+                    viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.error.res2color())
+                    tvUpload.setTextColor(R.color.error.res2color())
                     viewLine.setBackgroundColor(R.color.text_3.res2color())
                     viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.text_3.res2color())
                     tvRegistration.setTextColor(R.color.text_3.res2color())
@@ -99,11 +99,11 @@ class BackupDropboxPresenter(
                 BackupDropboxState.REGISTRATION_KEY_LIST -> {
                     tvOptionTitle.text = R.string.upload_backup.res2String()
                     clStatusLayout.visibility = View.VISIBLE
-                    viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
-                    tvUpload.setTextColor(R.color.text_2.res2color())
-                    viewLine.setBackgroundColor(R.color.text_2.res2color())
-                    viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.text_2.res2color())
-                    tvRegistration.setTextColor(R.color.text_2.res2color())
+                    viewUpload.backgroundTintList = ColorStateList.valueOf(R.color.colorSecondary.res2color())
+                    tvUpload.setTextColor(R.color.text_light.res2color())
+                    viewLine.setBackgroundColor(R.color.colorSecondary.res2color())
+                    viewRegistration.backgroundTintList = ColorStateList.valueOf(R.color.colorSecondary.res2color())
+                    tvRegistration.setTextColor(R.color.text_light.res2color())
                     btnNext.text = R.string.upload_backup.res2String()
                 }
                 BackupDropboxState.NETWORK_ERROR -> {

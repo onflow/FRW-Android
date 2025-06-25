@@ -106,7 +106,7 @@
             android:layout_marginStart="8dp"
             android:fontFamily="@font/src_inter_bold"
             android:text="@string/registration_key_list"
-            android:textColor="@color/text_3"
+            android:textColor="@color/text_light"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/view_registration"/>
