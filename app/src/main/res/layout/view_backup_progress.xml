@@ -30,8 +30,8 @@
     <View
         android:id="@+id/line_one"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/bg_3"
+        android:layout_height="2dp"
+        android:background="@color/bg_card"
         app:layout_constraintTop_toTopOf="@id/iv_first_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_first_option"
         app:layout_constraintStart_toEndOf="@id/iv_first_option"
@@ -61,8 +61,8 @@
     <View
         android:id="@+id/line_two"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/bg_3"
+        android:layout_height="2dp"
+        android:background="@color/bg_card"
         app:layout_constraintTop_toTopOf="@id/iv_second_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_second_option"
         app:layout_constraintStart_toEndOf="@id/iv_second_option"
@@ -92,8 +92,8 @@
     <View
         android:id="@+id/line_three"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/bg_3"
+        android:layout_height="2dp"
+        android:background="@color/bg_card"
         app:layout_constraintTop_toTopOf="@id/iv_third_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_third_option"
         app:layout_constraintStart_toEndOf="@id/iv_third_option"
