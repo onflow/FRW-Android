@@ -21,8 +21,8 @@ class DeviceInfoPresenter(private val view: View) : BaseViewHolder(view),
     override fun bind(model: DeviceKeyModel) {
         val isCurrentDevice = DeviceInfoManager.isCurrentDevice(model.deviceId)
         with(binding) {
-            // Show computer icon if user agent contains "Extension", otherwise show phone icon
-            val isExtension = model.deviceModel.user_agent.contains("Extension", ignoreCase = true)
+            // Show computer icon if device name contains "Extension", otherwise show phone icon
+            val isExtension = model.deviceModel.device_name.contains("Extension", ignoreCase = true)
             ivDeviceType.setImageResource(
                 if (isExtension) R.drawable.ic_device_type_computer 
                 else R.drawable.ic_device_type_phone

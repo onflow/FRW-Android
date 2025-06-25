@@ -69,7 +69,7 @@
                 <CheckBox
                     android:id="@+id/warning_check_1"
                     style="@style/CheckBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="27dp"
                     android:text="@string/backup_recovery_phrase_warning_1"/>
@@ -89,7 +89,7 @@
                 <CheckBox
                     android:id="@+id/warning_check_2"
                     style="@style/CheckBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="27dp"
                     android:text="@string/backup_recovery_phrase_warning_2"/>
@@ -109,7 +109,7 @@
                 <CheckBox
                     android:id="@+id/warning_check_3"
                     style="@style/CheckBox"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="27dp"
                     android:text="@string/backup_recovery_phrase_warning_3"/>

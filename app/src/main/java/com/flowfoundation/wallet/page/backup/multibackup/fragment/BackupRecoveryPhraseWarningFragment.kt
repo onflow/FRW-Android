@@ -49,6 +49,12 @@ class BackupRecoveryPhraseWarningFragment : Fragment() {
             warningCheck1.setOnCheckedChangeListener { _, _ -> onCheckChanged() }
             warningCheck2.setOnCheckedChangeListener { _, _ -> onCheckChanged() }
             warningCheck3.setOnCheckedChangeListener { _, _ -> onCheckChanged() }
+            
+            // Add click listeners to FrameLayouts to make the entire card clickable
+            warning1.setOnClickListener { warningCheck1.isChecked = !warningCheck1.isChecked }
+            warning2.setOnClickListener { warningCheck2.isChecked = !warningCheck2.isChecked }
+            warning3.setOnClickListener { warningCheck3.isChecked = !warningCheck3.isChecked }
+            
             tvLearnMore.setOnClickListener {
                 BackupAboutDialog().show(childFragmentManager, BackupAbout.ABOUT_RECOVERY_PHRASE)
             }

@@ -20,11 +20,7 @@ class WalletCreatePinCodePresenter(
 
     init {
         with(binding) {
-            title1.setSpannableText(
-                R.string.create_pin.res2String(),
-                R.string.pin.res2String(),
-                R.color.colorSecondary.res2color()
-            )
+            title1.setText(R.string.create_pin)
             pinInput.setCheckCallback { passed ->
                 savePinCode(pinInput.keys().joinToString("") { "${it.number}" })
                 MixpanelManager.securityTool(MixpanelSecurityTool.PIN)
@@ -50,11 +46,7 @@ class WalletCreatePinCodePresenter(
 
     private fun checkMode() {
         with(binding) {
-            title1.setSpannableText(
-                R.string.check_pin.res2String(),
-                R.string.pin.res2String(),
-                R.color.colorSecondary.res2color()
-            )
+            title1.setText(R.string.check_pin)
             title2.setText(R.string.check_pin_tip)
         }
     }
