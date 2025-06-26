@@ -2,8 +2,6 @@ package com.flowfoundation.wallet.page.profile.presenter
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
-import com.instabug.library.Instabug
-import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentProfileBinding
@@ -16,7 +14,6 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
-import com.flowfoundation.wallet.page.inbox.InboxActivity
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.profile.ProfileFragment
@@ -31,11 +28,9 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrenc
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
-import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
-import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
@@ -46,8 +41,8 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.bug.BugReporting
-import com.instabug.library.OnSdkDismissCallback
+import com.instabug.library.Instabug
+import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 
 class ProfileFragmentPresenter(
     private val fragment: ProfileFragment,
