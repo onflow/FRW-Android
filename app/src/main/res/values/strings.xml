@@ -582,7 +582,7 @@
     <string name="quick_enable_evm">Quick Enable EVM</string>
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import profile</string>
-    <string name="notification">Notification</string>
+    <string name="notification">Notifications</string>
     <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
@@ -595,7 +595,7 @@
     <string name="wallpaper_dynamic">Dynamic</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
-    <string name="appearance">Appearance</string>
+    <string name="appearance">Theme</string>
     <string name="current_device">Current Device</string>
     <string name="create_username_tip">Other Flow Wallet users can find you and send you payments via your unique username.</string>
     <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>

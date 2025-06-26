@@ -72,16 +72,13 @@ class ProfileFragmentPresenter(
         }
         binding.actionGroup.addressButton.setOnClickListener { AddressBookActivity.launch(context) }
         binding.actionGroup.walletButton.setOnClickListener { WalletListActivity.launch(context) }
-        binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
         binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }
         binding.group0.securityPreference.setOnClickListener {
             SecuritySettingActivity.launch(context)
         }
-        binding.group0.linkedAccount.setOnClickListener {
-            ChildAccountsActivity.launch(context)
-        }
-        binding.group0.developerModePreference.setOnClickListener {
+
+        binding.group3.developerModePreference.setOnClickListener {
             DeveloperModeActivity.launch(context)
         }
 
@@ -106,7 +103,7 @@ class ProfileFragmentPresenter(
         }
 
         binding.group3.bugReport.setOnClickListener { Instabug.show() }
-        binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
+        binding.group4a.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
         binding.group4.switchAccountPreference.setOnClickListener {
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
@@ -158,7 +155,6 @@ class ProfileFragmentPresenter(
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
                     actionGroup.root.setVisible(isSignIn)
-                    group0.llLinkedAccount.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.llBackupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.llSecurityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
@@ -166,7 +162,7 @@ class ProfileFragmentPresenter(
                         if (isNightMode(fragment.activity)) R.string.dark else R.string.light
                     )
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
-                    group0.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
+                    group3.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
                 }
                 updateWalletConnectSessionCount()
             }
@@ -175,8 +171,6 @@ class ProfileFragmentPresenter(
 
     @SuppressLint("SetTextI18n")
     private fun updateInboxCount(count: Int) {
-        binding.actionGroup.inboxUnreadCount.setVisible(count != 0)
-        binding.actionGroup.inboxUnreadCount.text = count.toString()
     }
 
     private fun updateWalletConnectSessionCount() {

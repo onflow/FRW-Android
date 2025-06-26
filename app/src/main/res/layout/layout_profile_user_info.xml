@@ -5,19 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <com.flowfoundation.wallet.page.profile.widget.ProfileSwitchTipsBanner
-        android:id="@+id/profile_switch_tips"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"/>
-
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/avatar_view"
         android:layout_width="82dp"
         android:layout_height="82dp"
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/profile_switch_tips"
+        app:layout_constraintTop_toTopOf="parent"
         app:round="82dp"
         tools:background="#999"/>
 

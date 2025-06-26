@@ -59,66 +59,6 @@
                 app:iconSize="28dp"
                 app:iconTint="@color/transparent"
                 app:iconTintMode="add" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/inbox_button"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackground"
-                android:visibility="gone"
-                tools:visibility="visible">
-
-                <androidx.constraintlayout.utils.widget.ImageFilterView
-                    android:id="@+id/inbox_icon"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:scaleType="centerInside"
-                    android:src="@drawable/ic_settings_inbox"
-                    android:translationY="4dp"
-                    app:layout_constraintBottom_toTopOf="@id/inbox_text"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_chainStyle="packed" />
-
-                <TextView
-                    android:id="@+id/inbox_text"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="7dp"
-                    android:letterSpacing="0"
-                    android:text="@string/inbox"
-                    android:textAllCaps="false"
-                    android:textColor="@color/note"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/inbox_icon" />
-
-                <TextView
-                    android:id="@+id/inbox_unread_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="20dp"
-                    android:layout_marginStart="14dp"
-                    android:background="@drawable/bg_inbox_num_sign"
-                    android:elevation="1dp"
-                    android:fontFamily="@font/inter_medium"
-                    android:gravity="center"
-                    android:minWidth="20dp"
-                    android:paddingHorizontal="5dp"
-                    android:textColor="@color/white"
-                    android:textSize="12sp"
-                    android:translationX="10dp"
-                    android:translationY="-14dp"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="@id/inbox_icon"
-                    app:layout_constraintEnd_toEndOf="@id/inbox_icon"
-                    tools:text="5"
-                    tools:visibility="visible" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
         </androidx.appcompat.widget.LinearLayoutCompat>
 
     </FrameLayout>
