@@ -16,7 +16,7 @@ import org.onflow.flow.models.SigningAlgorithm
 class BackupCryptoProvider(
     private val seedPhraseKey: SeedPhraseKey,
     private val keyWallet: KeyWallet? = null,
-    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1,
+    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_P256,
     private val hashingAlgorithm: HashingAlgorithm? = null // Dynamic hashing algorithm from on-chain key
 ) : CryptoProvider {
 

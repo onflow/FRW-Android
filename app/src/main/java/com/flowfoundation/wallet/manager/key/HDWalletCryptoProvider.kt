@@ -8,7 +8,7 @@ import org.onflow.flow.models.SigningAlgorithm
 
 class HDWalletCryptoProvider(
     private val seedPhraseKey: SeedPhraseKey,
-    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_P256,
+    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1,
     private val hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA2_256
 ) : CryptoProvider {
 
