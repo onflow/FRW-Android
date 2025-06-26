@@ -54,6 +54,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
+import android.widget.LinearLayout
 
 enum class HomeTab(val index: Int) {
     WALLET(0),
@@ -318,10 +319,18 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
             }
         }
 
-        if (refreshBalance && llMainAccount.childCount > 0) {
-            logd("DrawerLayoutPresenter", "Refreshing balances only")
+        // Check if we need to build UI or just refresh balances
+        val hasMainAccounts = llMainAccount.childCount > 0
+        val hasLinkedAccounts = llLinkedAccount.childCount > 0
+        val hasEvmAccount = EVMWalletManager.haveEVMAddress()
+        
+        // Only skip UI building if we have all the accounts we should have
+        if (refreshBalance && hasMainAccounts && (hasLinkedAccounts || !hasEvmAccount)) {
+            logd("DrawerLayoutPresenter", "Refreshing balances only - main: $hasMainAccounts, linked: $hasLinkedAccounts, hasEVM: $hasEvmAccount")
             fetchAllBalancesAndUpdateUI(addressList)
             return@ioScope
+        } else {
+            logd("DrawerLayoutPresenter", "Building UI - main: $hasMainAccounts, linked: $hasLinkedAccounts, hasEVM: $hasEvmAccount, refreshBalance: $refreshBalance")
         }
         
         if (llMainAccount.childCount > 0 && !refreshBalance) {
@@ -371,40 +380,62 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
     }
 }
 
-private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
+fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     wallet: com.flow.wallet.wallet.Wallet,
     userInfo: UserInfoData
 ) {
+    logd("DrawerLayoutPresenter", "=== setupLinkedAccount START ===")
     logd("DrawerLayoutPresenter", "Setting up linked accounts")
+    logd("DrawerLayoutPresenter", "Current linked account child count BEFORE removeAllViews: ${llLinkedAccount.childCount}")
     llLinkedAccount.removeAllViews()
+    logd("DrawerLayoutPresenter", "Current linked account child count AFTER removeAllViews: ${llLinkedAccount.childCount}")
     
     // Check EVM account - simplified without blocking retries
     val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
     logd("DrawerLayoutPresenter", "Show EVM account: $showEVMAccount")
+    logd("DrawerLayoutPresenter", "Current network: ${chainNetWorkString()}")
     
     if (showEVMAccount) {
         try {
             val evmAccount = EVMWalletManager.getEVMAccount()
             logd("DrawerLayoutPresenter", "EVM account: ${evmAccount?.address}")
+            logd("DrawerLayoutPresenter", "EVM account name: ${evmAccount?.name}")
+            logd("DrawerLayoutPresenter", "WalletManager.selectedWalletAddress(): ${WalletManager.selectedWalletAddress()}")
             
-            evmAccount?.let {
+            evmAccount?.let { account ->
+                logd("DrawerLayoutPresenter", "Creating EVM account view...")
+                
                 val childView = LayoutInflater.from(root.context)
                     .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
-                childView.setupWalletItem(
-                    WalletItemData(
-                        address = it.address,
-                        name = it.name,
-                        icon = it.icon,
-                        isSelected = WalletManager.selectedWalletAddress() == it.address
-                    ),
-                    isEVMAccount = true
+                    
+                logd("DrawerLayoutPresenter", "Inflated child view: $childView")
+                
+                val walletItemData = WalletItemData(
+                    address = account.address,
+                    name = account.name,
+                    icon = account.icon,
+                    isSelected = WalletManager.selectedWalletAddress() == account.address
                 )
+                
+                logd("DrawerLayoutPresenter", "Created WalletItemData: address=${walletItemData.address}, name=${walletItemData.name}, isSelected=${walletItemData.isSelected}")
+                
+                childView.setupWalletItem(walletItemData, isEVMAccount = true)
+                logd("DrawerLayoutPresenter", "Setup wallet item completed")
+                
                 llLinkedAccount.addView(childView)
+                logd("DrawerLayoutPresenter", "Added child view to llLinkedAccount")
+                logd("DrawerLayoutPresenter", "Current linked account child count AFTER addView: ${llLinkedAccount.childCount}")
+                
                 clEvmLayout.gone()
+                logd("DrawerLayoutPresenter", "Hidden clEvmLayout")
+                logd("DrawerLayoutPresenter", "Added EVM account to UI synchronously: ${account.address}")
             }
         } catch (e: Exception) {
             logd("DrawerLayoutPresenter", "Error getting EVM account: ${e.message}")
+            logd("DrawerLayoutPresenter", "Error stack trace: ${e.stackTraceToString()}")
         }
+    } else {
+        logd("DrawerLayoutPresenter", "showEVMAccount is false, skipping EVM account setup")
     }
     
     // Get main wallet address with fallbacks
@@ -473,7 +504,13 @@ private fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     
     val hasLinkedAccounts = llLinkedAccount.childCount > 0
     logd("DrawerLayoutPresenter", "Has linked accounts: $hasLinkedAccounts")
+    logd("DrawerLayoutPresenter", "Final linked account child count: ${llLinkedAccount.childCount}")
     tvLinkedAccount.setVisible(hasLinkedAccounts)
+    logd("DrawerLayoutPresenter", "=== setupLinkedAccount END ===")
+    
+    // Final debug of visibility states
+    logd("DrawerLayoutPresenter", "Final visibility - llLinkedAccount: ${if (llLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (llLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
+    logd("DrawerLayoutPresenter", "Final visibility - tvLinkedAccount: ${if (tvLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (tvLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
 }
 
 // Add async version that can safely handle retries in background - optimized for performance
@@ -488,6 +525,7 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
     
     // Check EVM account with quick retry mechanism
     val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
+    logd("DrawerLayoutPresenter", "showEVMAccount for network ${chainNetWorkString()}: $showEVMAccount")
     if (showEVMAccount) {
         var evmAccount: EVMAccount? = null
         var evmRetryCount = 0
@@ -516,8 +554,13 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
             val evmAlreadyExists = (0 until llLinkedAccount.childCount).any { index ->
                 val childView = llLinkedAccount.getChildAt(index)
                 val addressView = childView.findViewById<TextView>(R.id.wallet_address_view)
-                addressView?.text?.toString()?.contains(shortenEVMString(evmAccount.address.toAddress())) == true
+                val existingText = addressView?.text?.toString() ?: ""
+                val evmAddressShort = shortenEVMString(evmAccount.address.toAddress())
+                logd("DrawerLayoutPresenter", "Checking existing address: '$existingText' against EVM: '$evmAddressShort'")
+                existingText.contains(evmAddressShort)
             }
+            
+            logd("DrawerLayoutPresenter", "EVM account already exists in UI: $evmAlreadyExists")
             
             if (!evmAlreadyExists) {
                 hasNewAccounts = true
@@ -536,8 +579,15 @@ private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
                     llLinkedAccount.addView(childView)
                     clEvmLayout.gone()
                     logd("DrawerLayoutPresenter", "Added EVM account to UI asynchronously")
+                    
+                    // Force update visibility
+                    val hasLinkedAccounts = llLinkedAccount.childCount > 0
+                    tvLinkedAccount.setVisible(hasLinkedAccounts)
+                    logd("DrawerLayoutPresenter", "Updated linked accounts visibility after EVM add: $hasLinkedAccounts, child count: ${llLinkedAccount.childCount}")
                 }
             }
+        } else {
+            logd("DrawerLayoutPresenter", "Failed to get EVM account after retries")
         }
     }
     
@@ -898,4 +948,28 @@ private fun View.setupWalletItem(
             }
         }
     }
+}
+
+// Debug function to help troubleshoot EVM display issues
+fun LayoutMainDrawerLayoutBinding.debugDrawerAccounts() {
+    logd("DrawerLayoutPresenter", "=== DRAWER DEBUG INFO ===")
+    logd("DrawerLayoutPresenter", "Network: ${chainNetWorkString()}")
+    logd("DrawerLayoutPresenter", "EVMWalletManager.showEVMAccount(): ${EVMWalletManager.showEVMAccount(chainNetWorkString())}")
+    logd("DrawerLayoutPresenter", "EVMWalletManager.haveEVMAddress(): ${EVMWalletManager.haveEVMAddress()}")
+    logd("DrawerLayoutPresenter", "EVMWalletManager.getEVMAddress(): ${EVMWalletManager.getEVMAddress()}")
+    logd("DrawerLayoutPresenter", "WalletManager.selectedWalletAddress(): ${WalletManager.selectedWalletAddress()}")
+    
+    logd("DrawerLayoutPresenter", "llLinkedAccount child count: ${llLinkedAccount.childCount}")
+    logd("DrawerLayoutPresenter", "llLinkedAccount visibility: ${if (llLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (llLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
+    logd("DrawerLayoutPresenter", "tvLinkedAccount visibility: ${if (tvLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (tvLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
+    logd("DrawerLayoutPresenter", "clEvmLayout visibility: ${if (clEvmLayout.visibility == android.view.View.VISIBLE) "VISIBLE" else if (clEvmLayout.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
+    
+    for (i in 0 until llLinkedAccount.childCount) {
+        val childView = llLinkedAccount.getChildAt(i)
+        val addressView = childView.findViewById<TextView>(R.id.wallet_address_view)
+        val nameView = childView.findViewById<TextView>(R.id.wallet_name_view)
+        val evmLabel = childView.findViewById<TextView>(R.id.tv_evm_label)
+        logd("DrawerLayoutPresenter", "Child $i - Address: ${addressView?.text}, Name: ${nameView?.text}, EVM Label visible: ${evmLabel?.visibility == android.view.View.VISIBLE}")
+    }
+    logd("DrawerLayoutPresenter", "=== END DRAWER DEBUG ===")
 }

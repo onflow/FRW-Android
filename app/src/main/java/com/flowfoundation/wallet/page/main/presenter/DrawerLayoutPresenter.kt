@@ -40,8 +40,10 @@ import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
+import com.flowfoundation.wallet.page.main.debugDrawerAccounts
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.refreshWalletList
+import com.flowfoundation.wallet.page.main.setupLinkedAccount
 import com.flowfoundation.wallet.page.main.widget.NetworkPopupMenu
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.ScreenUtils
@@ -268,8 +270,38 @@ class DrawerLayoutPresenter(
             bindData()
             bindEVMInfo()
             
-            logd(TAG, "Drawer opened, scheduling debounced refresh")
+            // Debug the current state before refresh
+            binding.debugDrawerAccounts()
+            
+            logd(TAG, "Drawer opened, scheduling immediate refresh (not just balance)")
             scheduleDeboucedRefresh(refreshBalance = false)
+            
+            // Also try to immediately set up accounts if we have the data
+            ioScope {
+                try {
+                    logd(TAG, "Starting immediate account setup...")
+                    val userInfo = AccountManager.userInfo()
+                    val wallet = WalletManager.wallet()
+                    logd(TAG, "UserInfo available: ${userInfo != null}")
+                    logd(TAG, "Wallet available: ${wallet != null}")
+                    logd(TAG, "Wallet address: ${wallet?.walletAddress()}")
+                    
+                    if (userInfo != null && wallet != null) {
+                        logd(TAG, "Setting up accounts immediately on drawer open")
+                        uiScope {
+                            binding.setupLinkedAccount(wallet, userInfo)
+                            // Debug again after immediate setup
+                            logd(TAG, "Debugging after immediate setup:")
+                            binding.debugDrawerAccounts()
+                        }
+                    } else {
+                        logd(TAG, "Cannot set up accounts immediately - missing userInfo or wallet")
+                    }
+                } catch (e: Exception) {
+                    logd(TAG, "Error in immediate account setup: ${e.message}")
+                    logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
+                }
+            }
         }
 
         override fun onDrawerClosed(drawerView: View) {
