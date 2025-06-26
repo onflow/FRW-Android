@@ -2,11 +2,15 @@ package com.flowfoundation.wallet.manager.account
 
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.wallet.WalletFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.utils.readWalletPassword
-import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.utils.Env.getStorage
+import org.onflow.flow.ChainId
+import com.flow.wallet.wallet.KeyWallet
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 
 /**
  * Manages wallet creation and access using Flow-Wallet-Kit
@@ -36,8 +40,7 @@ object AccountWalletManager {
             keyPair = null,
             storage = getStorage()
         )
-        
-        // Return HDWalletCryptoProvider with weight 1000 for original seed phrase
+
         return HDWalletCryptoProvider(seedPhraseKey)
     }
 
