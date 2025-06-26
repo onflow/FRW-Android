@@ -2,14 +2,11 @@ package com.flowfoundation.wallet.manager.account
 
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.keys.SeedPhraseKey
-import com.flow.wallet.wallet.WalletFactory
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.utils.readWalletPassword
-import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.utils.Env.getStorage
-import org.onflow.flow.ChainId
-import com.flow.wallet.wallet.KeyWallet
 
 /**
  * Manages wallet creation and access using Flow-Wallet-Kit
@@ -30,6 +27,8 @@ object AccountWalletManager {
         if (password.isNullOrBlank()) {
             return null
         }
+        
+        // Create SeedPhraseKey from the original mnemonic using Flow-Wallet-Kit
         val seedPhraseKey = SeedPhraseKey(
             mnemonicString = password,
             passphrase = "",
@@ -37,13 +36,9 @@ object AccountWalletManager {
             keyPair = null,
             storage = getStorage()
         )
-        // Create a proper KeyWallet
-        val wallet = WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            getStorage()
-        )
-        return BackupCryptoProvider(seedPhraseKey, wallet as KeyWallet)
+        
+        // Return HDWalletCryptoProvider with weight 1000 for original seed phrase
+        return HDWalletCryptoProvider(seedPhraseKey)
     }
 
 }
