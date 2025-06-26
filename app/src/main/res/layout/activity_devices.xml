@@ -36,7 +36,7 @@
                 android:fontFamily="@font/src_inter_bold"
                 android:gravity="center_horizontal"
                 android:text="@string/create_device_backup_title"
-                android:textColor="@color/text_3"
+                android:textColor="@color/text_light"
                 android:textSize="16sp"/>
 
             <TextView
@@ -47,7 +47,7 @@
                 android:fontFamily="@font/inter"
                 android:gravity="center_horizontal"
                 android:text="@string/device_backup_note"
-                android:textColor="@color/text_2"
+                android:textColor="@color/text_light"
                 android:textSize="12sp"/>
 
             <androidx.appcompat.widget.LinearLayoutCompat
