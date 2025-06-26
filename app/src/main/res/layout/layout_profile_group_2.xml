@@ -22,6 +22,20 @@
             android:orientation="vertical">
 
             <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
+                android:id="@+id/notification_preference"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:descId="@string/off"
+                app:icon="@drawable/ic_settings_notification"
+                app:titleId="@string/notification" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="8dp"
+                android:background="@color/profile_card_divider" />
+
+            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
                 android:id="@+id/currency_preference"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -42,20 +56,6 @@
                 app:descId="@string/light"
                 app:icon="@drawable/ic_settings_theme"
                 app:titleId="@string/appearance" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="8dp"
-                android:background="@color/profile_card_divider" />
-
-            <com.flowfoundation.wallet.page.profile.widget.ProfilePreference
-                android:id="@+id/notification_preference"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:descId="@string/off"
-                app:icon="@drawable/ic_settings_notification"
-                app:titleId="@string/notification" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </FrameLayout>
 </com.google.android.material.card.MaterialCardView>

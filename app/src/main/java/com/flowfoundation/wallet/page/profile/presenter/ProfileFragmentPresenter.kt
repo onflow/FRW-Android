@@ -2,8 +2,6 @@ package com.flowfoundation.wallet.page.profile.presenter
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProvider
-import com.instabug.library.Instabug
-import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentProfileBinding
@@ -16,7 +14,6 @@ import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
-import com.flowfoundation.wallet.page.inbox.InboxActivity
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
 import com.flowfoundation.wallet.page.profile.ProfileFragment
@@ -31,11 +28,9 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrenc
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
-import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
 import com.flowfoundation.wallet.page.security.SecuritySettingActivity
-import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.getCurrencyFlag
@@ -46,8 +41,8 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.uiScope
-import com.instabug.bug.BugReporting
-import com.instabug.library.OnSdkDismissCallback
+import com.instabug.library.Instabug
+import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
 
 class ProfileFragmentPresenter(
     private val fragment: ProfileFragment,
@@ -72,16 +67,13 @@ class ProfileFragmentPresenter(
         }
         binding.actionGroup.addressButton.setOnClickListener { AddressBookActivity.launch(context) }
         binding.actionGroup.walletButton.setOnClickListener { WalletListActivity.launch(context) }
-        binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
         binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }
         binding.group0.securityPreference.setOnClickListener {
             SecuritySettingActivity.launch(context)
         }
-        binding.group0.linkedAccount.setOnClickListener {
-            ChildAccountsActivity.launch(context)
-        }
-        binding.group0.developerModePreference.setOnClickListener {
+
+        binding.group3.developerModePreference.setOnClickListener {
             DeveloperModeActivity.launch(context)
         }
 
@@ -106,7 +98,7 @@ class ProfileFragmentPresenter(
         }
 
         binding.group3.bugReport.setOnClickListener { Instabug.show() }
-        binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
+        binding.group4a.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
         binding.group4.switchAccountPreference.setOnClickListener {
             AccountSwitchDialog.show(fragment.childFragmentManager)
         }
@@ -158,7 +150,6 @@ class ProfileFragmentPresenter(
                     userInfo.root.setVisible(isSignIn)
                     notLoggedIn.root.setVisible(!isSignIn)
                     actionGroup.root.setVisible(isSignIn)
-                    group0.llLinkedAccount.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.llBackupPreference.setVisible(isSignIn && WalletManager.isChildAccountSelected().not())
                     group0.llSecurityPreference.setVisible(isSignIn)
                     group1.root.setVisible(isSignIn && AppConfig.walletConnectEnable())
@@ -166,7 +157,7 @@ class ProfileFragmentPresenter(
                         if (isNightMode(fragment.activity)) R.string.dark else R.string.light
                     )
                     group2.currencyPreference.setDesc(findCurrencyFromFlag(getCurrencyFlag()).name)
-                    group0.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
+                    group3.developerModePreference.setDesc((if (isTestnet()) R.string.testnet else R.string.mainnet))
                 }
                 updateWalletConnectSessionCount()
             }
@@ -175,8 +166,6 @@ class ProfileFragmentPresenter(
 
     @SuppressLint("SetTextI18n")
     private fun updateInboxCount(count: Int) {
-        binding.actionGroup.inboxUnreadCount.setVisible(count != 0)
-        binding.actionGroup.inboxUnreadCount.text = count.toString()
     }
 
     private fun updateWalletConnectSessionCount() {

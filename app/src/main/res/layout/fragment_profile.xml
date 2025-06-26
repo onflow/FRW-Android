@@ -59,6 +59,10 @@
             layout="@layout/layout_profile_group_3"/>
 
         <include
+            android:id="@+id/group4a"
+            layout="@layout/layout_profile_group_4a"/>
+
+        <include
             android:id="@+id/group4"
             layout="@layout/layout_profile_group_4"/>
 

@@ -35,14 +35,14 @@
     <string name="to_your_wallet">To Your Wallet</string>
     <string name="pin_code">PIN Code</string>
     <string name="grid">Grid</string>
-    <string name="create_pin">Create a PIN</string>
+    <string name="create_pin">Create a pin</string>
     <string name="pin">PIN</string>
     <string name="check_pin">Please type\nyour PIN again</string>
     <string name="reset_pin">Please type\nyour new PIN</string>
     <string name="reset_check_pin">Please type\nyour new PIN again</string>
     <string name="check_pin_tip">Please make sure you can remember your PIN.</string>
     <string name="create_pin_tip">So no one else but you can unlock your wallet.</string>
-    <string name="backup_pin_tip">Your PIN code will be used to securely encrypt your account backup</string>
+    <string name="backup_pin_tip">Your backup will be secured using your pin.</string>
     <string name="mnemonic_question_title">Select the word %1$s</string>
     <string name="home">Home</string>
     <string name="explore">Explore</string>
@@ -293,8 +293,8 @@
     <string name="view_more_transactions">View more transactions</string>
     <string name="ar">AR</string>
     <string name="scan_to_connect">Scan to Connect</string>
-    <string name="scan_wallet_connect_desc">With WalletConnect, you can connect your wallet with hundreds of apps</string>
-    <string name="new_connection">New Connection</string>
+    <string name="scan_wallet_connect_desc">With Wallet Connect, you can connect your wallet to applications.</string>
+    <string name="new_connection">Connect</string>
     <string name="provider">Provider</string>
     <string name="price_impact">Price Impact</string>
     <string name="estimated_fees">Estimated Fees</string>
@@ -475,15 +475,16 @@
     <string name="create_device_backup">Create Device Backup</string>
     <string name="google_backup_note">Note: Your backup key is end-to-end encrypted and is never sent to Flow Wallet servers</string>
     <string name="create_multi_backup">Create Multi-Backup</string>
-    <string name="create_seed_phrase_backup">Create Seed Phrase Backup</string>
+    <string name="create_seed_phrase_backup">Create a Recovery Phrase Backup</string>
     <string name="multi_backup">Multi-Backup</string>
-    <string name="full_weight_seed_phrase">Full Weight Seed Phrase</string>
+    <string name="account_backup">Account-Backup</string>
+    <string name="full_weight_seed_phrase">Seed Phrase Backup</string>
     <string name="device_backup">Device Backup</string>
     <string name="other_devices">Other Devices</string>
-    <string name="multi_backup_tip">Please Select 2 or More Backup Options</string>
-    <string name="upload_key_to_google_drive">Upload Key to Google Drive</string>
+    <string name="multi_backup_tip">Select 2 or More Backup Options</string>
+    <string name="upload_key_to_google_drive">Upload key to Google Drive</string>
     <string name="upload_key_to_dropbox">Upload Key to Dropbox</string>
-    <string name="registration_key_list">Registration KeyList</string>
+    <string name="registration_key_list">Key List Registration</string>
     <string name="upload_backup">Upload Backup</string>
     <string name="backup_completed">Backup Completed</string>
     <string name="ok">OK</string>
@@ -519,10 +520,10 @@
     <string name="connect_google_drive">Connect Google Drive</string>
     <string name="prepared_to_restore_wallet">Prepared to Restore Wallet</string>
     <string name="view_all">View All</string>
-    <string name="create_device_backup_title">Sync your wallet between your devices</string>
-    <string name="device_backup_note">Scan the QR code shown by the Flow Wallet browser extension to sync your wallet between your devices</string>
-    <string name="create_device_backup_note">Utilise Your Device as a Backup Wallet to Safeguard and Restore Your Digital Assets with Ease</string>
-    <string name="create_multi_backup_note">Create a Cloud Backup with Trusted Providers like Google Drive, Passkey and Secure Your Recovery Phrase</string>
+    <string name="create_device_backup_title">Scan to Connect to Another Device</string>
+    <string name="device_backup_note">Scan the QR code shown by the other device to connect.</string>
+    <string name="create_device_backup_note">Use your device as a backup wallet to safeguard your digital assets</string>
+    <string name="create_multi_backup_note">Create a multi-backup with trusted providers like Google Drive and iCloud</string>
     <string name="create_seed_phrase_backup_note">Create a 12 word recovery phrase</string>
     <string name="scan_desktop_device">Scan Desktop Device</string>
     <string name="backup_detail">Backup Detail</string>
@@ -532,7 +533,7 @@
     <string name="bug_report">Bug Report</string>
     <string name="wallet_already_logged_in">This wallet is already logged in</string>
     <string name="google_drive">Google Drive</string>
-    <string name="add_other_device">Add Other Device</string>
+    <string name="add_other_device">Add Another Device</string>
     <string name="revoke_device">Revoke Device</string>
     <string name="wrong_network">Switch Network</string>
     <string name="backup_on_mainnet">You can only create backup on Mainnet.</string>
@@ -581,7 +582,7 @@
     <string name="quick_enable_evm">Quick Enable EVM</string>
     <string name="select_collection">Select Collection</string>
     <string name="import_profile">Import profile</string>
-    <string name="notification">Notification</string>
+    <string name="notification">Notifications</string>
     <string name="landing_step_four_title">Your \nFlow account \nis ready, \nlet\'s back it up!</string>
     <string name="landing_step_four_desc">Backing up your account ensures your access is secure and always in your control</string>
     <string name="landing_step_loading">Creating your Profile</string>
@@ -594,7 +595,7 @@
     <string name="wallpaper_dynamic">Dynamic</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="change_wallpaper">Change Wallpaper</string>
-    <string name="appearance">Appearance</string>
+    <string name="appearance">Theme</string>
     <string name="current_device">Current Device</string>
     <string name="create_username_tip">Other Flow Wallet users can find you and send you payments via your unique username.</string>
     <string name="backup_step_google_drive">Backup %1$d: Google Drive Backup</string>
@@ -664,7 +665,7 @@
     <string name="secured_note">Flow Wallet uses your device\'s KeyStore to protect your account
         and assets. This private key cannot be retrieved. \n \nKeyStore protects your Private Key
         using the hardware-level security of your device, eliminating the need for a seed phrase. \n \nPlease create backups for your wallet to ensure you retain access to your Flow account and assets in the event you lose your device.</string>
-    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. \n \nThis recovery phrase backup will have full control of your account.</string>
+    <string name="backup_seed_phrase_warning">You have selected to use a 12-word recovery phrase backup. This recovery phrase backup will have full control of your account.</string>
     <string name="keystore_select_account_tips">Choose an account you want to import</string>
     <string name="keystore_select_account_title">%1$d Accounts Found</string>
     <string name="keystore_no_account_title">No Account Found</string>

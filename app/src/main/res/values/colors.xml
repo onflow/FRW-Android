@@ -3,6 +3,8 @@
     <color name="colorPrimary">#ffffff</color>
     <color name="colorPrimaryVariant">#ffffff</color>
     <color name="colorSecondary">#00B877</color>
+    <color name="backupIconGreen">#00B877</color>
+    <color name="colorSecondaryTransparent10">#00EF8B26</color>
     <color name="text_sub">#565A69</color>
     <color name="text_light">#000000</color>
     <color name="contrast_text">#4D000000</color>
@@ -67,7 +69,7 @@
     <color name="neutrals10">#E3E3E3</color>
     <color name="note">#808080</color>
     <color name="outline">#E6E6E6</color>
-    <color name="salmon_primary">#41CC5D</color>
+    <color name="salmon_primary">#3341CC5D</color>
     <color name="salmon5">#FCE9E1</color>
     <color name="success2">#38B000</color>
     <color name="success3">#69C93C</color>

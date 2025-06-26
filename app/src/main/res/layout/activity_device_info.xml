@@ -36,31 +36,17 @@
     </com.google.android.material.card.MaterialCardView>
 
     <TextView
-        android:id="@+id/tv_device_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:textColor="@color/text_2"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@id/cv_map_layout"
-        tools:text="Android"/>
-
-    <TextView
         android:id="@+id/tv_key_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginHorizontal="18dp"
         android:fontFamily="@font/inter"
-        android:textColor="@color/text_3"
+        android:textColor="@color/text_2"
         android:textSize="14sp"
-        android:textStyle="bold"
         android:text="@string/key_location"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_device_name"/>
+        app:layout_constraintTop_toBottomOf="@id/cv_map_layout"/>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cv_key_card"
@@ -83,7 +69,8 @@
                 android:id="@+id/iv_key_type"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_backup_passkey"
+                android:src="@drawable/ic_device_type_phone"
+                app:tint="@color/colorSecondary"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"/>
@@ -94,7 +81,7 @@
                 android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:fontFamily="@font/inter"
-                android:textColor="@color/text_3"
+                android:textColor="@color/text_2"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -140,9 +127,8 @@
         android:layout_marginTop="24dp"
         android:layout_marginHorizontal="18dp"
         android:fontFamily="@font/inter"
-        android:textColor="@color/text_3"
+        android:textColor="@color/text_2"
         android:textSize="14sp"
-        android:textStyle="bold"
         android:text="@string/device_info"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cv_key_card"/>
@@ -174,7 +160,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_2"
                     android:text="@string/device_application"
                     />
@@ -210,7 +196,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_2"
                     android:text="@string/device_ip_address"
                     />
@@ -246,7 +232,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_2"
                     android:text="@string/device_location"
                     />
@@ -283,7 +269,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_2"
                     android:text="@string/device_entry_date"
                     />
@@ -312,8 +298,8 @@
         android:layout_width="match_parent"
         android:layout_marginHorizontal="18dp"
         android:layout_marginBottom="50dp"
-        android:backgroundTint="@color/accent_red"
+        android:backgroundTint="@color/error"
         android:text="@string/revoke_device"
-        app:backgroundTint="@color/accent_red"
+        app:backgroundTint="@color/error"
         app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

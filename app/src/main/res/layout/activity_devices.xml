@@ -33,10 +33,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="10dp"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/inter_semi_bold"
+                android:fontFamily="@font/src_inter_bold"
                 android:gravity="center_horizontal"
                 android:text="@string/create_device_backup_title"
-                android:textColor="@color/text_3"
+                android:textColor="@color/text_light"
                 android:textSize="16sp"/>
 
             <TextView
@@ -47,7 +47,7 @@
                 android:fontFamily="@font/inter"
                 android:gravity="center_horizontal"
                 android:text="@string/device_backup_note"
-                android:textColor="@color/text_2"
+                android:textColor="@color/text_light"
                 android:textSize="12sp"/>
 
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -56,7 +56,7 @@
                 android:layout_height="54dp"
                 android:layout_marginTop="24dp"
                 android:background="@drawable/bg_round_16dp"
-                android:backgroundTint="@color/accent_blue"
+                android:backgroundTint="@color/colorSecondary"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -65,14 +65,14 @@
                     android:layout_height="16dp"
                     android:layout_marginEnd="8dp"
                     android:src="@drawable/ic_scan_simple"
-                    app:tint="@color/white"/>
+                    app:tint="@color/colorPrimary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/inter_semi_bold"
                     android:text="@string/add_other_device"
-                    android:textColor="@color/white"
+                    android:textColor="@color/colorPrimary"
                     android:textSize="16sp"/>
             </androidx.appcompat.widget.LinearLayoutCompat>
 

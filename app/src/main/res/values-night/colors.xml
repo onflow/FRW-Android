@@ -3,6 +3,10 @@
     <color name="colorPrimary">#242430</color>
     <color name="colorPrimaryVariant">@color/deep_bg</color>
     <color name="colorSecondary">#00EF8B</color>
+    <color name="backupIconGreen">#ffffff</color>
+    <color name="colorSecondaryTransparent10">#00EF8B1A</color>
+
+    <color name="error">#F04438</color>
 
     <color name="text_sub">#D2D2D2</color>
 
@@ -19,7 +23,7 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="landing_bg">#222222</color>
-    <color name="background">#121212</color>
+    <color name="background">#000000</color>
     <color name="select_tokens_dialog">#1E1E1F</color>
     <color name="button">#FAFAFA</color>
     <color name="button_text">#333333</color>
@@ -43,7 +47,7 @@
     <color name="neutrals12_background">#0D0D0D</color>
     <color name="note">#C4C4C4</color>
     <color name="outline">#4C4C4C</color>
-    <color name="salmon_primary">#00EF8B</color>
+    <color name="salmon_primary">#3300EF8B</color>
     <color name="salmon5">#7D4024</color>
     <color name="success2">#38B000</color>
     <color name="success3">#309600</color>

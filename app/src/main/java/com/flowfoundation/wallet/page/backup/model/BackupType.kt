@@ -4,12 +4,12 @@ import com.flowfoundation.wallet.R
 
 
 enum class BackupType(val index: Int, val displayName: String, val iconRes: Int, val keyIconRes: Int) {
-    GOOGLE_DRIVE(0, "Backup - Google Drive", R.drawable.ic_backup_google_drive, R.drawable.ic_key_type_google_drive),
-    ICLOUD(1, "Backup - iCloud", R.drawable.ic_backup_icloud, R.drawable.ic_key_type_icloud),
-    MANUAL(2, "Backup - Manual", R.drawable.ic_backup_recovery_phrase, R.drawable.ic_key_type_recovery_phrase),
+    GOOGLE_DRIVE(0, "Backup - Google Drive", R.drawable.ic_settings_backup, R.drawable.ic_key_type_google_drive),
+    ICLOUD(1, "Backup - iCloud", R.drawable.ic_settings_backup, R.drawable.ic_key_type_icloud),
+    MANUAL(2, "Backup - Manual", R.drawable.ic_settings_backup, R.drawable.ic_key_type_recovery_phrase),
     PASSKEY(3, "Backup - Passkey", R.drawable.ic_backup_passkey, R.drawable.ic_key_type_passkey),
-    FULL_WEIGHT_SEED_PHRASE(4, "Backup - Full Weight Seed Phrase", R.drawable.ic_backup_recovery_phrase, R.drawable.ic_key_type_recovery_phrase),
-    DROPBOX(5, "Backup - Dropbox", R.drawable.ic_backup_dropbox, R.drawable.ic_key_type_dropbox);
+    FULL_WEIGHT_SEED_PHRASE(4, "Backup - Full Weight Seed Phrase", R.drawable.ic_key_type_recovery_phrase, R.drawable.ic_key_type_recovery_phrase),
+    DROPBOX(5, "Backup - Dropbox", R.drawable.ic_settings_backup, R.drawable.ic_key_type_dropbox);
 
     companion object {
 

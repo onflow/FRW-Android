@@ -38,9 +38,6 @@ class BackupStartFragment : Fragment() {
             btnNext.setOnClickListener {
                 backupViewModel.startBackup()
             }
-            tvLearnMore.setOnClickListener {
-                BackupAboutDialog().show(childFragmentManager, BackupAbout.ABOUT_MULTI_BACKUP)
-            }
             if (BackupListManager.hadBackupOption(BackupType.GOOGLE_DRIVE)) {
                 oiGoogleDrive.changeItemStatus(true)
             } else {

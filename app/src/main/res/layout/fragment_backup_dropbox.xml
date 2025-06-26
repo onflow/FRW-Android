@@ -14,15 +14,21 @@
         android:layout_marginTop="14dp"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <ImageView
-        android:id="@+id/iv_option_icon"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginTop="86dp"
-        android:src="@drawable/ic_backup_dropbox"
+    <TextView
+        android:id="@+id/tv_backup_step"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_green_chip"
+        android:fontFamily="@font/inter"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:textColor="@color/colorSecondary"
+        android:textSize="16sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/backup_progress"/>
 
     <TextView
         android:id="@+id/tv_option_title"
@@ -36,21 +42,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:text="@string/backup_step_dropbox"
-        app:layout_constraintTop_toBottomOf="@id/iv_option_icon"/>
-
-    <TextView
-        android:id="@+id/tv_option_note"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="44dp"
-        android:layout_marginTop="24dp"
-        android:fontFamily="@font/inter"
-        android:gravity="center_horizontal"
-        android:lineSpacingMultiplier="1.1"
-        android:text="@string/google_backup_note"
-        android:textColor="@color/accent_gray"
-        android:textSize="12sp"
-        app:layout_constraintTop_toBottomOf="@id/tv_option_title"/>
+        app:layout_constraintTop_toBottomOf="@id/tv_backup_step"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_status_layout"
@@ -58,7 +50,7 @@
         android:layout_height="120dp"
         android:layout_marginTop="72dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_option_note">
+        app:layout_constraintTop_toBottomOf="@id/tv_option_title">
 
         <View
             android:id="@+id/view_upload"
@@ -66,33 +58,34 @@
             android:layout_height="9dp"
             android:layout_marginStart="72dp"
             android:background="@drawable/bg_round_corner"
-            android:backgroundTint="@color/text_2"
-            app:layout_constraintStart_toStartOf="parent"
+            android:backgroundTint="@color/colorSecondary"
             app:layout_constraintBottom_toBottomOf="@id/tv_upload"
-            app:layout_constraintTop_toTopOf="@id/tv_upload"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_upload" />
 
         <TextView
             android:id="@+id/tv_upload"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:includeFontPadding="false"
             android:layout_marginStart="8dp"
             android:fontFamily="@font/inter"
+            android:includeFontPadding="false"
             android:text="@string/upload_key_to_dropbox"
-            android:textColor="@color/text_2"
+            android:textColor="@color/text_light"
+            android:textStyle="bold"
             android:textSize="14sp"
             app:layout_constraintStart_toEndOf="@id/view_upload"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <View
             android:id="@+id/view_line"
             android:layout_width="0.5dp"
             android:layout_height="0dp"
             android:background="@color/text_3"
-            app:layout_constraintTop_toBottomOf="@id/view_upload"
-            app:layout_constraintStart_toStartOf="@id/view_upload"
+            app:layout_constraintBottom_toTopOf="@id/view_registration"
             app:layout_constraintEnd_toEndOf="@id/view_upload"
-            app:layout_constraintBottom_toTopOf="@id/view_registration"/>
+            app:layout_constraintStart_toStartOf="@id/view_upload"
+            app:layout_constraintTop_toBottomOf="@id/view_upload" />
 
         <View
             android:id="@+id/view_registration"
@@ -101,22 +94,23 @@
             android:layout_marginStart="72dp"
             android:background="@drawable/bg_round_corner"
             android:backgroundTint="@color/text_3"
+            app:layout_constraintBottom_toBottomOf="@id/tv_registration"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_registration"
-            app:layout_constraintBottom_toBottomOf="@id/tv_registration"/>
+            app:layout_constraintTop_toTopOf="@id/tv_registration" />
 
         <TextView
             android:id="@+id/tv_registration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:includeFontPadding="false"
             android:layout_marginStart="8dp"
             android:fontFamily="@font/inter"
+            android:includeFontPadding="false"
             android:text="@string/registration_key_list"
-            android:textColor="@color/text_3"
+            android:textColor="@color/text_light"
+            android:textStyle="bold"
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/view_registration"/>
+            app:layout_constraintStart_toEndOf="@id/view_registration" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.flowfoundation.wallet.widgets.LoadingMaterialButton

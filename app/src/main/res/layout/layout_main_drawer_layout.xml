@@ -60,7 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:fontFamily="@font/montsettat"
+        android:fontFamily="@font/inter"
         android:paddingBottom="24dp"
         android:textColor="@color/text_2"
         android:textSize="20sp"

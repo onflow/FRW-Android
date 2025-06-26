@@ -61,7 +61,6 @@ class DeviceInfoActivity: BaseActivity(), OnMapReadyCallback, OnTransactionState
         this.deviceKeyModel = deviceKeyModel
         val deviceModel = deviceKeyModel.deviceModel
         with(binding) {
-            tvDeviceName.text = deviceModel.device_name
             tvDeviceApplication.text = deviceModel.user_agent
             tvDeviceIp.text = deviceModel.ip
             tvDeviceLocation.text = deviceModel.city + ", " + deviceModel.countryCode

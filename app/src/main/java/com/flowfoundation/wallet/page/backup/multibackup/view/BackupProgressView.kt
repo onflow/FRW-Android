@@ -38,15 +38,15 @@ class BackupProgressView @JvmOverloads constructor(
 
     private fun handleSingleOption(option: BackupOption, isCompleted: Boolean) {
         with(binding) {
-            ivFirstOption.setImageResource(getBackupOptionIcon(option, isCompleted))
+            ivFirstOption.setImageResource(getBackupOptionIcon(option, isCompleted, !isCompleted))
             if (isCompleted) {
                 ivFirstSelected.visible()
                 lineOne.setBackgroundResource(R.color.colorSecondary)
                 ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_green)
             } else {
-                ivFirstSelected.gone()
+                ivFirstSelected.visible()
                 lineOne.setBackgroundResource(R.color.bg_3)
-                ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_gray)
+                ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
             }
             groupSecond.gone()
             groupThird.gone()
@@ -68,7 +68,9 @@ class BackupProgressView @JvmOverloads constructor(
                         firstOption,
                         secondOption,
                         isFirstCompleted = isCompleted,
-                        isSecondCompleted = false
+                        isSecondCompleted = false,
+                        isFirstCurrent = !isCompleted,
+                        isSecondCurrent = false
                     )
                     ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
@@ -77,7 +79,9 @@ class BackupProgressView @JvmOverloads constructor(
                         firstOption,
                         secondOption,
                         isFirstCompleted = true,
-                        isSecondCompleted = isCompleted
+                        isSecondCompleted = isCompleted,
+                        isFirstCurrent = false,
+                        isSecondCurrent = !isCompleted
                     )
                     ivCompleteOption.setImageResource(
                         if (isCompleted) R.drawable.ic_backup_complete_green else R.drawable.ic_backup_complete_progress
@@ -101,24 +105,27 @@ class BackupProgressView @JvmOverloads constructor(
             groupThird.visible()
             when (currentOption) {
                 firstOption -> {
-                    updateOptionUI(firstOption, secondOption, isCompleted, false)
-                    updateThirdOption(thirdOption, false, R.color.bg_3)
+                    updateOptionUI(firstOption, secondOption, isCompleted, false, !isCompleted, false)
+                    updateThirdOption(thirdOption, false, false, R.color.bg_3)
                     ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
                 secondOption -> {
-                    updateOptionUI(firstOption, secondOption, true, isCompleted)
-                    updateThirdOption(thirdOption, false, R.color.bg_3)
+                    updateOptionUI(firstOption, secondOption, true, isCompleted, false, !isCompleted)
+                    updateThirdOption(thirdOption, false, false, R.color.bg_3)
                     ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
                 }
                 thirdOption -> {
                     updateOptionUI(
                         firstOption, secondOption,
                         isFirstCompleted = true,
-                        isSecondCompleted = true
+                        isSecondCompleted = true,
+                        isFirstCurrent = false,
+                        isSecondCurrent = false
                     )
                     updateThirdOption(
                         thirdOption,
                         isCompleted,
+                        !isCompleted,
                         if (isCompleted) R.color.colorSecondary else R.color.bg_3
                     )
                     ivCompleteOption.setImageResource(R.drawable.ic_backup_complete_progress)
@@ -132,29 +139,31 @@ class BackupProgressView @JvmOverloads constructor(
         firstOption: BackupOption,
         secondOption: BackupOption,
         isFirstCompleted: Boolean,
-        isSecondCompleted: Boolean
+        isSecondCompleted: Boolean,
+        isFirstCurrent: Boolean,
+        isSecondCurrent: Boolean
     ) {
         with(binding) {
-            ivFirstOption.setImageResource(getBackupOptionIcon(firstOption, isFirstCompleted))
-            ivFirstSelected.setVisible(isFirstCompleted)
+            ivFirstOption.setImageResource(getBackupOptionIcon(firstOption, isFirstCompleted, isFirstCurrent))
+            ivFirstSelected.setVisible(isFirstCompleted || isFirstCurrent)
             lineOne.setBackgroundResource(if (isFirstCompleted) R.color.colorSecondary else R.color.bg_3)
 
-            ivSecondOption.setImageResource(getBackupOptionIcon(secondOption, isSecondCompleted))
-            ivSecondSelected.setVisible(isSecondCompleted)
+            ivSecondOption.setImageResource(getBackupOptionIcon(secondOption, isSecondCompleted, isSecondCurrent))
+            ivSecondSelected.setVisible(isSecondCompleted || isSecondCurrent)
             lineTwo.setBackgroundResource(if (isSecondCompleted) R.color.colorSecondary else R.color.bg_3)
         }
     }
 
-    private fun updateThirdOption(thirdOption: BackupOption, isCompleted: Boolean, lineColor: Int) {
+    private fun updateThirdOption(thirdOption: BackupOption, isCompleted: Boolean, isCurrent: Boolean, lineColor: Int) {
         with(binding) {
-            ivThirdOption.setImageResource(getBackupOptionIcon(thirdOption, isCompleted))
-            ivThirdSelected.setVisible(isCompleted)
+            ivThirdOption.setImageResource(getBackupOptionIcon(thirdOption, isCompleted, isCurrent))
+            ivThirdSelected.setVisible(isCompleted || isCurrent)
             lineThree.setBackgroundResource(lineColor)
         }
     }
 
-    private fun getBackupOptionIcon(backupOption: BackupOption, isCompleted: Boolean): Int {
-        return if (isCompleted) {
+    private fun getBackupOptionIcon(backupOption: BackupOption, isCompleted: Boolean, isCurrent: Boolean): Int {
+        return if (isCompleted || isCurrent) {
             backupOption.iconId
         } else {
             backupOption.progressIcon

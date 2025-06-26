@@ -124,7 +124,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="12dp"
                                     android:layout_marginEnd="6dp"
-                                    android:fontFamily="@font/montsettat"
+                                    android:fontFamily="@font/inter"
                                     android:lineSpacingMultiplier="1.1"
                                     android:maxWidth="150dp"
                                     android:textColor="@color/neutrals1"
@@ -252,7 +252,7 @@
                                         android:layout_height="24dp"
                                         android:layout_gravity="center"
                                         android:src="@drawable/ic_token_action_send"
-                                        app:tint="@color/text_white_90" />
+                                        app:tint="@color/colorPrimary" />
                                 </FrameLayout>
 
                                 <TextView
@@ -285,7 +285,7 @@
                                         android:layout_height="24dp"
                                         android:layout_gravity="center"
                                         android:src="@drawable/ic_token_action_receive"
-                                        app:tint="@color/text_white_90" />
+                                        app:tint="@color/colorPrimary" />
                                 </FrameLayout>
 
                                 <TextView
@@ -318,7 +318,7 @@
                                         android:layout_height="24dp"
                                         android:layout_gravity="center"
                                         android:src="@drawable/ic_token_action_swap"
-                                        app:tint="@color/text_white_90" />
+                                        app:tint="@color/colorPrimary" />
                                 </FrameLayout>
 
                                 <TextView
@@ -351,7 +351,7 @@
                                         android:layout_height="24dp"
                                         android:layout_gravity="center"
                                         android:src="@drawable/ic_buy"
-                                        app:tint="@color/text_white_90" />
+                                        app:tint="@color/colorPrimary" />
                                 </FrameLayout>
 
                                 <TextView

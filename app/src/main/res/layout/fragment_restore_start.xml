@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="16dp"
-        android:fontFamily="@font/montsettat"
+        android:fontFamily="@font/inter"
         android:gravity="center"
         android:text="@string/multi_restore_title"
         android:textColor="@color/text_2"

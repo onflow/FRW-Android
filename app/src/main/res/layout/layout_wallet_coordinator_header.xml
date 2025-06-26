@@ -115,7 +115,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_token_action_send"
-                        app:tint="@color/text_white_90"/>
+                        app:tint="@color/colorPrimary"/>
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
@@ -160,7 +160,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_token_action_receive"
-                        app:tint="@color/text_white_90"/>
+                        app:tint="@color/colorPrimary"/>
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
@@ -205,7 +205,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_swap"
-                        app:tint="@color/text_white_90"/>
+                        app:tint="@color/colorPrimary"/>
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView
@@ -250,7 +250,7 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center"
                         android:src="@drawable/ic_buy"
-                        app:tint="@color/text_white_90"/>
+                        app:tint="@color/colorPrimary"/>
                 </com.google.android.material.card.MaterialCardView>
 
                 <TextView

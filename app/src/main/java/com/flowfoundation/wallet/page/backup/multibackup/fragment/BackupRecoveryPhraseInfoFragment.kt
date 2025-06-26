@@ -62,6 +62,7 @@ class BackupRecoveryPhraseInfoFragment : Fragment() {
             }
         }
         binding.backupProgress.setProgressInfo(backupViewModel.getBackupOptionList(), BackupOption.BACKUP_WITH_RECOVERY_PHRASE, true)
+        binding.tvBackupStep.text = "Back up ${backupViewModel.getCurrentIndex() + 1}"
         with(binding.btnNext) {
             setOnClickListener {
                 backupViewModel.toNext(BackupCompletedItem(

@@ -5,8 +5,8 @@
         android:id="@+id/action_add"
         android:title="@string/address_book"
         android:icon="@drawable/ic_baseline_add_24"
-        app:iconTint="@color/profile_accent"
-        android:iconTint="@color/profile_accent"
+        app:iconTint="@color/text_light"
+        android:iconTint="@color/text_light"
         android:iconTintMode="src_atop"
         app:showAsAction="always"/>
 </menu>

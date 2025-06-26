@@ -22,7 +22,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:visibility="visible"
-        android:src="@drawable/bg_border_circle_1"
+        android:src="@drawable/bg_border_square_1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="@id/iv_first_option"
         app:layout_constraintEnd_toEndOf="@id/iv_first_option"/>
@@ -30,8 +30,8 @@
     <View
         android:id="@+id/line_one"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/bg_3"
+        android:layout_height="2dp"
+        android:background="@color/bg_card"
         app:layout_constraintTop_toTopOf="@id/iv_first_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_first_option"
         app:layout_constraintStart_toEndOf="@id/iv_first_option"
@@ -53,7 +53,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:visibility="gone"
-        android:src="@drawable/bg_border_circle_1"
+        android:src="@drawable/bg_border_square_1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="@id/iv_second_option"
         app:layout_constraintEnd_toEndOf="@id/iv_second_option"/>
@@ -61,8 +61,8 @@
     <View
         android:id="@+id/line_two"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/bg_3"
+        android:layout_height="2dp"
+        android:background="@color/bg_card"
         app:layout_constraintTop_toTopOf="@id/iv_second_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_second_option"
         app:layout_constraintStart_toEndOf="@id/iv_second_option"
@@ -84,7 +84,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:visibility="gone"
-        android:src="@drawable/bg_border_circle_1"
+        android:src="@drawable/bg_border_square_1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="@id/iv_third_option"
         app:layout_constraintEnd_toEndOf="@id/iv_third_option"/>
@@ -92,8 +92,8 @@
     <View
         android:id="@+id/line_three"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="@color/bg_3"
+        android:layout_height="2dp"
+        android:background="@color/bg_card"
         app:layout_constraintTop_toTopOf="@id/iv_third_option"
         app:layout_constraintBottom_toBottomOf="@id/iv_third_option"
         app:layout_constraintStart_toEndOf="@id/iv_third_option"

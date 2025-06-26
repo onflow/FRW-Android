@@ -38,7 +38,6 @@ import com.flowfoundation.wallet.utils.parseAvatarUrl
 import com.flowfoundation.wallet.utils.svgToPng
 import com.flowfoundation.wallet.wallet.toAddress
 
-
 @Composable
 fun ProfileItemSection(
     profile: Account,

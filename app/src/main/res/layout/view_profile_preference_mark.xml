@@ -12,6 +12,6 @@
     android:paddingHorizontal="5dp"
     android:textColor="@color/violet1"
     android:textSize="14sp"
-    app:layout_constraintBottom_toBottomOf="@id/inbox_icon"
-    app:layout_constraintEnd_toEndOf="@id/inbox_icon"
+    app:layout_constraintBottom_toBottomOf="@id/wallet_button"
+    app:layout_constraintEnd_toEndOf="@id/wallet_button"
     tools:text="5"/>

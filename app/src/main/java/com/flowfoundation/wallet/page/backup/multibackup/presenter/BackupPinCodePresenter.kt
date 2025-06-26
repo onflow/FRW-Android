@@ -73,27 +73,23 @@ class BackupPinCodePresenter(
 
     private fun setPinText(isCheckMode: Boolean) {
         with(binding) {
-            pinTitle.setSpannableText(
+            pinTitle.setText(
                 if (isVerifyPinCode) {
-                    R.string.verify_pin.res2String()
+                    R.string.verify_pin
                 } else if (isCheckMode) {
-                    R.string.check_pin.res2String()
+                    R.string.check_pin
                 } else {
-                    R.string.create_pin.res2String()
-                },
-                R.string.pin.res2String(),
-                R.color.colorSecondary.res2color()
+                    R.string.create_pin
+                }
             )
-            pinTip.setSpannableText(
+            pinTip.setText(
                 if (isVerifyPinCode) {
-                    R.string.verify_pin_tip.res2String()
+                    R.string.verify_pin_tip
                 } else if (isCheckMode) {
-                    R.string.check_pin_tip.res2String()
+                    R.string.check_pin_tip
                 } else {
-                    R.string.backup_pin_tip.res2String()
-                },
-                R.string.pin.res2String(),
-                R.color.colorSecondary.res2color()
+                    R.string.backup_pin_tip
+                }
             )
         }
     }
