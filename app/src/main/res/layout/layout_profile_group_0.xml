@@ -31,7 +31,7 @@
                     android:id="@+id/backup_preference"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:icon="@drawable/ic_settings_backup"
+                    app:icon="@drawable/ic_settings_backup_2"
                     app:isArrowVisible="true"
                     app:titleId="@string/backup" />
 

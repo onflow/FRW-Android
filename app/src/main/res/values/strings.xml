@@ -112,6 +112,7 @@
     <string name="sync_title">Sync Flow Wallet</string>
     <string name="switch_account">Switch Account</string>
     <string name="switch_profile">Switch Profile</string>
+    <string name="add_profile">Add new profile</string>
     <string name="logout">Logout</string>
     <string name="edit_avatar">Edit avatar</string>
     <string name="edit">Edit</string>
