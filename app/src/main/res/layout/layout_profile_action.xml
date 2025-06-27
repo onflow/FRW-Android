@@ -36,7 +36,7 @@
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_address"
                 app:iconGravity="textTop"
-                app:iconPadding="7dp"
+                app:iconPadding="12dp"
                 app:iconSize="28dp"
                 app:iconTint="@color/transparent"
                 app:iconTintMode="add" />
@@ -55,7 +55,7 @@
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_settings_wallet"
                 app:iconGravity="textTop"
-                app:iconPadding="7dp"
+                app:iconPadding="12dp"
                 app:iconSize="28dp"
                 app:iconTint="@color/transparent"
                 app:iconTintMode="add" />
