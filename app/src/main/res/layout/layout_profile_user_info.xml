@@ -7,12 +7,12 @@
 
     <androidx.constraintlayout.utils.widget.ImageFilterView
         android:id="@+id/avatar_view"
-        android:layout_width="82dp"
-        android:layout_height="82dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:round="82dp"
+        app:round="8dp"
         tools:background="#999"/>
 
     <TextView
@@ -53,8 +53,10 @@
         android:layout_height="36dp"
         android:layout_marginEnd="20dp"
         android:background="@color/transparent"
+        android:padding="8dp"
         android:src="@drawable/ic_profile_edit"
         app:layout_constraintBottom_toBottomOf="@id/avatar_view"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/avatar_view"/>
+        app:layout_constraintTop_toTopOf="@id/avatar_view"
+        app:round="36dp"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

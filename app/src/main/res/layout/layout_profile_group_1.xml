@@ -39,7 +39,7 @@
                 android:id="@+id/self_devices"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:icon="@drawable/ic_devices"
+                app:icon="@drawable/ic_settings_devices"
                 app:isArrowVisible="true"
                 app:titleId="@string/devices" />
         </androidx.appcompat.widget.LinearLayoutCompat>
