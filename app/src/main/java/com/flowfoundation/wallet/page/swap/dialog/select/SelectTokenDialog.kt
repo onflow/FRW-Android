@@ -70,7 +70,7 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             pendingUpdate = true
             return
         }
-        
+
         lastUpdateTime = currentTime
         pendingUpdate = false
         adapter.setNewDiffData(tokens)
@@ -192,7 +192,7 @@ class SelectTokenDialog : BottomSheetDialogFragment() {
             result.resume(null)
             return@suspendCoroutine
         }
-        
+
         isShowing = true
         this.selectedCoin = selectedCoin
         this.disableCoin = disableCoin

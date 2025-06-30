@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.ApiService
@@ -22,6 +23,10 @@ import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import org.onflow.flow.models.TransactionStatus
 
 private val TAG = SelectNFTViewModel::class.java.simpleName
 
@@ -251,6 +256,18 @@ class SelectNFTViewModel : ViewModel() {
                 return
             }
 
+            // Add transaction to mini window (bubble stack) immediately
+            val transactionState = TransactionState(
+                transactionId = txId,
+                time = System.currentTimeMillis(),
+                state = TransactionStatus.PENDING.ordinal,
+                type = TransactionState.TYPE_MOVE_NFT,
+                data = selectedNFTIdList.joinToString(","), // Store selected NFT IDs as data
+            )
+            TransactionStateManager.newTransaction(transactionState)
+            pushBubbleStack(transactionState)
+
+            // Monitor transaction completion in the background
             TransactionStateWatcher(txId).watch { result ->
                 when {
                     result.isExecuteFinished() -> {

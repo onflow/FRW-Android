@@ -42,6 +42,7 @@ class MainActivity : BaseActivity() {
     private lateinit var viewModel: MainActivityViewModel
 
     private var isRegistered = false
+    private val targetTabIndex by lazy { intent.getIntExtra(EXTRA_TARGET_TAB, -1) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +71,12 @@ class MainActivity : BaseActivity() {
                 firebaseInformationCheck()
             }
             contentPresenter.checkAndShowContent()
+            
+            // Navigate to target tab if specified
+            if (targetTabIndex >= 0) {
+                val targetTab = HomeTab.values().find { it.index == targetTabIndex }
+                targetTab?.let { viewModel.changeTab(it) }
+            }
         }
         WindowFrame.attach(this)
 
@@ -137,13 +144,15 @@ class MainActivity : BaseActivity() {
     }
 
     companion object {
+        private const val EXTRA_TARGET_TAB = "extra_target_tab"
 
         private var INSTANCE: MainActivity? = null
-        fun launch(context: Context) {
+        fun launch(context: Context, targetTab: HomeTab? = null) {
             context.startActivity(Intent(context, MainActivity::class.java).apply {
                 if (context !is Activity) {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
+                targetTab?.let { putExtra(EXTRA_TARGET_TAB, it.index) }
             })
         }
 

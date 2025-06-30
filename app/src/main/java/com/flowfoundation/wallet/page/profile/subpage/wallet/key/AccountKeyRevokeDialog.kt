@@ -12,12 +12,13 @@ import com.flowfoundation.wallet.manager.account.AccountKeyManager
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.ButtonState
-import com.nftco.flow.sdk.FlowAddress
+import org.onflow.flow.models.FlowAddress
 
 
 class AccountKeyRevokeDialog : BottomSheetDialogFragment() {

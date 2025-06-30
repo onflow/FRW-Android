@@ -29,7 +29,7 @@ class ChildAccountDetailViewModel : ViewModel() {
                 coinDataList.add(
                     CoinData(
                         token?.name ?: contractName,
-                        token?.tokenIcon().orEmpty().ifBlank {
+                                token?.tokenIcon().orEmpty().ifBlank {
                             "https://lilico.app/placeholder-2.0.png"
                         },
                         token?.symbol.orEmpty(),

@@ -8,6 +8,7 @@ import com.flowfoundation.wallet.manager.config.NftCollectionConfig
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.model.AddressBookDomain
 import com.flowfoundation.wallet.network.model.Nft

@@ -1,16 +1,16 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
 import android.webkit.WebView
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthzResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
+import org.onflow.flow.models.DomainTag
 import org.tdf.rlp.RLP
 import org.tdf.rlp.RLPCodec
 
-private val accountProofTag = DomainTag.normalize("FCL-ACCOUNT-PROOF-V0.0")
+private val accountProofTag = DomainTag.Custom("FCL-ACCOUNT-PROOF-V0.0").bytes
 
 // encode flow jvm account proof
 fun FclAuthnResponse.encodeAccountProof(address: String, includeDomainTag: Boolean = true): ByteArray {

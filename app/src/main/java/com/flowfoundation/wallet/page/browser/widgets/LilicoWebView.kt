@@ -75,7 +75,7 @@ class LilicoWebView : WebView {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        
+
         // Disable hardware acceleration for this WebView to prevent some layout issues
         setLayerType(View.LAYER_TYPE_SOFTWARE, null)
         initBlockedViewLayout()

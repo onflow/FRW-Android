@@ -167,4 +167,3 @@ fun openInFlowEVMScan(activity: Activity, transactionId: String) {
 class BrowserParams(
     val searchBoxPosition: Point? = null,
 )
-

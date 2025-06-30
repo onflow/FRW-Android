@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.view.View
 import androidx.recyclerview.widget.DiffUtil
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.flowfoundation.wallet.BuildConfig
 import com.google.android.material.appbar.AppBarLayout
 import com.flowfoundation.wallet.cache.NftSelections
 import com.flowfoundation.wallet.manager.config.NftCollectionConfig
@@ -12,6 +11,8 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.page.nft.nftlist.model.*
 import com.flowfoundation.wallet.utils.image.SvgModel
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.wallet.toAddress
 import java.net.URLEncoder
 import kotlin.math.min
 
@@ -92,8 +93,29 @@ fun Nft.video(): String? {
 
 fun Nft.title(): String? = postMedia?.title
 
-fun Nft.websiteUrl(walletAddress: String) = "https://lilico" +
-        ".app/nft/$walletAddress/${collectionAddress}/${contractName()}?tokenId=${id}"
+fun Nft.websiteUrl(walletAddress: String): String? {
+    // First priority: Check if collection has an external URL
+    if (!collectionExternalURL.isNullOrBlank()) {
+        return collectionExternalURL
+    }
+    
+    // Second priority: Fallback URLs based on NFT type
+    // For Flow-EVM NFTs, use OpenSea profile
+    if (canBridgeToEVM() || !evmAddress.isNullOrBlank()) {
+        val evmAddr = getEVMAddress() ?: evmAddress
+        if (!evmAddr.isNullOrBlank()) {
+            return "https://opensea.io/$evmAddr"
+        }
+    }
+    
+    // For Flow NFTs, use FlowPort
+    if (canBridgeToFlow() || !flowIdentifier.isNullOrBlank()) {
+        return "https://port.flow.com/nfts/$walletAddress"
+    }
+    
+    // If no URL can be determined, return null to hide the option
+    return null
+}
 
 fun findSwipeRefreshLayout(view: View): SwipeRefreshLayout? {
     if (view.parent == null) return null
@@ -118,7 +140,15 @@ fun nftWalletAddress(): String {
 //    if (BuildConfig.DEBUG) {
 //        return "0x95601dba5c2506eb"
 //    }
-    return WalletManager.selectedWalletAddress()
+    val rawAddress = WalletManager.selectedWalletAddress()
+    val formattedAddress = rawAddress.toAddress()
+    
+    // Log for debugging
+    logd("nftWalletAddress", "Raw address: '$rawAddress'")
+    logd("nftWalletAddress", "Formatted address: '$formattedAddress'")
+    
+    // Return the formatted address with 0x prefix
+    return formattedAddress
 }
 
 fun Nft.isDomain() = media?.firstOrNull { it.uri.contains("flowns.org") && it.uri.contains(".meow") } != null

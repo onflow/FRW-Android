@@ -23,6 +23,8 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryTokenBalanceWithAddress
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.model.WalletData
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
@@ -65,10 +67,17 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                 uiScope {
                     llMainWallet.removeAllViews()
 
-                    // todo multi account
-                    val wallet = WalletManager.wallet()?.wallet() ?: return@uiScope
+                    val wallet = WalletManager.wallet() ?: return@uiScope
                     val list = mutableListOf<WalletData?>().apply {
-                        add(wallet)
+                        add(WalletData(
+                            blockchain = listOf(
+                                BlockchainData(
+                                address = wallet.walletAddress() ?: "",
+                                chainId = chainNetWorkString()
+                            )
+                            ),
+                            name = ""
+                        ))
                     }.filterNotNull()
 
                     if (list.isEmpty()) {
@@ -99,7 +108,6 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                                     address = it.address,
                                     emojiId = emoji.emojiId,
                                     emojiName = emoji.emojiName
-
                                 ),
                                 isEVMAccount = true
                             )

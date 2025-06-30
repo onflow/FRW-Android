@@ -1,5 +1,6 @@
 package com.flowfoundation.wallet.utils.error
 
+import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
@@ -7,7 +8,7 @@ import com.flowfoundation.wallet.utils.getLocationInfo
 import com.instabug.crash.CrashReporting
 import com.instabug.crash.models.IBGNonFatalException
 import com.instabug.library.Instabug
-import com.nftco.flow.sdk.FlowError
+import org.onflow.flow.infrastructure.CadenceErrorCode
 
 
 object ErrorReporter {
@@ -49,14 +50,16 @@ object ErrorReporter {
     fun reportTransactionError(txId: String, errorCode: Int) {
         val scriptId = TransactionStateManager.getScriptId(txId)
         val errorMessage = "scriptId: $scriptId, txId: $txId"
-        FlowError.forErrorCode(errorCode)?.let {
-            val cause = CustomTransactionException(it, errorMessage)
+        CadenceErrorCode.forErrorCode(errorCode)?.let { cadenceError ->
+            // Map CadenceErrorCode to WalletError for consistent error reporting
+            val walletError = WalletError(errorCode, cadenceError.name)
+            val cause = CustomTransactionException(walletError, errorMessage)
             IBGNonFatalException.Builder(cause)
                 .setLevel(IBGNonFatalException.Level.ERROR)
                 .setFingerprint("$scriptId.$errorCode")
                 .build()
                 .let { exception ->  CrashReporting.report(exception)}
-            MixpanelManager.error(it, cause.getLocationInfo(), cause.message)
+            MixpanelManager.error(walletError, cause.getLocationInfo(), cause.message)
         }
     }
 }
@@ -67,9 +70,9 @@ class CustomException(
 ) : Throwable(error.errorLog, cause)
 
 class CustomTransactionException(
-    val error: FlowError,
+    val error: WalletError,
     errorMessage: String
-) : Throwable("${error.name}($errorMessage)")
+) : Throwable("${error.message}($errorMessage)")
 
 class InvalidKeyException(
     errorMessage: String

@@ -1,70 +1,120 @@
 package com.flowfoundation.wallet.manager.key
 
-import com.flowfoundation.wallet.manager.flowjvm.transaction.checkSecurityProvider
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.HashAlgorithm
-import com.nftco.flow.sdk.SignatureAlgorithm
-import com.nftco.flow.sdk.Signer
-import com.nftco.flow.sdk.bytesToHex
-import com.nftco.flow.sdk.crypto.Crypto
-import com.flowfoundation.wallet.manager.flowjvm.transaction.updateSecurityProvider
-import io.outblock.wallet.CryptoProvider
-import wallet.core.jni.Curve
-import wallet.core.jni.HDWallet
-import wallet.core.jni.Hash
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.HashingAlgorithm
+import org.onflow.flow.models.SigningAlgorithm
 
-class HDWalletCryptoProvider(private val wallet: HDWallet) : CryptoProvider {
+class HDWalletCryptoProvider(
+    private val seedPhraseKey: SeedPhraseKey,
+    private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_secp256k1,
+    private val hashingAlgorithm: HashingAlgorithm = HashingAlgorithm.SHA2_256
+) : CryptoProvider {
 
     fun getMnemonic(): String {
-        return wallet.mnemonic()
+        return seedPhraseKey.mnemonic.joinToString(" ")
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
-        val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-        val publicKey = privateKey.getPublicKeySecp256k1(false).data().bytesToHex()
-        return publicKey.removePrefix("04")
+        val rawPublicKey = seedPhraseKey.publicKey(signingAlgorithm)?.toHexString() ?: ""
+        // Match the format used by all other crypto providers: remove "04" prefix if present, no "0x" prefix for server
+        val formattedPublicKey = if (rawPublicKey.startsWith("04")) {
+            rawPublicKey.substring(2)
+        } else {
+            rawPublicKey
+        }
+        return formattedPublicKey
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun getPrivateKey(): String {
-        return wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH).data().bytesToHex()
+        return seedPhraseKey.privateKey(signingAlgorithm)?.toHexString() ?: ""
     }
 
-    override fun getUserSignature(jwt: String): String {
-        return signData(DomainTag.USER_DOMAIN_TAG + jwt.encodeToByteArray())
+    override suspend fun getUserSignature(jwt: String): String {
+        return signData(DomainTag.User.bytes + jwt.encodeToByteArray())
     }
 
-    override fun signData(data: ByteArray): String {
-        val privateKey = wallet.getCurveKey(Curve.SECP256K1, DERIVATION_PATH)
-        val hashedData = Hash.sha256(data)
-        val signature = privateKey.sign(hashedData, Curve.SECP256K1).dropLast(1).toByteArray()
-        return signature.bytesToHex()
+    @OptIn(ExperimentalStdlibApi::class)
+    override suspend fun signData(data: ByteArray): String {
+        val signatureBytes = seedPhraseKey.sign(data, signingAlgorithm, hashingAlgorithm)
+        
+        // Recovery ID trimming - ensure consistency with other providers
+        // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+        val finalSignature = if (signatureBytes.size == 65) {
+            signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+        } else {
+            signatureBytes
+        }
+        
+        return finalSignature.toHexString()
     }
 
-    override fun getSigner(): Signer {
-        checkSecurityProvider()
-        updateSecurityProvider()
-        return Crypto.getSigner(
-            privateKey = Crypto.decodePrivateKey(
-                getPrivateKey(),
-                getSignatureAlgorithm()
-            ),
-            hashAlgo = getHashAlgorithm()
-        )
+    override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
+        return object : org.onflow.flow.models.Signer {
+            override var address: String = ""
+            override var keyIndex: Int = 0
+            
+            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
+                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                
+                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                val finalSignature = if (signature.size == 65) {
+                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                } else {
+                    signature
+                }
+                
+                return finalSignature
+            }
+
+            override suspend fun sign(bytes: ByteArray): ByteArray {
+                val signature = seedPhraseKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
+                
+                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                val finalSignature = if (signature.size == 65) {
+                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                } else {
+                    signature
+                }
+                
+                return finalSignature
+            }
+            
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
+                val signature = seedPhraseKey.sign(domain + bytes, signingAlgorithm, hashingAlgorithm)
+                
+                // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
+                val finalSignature = if (signature.size == 65) {
+                    signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
+                } else {
+                    signature
+                }
+                
+                return finalSignature
+            }
+            
+            override suspend fun signAsUser(bytes: ByteArray): ByteArray {
+                return signWithDomain(bytes, DomainTag.User.bytes)
+            }
+            
+            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
+                return signWithDomain(bytes, DomainTag.Transaction.bytes)
+            }
+        }
     }
 
-    override fun getHashAlgorithm(): HashAlgorithm {
-        return HashAlgorithm.SHA2_256
+    override fun getHashAlgorithm(): HashingAlgorithm {
+        return hashingAlgorithm
     }
 
-    override fun getSignatureAlgorithm(): SignatureAlgorithm {
-        return SignatureAlgorithm.ECDSA_SECP256k1
+    override fun getSignatureAlgorithm(): SigningAlgorithm {
+        return signingAlgorithm
     }
 
     override fun getKeyWeight(): Int {
         return 1000
-    }
-
-    companion object {
-        private const val DERIVATION_PATH = "m/44'/539'/0'/0/0"
     }
 }

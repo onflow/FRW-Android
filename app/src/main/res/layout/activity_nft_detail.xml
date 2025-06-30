@@ -122,7 +122,7 @@
                     android:id="@+id/title_view"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="10dp"
+                    android:layout_marginEnd="18dp"
                     android:ellipsize="end"
                     android:fontFamily="@font/montsettat"
                     android:maxLines="1"
@@ -130,10 +130,10 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintBottom_toTopOf="@id/collection_wrapper"
-                    app:layout_constraintEnd_toStartOf="@id/share_button_wrapper"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_chainStyle="packed"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/share_button_wrapper"
+                    app:layout_constraintTop_toBottomOf="@id/media_wrapper"
                     tools:text="The Truth of Nature"/>
 
                 <androidx.appcompat.widget.LinearLayoutCompat
@@ -143,7 +143,7 @@
                     android:layout_marginTop="5dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    app:layout_constraintEnd_toStartOf="@id/share_button_wrapper"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/title_view">
 
@@ -168,53 +168,11 @@
                         android:maxLines="1"
                         android:textColor="@color/neutrals4"
                         android:textSize="14sp"
-                        app:layout_constraintEnd_toStartOf="@id/share_button_wrapper"
                         app:layout_constraintHorizontal_chainStyle="packed"
                         app:layout_constraintStart_toEndOf="@id/collection_icon"
                         app:layout_constraintTop_toBottomOf="@id/title_view"
                         tools:text="The Truth of Nature"/>
                 </androidx.appcompat.widget.LinearLayoutCompat>
-
-                <com.flowfoundation.wallet.widgets.likebutton.LikeButton
-                    android:id="@+id/collect_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="-7dp"
-                    android:background="@color/transparent"
-                    app:anim_scale_factor="2"
-                    app:circle_end_color="@color/colorSecondary"
-                    app:circle_start_color="@color/success"
-                    app:dots_primary_color="@color/colorSecondary"
-                    app:dots_secondary_color="@color/success"
-                    app:icon_size="44dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/media_wrapper"
-                    app:like_drawable="@drawable/ic_collect_nft_on"
-                    app:unlike_drawable="@drawable/ic_collect_nft"
-                    tools:background="#999"
-                    tools:ignore="ContentDescription"
-                    tools:layout_height="88dp"
-                    tools:layout_width="88dp"/>
-
-                <FrameLayout
-                    android:id="@+id/share_button_wrapper"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:layout_marginEnd="74dp"
-                    android:paddingBottom="16dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/media_wrapper">
-
-                    <ImageButton
-                        android:id="@+id/share_button"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:background="@color/transparent"
-                        android:src="@drawable/ic_share_nft"
-                        app:tint="@color/text_sub"
-                        tools:ignore="ContentDescription"/>
-                </FrameLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout

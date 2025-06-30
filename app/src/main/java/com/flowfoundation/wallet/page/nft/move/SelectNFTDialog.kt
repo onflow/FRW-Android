@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.widget.SelectNFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
@@ -110,6 +111,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     return@setOnClickListener
                 }
                 btnMove.setProgressVisible(true)
+                
                 ioScope {
                     viewModel.moveSelectedNFT(layoutFromAccount.getAccountAddress(), layoutToAccount.getAccountAddress()) {
                         isSuccess ->
@@ -117,6 +119,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                             btnMove.setProgressVisible(false)
                             if (isSuccess) {
                                 toast(msgRes = R.string.move_nft_success)
+                                // Dismiss dialog immediately upon successful TX submission
                                 result?.resume(true)
                                 dismissAllowingStateLoss()
                             } else {
@@ -339,7 +342,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 eligibleList.add(evmAddress)
             }
 
-            // Add the initial From address if it’s not the current From.
+            // Add the initial From address if it's not the current From.
             if (initialFromAddress != moveFromAddress && !eligibleList.contains(initialFromAddress)) {
                 eligibleList.add(initialFromAddress)
             }

@@ -89,26 +89,33 @@ object CadenceApiManager {
                     false
                 }
                 if (!isSignatureValid) {
-                    loge(TAG, "Invalid script signature")
+                    loge(TAG, "Invalid script signature - continuing with cached scripts")
+                    loge(TAG, "Response preview (first 200 chars): ${responseBody.take(200)}")
                     ErrorReporter.reportWithMixpanel(CadenceError.INVALID_SCRIPT_SIGNATURE)
-                    return@ioScope
+                    // Don't return here - let it fall through to use existing scripts
+                    // return@ioScope
+                } else {
+                    // Only update scripts if signature is valid
+                    val response = Gson().fromJson(responseBody, CadenceScriptResponse::class.java)
+                    if (response.data == null) {
+                        loge(TAG, "Decode script failed")
+                        ErrorReporter.reportWithMixpanel(CadenceError.DECODE_SCRIPT_FAILED)
+                        return@ioScope
+                    }
+                    val localVersion = cadenceApi?.version.toSafeFloat()
+                    val currentVersion = response.data.version.toSafeFloat()
+                    logd(TAG, "cadenceScriptVersion::local::$localVersion::current::$currentVersion")
+                    if (currentVersion > localVersion) {
+                        cadenceApi = response.data
+                        saveCadenceToLocal(Gson().toJson(response))
+                        logd(TAG, "Updated to new script version: $currentVersion")
+                    }
                 }
 
-                val response = Gson().fromJson(responseBody, CadenceScriptResponse::class.java)
-                if (response.data == null) {
-                    loge(TAG, "Decode script failed")
-                    ErrorReporter.reportWithMixpanel(CadenceError.DECODE_SCRIPT_FAILED)
-                    return@ioScope
-                }
-                val localVersion = cadenceApi?.version.toSafeFloat()
-                val currentVersion = response.data.version.toSafeFloat()
-                logd(TAG, "cadenceScriptVersion::local::$localVersion::current::$currentVersion")
-                if (currentVersion > localVersion) {
-                    cadenceApi = response.data
-                    saveCadenceToLocal(Gson().toJson(response))
-                }
+                // Always report version info (even if signature failed)
                 MixpanelManager.cadenceScriptVersion(getCadenceScriptVersion(), getCadenceVersion())
             } catch (e: Exception) {
+                loge(TAG, "Network fetch failed: ${e.message}")
                 ErrorReporter.reportWithMixpanel(CadenceError.FETCH_SCRIPT_FAILED, e)
                 e.printStackTrace()
             }
@@ -117,12 +124,39 @@ object CadenceApiManager {
 
     private fun verifySignature(signature: String, data: ByteArray): Boolean {
         try {
+            // Validate signature format before decoding
+            if (signature.isBlank()) {
+                loge(TAG, "Empty signature provided for verification")
+                return false
+            }
+            
+            // Check if signature contains only valid hex characters
+            val hexPattern = "^[0-9a-fA-F]+$".toRegex()
+            if (!hexPattern.matches(signature)) {
+                loge(TAG, "Invalid signature format - contains non-hex characters: ${signature.take(50)}...")
+                return false
+            }
+            
+            // Validate signature length (should be even number for hex)
+            if (signature.length % 2 != 0) {
+                loge(TAG, "Invalid signature length - not even number of hex chars: ${signature.length}")
+                return false
+            }
+            
+            logd(TAG, "Signature validation passed - length: ${signature.length}, format: hex")
+            
             val hashedData = Hash.sha256(data)
             val pubKeyBytes = BuildConfig.X_SIGNATURE_KEY.decodeHex().toByteArray()
             val public = PublicKey(pubKeyBytes, PublicKeyType.NIST256P1EXTENDED)
-            return public.verify(signature.decodeHex().toByteArray(), hashedData)
+            
+            val signatureBytes = signature.decodeHex().toByteArray()
+            val isValid = public.verify(signatureBytes, hashedData)
+            
+            logd(TAG, "Signature verification result: $isValid")
+            return isValid
         } catch (e: Exception) {
             loge(TAG, "Error verifying signature: ${e.message}")
+            loge(TAG, "Signature (first 100 chars): ${signature.take(100)}")
             e.printStackTrace()
             return false
         }

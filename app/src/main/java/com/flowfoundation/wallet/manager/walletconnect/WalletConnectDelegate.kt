@@ -5,7 +5,6 @@ import android.view.View
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.browser.browserInstance
 import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
@@ -285,8 +284,12 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                 uiScope {
                     try {
                         with(sessionProposal) {
-                            val approve = if (WalletManager.isEVMAccountSelected()) {
-                                logd(TAG, "Using EVM account, showing EVM dialog")
+                            // Determine if this is an EVM dApp request based on session proposal
+                            val isEVMRequest = isEVMSessionProposal(sessionProposal)
+                            logd(TAG, "Session proposal detected as EVM: $isEVMRequest")
+                            
+                            val approve = if (isEVMRequest) {
+                                logd(TAG, "EVM request detected, showing EVM dialog")
                                 if (isShowMoveDialog()) {
                                     logd(TAG, "Showing move dialog")
                                     MoveDialog().showMove(foundActivity.supportFragmentManager, description)
@@ -300,12 +303,12 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                                     )
                                 )
                             } else {
-                                logd(TAG, "Using FCL account, showing FCL dialog")
+                                logd(TAG, "Flow request detected, showing FCL dialog")
                                 val data = FclDialogModel(
                                     title = name,
                                     url = url,
                                     logo = icons.firstOrNull()?.toString(),
-                                    network = network()
+                                    network = if (isEVMRequest) "evm" else network() // Mark as EVM if detected
                                 )
                                 FclAuthnDialog().show(
                                     foundActivity.supportFragmentManager,
@@ -534,5 +537,88 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
             TAG,
             "onSessionUpdateResponse() sessionUpdateResponse:${Gson().toJson(sessionUpdateResponse)}"
         )
+    }
+
+    /**
+     * Determines if a session proposal is requesting EVM network support
+     * by analyzing the required and optional namespaces
+     */
+    private fun isEVMSessionProposal(sessionProposal: Sign.Model.SessionProposal): Boolean {
+        try {
+            logd(TAG, "Analyzing session proposal for EVM indicators")
+            
+            // Check required namespaces for EVM chains
+            sessionProposal.requiredNamespaces.forEach { (namespace, requirement) ->
+                logd(TAG, "Checking required namespace: $namespace")
+                
+                // EIP-155 namespace indicates Ethereum/EVM
+                if (namespace.equals("eip155", ignoreCase = true)) {
+                    logd(TAG, "Found EIP-155 namespace - this is an EVM request")
+                    return true
+                }
+                
+                // Check for specific EVM chain IDs in the chains
+                requirement.chains?.forEach { chain ->
+                    logd(TAG, "Checking chain: $chain")
+                    if (isEVMChain(chain)) {
+                        logd(TAG, "Found EVM chain: $chain")
+                        return true
+                    }
+                }
+            }
+            
+            // Check optional namespaces for EVM chains
+            sessionProposal.optionalNamespaces?.forEach { (namespace, requirement) ->
+                logd(TAG, "Checking optional namespace: $namespace")
+                
+                if (namespace.equals("eip155", ignoreCase = true)) {
+                    logd(TAG, "Found EIP-155 in optional namespace - this is an EVM request")
+                    return true
+                }
+                
+                requirement.chains?.forEach { chain ->
+                    logd(TAG, "Checking optional chain: $chain")
+                    if (isEVMChain(chain)) {
+                        logd(TAG, "Found EVM chain in optional: $chain")
+                        return true
+                    }
+                }
+            }
+            
+            logd(TAG, "No EVM indicators found - treating as Flow request")
+            return false
+            
+        } catch (e: Exception) {
+            loge(TAG, "Error analyzing session proposal: ${e.message}")
+            loge(e)
+            // If we can't determine, default to false (Flow)
+            return false
+        }
+    }
+    
+    /**
+     * Checks if a chain identifier represents an EVM-compatible chain
+     */
+    private fun isEVMChain(chain: String): Boolean {
+        return when {
+            // Standard Ethereum chains
+            chain.contains("eip155:1", ignoreCase = true) -> true     // Ethereum Mainnet
+            chain.contains("eip155:5", ignoreCase = true) -> true     // Goerli Testnet
+            chain.contains("eip155:11155111", ignoreCase = true) -> true // Sepolia Testnet
+            
+            // Flow EVM chains
+            chain.contains("eip155:747", ignoreCase = true) -> true   // Flow EVM Mainnet
+            chain.contains("eip155:545", ignoreCase = true) -> true   // Flow EVM Testnet
+            
+            // Other common EVM chains
+            chain.contains("eip155:137", ignoreCase = true) -> true   // Polygon
+            chain.contains("eip155:56", ignoreCase = true) -> true    // BSC
+            
+            // Generic EVM indicators
+            chain.contains("ethereum", ignoreCase = true) -> true
+            chain.contains("evm", ignoreCase = true) -> true
+            
+            else -> false
+        }
     }
 }

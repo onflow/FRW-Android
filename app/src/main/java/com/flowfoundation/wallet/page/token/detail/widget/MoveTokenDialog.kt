@@ -20,12 +20,18 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
 import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
 import com.flowfoundation.wallet.page.token.list.CadenceTokenListProvider
 import com.flowfoundation.wallet.page.token.list.EVMTokenListProvider
 import com.flowfoundation.wallet.page.token.list.TokenListProvider
+import com.flowfoundation.wallet.page.main.MainActivity
+import com.flowfoundation.wallet.page.main.HomeTab
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.MoveError
@@ -39,7 +45,10 @@ import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.findActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.gson.Gson
+import org.onflow.flow.models.TransactionStatus
 import java.math.BigDecimal
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -255,7 +264,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
         ioScope {
             val provider = getProvider(moveFromAddress)
             currentTokenProvider = provider
-            
+
             // Get fresh token list with updated balances
             availableTokens = provider.getTokenList(moveFromAddress)
 
@@ -269,7 +278,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         ?: availableTokens.firstOrNull { it.tokenBalance() > BigDecimal.ZERO }
                         ?: availableTokens.first()
                 }
-                
+
                 uiScope {
                     if (token != null) {
                         updateSelectedToken(token)
@@ -295,7 +304,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
 
             val provider = getProvider(moveFromAddress)
             currentTokenProvider = provider
-            
+
             // Get fresh token list with updated balances
             availableTokens = provider.getFungibleTokenListSnapshot()
 
@@ -347,16 +356,24 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             return
         }
         binding.btnMove.setProgressVisible(true)
+        
         ioScope {
             val amount = binding.etAmount.text.ifBlank { "0" }.toString().toSafeDecimal()
             val token = currentToken
             if (token == null) {
                 ErrorReporter.reportWithMixpanel(MoveError.LOAD_TOKEN_INFO_FAILED, getCurrentCodeLocation())
+                uiScope {
+                    binding.btnMove.setProgressVisible(false)
+                    toast(R.string.common_error_hint)
+                }
                 return@ioScope
             }
 
             val from = moveFromAddress
             val to = moveToAddress
+
+            android.util.Log.d("MoveTokenDialog", "Starting move: ${token.symbol} from $from to $to, amount: $amount")
+            android.util.Log.d("MoveTokenDialog", "Token isFlowToken: ${token.isFlowToken()}, canBridgeToEVM: ${token.canBridgeToEVM()}, canBridgeToCadence: ${token.canBridgeToCadence()}")
 
             MixpanelManager.transferFT(
                 from,
@@ -366,44 +383,49 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 token.tokenIdentifier()
             )
 
-            if (token.isFlowToken()) {
-                EVMWalletManager.moveFlowToken(token, amount, from, to) { isSuccess ->
-                    uiScope {
-                        binding.btnMove.setProgressVisible(false)
-                        if (isSuccess) {
-                            FungibleTokenListManager.updateTokenList()
-                            result?.resume(true)
-                            dismiss()
-                        } else {
-                            toast(R.string.move_flow_to_evm_failed)
+            try {
+                if (token.isFlowToken()) {
+                    android.util.Log.d("MoveTokenDialog", "Calling EVMWalletManager.moveFlowToken")
+                    EVMWalletManager.moveFlowToken(token, amount, from, to) { isSuccess ->
+                        android.util.Log.d("MoveTokenDialog", "moveFlowToken callback: isSuccess = $isSuccess")
+                        uiScope {
+                            binding.btnMove.setProgressVisible(false)
+                            if (isSuccess) {
+                                // Dismiss dialog and navigate back to wallet tab upon successful TX submission
+                                dismissAllowingStateLoss()
+                                val activity = findActivity(binding.root)
+                                if (activity != null) {
+                                    MainActivity.launch(activity, HomeTab.WALLET)
+                                }
+                            } else {
+                                toast(R.string.common_error_hint)
+                            }
+                        }
+                    }
+                } else {
+                    android.util.Log.d("MoveTokenDialog", "Calling EVMWalletManager.moveBridgeToken")
+                    EVMWalletManager.moveBridgeToken(token, amount, from, to) { isSuccess ->
+                        android.util.Log.d("MoveTokenDialog", "moveBridgeToken callback: isSuccess = $isSuccess")
+                        uiScope {
+                            binding.btnMove.setProgressVisible(false)
+                            if (isSuccess) {
+                                // Dismiss dialog and navigate back to wallet tab upon successful TX submission
+                                dismissAllowingStateLoss()
+                                val activity = findActivity(binding.root)
+                                if (activity != null) {
+                                    MainActivity.launch(activity, HomeTab.WALLET)
+                                }
+                            } else {
+                                toast(R.string.common_error_hint)
+                            }
                         }
                     }
                 }
-            } else if (token.canBridgeToEVM() || token.canBridgeToCadence()) {
-                EVMWalletManager.moveBridgeToken(token, amount, from, to) { isSuccess ->
-                    uiScope {
-                        binding.btnMove.setProgressVisible(false)
-                        if (isSuccess) {
-                            FungibleTokenListManager.updateTokenList()
-                            result?.resume(true)
-                            dismiss()
-                        } else {
-                            toast(R.string.move_flow_to_evm_failed)
-                        }
-                    }
-                }
-            } else {
-                EVMWalletManager.transferToken(token, to, amount) { isSuccess ->
-                    uiScope {
-                        binding.btnMove.setProgressVisible(false)
-                        if (isSuccess) {
-                            FungibleTokenListManager.updateTokenList()
-                            result?.resume(true)
-                            dismiss()
-                        } else {
-                            toast(R.string.move_flow_to_evm_failed)
-                        }
-                    }
+            } catch (e: Exception) {
+                android.util.Log.e("MoveTokenDialog", "Exception during move operation", e)
+                uiScope {
+                    binding.btnMove.setProgressVisible(false)
+                    toast(R.string.common_error_hint)
                 }
             }
         }

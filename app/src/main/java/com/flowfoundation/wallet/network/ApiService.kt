@@ -2,9 +2,7 @@ package com.flowfoundation.wallet.network
 
 import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
 import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
-import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.network.model.*
-import com.flowfoundation.wallet.page.profile.subpage.currency.model.Currency
 import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
@@ -21,11 +19,11 @@ interface ApiService {
     @GET("/v1/user/check")
     suspend fun checkUsername(@Query("username") username: String): UsernameCheckResponse
 
-    @POST("/retoken")
-    suspend fun uploadPushToken(@Body token: Map<String, String>): CommonResponse
-
     @GET("/v2/user/wallet")
     suspend fun getWalletList(): WalletListResponse
+
+    @POST("/retoken")
+    suspend fun uploadPushToken(@Body token: Map<String, String>): CommonResponse
 
     @GET("/v1/user/manualaddress")
     suspend fun manualAddress(): CommonResponse
@@ -151,12 +149,6 @@ interface ApiService {
         @Query("provider") market: String,
         @Query("pair") coinPair: String
     ): CryptowatchSummaryResponse
-
-    @GET("/v1/flowns/prepare")
-    suspend fun claimDomainPrepare(): ClaimDomainPrepareResponse
-
-    @POST("/v1/flowns/signature")
-    suspend fun claimDomainSignature(@Body params: PayerSignable): ClaimDomainSignatureResponse
 
     @GET("/v1/account/tokentransfers")
     suspend fun getTransferRecordByToken(

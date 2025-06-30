@@ -20,7 +20,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.page.emoji.EditWalletEmojiDialog
-import com.flowfoundation.wallet.page.profile.subpage.claimdomain.ClaimDomainActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.dialog.WalletResetConfirmDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.key.AccountKeyActivity
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
@@ -93,7 +92,7 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
 
             resetButton.setOnClickListener { WalletResetConfirmDialog.show(supportFragmentManager) }
 
-            claimButton.setOnClickListener { ClaimDomainActivity.launch(this@WalletSettingActivity) }
+//            claimButton.setOnClickListener { ClaimDomainActivity.launch(this@WalletSettingActivity) }
 
             uiScope {
                 claimDomainWrapper.gone()

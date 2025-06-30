@@ -4,10 +4,11 @@ import androidx.annotation.WorkerThread
 import com.google.gson.Gson
 import com.flowfoundation.wallet.utils.*
 import java.io.File
+import java.lang.reflect.Type
 
 class CacheManager<T>(
     private val fileName: String,
-    private val type: Class<T>,
+    private val type: Type,
     private val cacheDir: File = CACHE_PATH
 ) {
 

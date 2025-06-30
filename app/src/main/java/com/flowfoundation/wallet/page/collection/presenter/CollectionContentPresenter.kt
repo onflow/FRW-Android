@@ -41,6 +41,14 @@ class CollectionContentPresenter(
 
     private val dividerSize by lazy { R.dimen.nft_list_divider_size.res2dip().toDouble() }
 
+    // Responsive grid spacing dimensions
+    private val horizontalSpacing by lazy { R.dimen.nft_grid_horizontal_spacing.res2dip().toDouble() }
+    private val verticalSpacing by lazy { R.dimen.nft_grid_vertical_spacing.res2dip().toDouble() }
+    private val startSpacing by lazy { R.dimen.nft_grid_start_spacing.res2dip().toDouble() }
+    private val endSpacing by lazy { R.dimen.nft_grid_end_spacing.res2dip().toDouble() }
+    private val topSpacing by lazy { R.dimen.nft_grid_top_spacing.res2dip().toDouble() }
+    private val bottomSpacing by lazy { R.dimen.nft_grid_bottom_spacing.res2dip().toDouble() }
+
     private val screenHeight by lazy { ScreenUtils.getScreenHeight() }
 
     private var currentCollectionWrapper: NftCollectionWrapper? = null
@@ -56,7 +64,14 @@ class CollectionContentPresenter(
                 }
             }
             addItemDecoration(
-                GridSpaceItemDecoration(vertical = dividerSize, horizontal = dividerSize)
+                GridSpaceItemDecoration(
+                    top = topSpacing,
+                    bottom = bottomSpacing,
+                    vertical = verticalSpacing,
+                    horizontal = horizontalSpacing,
+                    start = startSpacing,
+                    end = endSpacing
+                )
             )
             minimumHeight = screenHeight - 222.dp2px().toInt()
         }
