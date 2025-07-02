@@ -1,3 +1,9 @@
+// Configures the React Native Gradle Settings plugin used for autolinking
+pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+plugins { id("com.facebook.react.settings") }
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+includeBuild("../node_modules/@react-native/gradle-plugin")
+
 rootProject.name = "FlowWallet"
 include ':app', ':wallet'
 project(':wallet').projectDir = new File('../Flow-Wallet-Kit/Android/wallet')

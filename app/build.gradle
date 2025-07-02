@@ -2,13 +2,14 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id("kotlin-parcelize")
-    id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
+    id "org.jetbrains.kotlin.plugin.serialization" version "1.9.25"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
     id("instabug-apm")
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
     id 'jacoco'
+    id 'com.facebook.react'
 //    id 'com.google.ar.sceneform.plugin'
 }
 
@@ -75,12 +76,12 @@ android {
     def localTesters = properties.getProperty("testers", "")
     def envTesters = System.getenv("FIREBASE_TESTERS") ?: ""
     def mergedTesters = ([localTesters, envTesters]
-        .findAll { it?.trim() } // Filter out null/empty sources
-        .collectMany { it.split(",") as List<String> } // Split comma-separated strings
-        .collect { it.trim() } // Trim each entry
-        .findAll { it } // Filter out blanks
-        .toSet() // Remove duplicates
-        .join(","))
+            .findAll { it?.trim() } // Filter out null/empty sources
+            .collectMany { it.split(",") as List<String> } // Split comma-separated strings
+            .collect { it.trim() } // Trim each entry
+            .findAll { it } // Filter out blanks
+            .toSet() // Remove duplicates
+            .join(","))
 
     signingConfigs {
         release {
@@ -163,7 +164,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.0"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     kotlinOptions {
@@ -179,15 +180,19 @@ android {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/io.netty.versions.properties', 'META-INF/INDEX.LIST', 'META-INF/DEPENDENCIES', 'META-INF/NOTICE', 'META-INF/NOTICE.txt', 'META-INF/notice.txt', 'META-INF/LICENSE.txt', 'META-INF/license.txt', 'project.properties', 'META-INF/rxjava.properties', 'META-INF/ASL2.0', 'META-INF/atomicfu.kotlin_module']
             pickFirsts += [
-                'lib/arm64-v8a/libTrustWalletCore.so',
-                'org/bouncycastle/x509/CertPathReviewerMessages_de.properties',
-                'org/bouncycastle/x509/CertPathReviewerMessages.properties',
-                'org/bouncycastle/x509/CertPathReviewerMessages_*.properties'
+                    'lib/arm64-v8a/libTrustWalletCore.so',
+                    'org/bouncycastle/x509/CertPathReviewerMessages_de.properties',
+                    'org/bouncycastle/x509/CertPathReviewerMessages.properties',
+                    'org/bouncycastle/x509/CertPathReviewerMessages_*.properties'
             ]
         }
     }
 
     namespace 'com.flowfoundation.wallet'
+
+    // Specify NDK version to avoid issues with corrupted installations
+    ndkVersion "26.1.10909125"
+
     lintOptions {
         checkAllWarnings true
         abortOnError true // stop the build if errors found
@@ -199,10 +204,10 @@ configurations.all {
     exclude group: 'com.google.protobuf', module: 'protobuf-java'
     exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     resolutionStrategy {
-        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.0'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.0'
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.25'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-common:1.9.25'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.25'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.25'
         force 'org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1'
         force 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
         force 'com.google.protobuf:protobuf-javalite:3.22.3'
@@ -215,7 +220,7 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     implementation project(':wallet')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.25"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
@@ -323,7 +328,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
     implementation 'com.google.firebase:firebase-appcheck'
     implementation 'com.google.firebase:firebase-appcheck-debug'
-    
+
     /** Instabug **/
     implementation 'com.instabug.library:instabug:15.0.1'
     implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
@@ -368,14 +373,14 @@ dependencies {
     }
     implementation 'com.github.onflow.flow-kmm:flow:0.0.24'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    
-     implementation "io.ktor:ktor-client-core:2.3.7"
-     implementation "io.ktor:ktor-client-cio:2.3.7"
-     implementation "io.ktor:ktor-client-websockets:2.3.7"
-     implementation "io.ktor:ktor-client-content-negotiation:2.3.7"
-     implementation "io.ktor:ktor-serialization-kotlinx-json:2.3.7"
-     implementation "io.ktor:ktor-client-logging:2.3.7"
-    
+
+    implementation "io.ktor:ktor-client-core:2.3.7"
+    implementation "io.ktor:ktor-client-cio:2.3.7"
+    implementation "io.ktor:ktor-client-websockets:2.3.7"
+    implementation "io.ktor:ktor-client-content-negotiation:2.3.7"
+    implementation "io.ktor:ktor-serialization-kotlinx-json:2.3.7"
+    implementation "io.ktor:ktor-client-logging:2.3.7"
+
     implementation(platform("com.reown:android-bom:1.3.3"))
     implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
@@ -409,6 +414,12 @@ dependencies {
     /** Mixpanel **/
     implementation "com.mixpanel.android:mixpanel-android:7.5.4"
 
+    /** React Native **/
+    // Note: we intentionally don't specify the version number here as RNGP will take care of it.
+    // If you don't use the RNGP, you'll have to specify version manually.
+    implementation "com.facebook.react:react-android"
+    implementation "com.facebook.react:hermes-android"
+
     /** TEST **/
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'junit:junit:4.13.2'
@@ -422,6 +433,11 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
+}
+
+react {
+    // Needed to enable Autolinking - https://github.com/react-native-community/cli/blob/master/docs/autolinking.md
+    autolinkLibrariesWithApp()
 }
 
 // Add after android {} block
@@ -438,12 +454,12 @@ tasks.register('jacocoTestReport', JacocoReport) {
     }
 
     def fileFilter = [
-        '**/R.class',
-        '**/R$*.class',
-        '**/BuildConfig.*',
-        '**/Manifest*.*',
-        '**/*Test*.*',
-        'android/**/*.*'
+            '**/R.class',
+            '**/R$*.class',
+            '**/BuildConfig.*',
+            '**/Manifest*.*',
+            '**/*Test*.*',
+            'android/**/*.*'
     ]
     def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
@@ -451,7 +467,7 @@ tasks.register('jacocoTestReport', JacocoReport) {
     sourceDirectories.setFrom(files([mainSrc]))
     classDirectories.setFrom(files([debugTree]))
     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-        'jacoco/testDebugUnitTest.exec',
-        'outputs/code-coverage/connected/*coverage.ec'
+            'jacoco/testDebugUnitTest.exec',
+            'outputs/code-coverage/connected/*coverage.ec'
     ]))
 }
