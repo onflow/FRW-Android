@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import org.onflow.flow.ChainId
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 
 class DeveloperModeViewModel : ViewModel() {
     val progressVisibleLiveData = MutableLiveData<Boolean>()
@@ -66,8 +67,11 @@ class DeveloperModeViewModel : ViewModel() {
                             blockchain = listOf(blockchainData),
                             name = "Flow Wallet"
                         )
+                        val firebaseUserId = firebaseUid()
+                            ?: throw IllegalStateException("Firebase user ID is null - cannot create wallet data")
+                        
                         val walletListData = WalletListData(
-                            id = currentAccount.userInfo.username,
+                            id = firebaseUserId,
                             username = currentAccount.userInfo.username,
                             wallets = listOf(walletData)
                         )

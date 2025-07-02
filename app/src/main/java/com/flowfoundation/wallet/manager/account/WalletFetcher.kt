@@ -24,6 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.concurrent.scheduleAtFixedRate
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.Lifecycle
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 
 object WalletFetcher {
     private val TAG = WalletFetcher::class.java.simpleName
@@ -122,8 +123,11 @@ object WalletFetcher {
                             blockchain = listOf(blockchainData),
                             name = "Flow Wallet"
                         )
+                        val firebaseUserId = firebaseUid()
+                            ?: throw IllegalStateException("Firebase user ID is null - cannot create wallet data")
+                        
                         val walletListData = WalletListData(
-                            id = currentAccount.userInfo.username,
+                            id = firebaseUserId,
                             username = currentAccount.userInfo.username,
                             wallets = listOf(walletData)
                         )
