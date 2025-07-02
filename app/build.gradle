@@ -415,8 +415,6 @@ dependencies {
     implementation "com.mixpanel.android:mixpanel-android:7.5.4"
 
     /** React Native **/
-    // Note: we intentionally don't specify the version number here as RNGP will take care of it.
-    // If you don't use the RNGP, you'll have to specify version manually.
     implementation "com.facebook.react:react-android"
     implementation "com.facebook.react:hermes-android"
 
@@ -436,7 +434,6 @@ dependencies {
 }
 
 react {
-    // Needed to enable Autolinking - https://github.com/react-native-community/cli/blob/master/docs/autolinking.md
     autolinkLibrariesWithApp()
 }
 
