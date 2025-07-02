@@ -24,6 +24,7 @@ buildscript {
         classpath 'com.instabug.library:instabug-plugin:12.0.0'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-appdistribution-gradle:5.0.0'
+        classpath 'com.facebook.react:react-native-gradle-plugin'
     }
 }
 

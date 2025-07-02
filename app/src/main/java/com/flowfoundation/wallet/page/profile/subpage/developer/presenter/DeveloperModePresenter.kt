@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeViewModel
 import com.flowfoundation.wallet.page.profile.subpage.developer.LocalAccountKeyActivity
 import com.flowfoundation.wallet.page.profile.subpage.developer.model.DeveloperPageModel
+import com.flowfoundation.wallet.page.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.debug.DebugLogManager
@@ -93,6 +94,9 @@ class DeveloperModePresenter(
                 cvReloadConfig.setOnClickListener {
                     fetchLatestFirebaseConfig()
                 }
+                cvReactNativeTest.setOnClickListener {
+                    ReactNativeActivity.launch(activity)
+                }
                 tvCadenceScriptVersion.setOnClickListener {
                     val currentTime = System.currentTimeMillis()
                     if (currentTime - lastClickTime <= clickThresholdTime) {
@@ -118,6 +122,7 @@ class DeveloperModePresenter(
         binding.cvDebug.setVisible(visible)
         binding.cvAccountKey.setVisible(visible && showLocalAccountKeys)
         binding.cvReloadConfig.setVisible(visible)
+        binding.cvReactNativeTest.setVisible(visible)
     }
 
     override fun bind(model: DeveloperPageModel) {

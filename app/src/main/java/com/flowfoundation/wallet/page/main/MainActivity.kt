@@ -32,6 +32,7 @@ import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
 import com.instabug.bug.BugReporting
 import com.instabug.library.Instabug
+import com.flowfoundation.wallet.page.reactnative.ReactNativeActivity
 
 class MainActivity : BaseActivity() {
 
@@ -71,7 +72,7 @@ class MainActivity : BaseActivity() {
                 firebaseInformationCheck()
             }
             contentPresenter.checkAndShowContent()
-            
+
             // Navigate to target tab if specified
             if (targetTabIndex >= 0) {
                 val targetTab = HomeTab.values().find { it.index == targetTabIndex }
@@ -154,6 +155,14 @@ class MainActivity : BaseActivity() {
                 }
                 targetTab?.let { putExtra(EXTRA_TARGET_TAB, it.index) }
             })
+        }
+
+        /**
+         * Test method to launch React Native screen
+         * TODO: Remove this method once React Native integration is properly integrated into the app flow
+         */
+        fun launchReactNative(context: Context) {
+            ReactNativeActivity.launch(context)
         }
 
         fun relaunch(context: Context, clearTop: Boolean = false) {
