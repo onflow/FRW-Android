@@ -31,6 +31,7 @@ import kotlinx.coroutines.withTimeout
 import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -215,8 +216,11 @@ object WalletManager {
                         name = chainId.toString()
                     )
                 }
+                val firebaseUserId = firebaseUid()
+                    ?: throw IllegalStateException("Firebase user ID is null - cannot create wallet data")
+                
                 account.wallet = WalletListData(
-                    id       = account.userInfo.username,         // or whatever id you use
+                    id       = firebaseUserId,
                     username = account.userInfo.username,
                     wallets  = wallets
                 )
