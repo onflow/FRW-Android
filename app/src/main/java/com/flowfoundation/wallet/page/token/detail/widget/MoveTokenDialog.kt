@@ -193,25 +193,10 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 initView()
             }
             tvMax.setOnClickListener {
-                // If balance is not loaded yet, wait for it to load
-                if ((currentToken?.tokenBalance() ?: fromBalance) == BigDecimal.ZERO) {
-                    ioScope {
-                        // Force refresh token info if balance is zero
-                        currentToken = getProvider(moveFromAddress).getTokenById(contractId)
-                        if (currentToken != null) {
-                            fromBalance = currentToken!!.tokenBalance()
-                        }
-                        uiScope {
-                            val amount = (currentToken?.tokenBalance() ?: fromBalance).toPlainString()
-                            etAmount.setText(amount)
-                            etAmount.setSelection(etAmount.text.length)
-                        }
-                    }
-                } else {
-                    val amount = (currentToken?.tokenBalance() ?: fromBalance).toPlainString()
-                    etAmount.setText(amount)
-                    etAmount.setSelection(etAmount.text.length)
-                }
+                // Max button is only visible when balance > 0, so we can safely use it
+                val amount = (currentToken?.tokenBalance() ?: fromBalance).toPlainString()
+                etAmount.setText(amount)
+                etAmount.setSelection(etAmount.text.length)
             }
             btnMove.setOnClickListener {
                 moveToken()
@@ -241,7 +226,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         tvBalance.text = ""
                         etAmount.setText("")
                         btnMove.isEnabled = false
-                        tvMax.isEnabled = false
+                        tvMax.setVisible(false)
                         // Refresh token list with new from address
                         loadTokens()
                         updateMoveFeeVisibility()
@@ -312,7 +297,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         tvBalance.text = ""
                         etAmount.setText("")
                         btnMove.isEnabled = false
-                        tvMax.isEnabled = false
+                        tvMax.setVisible(false)
                     }
                 }
             }
