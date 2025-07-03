@@ -300,8 +300,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     if (token != null) {
                         updateSelectedToken(token)
                     } else {
-                        // Enable max button even if no specific token found, balance might be available
-                        binding.tvMax.isEnabled = fromBalance > BigDecimal.ZERO
+                        // Show max button only if balance is available
+                        binding.tvMax.setVisible(fromBalance > BigDecimal.ZERO)
                     }
                 }
             } else {
