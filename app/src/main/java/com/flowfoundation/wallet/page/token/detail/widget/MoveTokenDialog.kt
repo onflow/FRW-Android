@@ -193,7 +193,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 initView()
             }
             tvMax.setOnClickListener {
-                val amount = fromBalance.format(8)
+                // Max button is only visible when balance > 0, so we can safely use it
+                val amount = (currentToken?.tokenBalance() ?: fromBalance).toPlainString()
                 etAmount.setText(amount)
                 etAmount.setSelection(etAmount.text.length)
             }
@@ -225,6 +226,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         tvBalance.text = ""
                         etAmount.setText("")
                         btnMove.isEnabled = false
+                        tvMax.setVisible(false)
                         // Refresh token list with new from address
                         loadTokens()
                         updateMoveFeeVisibility()
@@ -282,6 +284,9 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                 uiScope {
                     if (token != null) {
                         updateSelectedToken(token)
+                    } else {
+                        // Show max button only if balance is available
+                        binding.tvMax.setVisible(fromBalance > BigDecimal.ZERO)
                     }
                 }
             } else {
@@ -292,6 +297,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         tvBalance.text = ""
                         etAmount.setText("")
                         btnMove.isEnabled = false
+                        tvMax.setVisible(false)
                     }
                 }
             }
@@ -346,6 +352,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             tvBalance.text = "${token.tokenBalance().toPlainString()} ${token.symbol.uppercase()}"
             etAmount.setText("")
             btnMove.isEnabled = false
+            // Show max button only if balance is greater than 0
+            tvMax.setVisible(token.tokenBalance() > BigDecimal.ZERO)
             updateMoveFeeVisibility()
             checkAmount()
         }
@@ -449,6 +457,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
             tvBalance.text = ""
             etAmount.setText("")
             btnMove.isEnabled = false
+            // Hide max button until balance is loaded
+            tvMax.setVisible(false)
         }
         updateTokenInfo()
         updateMoveFeeVisibility()
@@ -468,6 +478,8 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                     Glide.with(binding.ivTokenIcon).load(it.tokenIcon()).into(binding.ivTokenIcon)
                 }
                 binding.tvBalance.text = Env.getApp().getString(R.string.balance_value, fromBalance.format(8))
+                // Show max button only if balance is greater than 0
+                binding.tvMax.setVisible(fromBalance > BigDecimal.ZERO)
             }
         }
     }
