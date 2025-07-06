@@ -72,4 +72,23 @@
         android:backgroundTint="@color/inaccessible_tag_background_gray"
         app:layout_constraintTop_toBottomOf="@id/name_view"
         app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:minWidth="22dp"
+        android:paddingHorizontal="6dp"
+        android:paddingVertical="1dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/bg_round_corner"
+        android:backgroundTint="@color/disable"
+        android:gravity="center"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="1"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

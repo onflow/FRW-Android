@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.cache.nftCollectionsCache
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.model.NFTContractType
 import com.flowfoundation.wallet.network.model.NftCollectionListResponse
 import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.ioScope
@@ -116,6 +117,8 @@ data class NftCollection(
     val flowIdentifier: String?,
     @SerializedName("externalURL")
     val externalURL: String?,
+    @SerializedName("contractType")
+    val contractType: String?
 ) : Parcelable {
 
     fun getNFTIdentifier(): String {
@@ -124,6 +127,10 @@ data class NftCollection(
 
     fun contractName(): String {
         return contractName ?: name
+    }
+
+    fun contractType(): NFTContractType {
+        return NFTContractType.fromString(contractType)
     }
 
     fun contractIdWithCollection() = "A.${address?.removeAddressPrefix().orEmpty()}.${contractName}.Collection"
