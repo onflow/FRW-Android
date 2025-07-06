@@ -182,6 +182,13 @@ class NftDetailPresenter(
             } else {
                 moveButton.gone()
             }
+
+            if (nft.isERC1155NFT()) {
+                groupAmount.visible()
+                tvAmount.text = activity.getString(R.string.nft_amount_items, nft.amount ?: "1")
+            } else {
+                groupAmount.gone()
+            }
         }
     }
 
