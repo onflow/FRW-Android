@@ -32,6 +32,7 @@ import com.google.gson.Gson
 import org.onflow.flow.models.TransactionStatus
 import org.web3j.abi.FunctionEncoder
 import org.web3j.abi.datatypes.Address
+import org.web3j.abi.datatypes.DynamicBytes
 import org.web3j.abi.datatypes.Function
 import org.web3j.abi.datatypes.generated.Uint256
 import org.web3j.utils.Numeric
@@ -42,10 +43,37 @@ class NftSendConfirmViewModel : ViewModel() {
 
     val resultLiveData = MutableLiveData<Boolean>()
 
+    private var currentAmount: Int = 1
+
+    private var maxAmount: Int = 1
+
     lateinit var sendModel: NftSendModel
 
-    fun bindSendModel(nft: NftSendModel) {
-        this.sendModel = nft
+    fun bindSendModel(model: NftSendModel) {
+        this.sendModel = model
+        maxAmount = model.nft.amount?.toInt()?: 1
+    }
+
+    fun setAmount(amount: Int): Int {
+        val validAmount = when {
+            amount < 1 -> 1
+            amount > maxAmount -> maxAmount
+            else -> amount
+        }
+        currentAmount = validAmount
+        return validAmount
+    }
+
+    fun getCurrentAmount(): Int {
+        return currentAmount
+    }
+
+    fun increaseAmount(): Int {
+        return setAmount(currentAmount + 1)
+    }
+
+    fun decreaseAmount(): Int {
+        return setAmount(currentAmount - 1)
     }
 
     fun load() {
@@ -91,12 +119,24 @@ class NftSendConfirmViewModel : ViewModel() {
                             }
                         } else {
                             // COA -> EOA/COA
-                            val function = Function(
-                                "safeTransferFrom",
-                                listOf(
-                                    Address(sendModel.fromAddress), Address(toAddress),
-                                    Uint256(nft.id.toBigInteger())), emptyList()
-                            )
+                            val function = if (nft.isERC1155NFT()) {
+                                Function(
+                                    "safeTransferFrom",
+                                    listOf(
+                                        Address(sendModel.fromAddress), Address(toAddress),
+                                        Uint256(nft.id.toBigInteger()),
+                                        Uint256(currentAmount.toBigInteger()),
+                                        DynamicBytes("0x".toByteArray())
+                                    ), emptyList()
+                                )
+                            } else {
+                                Function(
+                                    "safeTransferFrom",
+                                    listOf(
+                                        Address(sendModel.fromAddress), Address(toAddress),
+                                        Uint256(nft.id.toBigInteger())), emptyList()
+                                )
+                            }
                             val data = Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
                             val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)
                             if (txId.isNullOrBlank()) {
@@ -158,13 +198,24 @@ class NftSendConfirmViewModel : ViewModel() {
                             return@viewModelIOScope
                         }
                         // COA -> EOA/COA
-                        val function = Function(
-                            "safeTransferFrom",
-                            listOf(
-                                Address(sendModel.fromAddress), Address(toAddress),
-                                Uint256(nft.id.toBigInteger())
-                            ), emptyList()
-                        )
+                        val function = if (nft.isERC1155NFT()) {
+                            Function(
+                                "safeTransferFrom",
+                                listOf(
+                                    Address(sendModel.fromAddress), Address(toAddress),
+                                    Uint256(nft.id.toBigInteger()),
+                                    Uint256(currentAmount.toBigInteger()),
+                                    DynamicBytes("0x".toByteArray())
+                                ), emptyList()
+                            )
+                        } else {
+                            Function(
+                                "safeTransferFrom",
+                                listOf(
+                                    Address(sendModel.fromAddress), Address(toAddress),
+                                    Uint256(nft.id.toBigInteger())), emptyList()
+                            )
+                        }
                         val data =
                             Numeric.hexStringToByteArray(FunctionEncoder.encode(function) ?: "")
                         val txId = cadenceSendEVMTransaction(nft.getEVMAddress().orEmpty(), 0f.toBigDecimal(), data)

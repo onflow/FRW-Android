@@ -62,7 +62,11 @@ data class Nft(
     @SerializedName("flowIdentifier")
     val flowIdentifier: String?,
     @SerializedName("evmAddress")
-    val evmAddress: String?
+    val evmAddress: String?,
+    @SerializedName("contractType")
+    val contractType: String?,
+    @SerializedName("amount")
+    val amount: String?
 ) : Parcelable {
     fun uniqueId() = "${collectionName}.${contractName()}-${id}"
 
@@ -70,6 +74,10 @@ data class Nft(
 
     fun contractName(): String {
         return collectionContractName ?: flowIdentifier?.split(".", ignoreCase = true, limit = 0)?.getOrNull(2) ?: collectionName ?: ""
+    }
+
+    fun isERC1155NFT(): Boolean {
+        return NFTContractType.fromString(contractType) == NFTContractType.ERC1155
     }
 
     fun tokenId() = id

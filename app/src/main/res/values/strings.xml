@@ -770,4 +770,5 @@
     <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
     <string name="transfer_success">Transaction Success</string>
     <string name="transfer_failed">Transaction Failed</string>
+    <string name="nft_amount_items">%1$s Items</string>
 </resources>

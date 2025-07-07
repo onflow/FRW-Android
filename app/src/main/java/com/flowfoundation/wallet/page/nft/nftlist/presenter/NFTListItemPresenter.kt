@@ -44,6 +44,8 @@ class NFTListItemPresenter(
 
             view.setBackgroundResource(R.color.transparent)
             view.setPadding(0, 0, 0, 0)
+            tvAmount.setVisible(nft.isERC1155NFT())
+            tvAmount.text = nft.amount ?: "1"
         }
         view.setOnClickListener {
             NftDetailActivity.launch(context, nft.uniqueId(), nft.getCollectionContractId(), nft.contractName(), fromAddress)
