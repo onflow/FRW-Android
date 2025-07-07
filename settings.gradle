@@ -6,4 +6,4 @@ includeBuild("../node_modules/@react-native/gradle-plugin")
 
 rootProject.name = "FlowWallet"
 include ':app', ':wallet'
-project(':wallet').projectDir = new File('../../Flow-Wallet-Kit/Android/wallet')
+project(':wallet').projectDir = new File('../../android-app/Flow-Wallet-Kit/Android/wallet')
