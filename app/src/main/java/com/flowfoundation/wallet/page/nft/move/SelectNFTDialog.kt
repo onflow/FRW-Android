@@ -79,7 +79,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
 
     private fun setupFullHeight(bottomSheetDialog: BottomSheetDialog) {
         val bottomSheet =
-            bottomSheetDialog.findViewById<ViewGroup>(R.id.design_bottom_sheet)
+            bottomSheetDialog.findViewById<ViewGroup>(com.google.android.material.R.id.design_bottom_sheet)
         if (bottomSheet != null) {
             val behavior = BottomSheetBehavior.from(bottomSheet)
             behavior.state = BottomSheetBehavior.STATE_EXPANDED

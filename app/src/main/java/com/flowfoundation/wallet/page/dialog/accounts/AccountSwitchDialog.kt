@@ -72,7 +72,7 @@ class AccountSwitchDialog : BottomSheetDialogFragment() {
         }
         binding.tvViewMore.setOnClickListener {
             logd("AccountSwitchDialog", "View more clicked")
-            (dialog as BottomSheetDialog?)?.findViewById<View>(R.id.design_bottom_sheet)?.let { dialog ->
+            (dialog as BottomSheetDialog?)?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.let { dialog ->
                 val behavior = BottomSheetBehavior.from(dialog)
                 behavior.state = BottomSheetBehavior.STATE_EXPANDED
                 val displayMetrics = DisplayMetrics()
@@ -123,7 +123,7 @@ class AccountSwitchDialog : BottomSheetDialogFragment() {
     }
 
     private fun initDialogHeight() {
-        (dialog as BottomSheetDialog?)?.findViewById<View>(R.id.design_bottom_sheet)?.let { dialog ->
+        (dialog as BottomSheetDialog?)?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)?.let { dialog ->
             if (adapter.itemCount < 3) {
                 dialog.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
                 binding.recyclerView.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT

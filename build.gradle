@@ -6,7 +6,7 @@ buildscript {
         maven { url 'https://jitpack.io' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.7.3'
+        classpath 'com.android.tools.build:gradle:8.1.0'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.25'
         classpath 'com.google.gms:google-services:4.4.2'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.2'
@@ -20,9 +20,44 @@ plugins {
     id 'com.facebook.react' version '0.75.5' apply false
 }
 
-// Set NDK version for all subprojects (especially React Native Reanimated)
+
+// Set NDK version and SDK versions for all subprojects
 ext {
     ndkVersion = "26.1.10909125"
+    compileSdkVersion = 34
+    targetSdkVersion = 34
+    minSdkVersion = 26
+    buildToolsVersion = "34.0.0"
+}
+
+// Configure all subprojects to use the same SDK versions
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileSdkVersion rootProject.ext.compileSdkVersion
+                buildToolsVersion rootProject.ext.buildToolsVersion
+                
+                defaultConfig {
+                    minSdkVersion rootProject.ext.minSdkVersion
+                    targetSdkVersion rootProject.ext.targetSdkVersion
+                }
+            }
+        }
+        
+        // Configure Node.js path for react-native libraries
+        project.tasks.withType(Exec) { task ->
+            if (task.commandLine.contains('node')) {
+                def commandList = task.commandLine as List
+                def nodeIndex = commandList.indexOf('node')
+                if (nodeIndex >= 0) {
+                    commandList[nodeIndex] = '/usr/local/bin/node'
+                    task.commandLine = commandList
+                    println "Updated Node.js path for task: ${task.name} in project: ${project.name}"
+                }
+            }
+        }
+    }
 }
 
 allprojects {
