@@ -20,6 +20,11 @@ plugins {
     id 'com.facebook.react' version '0.75.5' apply false
 }
 
+// Set NDK version for all subprojects (especially React Native Reanimated)
+ext {
+    ndkVersion = "26.1.10909125"
+}
+
 allprojects {
     repositories {
         google()
