@@ -15,6 +15,10 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.secret.aesDecrypt
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.flowfoundation.wallet.wallet.Wallet
+import java.io.File
+import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flow.wallet.keys.SeedPhraseKey
+import com.flow.wallet.storage.FileSystemStorage
 
 
 private const val TAG = "GoogleDriveUtils"
@@ -59,14 +63,75 @@ fun uploadMnemonicToGoogleDrive(driveService: Drive, password: String) {
 @WorkerThread
 fun restoreMnemonicFromGoogleDrive(driveService: Drive) {
     try {
-        logd(TAG, "restoreMnemonicFromGoogleDrive")
+        logd(TAG, "restoreMnemonicFromGoogleDrive - Starting restore process")
+        
+        // Get existing data from Google Drive
         val data = existingData(driveService)
+        
+        if (data.isEmpty()) {
+            loge(TAG, "No backup data found in Google Drive")
+            sendRestoreCallback(false, "No backup found")
+            return
+        }
+        
+        logd(TAG, "Found ${data.size} backup entries in Google Drive")
+        
+        // Create fresh backup crypto providers for each restored mnemonic (like Dropbox does)
+        val validatedData = data.mapNotNull { driveItem ->
+            try {
+                // Test decryption and crypto provider creation
+                val decryptedMnemonic = aesDecrypt(AES_KEY, message = driveItem.data)
+                if (decryptedMnemonic.isNotBlank()) {
+                    
+                    // Create fresh BackupCryptoProvider like Dropbox does
+                    val baseDir = File(Env.getApp().filesDir, "wallet")
+                    val storage = FileSystemStorage(baseDir)
+                    val seedPhraseKey = SeedPhraseKey(
+                        mnemonicString = decryptedMnemonic,
+                        passphrase = "",
+                        derivationPath = "m/44'/539'/0'/0/0",
+                        keyPair = null,
+                        storage = storage
+                    )
+                    
+                    // Validate the crypto provider can be created successfully
+                    val testProvider = BackupCryptoProvider(seedPhraseKey)
+                    val testPublicKey = testProvider.getPublicKey()
+                    
+                    if (testPublicKey.isNotBlank() && testPublicKey != "0x" && testPublicKey.length >= 64) {
+                        logd(TAG, "Successfully validated backup for user: ${driveItem.username}")
+                        driveItem
+                    } else {
+                        loge(TAG, "Invalid crypto provider for user ${driveItem.username}: empty or invalid public key")
+                        null
+                    }
+                } else {
+                    loge(TAG, "Failed to decrypt backup for user ${driveItem.username}")
+                    null
+                }
+            } catch (e: Exception) {
+                loge(TAG, "Failed to validate backup for user ${driveItem.username}: ${e.message}")
+                null
+            }
+        }
+        
+        if (validatedData.isEmpty()) {
+            loge(TAG, "No valid backups found - all entries failed crypto provider validation")
+            sendRestoreCallback(false, "All backup data corrupted or incompatible")
+            return
+        }
+        
         LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
-            putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
+            putParcelableArrayListExtra(EXTRA_CONTENT, validatedData.toCollection(ArrayList()))
+            putExtra(EXTRA_SUCCESS, true)
         })
+        
+        logd(TAG, "Google Drive restore completed successfully with ${validatedData.size} valid backups")
+        
     } catch (e: Exception) {
+        loge(TAG, "Google Drive restore failed with exception: ${e.message}")
         loge(e)
-        sendCallback(false)
+        sendRestoreCallback(false, "Restore failed: ${e.message}")
         throw e
     }
 }
@@ -149,5 +214,14 @@ private fun sendCallback(isSuccess: Boolean) {
 private fun sendDeleteCallback(isSuccess: Boolean) {
     LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_DELETE_FINISH).apply {
         putExtra(EXTRA_SUCCESS, isSuccess)
+    })
+}
+
+private fun sendRestoreCallback(isSuccess: Boolean, errorMessage: String? = null) {
+    LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
+        putExtra(EXTRA_SUCCESS, isSuccess)
+        if (!isSuccess && errorMessage != null) {
+            putExtra("error_message", errorMessage)
+        }
     })
 }

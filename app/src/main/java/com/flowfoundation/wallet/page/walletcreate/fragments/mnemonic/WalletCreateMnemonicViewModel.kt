@@ -35,8 +35,6 @@ class WalletCreateMnemonicViewModel : ViewModel() {
                 }
                 mnemonicList.value = result
             }
-
-            logd("Mnemonic", mnemonic)
         }
     }
 
