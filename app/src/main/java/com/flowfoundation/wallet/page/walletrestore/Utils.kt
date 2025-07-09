@@ -49,65 +49,122 @@ fun requestWalletRestoreLogin(
     callback: (isSuccess: Boolean, reason: Int?) -> Unit
 ) {
     ioScope {
-        val baseDir = File(Env.getApp().filesDir, "wallet")
-        val seedPhraseKey = SeedPhraseKey(
-            mnemonicString = mnemonic,
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = FileSystemStorage(baseDir)
-        )
-        val cryptoProvider = HDWalletCryptoProvider(seedPhraseKey)
-        getFirebaseUid { uid ->
-            if (uid.isNullOrBlank()) {
-                callback.invoke(false, ERROR_UID)
-                return@getFirebaseUid
+        try {
+            // Validate mnemonic format first
+            if (mnemonic.isBlank()) {
+                loge(TAG, "Empty mnemonic provided to requestWalletRestoreLogin")
+                callback.invoke(false, ERROR_NETWORK)
+                return@ioScope
             }
-            runBlocking {
-                val catching = runCatching {
-                    val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
-                    val service = retrofit().create(ApiService::class.java)
-                    val resp = service.login(
-                        LoginRequest(
-                            signature = cryptoProvider.getUserSignature(
-                                getFirebaseJwt()
-                            ),
-                            accountKey = AccountKey(
-                                publicKey = cryptoProvider.getPublicKey(),
-                                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                            ),
-                            deviceInfo = deviceInfoRequest
-                        )
-                    )
-                    if (resp.data?.customToken.isNullOrBlank()) {
-                        if (resp.status == 404) {
-                            callback.invoke(false, ERROR_ACCOUNT_NOT_FOUND)
-                        } else {
-                            callback.invoke(false, ERROR_CUSTOM_TOKEN)
+            
+            val words = mnemonic.trim().split("\\s+".toRegex())
+            if (words.size != 12 && words.size != 15 && words.size != 24) {
+                loge(TAG, "Invalid mnemonic word count: ${words.size}")
+                callback.invoke(false, ERROR_NETWORK)
+                return@ioScope
+            }
+            
+            logd(TAG, "Creating crypto provider for Google Drive restore with ${words.size} word mnemonic")
+            
+            val baseDir = File(Env.getApp().filesDir, "wallet")
+            val seedPhraseKey = SeedPhraseKey(
+                mnemonicString = mnemonic,
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = FileSystemStorage(baseDir)
+            )
+            
+            // Create and validate HDWalletCryptoProvider
+            val cryptoProvider = HDWalletCryptoProvider(seedPhraseKey)
+            
+            // Validate the crypto provider before attempting to use it
+            val publicKey = try {
+                cryptoProvider.getPublicKey()
+            } catch (e: Exception) {
+                loge(TAG, "Failed to get public key from HDWalletCryptoProvider: ${e.message}")
+                callback.invoke(false, ERROR_NETWORK)
+                return@ioScope
+            }
+            
+            if (publicKey.isBlank() || publicKey == "0x" || publicKey.length < 64) {
+                loge(TAG, "Invalid public key from crypto provider: $publicKey")
+                callback.invoke(false, ERROR_NETWORK)
+                return@ioScope
+            }
+            
+            logd(TAG, "HDWalletCryptoProvider created successfully with public key: ${publicKey.take(20)}...")
+            
+            getFirebaseUid { uid ->
+                if (uid.isNullOrBlank()) {
+                    callback.invoke(false, ERROR_UID)
+                    return@getFirebaseUid
+                }
+                runBlocking {
+                    val catching = runCatching {
+                        val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+                        val service = retrofit().create(ApiService::class.java)
+                        
+                        // Test signature creation before making the request
+                        val testSignature = try {
+                            val jwt = getFirebaseJwt()
+                            cryptoProvider.getUserSignature(jwt)
+                        } catch (e: Exception) {
+                            loge(TAG, "Failed to create test signature: ${e.message}")
+                            throw RuntimeException("Crypto provider signature creation failed: ${e.message}")
                         }
-                    } else {
-                        firebaseLogin(resp.data?.customToken!!) { isSuccess ->
-                            if (isSuccess) {
-                                setRegistered()
-                                Wallet.store().reset(mnemonic)
-                                ioScope {
-                                    AccountManager.add(Account(userInfo = service.userInfo().data))
-                                    clearUserCache()
-                                    callback.invoke(true, null)
-                                }
+                        
+                        if (testSignature.isBlank()) {
+                            throw RuntimeException("Crypto provider returned empty signature")
+                        }
+                        
+                        logd(TAG, "Test signature created successfully")
+                        
+                        val resp = service.login(
+                            LoginRequest(
+                                signature = testSignature,
+                                accountKey = AccountKey(
+                                    publicKey = cryptoProvider.getPublicKey(),
+                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                                ),
+                                deviceInfo = deviceInfoRequest
+                            )
+                        )
+                        if (resp.data?.customToken.isNullOrBlank()) {
+                            if (resp.status == 404) {
+                                callback.invoke(false, ERROR_ACCOUNT_NOT_FOUND)
                             } else {
-                                callback.invoke(false, ERROR_FIREBASE_SIGN_IN)
+                                callback.invoke(false, ERROR_CUSTOM_TOKEN)
+                            }
+                        } else {
+                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                                if (isSuccess) {
+                                    setRegistered()
+                                    Wallet.store().reset(mnemonic)
+                                    ioScope {
+                                        AccountManager.add(Account(userInfo = service.userInfo().data))
+                                        clearUserCache()
+                                        callback.invoke(true, null)
+                                    }
+                                } else {
+                                    callback.invoke(false, ERROR_FIREBASE_SIGN_IN)
+                                }
                             }
                         }
                     }
-                }
 
-                if (catching.isFailure) {
-                    loge(catching.exceptionOrNull())
-                    callback.invoke(false, ERROR_NETWORK)
+                    if (catching.isFailure) {
+                        loge(TAG, "Login request failed: ${catching.exceptionOrNull()?.message}")
+                        loge(catching.exceptionOrNull())
+                        callback.invoke(false, ERROR_NETWORK)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            loge(TAG, "requestWalletRestoreLogin failed: ${e.message}")
+            loge(e)
+            callback.invoke(false, ERROR_NETWORK)
         }
     }
 }
