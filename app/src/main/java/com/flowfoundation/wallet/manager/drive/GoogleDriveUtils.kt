@@ -67,7 +67,6 @@ fun restoreMnemonicFromGoogleDrive(driveService: Drive) {
         })
     } catch (e: Exception) {
         loge(e)
-        sendRestoreCallback(false, "Restore failed: ${e.message}")
         throw e
     }
 }
@@ -150,14 +149,5 @@ private fun sendCallback(isSuccess: Boolean) {
 private fun sendDeleteCallback(isSuccess: Boolean) {
     LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_DELETE_FINISH).apply {
         putExtra(EXTRA_SUCCESS, isSuccess)
-    })
-}
-
-private fun sendRestoreCallback(isSuccess: Boolean, errorMessage: String? = null) {
-    LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
-        putExtra(EXTRA_SUCCESS, isSuccess)
-        if (!isSuccess && errorMessage != null) {
-            putExtra("error_message", errorMessage)
-        }
     })
 }
