@@ -561,7 +561,7 @@ object EVMWalletManager {
     }
 
     private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
-        callback.invoke(true)
+        // Create and register the transaction state for bubble monitoring
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
@@ -571,6 +571,18 @@ object EVMWalletManager {
         )
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
+
+        // Monitor transaction completion and call callback with actual result
+        TransactionStateWatcher(txId).watch { result ->
+            when {
+                result.isExecuteFinished() -> {
+                    callback(true)
+                }
+                result.isFailed() -> {
+                    callback(false)
+                }
+            }
+        }
     }
 
     private suspend inline fun executeNFTTransaction(
