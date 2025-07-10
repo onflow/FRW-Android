@@ -5,16 +5,17 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.flowfoundation.wallet.firebase.auth.deleteAnonymousUser
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
+import com.flowfoundation.wallet.network.generatePrefix
 import com.flowfoundation.wallet.network.model.AccountKey
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.retrofit
@@ -26,6 +27,7 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.utils.Env
+import org.onflow.flow.models.hexToBytes
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -87,6 +89,7 @@ private fun createSeedPhraseKeyWithKeyPair(mnemonic: String, storage: FileSystem
     }
 }
 
+@OptIn(ExperimentalStdlibApi::class)
 fun requestWalletRestoreLogin(
     mnemonic: String,
     callback: (isSuccess: Boolean, reason: Int?) -> Unit
@@ -189,12 +192,52 @@ fun requestWalletRestoreLogin(
                                     setRegistered()
                                     Wallet.store().reset(mnemonic)
                                     ioScope {
-                                        AccountManager.add(Account(userInfo = service.userInfo().data))
+                                        val userInfo = service.userInfo().data
+                                        
+                                        // Generate prefix for this account (like multi-restore)
+                                        val prefix = generatePrefix(userInfo.username)
+                                        logd(TAG, "Generated prefix for Google Drive restore: $prefix")
+                                        
+                                        // Store the mnemonic-derived private key using the prefix pattern
+                                        // This allows CryptoProviderManager to find it later
+                                        try {
+                                            val baseDir = File(Env.getApp().filesDir, "wallet")
+                                            val storage = FileSystemStorage(baseDir)
+                                            val keyId = "prefix_key_$prefix"
+                                            
+                                            // Extract private key from our seedPhraseKey and store it with prefi
+                                            val privateKeyHex = seedPhraseKey.privateKey(cryptoProvider.getSignatureAlgorithm())?.toHexString()
+                                            if (privateKeyHex.isNullOrBlank()) {
+                                                throw RuntimeException("Failed to extract private key for storage")
+                                            }
+                                            
+                                            // Create and store a PrivateKey instance for prefix-based access
+                                            val privateKey = com.flow.wallet.keys.PrivateKey.create(storage)
+                                            privateKey.importPrivateKey(privateKeyHex.removePrefix("0x").hexToBytes(), com.flow.wallet.keys.KeyFormat.RAW)
+                                            privateKey.store(keyId, prefix)
+                                            
+                                            logd(TAG, "Stored private key with prefix: $keyId")
+                                            
+                                            // Create account with prefix (like multi-restore)
+                                            AccountManager.add(
+                                                Account(
+                                                    userInfo = userInfo,
+                                                    prefix = prefix
+                                                ),
+                                                firebaseUid()
+                                            )
+                                            
+                                            logd(TAG, "Successfully created account with prefix: $prefix")
+                                        } catch (e: Exception) {
+                                            loge(TAG, "Failed to store key with prefix: ${e.message}")
+                                            // Fallback to basic account creation
+                                            AccountManager.add(Account(userInfo = userInfo))
+                                        }
+                                        
                                         clearUserCache()
                                         callback.invoke(true, null)
                                     }
                                 } else {
-                                    // Clean up temporary directory on Firebase login failure
                                     callback.invoke(false, ERROR_FIREBASE_SIGN_IN)
                                 }
                             }
