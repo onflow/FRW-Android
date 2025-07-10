@@ -20,6 +20,9 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -217,12 +220,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         moveNFTFromChildToParent(fromAddress, it) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
+                                // Remove duplicate toast - TransactionStateManager will handle it
                                 if (isSuccess) {
-                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
@@ -232,9 +234,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -244,9 +245,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -258,9 +258,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -270,9 +269,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -284,9 +282,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -296,9 +293,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -440,13 +436,15 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         pushBubbleStack(transactionState)
 
         // Monitor transaction completion and call callback with actual result
-        TransactionStateWatcher(txId).watch { result ->
-            when {
-                result.isExecuteFinished() -> {
-                    callback(true)
-                }
-                result.isFailed() -> {
-                    callback(false)
+        ioScope {
+            TransactionStateWatcher(txId).watch { result ->
+                when {
+                    result.isExecuteFinished() -> {
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        callback(false)
+                    }
                 }
             }
         }

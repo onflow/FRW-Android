@@ -573,13 +573,15 @@ object EVMWalletManager {
         pushBubbleStack(transactionState)
 
         // Monitor transaction completion and call callback with actual result
-        TransactionStateWatcher(txId).watch { result ->
-            when {
-                result.isExecuteFinished() -> {
-                    callback(true)
-                }
-                result.isFailed() -> {
-                    callback(false)
+        ioScope {
+            TransactionStateWatcher(txId).watch { result ->
+                when {
+                    result.isExecuteFinished() -> {
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        callback(false)
+                    }
                 }
             }
         }
