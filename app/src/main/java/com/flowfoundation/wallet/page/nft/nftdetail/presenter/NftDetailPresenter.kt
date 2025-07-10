@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -25,21 +24,17 @@ import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.nft.move.MoveNFTDialog
 import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
-import com.flowfoundation.wallet.page.nft.nftdetail.shareNft
 import com.flowfoundation.wallet.page.nft.nftdetail.widget.NftMorePopupMenu
 import com.flowfoundation.wallet.page.nft.nftlist.desc
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.isDomain
-import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.title
-import com.flowfoundation.wallet.page.nft.nftlist.utils.NftFavoriteManager
 import com.flowfoundation.wallet.page.nft.nftlist.video
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.send.nft.NftSendAddressDialog
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.downloadToGallery
 import com.flowfoundation.wallet.utils.exoplayer.createExoPlayer
-import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.res2color
@@ -47,12 +42,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
-import com.flowfoundation.wallet.utils.shareFile
 import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.widgets.ProgressDialog
-import com.flowfoundation.wallet.widgets.likebutton.LikeButton
-import com.flowfoundation.wallet.widgets.likebutton.OnLikeListener
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -98,18 +88,6 @@ class NftDetailPresenter(
         setupToolbar()
         with(binding) {
             toolbar.addStatusBarTopPadding()
-            collectButton.setOnLikeListener(object : OnLikeListener {
-                override fun liked(likeButton: LikeButton?) {
-                    val nft = nft ?: return
-                    toggleNftSelection(nft)
-                }
-
-                override fun unLiked(likeButton: LikeButton?) {
-                    val nft = nft ?: return
-                    toggleNftSelection(nft)
-                }
-            })
-
             backgroundImage.layoutParams.height = ScreenUtils.getScreenHeight()
             backgroundGradient.layoutParams.height = ScreenUtils.getScreenHeight()
 
@@ -127,8 +105,6 @@ class NftDetailPresenter(
                         mediaUrl.downloadToGallery(downloadLauncher)
                     }).show() }
             }
-            collectButton.setLikeDrawableTint(pageColor)
-            shareButton.setOnClickListener { showShareNft() }
             sendButton.setOnClickListener {
                 val uniqueId = nft?.uniqueId() ?: return@setOnClickListener
                 NftSendAddressDialog.newInstance(uniqueId, fromAddress ?: WalletManager
@@ -144,33 +120,6 @@ class NftDetailPresenter(
                     } else {
                         EnableEVMActivity.launch(activity)
                     }
-                }
-            }
-            val shareLayoutParams = (shareButtonWrapper.layoutParams as ConstraintLayout.LayoutParams).apply {
-                marginEnd = if (WalletManager.isChildAccountSelected()) {
-                    18.dp2px().toInt()
-                } else {
-                    74.dp2px().toInt()
-                }
-            }
-            collectButton.setVisible(WalletManager.isChildAccountSelected().not())
-            shareButtonWrapper.layoutParams = shareLayoutParams
-        }
-    }
-
-    private fun showShareNft() {
-        nft?.let {
-            if (NftCollectionConfig.get(it.collectionAddress, it.contractName()) != null) {
-                val dialog = ProgressDialog(activity)
-                dialog.show()
-                shareNft(binding.shareScreenshotWrapper, it) { file ->
-                    dialog.dismiss()
-                    activity.shareFile(
-                        file,
-                        title = "Nft share",
-                        text = it.name().orEmpty(),
-                        type = "image/*"
-                    )
                 }
             }
         }
@@ -194,8 +143,6 @@ class NftDetailPresenter(
             val name = config?.name ?: nft.contractName()
             val title = "$name #${nft.id}"
             toolbar.title = title
-
-            ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }
 
             bindCover(nft)
             Glide.with(backgroundImage).load(nft.getNFTCover())
@@ -221,8 +168,6 @@ class NftDetailPresenter(
             collectionWrapper.setOnClickListener {
                 CollectionActivity.launch(activity, config?.id.orEmpty(), nft.contractName())
             }
-
-            ioScope { updateSelectionState(NftFavoriteManager.isFavoriteNft(nft)) }
 
             sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
             if (nft.canBridgeToFlow() || nft.canBridgeToEVM() || WalletManager
@@ -320,28 +265,6 @@ class NftDetailPresenter(
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         activity.supportActionBar?.setDisplayShowHomeEnabled(true)
         activity.title = ""
-    }
-
-    private fun updateSelectionState(isSelected: Boolean) {
-        uiScope {
-            with(binding.collectButton) {
-                isLiked = isSelected
-                setUnLikeDrawableTint(pageColor)
-                setCircleStartColorInt(pageColor)
-            }
-        }
-    }
-
-    private fun toggleNftSelection(nft: Nft) {
-        ioScope {
-            if (NftFavoriteManager.isFavoriteNft(nft)) {
-                NftFavoriteManager.removeFavorite(nft.contractName(), nft.tokenId())
-                updateSelectionState(false)
-            } else {
-                NftFavoriteManager.addFavorite(nft)
-                updateSelectionState(true)
-            }
-        }
     }
 
     private fun ActivityNftDetailBinding.updateToolbarColor(scrollY: Int) {
