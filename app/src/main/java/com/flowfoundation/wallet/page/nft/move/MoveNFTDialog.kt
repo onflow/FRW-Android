@@ -28,13 +28,13 @@ import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.page.main.HomeTab
+import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -43,12 +43,8 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.flowfoundation.wallet.widgets.ProgressDialog
-import kotlinx.coroutines.delay
 import org.onflow.flow.models.TransactionStatus
 
 

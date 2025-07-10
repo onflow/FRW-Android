@@ -476,7 +476,6 @@ object TransactionStateManager {
         return result
     }
 
-    private fun Int.isProcessing() = this < TransactionStatus.FINALIZED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 }
 
 interface OnTransactionStateChange {
@@ -582,9 +581,6 @@ data class TransactionState(
         val executionResolved = execution == "success" || execution == "failure"
         val expired = isExpired()
         val result = notProcessing && (executionResolved || expired)
-        
-        // Debug logging
-        android.util.Log.d("TransactionState", "isCompletelyFinished() for $transactionId: state=$state, execution='$execution', notProcessing=$notProcessing, executionResolved=$executionResolved, expired=$expired, result=$result")
         
         return result
     }

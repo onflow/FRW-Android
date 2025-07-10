@@ -31,7 +31,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior

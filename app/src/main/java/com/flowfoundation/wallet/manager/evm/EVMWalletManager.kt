@@ -406,7 +406,7 @@ object EVMWalletManager {
         )
     }
 
-    suspend fun transferToken(token: FungibleToken, toAddress: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
+    private suspend fun transferToken(token: FungibleToken, toAddress: String, amount: BigDecimal, callback: (isSuccess: Boolean) -> Unit) {
         executeTransaction(
             action = { cadenceTransferToken(token, toAddress, amount.toDouble()) },
             operationName = "transfer token",
@@ -476,9 +476,9 @@ object EVMWalletManager {
         crossinline callback: (Boolean) -> Unit
     ) {
         try {
-            android.util.Log.d("EVMWalletManager", "executeTransaction starting: $operationName")
+            logd("EVMWalletManager", "executeTransaction starting: $operationName")
             val txId = action()
-            android.util.Log.d("EVMWalletManager", "executeTransaction got txId: $txId for $operationName")
+            logd("EVMWalletManager", "executeTransaction got txId: $txId for $operationName")
             
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
@@ -517,7 +517,7 @@ object EVMWalletManager {
                 operationName // Fallback to operation name for non-coin transactions
             }
             
-            android.util.Log.d("EVMWalletManager", "Creating TransactionState for $operationName with type $transactionType")
+            logd("EVMWalletManager", "Creating TransactionState for $operationName with type $transactionType")
             val transactionState = TransactionState(
                 transactionId = txId,
                 time = System.currentTimeMillis(),
@@ -526,7 +526,7 @@ object EVMWalletManager {
                 data = transactionData,
             )
             TransactionStateManager.newTransaction(transactionState)
-            android.util.Log.d("EVMWalletManager", "Calling pushBubbleStack for txId: $txId")
+            logd("EVMWalletManager", "Calling pushBubbleStack for txId: $txId")
             pushBubbleStack(transactionState)
 
             // Monitor transaction completion in the background
@@ -534,7 +534,7 @@ object EVMWalletManager {
                 when {
                     result.isExecuteFinished() -> {
                         logd(TAG, "$operationName success")
-                        android.util.Log.d("EVMWalletManager", "Transaction $txId finished successfully")
+                        logd("EVMWalletManager", "Transaction $txId finished successfully")
                         
                         // Update token list and trigger navigation for token operations
                         if (operationName.contains("fund") || operationName.contains("withdraw") || 
@@ -548,14 +548,13 @@ object EVMWalletManager {
                     }
                     result.isFailed() -> {
                         logd(TAG, "$operationName failed")
-                        android.util.Log.d("EVMWalletManager", "Transaction $txId failed")
+                        logd("EVMWalletManager", "Transaction $txId failed")
                         callback(false)
                     }
                 }
             }
         } catch (e: Exception) {
             logd(TAG, "$operationName failed :: ${e.message}")
-            android.util.Log.e("EVMWalletManager", "executeTransaction exception for $operationName", e)
             callback(false)
         }
     }
@@ -593,9 +592,9 @@ object EVMWalletManager {
         crossinline callback: (Boolean) -> Unit
     ) {
         try {
-            android.util.Log.d("EVMWalletManager", "executeNFTTransaction starting: $operationName")
+            logd("EVMWalletManager", "executeNFTTransaction starting: $operationName")
             val txId = action()
-            android.util.Log.d("EVMWalletManager", "executeNFTTransaction got txId: $txId for $operationName")
+            logd("EVMWalletManager", "executeNFTTransaction got txId: $txId for $operationName")
             
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
@@ -607,7 +606,7 @@ object EVMWalletManager {
             // Add transaction to mini window (bubble stack) immediately
             val transactionType = TransactionState.TYPE_MOVE_NFT
             
-            android.util.Log.d("EVMWalletManager", "Creating TransactionState for $operationName with type $transactionType")
+            logd("EVMWalletManager", "Creating TransactionState for $operationName with type $transactionType")
             val transactionState = TransactionState(
                 transactionId = txId,
                 time = System.currentTimeMillis(),
@@ -616,7 +615,7 @@ object EVMWalletManager {
                 data = operationName, // Store operation name for NFT operations
             )
             TransactionStateManager.newTransaction(transactionState)
-            android.util.Log.d("EVMWalletManager", "Calling pushBubbleStack for txId: $txId")
+            logd("EVMWalletManager", "Calling pushBubbleStack for txId: $txId")
             pushBubbleStack(transactionState)
 
             // Monitor transaction completion in the background
@@ -624,19 +623,18 @@ object EVMWalletManager {
                 when {
                     result.isExecuteFinished() -> {
                         logd(TAG, "$operationName success")
-                        android.util.Log.d("EVMWalletManager", "Transaction $txId finished successfully")
+                        logd("EVMWalletManager", "Transaction $txId finished successfully")
                         callback(true)
                     }
                     result.isFailed() -> {
                         logd(TAG, "$operationName failed")
-                        android.util.Log.d("EVMWalletManager", "Transaction $txId failed")
+                        logd("EVMWalletManager", "Transaction $txId failed")
                         callback(false)
                     }
                 }
             }
         } catch (e: Exception) {
             logd(TAG, "$operationName failed :: ${e.message}")
-            android.util.Log.e("EVMWalletManager", "executeNFTTransaction exception for $operationName", e)
             callback(false)
         }
     }
