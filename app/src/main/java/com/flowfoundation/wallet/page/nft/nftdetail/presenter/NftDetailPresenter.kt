@@ -175,9 +175,18 @@ class NftDetailPresenter(
             ioScope { updateSelectionState() }
 
             sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
-            if (nft.canBridgeToFlow() || nft.canBridgeToEVM() || WalletManager
-                    .isChildAccountSelected() || WalletManager.haveChildAccount()
-            ) {
+            
+            val canBridgeToFlow = nft.canBridgeToFlow()
+            val canBridgeToEVM = nft.canBridgeToEVM()
+            val isChildAccountSelected = WalletManager.isChildAccountSelected()
+            val haveChildAccount = WalletManager.haveChildAccount()
+            val hasFlowIdentifier = !nft.flowIdentifier.isNullOrBlank()
+            
+            // Require flowIdentifier for any bridge transfer functionality
+            val bridgeCapable = hasFlowIdentifier && (canBridgeToFlow || canBridgeToEVM)
+            val shouldShowMoveButton = bridgeCapable || isChildAccountSelected || haveChildAccount
+            
+            if (shouldShowMoveButton) {
                 moveButton.visible()
             } else {
                 moveButton.gone()
