@@ -103,8 +103,8 @@ object TransactionStateManager {
 
     fun getLastVisibleTransaction(): TransactionState? { // update to use final?
         return stateData.data.toList().firstOrNull {
-            (it.state < TransactionStatus.FINALIZED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
-                    || (it.state == TransactionStatus.FINALIZED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)
+            (it.state < TransactionStatus.EXECUTED.ordinal && it.state > TransactionStatus.UNKNOWN.ordinal)
+                    || (it.state == TransactionStatus.EXECUTED.ordinal && abs(it.updateTime - System.currentTimeMillis()) < 5000)
         }
     }
 
@@ -393,7 +393,7 @@ object TransactionStateManager {
         return result
     }
 
-    private fun Int.isProcessing() = this < TransactionStatus.FINALIZED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
+    private fun Int.isProcessing() = this < TransactionStatus.EXECUTED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 }
 
 interface OnTransactionStateChange {
@@ -467,7 +467,7 @@ data class TransactionState(
 
     fun contact() = if (type == TYPE_TRANSFER_COIN) coinData().target else nftData().target
 
-    fun isSuccess() = state >= TransactionStatus.FINALIZED.ordinal && errorMsg.isNullOrBlank()
+    fun isSuccess() = state >= TransactionStatus.EXECUTED.ordinal && errorMsg.isNullOrBlank()
 
     fun isFailed(): Boolean {
         if (isProcessing()) {
@@ -479,7 +479,7 @@ data class TransactionState(
         return !errorMsg.isNullOrBlank()
     }
 
-    fun isProcessing() = state < TransactionStatus.FINALIZED.ordinal
+    fun isProcessing() = state < TransactionStatus.EXECUTED.ordinal
 
     private fun isExpired() = state == TransactionStatus.EXPIRED.ordinal
 
@@ -494,7 +494,6 @@ data class TransactionState(
     fun progress(): Float {
         return when (state) {
             TransactionStatus.UNKNOWN.ordinal, TransactionStatus.PENDING.ordinal -> 0.25f
-            TransactionStatus.FINALIZED.ordinal -> 1.0f
             TransactionStatus.EXECUTED.ordinal -> 1.0f
             TransactionStatus.SEALED.ordinal-> 1.0f
             else -> 0.0f

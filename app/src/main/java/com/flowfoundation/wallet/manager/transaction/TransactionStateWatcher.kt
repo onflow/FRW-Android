@@ -70,7 +70,7 @@ class TransactionStateWatcher(
     }
 
     private fun TransactionResult.isSuccess(): Boolean {
-        return status != null && status!!.ordinal >= TransactionStatus.FINALIZED.ordinal && errorMessage.isBlank()
+        return status != null && status!!.ordinal >= TransactionStatus.EXECUTED.ordinal && errorMessage.isBlank()
     }
 
 }

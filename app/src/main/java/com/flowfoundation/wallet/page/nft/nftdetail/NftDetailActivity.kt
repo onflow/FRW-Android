@@ -116,7 +116,7 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         
         if (transaction.type == TransactionState.TYPE_TRANSFER_NFT || transaction.type == TransactionState.TYPE_NFT || transaction.type == TransactionState.TYPE_MOVE_NFT) {
             // Check if transaction is either processing, finalized, executed, or sealed
-            if (!hasNavigatedBack && (transaction.isProcessing() || transaction.isFinalized() || transaction.isExecuted() || transaction.isSealed())) {
+            if (!hasNavigatedBack && (transaction.isProcessing() || transaction.isExecuted() || transaction.isSealed())) {
                 hasNavigatedBack = true
                 
                 // Navigate back to the collection page instead of the home tab
@@ -126,7 +126,6 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
         }
     }
 
-    private fun TransactionState.isFinalized(): Boolean = state == TransactionStatus.FINALIZED.ordinal
     private fun TransactionState.isExecuted(): Boolean = state == TransactionStatus.EXECUTED.ordinal
     private fun TransactionState.isSealed(): Boolean = state == TransactionStatus.SEALED.ordinal
 
