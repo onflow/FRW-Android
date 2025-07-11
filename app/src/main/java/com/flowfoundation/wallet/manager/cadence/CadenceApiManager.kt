@@ -211,12 +211,7 @@ object CadenceApiManager {
     }
 
     fun getCadenceAccountScript(method: String): String {
-        val script = getCadenceScript()?.account?.get(method)?.decodeBase64()?.utf8()
-        if (script.isNullOrBlank()) {
-            loge(TAG, "Failed to get account script for method: $method, falling back to assets")
-            return getFallbackScriptFromAssets(method, "account")
-        }
-        return script
+        return getCadenceScript()?.account?.get(method)?.decodeBase64()?.utf8() ?: ""
     }
 
     fun getCadenceCollectionScript(method: String): String {
@@ -238,7 +233,12 @@ object CadenceApiManager {
     }
 
     fun getCadenceContractScript(method: String): String {
-        return getCadenceScript()?.contract?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.contract?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get contract script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "contract")
+        }
+        return script
     }
 
     fun getCadenceDomainScript(method: String): String {
@@ -246,31 +246,66 @@ object CadenceApiManager {
     }
 
     fun getCadenceHybridCustodyScript(method: String): String {
-        return getCadenceScript()?.hybridCustody?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.hybridCustody?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get hybridCustody script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "hybridCustody")
+        }
+        return script
     }
 
     fun getCadenceStakingScript(method: String): String {
-        return getCadenceScript()?.staking?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.staking?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get staking script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "staking")
+        }
+        return script
     }
 
     fun getCadenceStorageScript(method: String): String {
-        return getCadenceScript()?.storage?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.storage?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get storage script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "storage")
+        }
+        return script
     }
 
     fun getCadenceEVMScript(method: String): String {
-        return getCadenceScript()?.evm?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.evm?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get EVM script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "evm")
+        }
+        return script
     }
 
     fun getCadenceNFTScript(method: String): String {
-        return getCadenceScript()?.nft?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.nft?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get NFT script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "nft")
+        }
+        return script
     }
 
     fun getCadenceSwapScript(method: String): String {
-        return (getCadenceScript()?.swap?.get(method) as? String)?.decodeBase64()?.utf8() ?: ""
+        val script = (getCadenceScript()?.swap?.get(method) as? String)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get swap script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "swap")
+        }
+        return script
     }
 
     fun getCadenceBridgeScript(method: String): String {
-        return getCadenceScript()?.bridge?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.bridge?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get bridge script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "bridge")
+        }
+        return script
     }
 
     private fun getFallbackScriptFromAssets(method: String, category: String): String {
@@ -286,9 +321,16 @@ object CadenceApiManager {
             
             val scriptContent = when (category) {
                 "basic" -> script?.basic?.get(method)
-                "account" -> script?.account?.get(method)
                 "collection" -> script?.collection?.get(method)
                 "ft" -> script?.ft?.get(method)
+                "contract" -> script?.contract?.get(method)
+                "evm" -> script?.evm?.get(method)
+                "hybridCustody" -> script?.hybridCustody?.get(method)
+                "staking" -> script?.staking?.get(method)
+                "storage" -> script?.storage?.get(method)
+                "nft" -> script?.nft?.get(method)
+                "swap" -> script?.swap?.get(method) as? String
+                "bridge" -> script?.bridge?.get(method)
                 else -> null
             }?.decodeBase64()?.utf8()
             
