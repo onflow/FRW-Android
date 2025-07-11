@@ -1,3 +1,19 @@
+pluginManagement { 
+//    includeBuild("../node_modules/@react-native/gradle-plugin")
+    includeBuild(file("../node_modules/@react-native/gradle-plugin").toPath().toRealPath().toAbsolutePath().toString())
+}
+
+plugins { 
+    id("com.facebook.react.settings") 
+}
+
+extensions.configure(com.facebook.react.ReactSettingsExtension) { ex -> 
+    ex.autolinkLibrariesFromCommand() 
+}
+
 rootProject.name = "FlowWallet"
 include ':app', ':wallet'
 project(':wallet').projectDir = new File('../Flow-Wallet-Kit/Android/wallet')
+
+//https://github.com/react-native-community/cli/issues/1207#issuecomment-2232732690
+includeBuild(file("../node_modules/@react-native/gradle-plugin").toPath().toRealPath().toAbsolutePath().toString())

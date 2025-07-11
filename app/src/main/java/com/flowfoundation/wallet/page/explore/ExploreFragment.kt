@@ -8,6 +8,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.journeyapps.barcodescanner.ScanOptions
+import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.databinding.FragmentExploreBinding
 import com.flowfoundation.wallet.page.explore.model.ExploreModel
 import com.flowfoundation.wallet.page.explore.presenter.ExplorePresenter
@@ -35,7 +36,8 @@ class ExploreFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.searchBox.scanButton.setOnClickListener {
-            barcodeLauncher.launch()
+            // Launch React Native Demo Activity instead of barcode scanner
+            ReactNativeDemoActivity.launch(requireContext(), "Profile", "0x1234567890abcdef", "mainnet")
         }
         presenter = ExplorePresenter(this, binding)
         viewModel = ViewModelProvider(requireActivity())[ExploreViewModel::class.java].apply {
