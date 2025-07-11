@@ -163,10 +163,7 @@ object CadenceApiManager {
             // Validate expected signature length for ECDSA (typically 64 bytes = 128 hex chars)
             if (cleanSignature.length != 128) {
                 logd(TAG, "Warning: Unexpected signature length: ${cleanSignature.length} (expected 128)")
-                // Don't fail here, just log warning as signature lengths may vary
             }
-            
-            logd(TAG, "Signature validation passed - original length: ${signature.length}, cleaned length: ${cleanSignature.length}")
             
             val hashedData = Hash.sha256(data)
             val pubKeyBytes = BuildConfig.X_SIGNATURE_KEY.decodeHex().toByteArray()
@@ -176,7 +173,7 @@ object CadenceApiManager {
             val isValid = public.verify(signatureBytes, hashedData)
             
             logd(TAG, "Signature verification result: $isValid")
-            return isValid
+            isValid
         } catch (e: IllegalArgumentException) {
             loge(TAG, "Invalid hex format in signature: ${e.message}")
             loge(TAG, "Signature (first 100 chars): ${signature.take(100)}")
