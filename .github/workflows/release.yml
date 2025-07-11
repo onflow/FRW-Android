@@ -24,6 +24,7 @@ jobs:
         with:
           repository: Outblock/Flow-Wallet-Kit
           path: ./Flow-Wallet-Kit
+          ref: e8ee326f7fa4ecafc8c0946d2d81410160372305
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -107,6 +108,7 @@ jobs:
         with:
           repository: Outblock/Flow-Wallet-Kit
           path: ./Flow-Wallet-Kit
+          ref: e8ee326f7fa4ecafc8c0946d2d81410160372305
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
