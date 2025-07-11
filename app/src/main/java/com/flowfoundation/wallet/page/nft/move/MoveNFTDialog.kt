@@ -20,18 +20,21 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.page.main.HomeTab
+import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
 import com.flowfoundation.wallet.page.nft.nftlist.utils.NftCache
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.page.main.MainActivity
-import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -40,12 +43,8 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.flowfoundation.wallet.widgets.ProgressDialog
-import kotlinx.coroutines.delay
 import org.onflow.flow.models.TransactionStatus
 
 
@@ -217,12 +216,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         moveNFTFromChildToParent(fromAddress, it) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
+                                // Remove duplicate toast - TransactionStateManager will handle it
                                 if (isSuccess) {
-                                    // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
@@ -232,9 +230,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -244,9 +241,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -258,9 +254,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -270,9 +265,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -284,9 +278,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -296,9 +289,8 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                                 if (isSuccess) {
                                     // Dismiss dialog immediately upon successful TX submission
                                     successfulMoveNavigation(it)
-                                } else {
-                                    toast(R.string.move_nft_failed)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -428,7 +420,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     }
 
     private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
-        callback.invoke(true)
+        // Create and register the transaction state for bubble monitoring
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
@@ -438,6 +430,20 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
         )
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
+
+        // Monitor transaction completion and call callback with actual result
+        ioScope {
+            TransactionStateWatcher(txId).watch { result ->
+                when {
+                    result.isExecuteFinished() -> {
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        callback(false)
+                    }
+                }
+            }
+        }
     }
 
     private fun successfulMoveNavigation(nft: Nft) {
