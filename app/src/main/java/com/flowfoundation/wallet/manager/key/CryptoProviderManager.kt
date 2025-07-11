@@ -28,6 +28,8 @@ import com.google.gson.reflect.TypeToken
 import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flow.wallet.storage.StorageProtocol
+import com.flowfoundation.wallet.utils.logw
+import com.flowfoundation.wallet.BuildConfig
 
 /**
  * A CryptoProvider that handles multi-restore accounts by combining multiple backup providers
@@ -91,22 +93,66 @@ object CryptoProviderManager {
     private const val TAG = "CryptoProviderManager"
 
     fun getCurrentCryptoProvider(): CryptoProvider? {
-        if (cryptoProvider == null) {
-            logd(TAG, "getCurrentCryptoProvider: Cache miss, generating new provider.")
+        // Check if current provider is valid
+        val isValid = cryptoProvider?.let { 
+            try {
+                // Validate that the provider is properly initialized
+                it.getPublicKey().isNotBlank() && 
+                it.getPublicKey() != "0x" &&
+                it.getPublicKey().length >= 64 // Minimum valid key length
+            } catch (e: Exception) {
+                loge(TAG, "CryptoProvider validation failed: ${e.message}")
+                false
+            }
+        } ?: false
+        
+        if (!isValid) {
+            logd(TAG, "getCurrentCryptoProvider: Cache miss or invalid provider, generating new provider.")
             cryptoProvider = generateAccountCryptoProvider(AccountManager.get())
         }
         return cryptoProvider
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     fun generateAccountCryptoProvider(account: Account?): CryptoProvider? {
-        if (account == null) {
-            logd(TAG, "generateAccountCryptoProvider: Input account is null.")
-            return null
+        return try {
+            if (account == null) {
+                loge(TAG, "Cannot generate crypto provider: account is null")
+                return null
+            }
+            
+            val provider = createCryptoProviderForAccount(account)
+            if (provider != null) {
+                // Validate the generated provider before returning
+                val publicKey = try {
+                    provider.getPublicKey()
+                } catch (e: Exception) {
+                    loge(TAG, "Failed to get public key from provider: ${e.message}")
+                    return null
+                }
+                
+                if (publicKey.isBlank() || publicKey == "0x" || publicKey.length < 64) {
+                    loge(TAG, "Generated provider has invalid public key: $publicKey")
+                    ErrorReporter.reportWithMixpanel(AccountError.INVALID_PUBLIC_KEY)
+                    return null
+                }
+                logd(TAG, "Successfully generated valid crypto provider for ${account.userInfo.username}")
+                provider
+            } else {
+                loge(TAG, "Failed to create crypto provider for account ${account.userInfo.username}")
+                null
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Exception generating crypto provider for ${account!!.userInfo.username}: ${e.message}")
+            ErrorReporter.reportWithMixpanel(AccountError.GENERATE_PROVIDER_FAILED, e)
+            null
         }
-        logd(TAG, "generateAccountCryptoProvider: Generating for account: ${account.userInfo.username}, isActive: ${account.isActive}, prefix: ${account.prefix}, hasKeystore: ${!account.keyStoreInfo.isNullOrBlank()}")
+    }
 
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun createCryptoProviderForAccount(account: Account): CryptoProvider? {
         val storage = getStorage()
+
+        logd(TAG, "generateAccountCryptoProvider: Generating for account: ${account.userInfo.username}, isActive: ${account.isActive}, prefix: ${account.prefix}, hasKeystore: ${!account.keyStoreInfo.isNullOrBlank()}")
 
         return try {
             // Handle keystore-based accounts

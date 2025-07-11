@@ -65,11 +65,41 @@ suspend fun sign(text: String, domainTag: ByteArray = DomainTag.User.bytes): Str
     return try {
         getKeyWallet()
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-            ?: throw WalletError.InitHDWalletFailed
-        cryptoProvider.signData(domainTag + text.encodeToByteArray())
+            ?: throw WalletError.EmptySignKey
+        
+        // Validate provider before attempting to sign
+        val publicKey = cryptoProvider.getPublicKey()
+        if (publicKey.isBlank() || publicKey == "0x" || publicKey.length < 64) {
+            loge("WalletUtils", "Invalid public key from crypto provider: $publicKey")
+            throw WalletError.EmptySignKey
+        }
+        
+        val signature = cryptoProvider.signData(domainTag + text.encodeToByteArray())
+        
+        if (signature.isBlank()) {
+            loge("WalletUtils", "Empty signature returned from crypto provider")
+            throw WalletError.EmptySignKey
+        }
+        
+        logd("WalletUtils", "Successfully signed data, signature length: ${signature.length}")
+        signature
     } catch (e: WalletError) {
         loge("WalletUtils", "Failed to sign text: ${e.message}")
         ErrorReporter.reportWithMixpanel(AccountError.WALLET_ERROR, e)
+        
+        // Try to clear and regenerate crypto provider as fallback
+        try {
+            loge("WalletUtils", "Attempting to regenerate crypto provider as fallback")
+            CryptoProviderManager.clear()
+            val newProvider = CryptoProviderManager.getCurrentCryptoProvider()
+            if (newProvider != null) {
+                logd("WalletUtils", "Successfully regenerated crypto provider, retrying sign")
+                return newProvider.signData(domainTag + text.encodeToByteArray())
+            }
+        } catch (fallbackException: Exception) {
+            loge("WalletUtils", "Fallback crypto provider regeneration failed: ${fallbackException.message}")
+        }
+        
         ""
     } catch (e: Exception) {
         loge("WalletUtils", "Unexpected error signing text: ${e.message}")

@@ -63,10 +63,10 @@ fun restoreMnemonicFromGoogleDrive(driveService: Drive) {
         val data = existingData(driveService)
         LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
             putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
+            putExtra(EXTRA_SUCCESS, true)
         })
     } catch (e: Exception) {
         loge(e)
-        sendCallback(false)
         throw e
     }
 }
