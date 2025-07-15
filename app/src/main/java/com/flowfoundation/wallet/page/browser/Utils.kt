@@ -48,13 +48,15 @@ fun openBrowser(
     params: BrowserParams,
 ) {
     WindowFrame.browserContainer()?.setVisible()
-    if (browserInstance() != null) {
-        val browser = browserInstance()!!
-        url?.let { browser.loadUrl(it) }
-        browser.open(params)
-        return
-    } else {
-        attachBrowser(activity, url, params)
+    WindowFrame.browserContainer()?.post {
+        if (browserInstance() != null) {
+            val browser = browserInstance()!!
+            url?.let { browser.loadUrl(it) }
+            browser.open(params)
+            return@post
+        } else {
+            attachBrowser(activity, url, params)
+        }
     }
 }
 
