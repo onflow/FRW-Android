@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.widgets.webview.evm
 import android.webkit.JavascriptInterface
 import androidx.fragment.app.FragmentActivity
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.MAINNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.app.TESTNET_CHAIN_ID
 import com.flowfoundation.wallet.manager.app.networkStringByChainId
@@ -43,7 +44,15 @@ class EvmInterface(
         const val ETH_NETWORK = "ethereum"
         const val TAG = "EVMInterface"
     }
-    private fun activity() = findActivity(webView) as FragmentActivity
+
+    private fun activity(): FragmentActivity? {
+        val activity = findActivity(webView)
+        if (activity is FragmentActivity) {
+            return activity
+        }
+        val currentActivity = BaseActivity.getCurrentActivity()
+        return currentActivity as? FragmentActivity
+    }
 
     @JavascriptInterface
     fun postMessage(json: String) {
@@ -51,6 +60,11 @@ class EvmInterface(
         val id = obj.getLong("id")
         val method = DAppMethod.fromValue(obj.getString("name"))
         val network = obj.getString("network")
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
         when (method) {
             DAppMethod.REQUEST_ACCOUNTS -> {
                 if (webView.isLoading) {
@@ -60,10 +74,10 @@ class EvmInterface(
                 uiScope {
                     if (EVMWalletManager.haveEVMAddress()) {
                         if (isShowMoveDialog()) {
-                            MoveDialog().showMove(activity().supportFragmentManager, webView.title)
+                            MoveDialog().showMove(activity.supportFragmentManager, webView.title)
                         }
                         val connect = EvmRequestAccountDialog().show(
-                            activity().supportFragmentManager,
+                            activity.supportFragmentManager,
                             EVMDialogModel(
                                 title = webView.title,
                                 url = webView.url,
@@ -75,7 +89,7 @@ class EvmInterface(
                             webView.setAddress(network, address.orEmpty(), id)
                         }
                     } else {
-                        EnableEVMDialog.show(activity().supportFragmentManager)
+                        EnableEVMDialog.show(activity.supportFragmentManager)
                     }
                 }
             }
@@ -83,7 +97,7 @@ class EvmInterface(
                 uiScope {
                     when (val rpcChainId = extractRPCChainId(obj)) {
                         MAINNET_CHAIN_ID, TESTNET_CHAIN_ID -> {
-                            if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager,
+                            if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager,
                                 FclDialogModel(
                                     title = webView.title,
                                     url = webView.url,
@@ -98,7 +112,7 @@ class EvmInterface(
                         }
                         else -> {
                             logd(TAG, "Unsupported ChainId::$rpcChainId")
-                            val message = activity().getString(R.string.unsupported_chain_id, rpcChainId)
+                            val message = activity.getString(R.string.unsupported_chain_id, rpcChainId)
                             toast(msg = message)
                             webView.sendError(network, message, id)
                         }
@@ -109,13 +123,13 @@ class EvmInterface(
                 val data = extractMessage(obj)
                 if (network == ETH_NETWORK)
                     uiScope {
-                        handleSignMessage(id, data, network)
+                        handleSignMessage(activity, id, data, network)
                     }
             }
             DAppMethod.SIGN_PERSONAL_MESSAGE -> {
                 val data = extractMessage(obj)
                 uiScope {
-                    handleSignMessage(id, data, network)
+                    handleSignMessage(activity, id, data, network)
                 }
             }
             DAppMethod.SIGN_TRANSACTION -> {
@@ -124,7 +138,7 @@ class EvmInterface(
                     val transaction = Gson().fromJson(obj.optString("object"), EvmTransaction::class.java)
                     logd(TAG, "transaction::$transaction")
                     uiScope {
-                        handleTransaction(transaction, id, network)
+                        handleTransaction(activity, transaction, id, network)
                     }
                 }
             }
@@ -136,7 +150,7 @@ class EvmInterface(
                 logd(TAG, "signTypedMessage raw::$raw")
 
                 uiScope {
-                    handleSignTypedMessage(id, data, raw, network)
+                    handleSignTypedMessage(activity, id, data, raw, network)
                 }
             }
             DAppMethod.WATCH_ASSET -> {
@@ -144,7 +158,7 @@ class EvmInterface(
                 val contractAddress = extractContractAddress(obj)
                 uiScope {
                     AddCustomTokenDialog.show(
-                        activity().supportFragmentManager,
+                        activity.supportFragmentManager,
                         contractAddress
                     )
                     AddCustomTokenDialog.observe { approve ->
@@ -158,7 +172,7 @@ class EvmInterface(
         }
     }
 
-    private fun handleTransaction(transaction: EvmTransaction, id: Long, network: String) {
+    private fun handleTransaction(activity: FragmentActivity, transaction: EvmTransaction, id: Long, network: String) {
         val model = EVMTransactionDialogModel(
             url = webView.url,
             title = webView.title,
@@ -168,7 +182,7 @@ class EvmInterface(
             data = transaction.data
         )
         EVMSendTransactionDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             model
         )
         EVMSendTransactionDialog.observe { isApprove ->
@@ -203,7 +217,7 @@ class EvmInterface(
         return param.getString("raw")
     }
 
-    private fun handleSignMessage(id: Long, data: ByteArray, network: String) {
+    private fun handleSignMessage(activity: FragmentActivity, id: Long, data: ByteArray, network: String) {
         val signMessage = String(data, Charsets.UTF_8)
         val model = FclDialogModel(
             signMessage = data.bytesToHex(),
@@ -213,7 +227,7 @@ class EvmInterface(
             network = network
         )
         EVMSignMessageDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             model
         )
         EVMSignMessageDialog.observe { approve ->
@@ -226,7 +240,7 @@ class EvmInterface(
         }
     }
 
-    private fun handleSignTypedMessage(id: Long, data: ByteArray, raw: String, network: String) {
+    private fun handleSignTypedMessage(activity: FragmentActivity, id: Long, data: ByteArray, raw: String, network: String) {
         val model = FclDialogModel(
             signMessage = raw,
             url = webView.url,
@@ -235,7 +249,7 @@ class EvmInterface(
             network = network
         )
         EVMSignTypedDataDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             model
         )
         EVMSignTypedDataDialog.observe { approve ->
