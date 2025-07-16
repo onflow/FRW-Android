@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import java.util.*
-import kotlin.math.roundToInt
 
 class GridSpaceItemDecoration(
     @Dimension(unit = Dimension.DP) private val start: Double = 0.0,
@@ -35,6 +34,9 @@ class GridSpaceItemDecoration(
         val itemCount = parent.adapter?.itemCount ?: return
         val spanCount = gridLayoutManager.spanCount
         val position = parent.getChildLayoutPosition(view)
+        
+        if (position < 0) return
+        
         val spanSizeLookup = gridLayoutManager.spanSizeLookup
 
         if (dividerVisibleCheck?.dividerVisible(position) == false) {
@@ -43,112 +45,66 @@ class GridSpaceItemDecoration(
 
         val spanSize = spanSizeLookup.getSpanSize(position)
         val spanIndex = spanSizeLookup.getSpanIndex(position, spanCount)
-        val spanGroupIndex =
-            spanSizeLookup.getSpanGroupIndex(position, spanCount) // nMinusOne in vertical
+        val spanGroupIndex = spanSizeLookup.getSpanGroupIndex(position, spanCount)
 
-        val isRtl =
-            TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault()) == ViewCompat.LAYOUT_DIRECTION_RTL
+        val isRtl = TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault()) == ViewCompat.LAYOUT_DIRECTION_RTL
 
-        val verticalSpanCount = spanSizeLookup.getSpanGroupIndex(itemCount - 1, spanCount) + 1
-
-        val verticalSizeAvg =
-            (top + bottom + vertical * (verticalSpanCount - 1)) / verticalSpanCount
-
-        val horizontalSizeAvg =
-            (start + end + horizontal * (spanCount - 1)) / spanCount
-
-        val start = calculateStartOffsets(spanIndex, horizontalSizeAvg)
-        val end =
-            calculateEndOffset((spanCount - 1) - (spanIndex + spanSize - 1), horizontalSizeAvg)
-        val top = calculateTopOffsets(spanGroupIndex, verticalSizeAvg)
-        val bottom =
-            calculateBottomOffsets((verticalSpanCount - 1) - (spanGroupIndex), verticalSizeAvg)
+        // Simplified and more consistent spacing calculation
+        val leftSpacing = when {
+            spanSize == spanCount -> 0.0 // Full-width items (like headers)
+            spanIndex == 0 -> start.dp2px() // First column
+            else -> (horizontal / 2).dp2px() // Middle columns
+        }
+        
+        val rightSpacing = when {
+            spanSize == spanCount -> 0.0 // Full-width items (like headers)
+            spanIndex + spanSize == spanCount -> end.dp2px() // Last column
+            else -> (horizontal / 2).dp2px() // Middle columns
+        }
+        
+        val topSpacing = when {
+            spanGroupIndex == 0 -> top.dp2px() // First row
+            else -> vertical.dp2px() // Other rows
+        }
+        
+        val bottomSpacing = if (isLastRow(position, itemCount, spanSizeLookup, spanCount)) {
+            bottom.dp2px()
+        } else {
+            0.0
+        }
 
         val (left, right) = if (isRtl) {
-            end to start
+            rightSpacing to leftSpacing
         } else {
-            start to end
+            leftSpacing to rightSpacing
         }
+
         outRect.set(
-            left.dp2px().toInt(),
-            top.dp2px().toInt(),
-            right.dp2px().toInt(),
-            bottom.dp2px().toInt(),
+            left.toInt(),
+            topSpacing.toInt(),
+            right.toInt(),
+            bottomSpacing.toInt()
         )
+    }
+
+    private fun isLastRow(
+        position: Int,
+        itemCount: Int,
+        spanSizeLookup: GridLayoutManager.SpanSizeLookup,
+        spanCount: Int
+    ): Boolean {
+        val currentRow = spanSizeLookup.getSpanGroupIndex(position, spanCount)
+        val lastItemRow = spanSizeLookup.getSpanGroupIndex(itemCount - 1, spanCount)
+        return currentRow == lastItemRow
     }
 
     override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
-//        canvas.save()
-//        val left: Int
-//        val right: Int
-//        //noinspection AndroidLintNewApi - NewApi lint fails to handle overrides.
-//        if (parent.clipToPadding) {
-//            left = parent.paddingLeft
-//            right = parent.width - parent.paddingRight
-//            canvas.clipRect(
-//                left, parent.paddingTop, right,
-//                parent.height - parent.paddingBottom
-//            )
-//        } else {
-//            left = 0
-//            right = parent.width
-//        }
-//
-//        val childCount = parent.childCount
-//        for (i in 0 until childCount) {
-//            val child = parent.getChildAt(i)
-//            parent.getDecoratedBoundsWithMargins(child, mBounds)
-//            val bottom: Int = mBounds.bottom + Math.round(child.translationY)
-//            val top: Int = bottom - mSize
-//            if (isDividerVisible(i)) {
-//                mDrawable.setBounds(left, top, right, bottom)
-//                mDrawable.draw(canvas)
-//            }
-//        }
-//        canvas.restore()
+        // Empty implementation - no drawing needed for spacing decoration
     }
 
-    @Dimension(unit = Dimension.DP)
-    private fun calculateBottomOffsets(
-        nMinusOne: Int,
-        @Dimension(unit = Dimension.DP) verticalSizeAvg: Double
-    ): Int {
-        return calculateOffset(bottom, nMinusOne, vertical - verticalSizeAvg)
+    fun setDividerVisibleCheck(dividerVisibleCheck: DividerVisibleCheck) {
+        this.dividerVisibleCheck = dividerVisibleCheck
     }
-
-    @Dimension(unit = Dimension.DP)
-    private fun calculateTopOffsets(
-        nMinusOne: Int,
-        @Dimension(unit = Dimension.DP) verticalSizeAvg: Double
-    ): Int {
-        return calculateOffset(top, nMinusOne, vertical - verticalSizeAvg)
-    }
-
-
-    @Dimension(unit = Dimension.DP)
-    private fun calculateStartOffsets(
-        nMinusOne: Int,
-        @Dimension(unit = Dimension.DP) horizontalSizeAvg: Double
-    ): Int {
-        return calculateOffset(start, nMinusOne, horizontal - horizontalSizeAvg)
-    }
-
-    private fun calculateOffset(
-        initialValue: Double,
-        nMinusOne: Int,
-        commonDifference: Double
-    ): Int {
-        return (initialValue + nMinusOne * commonDifference).roundToInt()
-    }
-
-    private fun calculateEndOffset(nMinusOne: Int, horizontalSizeAvg: Double): Int {
-        return calculateOffset(
-            end,
-            (nMinusOne),
-            horizontal - horizontalSizeAvg
-        )
-    }
-
 }
 
 interface DividerVisibleCheck {

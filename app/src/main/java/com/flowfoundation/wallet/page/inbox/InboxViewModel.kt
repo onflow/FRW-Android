@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.inbox
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.nftco.flow.sdk.FlowTransactionStatus
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.inboxCache
 import com.flowfoundation.wallet.manager.app.isTestnet
@@ -23,6 +22,7 @@ import com.flowfoundation.wallet.network.retrofitWithHost
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.extensions.toSafeInt
+import org.onflow.flow.models.TransactionStatus
 
 class InboxViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenUpdateListener {
 
@@ -56,7 +56,7 @@ class InboxViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenUpdat
                 val transactionState = TransactionState(
                     transactionId = txId,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                     data = Gson().toJson(token)
                 )
@@ -79,7 +79,7 @@ class InboxViewModel : ViewModel(), OnTransactionStateChange, FungibleTokenUpdat
                 val transactionState = TransactionState(
                     transactionId = txId,
                     time = System.currentTimeMillis(),
-                    state = FlowTransactionStatus.PENDING.num,
+                    state = TransactionStatus.PENDING.ordinal,
                     type = TransactionState.TYPE_TRANSACTION_DEFAULT,
                     data = Gson().toJson(nft)
                 )

@@ -26,7 +26,15 @@ enum class AccountError(
     MIGRATE_PREFIX_FAILED("migratePrefixFailed"),
     SET_ANONYMOUS_FAILED("setAnonymousFiled"),
     REGISTER_USER_FAILED("registerUserFailed"),
-    GET_CRYPTO_PROVIDER_FAILED("getCryptoProviderFailed");
+    GET_CRYPTO_PROVIDER_FAILED("getCryptoProviderFailed"),
+    INIT_FAILED("initFailed"),
+    UPDATE_USER_INFO_FAILED("updateUserInfoFailed"),
+    UPDATE_WALLET_INFO_FAILED("updateWalletInfoFailed"),
+    GET_WALLET_FAILED("getWalletFailed"),
+    WALLET_ERROR("walletError"),
+    UNEXPECTED_ERROR("unexpectedError"),
+    INVALID_PUBLIC_KEY("invalidPublicKey"),
+    GENERATE_PROVIDER_FAILED("generateProviderFailed");
 }
 
 enum class WalletError(
@@ -51,7 +59,8 @@ enum class BackupError(
     SYNC_ACCOUNT_INFO_FAILED("syncAccountInfoFailed"),
     RESTORE_LOGIN_FAILED("restoreLoginFailed"),
     RESTORE_IMPORT_FAILED("restoreImportFailed"),
-    ADD_PUBLIC_KEY_FAILED("addPublicKeyFailed");
+    ADD_PUBLIC_KEY_FAILED("addPublicKeyFailed"),
+    MNEMONIC_RESTORE_FAILED("mnemonicRestoreFailed");
 }
 
 enum class GoogleBackupError(

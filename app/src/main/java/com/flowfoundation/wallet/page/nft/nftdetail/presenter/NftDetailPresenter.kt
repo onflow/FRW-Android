@@ -43,6 +43,7 @@ import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.zackratos.ultimatebarx.ultimatebarx.addStatusBarTopPadding
@@ -144,6 +145,8 @@ class NftDetailPresenter(
             val title = "$name #${nft.id}"
             toolbar.title = title
 
+            ioScope { updateSelectionState() }
+
             bindCover(nft)
             Glide.with(backgroundImage).load(nft.getNFTCover())
                 .transition(DrawableTransitionOptions.withCrossFade(100))
@@ -169,10 +172,21 @@ class NftDetailPresenter(
                 CollectionActivity.launch(activity, config?.id.orEmpty(), nft.contractName())
             }
 
+            ioScope { updateSelectionState() }
+
             sendButton.setVisible(!nft.isDomain() && AppConfig.showNFTTransfer())
-            if (nft.canBridgeToFlow() || nft.canBridgeToEVM() || WalletManager
-                    .isChildAccountSelected() || WalletManager.haveChildAccount()
-            ) {
+            
+            val canBridgeToFlow = nft.canBridgeToFlow()
+            val canBridgeToEVM = nft.canBridgeToEVM()
+            val isChildAccountSelected = WalletManager.isChildAccountSelected()
+            val haveChildAccount = WalletManager.haveChildAccount()
+            val hasFlowIdentifier = !nft.flowIdentifier.isNullOrBlank()
+            
+            // Require flowIdentifier for any bridge transfer functionality
+            val bridgeCapable = hasFlowIdentifier && (canBridgeToFlow || canBridgeToEVM)
+            val shouldShowMoveButton = bridgeCapable || isChildAccountSelected || haveChildAccount
+            
+            if (shouldShowMoveButton) {
                 moveButton.visible()
             } else {
                 moveButton.gone()
@@ -265,6 +279,12 @@ class NftDetailPresenter(
         activity.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         activity.supportActionBar?.setDisplayShowHomeEnabled(true)
         activity.title = ""
+    }
+
+    private fun updateSelectionState() {
+        uiScope {
+
+        }
     }
 
     private fun ActivityNftDetailBinding.updateToolbarColor(scrollY: Int) {

@@ -5,9 +5,11 @@ import androidx.fragment.app.FragmentActivity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
@@ -32,7 +34,12 @@ import com.flowfoundation.wallet.widgets.webview.fcl.model.FclService
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSignMessageResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclSimpleResponse
 import com.flowfoundation.wallet.widgets.webview.fcl.model.toAuthzTransaction
+import com.ionspin.kotlin.bignum.integer.toBigInteger
+import org.onflow.flow.infrastructure.Cadence
 import java.lang.reflect.Type
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
+import org.onflow.flow.models.FlowAddress
 
 private val TAG = FclMessageHandler::class.java.simpleName
 
@@ -43,9 +50,33 @@ fun authzTransaction() = authzTransaction
 class FclMessageHandler(
     private val webView: LilicoWebView,
 ) {
-    private fun activity() = findActivity(webView) as FragmentActivity
 
-    private fun wallet() = WalletManager.wallet()?.walletAddress().orEmpty()
+    private fun wallet(): String {
+        // Try getting from WalletManager first
+        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        if (walletAddress.isNotBlank()) {
+            logd(TAG, "Got wallet address from WalletManager: '$walletAddress'")
+            return walletAddress
+        }
+        
+        // If empty, try from AccountManager
+        val account = AccountManager.get()
+        val accountWalletAddress = account?.wallet?.walletAddress()
+        if (!accountWalletAddress.isNullOrBlank()) {
+            logd(TAG, "Got wallet address from AccountManager: '$accountWalletAddress'")
+            return accountWalletAddress
+        }
+        
+        // If still empty, try getting from current account directly
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        if (selectedAddress.isNotBlank()) {
+            logd(TAG, "Got wallet address from WalletManager.selectedWalletAddress(): '$selectedAddress'")
+            return selectedAddress
+        }
+        
+        logd(TAG, "Could not find any wallet address")
+        return ""
+    }
 
     private var message: String = ""
 
@@ -57,6 +88,15 @@ class FclMessageHandler(
 
     fun onHandleMessage(message: String) {
         ioScope { dispatch(message) }
+    }
+
+    private fun activity(): FragmentActivity? {
+        val activity = findActivity(webView)
+        if (activity is FragmentActivity) {
+            return activity
+        }
+        val currentActivity = BaseActivity.getCurrentActivity()
+        return currentActivity as? FragmentActivity
     }
 
     private fun dispatch(message: String) {
@@ -123,8 +163,13 @@ class FclMessageHandler(
         }
         logd(TAG, "dispatchAuthn")
         fclResponse = fcl
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
         val approve = FclAuthnDialog().show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             FclDialogModel(title = webView.title, url = webView.url, logo = fcl.config?.app?.icon, network = fcl.config?.client?.network)
         )
         if (approve) {
@@ -165,6 +210,12 @@ class FclMessageHandler(
 
         logd(TAG, "dispatchSignMessage:${fcl.uniqueId()}")
 
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
+
         val data = FclDialogModel(
             signMessage = fcl.body?.message,
             url = webView.url,
@@ -172,13 +223,13 @@ class FclMessageHandler(
             logo = fcl.config?.app?.icon,
             network = fcl.config?.client?.network
         )
-        if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager, data)) {
+        if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             finishService()
             return
         }
 
         FclSignMessageDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             data
         )
         FclSignMessageDialog.observe { approve ->
@@ -192,13 +243,19 @@ class FclMessageHandler(
     private fun signAuthz(fcl: FclAuthzResponse) {
         val data = fcl.toFclDialogModel(webView)
 
-        if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager, data)) {
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
+
+        if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             finishService()
             return
         }
 
         FclAuthzDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             data,
         )
         FclAuthzDialog.observe { approve ->
@@ -213,12 +270,17 @@ class FclMessageHandler(
 
     private fun signPayload(fcl: FclAuthzResponse) {
         val data = fcl.toFclDialogModel(webView)
-        if (checkAndShowNetworkWrongDialog(activity().supportFragmentManager, data)) {
+        val activity = activity()
+        if (activity == null) {
+            logd(TAG, "Activity is null, cannot show dialog")
+            return
+        }
+        if (checkAndShowNetworkWrongDialog(activity.supportFragmentManager, data)) {
             finishService()
             return
         }
         FclAuthzDialog.show(
-            activity().supportFragmentManager,
+            activity.supportFragmentManager,
             data,
         )
         FclAuthzDialog.observe { approve ->
@@ -232,9 +294,42 @@ class FclMessageHandler(
     }
 
     private suspend fun signEnvelope(fcl: FclAuthzResponse, webView: WebView, callback: () -> Unit) {
+        val voucher = fcl.body.voucher
+        
+        // Get the proper key ID instead of defaulting to 0
+        val proposerAddress = voucher.proposalKey.address ?: ""
+        val keyId = if (voucher.proposalKey.keyId != null) {
+            voucher.proposalKey.keyId!!
+        } else {
+            // Use the account's valid key ID instead of defaulting to 0
+            val validKeyId = FlowAddress(proposerAddress).lastBlockAccountKeyId()
+            if (validKeyId == -1) {
+                logd("FclMessageHandler", "⚠️ No valid key found for proposer $proposerAddress, cannot proceed")
+                callback.invoke()
+                readyToSignEnvelope = false
+                finishService()
+                return
+            }
+            validKeyId
+        }
+        
+        val transaction = org.onflow.flow.models.Transaction(
+            script = voucher.cadence ?: "",
+            arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
+            referenceBlockId = voucher.refBlock ?: "",
+            gasLimit = (voucher.computeLimit ?: 9999).toBigInteger(),
+            payer = voucher.payer ?: "",
+            proposalKey = org.onflow.flow.models.ProposalKey(
+                address = proposerAddress,
+                keyIndex = keyId,
+                sequenceNumber = (voucher.proposalKey.sequenceNum ?: 0).toBigInteger()
+            ),
+            authorizers = voucher.authorizers ?: emptyList()
+        )
+
         val response = executeHttpFunction(
             FUNCTION_SIGN_AS_PAYER, PayerSignable(
-                transaction = fcl.body.voucher,
+                transaction = transaction,
                 message = PayerSignable.Message(fcl.body.message)
             )
         )

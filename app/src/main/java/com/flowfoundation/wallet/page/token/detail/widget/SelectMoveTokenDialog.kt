@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.widgets.itemdecoration.ColorDividerItemDecorati
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import java.math.BigDecimal
 
 class SelectMoveTokenDialog : BottomSheetDialogFragment() {
 
@@ -51,7 +50,7 @@ class SelectMoveTokenDialog : BottomSheetDialogFragment() {
             )
         }
         val list = FungibleTokenListManager.getCurrentTokenListSnapshot()
-            .filter { it.isFlowToken() || it.canBridgeToEVM() || it.canBridgeToCadence() }.toList()
+                .filter { it.isFlowToken() || it.canBridgeToEVM() || it.canBridgeToCadence() }.toList()
         adapter.setNewDiffData(list)
     }
 

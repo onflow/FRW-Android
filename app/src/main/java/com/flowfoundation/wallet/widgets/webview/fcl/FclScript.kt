@@ -1,15 +1,17 @@
 package com.flowfoundation.wallet.widgets.webview.fcl
 
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.nftco.flow.sdk.DomainTag
-import com.nftco.flow.sdk.FlowAddress
-import com.nftco.flow.sdk.hexToBytes
+import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
+import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
+import org.onflow.flow.models.DomainTag
+import org.onflow.flow.models.FlowAddress
+import kotlinx.coroutines.runBlocking
 
 private const val PRE_AUTHZ_REPLACEMENT = "#pre-authz"
 private const val ADDRESS_REPLACEMENT = "#address"
@@ -20,6 +22,7 @@ private const val USER_SIGNATURE_REPLACEMENT = "#user-signature"
 private const val ACCOUNT_PROOF_REPLACEMENT = "#account-proof"
 private const val NONCE_REPLACEMENT = "#nonce"
 private const val NETWORK_REPLACEMENT = "#network"
+private const val PAYER_KEY_ID_REPLACEMENT = "#payer-key-id"
 
 
 private val FCL_AUTHN_RESPONSE = """
@@ -160,7 +163,7 @@ private val FCL_PRE_AUTHZ_RESPONSE = """
                     "method": "EXT/RPC",
                     "identity": {
                         "address": "$PAYER_ADDRESS_REPLACEMENT",
-                        "keyId": 0
+                        "keyId": $PAYER_KEY_ID_REPLACEMENT
                     }
                 }
             ],
@@ -241,6 +244,18 @@ suspend fun fclAuthnResponse(fcl: FclAuthnResponse, address: String): String {
     } else ""
 
     val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
+    if (keyId == -1) {
+        // No valid key found, return error response
+        return """
+        {
+            "f_type": "PollingResponse",
+            "f_vsn": "1.0.0",
+            "status": "DECLINED",
+            "reason": "No valid non-revoked key found for account",
+            "type": "FCL:VIEW:RESPONSE"
+        }
+        """.trimIndent()
+    }
     return fclAuthnResponseWithAccountProofSign(accountProofSign, fcl.body.nonce, address, keyId)
 }
 
@@ -264,32 +279,38 @@ suspend fun fclAuthnResponseWithAccountProofSign(
 }
 
 fun fclPreAuthzResponse(address: String, keyId: Int): String {
+    val payerKeyId = runBlocking { FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId() }
     return FCL_PRE_AUTHZ_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
         .replace(KEY_ID_REPLACEMENT, "$keyId")
         .replace(PAYER_ADDRESS_REPLACEMENT, AppConfig.payer().address)
+        .replace(PAYER_KEY_ID_REPLACEMENT, payerKeyId.toString())
 }
 
-fun fclAuthzResponse(address: String, signature: String, keyId: Int? = 0): String {
+fun fclAuthzResponse(address: String, signature: String, keyId: Int): String {
     return FCL_AUTHZ_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
         .replace(SIGNATURE_REPLACEMENT, signature)
         .replace(KEY_ID_REPLACEMENT, "$keyId")
 }
 
-fun fclSignMessageResponse(message: String?, address: String): String {
+suspend fun fclSignMessageResponse(message: String?, address: String): String {
     val messageBytes = message?.hexToBytes() ?: throw IllegalArgumentException("Message is empty")
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw IllegalArgumentException("Crypto Provider is null")
 
     val keyId = FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
+    if (keyId == -1) {
+        throw IllegalArgumentException("No valid non-revoked key found for account $address")
+    }
     return FCL_SIGN_MESSAGE_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
         .replace(KEY_ID_REPLACEMENT, "$keyId")
-        .replace(SIGNATURE_REPLACEMENT, cryptoProvider.signData(DomainTag.USER_DOMAIN_TAG + messageBytes))
+        .replace(SIGNATURE_REPLACEMENT, cryptoProvider.signData(DomainTag.User.bytes + messageBytes))
 }
 
 private suspend fun generateAuthnPreAuthz(): String {
     return if (isGasFree()) {
+        val payerKeyId = FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId()
         """
             {
                 "f_type": "Service",
@@ -300,7 +321,7 @@ private suspend fun generateAuthnPreAuthz(): String {
                 "method": "EXT/RPC",
                 "data": {
                     "address": "${AppConfig.payer().address.toAddress()}",
-                    "keyId": 0
+                    "keyId": $payerKeyId
                 }
             },
         """.trimIndent()

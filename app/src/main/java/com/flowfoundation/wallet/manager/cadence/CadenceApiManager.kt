@@ -74,41 +74,57 @@ object CadenceApiManager {
                     ErrorReporter.reportWithMixpanel(CadenceError.EMPTY_SCRIPT_SIGNATURE)
                     return@ioScope
                 }
-                logd(TAG, "Signature: $signature")
+                logd(TAG, "Signature received: ${signature.take(50)}...")
                 val responseBody = rawResponse.body()?.let { body ->
                     body.string().also {
                         body.close()
                     }
                 } ?: ""
-                logd(TAG, "Response: $responseBody")
+                logd(TAG, "Response body length: ${responseBody.length}")
+                
                 val isSignatureValid = try {
                     verifySignature(signature, responseBody.toByteArray())
                 } catch (e: Exception) {
                     loge(TAG, "Error verifying signature: ${e.message}")
+                    loge(TAG, "Signature (first 100 chars): ${signature.take(100)}")
                     ErrorReporter.reportWithMixpanel(CadenceError.SIGNATURE_VERIFICATION_ERROR, e)
                     false
                 }
+                
                 if (!isSignatureValid) {
-                    loge(TAG, "Invalid script signature")
+                    loge(TAG, "Invalid script signature - continuing with cached scripts")
+                    loge(TAG, "Response preview (first 200 chars): ${responseBody.take(200)}")
                     ErrorReporter.reportWithMixpanel(CadenceError.INVALID_SCRIPT_SIGNATURE)
-                    return@ioScope
+                    // Don't return here - continue with existing cached scripts
+                } else {
+                    // Only update scripts if signature is valid
+                    try {
+                        val response = Gson().fromJson(responseBody, CadenceScriptResponse::class.java)
+                        if (response?.data == null) {
+                            loge(TAG, "Decode script failed - response data is null")
+                            ErrorReporter.reportWithMixpanel(CadenceError.DECODE_SCRIPT_FAILED)
+                            return@ioScope
+                        }
+                        val localVersion = cadenceApi?.version?.toSafeFloat() ?: 0f
+                        val currentVersion = response.data.version.toSafeFloat()
+                        logd(TAG, "cadenceScriptVersion::local::$localVersion::current::$currentVersion")
+                        if (currentVersion > localVersion) {
+                            cadenceApi = response.data
+                            saveCadenceToLocal(Gson().toJson(response))
+                            logd(TAG, "Updated to new script version: $currentVersion")
+                        } else {
+                            logd(TAG, "Current version ($currentVersion) not newer than local ($localVersion), keeping cached scripts")
+                        }
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to parse response JSON: ${e.message}")
+                        ErrorReporter.reportWithMixpanel(CadenceError.DECODE_SCRIPT_FAILED, e)
+                    }
                 }
 
-                val response = Gson().fromJson(responseBody, CadenceScriptResponse::class.java)
-                if (response.data == null) {
-                    loge(TAG, "Decode script failed")
-                    ErrorReporter.reportWithMixpanel(CadenceError.DECODE_SCRIPT_FAILED)
-                    return@ioScope
-                }
-                val localVersion = cadenceApi?.version.toSafeFloat()
-                val currentVersion = response.data.version.toSafeFloat()
-                logd(TAG, "cadenceScriptVersion::local::$localVersion::current::$currentVersion")
-                if (currentVersion > localVersion) {
-                    cadenceApi = response.data
-                    saveCadenceToLocal(Gson().toJson(response))
-                }
+                // Always report version info (even if signature failed)
                 MixpanelManager.cadenceScriptVersion(getCadenceScriptVersion(), getCadenceVersion())
             } catch (e: Exception) {
+                loge(TAG, "Network fetch failed: ${e.message}")
                 ErrorReporter.reportWithMixpanel(CadenceError.FETCH_SCRIPT_FAILED, e)
                 e.printStackTrace()
             }
@@ -116,13 +132,55 @@ object CadenceApiManager {
     }
 
     private fun verifySignature(signature: String, data: ByteArray): Boolean {
-        try {
+        return try {
+            // Validate signature format before decoding
+            if (signature.isBlank()) {
+                loge(TAG, "Empty signature provided for verification")
+                return false
+            }
+            
+            // Clean the signature - remove any whitespace and non-hex characters
+            val cleanSignature = signature.trim().replace(Regex("[^0-9a-fA-F]"), "")
+            
+            if (cleanSignature.isBlank()) {
+                loge(TAG, "Signature contains no valid hex characters: ${signature.take(50)}...")
+                return false
+            }
+            
+            // Check if signature contains only valid hex characters
+            val hexPattern = "^[0-9a-fA-F]+$".toRegex()
+            if (!hexPattern.matches(cleanSignature)) {
+                loge(TAG, "Invalid signature format after cleaning - contains non-hex characters: ${cleanSignature.take(50)}...")
+                return false
+            }
+            
+            // Validate signature length (should be even number for hex)
+            if (cleanSignature.length % 2 != 0) {
+                loge(TAG, "Invalid signature length - not even number of hex chars: ${cleanSignature.length}")
+                return false
+            }
+            
+            // Validate expected signature length for ECDSA (typically 64 bytes = 128 hex chars)
+            if (cleanSignature.length != 128) {
+                logd(TAG, "Warning: Unexpected signature length: ${cleanSignature.length} (expected 128)")
+            }
+            
             val hashedData = Hash.sha256(data)
             val pubKeyBytes = BuildConfig.X_SIGNATURE_KEY.decodeHex().toByteArray()
             val public = PublicKey(pubKeyBytes, PublicKeyType.NIST256P1EXTENDED)
-            return public.verify(signature.decodeHex().toByteArray(), hashedData)
+            
+            val signatureBytes = cleanSignature.decodeHex().toByteArray()
+            val isValid = public.verify(signatureBytes, hashedData)
+            
+            logd(TAG, "Signature verification result: $isValid")
+            isValid
+        } catch (e: IllegalArgumentException) {
+            loge(TAG, "Invalid hex format in signature: ${e.message}")
+            loge(TAG, "Signature (first 100 chars): ${signature.take(100)}")
+            return false
         } catch (e: Exception) {
             loge(TAG, "Error verifying signature: ${e.message}")
+            loge(TAG, "Signature (first 100 chars): ${signature.take(100)}")
             e.printStackTrace()
             return false
         }
@@ -144,7 +202,12 @@ object CadenceApiManager {
     }
 
     fun getCadenceBasicScript(method: String): String {
-        return getCadenceScript()?.basic?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.basic?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get basic script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "basic")
+        }
+        return script
     }
 
     fun getCadenceAccountScript(method: String): String {
@@ -152,46 +215,132 @@ object CadenceApiManager {
     }
 
     fun getCadenceCollectionScript(method: String): String {
-        return getCadenceScript()?.collection?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.collection?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get collection script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "collection")
+        }
+        return script
+    }
+
+    fun getCadenceFTScript(method: String): String {
+        val script = getCadenceScript()?.ft?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get FT script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "ft")
+        }
+        return script
     }
 
     fun getCadenceContractScript(method: String): String {
-        return getCadenceScript()?.contract?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.contract?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get contract script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "contract")
+        }
+        return script
     }
 
     fun getCadenceDomainScript(method: String): String {
         return getCadenceScript()?.domain?.get(method)?.decodeBase64()?.utf8() ?: ""
     }
 
-    fun getCadenceFTScript(method: String): String {
-        return getCadenceScript()?.ft?.get(method)?.decodeBase64()?.utf8() ?: ""
-    }
-
     fun getCadenceHybridCustodyScript(method: String): String {
-        return getCadenceScript()?.hybridCustody?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.hybridCustody?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get hybridCustody script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "hybridCustody")
+        }
+        return script
     }
 
     fun getCadenceStakingScript(method: String): String {
-        return getCadenceScript()?.staking?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.staking?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get staking script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "staking")
+        }
+        return script
     }
 
     fun getCadenceStorageScript(method: String): String {
-        return getCadenceScript()?.storage?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.storage?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get storage script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "storage")
+        }
+        return script
     }
 
     fun getCadenceEVMScript(method: String): String {
-        return getCadenceScript()?.evm?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.evm?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get EVM script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "evm")
+        }
+        return script
     }
 
     fun getCadenceNFTScript(method: String): String {
-        return getCadenceScript()?.nft?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.nft?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get NFT script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "nft")
+        }
+        return script
     }
 
     fun getCadenceSwapScript(method: String): String {
-        return (getCadenceScript()?.swap?.get(method) as? String)?.decodeBase64()?.utf8() ?: ""
+        val script = (getCadenceScript()?.swap?.get(method) as? String)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get swap script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "swap")
+        }
+        return script
     }
 
     fun getCadenceBridgeScript(method: String): String {
-        return getCadenceScript()?.bridge?.get(method)?.decodeBase64()?.utf8() ?: ""
+        val script = getCadenceScript()?.bridge?.get(method)?.decodeBase64()?.utf8()
+        if (script.isNullOrBlank()) {
+            loge(TAG, "Failed to get bridge script for method: $method, falling back to assets")
+            return getFallbackScriptFromAssets(method, "bridge")
+        }
+        return script
+    }
+
+    private fun getFallbackScriptFromAssets(method: String, category: String): String {
+        return try {
+            val assetsData = Gson().fromJson(
+                readTextFromAssets(ASSETS_CADENCE_FILE_PATH),
+                CadenceScriptResponse::class.java
+            )
+            val script = when (chainNetwork()) {
+                NETWORK_TESTNET -> assetsData.data?.scripts?.testnet
+                else -> assetsData.data?.scripts?.mainnet
+            }
+            
+            val scriptContent = when (category) {
+                "basic" -> script?.basic?.get(method)
+                "collection" -> script?.collection?.get(method)
+                "ft" -> script?.ft?.get(method)
+                "contract" -> script?.contract?.get(method)
+                "evm" -> script?.evm?.get(method)
+                "hybridCustody" -> script?.hybridCustody?.get(method)
+                "staking" -> script?.staking?.get(method)
+                "storage" -> script?.storage?.get(method)
+                "nft" -> script?.nft?.get(method)
+                "swap" -> script?.swap?.get(method) as? String
+                "bridge" -> script?.bridge?.get(method)
+                else -> null
+            }?.decodeBase64()?.utf8()
+            
+            scriptContent ?: run {
+                loge(TAG, "No fallback script found for method: $method, category: $category")
+                ""
+            }
+        } catch (e: Exception) {
+            loge(TAG, "Failed to load fallback script from assets: ${e.message}")
+            ""
+        }
     }
 }

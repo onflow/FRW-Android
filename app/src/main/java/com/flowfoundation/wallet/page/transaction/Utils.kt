@@ -1,7 +1,7 @@
 package com.flowfoundation.wallet.page.transaction
 
 import com.flowfoundation.wallet.manager.transaction.TransactionState
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.network.flowscan.model.FlowScanTransaction
 import com.flowfoundation.wallet.page.transaction.record.model.TransactionRecord
 import org.joda.time.format.ISODateTimeFormat
@@ -20,12 +20,12 @@ fun TransactionState.toTransactionRecord(): TransactionRecord {
 
 private fun Int.stateToString(): String {
     return when (this) {
-        FlowTransactionStatus.UNKNOWN.num -> "Unknown"
-        FlowTransactionStatus.PENDING.num -> "Pending"
-        FlowTransactionStatus.FINALIZED.num -> "Finalized"
-        FlowTransactionStatus.EXECUTED.num -> "Executed"
-        FlowTransactionStatus.SEALED.num -> "Sealed"
-        FlowTransactionStatus.EXPIRED.num -> "Expired"
+        TransactionStatus.UNKNOWN.ordinal -> "Unknown"
+        TransactionStatus.PENDING.ordinal -> "Pending"
+        TransactionStatus.FINALIZED.ordinal -> "Finalized"
+        TransactionStatus.EXECUTED.ordinal -> "Executed"
+        TransactionStatus.SEALED.ordinal -> "Sealed"
+        TransactionStatus.EXPIRED.ordinal -> "Expired"
         else -> ""
     }
 }

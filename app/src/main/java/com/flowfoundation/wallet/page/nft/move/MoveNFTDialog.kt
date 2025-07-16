@@ -20,10 +20,16 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromChildToChild
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendNFTFromParentToChild
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.model.Nft
+import com.flowfoundation.wallet.page.main.HomeTab
+import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.nft.nftlist.getNFTCover
 import com.flowfoundation.wallet.page.nft.nftlist.name
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
@@ -34,12 +40,12 @@ import com.flowfoundation.wallet.utils.error.MoveError
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
+import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.getCurrentCodeLocation
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 
 
 class MoveNFTDialog : BottomSheetDialogFragment() {
@@ -71,7 +77,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(uniqueId, contractId, contractName)
+        this.nft = NftCache(nftWalletAddress()).findNFTByIdAndContractName(
+            uniqueId,
+            contractId,
+            contractName
+        )
         with(binding) {
             btnMove.isEnabled = nft != null
             btnMove.setOnClickListener {
@@ -198,6 +208,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 return
             }
             binding.btnMove.setProgressVisible(true)
+            
             ioScope {
                 val toAddress = binding.layoutToAccount.getAccountAddress()
                 if (isChildAccountSelected) {
@@ -205,11 +216,11 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         moveNFTFromChildToParent(fromAddress, it) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
+                                // Remove duplicate toast - TransactionStateManager will handle it
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_failed)
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else if (EVMWalletManager.isEVMWalletAddress(toAddress)) {
@@ -217,10 +228,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -228,10 +239,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_failed)
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -241,10 +252,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -252,10 +263,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -265,10 +276,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_to_evm_failed)
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     } else {
@@ -276,10 +287,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
                                 if (isSuccess) {
-                                    dismissAllowingStateLoss()
-                                } else {
-                                    toast(R.string.move_nft_failed)
+                                    // Dismiss dialog immediately upon successful TX submission
+                                    successfulMoveNavigation(it)
                                 }
+                                // Don't show failure toast - TransactionStateManager will handle it
                             }
                         }
                     }
@@ -313,7 +324,14 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(childAddress, toAddress, nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.CHILD)
+            trackMoveNFT(
+                childAddress,
+                toAddress,
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.CHILD
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -335,7 +353,10 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             val collection = NftCollectionConfig.get(nft.collectionAddress, nft.contractName())
             val identifier = collection?.path?.privatePath?.removePrefix("/private/") ?: ""
             if (identifier.isEmpty()) {
-                ErrorReporter.reportWithMixpanel(MoveError.INVALIDATE_IDENTIFIER, getCurrentCodeLocation())
+                ErrorReporter.reportWithMixpanel(
+                    MoveError.INVALIDATE_IDENTIFIER,
+                    getCurrentCodeLocation()
+                )
                 callback.invoke(false)
                 return
             }
@@ -344,7 +365,14 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(childAddress, WalletManager.wallet()?.walletAddress().orEmpty(), nft.getNFTIdentifier(), txId.orEmpty(), TransferAccountType.CHILD, TransferAccountType.FLOW)
+            trackMoveNFT(
+                childAddress,
+                WalletManager.wallet()?.walletAddress().orEmpty(),
+                nft.getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.CHILD,
+                TransferAccountType.FLOW
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -370,8 +398,15 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 identifier,
                 nft
             )
-            trackMoveNFT(WalletManager.wallet()?.walletAddress().orEmpty(), toAddress, nft
-                .getNFTIdentifier(), txId.orEmpty(), TransferAccountType.FLOW, TransferAccountType.CHILD)
+            trackMoveNFT(
+                WalletManager.wallet()?.walletAddress().orEmpty(),
+                toAddress,
+                nft
+                    .getNFTIdentifier(),
+                txId.orEmpty(),
+                TransferAccountType.FLOW,
+                TransferAccountType.CHILD
+            )
             if (txId.isNullOrBlank()) {
                 callback.invoke(false)
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation())
@@ -385,16 +420,40 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
     }
 
     private fun postTransaction(nft: Nft, txId: String, callback: (isSuccess: Boolean) -> Unit) {
-        callback.invoke(true)
+        // Create and register the transaction state for bubble monitoring
         val transactionState = TransactionState(
             transactionId = txId,
             time = System.currentTimeMillis(),
-            state = FlowTransactionStatus.PENDING.num,
+            state = TransactionStatus.PENDING.ordinal,
             type = TransactionState.TYPE_MOVE_NFT,
             data = nft.uniqueId(),
         )
         TransactionStateManager.newTransaction(transactionState)
         pushBubbleStack(transactionState)
+
+        // Monitor transaction completion and call callback with actual result
+        ioScope {
+            TransactionStateWatcher(txId).watch { result ->
+                when {
+                    result.isExecuteFinished() -> {
+                        callback(true)
+                    }
+                    result.isFailed() -> {
+                        callback(false)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun successfulMoveNavigation(nft: Nft) {
+        dismissAllowingStateLoss()
+        
+        // Navigate back to the main NFTs tab
+        val activity = findActivity(binding.root)
+        if (activity != null) {
+            MainActivity.launch(activity, HomeTab.NFT)
+        }
     }
 
     companion object {

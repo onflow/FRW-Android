@@ -2,7 +2,7 @@ package com.flowfoundation.wallet.page.staking.detail
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.nftco.flow.sdk.FlowTransactionStatus
+import org.onflow.flow.models.TransactionStatus
 import com.flowfoundation.wallet.manager.flowjvm.*
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.staking.StakingProvider
@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import kotlinx.coroutines.delay
+import org.onflow.flow.infrastructure.Cadence.Companion.uint32
 
 class StakingDetailViewModel : ViewModel(), FungibleTokenUpdateListener {
 
@@ -42,7 +43,7 @@ class StakingDetailViewModel : ViewModel(), FungibleTokenUpdateListener {
 
             val token = FungibleTokenListManager.getFlowToken() ?: return@ioScope
 
-            logd("StakingDetail", "token:$token")
+            logd("xxx", "token:$token")
             FungibleTokenListManager.updateTokenInfo(token.contractId())
         }
     }
@@ -89,14 +90,14 @@ class StakingDetailViewModel : ViewModel(), FungibleTokenUpdateListener {
 
             val txId = transactionByMainWallet {
                 arg { string(provider.id) }
-                arg { uint32(delegatorId) }
+                arg { uint32(delegatorId.toUInt()) }
                 arg { ufix64Safe(amount) }
             }
 
             val transactionState = TransactionState(
                 transactionId = txId!!,
                 time = System.currentTimeMillis(),
-                state = FlowTransactionStatus.PENDING.num,
+                state = TransactionStatus.PENDING.ordinal,
                 type = TransactionState.TYPE_STAKE_FLOW,
                 data = ""
             )
@@ -122,4 +123,6 @@ class StakingDetailViewModel : ViewModel(), FungibleTokenUpdateListener {
             updateLiveData(detailModel)
         }
     }
+
+
 }

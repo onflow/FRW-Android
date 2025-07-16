@@ -2,20 +2,17 @@ package com.flowfoundation.wallet.manager.transaction
 
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.model.StorageLimitDialogType
-import com.nftco.flow.sdk.FlowId
-import com.nftco.flow.sdk.FlowTransactionResult
-import com.nftco.flow.sdk.FlowTransactionStatus
-import com.nftco.flow.sdk.hexToBytes
-import com.flowfoundation.wallet.manager.flowjvm.FlowApi
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.storage.StorageLimitErrorDialog
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.safeRun
+import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
-import com.nftco.flow.sdk.FlowError
-import com.nftco.flow.sdk.parseErrorCode
-import kotlinx.coroutines.delay
+import org.onflow.flow.infrastructure.parseErrorCode
+import org.onflow.flow.models.TransactionExecution
+import org.onflow.flow.models.TransactionResult
+import org.onflow.flow.models.TransactionStatus
 
 private val TAG = TransactionStateWatcher::class.java.simpleName
 
@@ -23,33 +20,24 @@ class TransactionStateWatcher(
     val transactionId: String,
 ) {
 
-    suspend fun watch(callback: (state: FlowTransactionResult) -> Unit) {
-        var ret: FlowTransactionResult? = null
-        var statusCode = -1
-        while (true) {
-            safeRun {
-                val result = checkNotNull(
-                    FlowApi.get().getTransactionResultById(FlowId.of(transactionId.hexToBytes()))
-                ) { "Transaction with that id not found" }
-                logd(TAG, "statusCode:${result.status.num}")
-                if (result.status.num != statusCode) {
-                    statusCode = result.status.num
-                    callback.invoke(result)
-                }
-                ret = result
-            }
-            val errorMsg = ret?.errorMessage
-
-            if (!statusCode.isProcessing() || !errorMsg.isNullOrBlank()) {
+    suspend fun watch(callback: (state: TransactionResult) -> Unit) {
+        safeRunSuspend {
+            try {
+                val result = FlowCadenceApi.waitForSeal(transactionId)
+                callback.invoke(result)
+                
+                // Report the final result
                 MixpanelManager.transactionResult(
                     transactionId,
-                    statusCode.isProcessing().not() && errorMsg.isNullOrBlank(),
-                    ret?.errorMessage
+                    result.isSuccess(),
+                    result.errorMessage
                 )
-                uiScope {
-                    if (!errorMsg.isNullOrBlank()) {
-                        val errorCode = parseErrorCode(errorMsg)
-                        ErrorReporter.reportTransactionError(transactionId, errorCode ?: -1)
+                
+                // Handle storage errors
+                if (result.errorMessage.isNotBlank()) {
+                    val errorCode = parseErrorCode(result.errorMessage)
+                    ErrorReporter.reportTransactionError(transactionId, errorCode ?: -1)
+                    uiScope {
                         when (errorCode) {
                             ERROR_STORAGE_CAPACITY_EXCEEDED -> {
                                 BaseActivity.getCurrentActivity()?.let {
@@ -59,13 +47,36 @@ class TransactionStateWatcher(
                         }
                     }
                 }
-                break
+            } catch (e: Exception) {
+                logd(TAG, "Transaction $transactionId failed or timed out: ${e.message}")
+                
+                // Create a failed result and notify callback
+                val failedResult = TransactionResult(
+                    blockId = "",
+                    status = TransactionStatus.EXPIRED,
+                    statusCode = TransactionStatus.EXPIRED.ordinal,
+                    errorMessage = e.message ?: "Transaction timeout",
+                    computationUsed = "0",
+                    events = emptyList(),
+                    execution = null,
+                    links = null
+                )
+                callback.invoke(failedResult)
+                
+                // Report the failure
+                MixpanelManager.transactionResult(transactionId, false, e.message)
+                ErrorReporter.reportTransactionError(transactionId, -1)
             }
-
-            delay(500)
         }
     }
 
-    private fun Int.isProcessing() = this < FlowTransactionStatus.SEALED.num && this >= FlowTransactionStatus.UNKNOWN.num
+    private fun TransactionResult.isSuccess(): Boolean {
+        return when (status) {
+            TransactionStatus.FINALIZED -> execution == TransactionExecution.success && errorMessage.isBlank()
+            TransactionStatus.SEALED -> execution == TransactionExecution.success && errorMessage.isBlank()
+            TransactionStatus.EXECUTED -> execution == TransactionExecution.success && errorMessage.isBlank()
+            else -> false
+        }
+    }
 
 }

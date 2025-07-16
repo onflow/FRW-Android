@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.nft.move.model.CollectionInfo
 import com.flowfoundation.wallet.page.nft.move.widget.SelectNFTListAdapter
 import com.flowfoundation.wallet.page.nft.nftlist.nftWalletAddress
@@ -30,7 +31,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -110,18 +110,16 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                     return@setOnClickListener
                 }
                 btnMove.setProgressVisible(true)
+                
                 ioScope {
                     viewModel.moveSelectedNFT(layoutFromAccount.getAccountAddress(), layoutToAccount.getAccountAddress()) {
                         isSuccess ->
                         uiScope {
                             btnMove.setProgressVisible(false)
-                            if (isSuccess) {
-                                toast(msgRes = R.string.move_nft_success)
-                                result?.resume(true)
-                                dismissAllowingStateLoss()
-                            } else {
-                                toast(msgRes = R.string.move_nft_failed)
-                            }
+                            // Remove duplicate toast - TransactionStateManager will handle it
+                            // Dismiss dialog for both success and failure since monitoring continues in background
+                            result?.resume(isSuccess)
+                            dismissAllowingStateLoss()
                         }
                     }
                 }
@@ -339,7 +337,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                 eligibleList.add(evmAddress)
             }
 
-            // Add the initial From address if it’s not the current From.
+            // Add the initial From address if it's not the current From.
             if (initialFromAddress != moveFromAddress && !eligibleList.contains(initialFromAddress)) {
                 eligibleList.add(initialFromAddress)
             }

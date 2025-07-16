@@ -27,9 +27,7 @@ fun getActivityFromContext(context: Context): Activity? {
     if (ctx is ContextWrapper) {
         ctx = ctx.baseContext
     }
-    return if (ctx is Activity) {
-        ctx
-    } else null
+    return ctx as? Activity
 }
 
 fun Context.startActivitySafe(intent: Intent) {

@@ -31,7 +31,7 @@ const val EXTRA_CONTENT = "extra_content"
 private const val AES_KEY = BuildConfig.DRIVE_AES_KEY
 
 @WorkerThread
-suspend fun uploadMnemonicToGoogleDrive(driveService: Drive, password: String) {
+fun uploadMnemonicToGoogleDrive(driveService: Drive, password: String) {
     try {
         logd(TAG, "uploadMnemonicToGoogleDrive")
         val driveServiceHelper = DriveServerHelper(driveService)
@@ -63,10 +63,10 @@ fun restoreMnemonicFromGoogleDrive(driveService: Drive) {
         val data = existingData(driveService)
         LocalBroadcastManager.getInstance(Env.getApp()).sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_RESTORE_FINISH).apply {
             putParcelableArrayListExtra(EXTRA_CONTENT, data.toCollection(ArrayList()))
+            putExtra(EXTRA_SUCCESS, true)
         })
     } catch (e: Exception) {
         loge(e)
-        sendCallback(false)
         throw e
     }
 }

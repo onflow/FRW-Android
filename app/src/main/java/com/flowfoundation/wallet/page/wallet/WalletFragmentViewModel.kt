@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.manager.account.AccountInfoManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.OnUserInfoReload
 import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
+import com.flowfoundation.wallet.manager.account.OnAccountUpdate
 import com.flowfoundation.wallet.manager.account.WalletFetcher
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -30,7 +31,7 @@ import java.math.BigDecimal
 import java.util.concurrent.CopyOnWriteArrayList
 
 class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateListener, StakingInfoUpdateListener,
-    OnUserInfoReload, FungibleTokenListUpdateListener, FungibleTokenUpdateListener {
+    OnUserInfoReload, FungibleTokenListUpdateListener, FungibleTokenUpdateListener, OnAccountUpdate {
 
     val dataListLiveData = MutableLiveData<List<WalletCoinItemModel>>()
 
@@ -63,6 +64,12 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         }
     }
 
+    override fun onAccountUpdate(account: com.flowfoundation.wallet.manager.account.Account) {
+        viewModelIOScope(this) {
+            loadWallet(true)
+        }
+    }
+
     override fun onWalletDataUpdate(wallet: WalletListData) {
         updateWalletHeader(wallet = wallet)
         loadCoinInfo(false)
@@ -80,7 +87,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             isStaked = StakingManager.isStaked(),
             stakeAmount = StakingManager.stakingCount()
         )
-        dataListLiveData.postValue(dataList)
+        dataListLiveData.postValue(dataList.toList())
     }
 
     fun onBalanceHideStateUpdate() {
@@ -100,7 +107,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             logd(TAG, "loadWallet :: null")
         } else {
             logd(TAG, "loadWallet :: wallet")
-            updateWalletHeader(WalletManager.wallet())
+            updateWalletHeader()
             needReload = true
             loadCoinInfo(isRefresh)
         }
@@ -164,7 +171,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                 })
                 logd(TAG, "loadCoinList dataList:${dataList.map { it.token.contractId() }}")
                 sortDataList()
-                dataListLiveData.postValue(dataList)
+                dataListLiveData.postValue(dataList.toList())
                 updateWalletHeader(count = dataList.size)
             }
             if (isMainnet() && WalletManager.isEVMAccountSelected().not() && WalletManager.isChildAccountSelected().not()) {
@@ -187,7 +194,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                         )
                     )
                     sortDataList()
-                    dataListLiveData.postValue(dataList)
+                    dataListLiveData.postValue(dataList.toList())
                     updateWalletHeader(count = dataList.size)
                 }
             }
@@ -197,7 +204,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
                 return
             }
             dataList.removeAt(index)
-            dataListLiveData.postValue(dataList)
+            dataListLiveData.postValue(dataList.toList())
             updateWalletHeader(count = dataList.size)
         }
     }
@@ -208,7 +215,7 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         val index = dataList.indexOf(oldItem)
         dataList[index] = oldItem.copy(token = token)
         sortDataList()
-        dataListLiveData.postValue(dataList)
+        dataListLiveData.postValue(dataList.toList())
         updateWalletHeader()
     }
 

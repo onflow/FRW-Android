@@ -48,7 +48,9 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        barcodeLauncher = registerBarcodeLauncher { result -> dispatchScanResult(requireContext(), result.orEmpty()) }
+        barcodeLauncher = registerBarcodeLauncher { result -> 
+            dispatchScanResult(requireContext(), result.orEmpty())
+        }
         WalletNotificationManager.addListener(this)
         WallpaperManager.addListener(this)
     }
@@ -64,7 +66,7 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
         headerPresenter = WalletHeaderPresenter(this, binding.walletHeader.root)
 //        headerPlaceholderPresenter = WalletHeaderPlaceholderPresenter(binding.shimmerPlaceHolder.root)
 
-        binding.ivScan.setOnClickListener { barcodeLauncher.launch() }
+        binding.llScan.setOnClickListener { barcodeLauncher.launch() }
         TransitionManager.beginDelayedTransition(binding.root)
 
         viewModel = ViewModelProvider(this)[WalletFragmentViewModel::class.java].apply {

@@ -74,7 +74,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
                 pbKeyWeight.progress = (progress * 100).toInt()
             }
 
-            tvPublicKeyContent.text = model.publicKey.base16Value
+            tvPublicKeyContent.text = model.publicKey.publicKey
             tvCurveContent.text = model.signAlgo.name
             tvHashContent.text = model.hashAlgo.name
             tvSequenceContent.text = model.sequenceNumber.toString()
@@ -85,7 +85,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
             }
             if (model.revoked || model.isRevoking || model.isCurrentDevice) {
                 srlSwipeLayout.setLockDrag(true)
-                srlSwipeLayout.close(false)
+                        srlSwipeLayout.close(false)
             } else {
                 srlSwipeLayout.setLockDrag(false)
             }
@@ -103,7 +103,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
                 )
             }
             ivKeyCopy.setOnClickListener {
-                textToClipboard(model.publicKey.base16Value)
+                textToClipboard(model.publicKey.publicKey)
                 toast(msgRes = R.string.copied_to_clipboard)
             }
         }
@@ -112,7 +112,7 @@ class AccountKeyListItemPresenter(private val view: View) : BaseViewHolder(view)
     private fun toggleContent() {
         isExpanded = isExpanded.not()
         with(binding) {
-            fbToggle.setImageResource(if (isExpanded) {
+            fbToggle.setImageResource(if(isExpanded) {
                 R.drawable.ic_key_list_collapse
             } else {
                 R.drawable.ic_key_list_expand

@@ -61,6 +61,7 @@ class TokenDetailPresenter(
                 TransactionSendActivity.launch(activity, coinContractId = token.contractId())
             }
             ivVerified.setVisible(token.isVerified)
+            ivVerifiedSecondary.setVisible(token.isVerified)
             clVerifiedTip.setVisible(token.isVerified.not())
             btnReceive.setOnClickListener { ReceiveActivity.launch(activity) }
             btnSwap.setOnClickListener {

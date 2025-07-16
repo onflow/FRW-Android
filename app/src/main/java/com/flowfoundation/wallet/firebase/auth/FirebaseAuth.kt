@@ -19,6 +19,7 @@ fun isAnonymousSignIn(): Boolean {
     return Firebase.auth.currentUser?.isAnonymous ?: true
 }
 
+
 fun isUserSignIn(): Boolean {
     val user = Firebase.auth.currentUser
     return user != null && user.uid.isNotEmpty() && isAnonymousSignIn().not()
@@ -36,8 +37,6 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
             clearUserCache()
             if (task.isSuccessful) {
                 auth.currentUser?.getIdToken(true)?.addOnSuccessListener { result ->
-                    val jwt = result.token
-                    logd(TAG, "get token finish, token:${jwt}")
                     uiScope {
                         onComplete.invoke(true, null)
                     }

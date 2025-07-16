@@ -14,11 +14,13 @@ import com.flowfoundation.wallet.manager.blocklist.BlockManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.capitalizeV2
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.urlHost
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclDialogModel
 import kotlin.coroutines.Continuation
@@ -40,7 +42,14 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         result ?: return
         val data = data ?: return
-        val address = WalletManager.selectedWalletAddress()
+        
+        // Determine if this is an EVM dApp and use appropriate address
+        val address = if (isEVMDapp(data.url)) {
+            EVMWalletManager.getEVMAddress() ?: WalletManager.selectedWalletAddress()
+        } else {
+            WalletManager.selectedWalletAddress()
+        }
+        
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
         with(binding) {
             iconView.loadFavicon(data.logo ?: data.url?.toFavIcon())
@@ -98,6 +107,21 @@ class FclAuthnDialog : BottomSheetDialogFragment() {
             dismiss()
         }
         super.onResume()
+    }
+
+    /**
+     * Check if the given URL belongs to an EVM dApp
+     * Based on session proposal analysis done in WalletConnectDelegate
+     */
+    private fun isEVMDapp(url: String?): Boolean {
+        val data = this.data
+        logd("FCLAUTH", "Checking isEVMDapp for: $data")
+        
+        // Simply check if this was flagged as EVM by session proposal analysis
+        // The WalletConnectDelegate sets network="evm" for EVM requests
+        val isEVM = data?.network == "evm"
+        logd("FCLAUTH", "Session proposal analysis result - isEVM: $isEVM")
+        return isEVM
     }
 
 }
