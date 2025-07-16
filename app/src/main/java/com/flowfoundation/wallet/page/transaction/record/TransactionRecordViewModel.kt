@@ -91,7 +91,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
             logd("TransactionRecordViewModel", "Child account details: address='${childAccount?.address}', name='${childAccount?.name}'")
         }
         logd("TransactionRecordViewModel", "=== END DEBUG ===")
-        
+
         if (WalletManager.isEVMAccountSelected()) {
             logd("TransactionRecordViewModel", "EVM account selected. Fetching EVM transfer records for address: '$formattedAddress'")
             ioScope {
@@ -130,7 +130,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
             ioScope {
                 try {
                     logd("TransactionRecordViewModel", "Creating API service for Flow transfers")
-                    val service = retrofit(network = chainNetWorkString()).create(ApiService::class.java)
+                    val service = retrofitApi().create(ApiService::class.java)
                     logd("TransactionRecordViewModel", "Making API call to get Flow transfer records for address: '$formattedAddress'")
                     val resp = service.getTransferRecord(formattedAddress, limit = LIMIT)
                     logd("TransactionRecordViewModel", "Transfer record response received. Status: ${resp.status}, Message: ${resp.message}")
