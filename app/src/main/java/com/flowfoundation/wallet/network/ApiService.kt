@@ -150,7 +150,7 @@ interface ApiService {
         @Query("pair") coinPair: String
     ): CryptowatchSummaryResponse
 
-    @GET("/v1/account/tokentransfers")
+    @GET("/api/v1/account/token-transfers")
     suspend fun getTransferRecordByToken(
         @Query("address") walletAddress: String,
         @Query("token") tokenId: String,
@@ -158,7 +158,7 @@ interface ApiService {
         @Query("after") after: String = "",
     ): TransferRecordResponse
 
-    @GET("/v1/account/transfers")
+    @GET("/api/v1/account/transfers")
     suspend fun getTransferRecord(
         @Query("address") walletAddress: String,
         @Query("limit") limit: Int = 25,

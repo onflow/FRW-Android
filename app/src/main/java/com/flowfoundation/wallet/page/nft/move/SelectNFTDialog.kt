@@ -31,7 +31,6 @@ import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -117,14 +116,10 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
                         isSuccess ->
                         uiScope {
                             btnMove.setProgressVisible(false)
-                            if (isSuccess) {
-                                toast(msgRes = R.string.move_nft_success)
-                                // Dismiss dialog immediately upon successful TX submission
-                                result?.resume(true)
-                                dismissAllowingStateLoss()
-                            } else {
-                                toast(msgRes = R.string.move_nft_failed)
-                            }
+                            // Remove duplicate toast - TransactionStateManager will handle it
+                            // Dismiss dialog for both success and failure since monitoring continues in background
+                            result?.resume(isSuccess)
+                            dismissAllowingStateLoss()
                         }
                     }
                 }

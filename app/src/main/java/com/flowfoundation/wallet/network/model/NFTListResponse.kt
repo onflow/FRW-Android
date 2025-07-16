@@ -85,7 +85,8 @@ data class Nft(
     fun isNBA() = collectionName?.trim()?.lowercase() == "TopShot".lowercase()
 
     fun canBridgeToFlow(): Boolean {
-        return flowIdentifier.isNullOrBlank().not()
+        val result = flowIdentifier.isNullOrBlank().not()
+        return result
     }
 
     fun getCollectionContractId(): String {
@@ -97,11 +98,15 @@ data class Nft(
     }
 
     fun canBridgeToEVM(): Boolean {
-        return getEVMAddress()?.isNotEmpty() ?: return false
+        val evmAddr = getEVMAddress()
+        val result = evmAddr?.isNotEmpty() ?: false
+        return result
     }
 
     fun getEVMAddress(): String? {
-        return evmAddress ?: NftCollectionConfig.get(collectionAddress, contractName())?.evmAddress
+        val configEvmAddress = NftCollectionConfig.get(collectionAddress, contractName())?.evmAddress
+        val result = evmAddress ?: configEvmAddress
+        return result
     }
 }
 
