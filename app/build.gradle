@@ -437,6 +437,9 @@ dependencies {
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
 }
 
+// Add react-native-config configuration
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
 // Add after android {} block
 // jacoco {
 //     toolVersion = "0.8.11"
