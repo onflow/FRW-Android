@@ -37,7 +37,7 @@ class ExploreFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.searchBox.scanButton.setOnClickListener {
             // Launch React Native Demo Activity instead of barcode scanner
-            ReactNativeDemoActivity.launch(requireContext(), "Profile", "0x1234567890abcdef", "mainnet")
+            ReactNativeDemoActivity.launch(requireContext(), "Home", "0x1234567890abcdef", "mainnet")
         }
         presenter = ExplorePresenter(this, binding)
         viewModel = ViewModelProvider(requireActivity())[ExploreViewModel::class.java].apply {
