@@ -3,8 +3,10 @@ package com.flowfoundation.wallet.manager.account
 /**
  * Base exception for KeyStore migration failures.
  * Provides detailed context for debugging migration issues.
+ * 
+ * Note: Using abstract class instead of sealed class to avoid ASM9 compatibility issues.
  */
-sealed class KeyStoreMigrationException(
+abstract class KeyStoreMigrationException(
     message: String,
     cause: Throwable? = null,
     val prefix: String? = null,
@@ -76,8 +78,27 @@ class InvalidPrivateKeySizeException(
     alias = alias
 ) {
     
+    /**
+     * ⚠️ SECURITY WARNING: This method exposes raw private key material!
+     * 
+     * This should ONLY be used for debugging in development builds.
+     * NEVER call this method in production code or logs, as it could
+     * expose users' private keys and compromise their funds.
+     * 
+     * @return Hex-encoded private key bytes - HIGHLY SENSITIVE MATERIAL!
+     */
     fun getKeyBytesHex(): String? {
         return keyBytes?.joinToString("") { "%02x".format(it) }
+    }
+    
+    /**
+     * Safe method to get debugging information without exposing key material.
+     * Use this method in production logging instead of getKeyBytesHex().
+     * 
+     * @return Non-sensitive debugging information
+     */
+    fun getSafeDebugInfo(): String {
+        return "actualSize=${keyBytes?.size}, expectedSize=$expectedSize, alias=$alias"
     }
 }
 

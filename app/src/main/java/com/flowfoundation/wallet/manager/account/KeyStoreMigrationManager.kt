@@ -7,7 +7,6 @@ import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.logw
 import org.onflow.flow.models.SigningAlgorithm
 import java.security.KeyStore
 import java.security.KeyStore.PrivateKeyEntry
@@ -44,18 +43,22 @@ object KeyStoreMigrationManager {
             logd(TAG, "Found ${accounts.size} accounts to check for migration")
             
             val storage = getStorage()
-            var migrationPerformed = false
+            var totalAccountsProcessed = 0
+            var successfulMigrations = 0
+            var accountsNeedingMigration = 0
             
             // Check each account
             for (account in accounts) {
                 val prefix = account.prefix
                 if (!prefix.isNullOrBlank()) {
+                    totalAccountsProcessed++
                     logd(TAG, "Checking account with prefix: $prefix")
                     
                     // Check if the account already has a key in the new storage system
                     val newKeyId = "prefix_key_$prefix"
                     if (hasKeyInNewStorage(newKeyId, prefix, storage)) {
                         logd(TAG, "Account $prefix already has key in new storage, skipping")
+                        successfulMigrations++ // Already migrated counts as success
                         continue
                     }
                     
@@ -66,31 +69,75 @@ object KeyStoreMigrationManager {
                         val privateKeyData = extractPrivateKeyFromAndroidKeystore(oldAlias)
                         
                         logd(TAG, "Found private key in old keystore for prefix: $prefix")
+                        accountsNeedingMigration++
                         
                         // Migrate the key to the new storage system
                         migratePrivateKey(privateKeyData, newKeyId, prefix, storage)
                         logd(TAG, "Successfully migrated key for prefix: $prefix")
-                        migrationPerformed = true
+                        successfulMigrations++
                         
                     } catch (e: KeystoreKeyNotFoundException) {
                         logd(TAG, "No key found in old keystore for prefix: $prefix (not an error - may be new account)")
+                        successfulMigrations++ // No migration needed counts as success
                     } catch (e: InvalidPrivateKeySizeException) {
                         loge(TAG, "CRITICAL: Invalid private key size for prefix $prefix: ${e.message}")
-                        loge(TAG, "Key details: actualSize=${e.keyBytes?.size}, keyBytes=${e.getKeyBytesHex()?.take(64)}...")
                         loge(TAG, "This account may require manual recovery or the key may be corrupted")
+                        accountsNeedingMigration++
+                        // Note: successfulMigrations is NOT incremented - this is a failure
                     } catch (e: KeyStoreMigrationException) {
                         loge(TAG, "Migration failed for prefix $prefix: $e")
                         loge(TAG, "Account may need manual intervention or alternative recovery method")
+                        accountsNeedingMigration++
+                        // Note: successfulMigrations is NOT incremented - this is a failure
                     } catch (e: Exception) {
                         loge(TAG, "Unexpected error migrating key for prefix $prefix: ${e.message}")
+                        accountsNeedingMigration++
+                        // Note: successfulMigrations is NOT incremented - this is a failure
                     }
                 }
             }
             
-            // Mark migration as completed if any migration was performed or no migration was needed
-            if (migrationPerformed || accounts.isEmpty()) {
+            // Determine if migration should be marked as completed
+            logd(TAG, "Migration Summary:")
+            logd(TAG, "- Total accounts processed: $totalAccountsProcessed")
+            logd(TAG, "- Successful migrations: $successfulMigrations") 
+            logd(TAG, "- Accounts that needed migration: $accountsNeedingMigration")
+            
+            val shouldMarkCompleted = when {
+                // Case 1: No accounts exist - nothing to migrate
+                accounts.isEmpty() -> {
+                    logd(TAG, "No accounts found - marking migration as completed")
+                    true
+                }
+                
+                // Case 2: No accounts have prefix (all keystore-based) - no migration needed
+                totalAccountsProcessed == 0 -> {
+                    logd(TAG, "No prefix-based accounts found - marking migration as completed")
+                    true
+                }
+                
+                // Case 3: All accounts were successfully processed
+                successfulMigrations == totalAccountsProcessed -> {
+                    logd(TAG, "All accounts successfully processed - marking migration as completed")
+                    true
+                }
+                
+                // Case 4: Some accounts failed - DO NOT mark as completed
+                successfulMigrations < totalAccountsProcessed -> {
+                    loge(TAG, "Some accounts failed migration - NOT marking as completed")
+                    loge(TAG, "Failed accounts: ${totalAccountsProcessed - successfulMigrations}")
+                    loge(TAG, "Migration will be retried on next app launch")
+                    false
+                }
+                
+                else -> false
+            }
+            
+            if (shouldMarkCompleted) {
                 markMigrationCompleted()
                 logd(TAG, "Migration process completed successfully")
+            } else {
+                logd(TAG, "Migration process completed with failures - will retry on next launch")
             }
             
         } catch (e: Exception) {
@@ -165,7 +212,7 @@ object KeyStoreMigrationManager {
                 else -> {
                     // This is the critical improvement - throw specific exception instead of returning null
                     loge(TAG, "Private key has unexpected size: ${privateKeyBytes.size} bytes (expected: 32)")
-                    loge(TAG, "Key bytes (first 64 chars): ${privateKeyBytes.take(32).joinToString("") { "%02x".format(it) }}")
+                    
                     throw InvalidPrivateKeySizeException(
                         alias = alias,
                         actualSize = privateKeyBytes.size,
@@ -219,10 +266,8 @@ object KeyStoreMigrationManager {
             
             // Verify the key works by generating a public key
             val publicKey = retrievedKey.publicKey(SigningAlgorithm.ECDSA_P256)
-            if (publicKey == null) {
-                throw KeyMigrationVerificationException(keyId, password)
-            }
-            
+                ?: throw KeyMigrationVerificationException(keyId, password)
+
             logd(TAG, "Successfully migrated and verified private key")
             logd(TAG, "Generated public key size: ${publicKey.size} bytes")
             
@@ -250,18 +295,6 @@ object KeyStoreMigrationManager {
     }
     
     /**
-     * Public method to check migration status (for diagnostics)
-     */
-    fun getMigrationStatus(): Boolean {
-        return try {
-            val storage = getStorage()
-            storage.get(MIGRATION_COMPLETED_KEY) != null
-        } catch (e: Exception) {
-            false
-        }
-    }
-    
-    /**
      * Marks migration as completed
      */
     private fun markMigrationCompleted() {
@@ -271,19 +304,6 @@ object KeyStoreMigrationManager {
             logd(TAG, "Marked migration as completed")
         } catch (e: Exception) {
             logd(TAG, "Error marking migration as completed: ${e.message}")
-        }
-    }
-    
-    /**
-     * Forces re-migration (for testing purposes only)
-     */
-    fun resetMigrationStatus() {
-        try {
-            val storage = getStorage()
-            storage.remove(MIGRATION_COMPLETED_KEY)
-            logd(TAG, "Reset migration status")
-        } catch (e: Exception) {
-            logd(TAG, "Error resetting migration status: ${e.message}")
         }
     }
     
