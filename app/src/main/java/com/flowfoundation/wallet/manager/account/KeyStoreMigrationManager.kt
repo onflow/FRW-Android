@@ -6,6 +6,7 @@ import com.flow.wallet.storage.StorageProtocol
 import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import org.onflow.flow.models.SigningAlgorithm
 import java.security.KeyStore
@@ -58,22 +59,30 @@ object KeyStoreMigrationManager {
                         continue
                     }
                     
-                    // Check if the account has a key in the old Android Keystore
+                    // Attempt to migrate the key from old Android Keystore
                     val oldAlias = OLD_KEYSTORE_ALIAS_PREFIX + prefix
-                    val privateKeyData = extractPrivateKeyFromAndroidKeystore(oldAlias)
-                    
-                    if (privateKeyData != null) {
+                    try {
+                        logd(TAG, "Attempting to extract key from old keystore for prefix: $prefix")
+                        val privateKeyData = extractPrivateKeyFromAndroidKeystore(oldAlias)
+                        
                         logd(TAG, "Found private key in old keystore for prefix: $prefix")
                         
                         // Migrate the key to the new storage system
-                        if (migratePrivateKey(privateKeyData, newKeyId, prefix, storage)) {
-                            logd(TAG, "Successfully migrated key for prefix: $prefix")
-                            migrationPerformed = true
-                        } else {
-                            logd(TAG, "Failed to migrate key for prefix: $prefix")
-                        }
-                    } else {
-                        logd(TAG, "No key found in old keystore for prefix: $prefix")
+                        migratePrivateKey(privateKeyData, newKeyId, prefix, storage)
+                        logd(TAG, "Successfully migrated key for prefix: $prefix")
+                        migrationPerformed = true
+                        
+                    } catch (e: KeystoreKeyNotFoundException) {
+                        logd(TAG, "No key found in old keystore for prefix: $prefix (not an error - may be new account)")
+                    } catch (e: InvalidPrivateKeySizeException) {
+                        loge(TAG, "CRITICAL: Invalid private key size for prefix $prefix: ${e.message}")
+                        loge(TAG, "Key details: actualSize=${e.keyBytes?.size}, keyBytes=${e.getKeyBytesHex()?.take(64)}...")
+                        loge(TAG, "This account may require manual recovery or the key may be corrupted")
+                    } catch (e: KeyStoreMigrationException) {
+                        loge(TAG, "Migration failed for prefix $prefix: $e")
+                        loge(TAG, "Account may need manual intervention or alternative recovery method")
+                    } catch (e: Exception) {
+                        loge(TAG, "Unexpected error migrating key for prefix $prefix: ${e.message}")
                     }
                 }
             }
@@ -106,97 +115,125 @@ object KeyStoreMigrationManager {
     
     /**
      * Extracts private key data from the old Android Keystore system
+     * @throws KeyStoreMigrationException with specific details about the failure
      */
-    private fun extractPrivateKeyFromAndroidKeystore(alias: String): ByteArray? {
-        return try {
+    private fun extractPrivateKeyFromAndroidKeystore(alias: String): ByteArray {
+        try {
             logd(TAG, "Attempting to extract key from Android Keystore with alias: $alias")
             
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
             keyStore.load(null)
             
             if (!keyStore.containsAlias(alias)) {
-                logd(TAG, "Alias $alias not found in Android Keystore")
-                return null
+                throw KeystoreKeyNotFoundException(alias)
             }
             
-            val keyEntry = keyStore.getEntry(alias, null) as? PrivateKeyEntry
-            if (keyEntry == null) {
-                logw(TAG, "Key entry not found for alias: $alias")
-                return null
+            val keyEntry = keyStore.getEntry(alias, null)
+            if (keyEntry !is PrivateKeyEntry) {
+                val entryType = keyEntry?.javaClass?.simpleName ?: "null"
+                throw InvalidKeystoreEntryException(alias, entryType)
             }
             
-            val privateKey = keyEntry.privateKey as? ECPrivateKey
-            if (privateKey == null) {
-                logw(TAG, "Private key is not an EC key for alias: $alias")
-                return null
+            val privateKey = keyEntry.privateKey
+            if (privateKey !is ECPrivateKey) {
+                val keyType = privateKey?.javaClass?.simpleName ?: "null"
+                throw UnsupportedKeyTypeException(alias, keyType)
             }
             
             // Extract the private key value as raw bytes
             val privateKeyValue = privateKey.s
             val privateKeyBytes = privateKeyValue.toByteArray()
             
-            // Ensure the key is 32 bytes (pad with zeros if necessary)
+            logd(TAG, "Extracted private key with size: ${privateKeyBytes.size} bytes")
+            
+            // Ensure the key is 32 bytes (normalize different formats)
             val normalizedBytes = when {
-                privateKeyBytes.size == 32 -> privateKeyBytes
-                privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> 
-                    privateKeyBytes.copyOfRange(1, 33) // Remove leading zero byte
+                privateKeyBytes.size == 32 -> {
+                    logd(TAG, "Private key size is correct (32 bytes)")
+                    privateKeyBytes
+                }
+                privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
+                    logd(TAG, "Removing leading zero byte from 33-byte key")
+                    privateKeyBytes.copyOfRange(1, 33)
+                }
                 privateKeyBytes.size < 32 -> {
+                    logd(TAG, "Padding ${privateKeyBytes.size}-byte key to 32 bytes")
                     val padded = ByteArray(32)
                     System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
                     padded
                 }
                 else -> {
-                    logw(TAG, "Unexpected private key size: ${privateKeyBytes.size}")
-                    return null
+                    // This is the critical improvement - throw specific exception instead of returning null
+                    loge(TAG, "Private key has unexpected size: ${privateKeyBytes.size} bytes (expected: 32)")
+                    loge(TAG, "Key bytes (first 64 chars): ${privateKeyBytes.take(32).joinToString("") { "%02x".format(it) }}")
+                    throw InvalidPrivateKeySizeException(
+                        alias = alias,
+                        actualSize = privateKeyBytes.size,
+                        keyBytes = privateKeyBytes
+                    )
                 }
             }
             
-            logd(TAG, "Successfully extracted private key from Android Keystore")
-            normalizedBytes
+            logd(TAG, "Successfully extracted and normalized private key from Android Keystore")
+            return normalizedBytes
             
+        } catch (e: KeyStoreMigrationException) {
+            // Re-throw our specific exceptions
+            loge(TAG, "Key extraction failed: $e")
+            throw e
         } catch (e: Exception) {
-            logd(TAG, "Error extracting private key from Android Keystore: ${e.message}")
-            null
+            // Wrap other exceptions
+            loge(TAG, "Unexpected error extracting private key: ${e.message}")
+            throw KeystoreAccessException(alias, e)
         }
     }
     
     /**
      * Migrates a private key to the new storage system
+     * @throws KeyStoreMigrationException with specific details about the failure
      */
     private suspend fun migratePrivateKey(
         privateKeyData: ByteArray, 
         keyId: String, 
         password: String, 
         storage: StorageProtocol
-    ): Boolean {
-        return try {
+    ) {
+        try {
             logd(TAG, "Migrating private key to new storage with ID: $keyId")
+            logd(TAG, "Private key data size: ${privateKeyData.size} bytes")
             
             // Create a new PrivateKey instance using Flow-Wallet-Kit
             val privateKey = PrivateKey.create(storage)
             
             // Import the raw private key data
             privateKey.importPrivateKey(privateKeyData, KeyFormat.RAW)
+            logd(TAG, "Successfully imported private key data")
             
             // Store the key with the new ID pattern
             privateKey.store(keyId, password)
+            logd(TAG, "Successfully stored private key with new ID")
             
             // Verify the key was stored correctly by attempting to retrieve it
             val retrievedKey = PrivateKey.get(keyId, password, storage)
+            logd(TAG, "Successfully retrieved stored private key for verification")
             
             // Verify the key works by generating a public key
             val publicKey = retrievedKey.publicKey(SigningAlgorithm.ECDSA_P256)
             if (publicKey == null) {
-                logd(TAG, "Failed to generate public key from migrated private key")
-                return false
+                throw KeyMigrationVerificationException(keyId, password)
             }
             
             logd(TAG, "Successfully migrated and verified private key")
-            true
+            logd(TAG, "Generated public key size: ${publicKey.size} bytes")
             
+        } catch (e: KeyStoreMigrationException) {
+            // Re-throw our specific exceptions
+            loge(TAG, "Key migration failed: $e")
+            throw e
         } catch (e: Exception) {
-            logd(TAG, "Error migrating private key: ${e.message}")
-            false
+            // Wrap other exceptions
+            loge(TAG, "Unexpected error during key migration: ${e.message}")
+            throw KeyMigrationStorageException(keyId, password, e)
         }
     }
     
