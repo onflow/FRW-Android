@@ -24,6 +24,13 @@ import java.util.UUID
 // from single account to multi account
 fun accountMigrateV1(callback: (() -> Unit)? = null) {
     ioScope {
+        // First, perform keystore migration if needed
+        try {
+            KeyStoreMigrationManager.performMigrationIfNeeded()
+        } catch (e: Exception) {
+            logd("AccountMigrate", "Error during keystore migration: ${e.message}")
+        }
+        
         if (!isAccountV1DataExist()) {
             callback?.invoke()
             return@ioScope

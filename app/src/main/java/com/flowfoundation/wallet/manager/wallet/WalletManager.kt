@@ -32,6 +32,7 @@ import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -123,15 +124,28 @@ object WalletManager {
 
         // Handle prefix-based accounts
         else if (!account.prefix.isNullOrBlank()) {
-            logd(TAG, "Initializing prefix-based wallet")
+            logd(TAG, "Initializing prefix-based wallet for prefix: ${account.prefix}")
 
             // Load the stored private key using the prefix-based ID
             val keyId = "prefix_key_${account.prefix}"
             val privateKey = try {
+                logd(TAG, "Attempting to load private key with ID: $keyId")
                 PrivateKey.get(keyId, account.prefix!!, storage)
             } catch (e: Exception) {
                 logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
-                logd(TAG, "Cannot proceed without the stored key as it would create a different account")
+                logd(TAG, "This could indicate:")
+                logd(TAG, "  1. Key was not migrated from old Android Keystore")
+                logd(TAG, "  2. Migration failed")
+                logd(TAG, "  3. Account was created before migration system was in place")
+
+                // Run diagnostic to help troubleshooting
+                try {
+                    val androidKeystoreAliases = KeyStoreMigrationManager.diagnoseAndroidKeystore()
+                    logd(TAG, "Available Android Keystore aliases for debugging: $androidKeystoreAliases")
+                } catch (diagE: Exception) {
+                    logd(TAG, "Could not run Android Keystore diagnostic: ${diagE.message}")
+                }
+                
                 return false // Fail gracefully instead of creating a new key
             }
             logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
@@ -498,15 +512,25 @@ object WalletManager {
 
                 // Handle prefix-based accounts
                 else if (!account.prefix.isNullOrBlank()) {
-                    logd(TAG, "Updating prefix-based wallet")
+                    logd(TAG, "Updating prefix-based wallet for prefix: ${account.prefix}")
 
                     // Load the stored private key using the prefix-based ID
                     val keyId = "prefix_key_${account.prefix}"
                     val privateKey = try {
+                        logd(TAG, "Attempting to load private key with ID: $keyId")
                         PrivateKey.get(keyId, account.prefix!!, storage)
                     } catch (e: Exception) {
                         logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
-                        logd(TAG, "Cannot proceed without the stored key as it would create a different account")
+                        logd(TAG, "This could indicate a migration issue. Cannot proceed without the stored key.")
+                        
+                        // Run diagnostic to help troubleshooting
+                        try {
+                            val androidKeystoreAliases = KeyStoreMigrationManager.diagnoseAndroidKeystore()
+                            logd(TAG, "Available Android Keystore aliases for debugging: $androidKeystoreAliases")
+                        } catch (diagE: Exception) {
+                            logd(TAG, "Could not run Android Keystore diagnostic: ${diagE.message}")
+                        }
+                        
                         return@synchronized
                     }
                     logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
