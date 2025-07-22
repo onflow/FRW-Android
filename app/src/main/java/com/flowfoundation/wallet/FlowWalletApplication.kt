@@ -12,6 +12,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.flowfoundation.wallet.crowdin.crowdinInitialize
 import com.flowfoundation.wallet.manager.LaunchManager
 import com.flowfoundation.wallet.utils.Env
+import com.frwrn.bridge.FRWBridgePackage
 
 class FlowWalletApplication : Application(), ReactApplication {
 
@@ -21,6 +22,9 @@ class FlowWalletApplication : Application(), ReactApplication {
                 PackageList(this).packages.apply {
                     // Packages that cannot be autolinked yet can be added manually here, for example:
                     // add(MyReactNativePackage())
+                    
+                    // Add our custom FRW Bridge TurboModule
+                    add(FRWBridgePackage())
                 }
 
             override fun getJSMainModuleName(): String = "index"
