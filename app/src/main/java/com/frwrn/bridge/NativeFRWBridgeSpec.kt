@@ -39,4 +39,22 @@ abstract class NativeFRWBridgeSpec(reactContext: ReactApplicationContext) :
      * @param promise Promise to resolve with the signature
      */
     abstract fun sign(hexData: String, promise: Promise)
+
+    /**
+     * Get the address book contacts
+     * @param promise Promise to resolve with the address book contacts as JSON string
+     */
+    abstract fun getAddressBook(promise: Promise)
+
+    /**
+     * Get recent transaction contacts
+     * @param promise Promise to resolve with the recent contacts as JSON string  
+     */
+    abstract fun getRecentContacts(promise: Promise)
+
+    /**
+     * Get wallet accounts (main account + child accounts + EVM account)
+     * @param promise Promise to resolve with the wallet accounts as JSON string
+     */
+    abstract fun getWalletAccounts(promise: Promise)
 } 
