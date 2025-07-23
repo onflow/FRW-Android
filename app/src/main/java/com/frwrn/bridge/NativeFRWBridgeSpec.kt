@@ -57,4 +57,10 @@ abstract class NativeFRWBridgeSpec(reactContext: ReactApplicationContext) :
      * @param promise Promise to resolve with the wallet accounts as JSON string
      */
     abstract fun getWalletAccounts(promise: Promise)
+
+    /**
+     * Get COA (EVM) FLOW balance
+     * @param promise Promise to resolve with the COA FLOW balance as string
+     */
+    abstract fun getCOAFlowBalance(promise: Promise)
 } 

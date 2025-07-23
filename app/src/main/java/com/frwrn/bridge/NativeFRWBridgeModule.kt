@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
+import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.cache.addressBookCache
@@ -17,6 +18,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 
 /**
  * Android TurboModule implementation for the FRW Bridge
@@ -264,7 +266,7 @@ class NativeFRWBridgeModule(reactContext: ReactApplicationContext) :
                         "emoji" to emoji,
                         "isActive" to true,
                         "isIncompatible" to false,
-                        "accountType" to "main"
+                        "type" to "main"
                     ))
                 }
 
@@ -279,7 +281,7 @@ class NativeFRWBridgeModule(reactContext: ReactApplicationContext) :
                             "emoji" to "👶", // Default emoji for child accounts
                             "isActive" to false,
                             "isIncompatible" to false,
-                            "accountType" to "child"
+                            "type" to "child"
                         ))
                     }
                 } catch (e: Exception) {
@@ -302,7 +304,7 @@ class NativeFRWBridgeModule(reactContext: ReactApplicationContext) :
                             "emoji" to emoji,
                             "isActive" to false,
                             "isIncompatible" to false,
-                            "accountType" to "evm"
+                            "type" to "evm"
                         ))
                     }
                 } catch (e: Exception) {
@@ -319,6 +321,27 @@ class NativeFRWBridgeModule(reactContext: ReactApplicationContext) :
             } catch (e: Exception) {
                 CoroutineScope(Dispatchers.Main).launch {
                     promise.resolve("[]") // Return empty array on error
+                }
+            }
+        }
+    }
+
+    /**
+     * Get COA (EVM) FLOW balance
+     * @param promise Promise to resolve with the COA FLOW balance as string
+     */
+    @ReactMethod
+    override fun getCOAFlowBalance(promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val balance = cadenceQueryCOATokenBalance() ?: BigDecimal.ZERO
+                
+                CoroutineScope(Dispatchers.Main).launch {
+                    promise.resolve(balance.toString())
+                }
+            } catch (e: Exception) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    promise.resolve("0") // Return 0 on error instead of rejecting
                 }
             }
         }
