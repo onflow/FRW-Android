@@ -2,6 +2,8 @@ package com.flowfoundation.wallet.bridge
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.bridge.WritableNativeArray
 import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
@@ -12,16 +14,14 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.cache.addressBookCache
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
-import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
-import com.google.gson.Gson
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
+import android.content.Intent
+import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -39,9 +39,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         ioScope {
             try {
                 val jwt = getFirebaseJwt()
-                promise.resolve(jwt)
+                uiScope {
+                    promise.resolve(jwt)
+                }
             } catch (e: Exception) {
-                promise.reject("JWT_ERROR", "Failed to get Firebase JWT: ${e.message}", e)
+                uiScope {
+                    promise.reject("JWT_ERROR", "Failed to get Firebase JWT: ${e.message}", e)
+                }
             }
         }
     }
@@ -60,72 +64,36 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: throw WalletError.InitHDWalletFailed
                 val signature = cryptoProvider.signData(hexData.hexToBytes())
                 if (signature.isNotEmpty()) {
-                    promise.resolve(signature)
-                } else {
-                    promise.reject("SIGN_ERROR", "Failed to sign data", null)
-                }
-            } catch (e: Exception) {
-                promise.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
-            }
-        }
-    }
-
-    override fun getAddressBook(promise: Promise) {
-        ioScope {
-            try {
-                // First try to get from cache
-                val cachedData = addressBookCache().read()?.contacts
-                if (!cachedData.isNullOrEmpty()) {
-                    val gson = Gson()
-                    val contactsJson = gson.toJson(cachedData.map { contact ->
-                        mapOf(
-                            "id" to contact.id,
-                            "name" to contact.name(),
-                            "address" to contact.address,
-                            "avatar" to contact.avatar,
-                            "username" to contact.username,
-                            "contactName" to contact.contactName
-                        )
-                    })
-
                     uiScope {
-                        promise.resolve(contactsJson)
-                    }
-                    return@ioScope
-                }
-
-                // If no cache, fetch from API
-                val service = retrofit().create(ApiService::class.java)
-                val response = service.getAddressBook()
-
-                if (response.status == 200 && !response.data.contacts.isNullOrEmpty()) {
-                    // Cache the response
-                    addressBookCache().cache(response.data)
-
-                    val gson = Gson()
-                    val contactsJson = gson.toJson(response.data.contacts?.map { contact ->
-                        mapOf(
-                            "id" to contact.id,
-                            "name" to contact.name(),
-                            "address" to contact.address,
-                            "avatar" to contact.avatar,
-                            "username" to contact.username,
-                            "contactName" to contact.contactName
-                        )
-                    })
-
-                    uiScope {
-                        promise.resolve(contactsJson)
+                        promise.resolve(signature)
                     }
                 } else {
                     uiScope {
-                        promise.resolve("[]") // Return empty array if no contacts
+                        promise.reject("SIGN_ERROR", "Failed to sign data", null)
                     }
                 }
             } catch (e: Exception) {
                 uiScope {
-                    promise.resolve("[]") // Return empty array on error instead of rejecting
+                    promise.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
                 }
+            }
+        }
+    }
+
+    override fun scanQRCode(promise: Promise) {
+        try {
+            // Store the promise for later resolution
+            QRCodeScanManager.setPendingPromise(promise)
+
+            // Create intent to launch scan activity
+            val intent = Intent(reactApplicationContext, ScanBarcodeActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+            // Start the activity
+            reactApplicationContext.startActivity(intent)
+        } catch (e: Exception) {
+            uiScope {
+                promise.reject("SCAN_ERROR", "Failed to start QR scanner: ${e.message}", e)
             }
         }
     }
@@ -136,29 +104,40 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val recentData = recentTransactionCache().read()?.contacts
 
                 if (!recentData.isNullOrEmpty()) {
-                    val gson = Gson()
-                    val contactsJson = gson.toJson(recentData.map { contact ->
-                        mapOf(
-                            "id" to contact.id,
-                            "name" to contact.name(),
-                            "address" to contact.address,
-                            "avatar" to contact.avatar,
-                            "username" to contact.username,
-                            "contactName" to contact.contactName
-                        )
-                    })
+                    val contactsArray = WritableNativeArray()
+                    recentData.forEach { contact ->
+                        val contactMap = WritableNativeMap().apply {
+                            putString("id", contact.id)
+                            putString("name", contact.name())
+                            putString("address", contact.address)
+                            putString("avatar", contact.avatar)
+                            putString("username", contact.username)
+                            putString("contactName", contact.contactName)
+                        }
+                        contactsArray.pushMap(contactMap)
+                    }
+
+                    val result = WritableNativeMap().apply {
+                        putArray("contacts", contactsArray)
+                    }
 
                     uiScope {
-                        promise.resolve(contactsJson)
+                        promise.resolve(result)
                     }
                 } else {
+                    val result = WritableNativeMap().apply {
+                        putArray("contacts", WritableNativeArray())
+                    }
                     uiScope {
-                        promise.resolve("[]") // Return empty array if no recent contacts
+                        promise.resolve(result)
                     }
                 }
             } catch (e: Exception) {
+                val result = WritableNativeMap().apply {
+                    putArray("contacts", WritableNativeArray())
+                }
                 uiScope {
-                    promise.resolve("[]") // Return empty array on error instead of rejecting
+                    promise.resolve(result)
                 }
             }
         }
@@ -167,7 +146,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getWalletAccounts(promise: Promise) {
         ioScope {
             try {
-                val accounts = mutableListOf<Map<String, Any?>>()
+                val accountsArray = WritableNativeArray()
 
                 // Get main wallet address
                 val mainAddress = WalletManager.selectedWalletAddress()
@@ -176,30 +155,32 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainAddress)
                     val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
 
-                    accounts.add(mapOf(
-                        "id" to "main",
-                        "name" to emojiInfo.emojiName,
-                        "address" to mainAddress,
-                        "emoji" to emoji,
-                        "isActive" to true,
-                        "isIncompatible" to false,
-                        "type" to "main"
-                    ))
+                    val accountMap = WritableNativeMap().apply {
+                        putString("id", "main")
+                        putString("name", emojiInfo.emojiName)
+                        putString("address", mainAddress)
+                        putString("emoji", emoji)
+                        putBoolean("isActive", true)
+                        putBoolean("isIncompatible", false)
+                        putString("type", "main")
+                    }
+                    accountsArray.pushMap(accountMap)
                 }
 
                 // Get child accounts
                 try {
                     val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
                     childAccounts?.forEach { childAccount ->
-                        accounts.add(mapOf(
-                            "id" to "child_${childAccount.address}",
-                            "name" to (childAccount.name ?: "Child Account"),
-                            "address" to childAccount.address,
-                            "emoji" to "👶", // Default emoji for child accounts
-                            "isActive" to false,
-                            "isIncompatible" to false,
-                            "type" to "child"
-                        ))
+                        val accountMap = WritableNativeMap().apply {
+                            putString("id", "child_${childAccount.address}")
+                            putString("name", childAccount.name ?: "Child Account")
+                            putString("address", childAccount.address)
+                            putString("emoji", "👶") // Default emoji for child accounts
+                            putBoolean("isActive", false)
+                            putBoolean("isIncompatible", false)
+                            putString("type", "child")
+                        }
+                        accountsArray.pushMap(accountMap)
                     }
                 } catch (e: Exception) {
                     // Child accounts might not be available, continue without them
@@ -214,30 +195,35 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         val emojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
                         val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
 
-                        accounts.add(mapOf(
-                            "id" to "evm",
-                            "name" to emojiInfo.emojiName,
-                            "address" to evmAddress,
-                            "emoji" to emoji,
-                            "isActive" to false,
-                            "isIncompatible" to false,
-                            "type" to "evm"
-                        ))
+                        val accountMap = WritableNativeMap().apply {
+                            putString("id", "evm")
+                            putString("name", emojiInfo.emojiName)
+                            putString("address", evmAddress)
+                            putString("emoji", emoji)
+                            putBoolean("isActive", false)
+                            putBoolean("isIncompatible", false)
+                            putString("type", "evm")
+                        }
+                        accountsArray.pushMap(accountMap)
                     }
                 } catch (e: Exception) {
                     // EVM account might not be available, continue without it
                     println("EVM account not available: ${e.message}")
                 }
 
-                val gson = Gson()
-                val accountsJson = gson.toJson(accounts)
+                val result = WritableNativeMap().apply {
+                    putArray("accounts", accountsArray)
+                }
 
                 uiScope {
-                    promise.resolve(accountsJson)
+                    promise.resolve(result)
                 }
             } catch (e: Exception) {
+                val result = WritableNativeMap().apply {
+                    putArray("accounts", WritableNativeArray())
+                }
                 uiScope {
-                    promise.resolve("[]") // Return empty array on error
+                    promise.resolve(result)
                 }
             }
         }

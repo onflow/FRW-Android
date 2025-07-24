@@ -8,6 +8,7 @@ import android.util.Log;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+import com.flowfoundation.wallet.bridge.QRCodeScanManager;
 
 public class ReactNativeDemoActivity extends ReactActivity {
 
@@ -80,6 +81,13 @@ public class ReactNativeDemoActivity extends ReactActivity {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        // Handle QR scan result
+        QRCodeScanManager.INSTANCE.handleScanResult(resultCode, data);
+    }
 
     /**
      * Launch the React Native Demo Activity

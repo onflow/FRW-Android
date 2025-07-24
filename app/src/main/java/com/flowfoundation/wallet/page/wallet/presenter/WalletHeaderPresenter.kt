@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
 import com.flowfoundation.wallet.R
+import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
@@ -70,7 +71,10 @@ class WalletHeaderPresenter(
             val count = if (model.coinCount > 0 ) model.coinCount else FungibleTokenListManager.getCurrentDisplayTokenListSnapshot().size
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
-            cvSend.setOnClickListener { TransactionSendActivity.launch(view.context) }
+            cvSend.setOnClickListener { 
+                // Launch React Native Demo Activity instead of TransactionSendActivity
+                ReactNativeDemoActivity.launch(view.context, "Home", WalletManager.selectedWalletAddress().toAddress(), if (isTestnet()) "testnet" else "mainnet")
+            }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address
