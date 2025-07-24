@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.network.model.CryptowatchSummaryData
 import com.flowfoundation.wallet.network.model.TransferRecord
 import com.flowfoundation.wallet.network.model.TransferRecordList
 import com.flowfoundation.wallet.network.retrofit
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.getQuoteMarket
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.updateQuoteMarket
@@ -141,9 +142,9 @@ class TokenDetailViewModel : ViewModel(), OnTransactionStateChange, FungibleToke
                 transferListLiveData.postValue(cache.take(3))
             }
 
-            val service = retrofit().create(ApiService::class.java)
+            val service = retrofitApi().create(ApiService::class.java)
             val walletAddress = WalletManager.selectedWalletAddress()
-            val resp = service.getTransferRecordByToken(walletAddress, token.contractId(), limit = 3)
+            val resp = service.getTransferRecordByToken(walletAddress, token.tokenIdentifier(), limit = 3)
             val data = resp.data?.transactions.orEmpty()
             transferListLiveData.postValue(data)
 
