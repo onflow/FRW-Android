@@ -5,10 +5,12 @@ plugins {
     id "org.jetbrains.kotlin.plugin.serialization" version "1.9.0"
     id 'com.google.gms.google-services'
     id 'com.google.firebase.crashlytics'
-    id("instabug-apm")
+//    id("instabug-apm")  // Disabled to fix ASM instrumentation issue
     id 'com.google.devtools.ksp'
     id 'com.google.firebase.appdistribution'
-    id 'jacoco'
+    // id 'jacoco'
+    id 'com.facebook.react'
+    id 'org.jetbrains.kotlin.plugin.compose'
 //    id 'com.google.ar.sceneform.plugin'
 }
 
@@ -23,8 +25,8 @@ repositories {
     maven {
         url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
         credentials {
-            username = properties.getProperty("gpr.user") as String?: System.getenv("TW_ACCESS_USER")
-            password = properties.getProperty("gpr.key") as String?: System.getenv("TW_ACCESS_TOKEN")
+            username = properties.getProperty("gpr.user") as String?: System.getenv("GITHUB_USER")
+            password = properties.getProperty("gpr.key") as String?: System.getenv("GITHUB_TOKEN")
         }
     }
 }
@@ -39,13 +41,17 @@ if (apiKeysFile.exists()) {
 def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKey"
 def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
 
+react {
+    autolinkLibrariesWithApp()
+}
+
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.flowfoundation.wallet"
-        minSdk 26
-        targetSdk 34
+        minSdk 24
+        targetSdk 35
         versionCode vCode as Integer
         versionName vName
 
@@ -163,17 +169,18 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.0"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     buildFeatures {
         compose true
         viewBinding true
         dataBinding true
+        buildConfig true
     }
     packagingOptions {
         resources {
@@ -212,10 +219,16 @@ configurations.all {
 }
 
 dependencies {
+    implementation("com.facebook.react:react-android")
+    
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    }
+    
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     implementation project(':wallet')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
@@ -425,33 +438,33 @@ dependencies {
 }
 
 // Add after android {} block
-jacoco {
-    toolVersion = "0.8.11"
-}
-
-tasks.register('jacocoTestReport', JacocoReport) {
-    dependsOn 'testDebugUnitTest'
-
-    reports {
-        xml.required = true
-        html.required = true
-    }
-
-    def fileFilter = [
-        '**/R.class',
-        '**/R$*.class',
-        '**/BuildConfig.*',
-        '**/Manifest*.*',
-        '**/*Test*.*',
-        'android/**/*.*'
-    ]
-    def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
-    def mainSrc = "${project.projectDir}/src/main/java"
-
-    sourceDirectories.setFrom(files([mainSrc]))
-    classDirectories.setFrom(files([debugTree]))
-    executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-        'jacoco/testDebugUnitTest.exec',
-        'outputs/code-coverage/connected/*coverage.ec'
-    ]))
-}
+// jacoco {
+//     toolVersion = "0.8.11"
+// }
+// 
+// tasks.register('jacocoTestReport', JacocoReport) {
+//     dependsOn 'testDebugUnitTest'
+// 
+//     reports {
+//         xml.required = true
+//         html.required = true
+//     }
+// 
+//     def fileFilter = [
+//         '**/R.class',
+//         '**/R$*.class',
+//         '**/BuildConfig.*',
+//         '**/Manifest*.*',
+//         '**/*Test*.*',
+//         'android/**/*.*'
+//     ]
+//     def debugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
+//     def mainSrc = "${project.projectDir}/src/main/java"
+// 
+//     sourceDirectories.setFrom(files([mainSrc]))
+//     classDirectories.setFrom(files([debugTree]))
+//     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
+//         'jacoco/testDebugUnitTest.exec',
+//         'outputs/code-coverage/connected/*coverage.ec'
+//     ]))
+// }
