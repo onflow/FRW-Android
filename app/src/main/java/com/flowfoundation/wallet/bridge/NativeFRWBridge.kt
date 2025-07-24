@@ -5,7 +5,6 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.flow.wallet.errors.WalletError
-import com.flowfoundation.wallet.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -21,17 +20,20 @@ import com.flowfoundation.wallet.utils.uiScope
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
 import android.content.Intent
+import com.flowfoundation.wallet.cache.addressBookCache
+import com.flowfoundation.wallet.network.ApiService
+import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
     override fun getName() = NAME
 
-    override fun getSelectedAddress(): String? {
+    override fun getSelectedAddress(): String {
         return WalletManager.selectedWalletAddress()
     }
 
-    override fun getNetwork(): String? {
+    override fun getNetwork(): String {
         return chainNetWorkString()
     }
 
@@ -173,7 +175,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     childAccounts?.forEach { childAccount ->
                         val accountMap = WritableNativeMap().apply {
                             putString("id", "child_${childAccount.address}")
-                            putString("name", childAccount.name ?: "Child Account")
+                            putString("name", childAccount.name)
                             putString("address", childAccount.address)
                             putString("emoji", "👶") // Default emoji for child accounts
                             putBoolean("isActive", false)
@@ -221,6 +223,93 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             } catch (e: Exception) {
                 val result = WritableNativeMap().apply {
                     putArray("accounts", WritableNativeArray())
+                }
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
+    }
+
+    override fun getAddressBook(promise: Promise) {
+        ioScope {
+            try {
+                // Try to get from cache first
+                val cachedData = addressBookCache().read()?.contacts
+
+                if (!cachedData.isNullOrEmpty()) {
+                    val contactsArray = WritableNativeArray()
+                    cachedData.forEach { contact ->
+                        val contactMap = WritableNativeMap().apply {
+                            putString("id", contact.id ?: contact.address)
+                            putString("name", contact.name())
+                            putString("address", contact.address)
+                            putString("avatar", contact.avatar)
+                            putString("username", contact.username)
+                            putString("contactName", contact.contactName)
+                        }
+                        contactsArray.pushMap(contactMap)
+                    }
+
+                    val result = WritableNativeMap().apply {
+                        putArray("contacts", contactsArray)
+                    }
+
+                    uiScope {
+                        promise.resolve(result)
+                    }
+                } else {
+                    // If no cache, try to fetch from API
+                    try {
+                        val service = retrofit().create(ApiService::class.java)
+                        val resp = service.getAddressBook()
+
+                        if (resp.status == 200 && !resp.data.contacts.isNullOrEmpty()) {
+                            // Cache the response
+                            addressBookCache().cache(resp.data)
+
+                            val contactsArray = WritableNativeArray()
+                            resp.data.contacts!!.forEach { contact ->
+                                val contactMap = WritableNativeMap().apply {
+                                    putString("id", contact.id ?: contact.address)
+                                    putString("name", contact.name())
+                                    putString("address", contact.address)
+                                    putString("avatar", contact.avatar)
+                                    putString("username", contact.username)
+                                    putString("contactName", contact.contactName)
+                                }
+                                contactsArray.pushMap(contactMap)
+                            }
+
+                            val result = WritableNativeMap().apply {
+                                putArray("contacts", contactsArray)
+                            }
+
+                            uiScope {
+                                promise.resolve(result)
+                            }
+                        } else {
+                            // Empty response
+                            val result = WritableNativeMap().apply {
+                                putArray("contacts", WritableNativeArray())
+                            }
+                            uiScope {
+                                promise.resolve(result)
+                            }
+                        }
+                    } catch (apiError: Exception) {
+                        // API call failed, return empty
+                        val result = WritableNativeMap().apply {
+                            putArray("contacts", WritableNativeArray())
+                        }
+                        uiScope {
+                            promise.resolve(result)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                val result = WritableNativeMap().apply {
+                    putArray("contacts", WritableNativeArray())
                 }
                 uiScope {
                     promise.resolve(result)
