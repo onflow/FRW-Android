@@ -31,6 +31,21 @@ class RNBridge {
         val contactName: String?
     )
 
+    data class AddressBookContact(
+        @SerializedName("id")
+        val id: String,
+        @SerializedName("name")
+        val name: String,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("avatar")
+        val avatar: String?,
+        @SerializedName("username")
+        val username: String?,
+        @SerializedName("contactName")
+        val contactName: String?
+    )
+
     data class WalletAccount(
         @SerializedName("id")
         val id: String,
@@ -40,6 +55,8 @@ class RNBridge {
         val address: String,
         @SerializedName("emoji")
         val emoji: String,
+        @SerializedName("avatar")
+        val avatar: String?,
         @SerializedName("isActive")
         val isActive: Boolean,
         @SerializedName("isIncompatible")
@@ -56,6 +73,11 @@ class RNBridge {
     data class WalletAccountsResponse(
         @SerializedName("accounts")
         val accounts: List<WalletAccount>
+    )
+
+    data class AddressBookResponse(
+        @SerializedName("contacts")
+        val contacts: List<AddressBookContact>
     )
 
 }
