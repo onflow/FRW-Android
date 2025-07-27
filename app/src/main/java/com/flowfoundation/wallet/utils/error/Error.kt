@@ -32,7 +32,9 @@ enum class AccountError(
     UPDATE_WALLET_INFO_FAILED("updateWalletInfoFailed"),
     GET_WALLET_FAILED("getWalletFailed"),
     WALLET_ERROR("walletError"),
-    UNEXPECTED_ERROR("unexpectedError");
+    UNEXPECTED_ERROR("unexpectedError"),
+    INVALID_PUBLIC_KEY("invalidPublicKey"),
+    GENERATE_PROVIDER_FAILED("generateProviderFailed");
 }
 
 enum class WalletError(

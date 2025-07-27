@@ -96,7 +96,7 @@ class BrowserPresenter(
         WindowFrame.browserContainer()?.setVisible(true)
         newAndPushBrowserTab(url)?.let { tab ->
             tab.webView.setWebViewCallback(this@BrowserPresenter)
-            expandBrowser()
+            WindowFrame.browserContainer()?.post { expandBrowser() }
             onTitleChange(tab.title() ?: (tab.url().orEmpty()))
         }
     }

@@ -38,6 +38,7 @@ import org.onflow.flow.infrastructure.parseErrorCode
 import org.onflow.flow.websocket.FlowWebSocketClient
 import org.onflow.flow.websocket.FlowWebSocketTopic
 import org.onflow.flow.websocket.TransactionStatusPayload
+import org.onflow.flow.models.TransactionExecution
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.WebSockets
 import java.lang.ref.WeakReference
@@ -223,19 +224,45 @@ object TransactionStateManager {
                 return
             }
 
-            // Update state if it changed
-            if (newStatus != null && newStatus.ordinal != state.state) {
-                logd(TAG, "WebSocket: Updating transaction $transactionId from state ${state.state} to ${newStatus.ordinal}")
-                state.state = newStatus.ordinal
-                state.errorMsg = transactionResult.errorMessage
+            // Check if anything changed (status OR execution)
+            val currentExecution = state.execution
+            val newExecution = transactionResult.execution?.name?.lowercase()
+            val statusChanged = newStatus != null && newStatus.ordinal != state.state
+            val executionChanged = newExecution != currentExecution
+            
+            if (statusChanged || executionChanged) {
+                if (statusChanged) {
+                    logd(TAG, "WebSocket: Updating transaction $transactionId from state ${state.state} to ${newStatus!!.ordinal}")
+                    state.state = newStatus.ordinal
+                }
+                
+                if (executionChanged) {
+                    logd(TAG, "WebSocket: Updating transaction $transactionId execution from '${currentExecution}' to '${newExecution}'")
+                    state.execution = newExecution
+                }
+                
+                // Only set error message if there's an actual error or explicit execution failure
+                state.errorMsg = when {
+                    transactionResult.errorMessage.isNotBlank() -> transactionResult.errorMessage
+                    transactionResult.execution == TransactionExecution.failure -> 
+                        "Transaction execution failed"
+                    else -> ""
+                }
+                
                 updateState(state)
 
-                // If transaction is finished, unsubscribe
-                if (!state.isProcessing()) {
+                // If transaction is completely finished (status + execution resolved), unsubscribe
+                val isCompletelyFinished = state.isCompletelyFinished()
+                logd(TAG, "WebSocket: Transaction $transactionId completeness check - isProcessing=${state.isProcessing()}, execution='${state.execution}', isCompletelyFinished=$isCompletelyFinished")
+                
+                if (isCompletelyFinished) {
+                    logd(TAG, "WebSocket: Transaction $transactionId is completely finished, unsubscribing")
                     unsubscribeFromTransaction(transactionId)
+                } else {
+                    logd(TAG, "WebSocket: Transaction $transactionId still needs monitoring (execution='${state.execution}')")
                 }
             } else {
-                logd(TAG, "WebSocket: No state change for transaction $transactionId")
+                logd(TAG, "WebSocket: No changes for transaction $transactionId (status=${newStatus?.ordinal}, execution=${newExecution})")
             }
 
         } catch (e: Exception) {
@@ -285,17 +312,72 @@ object TransactionStateManager {
         ioScope {
             safeRunSuspend {
                 try {
-                    logd(TAG, "Fallback polling: Calling waitForSeal for $transactionId")
-                    val ret = FlowCadenceApi.waitForSeal(transactionId)
-                    logd(TAG, "Fallback polling: waitForSeal returned for $transactionId - status=${ret.status}, ordinal=${ret.status?.ordinal}")
+                    logd(TAG, "Fallback polling: Starting custom polling for $transactionId")
+                    
+                    // Custom polling that waits for BOTH status finalized AND execution resolved
+                    var attempts = 0
+                    val maxAttempts = 60 // 5 minutes max (60 * 5 seconds)
+                    
+                    while (attempts < maxAttempts) {
+                        try {
+                            val ret = FlowCadenceApi.waitForSeal(transactionId)
+                            logd(TAG, "Fallback polling: Attempt ${attempts + 1} for $transactionId - status=${ret.status}, execution=${ret.execution}")
 
-                    val state = getTransactionStateById(transactionId)
-                    if (state != null && ret.status!!.ordinal != state.state) {
-                        logd(TAG, "Fallback polling: State changed for $transactionId from ${state.state} to ${ret.status!!.ordinal}")
-                        state.state = ret.status!!.ordinal
-                        state.errorMsg = ret.errorMessage
-                        updateState(state)
+                            val state = getTransactionStateById(transactionId)
+                            if (state != null) {
+                                val statusChanged = ret.status!!.ordinal != state.state
+                                val executionChanged = ret.execution?.name?.lowercase() != state.execution
+                                
+                                if (statusChanged || executionChanged) {
+                                    if (statusChanged) {
+                                        logd(TAG, "Fallback polling: State changed for $transactionId from ${state.state} to ${ret.status!!.ordinal}")
+                                        state.state = ret.status!!.ordinal
+                                    }
+                                    
+                                    if (executionChanged) {
+                                        logd(TAG, "Fallback polling: Execution changed for $transactionId from '${state.execution}' to '${ret.execution?.name?.lowercase()}'")
+                                        state.execution = ret.execution?.name?.lowercase()
+                                    }
+                                    
+                                    // Only set error message if there's an actual error or explicit execution failure
+                                    state.errorMsg = when {
+                                        ret.errorMessage.isNotBlank() -> ret.errorMessage
+                                        ret.execution == TransactionExecution.failure -> 
+                                            "Transaction execution failed"
+                                        else -> ""
+                                    }
+                                    
+                                    updateState(state)
+                                }
+                                
+                                // Check if completely finished
+                                if (state.isCompletelyFinished()) {
+                                    logd(TAG, "Fallback polling: Transaction $transactionId completely finished")
+                                    break
+                                }
+                            }
+                            
+                            // Wait 5 seconds before next check if not finished
+                            delay(5000)
+                            attempts++
+                            
+                        } catch (e: Exception) {
+                            logd(TAG, "Fallback polling attempt ${attempts + 1} failed for $transactionId: ${e.message}")
+                            attempts++
+                            delay(5000)
+                        }
                     }
+                    
+                    if (attempts >= maxAttempts) {
+                        logd(TAG, "Fallback polling timeout for $transactionId after $maxAttempts attempts")
+                        val state = getTransactionStateById(transactionId)
+                        if (state != null) {
+                            state.state = TransactionStatus.EXPIRED.ordinal
+                            state.errorMsg = "Transaction monitoring timeout"
+                            updateState(state)
+                        }
+                    }
+                    
                 } catch (e: Exception) {
                     logd(TAG, "Fallback polling failed for $transactionId: ${e.message}")
                     val state = getTransactionStateById(transactionId)
@@ -315,7 +397,7 @@ object TransactionStateManager {
         logd(TAG, "updateState:$state")
         dispatchCallback()
         updateBubbleStack(state)
-        if (!state.isProcessing()) {
+        if (state.isCompletelyFinished()) {
             uiScope {
                 delay(3000)
                 popBubbleStack(state)
@@ -386,10 +468,11 @@ object TransactionStateManager {
         val allTransactions = data.toList()
         logd(TAG, "unsealedState: Total transactions in cache: ${allTransactions.size}")
         allTransactions.forEach { tx ->
-            logd(TAG, "unsealedState: TX ${tx.transactionId.take(8)}... state=${tx.state} isProcessing=${tx.state.isProcessing()}")
+            logd(TAG, "unsealedState: TX ${tx.transactionId.take(8)}... state=${tx.state} execution=${tx.execution} isCompletelyFinished=${tx.isCompletelyFinished()}")
         }
-        val result = allTransactions.filter { it.state.isProcessing() }
-        logd(TAG, "unsealedState: Returning ${result.size} processing transactions")
+        // Return transactions that are not completely finished (need monitoring)
+        val result = allTransactions.filter { !it.isCompletelyFinished() }
+        logd(TAG, "unsealedState: Returning ${result.size} transactions needing monitoring")
         return result
     }
 
@@ -430,6 +513,9 @@ data class TransactionState(
 
     @SerializedName("errorMsg")
     var errorMsg: String? = null,
+    
+    @SerializedName("execution")
+    var execution: String? = "pending", // "success", "failure", "pending", or null
 ) : Parcelable {
     companion object {
         const val TYPE_TRANSACTION_DEFAULT = 0
@@ -467,7 +553,12 @@ data class TransactionState(
 
     fun contact() = if (type == TYPE_TRANSFER_COIN) coinData().target else nftData().target
 
-    fun isSuccess() = state >= TransactionStatus.EXECUTED.ordinal && errorMsg.isNullOrBlank()
+    fun isSuccess(): Boolean {
+        // Only consider successful if transaction is finalized AND execution is explicitly "success"
+        return state >= TransactionStatus.EXECUTED.ordinal && 
+               errorMsg.isNullOrBlank() && 
+               execution == "success"
+    }
 
     fun isFailed(): Boolean {
         if (isProcessing()) {
@@ -476,10 +567,24 @@ data class TransactionState(
         if (isExpired()) {
             return true
         }
-        return !errorMsg.isNullOrBlank()
+        // Transaction is failed if there's an error message OR execution is explicitly "failure"
+        return !errorMsg.isNullOrBlank() || execution == "failure"
     }
 
     fun isProcessing() = state < TransactionStatus.EXECUTED.ordinal
+
+    /**
+     * Check if transaction is truly complete (both status finalized AND execution resolved)
+     * Used to determine when to stop monitoring
+     */
+    fun isCompletelyFinished(): Boolean {
+        val notProcessing = !isProcessing()
+        val executionResolved = execution == "success" || execution == "failure"
+        val expired = isExpired()
+        val result = notProcessing && (executionResolved || expired)
+        
+        return result
+    }
 
     private fun isExpired() = state == TransactionStatus.EXPIRED.ordinal
 

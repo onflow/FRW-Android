@@ -58,7 +58,6 @@ class WalletRestoreDrivePasswordFragment : Fragment() {
         try {
             binding.nextButton.setProgressVisible(true)
             val mnemonic = aesDecrypt(binding.pwdText.text.toString(), message = data.data)
-            logd("mnemonic", mnemonic)
             ioScope {
                 requestWalletRestoreLogin(mnemonic) { isSuccess, _ ->
                     uiScope {

@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRunSuspend
 import com.flowfoundation.wallet.utils.uiScope
 import org.onflow.flow.infrastructure.parseErrorCode
+import org.onflow.flow.models.TransactionExecution
 import org.onflow.flow.models.TransactionResult
 import org.onflow.flow.models.TransactionStatus
 
@@ -70,7 +71,11 @@ class TransactionStateWatcher(
     }
 
     private fun TransactionResult.isSuccess(): Boolean {
-        return status != null && status!!.ordinal >= TransactionStatus.EXECUTED.ordinal && errorMessage.isBlank()
+        return when (status) {
+            TransactionStatus.SEALED -> execution == TransactionExecution.success && errorMessage.isBlank()
+            TransactionStatus.EXECUTED -> execution == TransactionExecution.success && errorMessage.isBlank()
+            else -> false
+        }
     }
 
 }
