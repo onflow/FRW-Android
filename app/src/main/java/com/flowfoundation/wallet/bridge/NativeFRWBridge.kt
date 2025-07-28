@@ -175,16 +175,16 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     childAccounts?.forEach { childAccount ->
                         // Debug: Log child account data to see if icon is available
                         println("DEBUG: Child account - name: ${childAccount.name}, icon: ${childAccount.icon}, address: ${childAccount.address}")
-                        
+
                         val accountMap = WritableNativeMap().apply {
                             putString("id", "child_${childAccount.address}")
                             putString("name", childAccount.name ?: "Child Account")
                             putString("address", childAccount.address)
                             putString("emoji", "👶") // Default emoji for child accounts
                             // Add the child account's icon as avatar if available (this should show the squid!)
-                            childAccount.icon?.let { 
+                            childAccount.icon?.let {
                                 println("DEBUG: Setting avatar for child account: $it")
-                                putString("avatar", it) 
+                                putString("avatar", it)
                             }
                             putBoolean("isActive", false)
                             putBoolean("isIncompatible", false)
@@ -239,19 +239,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun getCOAFlowBalance(promise: Promise) {
-        ioScope {
-            try {
-                val balance = cadenceQueryCOATokenBalance() ?: BigDecimal.ZERO
-
-                uiScope {
-                    promise.resolve(balance.toString())
-                }
-            } catch (e: Exception) {
-                uiScope {
-                    promise.resolve("0") // Return 0 on error instead of rejecting
-                }
-            }
+    override fun closeRN() {
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            currentActivity?.finish()
+        } catch (e: Exception) {
+            // If finishing activity fails, log error but don't crash
+            println("Failed to close React Native activity: ${e.message}")
         }
     }
 
@@ -259,17 +253,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         return try {
             val address = WalletManager.selectedWalletAddress()
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-            
+
             if (address.isEmpty() || cryptoProvider == null) {
                 return 0.0
             }
-            
+
             // This is a synchronous method, but currentKeyId is suspend
             // We need to use a blocking call here since the interface expects a synchronous return
             val keyId = kotlinx.coroutines.runBlocking {
                 FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
             }
-            
+
             // Return 0 if no valid key found (-1), otherwise return the key index
             if (keyId == -1) 0.0 else keyId.toDouble()
         } catch (e: Exception) {
