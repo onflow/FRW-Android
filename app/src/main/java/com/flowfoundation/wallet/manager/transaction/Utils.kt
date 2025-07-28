@@ -33,5 +33,5 @@ fun TransactionResult.isFailed(): Boolean {
            status == TransactionStatus.EXPIRED
 }
 
-private fun Int.isProcessing() = this < TransactionStatus.FINALIZED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
+private fun Int.isProcessing() = this < TransactionStatus.EXECUTED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 

@@ -72,7 +72,6 @@ class TransactionStateWatcher(
 
     private fun TransactionResult.isSuccess(): Boolean {
         return when (status) {
-            TransactionStatus.FINALIZED -> execution == TransactionExecution.success && errorMessage.isBlank()
             TransactionStatus.SEALED -> execution == TransactionExecution.success && errorMessage.isBlank()
             TransactionStatus.EXECUTED -> execution == TransactionExecution.success && errorMessage.isBlank()
             else -> false

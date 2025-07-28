@@ -95,7 +95,6 @@ suspend fun sendTransaction(
                 try {
                     val txResult = FlowCadenceApi.waitForSeal(txID)
                     val isSuccess = when (txResult.status) {
-                        TransactionStatus.FINALIZED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
                         TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
                         TransactionStatus.EXPIRED -> false
                         TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
@@ -175,7 +174,6 @@ suspend fun sendBridgeTransaction(
                 try {
                     val txResult = FlowCadenceApi.waitForSeal(txID)
                     val isSuccess = when (txResult.status) {
-                        TransactionStatus.FINALIZED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
                         TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
                         TransactionStatus.EXPIRED -> false
                         TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
@@ -266,7 +264,6 @@ suspend fun sendTransactionWithMultiSignature(
             try {
                 val txResult = FlowCadenceApi.waitForSeal(txID)
                 val isSuccess = when (txResult.status) {
-                    TransactionStatus.FINALIZED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
                     TransactionStatus.SEALED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()
                     TransactionStatus.EXPIRED -> false
                     TransactionStatus.EXECUTED -> txResult.execution == TransactionExecution.success && txResult.errorMessage.isBlank()

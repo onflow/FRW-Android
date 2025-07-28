@@ -323,7 +323,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'
     implementation 'com.google.firebase:firebase-appcheck'
     implementation 'com.google.firebase:firebase-appcheck-debug'
-    
+
     /** Instabug **/
     implementation 'com.instabug.library:instabug:15.0.1'
     implementation 'com.instabug.library:instabug-with-okhttp-interceptor:15.0.1'
@@ -366,16 +366,16 @@ dependencies {
     implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.7") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
-    implementation 'com.github.onflow.flow-kmm:flow:0.0.25'
+    implementation 'com.github.onflow.flow-kmm:flow:0.0.26'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
-    
+
      implementation "io.ktor:ktor-client-core:2.3.7"
      implementation "io.ktor:ktor-client-cio:2.3.7"
      implementation "io.ktor:ktor-client-websockets:2.3.7"
      implementation "io.ktor:ktor-client-content-negotiation:2.3.7"
      implementation "io.ktor:ktor-serialization-kotlinx-json:2.3.7"
      implementation "io.ktor:ktor-client-logging:2.3.7"
-    
+
     implementation(platform("com.reown:android-bom:1.3.3"))
     implementation("com.reown:android-core") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk18on'
