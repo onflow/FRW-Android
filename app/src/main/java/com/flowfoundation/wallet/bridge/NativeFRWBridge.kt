@@ -33,7 +33,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         return WalletManager.selectedWalletAddress()
     }
 
-    override fun getNetwork(): String? {
+    override fun getNetwork(): String {
         return chainNetWorkString()
     }
 
