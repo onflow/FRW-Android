@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.addPlatformInfo
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
+import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -415,11 +416,8 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                     throw RuntimeException("Stored key information is missing - cannot proceed with syncAccountInfo")
                 }
 
-                val newPrivateKey = try {
-                    PrivateKey.get(storedKeyId, storedPrefix, storage)
-                } catch (e: Exception) {
-                    throw RuntimeException("Failed to load the stored key that was added to the account: ${e.message}", e)
-                }
+                val newPrivateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(storedPrefix, storage)
+                    ?: throw RuntimeException("Failed to load the stored key that was added to the account from both new and old storage")
 
                 val newPublicKey = newPrivateKey.publicKey(storedSigningAlgorithm)?.toHexString()?.removePrefix("04") ?: ""
                 logd("MultiRestore", "Using stored key for syncAccountInfo: ${newPublicKey.take(20)}... (algorithms: signing=${storedSigningAlgorithm}, hashing=${storedHashingAlgorithm})")

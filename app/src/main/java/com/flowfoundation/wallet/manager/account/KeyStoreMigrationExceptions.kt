@@ -69,7 +69,7 @@ class UnsupportedKeyTypeException(
 class InvalidPrivateKeySizeException(
     alias: String,
     actualSize: Int,
-    expectedSize: Int = 32,
+    val expectedSize: Int = 32,
     prefix: String? = null,
     val keyBytes: ByteArray? = null
 ) : KeyStoreMigrationException(

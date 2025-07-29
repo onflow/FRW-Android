@@ -7,6 +7,7 @@ import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.Accounts
+import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -126,17 +127,16 @@ object WalletManager {
         else if (!account.prefix.isNullOrBlank()) {
             logd(TAG, "Initializing prefix-based wallet for prefix: ${account.prefix}")
 
-            // Load the stored private key using the prefix-based ID
+            // Load the stored private key using the prefix-based ID with backward compatibility
             val keyId = "prefix_key_${account.prefix}"
-            val privateKey = try {
-                logd(TAG, "Attempting to load private key with ID: $keyId")
-                PrivateKey.get(keyId, account.prefix!!, storage)
-            } catch (e: Exception) {
-                logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+            logd(TAG, "Attempting to load private key with ID: $keyId (with fallback to old storage)")
+            val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+            if (privateKey == null) {
+                logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix} from both new and old storage")
                 logd(TAG, "This could indicate:")
-                logd(TAG, "  1. Key was not migrated from old Android Keystore")
-                logd(TAG, "  2. Migration failed")
-                logd(TAG, "  3. Account was created before migration system was in place")
+                logd(TAG, "  1. Key was never created or stored")
+                logd(TAG, "  2. Storage corruption")
+                logd(TAG, "  3. Account data inconsistency")
 
                 // Run diagnostic to help troubleshooting
                 try {

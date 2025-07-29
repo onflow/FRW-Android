@@ -17,6 +17,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
 import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
@@ -108,10 +109,9 @@ suspend fun registerOutblock(
                     // Now that we have the wallet data with account address, use fetchAccountByAddress 
                     // to populate the wallet SDK with the account details from Flow network
                     val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-                    val keyForWalletSDK = try {
-                        PrivateKey.get("prefix_key_$prefix", prefix, storage)
-                    } catch (e: Exception) {
-                        logd(TAG, "Failed to retrieve stored private key for Wallet SDK init.")
+                    val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
+                    if (keyForWalletSDK == null) {
+                        logd(TAG, "Failed to retrieve stored private key for Wallet SDK init from both new and old storage.")
                         continuation.resume(false)
                         return@ioScope
                     }
