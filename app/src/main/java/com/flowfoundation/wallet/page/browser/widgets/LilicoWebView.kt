@@ -77,7 +77,7 @@ class LilicoWebView : WebView {
         )
 
         // Disable hardware acceleration for this WebView to prevent some layout issues
-        setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
         initBlockedViewLayout()
 
         with(settings) {
