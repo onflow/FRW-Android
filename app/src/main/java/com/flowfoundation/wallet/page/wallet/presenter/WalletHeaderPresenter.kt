@@ -71,9 +71,9 @@ class WalletHeaderPresenter(
             val count = if (model.coinCount > 0 ) model.coinCount else FungibleTokenListManager.getCurrentDisplayTokenListSnapshot().size
             tvTokenCount.text = view.context.getString(R.string.token_count, count)
 
-            cvSend.setOnClickListener { 
+            cvSend.setOnClickListener {
                 // Launch React Native Demo Activity instead of TransactionSendActivity
-                ReactNativeDemoActivity.launch(view.context, "Home", WalletManager.selectedWalletAddress().toAddress(), if (isTestnet()) "testnet" else "mainnet")
+                ReactNativeDemoActivity.launch(view.context, "SelectTokens", WalletManager.selectedWalletAddress().toAddress(), if (isTestnet()) "testnet" else "mainnet")
             }
             cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
