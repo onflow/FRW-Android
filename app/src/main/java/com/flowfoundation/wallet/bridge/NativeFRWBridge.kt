@@ -334,6 +334,42 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun getAllEnvVars(promise: Promise) {
+        try {
+            val envVars = WritableNativeMap().apply {
+                // Standard environment variables
+                putString("API_BASE_URL", BuildConfig.API_BASE_URL ?: "")
+                putString("API_KEY", BuildConfig.API_KEY ?: "")
+                putBoolean("DEBUG_MODE", BuildConfig.DEBUG)
+                putString("APP_VERSION", BuildConfig.VERSION_NAME)
+                putBoolean("ANALYTICS_ENABLED", BuildConfig.ANALYTICS_ENABLED ?: false)
+                putString("ENVIRONMENT", if (BuildConfig.DEBUG) "development" else "production")
+                putString("FLOW_NETWORK", chainNetWorkString())
+                putString("FLOW_ACCESS_NODE_URL", BuildConfig.FLOW_ACCESS_NODE_URL ?: "")
+                putString("FLOW_DISCOVERY_WALLET_URL", BuildConfig.FLOW_DISCOVERY_WALLET_URL ?: "")
+                
+                // Native App Environment Variables
+                putString("DRIVE_AES_IV", BuildConfig.DRIVE_AES_IV ?: "")
+                putString("DRIVE_AES_KEY", BuildConfig.DRIVE_AES_KEY ?: "")
+                putString("WALLET_CONNECT_PROJECT_ID", BuildConfig.WALLET_CONNECT_PROJECT_ID ?: "")
+                putString("INSTABUG_TOKEN_DEV", BuildConfig.INSTABUG_TOKEN_DEV ?: "")
+                putString("INSTABUG_TOKEN_PROD", BuildConfig.INSTABUG_TOKEN_PROD ?: "")
+                putString("CROWDIN_PROJECT_ID", BuildConfig.CROWDIN_PROJECT_ID ?: "")
+                putString("CROWDIN_API_TOKEN", BuildConfig.CROWDIN_API_TOKEN ?: "")
+                putString("CROWDIN_DISTRIBUTION", BuildConfig.CROWDIN_DISTRIBUTION ?: "")
+                putString("MIXPANEL_TOKEN_DEV", BuildConfig.MIXPANEL_TOKEN_DEV ?: "")
+                putString("MIXPANEL_TOKEN_PROD", BuildConfig.MIXPANEL_TOKEN_PROD ?: "")
+                putString("DROPBOX_APP_KEY_DEV", BuildConfig.DROPBOX_APP_KEY ?: "")
+                putString("DROPBOX_APP_KEY_PROD", BuildConfig.DROPBOX_APP_KEY ?: "")
+                putString("X_SIGNATURE_KEY", BuildConfig.X_SIGNATURE_KEY ?: "")
+            }
+            
+            promise.resolve(envVars)
+        } catch (e: Exception) {
+            promise.reject("ENV_ERROR", "Failed to get environment variables: ${e.message}", e)
+        }
+    }
+
     companion object {
         const val NAME = "NativeFRWBridge"
     }

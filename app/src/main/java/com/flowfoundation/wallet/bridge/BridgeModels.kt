@@ -40,6 +40,8 @@ class RNBridge {
         val address: String,
         @SerializedName("emoji")
         val emoji: String,
+        @SerializedName("avatar")
+        val avatar: String?,
         @SerializedName("isActive")
         val isActive: Boolean,
         @SerializedName("isIncompatible")
