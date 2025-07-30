@@ -19,6 +19,7 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.manager.config.isGasFree
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.FlowAddress
@@ -269,6 +270,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         } catch (e: Exception) {
             // Return 0 as default key index on any error
             0.0
+        }
+    }
+
+    override fun isFreeGasEnabled(promise: Promise) {
+        ioScope {
+            try {
+                val isFreeGas = isGasFree()
+                uiScope {
+                    promise.resolve(isFreeGas)
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("FREE_GAS_ERROR", "Failed to get free gas status: ${e.message}", e)
+                }
+            }
         }
     }
 
