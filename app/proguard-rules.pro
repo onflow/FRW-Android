@@ -274,3 +274,19 @@
 -dontwarn javax.mail.**
 -dontwarn javax.servlet.**
 -dontwarn org.apache.**
+
+# Fix for R8 missing classes from gRPC/Netty
+-dontwarn com.ning.compress.lzf.util.ChunkDecoderFactory
+-dontwarn com.ning.compress.lzf.util.ChunkEncoderFactory
+-dontwarn net.jpountz.lz4.LZ4Factory
+-dontwarn sun.security.x509.AlgorithmId
+-dontwarn sun.security.x509.CertificateAlgorithmId
+-dontwarn sun.security.x509.CertificateIssuerName
+-dontwarn sun.security.x509.CertificateSerialNumber
+-dontwarn sun.security.x509.CertificateSubjectName
+-dontwarn sun.security.x509.CertificateValidity
+-dontwarn sun.security.x509.CertificateVersion
+-dontwarn sun.security.x509.CertificateX509Key
+-dontwarn sun.security.x509.X500Name
+-dontwarn sun.security.x509.X509CertImpl
+-dontwarn sun.security.x509.X509CertInfo

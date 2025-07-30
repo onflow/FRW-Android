@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.flow.wallet.errors.WalletError
+import com.flowfoundation.wallet.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -15,21 +16,21 @@ import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
+import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.manager.config.isGasFree
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
+import org.onflow.flow.models.FlowAddress
 import android.content.Intent
-import com.flowfoundation.wallet.cache.addressBookCache
-import com.flowfoundation.wallet.network.ApiService
-import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
     override fun getName() = NAME
 
-    override fun getSelectedAddress(): String {
+    override fun getSelectedAddress(): String? {
         return WalletManager.selectedWalletAddress()
     }
 
@@ -173,11 +174,19 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 try {
                     val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
                     childAccounts?.forEach { childAccount ->
+                        // Debug: Log child account data to see if icon is available
+                        println("DEBUG: Child account - name: ${childAccount.name}, icon: ${childAccount.icon}, address: ${childAccount.address}")
+
                         val accountMap = WritableNativeMap().apply {
                             putString("id", "child_${childAccount.address}")
-                            putString("name", childAccount.name)
+                            putString("name", childAccount.name ?: "Child Account")
                             putString("address", childAccount.address)
                             putString("emoji", "👶") // Default emoji for child accounts
+                            // Add the child account's icon as avatar if available (this should show the squid!)
+                            childAccount.icon?.let {
+                                println("DEBUG: Setting avatar for child account: $it")
+                                putString("avatar", it)
+                            }
                             putBoolean("isActive", false)
                             putBoolean("isIncompatible", false)
                             putString("type", "child")
@@ -231,104 +240,49 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun getAddressBook(promise: Promise) {
-        ioScope {
-            try {
-                // Try to get from cache first
-                val cachedData = addressBookCache().read()?.contacts
-
-                if (!cachedData.isNullOrEmpty()) {
-                    val contactsArray = WritableNativeArray()
-                    cachedData.forEach { contact ->
-                        val contactMap = WritableNativeMap().apply {
-                            putString("id", contact.id ?: contact.address)
-                            putString("name", contact.name())
-                            putString("address", contact.address)
-                            putString("avatar", contact.avatar)
-                            putString("username", contact.username)
-                            putString("contactName", contact.contactName)
-                        }
-                        contactsArray.pushMap(contactMap)
-                    }
-
-                    val result = WritableNativeMap().apply {
-                        putArray("contacts", contactsArray)
-                    }
-
-                    uiScope {
-                        promise.resolve(result)
-                    }
-                } else {
-                    // If no cache, try to fetch from API
-                    try {
-                        val service = retrofit().create(ApiService::class.java)
-                        val resp = service.getAddressBook()
-
-                        if (resp.status == 200 && !resp.data.contacts.isNullOrEmpty()) {
-                            // Cache the response
-                            addressBookCache().cache(resp.data)
-
-                            val contactsArray = WritableNativeArray()
-                            resp.data.contacts!!.forEach { contact ->
-                                val contactMap = WritableNativeMap().apply {
-                                    putString("id", contact.id ?: contact.address)
-                                    putString("name", contact.name())
-                                    putString("address", contact.address)
-                                    putString("avatar", contact.avatar)
-                                    putString("username", contact.username)
-                                    putString("contactName", contact.contactName)
-                                }
-                                contactsArray.pushMap(contactMap)
-                            }
-
-                            val result = WritableNativeMap().apply {
-                                putArray("contacts", contactsArray)
-                            }
-
-                            uiScope {
-                                promise.resolve(result)
-                            }
-                        } else {
-                            // Empty response
-                            val result = WritableNativeMap().apply {
-                                putArray("contacts", WritableNativeArray())
-                            }
-                            uiScope {
-                                promise.resolve(result)
-                            }
-                        }
-                    } catch (apiError: Exception) {
-                        // API call failed, return empty
-                        val result = WritableNativeMap().apply {
-                            putArray("contacts", WritableNativeArray())
-                        }
-                        uiScope {
-                            promise.resolve(result)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                val result = WritableNativeMap().apply {
-                    putArray("contacts", WritableNativeArray())
-                }
-                uiScope {
-                    promise.resolve(result)
-                }
-            }
+    override fun closeRN() {
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            currentActivity?.finish()
+        } catch (e: Exception) {
+            // If finishing activity fails, log error but don't crash
+            println("Failed to close React Native activity: ${e.message}")
         }
     }
 
-    override fun getCOAFlowBalance(promise: Promise) {
+    override fun getSignKeyIndex(): Double {
+        return try {
+            val address = WalletManager.selectedWalletAddress()
+            val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+
+            if (address.isEmpty() || cryptoProvider == null) {
+                return 0.0
+            }
+
+            // This is a synchronous method, but currentKeyId is suspend
+            // We need to use a blocking call here since the interface expects a synchronous return
+            val keyId = kotlinx.coroutines.runBlocking {
+                FlowAddress(address).currentKeyId(cryptoProvider.getPublicKey())
+            }
+
+            // Return 0 if no valid key found (-1), otherwise return the key index
+            if (keyId == -1) 0.0 else keyId.toDouble()
+        } catch (e: Exception) {
+            // Return 0 as default key index on any error
+            0.0
+        }
+    }
+
+    override fun isFreeGasEnabled(promise: Promise) {
         ioScope {
             try {
-                val balance = cadenceQueryCOATokenBalance() ?: BigDecimal.ZERO
-
+                val isFreeGas = isGasFree()
                 uiScope {
-                    promise.resolve(balance.toString())
+                    promise.resolve(isFreeGas)
                 }
             } catch (e: Exception) {
                 uiScope {
-                    promise.resolve("0") // Return 0 on error instead of rejecting
+                    promise.reject("FREE_GAS_ERROR", "Failed to get free gas status: ${e.message}", e)
                 }
             }
         }
