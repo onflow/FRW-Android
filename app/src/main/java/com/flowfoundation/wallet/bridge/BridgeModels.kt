@@ -59,10 +59,8 @@ class RNBridge {
         val avatar: String?,
         @SerializedName("isActive")
         val isActive: Boolean,
-        @SerializedName("isIncompatible")
-        val isIncompatible: Boolean,
         @SerializedName("type")
-        val type: AccountType
+        val type: AccountType?
     )
 
     data class RecentContactsResponse(
