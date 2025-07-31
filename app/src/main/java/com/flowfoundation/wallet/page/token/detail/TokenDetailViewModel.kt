@@ -122,9 +122,13 @@ class TokenDetailViewModel : ViewModel(), OnTransactionStateChange, FungibleToke
         viewModelIOScope(this) {
             val market = getQuoteMarket()
             val service = retrofit().create(ApiService::class.java)
+            val coinPair = token.getPricePair(QuoteMarket.fromMarketName(market))
+            if (coinPair.isEmpty()) {
+                return@viewModelIOScope
+            }
             val result = service.summary(
                 market = market,
-                coinPair = token.getPricePair(QuoteMarket.fromMarketName(market)),
+                coinPair = coinPair,
             )
             if (this.period == period && this.market == market) {
                 summaryLiveData.postValue(result.data.result)
