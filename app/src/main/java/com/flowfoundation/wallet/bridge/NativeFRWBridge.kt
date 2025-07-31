@@ -273,8 +273,19 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun isFreeGasEnabled(): Boolean {
-        return isGasFree()
+    override fun isFreeGasEnabled(promise: Promise) {
+        ioScope {
+            try {
+                val isFreeGas = isGasFree()
+                uiScope {
+                    promise.resolve(isFreeGas)
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("FREE_GAS_ERROR", "Failed to get free gas status: ${e.message}", e)
+                }
+            }
+        }
     }
 
     companion object {
