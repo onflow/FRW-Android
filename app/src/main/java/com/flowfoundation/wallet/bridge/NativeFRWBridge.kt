@@ -22,6 +22,10 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.manager.config.isGasFree
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import org.onflow.flow.models.TransactionStatus
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.FlowAddress
@@ -90,7 +94,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun listenTransaction(txid: String) {
-        
+        val transactionState = TransactionState(
+            transactionId = txid,
+            time = System.currentTimeMillis(),
+            state = TransactionStatus.PENDING.ordinal,
+            type = TransactionState.TYPE_SEND,
+            data = ""
+        )
+        TransactionStateManager.newTransaction(transactionState)
+        uiScope {
+            pushBubbleStack(transactionState)
+        }
     }
 
     override fun scanQRCode(promise: Promise) {
