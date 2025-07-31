@@ -16,6 +16,15 @@ class RNBridge {
         @SerializedName("evm") EVM
     }
 
+    data class EmojiInfo(
+        @SerializedName("emoji")
+        val emoji: String,
+        @SerializedName("name")
+        val name: String,
+        @SerializedName("color")
+        val color: String
+    )
+
     data class Contact(
         @SerializedName("id")
         val id: String,
@@ -53,8 +62,10 @@ class RNBridge {
         val name: String,
         @SerializedName("address")
         val address: String,
-        @SerializedName("emoji")
-        val emoji: String,
+        @SerializedName("emojiInfo")
+        val emojiInfo: EmojiInfo?,
+        @SerializedName("parentEmoji")
+        val parentEmoji: EmojiInfo?,
         @SerializedName("avatar")
         val avatar: String?,
         @SerializedName("isActive")
