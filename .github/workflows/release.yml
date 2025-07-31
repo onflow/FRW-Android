@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - develop
-      - prod-build-for-testing
+      - prod-built-for-testing
 
 jobs:
   dev:
