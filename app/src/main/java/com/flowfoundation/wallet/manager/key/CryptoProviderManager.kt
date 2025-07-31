@@ -199,29 +199,35 @@ object CryptoProviderManager {
                         // Check if we have a device key that works and has sufficient weight
                         val keyId = "prefix_key_${account.prefix}"
                         val hasDeviceKey = try {
-                            val deviceKey = PrivateKey.get(keyId, account.prefix!!, storage)
-                            deviceKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                                ?: deviceKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                            val deviceKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                            deviceKey?.let { key ->
+                                key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                                    ?: key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                            }
                             
                             logd(TAG, "    Device key check: keyId=$keyId, prefix=${account.prefix}")
                             
                             // Test both signing algorithms for the device key
-                            val deviceKeyECDSA_P256 = try {
-                                val key = deviceKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                                logd(TAG, "    Device key ECDSA_P256 public key: $key")
-                                key
-                            } catch (e: Exception) {
-                                logd(TAG, "    Device key ECDSA_P256 failed: ${e.message}")
-                                null
+                            val deviceKeyECDSA_P256 = deviceKey?.let { key ->
+                                try {
+                                    val pubKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                                    logd(TAG, "    Device key ECDSA_P256 public key: $pubKey")
+                                    pubKey
+                                } catch (e: Exception) {
+                                    logd(TAG, "    Device key ECDSA_P256 failed: ${e.message}")
+                                    null
+                                }
                             }
                             
-                            val deviceKeyECDSA_secp256k1 = try {
-                                val key = deviceKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
-                                logd(TAG, "    Device key ECDSA_secp256k1 public key: $key")
-                                key
-                            } catch (e: Exception) {
-                                logd(TAG, "    Device key ECDSA_secp256k1 failed: ${e.message}")
-                                null
+                            val deviceKeyECDSA_secp256k1 = deviceKey?.let { key ->
+                                try {
+                                    val pubKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                                    logd(TAG, "    Device key ECDSA_secp256k1 public key: $pubKey")
+                                    pubKey
+                                } catch (e: Exception) {
+                                    logd(TAG, "    Device key ECDSA_secp256k1 failed: ${e.message}")
+                                    null
+                                }
                             }
                             
                             logd(TAG, "    Fetching on-chain account for address: ${account.wallet?.walletAddress()}")
@@ -432,10 +438,9 @@ object CryptoProviderManager {
                 // Standard prefix-based account handling (for non-multi-restore accounts)
                 logd(TAG, "  Standard prefix-based account handling")
                 val keyId = "prefix_key_${account.prefix}"
-                val privateKey = try {
-                    PrivateKey.get(keyId, account.prefix!!, storage)
-                } catch (e: Exception) {
-                    loge(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                if (privateKey == null) {
+                    loge(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix} from both new and old storage")
                     return null
                 }
                 val wallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
@@ -596,14 +601,13 @@ object CryptoProviderManager {
                 logd("CryptoProviderManager", "Creating PrivateKeyCryptoProvider for prefix-based account")
                 logd("CryptoProviderManager", "  prefix: ${account.prefix}")
                 
-                // Load the stored private key using the prefix-based ID
+                // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"
-                val privateKey = try {
-                    PrivateKey.get(keyId, account.prefix!!, storage)
-                } catch (e: Exception) {
-                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for switch account prefix ${account.prefix}: ${e.message}")
+                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                if (privateKey == null) {
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for switch account prefix ${account.prefix} from both new and old storage")
                     loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
-                    return null // Return null instead of creating a new key
+                    return null
                 }
                 
                 // Create a proper KeyWallet directly with the PrivateKey
@@ -702,14 +706,13 @@ object CryptoProviderManager {
         return try {
             // Handle prefix-based accounts
             if (switchAccount.prefix.isNullOrBlank().not()) {
-                // Load the stored private key using the prefix-based ID
+                // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${switchAccount.prefix}"
-                val privateKey = try {
-                    PrivateKey.get(keyId, switchAccount.prefix!!, storage)
-                } catch (e: Exception) {
-                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for local switch account prefix ${switchAccount.prefix}: ${e.message}")
+                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(switchAccount.prefix!!, storage)
+                if (privateKey == null) {
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for local switch account prefix ${switchAccount.prefix} from both new and old storage")
                     loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
-                    return null // Return null instead of creating a new key
+                    return null
                 }
                 
                 // Create a proper KeyWallet directly with the PrivateKey
