@@ -4,12 +4,14 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
+import com.facebook.react.bridge.Arguments
 import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
@@ -20,11 +22,19 @@ import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.manager.config.isGasFree
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
+import org.onflow.flow.models.TransactionStatus
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.FlowAddress
 import android.content.Intent
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
+import com.google.gson.Gson
+import org.json.JSONObject
+import org.json.JSONArray
+import android.os.Bundle
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -83,6 +93,20 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun listenTransaction(txid: String) {
+        val transactionState = TransactionState(
+            transactionId = txid,
+            time = System.currentTimeMillis(),
+            state = TransactionStatus.PENDING.ordinal,
+            type = TransactionState.TYPE_SEND,
+            data = ""
+        )
+        TransactionStateManager.newTransaction(transactionState)
+        uiScope {
+            pushBubbleStack(transactionState)
+        }
+    }
+
     override fun scanQRCode(promise: Promise) {
         try {
             // Store the promise for later resolution
@@ -106,39 +130,30 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             try {
                 val recentData = recentTransactionCache().read()?.contacts
 
-                if (!recentData.isNullOrEmpty()) {
-                    val contactsArray = WritableNativeArray()
-                    recentData.forEach { contact ->
-                        val contactMap = WritableNativeMap().apply {
-                            putString("id", contact.id)
-                            putString("name", contact.name())
-                            putString("address", contact.address)
-                            putString("avatar", contact.avatar)
-                            putString("username", contact.username)
-                            putString("contactName", contact.contactName)
-                        }
-                        contactsArray.pushMap(contactMap)
-                    }
-
-                    val result = WritableNativeMap().apply {
-                        putArray("contacts", contactsArray)
-                    }
-
-                    uiScope {
-                        promise.resolve(result)
+                val bridgeContacts = if (!recentData.isNullOrEmpty()) {
+                    recentData.map { contact ->
+                        RNBridge.Contact(
+                            id = contact.id ?: contact.uniqueId(),
+                            name = contact.name(),
+                            address = contact.address ?: "",
+                            avatar = contact.avatar,
+                            username = contact.username,
+                            contactName = contact.contactName
+                        )
                     }
                 } else {
-                    val result = WritableNativeMap().apply {
-                        putArray("contacts", WritableNativeArray())
-                    }
-                    uiScope {
-                        promise.resolve(result)
-                    }
+                    emptyList()
+                }
+
+                val response = RNBridge.RecentContactsResponse(contacts = bridgeContacts)
+                val result = bridgeModelToWritableMap(response)
+
+                uiScope {
+                    promise.resolve(result)
                 }
             } catch (e: Exception) {
-                val result = WritableNativeMap().apply {
-                    putArray("contacts", WritableNativeArray())
-                }
+                val emptyResponse = RNBridge.RecentContactsResponse(contacts = emptyList())
+                val result = bridgeModelToWritableMap(emptyResponse)
                 uiScope {
                     promise.resolve(result)
                 }
@@ -149,25 +164,23 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getWalletAccounts(promise: Promise) {
         ioScope {
             try {
-                val accountsArray = WritableNativeArray()
+                val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
 
                 // Get main wallet address
-                val mainAddress = WalletManager.selectedWalletAddress()
-                if (mainAddress.isNotEmpty()) {
-                    // Use AccountEmojiManager to get proper name and emoji
-                    val emojiInfo = AccountEmojiManager.getEmojiByAddress(mainAddress)
-                    val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
-
-                    val accountMap = WritableNativeMap().apply {
-                        putString("id", "main")
-                        putString("name", emojiInfo.emojiName)
-                        putString("address", mainAddress)
-                        putString("emoji", emoji)
-                        putBoolean("isActive", true)
-                        putBoolean("isIncompatible", false)
-                        putString("type", "main")
-                    }
-                    accountsArray.pushMap(accountMap)
+                val mainAddress = WalletManager.wallet()?.walletAddress()
+                val mainEmojiInfo = createEmojiInfo(mainAddress)
+                if (!mainAddress.isNullOrEmpty()) {
+                    val mainAccount = RNBridge.WalletAccount(
+                        id = "main",
+                        name = mainEmojiInfo?.name ?: "Main Account",
+                        address = mainAddress,
+                        emojiInfo = mainEmojiInfo,
+                        parentEmoji = null,
+                        avatar = null,
+                        isActive = isSelectedWalletAddress(mainAddress),
+                        type = RNBridge.AccountType.MAIN
+                    )
+                    bridgeAccounts.add(mainAccount)
                 }
 
                 // Get child accounts
@@ -177,21 +190,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         // Debug: Log child account data to see if icon is available
                         println("DEBUG: Child account - name: ${childAccount.name}, icon: ${childAccount.icon}, address: ${childAccount.address}")
 
-                        val accountMap = WritableNativeMap().apply {
-                            putString("id", "child_${childAccount.address}")
-                            putString("name", childAccount.name ?: "Child Account")
-                            putString("address", childAccount.address)
-                            putString("emoji", "👶") // Default emoji for child accounts
-                            // Add the child account's icon as avatar if available (this should show the squid!)
-                            childAccount.icon?.let {
-                                println("DEBUG: Setting avatar for child account: $it")
-                                putString("avatar", it)
-                            }
-                            putBoolean("isActive", false)
-                            putBoolean("isIncompatible", false)
-                            putString("type", "child")
-                        }
-                        accountsArray.pushMap(accountMap)
+                        val childAccountBridge = RNBridge.WalletAccount(
+                            id = "child_${childAccount.address}",
+                            name = childAccount.name ?: "Child Account",
+                            address = childAccount.address,
+                            emojiInfo = null,
+                            parentEmoji = mainEmojiInfo,
+                            avatar = childAccount.icon, // Include the squid avatar!
+                            isActive = isSelectedWalletAddress(childAccount.address),
+                            type = RNBridge.AccountType.CHILD
+                        )
+                        bridgeAccounts.add(childAccountBridge)
                     }
                 } catch (e: Exception) {
                     // Child accounts might not be available, continue without them
@@ -202,37 +211,34 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 try {
                     val evmAddress = EVMWalletManager.getEVMAddress()
                     if (!evmAddress.isNullOrEmpty()) {
-                        // Use AccountEmojiManager for EVM account as well
-                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(evmAddress)
-                        val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
+                        val evmEmojiInfo = createEmojiInfo(evmAddress)
 
-                        val accountMap = WritableNativeMap().apply {
-                            putString("id", "evm")
-                            putString("name", emojiInfo.emojiName)
-                            putString("address", evmAddress)
-                            putString("emoji", emoji)
-                            putBoolean("isActive", false)
-                            putBoolean("isIncompatible", false)
-                            putString("type", "evm")
-                        }
-                        accountsArray.pushMap(accountMap)
+                        val evmAccount = RNBridge.WalletAccount(
+                            id = "evm",
+                            name = evmEmojiInfo?.name ?: "EVM Account",
+                            address = evmAddress,
+                            emojiInfo = evmEmojiInfo,
+                            parentEmoji = mainEmojiInfo,
+                            avatar = null,
+                            isActive = isSelectedWalletAddress(evmAddress),
+                            type = RNBridge.AccountType.EVM
+                        )
+                        bridgeAccounts.add(evmAccount)
                     }
                 } catch (e: Exception) {
                     // EVM account might not be available, continue without it
                     println("EVM account not available: ${e.message}")
                 }
 
-                val result = WritableNativeMap().apply {
-                    putArray("accounts", accountsArray)
-                }
+                val response = RNBridge.WalletAccountsResponse(accounts = bridgeAccounts)
+                val result = bridgeModelToWritableMap(response)
 
                 uiScope {
                     promise.resolve(result)
                 }
             } catch (e: Exception) {
-                val result = WritableNativeMap().apply {
-                    putArray("accounts", WritableNativeArray())
-                }
+                val emptyResponse = RNBridge.WalletAccountsResponse(accounts = emptyList())
+                val result = bridgeModelToWritableMap(emptyResponse)
                 uiScope {
                     promise.resolve(result)
                 }
@@ -252,10 +258,10 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun getSignKeyIndex(): Double {
         return try {
-            val address = WalletManager.selectedWalletAddress()
+            val address = WalletManager.wallet()?.walletAddress()
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
 
-            if (address.isEmpty() || cryptoProvider == null) {
+            if (address.isNullOrEmpty() || cryptoProvider == null) {
                 return 0.0
             }
 
@@ -322,6 +328,87 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         } catch (e: Exception) {
             promise.reject("ENV_ERROR", "Failed to get environment variables: ${e.message}", e)
         }
+    }
+
+
+    private val gson = Gson()
+
+    // Helper method to convert Bridge models to React Native data
+    private fun bridgeModelToWritableMap(model: Any): WritableNativeMap {
+        val json = gson.toJson(model)
+        return jsonToWritableMap(json)
+    }
+
+    // Helper method to convert JSON string to WritableMap
+    private fun jsonToWritableMap(jsonString: String): WritableNativeMap {
+        val map = WritableNativeMap()
+        try {
+            val jsonObject = JSONObject(jsonString)
+            jsonObject.keys().forEach { key ->
+                val value = jsonObject.get(key)
+                when (value) {
+                    is String -> map.putString(key, value)
+                    is Boolean -> map.putBoolean(key, value)
+                    is Int -> map.putInt(key, value)
+                    is Double -> map.putDouble(key, value)
+                    is JSONArray -> map.putArray(key, jsonArrayToWritableArray(value))
+                    is JSONObject -> map.putMap(key, jsonToWritableMap(value.toString()))
+                    JSONObject.NULL -> map.putNull(key)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return map
+    }
+
+    // Helper method to convert JSONArray to WritableArray
+    private fun jsonArrayToWritableArray(jsonArray: JSONArray): WritableNativeArray {
+        val array = WritableNativeArray()
+        try {
+            for (i in 0 until jsonArray.length()) {
+                val value = jsonArray.get(i)
+                when (value) {
+                    is String -> array.pushString(value)
+                    is Boolean -> array.pushBoolean(value)
+                    is Int -> array.pushInt(value)
+                    is Double -> array.pushDouble(value)
+                    is JSONObject -> array.pushMap(jsonToWritableMap(value.toString()))
+                    is JSONArray -> array.pushArray(jsonArrayToWritableArray(value))
+                    JSONObject.NULL -> array.pushNull()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return array
+    }
+
+    // Helper method to create EmojiInfo from AccountEmojiManager data
+    private fun createEmojiInfo(address: String?): RNBridge.EmojiInfo? {
+        if (address.isNullOrEmpty()) {
+            return null
+        }
+
+        val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
+        val emoji = Emoji.getEmojiById(emojiInfo.emojiId)
+        val colorHex = Emoji.getEmojiColorHex(emojiInfo.emojiId)
+
+        return RNBridge.EmojiInfo(
+            emoji = emoji,
+            name = emojiInfo.emojiName,
+            color = colorHex
+        )
+    }
+
+    // Helper method to check if address is the selected wallet address (case-insensitive)
+    private fun isSelectedWalletAddress(address: String?): Boolean {
+        if (address.isNullOrEmpty()) {
+            return false
+        }
+
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        return selectedAddress.equals(address, ignoreCase = true)
     }
 
     companion object {

@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.emoji.model
 
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.utils.extensions.res2color
+import com.flowfoundation.wallet.utils.extensions.toHexColorString
 
 
 enum class Emoji(val id: Int, val emoji: String, val defaultName: String, val colorRes: Int) {
@@ -23,12 +24,18 @@ enum class Emoji(val id: Int, val emoji: String, val defaultName: String, val co
 
         @JvmStatic
         fun getEmojiById(id: Int): String {
-            return Emoji.values().firstOrNull { it.id == id }?.emoji ?: PEACH.emoji
+            return entries.firstOrNull { it.id == id }?.emoji ?: PEACH.emoji
         }
 
         @JvmStatic
         fun getEmojiColorRes(id: Int): Int {
-            return Emoji.values().firstOrNull { it.id == id }?.colorRes?.res2color() ?: R.color.transparent.res2color()
+            return entries.firstOrNull { it.id == id }?.colorRes?.res2color() ?: R.color.transparent.res2color()
+        }
+
+        @JvmStatic
+        fun getEmojiColorHex(id: Int, withAlpha: Boolean = false): String {
+          val colorInt = getEmojiColorRes(id)
+          return colorInt.toHexColorString(withAlpha)
         }
     }
 }
