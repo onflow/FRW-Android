@@ -438,7 +438,63 @@ object CryptoProviderManager {
                 // Standard prefix-based account handling (for non-multi-restore accounts)
                 logd(TAG, "  Standard prefix-based account handling")
                 val keyId = "prefix_key_${account.prefix}"
-                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                
+                // Try to get the private key, handling hardware-backed keys
+                val privateKey = try {
+                    KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                } catch (e: HardwareBackedKeyException) {
+                    loge(TAG, "Hardware-backed key detected for prefix ${account.prefix}")
+                    loge(TAG, "Creating AndroidKeystoreCryptoProvider for keystore alias: ${e.keystoreAlias}")
+                    
+                    // Determine the correct algorithms by checking on-chain keys
+                    var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
+                    var determinedHashingAlgorithm: HashingAlgorithm? = null
+                    
+                    try {
+                        val accountAddress = account.wallet?.walletAddress()
+                        if (accountAddress != null) {
+                            val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
+                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
+                            
+                            // Create temporary AndroidKeystoreCryptoProvider to get public key for matching
+                            val tempProvider = AndroidKeystoreCryptoProvider(e.keystoreAlias, SigningAlgorithm.ECDSA_P256)
+                            val keystorePublicKey = tempProvider.getPublicKey()
+                            
+                            // Find matching on-chain key to determine algorithms
+                            val matchedKey = onChainKeys.find { onChainKey ->
+                                isKeyMatchRobust("0x$keystorePublicKey", onChainKey.publicKey) && !onChainKey.revoked
+                            }
+                            
+                            if (matchedKey != null) {
+                                determinedSigningAlgorithm = matchedKey.signingAlgorithm
+                                determinedHashingAlgorithm = matchedKey.hashingAlgorithm
+                                logd(TAG, "  Hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
+                            } else {
+                                // Try secp256k1 if P256 didn't match
+                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.keystoreAlias, SigningAlgorithm.ECDSA_secp256k1)
+                                val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
+                                
+                                val matchedKeySecp = onChainKeys.find { onChainKey ->
+                                    isKeyMatchRobust("0x$keystorePublicKeySecp", onChainKey.publicKey) && !onChainKey.revoked
+                                }
+                                
+                                if (matchedKeySecp != null) {
+                                    determinedSigningAlgorithm = matchedKeySecp.signingAlgorithm
+                                    determinedHashingAlgorithm = matchedKeySecp.hashingAlgorithm
+                                    logd(TAG, "  Hardware-backed key matched on-chain with secp256k1: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
+                                } else {
+                                    logd(TAG, "  Hardware-backed key: Could not find matching on-chain key, using defaults")
+                                }
+                            }
+                        }
+                    } catch (ex: Exception) {
+                        loge(TAG, "  Hardware-backed key: Error determining algorithms: ${ex.message}, using defaults")
+                    }
+                    
+                    // Return AndroidKeystoreCryptoProvider directly
+                    return AndroidKeystoreCryptoProvider(e.keystoreAlias, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                }
+                
                 if (privateKey == null) {
                     loge(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix} from both new and old storage")
                     return null
@@ -603,7 +659,61 @@ object CryptoProviderManager {
                 
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"
-                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                val privateKey = try {
+                    KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                } catch (e: HardwareBackedKeyException) {
+                    loge("CryptoProviderManager", "Hardware-backed key detected for switch account prefix ${account.prefix}")
+                    loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for keystore alias: ${e.keystoreAlias}")
+                    
+                    // Determine the correct algorithms by checking on-chain keys
+                    var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
+                    var determinedHashingAlgorithm: HashingAlgorithm? = null
+                    
+                    try {
+                        val accountAddress = account.wallet?.walletAddress()
+                        if (accountAddress != null) {
+                            val onChainAccount = runBlocking { FlowCadenceApi.getAccount(accountAddress) }
+                            val onChainKeys = onChainAccount.keys?.toList() ?: emptyList()
+                            
+                            // Create temporary AndroidKeystoreCryptoProvider to get public key for matching
+                            val tempProvider = AndroidKeystoreCryptoProvider(e.keystoreAlias, SigningAlgorithm.ECDSA_P256)
+                            val keystorePublicKey = tempProvider.getPublicKey()
+                            
+                            // Find matching on-chain key to determine algorithms
+                            val matchedKey = onChainKeys.find { onChainKey ->
+                                isKeyMatchRobust("0x$keystorePublicKey", onChainKey.publicKey) && !onChainKey.revoked
+                            }
+                            
+                            if (matchedKey != null) {
+                                determinedSigningAlgorithm = matchedKey.signingAlgorithm
+                                determinedHashingAlgorithm = matchedKey.hashingAlgorithm
+                                logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
+                            } else {
+                                // Try secp256k1 if P256 didn't match
+                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.keystoreAlias, SigningAlgorithm.ECDSA_secp256k1)
+                                val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
+                                
+                                val matchedKeySecp = onChainKeys.find { onChainKey ->
+                                    isKeyMatchRobust("0x$keystorePublicKeySecp", onChainKey.publicKey) && !onChainKey.revoked
+                                }
+                                
+                                if (matchedKeySecp != null) {
+                                    determinedSigningAlgorithm = matchedKeySecp.signingAlgorithm
+                                    determinedHashingAlgorithm = matchedKeySecp.hashingAlgorithm
+                                    logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain with secp256k1: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
+                                } else {
+                                    logd("CryptoProviderManager", "Switch account hardware-backed key: Could not find matching on-chain key, using defaults")
+                                }
+                            }
+                        }
+                    } catch (ex: Exception) {
+                        loge("CryptoProviderManager", "Switch account hardware-backed key: Error determining algorithms: ${ex.message}, using defaults")
+                    }
+                    
+                    // Return AndroidKeystoreCryptoProvider directly
+                    return AndroidKeystoreCryptoProvider(e.keystoreAlias, determinedSigningAlgorithm, determinedHashingAlgorithm)
+                }
+                
                 if (privateKey == null) {
                     loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for switch account prefix ${account.prefix} from both new and old storage")
                     loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
@@ -708,7 +818,16 @@ object CryptoProviderManager {
             if (switchAccount.prefix.isNullOrBlank().not()) {
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${switchAccount.prefix}"
-                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(switchAccount.prefix!!, storage)
+                val privateKey = try {
+                    KeyCompatibilityManager.getPrivateKeyWithFallback(switchAccount.prefix!!, storage)
+                } catch (e: HardwareBackedKeyException) {
+                    loge("CryptoProviderManager", "Hardware-backed key detected for local switch account prefix ${switchAccount.prefix}")
+                    loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for keystore alias: ${e.keystoreAlias}")
+                    
+                    // For LocalSwitchAccount, we use defaults since we don't have wallet address
+                    return AndroidKeystoreCryptoProvider(e.keystoreAlias, SigningAlgorithm.ECDSA_P256, null)
+                }
+                
                 if (privateKey == null) {
                     loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for local switch account prefix ${switchAccount.prefix} from both new and old storage")
                     loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")

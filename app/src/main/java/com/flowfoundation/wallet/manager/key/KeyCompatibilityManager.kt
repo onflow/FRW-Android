@@ -11,6 +11,11 @@ import com.flow.wallet.keys.KeyFormat
 import org.onflow.flow.models.SigningAlgorithm
 
 /**
+ * Exception thrown when a hardware-backed key is detected that cannot be extracted
+ */
+class HardwareBackedKeyException(val keystoreAlias: String, message: String) : Exception(message)
+
+/**
  * Handles backward compatibility between old Android Keystore pattern and new Flow-Wallet-Kit storage.
  *
  * Old pattern: user_keystore_{prefix} -> Android Keystore
@@ -68,7 +73,9 @@ object KeyCompatibilityManager {
     }
 
     /**
-     * Attempts to retrieve key from old Android Keystore and wrap it in PrivateKey
+     * Attempts to retrieve key from old Android Keystore
+     * For hardware-backed keys, returns a special marker indicating that an 
+     * AndroidKeystoreCryptoProvider should be used instead
      */
     private fun tryGetFromOldKeystore(prefix: String, storage: StorageProtocol): PrivateKey? {
         return try {
@@ -92,61 +99,83 @@ object KeyCompatibilityManager {
             val privateKey = keyEntry.privateKey
             logd(TAG, "Private key type: ${privateKey?.javaClass?.simpleName}")
             
-            // AndroidKeyStoreECPrivateKey doesn't directly implement ECPrivateKey interface
-            // but we can extract the key using reflection or alternative methods
-            val privateKeyBytes = try {
-                when {
-                    privateKey is ECPrivateKey -> {
-                        logd(TAG, "Using ECPrivateKey interface")
-                        privateKey.s.toByteArray()
+            // Check if this is a hardware-backed key that cannot be extracted
+            if (privateKey.javaClass.simpleName == "AndroidKeyStoreECPrivateKey") {
+                // Try to determine if this is hardware-backed or software-backed
+                val privateKeyBytes = extractFromAndroidKeyStoreECPrivateKey(privateKey, oldAlias)
+                
+                if (privateKeyBytes == null) {
+                    // Hardware-backed key - cannot extract, need to use AndroidKeystoreCryptoProvider
+                    loge(TAG, "Hardware-backed key detected for prefix: $prefix")
+                    loge(TAG, "Cannot extract private key material - this is a security feature")
+                    loge(TAG, "Will need to use AndroidKeystoreCryptoProvider for this key")
+                    throw HardwareBackedKeyException(oldAlias, "Hardware-backed key requires AndroidKeystoreCryptoProvider")
+                }
+                
+                // Software-backed key - proceed with extraction
+                logd(TAG, "Software-backed AndroidKeyStore key detected, proceeding with extraction")
+                
+                // Normalize to 32 bytes
+                val normalizedBytes = when {
+                    privateKeyBytes.size == 32 -> privateKeyBytes
+                    privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
+                        privateKeyBytes.copyOfRange(1, 33)
                     }
-                    privateKey.javaClass.simpleName == "AndroidKeyStoreECPrivateKey" -> {
-                        logd(TAG, "Handling AndroidKeyStoreECPrivateKey")
-                        // For AndroidKeyStoreECPrivateKey, we need to use a different approach
-                        // Since we can't directly access the private key value, we'll use the key for signing
-                        // and then reconstruct it, or use alternative extraction methods
-                        extractFromAndroidKeyStoreECPrivateKey(privateKey, oldAlias)
+                    privateKeyBytes.size < 32 -> {
+                        val padded = ByteArray(32)
+                        System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
+                        padded
                     }
                     else -> {
-                        loge(TAG, "Unsupported private key type: ${privateKey?.javaClass?.simpleName}")
+                        loge(TAG, "Unexpected private key size: ${privateKeyBytes.size} bytes")
                         return null
                     }
                 }
-            } catch (e: Exception) {
-                loge(TAG, "Failed to extract private key: ${e.message}")
+
+                // Create a new PrivateKey instance from the raw bytes
+                val newPrivateKey = PrivateKey.create(storage)
+                newPrivateKey.importPrivateKey(normalizedBytes, KeyFormat.RAW)
+
+                logd(TAG, "Successfully extracted and converted software-backed keystore key to PrivateKey")
+                return newPrivateKey
+            }
+            // Handle standard ECPrivateKey interface
+            else if (privateKey is ECPrivateKey) {
+                logd(TAG, "Using ECPrivateKey interface")
+                val privateKeyBytes = privateKey.s.toByteArray()
+                
+                // Normalize to 32 bytes
+                val normalizedBytes = when {
+                    privateKeyBytes.size == 32 -> privateKeyBytes
+                    privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
+                        privateKeyBytes.copyOfRange(1, 33)
+                    }
+                    privateKeyBytes.size < 32 -> {
+                        val padded = ByteArray(32)
+                        System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
+                        padded
+                    }
+                    else -> {
+                        loge(TAG, "Unexpected private key size: ${privateKeyBytes.size} bytes")
+                        return null
+                    }
+                }
+
+                // Create a new PrivateKey instance from the raw bytes
+                val newPrivateKey = PrivateKey.create(storage)
+                newPrivateKey.importPrivateKey(normalizedBytes, KeyFormat.RAW)
+
+                logd(TAG, "Successfully extracted and converted ECPrivateKey to PrivateKey")
+                return newPrivateKey
+            }
+            else {
+                loge(TAG, "Unsupported private key type: ${privateKey?.javaClass?.simpleName}")
                 return null
             }
 
-            // Check if extraction failed (null return from extractFromAndroidKeyStoreECPrivateKey)
-            if (privateKeyBytes == null) {
-                loge(TAG, "Private key extraction returned null - likely hardware-backed key")
-                return null
-            }
-
-            // Normalize to 32 bytes
-            val normalizedBytes = when {
-                privateKeyBytes.size == 32 -> privateKeyBytes
-                privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
-                    privateKeyBytes.copyOfRange(1, 33)
-                }
-                privateKeyBytes.size < 32 -> {
-                    val padded = ByteArray(32)
-                    System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
-                    padded
-                }
-                else -> {
-                    loge(TAG, "Unexpected private key size: ${privateKeyBytes.size} bytes")
-                    return null
-                }
-            }
-
-            // Create a new PrivateKey instance from the raw bytes
-            val newPrivateKey = PrivateKey.create(storage)
-            newPrivateKey.importPrivateKey(normalizedBytes, KeyFormat.RAW)
-
-            logd(TAG, "Successfully extracted and converted old keystore key to PrivateKey")
-            return newPrivateKey
-
+        } catch (e: HardwareBackedKeyException) {
+            // Re-throw hardware-backed key exception
+            throw e
         } catch (e: Exception) {
             loge(TAG, "Failed to get key from old Android Keystore: ${e.message}")
             null
@@ -155,21 +184,15 @@ object KeyCompatibilityManager {
 
     /**
      * Attempts to extract private key bytes from AndroidKeyStoreECPrivateKey
-     * 
-     * Note: AndroidKeyStore keys are hardware-backed and typically don't expose
-     * raw private key material. This is by design for security.
-     * 
-     * For hardware-backed keys, this method will return null and the key
-     * cannot be migrated. The user would need to create a new key.
+     * Returns null for hardware-backed keys (which is expected and handled by throwing HardwareBackedKeyException)
      */
     private fun extractFromAndroidKeyStoreECPrivateKey(privateKey: java.security.PrivateKey, alias: String): ByteArray? {
         logd(TAG, "Attempting to extract private key from AndroidKeyStoreECPrivateKey")
         
-        // Check if this key somehow implements ECPrivateKey interface
-        // (This could happen with software-backed keys or older Android versions)
+        // Check if this key implements ECPrivateKey interface (software-backed keys)
         if (privateKey is ECPrivateKey) {
             return try {
-                logd(TAG, "AndroidKeyStore key implements ECPrivateKey interface - extracting")
+                logd(TAG, "AndroidKeyStore key implements ECPrivateKey interface - extracting (software-backed)")
                 privateKey.s.toByteArray()
             } catch (e: Exception) {
                 loge(TAG, "Failed to extract private key value: ${e.message}")
@@ -177,10 +200,9 @@ object KeyCompatibilityManager {
             }
         }
         
-        // For hardware-backed keys, log the limitation and return null
+        // Hardware-backed keys cannot be extracted - return null to trigger HardwareBackedKeyException
         logd(TAG, "AndroidKeyStore key is hardware-backed and cannot be extracted")
-        logd(TAG, "This is a security feature - private key material cannot be accessed")
-        logd(TAG, "Migration not possible for this key. User will need to create a new key.")
+        logd(TAG, "This will trigger AndroidKeystoreCryptoProvider usage")
         
         return null
     }
