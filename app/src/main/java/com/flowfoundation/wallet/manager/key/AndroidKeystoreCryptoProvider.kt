@@ -63,31 +63,28 @@ class AndroidKeystoreCryptoProvider(
     @OptIn(ExperimentalStdlibApi::class)
     override fun getPublicKey(): String {
         return try {
-            val pubKey = publicKey as ECPublicKey
-            val point = pubKey.w
-            val x = point.affineX
-            val y = point.affineY
+            // Try to get the public key from the certificate first
+            val pubKey = publicKey
+            val encoded = pubKey.encoded
             
-            // Convert to uncompressed format (04 + x + y)
-            val xBytes = x.toByteArray().let { 
-                when {
-                    it.size == 33 && it[0] == 0.toByte() -> it.copyOfRange(1, 33) // Remove leading zero
-                    it.size < 32 -> ByteArray(32 - it.size) + it // Pad with leading zeros
-                    else -> it.takeLast(32).toByteArray() // Take last 32 bytes
+            // For ECDSA keys, the public key is typically the last 65 bytes (04 + 32 + 32)
+            // or last 64 bytes if uncompressed without the 04 prefix
+            val publicKeyBytes = if (encoded.size >= 65) {
+                // Look for the uncompressed point (starts with 04)
+                val startIndex = encoded.indexOfFirst { it == 0x04.toByte() }
+                if (startIndex != -1 && startIndex + 65 <= encoded.size) {
+                    encoded.copyOfRange(startIndex, startIndex + 65)
+                } else {
+                    // Fallback: take last 65 bytes
+                    encoded.takeLast(65).toByteArray()
                 }
-            }
-            val yBytes = y.toByteArray().let { 
-                when {
-                    it.size == 33 && it[0] == 0.toByte() -> it.copyOfRange(1, 33) // Remove leading zero
-                    it.size < 32 -> ByteArray(32 - it.size) + it // Pad with leading zeros
-                    else -> it.takeLast(32).toByteArray() // Take last 32 bytes
-                }
+            } else {
+                encoded
             }
             
-            val uncompressed = byteArrayOf(0x04.toByte()) + xBytes + yBytes
-            val publicKeyHex = uncompressed.toHexString()
+            val publicKeyHex = publicKeyBytes.toHexString()
             
-            // Remove "04" prefix to match expected format
+            // Remove "04" prefix to match expected format (same as PrivateKeyStoreCryptoProvider)
             val formattedPublicKey = if (publicKeyHex.startsWith("04")) {
                 publicKeyHex.substring(2)
             } else {
@@ -201,18 +198,42 @@ class AndroidKeystoreCryptoProvider(
     
     /**
      * Convert DER-encoded signature to raw format (r || s)
-     * Android Keystore returns signatures in DER format, but Flow expects raw format
+     * Android Keystore returns signatures in DER format, but Flow expects 64-byte raw format
+     * Based on the working PrivateKeyStoreCryptoProvider pattern
      */
     private fun derToRaw(derSignature: ByteArray): ByteArray {
         try {
-            // DER format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S]
+            logd(TAG, "DER signature input: ${derSignature.size} bytes")
+            
+            // If it's already 64 bytes, assume it's raw format
+            if (derSignature.size == 64) {
+                logd(TAG, "Signature is already 64 bytes, assuming raw format")
+                return derSignature
+            }
+            
+            // If it's 65 bytes, remove recovery ID (like PrivateKeyStoreCryptoProvider does)
+            if (derSignature.size == 65) {
+                logd(TAG, "Trimming recovery ID from 65-byte signature")
+                return derSignature.copyOfRange(0, 64)
+            }
+            
+            // Parse DER format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S]
             var offset = 0
             
             // Skip sequence tag (0x30) and length
             if (derSignature[offset] != 0x30.toByte()) {
                 throw IllegalArgumentException("Invalid DER signature: missing sequence tag")
             }
-            offset += 2 // Skip 0x30 and length byte
+            offset++ // Skip 0x30
+            
+            // Skip length byte(s) - handle both short and long form
+            val lengthByte = derSignature[offset].toInt() and 0xFF
+            if (lengthByte and 0x80 == 0) {
+                offset++ // Short form: single byte length
+            } else {
+                val lengthBytes = lengthByte and 0x7F
+                offset += 1 + lengthBytes // Long form: skip length indicator + length bytes
+            }
             
             // Read R
             if (derSignature[offset] != 0x02.toByte()) {
@@ -239,11 +260,27 @@ class AndroidKeystoreCryptoProvider(
             val rNormalized = normalizeToSize(rBytes, 32)
             val sNormalized = normalizeToSize(sBytes, 32)
             
-            return rNormalized + sNormalized
+            val result = rNormalized + sNormalized
+            logd(TAG, "DER conversion successful: ${result.size} bytes")
+            return result
+            
         } catch (e: Exception) {
             loge(TAG, "Failed to convert DER to raw signature: ${e.message}")
-            // Fallback: assume it's already in raw format
-            return derSignature
+            
+            // Fallback: try to extract 64 bytes from the signature
+            return when {
+                derSignature.size >= 64 -> {
+                    logd(TAG, "Using fallback: taking last 64 bytes")
+                    derSignature.takeLast(64).toByteArray()
+                }
+                else -> {
+                    logd(TAG, "Using fallback: padding to 64 bytes")
+                    ByteArray(64).also { result ->
+                        val copyLength = minOf(derSignature.size, 64)
+                        System.arraycopy(derSignature, 0, result, 64 - copyLength, copyLength)
+                    }
+                }
+            }
         }
     }
     
