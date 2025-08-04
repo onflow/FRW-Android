@@ -130,34 +130,35 @@ object WalletManager {
             // Load the stored private key using the prefix-based ID with backward compatibility
             val keyId = "prefix_key_${account.prefix}"
             logd(TAG, "Attempting to load private key with ID: $keyId (with fallback to old storage)")
-            val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
-            if (privateKey == null) {
-                logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix} from both new and old storage")
-                logd(TAG, "This could indicate:")
-                logd(TAG, "  1. Key was never created or stored")
-                logd(TAG, "  2. Storage corruption")
-                logd(TAG, "  3. Account data inconsistency")
-
-                // Run diagnostic to help troubleshooting
-                try {
-                    val androidKeystoreAliases = KeyStoreMigrationManager.diagnoseAndroidKeystore()
-                    logd(TAG, "Available Android Keystore aliases for debugging: $androidKeystoreAliases")
-                } catch (diagE: Exception) {
-                    logd(TAG, "Could not run Android Keystore diagnostic: ${diagE.message}")
+            
+            try {
+                val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
+                if (privateKey == null) {
+                    logd(TAG, "Private key not found in either storage system")
+                    return false
                 }
                 
-                return false // Fail gracefully instead of creating a new key
-            }
-            logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
+                logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
 
-            /* 2. Create the wallet */
-            val newWallet = WalletFactory.createKeyWallet(
-                privateKey,
-                setOf(ChainId.Mainnet, ChainId.Testnet),
-                storage
-            )
-            currentWallet = newWallet
-            logd(TAG, "Prefix wallet created, waiting for accounts to load...")
+                /* 2. Create the wallet */
+                val newWallet = WalletFactory.createKeyWallet(
+                    privateKey,
+                    setOf(ChainId.Mainnet, ChainId.Testnet),
+                    storage
+                )
+                currentWallet = newWallet
+                logd(TAG, "Prefix wallet created, waiting for accounts to load...")
+                
+            } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
+                logd(TAG, "Hardware-backed key detected for prefix: ${account.prefix}")
+                logd(TAG, "Hardware-backed keys will be handled by CryptoProviderManager during signing operations")
+                logd(TAG, "Skipping wallet creation for hardware-backed key scenario")
+                
+                // For hardware-backed keys, we don't create a wallet since we can't access the private key
+                // The CryptoProviderManager will handle signing operations using AndroidKeystoreCryptoProvider
+                currentWallet = null
+                logd(TAG, "Hardware-backed key wallet initialization completed (no wallet object created)")
+            }
         }
 
         else {
@@ -243,9 +244,18 @@ object WalletManager {
         }
 
         /* 4. Make sure WalletManager knows which address is selected */
-        val address = currentWallet?.walletAddress()
+        val address = currentWallet?.walletAddress() ?: run {
+            // For hardware-backed keys, try to get address from account data
+            val walletData = account.wallet?.wallets?.firstOrNull()
+            val blockchainData = walletData?.blockchain?.firstOrNull()
+            blockchainData?.address
+        }
+        
         if (!address.isNullOrBlank()) {
             selectWalletAddress(address)
+            logd(TAG, "Selected wallet address: $address")
+        } else {
+            logd(TAG, "No wallet address found to select (this may be normal for hardware-backed keys)")
         }
 
         return true

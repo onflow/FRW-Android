@@ -9,11 +9,7 @@ import java.security.KeyStore.PrivateKeyEntry
 import java.security.interfaces.ECPrivateKey
 import com.flow.wallet.keys.KeyFormat
 import org.onflow.flow.models.SigningAlgorithm
-
-/**
- * Exception thrown when a hardware-backed key is detected that cannot be extracted
- */
-class HardwareBackedKeyException(val keystoreAlias: String, message: String) : Exception(message)
+import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
 
 /**
  * Handles backward compatibility between old Android Keystore pattern and new Flow-Wallet-Kit storage.
@@ -109,7 +105,7 @@ object KeyCompatibilityManager {
                     loge(TAG, "Hardware-backed key detected for prefix: $prefix")
                     loge(TAG, "Cannot extract private key material - this is a security feature")
                     loge(TAG, "Will need to use AndroidKeystoreCryptoProvider for this key")
-                    throw HardwareBackedKeyException(oldAlias, "Hardware-backed key requires AndroidKeystoreCryptoProvider")
+                    throw HardwareBackedKeyException(oldAlias, "Hardware-backed key requires AndroidKeystoreCryptoProvider", prefix)
                 }
                 
                 // Software-backed key - proceed with extraction
@@ -174,7 +170,7 @@ object KeyCompatibilityManager {
             }
 
         } catch (e: HardwareBackedKeyException) {
-            // Re-throw hardware-backed key exception
+            // Re-throw hardware-backed key exception for CryptoProviderManager to handle
             throw e
         } catch (e: Exception) {
             loge(TAG, "Failed to get key from old Android Keystore: ${e.message}")

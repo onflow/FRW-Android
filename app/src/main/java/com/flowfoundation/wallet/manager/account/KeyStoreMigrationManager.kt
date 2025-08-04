@@ -195,8 +195,28 @@ object KeyStoreMigrationManager {
             }
 
             val privateKey = keyEntry.privateKey
-            if (privateKey !is ECPrivateKey) {
-                val keyType = privateKey?.javaClass?.simpleName ?: "null"
+            val keyType = privateKey?.javaClass?.simpleName ?: "null"
+            
+            // Handle AndroidKeyStoreECPrivateKey specifically
+            if (keyType == "AndroidKeyStoreECPrivateKey") {
+                // Check if key is hardware-backed by attempting to extract
+                if (privateKey is ECPrivateKey) {
+                    try {
+                        val privateKeyValue = privateKey.s
+                        val privateKeyBytes = privateKeyValue.toByteArray()
+                        logd(TAG, "Successfully extracted software-backed AndroidKeyStoreECPrivateKey")
+                        return normalizePrivateKeyBytes(privateKeyBytes, alias)
+                    } catch (e: Exception) {
+                        logd(TAG, "Failed to extract AndroidKeyStoreECPrivateKey - likely hardware-backed")
+                        throw HardwareBackedKeyException(alias, "Hardware-backed key cannot be migrated via extraction")
+                    }
+                } else {
+                    logd(TAG, "AndroidKeyStoreECPrivateKey doesn't implement ECPrivateKey interface - hardware-backed")
+                    throw HardwareBackedKeyException(alias, "Hardware-backed key cannot be migrated via extraction")
+                }
+            }
+            // Handle standard ECPrivateKey
+            else if (privateKey !is ECPrivateKey) {
                 throw UnsupportedKeyTypeException(alias, keyType)
             }
 
@@ -205,37 +225,7 @@ object KeyStoreMigrationManager {
             val privateKeyBytes = privateKeyValue.toByteArray()
 
             logd(TAG, "Extracted private key with size: ${privateKeyBytes.size} bytes")
-
-            // Ensure the key is 32 bytes (normalize different formats)
-            val normalizedBytes = when {
-                privateKeyBytes.size == 32 -> {
-                    logd(TAG, "Private key size is correct (32 bytes)")
-                    privateKeyBytes
-                }
-                privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
-                    logd(TAG, "Removing leading zero byte from 33-byte key")
-                    privateKeyBytes.copyOfRange(1, 33)
-                }
-                privateKeyBytes.size < 32 -> {
-                    logd(TAG, "Padding ${privateKeyBytes.size}-byte key to 32 bytes")
-                    val padded = ByteArray(32)
-                    System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
-                    padded
-                }
-                else -> {
-                    // This is the critical improvement - throw specific exception instead of returning null
-                    loge(TAG, "Private key has unexpected size: ${privateKeyBytes.size} bytes (expected: 32)")
-
-                    throw InvalidPrivateKeySizeException(
-                        alias = alias,
-                        actualSize = privateKeyBytes.size,
-                        keyBytes = privateKeyBytes
-                    )
-                }
-            }
-
-            logd(TAG, "Successfully extracted and normalized private key from Android Keystore")
-            return normalizedBytes
+            return normalizePrivateKeyBytes(privateKeyBytes, alias)
 
         } catch (e: KeyStoreMigrationException) {
             // Re-throw our specific exceptions
@@ -245,6 +235,37 @@ object KeyStoreMigrationManager {
             // Wrap other exceptions
             loge(TAG, "Unexpected error extracting private key: ${e.message}")
             throw KeystoreAccessException(alias, e)
+        }
+    }
+
+    /**
+     * Helper method to normalize private key bytes to 32 bytes
+     */
+    private fun normalizePrivateKeyBytes(privateKeyBytes: ByteArray, alias: String): ByteArray {
+        // Ensure the key is 32 bytes (normalize different formats)
+        return when {
+            privateKeyBytes.size == 32 -> {
+                logd(TAG, "Private key size is correct (32 bytes)")
+                privateKeyBytes
+            }
+            privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
+                logd(TAG, "Removing leading zero byte from 33-byte key")
+                privateKeyBytes.copyOfRange(1, 33)
+            }
+            privateKeyBytes.size < 32 -> {
+                logd(TAG, "Padding ${privateKeyBytes.size}-byte key to 32 bytes")
+                val padded = ByteArray(32)
+                System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
+                padded
+            }
+            else -> {
+                loge(TAG, "Private key has unexpected size: ${privateKeyBytes.size} bytes (expected: 32)")
+                throw InvalidPrivateKeySizeException(
+                    alias = alias,
+                    actualSize = privateKeyBytes.size,
+                    keyBytes = privateKeyBytes
+                )
+            }
         }
     }
 
@@ -426,6 +447,12 @@ object KeyStoreMigrationManager {
             
         } catch (e: KeystoreKeyNotFoundException) {
             logd(TAG, "No key found in old keystore for prefix: $prefix (not an error - may be new account)")
+            AccountMigrationResult.NotNeeded
+            
+        } catch (e: HardwareBackedKeyException) {
+            loge(TAG, "Hardware-backed key detected for prefix $prefix - migration not possible via extraction")
+            loge(TAG, "Key requires AndroidKeystoreCryptoProvider for signing operations")
+            // Hardware-backed keys cannot be migrated - mark as completed since this is expected behavior
             AccountMigrationResult.NotNeeded
             
         } catch (e: InvalidPrivateKeySizeException) {
