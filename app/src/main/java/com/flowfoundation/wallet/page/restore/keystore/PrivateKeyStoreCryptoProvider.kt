@@ -42,7 +42,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         logd(TAG, "KeyStore info details:")
         logd(TAG, "  Address: ${keyInfo.get("address").asString}")
         logd(TAG, "  Public Key (from keystore): ${keyInfo.get("publicKey").asString}")
-        logd(TAG, "  Private Key length: ${keyInfo.get("privateKey").asString.length}")
+        logd(TAG, "  Private Key loaded successfully")
         logd(TAG, "  Sign Algorithm: ${keyInfo.get("signAlgo").asInt} -> $signingAlgorithm")
         logd(TAG, "  Hash Algorithm: ${keyInfo.get("hashAlgo").asInt}")
         logd(TAG, "  Key ID: ${keyInfo.get("keyId").asInt}")

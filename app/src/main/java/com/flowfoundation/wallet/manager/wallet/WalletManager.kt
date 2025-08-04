@@ -125,11 +125,11 @@ object WalletManager {
 
         // Handle prefix-based accounts
         else if (!account.prefix.isNullOrBlank()) {
-            logd(TAG, "Initializing prefix-based wallet for prefix: ${account.prefix}")
+            logd(TAG, "Initializing prefix-based wallet")
 
             // Load the stored private key using the prefix-based ID with backward compatibility
             val keyId = "prefix_key_${account.prefix}"
-            logd(TAG, "Attempting to load private key with ID: $keyId (with fallback to old storage)")
+            logd(TAG, "Attempting to load private key (with fallback to old storage)")
             
             try {
                 val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
@@ -138,7 +138,7 @@ object WalletManager {
                     return false
                 }
                 
-                logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
+                logd(TAG, "Successfully loaded private key")
 
                 /* 2. Create the wallet */
                 val newWallet = WalletFactory.createKeyWallet(
@@ -150,7 +150,7 @@ object WalletManager {
                 logd(TAG, "Prefix wallet created, waiting for accounts to load...")
                 
             } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
-                logd(TAG, "Hardware-backed key detected for prefix: ${account.prefix}")
+                logd(TAG, "Hardware-backed key detected")
                 logd(TAG, "Hardware-backed keys will be handled by CryptoProviderManager during signing operations")
                 logd(TAG, "Setting currentWallet = null for hardware-backed keys")
                 
@@ -523,15 +523,15 @@ object WalletManager {
 
                 // Handle prefix-based accounts
                 else if (!account.prefix.isNullOrBlank()) {
-                    logd(TAG, "Updating prefix-based wallet for prefix: ${account.prefix}")
+                    logd(TAG, "Updating prefix-based wallet")
 
                     // Load the stored private key using the prefix-based ID
                     val keyId = "prefix_key_${account.prefix}"
                     val privateKey = try {
-                        logd(TAG, "Attempting to load private key with ID: $keyId")
+                        logd(TAG, "Attempting to load private key")
                         PrivateKey.get(keyId, account.prefix!!, storage)
                     } catch (e: Exception) {
-                        logd(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix}: ${e.message}")
+                        logd(TAG, "CRITICAL ERROR: Failed to load stored private key: ${e.message}")
                         logd(TAG, "This could indicate a migration issue. Cannot proceed without the stored key.")
                         
                         // Run diagnostic to help troubleshooting
@@ -544,7 +544,7 @@ object WalletManager {
                         
                         return@synchronized
                     }
-                    logd(TAG, "Successfully loaded private key for prefix: ${account.prefix}")
+                    logd(TAG, "Successfully loaded private key")
 
                     // Create a new wallet using the private key
                     newWallet = WalletFactory.createKeyWallet(

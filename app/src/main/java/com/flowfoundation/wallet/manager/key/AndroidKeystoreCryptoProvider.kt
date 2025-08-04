@@ -51,12 +51,12 @@ class AndroidKeystoreCryptoProvider(
     }
 
     init {
-        logd(TAG, "Initialized AndroidKeystoreCryptoProvider for alias: $keystoreAlias")
+        logd(TAG, "Initialized AndroidKeystoreCryptoProvider")
         logd(TAG, "Using signAlgo=$signingAlgorithm, hashAlgo=${hashingAlgorithm ?: "default"}")
         
         // Verify the key exists
         if (!keyStore.containsAlias(keystoreAlias)) {
-            throw IllegalArgumentException("Keystore alias not found: $keystoreAlias")
+            throw IllegalArgumentException("Keystore alias not found")
         }
     }
 

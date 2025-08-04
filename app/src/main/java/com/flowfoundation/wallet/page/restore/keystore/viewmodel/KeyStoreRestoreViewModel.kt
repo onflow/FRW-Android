@@ -889,7 +889,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         // Create PrivateKey instance from wallet module
         val key = PrivateKey.create(storage).apply {
             val keyBytes = privateKey.hexToBytes()
-            logd("KeyStoreRestoreViewModel", "Importing private key with ${keyBytes.size} bytes")
+            logd("KeyStoreRestoreViewModel", "Importing private key")
             importPrivateKey(keyBytes, KeyFormat.RAW)
         }
 

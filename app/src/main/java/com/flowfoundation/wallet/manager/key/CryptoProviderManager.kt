@@ -444,7 +444,7 @@ object CryptoProviderManager {
                 val privateKey = try {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
                 } catch (e: HardwareBackedKeyException) {
-                    loge(TAG, "Hardware-backed key detected for prefix ${account.prefix}")
+                    loge(TAG, "Hardware-backed key detected")
 
                     // Determine the correct algorithms by checking on-chain keys
                     var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
@@ -496,7 +496,7 @@ object CryptoProviderManager {
                 }
 
                 if (privateKey == null) {
-                    loge(TAG, "CRITICAL ERROR: Failed to load stored private key for prefix ${account.prefix} from both new and old storage")
+                    loge(TAG, "CRITICAL ERROR: Failed to load stored private key from both new and old storage")
                     return null
                 }
                 val wallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
@@ -655,15 +655,15 @@ object CryptoProviderManager {
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
                 logd("CryptoProviderManager", "Creating PrivateKeyCryptoProvider for prefix-based account")
-                logd("CryptoProviderManager", "  prefix: ${account.prefix}")
+                logd("CryptoProviderManager", "  Using prefix-based key")
 
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"
                 val privateKey = try {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
                 } catch (e: HardwareBackedKeyException) {
-                    loge("CryptoProviderManager", "Hardware-backed key detected for switch account prefix ${account.prefix}")
-                    loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for keystore alias: ${e.alias!!}")
+                    loge("CryptoProviderManager", "Hardware-backed key detected for switch account")
+                    loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
 
                     // Determine the correct algorithms by checking on-chain keys
                     var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
@@ -715,7 +715,7 @@ object CryptoProviderManager {
                 }
 
                 if (privateKey == null) {
-                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for switch account prefix ${account.prefix} from both new and old storage")
+                    loge("CryptoProviderManager", "CRITICAL ERROR: Failed to load stored private key for switch account from both new and old storage")
                     loge("CryptoProviderManager", "Cannot proceed without the stored key as it would create a different account")
                     return null
                 }
@@ -822,7 +822,7 @@ object CryptoProviderManager {
                     KeyCompatibilityManager.getPrivateKeyWithFallback(switchAccount.prefix!!, storage)
                 } catch (e: HardwareBackedKeyException) {
                     loge("CryptoProviderManager", "Hardware-backed key detected for local switch account prefix ${switchAccount.prefix}")
-                    loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for keystore alias: ${e.alias!!}")
+                    loge("CryptoProviderManager", "Creating AndroidKeystoreCryptoProvider for hardware-backed key")
 
                     // For LocalSwitchAccount, we use defaults since we don't have wallet address
                     return AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_P256, null)
