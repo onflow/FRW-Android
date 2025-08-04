@@ -189,7 +189,7 @@
                             <ImageView
                                 android:layout_width="11dp"
                                 android:layout_height="12dp"
-                                android:src="@drawable/ic_evm_move_token" />
+                                android:src="@drawable/ic_send_simple" />
                         </LinearLayout>
 
                         <!-- Balance amount & coin type -->

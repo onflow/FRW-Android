@@ -106,6 +106,12 @@ public class ReactNativeDemoActivity extends ReactActivity {
         Log.d(TAG, "  network: " + network);
         
         Intent intent = new Intent(context, ReactNativeDemoActivity.class);
+        
+        // Add flags to ensure the activity comes to the foreground prominently
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        
         if (address != null) {
             intent.putExtra("address", address);
         }

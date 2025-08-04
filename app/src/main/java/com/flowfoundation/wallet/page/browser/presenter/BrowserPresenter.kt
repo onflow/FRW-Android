@@ -52,6 +52,8 @@ class BrowserPresenter(
                             WalletManager.selectedWalletAddress().toAddress(),
                             if (isTestnet()) "testnet" else "mainnet"
                         )
+                        // Minimize browser to allow React Native to show prominently
+                        shrinkBrowser()
                     } else {
                         uiScope {
                             EnableEVMDialog.show(activity.supportFragmentManager)
