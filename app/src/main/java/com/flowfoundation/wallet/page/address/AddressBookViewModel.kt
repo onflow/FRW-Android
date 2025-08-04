@@ -11,7 +11,7 @@ import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.page.address.model.AddressBookCharModel
 import com.flowfoundation.wallet.page.address.model.AddressBookPersonModel
-import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
+import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.wallet.toAddress
 
@@ -29,7 +29,7 @@ class AddressBookViewModel : ViewModel() {
 
     private var searchKeyword: String = ""
 
-    private val isSendPage by lazy { BaseActivity.getCurrentActivity()?.javaClass == TransactionSendActivity::class.java }
+    private val isSendPage by lazy { BaseActivity.getCurrentActivity()?.javaClass == ReactNativeDemoActivity::class.java }
 
     fun loadAddressBook() {
         if (searchKeyword.isNotBlank()) {

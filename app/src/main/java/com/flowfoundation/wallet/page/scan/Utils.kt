@@ -12,7 +12,8 @@ import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
 import com.flowfoundation.wallet.page.component.deeplinking.getWalletConnectUri
-import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.utils.addressPattern
 import com.flowfoundation.wallet.utils.evmAddressPattern
 import com.flowfoundation.wallet.utils.logd
@@ -50,19 +51,23 @@ fun dispatchScanResult(context: Context, str: String) {
         if (EVMWalletManager.haveEVMAddress().not()) {
             return
         }
-        SendAmountActivity.launch(
-            context as Activity,
-            AddressBookContact(address = addressText.toAddress()),
-            FungibleTokenListManager.getFlowTokenContractId()
+        // Launch React Native send workflow instead of native SendAmountActivity
+        ReactNativeDemoActivity.launch(
+            context,
+            "SelectTokens",
+            WalletManager.selectedWalletAddress().toAddress(),
+            if (isTestnet()) "testnet" else "mainnet"
         )
     } else if (addressPattern.matches(text) || evmAddressPattern.matches(text)) {
         if (WalletManager.isChildAccountSelected()) {
             return
         }
-        SendAmountActivity.launch(
-            context as Activity,
-            AddressBookContact(address = text.toAddress()),
-            FungibleTokenListManager.getFlowTokenContractId()
+        // Launch React Native send workflow instead of native SendAmountActivity
+        ReactNativeDemoActivity.launch(
+            context,
+            "SelectTokens",
+            WalletManager.selectedWalletAddress().toAddress(),
+            if (isTestnet()) "testnet" else "mainnet"
         )
     } else if (URLUtil.isValidUrl(text.httpPrefix())) {
         openBrowser(context as Activity, text.httpPrefix())

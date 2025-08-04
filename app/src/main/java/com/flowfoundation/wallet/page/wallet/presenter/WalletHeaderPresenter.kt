@@ -26,7 +26,6 @@ import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
-import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
 import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
 import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity

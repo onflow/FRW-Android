@@ -11,7 +11,9 @@ import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.browser.openBrowser
-import com.flowfoundation.wallet.page.send.transaction.subpage.amount.SendAmountActivity
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.wallet.dialog.SwapDialog
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.logd
@@ -224,11 +226,12 @@ private fun dispatchSend(uri: Uri, recipient: String, network: String?, value: B
                 ).show()
             }
         } else {
-            SendAmountActivity.launch(
+            // Launch React Native send workflow instead of native SendAmountActivity
+            ReactNativeDemoActivity.launch(
                 it,
-                AddressBookContact(address = recipient.toAddress()),
-                FungibleTokenListManager.getFlowTokenContractId(),
-                value?.toString()
+                "SelectTokens",
+                WalletManager.selectedWalletAddress().toAddress(),
+                if (isTestnet()) "testnet" else "mainnet"
             )
         }
     }
