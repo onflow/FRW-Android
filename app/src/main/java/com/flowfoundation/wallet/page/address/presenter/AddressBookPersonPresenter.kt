@@ -26,7 +26,7 @@ import com.flowfoundation.wallet.page.address.FlowDomainServer
 import com.flowfoundation.wallet.page.address.model.AddressBookPersonModel
 import com.flowfoundation.wallet.page.addressadd.AddressAddActivity
 import com.flowfoundation.wallet.page.send.transaction.SelectSendAddressViewModel
-import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
+import com.flowfoundation.wallet.ReactNativeDemoActivity
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -43,7 +43,7 @@ class AddressBookPersonPresenter(
 
     private val viewModel by lazy { ViewModelProvider(findActivity(view) as FragmentActivity)[AddressBookViewModel::class.java] }
 
-    private val isSendTransactionPage by lazy { BaseActivity.getCurrentActivity()?.javaClass == TransactionSendActivity::class.java }
+    private val isSendTransactionPage by lazy { BaseActivity.getCurrentActivity()?.javaClass == ReactNativeDemoActivity::class.java }
 
     private val isSendNftPage by lazy { BaseActivity.getCurrentActivity()?.javaClass == com.flowfoundation.wallet.page.nft.nftdetail.NftDetailActivity::class.java }
 

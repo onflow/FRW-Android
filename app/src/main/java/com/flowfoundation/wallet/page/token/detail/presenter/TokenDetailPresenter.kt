@@ -22,7 +22,9 @@ import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
 import com.flowfoundation.wallet.page.profile.subpage.wallet.ChildAccountCollectionManager
 import com.flowfoundation.wallet.page.receive.ReceiveActivity
-import com.flowfoundation.wallet.page.send.transaction.TransactionSendActivity
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.staking.openStakingPage
 import com.flowfoundation.wallet.page.token.detail.model.TokenDetailModel
 import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
@@ -58,7 +60,13 @@ class TokenDetailPresenter(
             Glide.with(iconView).load(token.tokenIcon()).into(iconView)
             getMoreWrapper.setOnClickListener { }
             btnSend.setOnClickListener {
-                TransactionSendActivity.launch(activity, coinContractId = token.contractId())
+                // Launch React Native send workflow instead of native TransactionSendActivity
+                ReactNativeDemoActivity.launch(
+                    activity,
+                    "SelectTokens",
+                    WalletManager.selectedWalletAddress().toAddress(),
+                    if (isTestnet()) "testnet" else "mainnet"
+                )
             }
             ivVerified.setVisible(token.isVerified)
             ivVerifiedSecondary.setVisible(token.isVerified)
