@@ -152,12 +152,13 @@ object WalletManager {
             } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
                 logd(TAG, "Hardware-backed key detected for prefix: ${account.prefix}")
                 logd(TAG, "Hardware-backed keys will be handled by CryptoProviderManager during signing operations")
-                logd(TAG, "Skipping wallet creation for hardware-backed key scenario")
+                logd(TAG, "Setting currentWallet = null for hardware-backed keys")
                 
-                // For hardware-backed keys, we don't create a wallet since we can't access the private key
-                // The CryptoProviderManager will handle signing operations using AndroidKeystoreCryptoProvider
+                // For hardware-backed keys, we cannot create a wallet object because the key cannot be extracted
+                // The CryptoProviderManager will handle cryptographic operations using AndroidKeystoreCryptoProvider
+                // Transactions will get the address from account data instead of wallet object
                 currentWallet = null
-                logd(TAG, "Hardware-backed key wallet initialization completed (no wallet object created)")
+                logd(TAG, "Hardware-backed key configuration complete")
             }
         }
 
@@ -667,10 +668,29 @@ object WalletManager {
 
 // Extension functions for backward compatibility
 fun Wallet?.walletAddress(): String? {
-    if (this == null) return null
-    
     val currentNetwork = chainNetWorkString()
     logd("WalletManager", "Getting wallet address for network: $currentNetwork")
+    
+    // Handle case where wallet is null (hardware-backed keys)
+    if (this == null) {
+        logd("WalletManager", "Wallet is null (likely hardware-backed key), getting address from account data")
+        
+        // Get address from account data for hardware-backed keys
+        val account = AccountManager.get()
+        val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
+            walletData.blockchain?.any { blockchain ->
+                blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+            } == true
+        }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
+
+        if (!serverAddress.isNullOrBlank()) {
+            logd("WalletManager", "Using server wallet address for hardware-backed key: $serverAddress")
+            return serverAddress
+        }
+        
+        logd("WalletManager", "No wallet address available for hardware-backed key")
+        return null
+    }
     
     // First try to find account for current network
     val networkAccount = this.accounts.entries.firstOrNull { (chainId, accounts) ->
