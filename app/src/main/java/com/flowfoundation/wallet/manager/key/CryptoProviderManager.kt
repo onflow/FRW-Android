@@ -153,7 +153,7 @@ object CryptoProviderManager {
     private fun createCryptoProviderForAccount(account: Account): CryptoProvider? {
         val storage = getStorage()
 
-        logd(TAG, "generateAccountCryptoProvider: Generating for account: ${account.userInfo.username}, isActive: ${account.isActive}, prefix: ${account.prefix}, hasKeystore: ${!account.keyStoreInfo.isNullOrBlank()}")
+        logd(TAG, "generateAccountCryptoProvider: Generating for account: ${account.userInfo.username}, isActive: ${account.isActive}, hasKeystore: ${!account.keyStoreInfo.isNullOrBlank()}")
 
         return try {
             // Handle keystore-based accounts
@@ -166,7 +166,7 @@ object CryptoProviderManager {
             }
             // Handle prefix-based accounts
             else if (!account.prefix.isNullOrBlank()) {
-                logd(TAG, "  Branch: Prefix-based account (prefix: ${account.prefix}).")
+                logd(TAG, "  Branch: Prefix-based account")
 
                 // Check if this is a multi-restore account
                 val isMultiRestoreAccount = try {
@@ -206,7 +206,7 @@ object CryptoProviderManager {
                                     ?: key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
                             }
 
-                            logd(TAG, "    Device key check: keyId=$keyId, prefix=${account.prefix}")
+                            logd(TAG, "    Device key check")
 
                             // Test both signing algorithms for the device key
                             val deviceKeyECDSA_P256 = deviceKey?.let { key ->

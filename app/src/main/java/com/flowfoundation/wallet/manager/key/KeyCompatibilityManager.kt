@@ -31,13 +31,13 @@ object KeyCompatibilityManager {
      * @return PrivateKey instance or null if not found in either storage
      */
     fun getPrivateKeyWithFallback(prefix: String, storage: StorageProtocol): PrivateKey? {
-        logd(TAG, "Attempting to get private key for prefix: $prefix")
+        logd(TAG, "Attempting to get private key")
 
         // First try the new storage pattern
         val newKeyId = "$NEW_STORAGE_KEY_PREFIX$prefix"
         val newStorageKey = tryGetFromNewStorage(newKeyId, prefix, storage)
         if (newStorageKey != null) {
-            logd(TAG, "Successfully retrieved key from new storage: $newKeyId")
+            logd(TAG, "Successfully retrieved key from new storage")
             return newStorageKey
         }
 
@@ -46,12 +46,12 @@ object KeyCompatibilityManager {
         // Fallback to old Android Keystore pattern
         val oldStorageKey = tryGetFromOldKeystore(prefix, storage)
         if (oldStorageKey != null) {
-            logd(TAG, "Successfully retrieved key from old Android Keystore for prefix: $prefix")
+            logd(TAG, "Successfully retrieved key from old Android Keystore")
             logd(TAG, "Note: Key accessed from old storage. Migration available via KeyStoreMigrationManager if needed.")
             return oldStorageKey
         }
 
-        loge(TAG, "Private key not found in either new storage or old Android Keystore for prefix: $prefix")
+        loge(TAG, "Private key not found in either new storage or old Android Keystore")
         return null
     }
 
@@ -75,14 +75,14 @@ object KeyCompatibilityManager {
      */
     private fun tryGetFromOldKeystore(prefix: String, storage: StorageProtocol): PrivateKey? {
         return try {
-            logd(TAG, "Trying to get key from old Android Keystore for prefix: $prefix")
+            logd(TAG, "Trying to get key from old Android Keystore")
 
             val oldAlias = "$OLD_KEYSTORE_ALIAS_PREFIX$prefix"
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
             keyStore.load(null)
 
             if (!keyStore.containsAlias(oldAlias)) {
-                logd(TAG, "Old keystore alias not found: $oldAlias")
+                logd(TAG, "Old keystore alias not found")
                 return null
             }
 
@@ -102,7 +102,7 @@ object KeyCompatibilityManager {
                 
                 if (privateKeyBytes == null) {
                     // Hardware-backed key - cannot extract, need to use AndroidKeystoreCryptoProvider
-                    loge(TAG, "Hardware-backed key detected for prefix: $prefix")
+                    loge(TAG, "Hardware-backed key detected")
                     loge(TAG, "Cannot extract private key material - this is a security feature")
                     loge(TAG, "Will need to use AndroidKeystoreCryptoProvider for this key")
                     throw HardwareBackedKeyException(oldAlias, "Hardware-backed key requires AndroidKeystoreCryptoProvider", prefix)
@@ -208,7 +208,7 @@ object KeyCompatibilityManager {
      * Checks if a key exists in either storage system
      */
     fun hasPrivateKey(prefix: String, storage: StorageProtocol): Boolean {
-        logd(TAG, "Checking if private key exists for prefix: $prefix")
+        logd(TAG, "Checking if private key exists")
 
         // Check new storage first
         val newKeyId = "$NEW_STORAGE_KEY_PREFIX$prefix"
