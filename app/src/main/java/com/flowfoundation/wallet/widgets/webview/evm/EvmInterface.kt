@@ -16,7 +16,10 @@ import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
 import com.flowfoundation.wallet.page.token.custom.widget.AddCustomTokenDialog
-import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.utils.findActivity
 import com.flowfoundation.wallet.utils.isShowMoveDialog
 import com.flowfoundation.wallet.utils.logd
@@ -74,7 +77,13 @@ class EvmInterface(
                 uiScope {
                     if (EVMWalletManager.haveEVMAddress()) {
                         if (isShowMoveDialog()) {
-                            MoveDialog().showMove(activity.supportFragmentManager, webView.title)
+                            // Launch React Native send workflow directly instead of MoveDialog
+                            ReactNativeDemoActivity.launch(
+                                activity,
+                                "SelectTokens",
+                                WalletManager.selectedWalletAddress().toAddress(),
+                                if (isTestnet()) "testnet" else "mainnet"
+                            )
                         }
                         val connect = EvmRequestAccountDialog().show(
                             activity.supportFragmentManager,

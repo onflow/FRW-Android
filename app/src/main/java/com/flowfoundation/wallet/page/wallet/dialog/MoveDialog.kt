@@ -9,16 +9,16 @@ import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.databinding.DialogMoveBinding
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
-import com.flowfoundation.wallet.page.nft.move.SelectNFTDialog
-import com.flowfoundation.wallet.page.token.detail.widget.MoveTokenDialog
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.invisible
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.setDoNotShowMoveDialog
 import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.utils.uiScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume
@@ -48,21 +48,27 @@ class MoveDialog : BottomSheetDialogFragment() {
                 dismissAllowingStateLoss()
             }
             clMoveNft.setOnClickListener {
-                uiScope {
-                    SelectNFTDialog().show(requireActivity()).let {
-                        result?.resume(true)
-                    }
-                    dismissAllowingStateLoss()
-                }
+                // Launch React Native send workflow for NFTs instead of native SelectNFTDialog
+                ReactNativeDemoActivity.launch(
+                    requireContext(),
+                    "SelectTokens",
+                    WalletManager.selectedWalletAddress().toAddress(),
+                    if (isTestnet()) "testnet" else "mainnet"
+                )
+                result?.resume(true)
+                dismissAllowingStateLoss()
             }
             clMoveToken.setOnClickListener {
                 if (EVMWalletManager.haveEVMAddress()) {
-                    uiScope {
-                        MoveTokenDialog().showDialog(requireActivity(), FungibleTokenListManager.getFlowTokenContractId()).let {
-                            result?.resume(true)
-                        }
-                        dismissAllowingStateLoss()
-                    }
+                    // Launch React Native send workflow for tokens instead of native MoveTokenDialog
+                    ReactNativeDemoActivity.launch(
+                        requireContext(),
+                        "SelectTokens",
+                        WalletManager.selectedWalletAddress().toAddress(),
+                        if (isTestnet()) "testnet" else "mainnet"
+                    )
+                    result?.resume(true)
+                    dismissAllowingStateLoss()
                 } else {
                     toast(msgRes = R.string.features_coming)
                 }

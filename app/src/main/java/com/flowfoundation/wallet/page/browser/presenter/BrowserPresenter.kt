@@ -13,7 +13,9 @@ import com.flowfoundation.wallet.page.browser.tools.*
 import com.flowfoundation.wallet.page.browser.widgets.BrowserPopupMenu
 import com.flowfoundation.wallet.page.browser.widgets.WebviewCallback
 import com.flowfoundation.wallet.page.evm.EnableEVMDialog
-import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.page.window.bubble.tools.inBubbleStack
 import com.flowfoundation.wallet.utils.extensions.isVisible
@@ -43,9 +45,13 @@ class BrowserPresenter(
                     val activity =
                         BaseActivity.getCurrentActivity() ?: return@setOnClickListener
                     if (WalletManager.haveChildAccount() || WalletManager.isChildAccountSelected() || EVMWalletManager.haveEVMAddress()) {
-                        uiScope {
-                            MoveDialog().showMove(activity.supportFragmentManager)
-                        }
+                        // Launch React Native send workflow directly instead of MoveDialog
+                        ReactNativeDemoActivity.launch(
+                            activity,
+                            "SelectTokens",
+                            WalletManager.selectedWalletAddress().toAddress(),
+                            if (isTestnet()) "testnet" else "mainnet"
+                        )
                     } else {
                         uiScope {
                             EnableEVMDialog.show(activity.supportFragmentManager)

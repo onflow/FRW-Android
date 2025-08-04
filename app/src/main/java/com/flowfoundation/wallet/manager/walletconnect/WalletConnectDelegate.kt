@@ -7,7 +7,10 @@ import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.walletconnect.model.toWcRequest
 import com.flowfoundation.wallet.page.browser.browserInstance
-import com.flowfoundation.wallet.page.wallet.dialog.MoveDialog
+import com.flowfoundation.wallet.ReactNativeDemoActivity
+import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
 import com.flowfoundation.wallet.utils.ioScope
@@ -291,8 +294,13 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             val approve = if (isEVMRequest) {
                                 logd(TAG, "EVM request detected, showing EVM dialog")
                                 if (isShowMoveDialog()) {
-                                    logd(TAG, "Showing move dialog")
-                                    MoveDialog().showMove(foundActivity.supportFragmentManager, description)
+                                    logd(TAG, "Launching React Native send workflow")
+                                    ReactNativeDemoActivity.launch(
+                                        foundActivity,
+                                        "SelectTokens",
+                                        WalletManager.selectedWalletAddress().toAddress(),
+                                        if (isTestnet()) "testnet" else "mainnet"
+                                    )
                                 }
                                 EvmRequestAccountDialog().show(
                                     foundActivity.supportFragmentManager,
