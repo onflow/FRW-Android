@@ -112,8 +112,16 @@ fun LayoutMainDrawerLayoutBinding.refreshWalletList(refreshBalance: Boolean = fa
         
         logd("DrawerLayoutPresenter", "Wallet after retries: ${wallet?.walletAddress()}")
         
-        if (userInfo == null || wallet == null) {
-            logd("DrawerLayoutPresenter", "User info or wallet is null after retries, skipping refresh")
+        if (userInfo == null) {
+            logd("DrawerLayoutPresenter", "User info is null, skipping refresh")
+            return@ioScope
+        }
+        
+        if (wallet == null) {
+            logd("DrawerLayoutPresenter", "Wallet is null after retries - likely hardware-backed key")
+            uiScope {
+                setupLinkedAccountForHardwareBackedKey(userInfo)
+            }
             return@ioScope
         }
 
@@ -513,6 +521,155 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     logd("DrawerLayoutPresenter", "Final visibility - tvLinkedAccount: ${if (tvLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (tvLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
 }
 
+/**
+ * Setup linked accounts for hardware-backed keys where wallet is null.
+ * Uses server account data instead of wallet object.
+ */
+fun LayoutMainDrawerLayoutBinding.setupLinkedAccountForHardwareBackedKey(
+    userInfo: UserInfoData
+) {
+    logd("DrawerLayoutPresenter", "=== setupLinkedAccountForHardwareBackedKey START ===")
+    logd("DrawerLayoutPresenter", "Setting up accounts for hardware-backed key (null wallet)")
+    
+    // Clear both main and linked account sections
+    logd("DrawerLayoutPresenter", "Current main account child count BEFORE removeAllViews: ${llMainAccount.childCount}")
+    logd("DrawerLayoutPresenter", "Current linked account child count BEFORE removeAllViews: ${llLinkedAccount.childCount}")
+    llMainAccount.removeAllViews()
+    llLinkedAccount.removeAllViews()
+    logd("DrawerLayoutPresenter", "Current main account child count AFTER removeAllViews: ${llMainAccount.childCount}")
+    logd("DrawerLayoutPresenter", "Current linked account child count AFTER removeAllViews: ${llLinkedAccount.childCount}")
+    
+    // Set up main account using server data
+    val currentNetwork = chainNetWorkString()
+    try {
+        val account = AccountManager.get()
+        val serverWallets = account?.wallet?.wallets?.filter { walletData ->
+            walletData.blockchain?.any { blockchain ->
+                blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+            } == true
+        }
+        
+        if (!serverWallets.isNullOrEmpty()) {
+            logd("DrawerLayoutPresenter", "Using server wallet data for main account")
+            val list = serverWallets.map { walletData ->
+                WalletData(
+                    blockchain = walletData.blockchain?.filter { 
+                        it.chainId.equals(currentNetwork, true) 
+                    },
+                    name = userInfo.username
+                )
+            }
+
+            if (list.isNotEmpty()) {
+                logd("DrawerLayoutPresenter", "Updating UI with ${list.size} server main wallet accounts")
+                
+                list.forEach { walletItem ->
+                    val itemView = LayoutInflater.from(root.context)
+                        .inflate(R.layout.item_wallet_list_main_account, llMainAccount, false)
+                    (itemView as ViewGroup).setupWallet(walletItem, userInfo)
+                    llMainAccount.addView(itemView)
+                    logd("DrawerLayoutPresenter", "Added main account to UI: ${walletItem.blockchain?.firstOrNull()?.address}")
+                }
+            }
+        } else {
+            logd("DrawerLayoutPresenter", "No server wallet data found for main account")
+        }
+    } catch (e: Exception) {
+        logd("DrawerLayoutPresenter", "Error setting up main account for hardware-backed key: ${e.message}")
+    }
+    
+    // Check EVM account - simplified without blocking retries
+    val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
+    logd("DrawerLayoutPresenter", "Show EVM account: $showEVMAccount")
+    logd("DrawerLayoutPresenter", "Current network: ${chainNetWorkString()}")
+    
+    if (showEVMAccount) {
+        try {
+            val evmAccount = EVMWalletManager.getEVMAccount()
+            logd("DrawerLayoutPresenter", "EVM account: ${evmAccount?.address}")
+            logd("DrawerLayoutPresenter", "EVM account name: ${evmAccount?.name}")
+            logd("DrawerLayoutPresenter", "WalletManager.selectedWalletAddress(): ${WalletManager.selectedWalletAddress()}")
+            
+            evmAccount?.let { account ->
+                logd("DrawerLayoutPresenter", "Creating EVM account view...")
+                
+                val childView = LayoutInflater.from(root.context)
+                    .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
+                    
+                logd("DrawerLayoutPresenter", "Inflated child view: $childView")
+                
+                val walletItemData = WalletItemData(
+                    address = account.address,
+                    name = account.name,
+                    icon = account.icon,
+                    isSelected = WalletManager.selectedWalletAddress() == account.address
+                )
+                
+                logd("DrawerLayoutPresenter", "Created WalletItemData: address=${walletItemData.address}, name=${walletItemData.name}, isSelected=${walletItemData.isSelected}")
+                
+                childView.setupWalletItem(walletItemData, isEVMAccount = true)
+                llLinkedAccount.addView(childView)
+                logd("DrawerLayoutPresenter", "Added EVM account to UI")
+            }
+        } catch (e: Exception) {
+            logd("DrawerLayoutPresenter", "Error setting up EVM account: ${e.message}")
+        }
+    }
+    
+    // Get main wallet address from server data (since wallet is null for hardware-backed keys)
+    var mainWalletAddress: String? = null
+    
+    try {
+        // Get address from server data
+        val account = AccountManager.get()
+        val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
+            walletData.blockchain?.any { blockchain ->
+                blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+            } == true
+        }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
+        
+        if (!serverAddress.isNullOrBlank()) {
+            mainWalletAddress = serverAddress
+            logd("DrawerLayoutPresenter", "Using server address for hardware-backed key: $mainWalletAddress")
+        } else {
+            logd("DrawerLayoutPresenter", "No server address found for hardware-backed key")
+        }
+    } catch (e: Exception) {
+        logd("DrawerLayoutPresenter", "Error getting server address for hardware-backed key: ${e.message}")
+    }
+    
+    // Check child accounts - simplified without blocking retries
+    if (!mainWalletAddress.isNullOrBlank()) {
+        try {
+            val childAccounts = WalletManager.childAccountList(mainWalletAddress)?.get()
+            logd("DrawerLayoutPresenter", "Child accounts count: ${childAccounts?.size ?: 0} for address: $mainWalletAddress")
+            
+            childAccounts?.forEach { childAccount ->
+                logd("DrawerLayoutPresenter", "Processing child account: ${childAccount.address}, name: ${childAccount.name}")
+                val childView = LayoutInflater.from(root.context)
+                    .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
+                childAccount.address.walletData(userInfo)?.let { data ->
+                    logd("DrawerLayoutPresenter", "Adding child account to UI: ${data.address}, name: ${data.name}")
+                    childView.setupWalletItem(data)
+                    llLinkedAccount.addView(childView)
+                }
+            }
+        } catch (e: Exception) {
+            logd("DrawerLayoutPresenter", "Error getting child accounts: ${e.message}")
+        }
+    }
+    
+    val hasLinkedAccounts = llLinkedAccount.childCount > 0
+    logd("DrawerLayoutPresenter", "Has linked accounts: $hasLinkedAccounts")
+    logd("DrawerLayoutPresenter", "Final linked account child count: ${llLinkedAccount.childCount}")
+    tvLinkedAccount.setVisible(hasLinkedAccounts)
+    logd("DrawerLayoutPresenter", "=== setupLinkedAccountForHardwareBackedKey END ===")
+    
+    // Final debug of visibility states
+    logd("DrawerLayoutPresenter", "Final visibility - llLinkedAccount: ${if (llLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (llLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
+    logd("DrawerLayoutPresenter", "Final visibility - tvLinkedAccount: ${if (tvLinkedAccount.visibility == android.view.View.VISIBLE) "VISIBLE" else if (tvLinkedAccount.visibility == android.view.View.GONE) "GONE" else "INVISIBLE"}")
+}
+
 // Add async version that can safely handle retries in background - optimized for performance
 private suspend fun LayoutMainDrawerLayoutBinding.setupLinkedAccountAsync(
     wallet: com.flow.wallet.wallet.Wallet,
@@ -803,14 +960,39 @@ private fun String.walletData(userInfo: UserInfoData): WalletItemData? {
     // Check if this is the main wallet address
     val isMainWallet = if (wallet?.walletAddress() == this) {
         true
-    } else {
+    } else if (wallet != null) {
         // Additional check: see if this address matches any account in the wallet
-        val matchingAccount = wallet?.accounts?.values?.flatten()?.find { account ->
+        val matchingAccount = wallet.accounts.values.flatten().find { account ->
             account.address.equals(this, ignoreCase = true) ||
             account.address.equals("0x$this", ignoreCase = true) ||
             account.address.removePrefix("0x").equals(this.removePrefix("0x"), ignoreCase = true)
         }
         matchingAccount != null
+    } else {
+        // Hardware-backed key case: wallet is null
+        // Check if this address matches the selected address or server data
+        val selectedAddress = WalletManager.selectedWalletAddress()
+        val normalizedThis = this.removePrefix("0x")
+        val normalizedSelected = selectedAddress.removePrefix("0x")
+        
+        val matchesSelected = normalizedThis.equals(normalizedSelected, ignoreCase = true)
+        
+        // Also check server data to confirm this is a main account
+        val account = AccountManager.get()
+        val currentNetwork = chainNetWorkString()
+        val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
+            walletData.blockchain?.any { blockchain ->
+                blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
+            } == true
+        }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
+        
+        val normalizedServer = serverAddress?.removePrefix("0x")
+        val matchesServer = normalizedServer?.equals(normalizedThis, ignoreCase = true) == true
+        
+        logd("Utils", "Hardware-backed key check - this: '$normalizedThis', selected: '$normalizedSelected', server: '$normalizedServer'")
+        logd("Utils", "Hardware-backed key check - matchesSelected: $matchesSelected, matchesServer: $matchesServer")
+        
+        matchesSelected || matchesServer
     }
     
     return if (isMainWallet) {
