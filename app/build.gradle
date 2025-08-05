@@ -62,6 +62,8 @@ android {
         buildConfigField("String", "WALLET_CONNECT_PROJECT_ID", "\"${apiKeys.getProperty('WALLET_CONNECT_PROJECT_ID')}\"")
         buildConfigField("String", "INSTABUG_TOKEN_DEV", "\"${apiKeys.getProperty('INSTABUG_TOKEN_DEV')}\"")
         buildConfigField("String", "INSTABUG_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_TOKEN_PROD')}\"")
+        buildConfigField("String", "INSTABUG_RN_TOKEN_DEV", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_DEV')}\"")
+        buildConfigField("String", "INSTABUG_RN_TOKEN_PROD", "\"${apiKeys.getProperty('INSTABUG_RN_TOKEN_PROD')}\"")
         buildConfigField("String", "CROWDIN_PROJECT_ID", "\"${apiKeys.getProperty('CROWDIN_PROJECT_ID')}\"")
         buildConfigField("String", "CROWDIN_API_TOKEN", "\"${apiKeys.getProperty('CROWDIN_API_TOKEN')}\"")
         buildConfigField("String", "CROWDIN_DISTRIBUTION", "\"${apiKeys.getProperty('CROWDIN_DISTRIBUTION')}\"")

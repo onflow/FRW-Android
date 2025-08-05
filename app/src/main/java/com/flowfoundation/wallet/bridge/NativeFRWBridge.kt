@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.bridge
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.Arguments
@@ -26,6 +27,8 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import org.onflow.flow.models.TransactionStatus
+import com.flowfoundation.wallet.network.API_HOST
+import com.flowfoundation.wallet.network.BASE_HOST
 import java.math.BigDecimal
 import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.FlowAddress
@@ -291,6 +294,24 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     promise.reject("FREE_GAS_ERROR", "Failed to get free gas status: ${e.message}", e)
                 }
             }
+        }
+    }
+
+    override fun getEnvKeys(): WritableMap {
+        return try {
+            // Create WritableMap directly with environment keys
+            val envKeys = WritableNativeMap()
+            envKeys.putString("NODE_API_URL", BASE_HOST)
+            envKeys.putString("GO_API_URL", API_HOST)
+            envKeys.putString("INSTABUG_TOKEN", if (BuildConfig.DEBUG) {
+                BuildConfig.INSTABUG_RN_TOKEN_DEV
+            } else {
+                BuildConfig.INSTABUG_RN_TOKEN_PROD
+            })
+            
+            envKeys
+        } catch (e: Exception) {
+            WritableNativeMap()
         }
     }
 
