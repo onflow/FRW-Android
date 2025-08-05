@@ -252,9 +252,12 @@ object WalletManager {
             blockchainData?.address
         }
         
-        if (!address.isNullOrBlank()) {
+        // Only set the address if no address is currently selected (avoid overriding user selections)
+        if (!address.isNullOrBlank() && selectedWalletAddressRef.get().isBlank()) {
             selectWalletAddress(address)
-            logd(TAG, "Selected wallet address: $address")
+            logd(TAG, "Selected initial wallet address: $address")
+        } else if (!address.isNullOrBlank()) {
+            logd(TAG, "Skipping address selection - user has already selected: ${selectedWalletAddressRef.get()}")
         } else {
             logd(TAG, "No wallet address found to select (this may be normal for hardware-backed keys)")
         }
@@ -381,14 +384,18 @@ object WalletManager {
     }
 
     fun selectWalletAddress(address: String): String {
+        logd(TAG, "selectWalletAddress called with: '$address'")
+        
         if (address.isBlank()) {
             logd(TAG, "WARNING: Attempting to select blank address")
         }
 
         if (selectedWalletAddressRef.get().equals(address, ignoreCase = true)) {
+            logd(TAG, "Address already selected, returning current network")
             return chainNetWorkString()
         }
 
+        logd(TAG, "Setting selected address to: '$address'")
         selectedWalletAddressRef.set(address)
         updateSelectedWalletAddress(address)
 
@@ -424,26 +431,54 @@ object WalletManager {
     fun selectedWalletAddress(): String {
         val currentTime = System.currentTimeMillis()
         if (currentTime - lastAddressCheck < ADDRESS_CACHE_DURATION) {
+            logd(TAG, "selectedWalletAddress (cached): ${selectedWalletAddressRef.get()}")
             return selectedWalletAddressRef.get()
         }
 
         lastAddressCheck = currentTime
         val pref = selectedWalletAddressRef.get().toAddress()
+        logd(TAG, "selectedWalletAddress called, pref: '$pref'")
 
         if (pref.isBlank()) {
             logd(TAG, "WARNING: Selected address is blank")
         }
 
-        val isExist = childAccountMap.keys.contains(pref) || childAccount(pref) != null || EVMWalletManager.isEVMWalletAddress(pref)
+        val isChildAccount = childAccount(pref) != null
+        val isEVMAddress = EVMWalletManager.isEVMWalletAddress(pref)
+        val isInChildMap = childAccountMap.keys.contains(pref)
+        
+        logd(TAG, "Address existence check - isChildAccount: $isChildAccount, isEVMAddress: $isEVMAddress, isInChildMap: $isInChildMap")
+        
+        val isExist = isInChildMap || isChildAccount || isEVMAddress
         if (isExist) {
+            logd(TAG, "Address exists in our maps, returning: '$pref'")
             return pref
         }
 
-        // If we have a selected address in preferences, use it even if no wallet exists yet
+        // For hardware-backed keys, be more permissive about preserving selected addresses
         if (selectedWalletAddressRef.get().isNotBlank()) {
-            return selectedWalletAddressRef.get()
+            val currentWallet = wallet()
+            logd(TAG, "Current wallet: ${if (currentWallet == null) "null (hardware-backed)" else "not null"}")
+            
+            if (currentWallet == null) {
+                // Hardware-backed key case: trust the selected address even if not in our maps
+                logd(TAG, "Hardware-backed key detected, preserving selected address: ${selectedWalletAddressRef.get()}")
+                return selectedWalletAddressRef.get()
+            } else {
+                // Regular wallet case: validate the address exists in wallet before using it
+                val selectedAddress = selectedWalletAddressRef.get()
+                val isValidInWallet = currentWallet.accounts.values.flatten().any { account ->
+                    account.address.equals(selectedAddress, ignoreCase = true)
+                }
+                logd(TAG, "Regular wallet - selected address '$selectedAddress' valid in wallet: $isValidInWallet")
+                if (isValidInWallet) {
+                    return selectedAddress
+                }
+                logd(TAG, "Selected address '$selectedAddress' not found in wallet accounts, will use default")
+            }
         }
 
+        // Only fall back to default address if no valid selection exists
         val defaultAddress = wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty().apply {
             if (isNotBlank()) {
                 selectedWalletAddressRef.set(this)

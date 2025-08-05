@@ -209,7 +209,10 @@ object EVMWalletManager {
     }
 
     fun isEVMWalletAddress(address: String): Boolean {
-        return evmAddressMap.values.firstOrNull { address != "0x" && it.equals(address, ignoreCase = true)} != null
+        logd(TAG, "isEVMWalletAddress: checking '$address' against evmAddressMap.values: ${evmAddressMap.values}")
+        val result = evmAddressMap.values.firstOrNull { address != "0x" && it.equals(address, ignoreCase = true)} != null
+        logd(TAG, "isEVMWalletAddress result: $result")
+        return result
     }
 
     suspend fun moveFlowToken(
