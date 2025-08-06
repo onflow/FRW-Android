@@ -346,10 +346,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getEnvKeys(): WritableMap {
         val envMap = WritableNativeMap()
         
-        // Add environment keys - these would typically come from BuildConfig or environment
-        envMap.putString("NODE_API_URL", BuildConfig.NODE_API_URL ?: "")
-        envMap.putString("GO_API_URL", BuildConfig.GO_API_URL ?: "")
-        envMap.putString("INSTABUG_TOKEN", BuildConfig.INSTABUG_TOKEN ?: "")
+        // Add environment keys - using available BuildConfig values or defaults
+        envMap.putString("NODE_API_URL", "https://access-mainnet-beta.onflow.org")
+        envMap.putString("GO_API_URL", "https://rest-mainnet.onflow.org")
+        
+        // Use appropriate Instabug token based on build variant
+        val instabugToken = if (com.flowfoundation.wallet.utils.isDev()) {
+            BuildConfig.INSTABUG_TOKEN_DEV
+        } else {
+            BuildConfig.INSTABUG_TOKEN_PROD
+        }
+        envMap.putString("INSTABUG_TOKEN", instabugToken)
         
         return envMap
     }
