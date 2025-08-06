@@ -40,6 +40,8 @@ if (apiKeysFile.exists()) {
 }
 def dropboxKeyDev = apiKeys.getProperty("DROPBOX_APP_KEY_DEV") ?: "fallbackDevKey"
 def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackProdKey"
+def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
+def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
 
 react {
     autolinkLibrariesWithApp()
@@ -69,6 +71,7 @@ android {
         buildConfigField("String", "MIXPANEL_TOKEN_PROD", "\"${apiKeys.getProperty('MIXPANEL_TOKEN_PROD')}\"")
         buildConfigField("String", "X_SIGNATURE_KEY", "\"${apiKeys.getProperty('X_SIGNATURE_KEY')}\"")
         buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyProd}\"")
+        buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyProduction}\"")
         manifestPlaceholders = new HashMap<String, String>()
         manifestPlaceholders.put("dropboxKey", dropboxKeyProd)
     }
@@ -110,6 +113,7 @@ android {
             debuggable true
             applicationIdSuffix = ".dev"
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
+            buildConfigField("String", "CODEPUSH_KEY", "\"${codePushKeyStaging}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
             ndk {
                 debugSymbolLevel 'NONE'
