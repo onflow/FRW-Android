@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.cache
 
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.account.Account
+import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
@@ -70,18 +71,19 @@ object AccountCacheManager{
             
             // Validate account data
             val validAccounts = result.filter { account ->
-                val isValid = !account.userInfo.username.isNullOrBlank() && 
-                             (!account.keyStoreInfo.isNullOrBlank() || !account.prefix.isNullOrBlank())
+                val isValid = account.userInfo.username.isNotBlank() &&
+                             (!account.keyStoreInfo.isNullOrBlank() || !account.prefix
+                                 .isNullOrBlank() || AccountWalletManager.isHDWallet(account.wallet?.id ?: ""))
                 if (!isValid) {
                     logd(TAG, "Invalid account found: ${account.userInfo.username}")
                 }
                 isValid
             }
-            
+
             if (validAccounts.size != result.size) {
                 logd(TAG, "Filtered out ${result.size - validAccounts.size} invalid accounts")
             }
-            
+
             if (validAccounts.isNotEmpty()) {
                 logd(TAG, "Returning ${validAccounts.size} valid accounts")
                 logd(TAG, "First account username: ${validAccounts.firstOrNull()?.userInfo?.username}")
