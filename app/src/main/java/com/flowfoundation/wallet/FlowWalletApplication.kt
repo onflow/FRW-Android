@@ -22,6 +22,7 @@ class FlowWalletApplication : Application(), ReactApplication {
                 PackageList(this).packages.apply {
                     // Packages that cannot be autolinked yet can be added manually here, for example:
                      add(NativeFRWBridgePackage())
+                     // CodePush will be added automatically via autolinking
                 }
 
             override fun getJSMainModuleName(): String = "index"

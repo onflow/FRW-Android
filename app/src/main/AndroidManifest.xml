@@ -470,6 +470,10 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_api_key"/>
+        
+        <meta-data
+            android:name="com.microsoft.codepush.react.CodePushDeploymentKey"
+            android:value="YOUR_CODEPUSH_DEPLOYMENT_KEY" />
 
     </application>
 

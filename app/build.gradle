@@ -111,6 +111,9 @@ android {
             applicationIdSuffix = ".dev"
             buildConfigField("String", "DROPBOX_APP_KEY", "\"${dropboxKeyDev}\"")
             manifestPlaceholders = [dropboxKey: dropboxKeyDev]
+            ndk {
+                debugSymbolLevel 'NONE'
+            }
         }
 
         releaseDebug {

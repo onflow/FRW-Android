@@ -10,6 +10,13 @@ package com.flowfoundation.wallet.bridge
 import com.google.gson.annotations.SerializedName
 
 class RNBridge {
+    enum class TransactionType {
+        @SerializedName("tokens") TOKENS,
+        @SerializedName("single-nft") SINGLE_NFT,
+        @SerializedName("multiple-nfts") MULTIPLE_NFTS,
+        @SerializedName("target-address") TARGET_ADDRESS
+    }
+
     enum class AccountType {
         @SerializedName("main") MAIN,
         @SerializedName("child") CHILD,
@@ -53,6 +60,19 @@ class RNBridge {
         val username: String?,
         @SerializedName("contactName")
         val contactName: String?
+    )
+
+    data class SendToConfig(
+        @SerializedName("selectedToken")
+        val selectedToken: Any?,
+        @SerializedName("fromAccount")
+        val fromAccount: WalletAccount?,
+        @SerializedName("transactionType")
+        val transactionType: TransactionType,
+        @SerializedName("selectedNFTs")
+        val selectedNFTs: List<Any>?,
+        @SerializedName("targetAddress")
+        val targetAddress: String?
     )
 
     data class WalletAccount(
