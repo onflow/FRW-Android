@@ -6,9 +6,7 @@ import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
-import com.flowfoundation.wallet.wallet.Wallet
 import com.flow.wallet.CryptoProvider
-import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
@@ -28,8 +26,6 @@ import com.google.gson.reflect.TypeToken
 import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flow.wallet.storage.StorageProtocol
-import com.flowfoundation.wallet.utils.logw
-import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
 
 /**
@@ -567,62 +563,17 @@ object CryptoProviderManager {
                 // Create provider with determined (or default) signing algorithm
                 return PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm)
             }
-            // Handle active accounts (typically uses global mnemonic)
-            else if (account.isActive) {
-                val currentGlobalMnemonic = Wallet.store().mnemonic() // Get current global mnemonic
-                logd(TAG, "  Branch: Active account. Using Wallet.store().mnemonic(): '$currentGlobalMnemonic'")
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = currentGlobalMnemonic,
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                val wallet = WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                // Signing algorithm determination logic (omitted for brevity, assumed correct from previous state)
-                val accountKeys = account.wallet?.walletAddress()
-                    ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
-                val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
-                    SigningAlgorithm.ECDSA_secp256k1
-                } else {
-                    SigningAlgorithm.ECDSA_P256
-                }
-                // Get the hashing algorithm from the on-chain key as well
-                val hashingAlgorithm = accountKeys?.find { it.signingAlgorithm == signingAlgorithm }?.hashingAlgorithm
-                logd(TAG, "  Active account using determined algorithms: signing=$signingAlgorithm, hashing=${hashingAlgorithm ?: "default"}")
-                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm, hashingAlgorithm)
-            }
-            // Handle inactive accounts (may use wallet-specific mnemonic)
+            // Handle wallet-specific mnemonic accounts
             else {
                 logd(TAG, "  Branch: Inactive account.")
-                val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
-                if (existingWallet == null) {
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
+                if (mnemonic == null) {
                     loge(TAG, "  Inactive account: Failed to get existing HDWallet by UID: ${account.wallet?.id}")
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-                val inactiveMnemonic = (existingWallet as BackupCryptoProvider).getMnemonic()
-                logd(TAG, "  Inactive account: Using mnemonic from existing HDWallet: '$inactiveMnemonic'")
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = inactiveMnemonic,
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                val wallet = WalletFactory.createKeyWallet(seedPhraseKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
-                // Signing algorithm determination logic (omitted for brevity, assumed correct from previous state)
-                val accountKeys = account.wallet?.walletAddress()
-                    ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
-                val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
-                    SigningAlgorithm.ECDSA_secp256k1
-                } else {
-                    SigningAlgorithm.ECDSA_P256
-                }
-                // Get the hashing algorithm from the on-chain key as well
-                val hashingAlgorithm = accountKeys?.find { it.signingAlgorithm == signingAlgorithm }?.hashingAlgorithm
-                logd(TAG, "  Inactive account using determined algorithms: signing=$signingAlgorithm, hashing=${hashingAlgorithm ?: "default"}")
-                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm, hashingAlgorithm)
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                HDWalletCryptoProvider(seedPhraseKey)
             }
         } catch (e: WalletError) {
             logd(TAG, "Wallet error during provider generation: ${e.message}")
@@ -764,40 +715,14 @@ object CryptoProviderManager {
             // Handle other accounts (mnemonic-based)
             else {
                 logd("CryptoProviderManager", "Creating BackupCryptoProvider for mnemonic-based account")
-                val existingWallet = AccountWalletManager.getHDWalletByUID(account.wallet?.id ?: "")
-                if (existingWallet == null) {
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
+                if (mnemonic == null) {
                     loge("CryptoProviderManager", "Failed to get existing wallet for account ${account.userInfo.username}")
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = (existingWallet as BackupCryptoProvider).getMnemonic(),
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                // Create a proper KeyWallet
-                val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                ) as KeyWallet
-
-                // Determine signing and hashing algorithms from on-chain data
-                val accountKeys = account.wallet?.walletAddress()
-                    ?.let { runBlocking { FlowCadenceApi.getAccount(it).keys } }
-                val signingAlgorithm = if (accountKeys?.any { it.signingAlgorithm == SigningAlgorithm.ECDSA_secp256k1 } == true) {
-                    SigningAlgorithm.ECDSA_secp256k1
-                } else {
-                    SigningAlgorithm.ECDSA_P256
-                }
-                // Get the hashing algorithm from the on-chain key as well
-                val hashingAlgorithm = accountKeys?.find { it.signingAlgorithm == signingAlgorithm }?.hashingAlgorithm
-                logd("CryptoProviderManager", "Mnemonic-based account using determined algorithms: signing=$signingAlgorithm, hashing=${hashingAlgorithm ?: "default"}")
-
-                BackupCryptoProvider(seedPhraseKey, wallet, signingAlgorithm, hashingAlgorithm)
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                HDWalletCryptoProvider(seedPhraseKey)
             }
         } catch (e: WalletError) {
             loge("CryptoProviderManager", "Wallet error: ${e.message}")
@@ -847,27 +772,14 @@ object CryptoProviderManager {
 
             // Handle other accounts
             else {
-                val existingWallet = AccountWalletManager.getHDWalletByUID(switchAccount.userId ?: "")
-                if (existingWallet == null) {
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(switchAccount.userId ?: "")
+                if (mnemonic == null) {
                     loge("CryptoProviderManager", "Failed to get existing wallet for switch account ${switchAccount.username}")
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
                     return null
                 }
-
-                val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = (existingWallet as BackupCryptoProvider).getMnemonic(),
-                    passphrase = "",
-                    derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
-                    storage = storage
-                )
-                // Create a proper KeyWallet
-                val wallet = WalletFactory.createKeyWallet(
-                    seedPhraseKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                ) as KeyWallet
-                BackupCryptoProvider(seedPhraseKey, wallet)
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                HDWalletCryptoProvider(seedPhraseKey)
             }
         } catch (e: WalletError) {
             loge("CryptoProviderManager", "Wallet error: ${e.message}")

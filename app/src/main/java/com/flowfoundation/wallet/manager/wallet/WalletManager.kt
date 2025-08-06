@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.wallet
 
 import com.flow.wallet.keys.KeyFormat
 import com.flow.wallet.keys.PrivateKey
+import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.Wallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.cache.AccountCacheManager
@@ -33,6 +34,7 @@ import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
 
 object WalletManager {
@@ -164,7 +166,27 @@ object WalletManager {
 
         else {
             logd(TAG, "-- bail: account has neither keyStoreInfo nor prefix")
-            return false
+            val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
+            if (mnemonic == null) {
+                logd(TAG, "HD wallet key not found for account")
+                return false
+            }
+            val seedPhraseKey = SeedPhraseKey(
+                mnemonicString = mnemonic,
+                passphrase = "",
+                derivationPath = "m/44'/539'/0'/0/0",
+                keyPair = null,
+                storage = storage
+            )
+
+            // Create the wallet using the seed phrase key
+            val newWallet = WalletFactory.createKeyWallet(
+                seedPhraseKey,
+                setOf(ChainId.Mainnet, ChainId.Testnet),
+                storage
+            )
+            currentWallet = newWallet
+            logd(TAG, "HD wallet created, waiting for accounts to load...")
         }
 
         // Wait for accounts to be loaded

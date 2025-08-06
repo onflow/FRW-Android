@@ -347,13 +347,13 @@ object AccountManager {
             }
             
             // Clear any cached wallet passwords or multi-backup data
-            try {
-                val emptyPasswordMap = HashMap<String, String>()
-                storeWalletPassword(Gson().toJson(emptyPasswordMap))
-                logd(TAG, "Cleared wallet password cache")
-            } catch (e: Exception) {
-                logd(TAG, "Error clearing wallet password cache: ${e.message}")
-            }
+//            try {
+//                val emptyPasswordMap = HashMap<String, String>()
+//                storeWalletPassword(Gson().toJson(emptyPasswordMap))
+//                logd(TAG, "Cleared wallet password cache")
+//            } catch (e: Exception) {
+//                logd(TAG, "Error clearing wallet password cache: ${e.message}")
+//            }
             
             // Clear uploaded address set
             uploadedAddressSet.clear()
