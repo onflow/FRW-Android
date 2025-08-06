@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.Arguments
+import com.facebook.react.bridge.WritableMap
 import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.bridge.NativeFRWBridgeSpec
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
@@ -340,6 +341,17 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 }
             }
         }
+    }
+
+    override fun getEnvKeys(): WritableMap {
+        val envMap = WritableNativeMap()
+        
+        // Add environment keys - these would typically come from BuildConfig or environment
+        envMap.putString("NODE_API_URL", BuildConfig.NODE_API_URL ?: "")
+        envMap.putString("GO_API_URL", BuildConfig.GO_API_URL ?: "")
+        envMap.putString("INSTABUG_TOKEN", BuildConfig.INSTABUG_TOKEN ?: "")
+        
+        return envMap
     }
 
 
