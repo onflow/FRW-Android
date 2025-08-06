@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- CodePush staging deployment key - Replace with your actual key -->
-    <string name="codepush_deployment_key_staging">staging-deployment-key-placeholder-replace-with-real-key</string>
-</resources>

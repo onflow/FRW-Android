@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- CodePush production deployment key - Replace with your actual key -->
-    <string name="codepush_deployment_key_production">production-deployment-key-placeholder-replace-with-real-key</string>
-    <string moduleConfig="true" name="CodePushDeploymentKey">@string/codepush_deployment_key_production</string>
-</resources>
