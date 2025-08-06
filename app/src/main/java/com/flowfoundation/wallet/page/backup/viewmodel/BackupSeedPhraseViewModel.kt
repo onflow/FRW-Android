@@ -39,7 +39,6 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 
 class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
@@ -54,10 +53,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
     private val backupCryptoProvider: HDWalletCryptoProvider? by lazy {
         try {
             val globalMnemonic = Wallet.store().mnemonic()
-            logd("BackupSeedPhraseVM", "Attempting to create backup crypto provider from global mnemonic")
-            logd("BackupSeedPhraseVM", "Global mnemonic available: ${globalMnemonic.isNotBlank()}")
             if (globalMnemonic.isNotBlank()) {
-                logd("BackupSeedPhraseVM", "Creating SeedPhraseKey with mnemonic length: ${globalMnemonic.split(" ").size} words")
                 val baseDir = File(Env.getApp().filesDir, "wallet")
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = globalMnemonic,
@@ -66,10 +62,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     keyPair = null,
                     storage = FileSystemStorage(baseDir)
                 )
-                logd("BackupSeedPhraseVM", "SeedPhraseKey created successfully")
                 val provider = HDWalletCryptoProvider(seedPhraseKey)
-                logd("BackupSeedPhraseVM", "HDWalletCryptoProvider created successfully")
-                logd("BackupSeedPhraseVM", "Backup provider public key: ${provider.getPublicKey()}")
                 provider
             } else {
                 logd("BackupSeedPhraseVM", "No global mnemonic available for backup")
@@ -136,8 +129,6 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
             return
         }
         
-        // Debug WalletManager state
-
         val selectedAddress = WalletManager.selectedWalletAddress()
         logd("BackupSeedPhraseVM", "WalletManager.selectedWalletAddress(): '$selectedAddress'")
         
@@ -147,26 +138,6 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
         // Debug current account's crypto provider
         val currentCryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
 
-        // Debug crypto provider generation step by step
-        if (account != null) {
-            logd("BackupSeedPhraseVM", "Testing generateAccountCryptoProvider with current account:")
-            logd("BackupSeedPhraseVM", "  account.keyStoreInfo.isNullOrBlank(): ${account.keyStoreInfo.isNullOrBlank()}")
-            logd("BackupSeedPhraseVM", "  account.prefix.isNullOrBlank(): ${account.prefix.isNullOrBlank()}")
-            logd("BackupSeedPhraseVM", "  account.isActive: ${account.isActive}")
-
-            val testCryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
-            logd("BackupSeedPhraseVM", "  Generated crypto provider: $testCryptoProvider")
-            logd("BackupSeedPhraseVM", "  Generated crypto provider type: ${testCryptoProvider?.javaClass?.simpleName}")
-
-            // Test global mnemonic availability for active accounts
-            if (account.isActive) {
-                try {
-                    val globalMnemonic = Wallet.store().mnemonic()
-                } catch (e: Exception) {
-                    logd("BackupSeedPhraseVM", "  Error getting global mnemonic: ${e.message}")
-                }
-            }
-        }
         ioScope {
             try {
                 withTimeout(45000) { // 45 second timeout (longer than Flow's 30s to catch timeouts)
