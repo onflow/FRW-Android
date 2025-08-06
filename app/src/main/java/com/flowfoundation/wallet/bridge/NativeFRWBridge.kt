@@ -294,6 +294,54 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun getProposer(promise: Promise) {
+        ioScope {
+            try {
+                // TODO: Implement getProposer logic
+                val proposer = WalletManager.selectedWalletAddress()
+                uiScope {
+                    promise.resolve(proposer)
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("PROPOSER_ERROR", "Failed to get proposer: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    override fun getPayer(promise: Promise) {
+        ioScope {
+            try {
+                // TODO: Implement getPayer logic
+                val payer = WalletManager.selectedWalletAddress()
+                uiScope {
+                    promise.resolve(payer)
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("PAYER_ERROR", "Failed to get payer: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    override fun getAuthorizations(promise: Promise) {
+        ioScope {
+            try {
+                // TODO: Implement getAuthorizations logic
+                val authorizations = WritableNativeArray()
+                uiScope {
+                    promise.resolve(authorizations)
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("AUTHORIZATIONS_ERROR", "Failed to get authorizations: ${e.message}", e)
+                }
+            }
+        }
+    }
+
 
     private val gson = Gson()
 
