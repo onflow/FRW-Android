@@ -1,0 +1,15 @@
+# Example CodePush configuration for local.properties
+# Add these keys to your local.properties file with your actual CodePush deployment keys
+
+# CodePush deployment keys for Android
+CODEPUSH_KEY_ANDROID_STAGING=your-staging-deployment-key-here
+CODEPUSH_KEY_ANDROID_PRODUCTION=your-production-deployment-key-here
+
+# To get your deployment keys:
+# 1. Install App Center CLI: npm install -g appcenter-cli
+# 2. Login: appcenter login
+# 3. Create your app: appcenter apps create -d "YourApp-Android" -o Android -p React-Native
+# 4. Create deployments: 
+#    appcenter codepush deployment add Staging -a your-username/YourApp-Android
+#    appcenter codepush deployment add Production -a your-username/YourApp-Android
+# 5. List keys: appcenter codepush deployment list -a your-username/YourApp-Android -k
