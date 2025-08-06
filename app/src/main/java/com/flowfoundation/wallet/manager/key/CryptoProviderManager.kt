@@ -202,7 +202,7 @@ object CryptoProviderManager {
                                     ?: key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
                             }
 
-                            logd(TAG, "    Device key check")
+                            logd(TAG, " Device key check")
 
                             // Test both signing algorithms for the device key
                             val deviceKeyECDSA_P256 = deviceKey?.let { key ->
@@ -250,48 +250,25 @@ object CryptoProviderManager {
 
                             listOf(deviceKeyECDSA_P256, deviceKeyECDSA_secp256k1).filterNotNull().forEach { devicePublicKey ->
                                 val signingAlgo = if (devicePublicKey == deviceKeyECDSA_P256) "ECDSA_P256" else "ECDSA_secp256k1"
-                                logd(TAG, "    Testing device key ($signingAlgo) against on-chain keys...")
-                                logd(TAG, "      Device key full: $devicePublicKey")
-                                logd(TAG, "      Device key length: ${devicePublicKey.length}")
 
                                 // Show different format variations
                                 val deviceRaw = devicePublicKey.removePrefix("0x").lowercase()
-                                val deviceStripped = if (deviceRaw.startsWith("04") && deviceRaw.length == 130) deviceRaw.substring(2) else deviceRaw
-                                val deviceWith04 = if (!deviceRaw.startsWith("04") && deviceRaw.length == 128) "04$deviceRaw" else deviceRaw
-
-                                logd(TAG, "      Device key variations:")
-                                logd(TAG, "        Raw: $deviceRaw")
-                                logd(TAG, "        Stripped: $deviceStripped")
-                                logd(TAG, "        With04: $deviceWith04")
+                                if (deviceRaw.startsWith("04") && deviceRaw.length == 130) deviceRaw.substring(2) else deviceRaw
+                                if (!deviceRaw.startsWith("04") && deviceRaw.length == 128) "04$deviceRaw" else deviceRaw
 
                                 onChainKeys.forEachIndexed { index, onChainKey ->
                                     if (!onChainKey.revoked && onChainKey.weight.toIntOrNull()?.let { it >= 1000 } == true) {
                                         val onChainRaw = onChainKey.publicKey.removePrefix("0x").lowercase()
-                                        val onChainStripped = if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
-                                        val onChainWith04 = if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
+                                        if (onChainRaw.startsWith("04") && onChainRaw.length == 130) onChainRaw.substring(2) else onChainRaw
+                                        if (!onChainRaw.startsWith("04") && onChainRaw.length == 128) "04$onChainRaw" else onChainRaw
 
                                         val isMatch = isKeyMatchRobust(devicePublicKey, onChainKey.publicKey)
 
                                         if (isMatch) {
-                                            logd(TAG, "        ✅ MATCH FOUND! Key $index ($signingAlgo)")
-                                            logd(TAG, "          On-chain: ${onChainKey.publicKey}")
-                                            logd(TAG, "          Device:   $devicePublicKey")
-                                            logd(TAG, "          Weight: ${onChainKey.weight}")
                                             deviceKeyFound = true
                                             bestMatch = onChainKey.publicKey
                                             bestMatchInfo = "Key $index ($signingAlgo, weight=${onChainKey.weight})"
                                         } else {
-                                            // Show detailed comparison for high-weight keys
-                                            logd(TAG, "        ❌ No match Key $index ($signingAlgo, weight=${onChainKey.weight}):")
-                                            logd(TAG, "          OnChain: ${onChainKey.publicKey.take(40)}...")
-                                            logd(TAG, "          Device:  ${devicePublicKey.take(40)}...")
-
-                                            // Show format comparison
-                                            logd(TAG, "          Format comparison:")
-                                            logd(TAG, "            OnChain raw vs Device raw: ${onChainRaw == deviceRaw}")
-                                            logd(TAG, "            OnChain stripped vs Device stripped: ${onChainStripped == deviceStripped}")
-                                            logd(TAG, "            OnChain with04 vs Device with04: ${onChainWith04 == deviceWith04}")
-
                                             // Check similarity
                                             val similarity = calculateSimilarity(onChainRaw, deviceRaw)
                                             if (similarity > 0.8) {
@@ -303,17 +280,8 @@ object CryptoProviderManager {
                             }
 
                             if (deviceKeyFound) {
-                                logd(TAG, "    ✅ DEVICE KEY FOUND ON-CHAIN: $bestMatchInfo")
-                                logd(TAG, "    Matched key: $bestMatch")
                                 true
                             } else {
-                                logd(TAG, "    ❌ DEVICE KEY NOT FOUND ON-CHAIN")
-                                logd(TAG, "      This suggests either:")
-                                logd(TAG, "      1. Key indexer latency - device key may not be indexed yet")
-                                logd(TAG, "      2. Algorithm mismatch - key created with different algorithm")
-                                logd(TAG, "      3. Key format issue - encoding differences")
-                                logd(TAG, "      4. Different key stored locally vs on-chain")
-
                                 // Show what we're looking for vs what's available
                                 if (deviceKeyECDSA_P256 != null) {
                                     logd(TAG, "      Looking for ECDSA_P256: ${deviceKeyECDSA_P256.take(40)}...")
@@ -322,7 +290,7 @@ object CryptoProviderManager {
                                     logd(TAG, "      Looking for ECDSA_secp256k1: ${deviceKeyECDSA_secp256k1.take(40)}...")
                                 }
 
-                                logd(TAG, "      Available high-weight keys on-chain:")
+                                logd(TAG, "Available high-weight keys on-chain:")
                                 onChainKeys.forEachIndexed { index, key ->
                                     if (!key.revoked && key.weight.toIntOrNull()?.let { it >= 1000 } == true) {
                                         logd(TAG, "        Key $index: ${key.publicKey.take(40)}... (weight=${key.weight})")
@@ -331,22 +299,12 @@ object CryptoProviderManager {
                                 false
                             }
                         } catch (e: Exception) {
-                            logd(TAG, "  Device key check failed: ${e.message}")
-                            logd(TAG, "  This could indicate:")
-                            logd(TAG, "    1. Device key not stored yet")
-                            logd(TAG, "    2. Key indexer latency")
-                            logd(TAG, "    3. Storage/network error")
                             false
                         }
 
                         if (hasDeviceKey) {
-                            logd(TAG, "  ✅ DECISION: Device key available with sufficient weight - using device key instead of multi-signature")
-                            logd(TAG, "  This means subsequent transactions will use fast single-signature with the 1000-weight device key")
                             false // Don't use multi-restore, use device key
                         } else {
-                            logd(TAG, "  ⚠️ DECISION: Device key not available or insufficient weight - using multi-signature")
-                            logd(TAG, "  This means subsequent transactions will use slower multi-signature with backup keys")
-                            logd(TAG, "  If this happens immediately after restore, it's likely due to key indexer latency")
                             true // Use multi-restore
                         }
                     } else {
@@ -467,7 +425,7 @@ object CryptoProviderManager {
                                 logd(TAG, "  Hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
                             } else {
                                 // Try secp256k1 if P256 didn't match
-                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_secp256k1)
+                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_secp256k1)
                                 val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
 
                                 val matchedKeySecp = onChainKeys.find { onChainKey ->
@@ -498,11 +456,9 @@ object CryptoProviderManager {
                 val wallet = WalletFactory.createKeyWallet(privateKey, setOf(ChainId.Mainnet, ChainId.Testnet), storage) as KeyWallet
 
                 // Determine the correct signing algorithm for this private key
-                val currentProviderPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
                     ?: privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
                 var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256 // Default
-                logd(TAG, "  Prefix-based: currentProviderPublicKey from local private key: $currentProviderPublicKey")
-                logd(TAG, "  Prefix-based: account.wallet?.walletAddress() for on-chain lookup: ${account.wallet?.walletAddress()}")
 
                 // Try to get on-chain account information to determine the correct signing algorithm
                 try {
@@ -515,10 +471,6 @@ object CryptoProviderManager {
                         val ecdsaP256PublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
                         val ecdsaSecp256k1PublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
 
-                        logd(TAG, "  Prefix-based: Testing key matching...")
-                        logd(TAG, "    ECDSA_P256 key: ${ecdsaP256PublicKey?.take(20)}...")
-                        logd(TAG, "    ECDSA_secp256k1 key: ${ecdsaSecp256k1PublicKey?.take(20)}...")
-
                         // Find matching on-chain key
                         var matchedKey: org.onflow.flow.models.AccountPublicKey? = null
 
@@ -526,7 +478,6 @@ object CryptoProviderManager {
                             matchedKey = onChainKeys.find { onChainKey ->
                                 val match = isKeyMatchRobust(ecdsaP256PublicKey, onChainKey.publicKey)
                                 if (match) {
-                                    logd(TAG, "    ✓ ECDSA_P256 key matches on-chain key index ${onChainKey.index}")
                                     determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256
                                 }
                                 match
@@ -545,9 +496,6 @@ object CryptoProviderManager {
                         }
 
                         if (matchedKey != null) {
-                            logd(TAG, "  Prefix-based: Found matching on-chain key with algorithm: $determinedSigningAlgorithm")
-                            logd(TAG, "  Prefix-based: On-chain key hashing algorithm: ${matchedKey.hashingAlgorithm}")
-
                             // Create the provider with the correct algorithms
                             return PrivateKeyCryptoProvider(privateKey, wallet, determinedSigningAlgorithm, matchedKey.hashingAlgorithm)
                         } else {
@@ -590,24 +538,14 @@ object CryptoProviderManager {
     fun getSwitchAccountCryptoProvider(account: Account): CryptoProvider? {
         val storage = getStorage()
 
-        logd("CryptoProviderManager", "getSwitchAccountCryptoProvider called for account: ${account.userInfo.username}")
-        logd("CryptoProviderManager", "  keyStoreInfo present: ${!account.keyStoreInfo.isNullOrBlank()}")
-        logd("CryptoProviderManager", "  prefix present: ${!account.prefix.isNullOrBlank()}")
-        logd("CryptoProviderManager", "  wallet ID: ${account.wallet?.id}")
-
         return try {
             // Handle keystore-based accounts
             if (account.keyStoreInfo.isNullOrBlank().not()) {
-                logd("CryptoProviderManager", "Creating PrivateKeyStoreCryptoProvider for keystore-based account")
-                logd("CryptoProviderManager", "  keyStoreInfo length: ${account.keyStoreInfo!!.length}")
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
             }
 
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
-                logd("CryptoProviderManager", "Creating PrivateKeyCryptoProvider for prefix-based account")
-                logd("CryptoProviderManager", "  Using prefix-based key")
-
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"
                 val privateKey = try {
@@ -641,7 +579,7 @@ object CryptoProviderManager {
                                 logd("CryptoProviderManager", "Switch account hardware-backed key matched on-chain: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
                             } else {
                                 // Try secp256k1 if P256 didn't match
-                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias!!, SigningAlgorithm.ECDSA_secp256k1)
+                                val tempProviderSecp = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_secp256k1)
                                 val keystorePublicKeySecp = tempProviderSecp.getPublicKey()
 
                                 val matchedKeySecp = onChainKeys.find { onChainKey ->

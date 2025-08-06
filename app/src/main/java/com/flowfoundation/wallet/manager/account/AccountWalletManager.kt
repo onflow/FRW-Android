@@ -32,8 +32,8 @@ object AccountWalletManager {
         if (password.isNullOrBlank()) {
             return null
         }
-        val wallet = WalletStoreWithUid(uid, password).wallet()
-        return wallet.mnemonic()
+        val walletStore = WalletStoreWithUid(uid, password)
+        return walletStore.getMnemonic()
     }
 
     fun isHDWallet(uid: String): Boolean {
@@ -49,6 +49,8 @@ object AccountWalletManager {
         }
 
         fun wallet(): HDWallet = keyStore.wallet(password.hexToBytes())
+
+        fun getMnemonic(): String = keyStore.decryptMnemonic(password.hexToBytes())
 
         private fun generateKeyStore(): StoredKey {
             return if (!File(storePath()).exists()) {
