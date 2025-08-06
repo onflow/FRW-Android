@@ -20,8 +20,6 @@ internal class NftGridFragment : Fragment() {
 
     private val adapter by lazy { NFTListAdapter() }
 
-    private val dividerSize by lazy { R.dimen.nft_list_divider_size.res2dip().toDouble() }
-
     // Responsive grid spacing dimensions
     private val horizontalSpacing by lazy { R.dimen.nft_grid_horizontal_spacing.res2dip().toDouble() }
     private val verticalSpacing by lazy { R.dimen.nft_grid_vertical_spacing.res2dip().toDouble() }

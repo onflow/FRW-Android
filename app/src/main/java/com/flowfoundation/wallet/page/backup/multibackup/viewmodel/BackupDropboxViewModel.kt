@@ -204,7 +204,7 @@ class BackupDropboxViewModel : ViewModel(), OnTransactionStateChange {
                         backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("BackupDropbox", "Registration failed", e)
+                    logd("BackupDropbox", "Registration failed: ${e.message}")
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.DROPBOX)
                     backupStateLiveData.postValue(BackupDropboxState.NETWORK_ERROR)
                 }

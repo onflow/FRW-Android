@@ -392,8 +392,7 @@ class DrawerLayoutPresenter(
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error during wallet update: ${e.message}")
-                    Log.e(TAG, "Error stack trace: ${e.stackTraceToString()}")
+                    logd(TAG, "Error during wallet update: ${e.message}")
                 } finally {
                     isUpdatingWallet = false
                     logd(TAG, "Wallet update process completed")

@@ -224,9 +224,4 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_location_mark)))
         }
     }
-
-    private fun isCurrentDevice(publicKey: String): Boolean {
-        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-        return cryptoProvider?.getPublicKey() == publicKey
-    }
 }

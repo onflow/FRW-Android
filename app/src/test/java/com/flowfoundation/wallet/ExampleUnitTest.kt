@@ -27,7 +27,7 @@ class ExampleUnitTest {
                     }
                 """.trimIndent()
             )
-            println("===========> response: ${response}")
+            println("===========> response: $response")
             
             // The response should be a Cadence String value
             val stringValue = response as Cadence.Value.StringValue

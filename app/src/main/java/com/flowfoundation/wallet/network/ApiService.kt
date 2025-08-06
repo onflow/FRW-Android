@@ -201,17 +201,8 @@ interface ApiService {
     @POST("/v3/user/device")
     suspend fun updateDeviceInfo(@Body params: UpdateDeviceParams): CommonResponse
 
-    @GET("/api/prices")
-    suspend fun getTokenPrices(): TokenPriceResponse
-
     @GET("/api/v2/scripts")
     suspend fun getCadenceScriptWithHeaders(): Response<ResponseBody>
-
-    @GET("/api/v3/evm/{evmAddress}/fts")
-    suspend fun getEVMTokenBalance(
-        @Path("evmAddress") address: String,
-        @Query("network") network: String
-    ): EVMTokenBalanceResponse
 
     @GET("/v3/checkimport")
     suspend fun checkKeystorePublicKeyImport(@Query("key") publicKey: String): CommonResponse

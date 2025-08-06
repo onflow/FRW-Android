@@ -120,10 +120,6 @@ object AccountInfoManager {
         return (currentAccount.storageCapacity - currentAccount.storageUsed) < MINIMUM_STORAGE_THRESHOLD
     }
 
-    fun getCurrentFlowBalance(): BigDecimal? {
-        return _accountResultFlow.value?.availableBalance?.toBigDecimal()
-    }
-
     fun getTotalFlowBalance(): String {
         return (_accountResultFlow.value?.balance?.format() ?: "0") + " FLOW"
     }

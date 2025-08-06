@@ -28,7 +28,6 @@ object KeyStoreMigrationManager {
     private const val MIGRATION_LAST_ATTEMPT_KEY = "keystore_migration_last_attempt"
     private const val MAX_RETRY_ATTEMPTS = 3
     private const val RETRY_DELAY_HOURS = 24
-    private const val MAX_CONCURRENT_MIGRATIONS = 5
 
     /**
      * Result of a migration operation
@@ -109,7 +108,7 @@ object KeyStoreMigrationManager {
                 migrationState.totalAccountsProcessed++
                 
                 try {
-                    val migrationResult = migrateAccountWithRetry(prefix, storage, migrationState)
+                    val migrationResult = migrateAccountWithRetry(prefix, storage)
                     when (migrationResult) {
                         is AccountMigrationResult.Success -> {
                             migrationState.successfulMigrations++
@@ -416,9 +415,8 @@ object KeyStoreMigrationManager {
      * Migrates a single account with retry logic and improved error handling
      */
     private suspend fun migrateAccountWithRetry(
-        prefix: String, 
-        storage: StorageProtocol, 
-        migrationState: MigrationState
+        prefix: String,
+        storage: StorageProtocol
     ): AccountMigrationResult {
         logd(TAG, "Processing account")
         
