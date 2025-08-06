@@ -248,7 +248,10 @@ object CryptoProviderManager {
                             var bestMatch = ""
                             var bestMatchInfo = ""
 
-                            listOf(deviceKeyECDSA_P256, deviceKeyECDSA_secp256k1).filterNotNull().forEach { devicePublicKey ->
+                            listOfNotNull(
+                                deviceKeyECDSA_P256,
+                                deviceKeyECDSA_secp256k1
+                            ).forEach { devicePublicKey ->
                                 val signingAlgo = if (devicePublicKey == deviceKeyECDSA_P256) "ECDSA_P256" else "ECDSA_secp256k1"
 
                                 // Show different format variations

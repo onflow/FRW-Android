@@ -10,9 +10,6 @@ import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.PublicKey
 import java.security.Signature
-import java.security.interfaces.ECPublicKey
-import java.security.spec.ECPoint
-import java.math.BigInteger
 
 /**
  * A CryptoProvider that works directly with hardware-backed Android Keystore keys

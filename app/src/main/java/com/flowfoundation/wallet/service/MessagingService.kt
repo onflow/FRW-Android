@@ -30,7 +30,7 @@ class MessagingService : FirebaseMessagingService() {
         logd(TAG, "receive new firebase message:$message")
         parseFirebaseMessaging(message)
         if (Replies.isInstabugNotification(message.getData())) {
-            Replies.showNotification(message.getData());
+            Replies.showNotification(message.getData())
         }
     }
 

@@ -1,6 +1,5 @@
 package com.flowfoundation.wallet.page.token.manage.presenter
 
-import android.app.AlertDialog
 import android.graphics.Color
 import android.transition.Scene
 import android.transition.Slide
@@ -22,7 +21,6 @@ import com.flowfoundation.wallet.page.token.manage.HideDustTokenTipDialog
 import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity
 import com.flowfoundation.wallet.page.token.manage.adapter.ManageTokenAdapter
 import com.flowfoundation.wallet.page.token.manage.viewmodel.ManageTokenViewModel
-import com.flowfoundation.wallet.utils.debug.showDialog
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.hideKeyboard
 import com.flowfoundation.wallet.utils.extensions.isVisible

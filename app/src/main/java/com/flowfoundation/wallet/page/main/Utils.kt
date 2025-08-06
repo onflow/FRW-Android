@@ -54,7 +54,6 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
-import android.widget.LinearLayout
 
 enum class HomeTab(val index: Int) {
     WALLET(0),

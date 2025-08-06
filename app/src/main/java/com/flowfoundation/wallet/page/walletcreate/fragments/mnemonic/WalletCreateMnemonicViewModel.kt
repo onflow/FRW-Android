@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.page.walletcreate.fragments.mnemonic
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flow.wallet.crypto.BIP39
 import com.flow.wallet.keys.SeedPhraseKey
