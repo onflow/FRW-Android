@@ -44,6 +44,7 @@ import com.flowfoundation.wallet.page.main.debugDrawerAccounts
 import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.refreshWalletList
 import com.flowfoundation.wallet.page.main.setupLinkedAccount
+import com.flowfoundation.wallet.page.main.setupLinkedAccountForHardwareBackedKey
 import com.flowfoundation.wallet.page.main.widget.NetworkPopupMenu
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.ScreenUtils
@@ -286,16 +287,26 @@ class DrawerLayoutPresenter(
                     logd(TAG, "Wallet available: ${wallet != null}")
                     logd(TAG, "Wallet address: ${wallet?.walletAddress()}")
                     
-                    if (userInfo != null && wallet != null) {
-                        logd(TAG, "Setting up accounts immediately on drawer open")
-                        uiScope {
-                            binding.setupLinkedAccount(wallet, userInfo)
-                            // Debug again after immediate setup
-                            logd(TAG, "Debugging after immediate setup:")
-                            binding.debugDrawerAccounts()
+                    if (userInfo != null) {
+                        if (wallet != null) {
+                            logd(TAG, "Setting up accounts immediately on drawer open with wallet")
+                            uiScope {
+                                binding.setupLinkedAccount(wallet, userInfo)
+                                // Debug again after immediate setup
+                                logd(TAG, "Debugging after immediate setup:")
+                                binding.debugDrawerAccounts()
+                            }
+                        } else {
+                            logd(TAG, "Setting up accounts for hardware-backed key (null wallet)")
+                            uiScope {
+                                binding.setupLinkedAccountForHardwareBackedKey(userInfo)
+                                // Debug again after immediate setup
+                                logd(TAG, "Debugging after hardware-backed key setup:")
+                                binding.debugDrawerAccounts()
+                            }
                         }
                     } else {
-                        logd(TAG, "Cannot set up accounts immediately - missing userInfo or wallet")
+                        logd(TAG, "Cannot set up accounts immediately - missing userInfo")
                     }
                 } catch (e: Exception) {
                     logd(TAG, "Error in immediate account setup: ${e.message}")
@@ -381,8 +392,7 @@ class DrawerLayoutPresenter(
                         }
                     }
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error during wallet update: ${e.message}")
-                    Log.e(TAG, "Error stack trace: ${e.stackTraceToString()}")
+                    logd(TAG, "Error during wallet update: ${e.message}")
                 } finally {
                     isUpdatingWallet = false
                     logd(TAG, "Wallet update process completed")

@@ -21,8 +21,6 @@ import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
-import com.flowfoundation.wallet.manager.transaction.TransactionState
-import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.nft.move.SelectAccountDialog
 import com.flowfoundation.wallet.page.swap.dialog.select.SelectTokenDialog
@@ -31,7 +29,6 @@ import com.flowfoundation.wallet.page.token.list.EVMTokenListProvider
 import com.flowfoundation.wallet.page.token.list.TokenListProvider
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.HomeTab
-import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.MoveError
@@ -47,8 +44,6 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.findActivity
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.gson.Gson
-import org.onflow.flow.models.TransactionStatus
 import java.math.BigDecimal
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.resume

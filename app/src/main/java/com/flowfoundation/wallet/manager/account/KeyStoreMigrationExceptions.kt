@@ -142,4 +142,20 @@ class KeyMigrationStorageException(
     cause = cause,
     prefix = prefix,
     alias = keyId
+)
+
+/**
+ * Thrown when a hardware-backed key is detected that cannot be extracted.
+ * Hardware-backed keys are stored in the device's secure hardware element
+ * and cannot be extracted for migration. These keys require special handling
+ * via AndroidKeystoreCryptoProvider.
+ */
+class HardwareBackedKeyException(
+    alias: String,
+    message: String = "Hardware-backed key cannot be extracted for migration",
+    prefix: String? = null
+) : KeyStoreMigrationException(
+    message = message,
+    prefix = prefix,
+    alias = alias
 ) 

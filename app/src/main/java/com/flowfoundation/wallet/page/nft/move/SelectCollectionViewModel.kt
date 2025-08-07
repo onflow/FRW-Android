@@ -22,11 +22,10 @@ class SelectCollectionViewModel : ViewModel() {
     fun loadCollections(fromAddress: String) {
         viewModelIOScope(this) {
             collectionList.clear()
-            val address = fromAddress
-            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(address)) {
-                service.getEVMNFTCollections(address)
+            val collectionResponse = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                service.getEVMNFTCollections(fromAddress)
             } else {
-                service.getNFTCollections(address)
+                service.getNFTCollections(fromAddress)
             }
             if (collectionResponse.data.isNullOrEmpty()) {
                 collectionListLiveData.postValue(emptyList())
@@ -43,7 +42,7 @@ class SelectCollectionViewModel : ViewModel() {
                     contractName = collection.contractName(),
                     contractAddress = collection.address.orEmpty(),
                     count = it.count ?: 0,
-                    isFlowCollection = EVMWalletManager.isEVMWalletAddress(address).not(),
+                    isFlowCollection = EVMWalletManager.isEVMWalletAddress(fromAddress).not(),
                     identifier = collection.path?.privatePath?.removePrefix("/private/") ?: "",
                     nftIdentifier = collection.getNFTIdentifier()
                 )

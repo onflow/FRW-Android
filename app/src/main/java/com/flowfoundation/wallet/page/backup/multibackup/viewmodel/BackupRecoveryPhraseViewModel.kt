@@ -169,7 +169,7 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
                     MixpanelManager.multiBackupCreated(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(resp.status == 200)
                 } catch (e: Exception) {
-                    android.util.Log.e("BackupRecoveryPhrase", "Sync failed", e)
+                    logd("BackupRecoveryPhrase", "Sync failed: ${e.message}")
                     ErrorReporter.reportWithMixpanel(BackupError.SYNC_ACCOUNT_INFO_FAILED, e)
                     MixpanelManager.multiBackupCreationFailed(MixpanelBackupProvider.SEED_PHRASE)
                     createBackupCallbackLiveData.postValue(false)

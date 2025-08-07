@@ -3,8 +3,6 @@ package com.flowfoundation.wallet.page.nft.nftdetail
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import androidx.lifecycle.ViewModelProvider
@@ -25,7 +23,6 @@ import com.flowfoundation.wallet.page.nft.nftdetail.model.NftDetailModel
 import com.flowfoundation.wallet.page.nft.nftdetail.presenter.NftDetailPresenter
 import com.flowfoundation.wallet.page.nft.nftlist.cover
 import com.flowfoundation.wallet.page.nft.nftlist.video
-import com.flowfoundation.wallet.page.collection.CollectionActivity
 import com.flowfoundation.wallet.utils.isNightMode
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import org.onflow.flow.models.TransactionStatus
@@ -35,7 +32,6 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
 
     private val uniqueId by lazy { intent.getStringExtra(EXTRA_UNIQUE_ID)!! }
     private val collectionAddress by lazy { intent.getStringExtra(EXTRA_COLLECTION_CONTRACT_ID)!! }
-    private val fromAddress by lazy { intent.getStringExtra(EXTRA_FROM_ADDRESS) }
     private val collectionContract by lazy { intent.getStringExtra(EXTRA_COLLECTION_CONTRACT) }
     private val sourceTabIndex by lazy { intent.getIntExtra(EXTRA_SOURCE_TAB, -1) }
 
@@ -170,33 +166,6 @@ class NftDetailActivity : BaseActivity(), OnTransactionStateChange {
             }
             finish()
         }
-    }
-
-    fun onTransactionSubmitted() {
-        // Called when a transaction is submitted to trigger delayed navigation
-        setupNavigationOnTransactionSubmit()
-    }
-
-    private fun setupNavigationOnTransactionSubmit() {
-        // Set up a delayed navigation that will trigger shortly after transaction submission
-        // This ensures we navigate back even if the activity becomes inactive before transaction completion
-        
-        // Post with a short delay to allow transaction to be submitted
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!hasNavigatedBack && !isFinishing && !isDestroyed) {
-                hasNavigatedBack = true
-                
-                if (sourceTabIndex != -1) {
-                    val sourceTab = HomeTab.values().getOrNull(sourceTabIndex)
-                    if (sourceTab != null) {
-                        navigateToTab(sourceTab)
-                        return@postDelayed
-                    }
-                }
-                
-                finish()
-            }
-        }, 3000) // Increased to 3 seconds to reduce race condition chance
     }
 
     companion object {

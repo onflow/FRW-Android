@@ -28,7 +28,6 @@ object KeyStoreMigrationManager {
     private const val MIGRATION_LAST_ATTEMPT_KEY = "keystore_migration_last_attempt"
     private const val MAX_RETRY_ATTEMPTS = 3
     private const val RETRY_DELAY_HOURS = 24
-    private const val MAX_CONCURRENT_MIGRATIONS = 5
 
     /**
      * Result of a migration operation
@@ -109,21 +108,21 @@ object KeyStoreMigrationManager {
                 migrationState.totalAccountsProcessed++
                 
                 try {
-                    val migrationResult = migrateAccountWithRetry(prefix, storage, migrationState)
+                    val migrationResult = migrateAccountWithRetry(prefix, storage)
                     when (migrationResult) {
                         is AccountMigrationResult.Success -> {
                             migrationState.successfulMigrations++
                             if (migrationResult.wasAlreadyMigrated) {
-                                logd(TAG, "Account $prefix already migrated")
+                                logd(TAG, "Account already migrated")
                             } else {
-                                logd(TAG, "Successfully migrated account $prefix")
+                                logd(TAG, "Successfully migrated account")
                                 migrationState.accountsNeedingMigration++
                             }
                         }
                         is AccountMigrationResult.NotNeeded -> {
                             migrationState.successfulMigrations++
                             migrationState.accountsSkipped++
-                            logd(TAG, "Account $prefix does not need migration")
+                            logd(TAG, "Account does not need migration")
                         }
                         is AccountMigrationResult.Failed -> {
                             val failure = MigrationFailure(
@@ -133,7 +132,7 @@ object KeyStoreMigrationManager {
                             )
                             failedAccounts.add(failure)
                             migrationState.accountsNeedingMigration++
-                            loge(TAG, "Failed to migrate account $prefix: ${migrationResult.error.message}")
+                            loge(TAG, "Failed to migrate account: ${migrationResult.error.message}")
                         }
                     }
                 } catch (e: Exception) {
@@ -145,7 +144,7 @@ object KeyStoreMigrationManager {
                     )
                     failedAccounts.add(failure)
                     migrationState.accountsNeedingMigration++
-                    loge(TAG, "Unexpected error processing account $prefix: ${e.message}")
+                    loge(TAG, "Unexpected error processing account: ${e.message}")
                 }
             }
 
@@ -179,7 +178,7 @@ object KeyStoreMigrationManager {
      */
     private fun extractPrivateKeyFromAndroidKeystore(alias: String): ByteArray {
         try {
-            logd(TAG, "Attempting to extract key from Android Keystore with alias: $alias")
+            logd(TAG, "Attempting to extract key from Android Keystore")
 
             val keyStore = KeyStore.getInstance("AndroidKeyStore")
             keyStore.load(null)
@@ -195,8 +194,28 @@ object KeyStoreMigrationManager {
             }
 
             val privateKey = keyEntry.privateKey
-            if (privateKey !is ECPrivateKey) {
-                val keyType = privateKey?.javaClass?.simpleName ?: "null"
+            val keyType = privateKey?.javaClass?.simpleName ?: "null"
+            
+            // Handle AndroidKeyStoreECPrivateKey specifically
+            if (keyType == "AndroidKeyStoreECPrivateKey") {
+                // Check if key is hardware-backed by attempting to extract
+                if (privateKey is ECPrivateKey) {
+                    try {
+                        val privateKeyValue = privateKey.s
+                        val privateKeyBytes = privateKeyValue.toByteArray()
+                        logd(TAG, "Successfully extracted software-backed AndroidKeyStoreECPrivateKey")
+                        return normalizePrivateKeyBytes(privateKeyBytes, alias)
+                    } catch (e: Exception) {
+                        logd(TAG, "Failed to extract AndroidKeyStoreECPrivateKey - likely hardware-backed")
+                        throw HardwareBackedKeyException(alias, "Hardware-backed key cannot be migrated via extraction")
+                    }
+                } else {
+                    logd(TAG, "AndroidKeyStoreECPrivateKey doesn't implement ECPrivateKey interface - hardware-backed")
+                    throw HardwareBackedKeyException(alias, "Hardware-backed key cannot be migrated via extraction")
+                }
+            }
+            // Handle standard ECPrivateKey
+            else if (privateKey !is ECPrivateKey) {
                 throw UnsupportedKeyTypeException(alias, keyType)
             }
 
@@ -204,38 +223,8 @@ object KeyStoreMigrationManager {
             val privateKeyValue = privateKey.s
             val privateKeyBytes = privateKeyValue.toByteArray()
 
-            logd(TAG, "Extracted private key with size: ${privateKeyBytes.size} bytes")
-
-            // Ensure the key is 32 bytes (normalize different formats)
-            val normalizedBytes = when {
-                privateKeyBytes.size == 32 -> {
-                    logd(TAG, "Private key size is correct (32 bytes)")
-                    privateKeyBytes
-                }
-                privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
-                    logd(TAG, "Removing leading zero byte from 33-byte key")
-                    privateKeyBytes.copyOfRange(1, 33)
-                }
-                privateKeyBytes.size < 32 -> {
-                    logd(TAG, "Padding ${privateKeyBytes.size}-byte key to 32 bytes")
-                    val padded = ByteArray(32)
-                    System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
-                    padded
-                }
-                else -> {
-                    // This is the critical improvement - throw specific exception instead of returning null
-                    loge(TAG, "Private key has unexpected size: ${privateKeyBytes.size} bytes (expected: 32)")
-
-                    throw InvalidPrivateKeySizeException(
-                        alias = alias,
-                        actualSize = privateKeyBytes.size,
-                        keyBytes = privateKeyBytes
-                    )
-                }
-            }
-
-            logd(TAG, "Successfully extracted and normalized private key from Android Keystore")
-            return normalizedBytes
+            logd(TAG, "Extracted private key successfully")
+            return normalizePrivateKeyBytes(privateKeyBytes, alias)
 
         } catch (e: KeyStoreMigrationException) {
             // Re-throw our specific exceptions
@@ -245,6 +234,37 @@ object KeyStoreMigrationManager {
             // Wrap other exceptions
             loge(TAG, "Unexpected error extracting private key: ${e.message}")
             throw KeystoreAccessException(alias, e)
+        }
+    }
+
+    /**
+     * Helper method to normalize private key bytes to 32 bytes
+     */
+    private fun normalizePrivateKeyBytes(privateKeyBytes: ByteArray, alias: String): ByteArray {
+        // Ensure the key is 32 bytes (normalize different formats)
+        return when {
+            privateKeyBytes.size == 32 -> {
+                logd(TAG, "Private key size is correct (32 bytes)")
+                privateKeyBytes
+            }
+            privateKeyBytes.size == 33 && privateKeyBytes[0] == 0.toByte() -> {
+                logd(TAG, "Removing leading zero byte from 33-byte key")
+                privateKeyBytes.copyOfRange(1, 33)
+            }
+            privateKeyBytes.size < 32 -> {
+                logd(TAG, "Padding ${privateKeyBytes.size}-byte key to 32 bytes")
+                val padded = ByteArray(32)
+                System.arraycopy(privateKeyBytes, 0, padded, 32 - privateKeyBytes.size, privateKeyBytes.size)
+                padded
+            }
+            else -> {
+                loge(TAG, "Private key has unexpected size: ${privateKeyBytes.size} bytes (expected: 32)")
+                throw InvalidPrivateKeySizeException(
+                    alias = alias,
+                    actualSize = privateKeyBytes.size,
+                    keyBytes = privateKeyBytes
+                )
+            }
         }
     }
 
@@ -259,8 +279,7 @@ object KeyStoreMigrationManager {
         storage: StorageProtocol
     ) {
         try {
-            logd(TAG, "Migrating private key to new storage with ID: $keyId")
-            logd(TAG, "Private key data size: ${privateKeyData.size} bytes")
+            logd(TAG, "Migrating private key to new storage")
 
             // Create a new PrivateKey instance using Flow-Wallet-Kit
             val privateKey = PrivateKey.create(storage)
@@ -396,16 +415,15 @@ object KeyStoreMigrationManager {
      * Migrates a single account with retry logic and improved error handling
      */
     private suspend fun migrateAccountWithRetry(
-        prefix: String, 
-        storage: StorageProtocol, 
-        migrationState: MigrationState
+        prefix: String,
+        storage: StorageProtocol
     ): AccountMigrationResult {
-        logd(TAG, "Processing account with prefix: $prefix")
+        logd(TAG, "Processing account")
         
         // Check if the account already has a key in the new storage system
         val newKeyId = "prefix_key_$prefix"
         if (hasKeyInNewStorage(newKeyId, prefix, storage)) {
-            logd(TAG, "Account $prefix already has key in new storage")
+            logd(TAG, "Account already has key in new storage")
             return AccountMigrationResult.Success(wasAlreadyMigrated = true)
         }
         
@@ -413,27 +431,33 @@ object KeyStoreMigrationManager {
         val oldAlias = OLD_KEYSTORE_ALIAS_PREFIX + prefix
         
         return try {
-            logd(TAG, "Attempting to extract key from old keystore for prefix: $prefix")
+            logd(TAG, "Attempting to extract key from old keystore")
             val privateKeyData = extractPrivateKeyFromAndroidKeystore(oldAlias)
             
-            logd(TAG, "Found private key in old keystore for prefix: $prefix")
+            logd(TAG, "Found private key in old keystore")
             
             // Migrate the key to the new storage system
             migratePrivateKey(privateKeyData, newKeyId, prefix, storage)
-            logd(TAG, "Successfully migrated key for prefix: $prefix")
+            logd(TAG, "Successfully migrated key")
             
             AccountMigrationResult.Success(wasAlreadyMigrated = false)
             
         } catch (e: KeystoreKeyNotFoundException) {
-            logd(TAG, "No key found in old keystore for prefix: $prefix (not an error - may be new account)")
+            logd(TAG, "No key found in old keystore (not an error - may be new account)")
+            AccountMigrationResult.NotNeeded
+            
+        } catch (e: HardwareBackedKeyException) {
+            loge(TAG, "Hardware-backed key detected - migration not possible via extraction")
+            loge(TAG, "Key requires AndroidKeystoreCryptoProvider for signing operations")
+            // Hardware-backed keys cannot be migrated - mark as completed since this is expected behavior
             AccountMigrationResult.NotNeeded
             
         } catch (e: InvalidPrivateKeySizeException) {
-            loge(TAG, "CRITICAL: Invalid private key size for prefix $prefix: ${e.getSafeDebugInfo()}")
+            loge(TAG, "CRITICAL: Invalid private key size: ${e.getSafeDebugInfo()}")
             AccountMigrationResult.Failed(e, canRetry = false) // Size issues usually can't be retried
             
         } catch (e: KeyStoreMigrationException) {
-            loge(TAG, "Migration failed for prefix $prefix: $e")
+            loge(TAG, "Migration failed: $e")
             val canRetry = when (e) {
                 is KeystoreAccessException -> true // Network/storage issues can be retried
                 is KeyMigrationStorageException -> true // Storage issues can be retried
@@ -443,7 +467,7 @@ object KeyStoreMigrationManager {
             AccountMigrationResult.Failed(e, canRetry = canRetry)
             
         } catch (e: Exception) {
-            loge(TAG, "Unexpected error migrating key for prefix $prefix: ${e.message}")
+            loge(TAG, "Unexpected error migrating key: ${e.message}")
             AccountMigrationResult.Failed(KeystoreAccessException(oldAlias, e), canRetry = true)
         }
     }

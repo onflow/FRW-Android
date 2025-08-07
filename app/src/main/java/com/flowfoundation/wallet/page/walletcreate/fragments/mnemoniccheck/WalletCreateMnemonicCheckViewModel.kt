@@ -4,9 +4,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.utils.viewModelIOScope
 import com.flow.wallet.crypto.BIP39
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.account.AccountWalletManager
-import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
+import com.flowfoundation.wallet.wallet.Wallet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -17,17 +15,7 @@ class WalletCreateMnemonicCheckViewModel : ViewModel() {
     fun generateMnemonicQuestion() {
         viewModelIOScope(this) {
             val questionList = mutableListOf<MnemonicQuestionModel>()
-            val currentWallet = WalletManager.wallet()
-                ?: throw IllegalStateException("No wallet available")
-            
-            val walletAddress = currentWallet.accounts.values.flatten().firstOrNull()?.address
-                ?: throw IllegalStateException("No accounts available in wallet")
-            
-            val cryptoProvider = AccountWalletManager.getHDWalletByUID(walletAddress)
-                ?: throw IllegalStateException("Failed to get crypto provider for wallet")
-            
-            val mnemonics = (cryptoProvider as BackupCryptoProvider).getMnemonic().split(" ").toMutableList()
-
+            val mnemonics = Wallet.store().mnemonic().split(" ").toMutableList()
             questionList.add(generateMnemonicItem(mnemonics, listOf(0, 1, 2)))
             questionList.add(generateMnemonicItem(mnemonics, listOf(3, 4, 5)))
             questionList.add(generateMnemonicItem(mnemonics, listOf(6, 7, 8)))

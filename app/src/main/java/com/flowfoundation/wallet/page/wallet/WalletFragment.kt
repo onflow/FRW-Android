@@ -145,6 +145,10 @@ class WalletFragment : BaseFragment(), OnNotificationUpdate, OnWallpaperChange {
     override fun onResume() {
         super.onResume()
         viewModel.load()
+        // Force refresh with current filtered tokens after a short delay to ensure filters are applied
+        binding.root.postDelayed({
+            viewModel.refreshWithCurrentTokens()
+        }, 100) // 100ms delay to ensure all other callbacks complete first
     }
 
     override fun onNotificationUpdate() {

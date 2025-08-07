@@ -475,8 +475,6 @@ object TransactionStateManager {
         logd(TAG, "unsealedState: Returning ${result.size} transactions needing monitoring")
         return result
     }
-
-    private fun Int.isProcessing() = this < TransactionStatus.EXECUTED.ordinal && this >= TransactionStatus.UNKNOWN.ordinal
 }
 
 interface OnTransactionStateChange {

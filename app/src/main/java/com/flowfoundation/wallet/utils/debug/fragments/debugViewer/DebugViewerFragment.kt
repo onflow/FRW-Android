@@ -26,7 +26,6 @@ import com.flowfoundation.wallet.utils.debug.DebugManager
 import com.flowfoundation.wallet.utils.debug.reload
 import com.flowfoundation.wallet.utils.debug.toDp
 import com.google.android.material.tabs.TabLayoutMediator
-import com.google.firebase.Timestamp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

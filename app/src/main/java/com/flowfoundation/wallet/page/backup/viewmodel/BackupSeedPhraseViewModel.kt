@@ -39,7 +39,6 @@ import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 
 class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
@@ -54,10 +53,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
     private val backupCryptoProvider: HDWalletCryptoProvider? by lazy {
         try {
             val globalMnemonic = Wallet.store().mnemonic()
-            logd("BackupSeedPhraseVM", "Attempting to create backup crypto provider from global mnemonic")
-            logd("BackupSeedPhraseVM", "Global mnemonic available: ${globalMnemonic.isNotBlank()}")
             if (globalMnemonic.isNotBlank()) {
-                logd("BackupSeedPhraseVM", "Creating SeedPhraseKey with mnemonic length: ${globalMnemonic.split(" ").size} words")
                 val baseDir = File(Env.getApp().filesDir, "wallet")
                 val seedPhraseKey = SeedPhraseKey(
                     mnemonicString = globalMnemonic,
@@ -66,10 +62,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     keyPair = null,
                     storage = FileSystemStorage(baseDir)
                 )
-                logd("BackupSeedPhraseVM", "SeedPhraseKey created successfully")
                 val provider = HDWalletCryptoProvider(seedPhraseKey)
-                logd("BackupSeedPhraseVM", "HDWalletCryptoProvider created successfully")
-                logd("BackupSeedPhraseVM", "Backup provider public key: ${provider.getPublicKey()}")
                 provider
             } else {
                 logd("BackupSeedPhraseVM", "No global mnemonic available for backup")
@@ -96,9 +89,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
         // Always get mnemonic from global storage for display
         return try {
             val globalMnemonic = Wallet.store().mnemonic()
-            if (globalMnemonic.isNotBlank()) {
-                globalMnemonic
-            } else {
+            globalMnemonic.ifBlank {
                 ""
             }
         } catch (e: Exception) {
@@ -132,118 +123,31 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
 
     fun uploadToChain() {
         val backupProvider = backupCryptoProvider
-        logd("BackupSeedPhraseVM", "uploadToChain() called")
-        logd("BackupSeedPhraseVM", "Backup provider available: ${backupProvider != null}")
         if (backupProvider == null) {
             logd("BackupSeedPhraseVM", "Backup provider is null, cannot proceed with backup")
             createBackupCallbackLiveData.postValue(false)
             return
         }
         
-        logd("BackupSeedPhraseVM", "Backup provider public key: ${backupProvider.getPublicKey()}")
-        logd("BackupSeedPhraseVM", "Backup provider signature algo: ${backupProvider.getSignatureAlgorithm()}")
-        logd("BackupSeedPhraseVM", "Backup provider hash algo: ${backupProvider.getHashAlgorithm()}")
-        
-        // Debug WalletManager state
-        logd("BackupSeedPhraseVM", "=== WALLET MANAGER DEBUG ===")
-        val wallet = WalletManager.wallet()
-        logd("BackupSeedPhraseVM", "WalletManager.wallet(): $wallet")
-        logd("BackupSeedPhraseVM", "WalletManager.wallet() is null: ${wallet == null}")
-        if (wallet != null) {
-            val walletAddress = wallet.walletAddress()
-            logd("BackupSeedPhraseVM", "wallet.walletAddress(): '$walletAddress'")
-            logd("BackupSeedPhraseVM", "wallet.accounts: ${wallet.accounts}")
-            logd("BackupSeedPhraseVM", "wallet.accounts.keys: ${wallet.accounts.keys}")
-            logd("BackupSeedPhraseVM", "wallet.accounts.values: ${wallet.accounts.values}")
-        }
         val selectedAddress = WalletManager.selectedWalletAddress()
         logd("BackupSeedPhraseVM", "WalletManager.selectedWalletAddress(): '$selectedAddress'")
         
         val account = AccountManager.get()
         logd("BackupSeedPhraseVM", "AccountManager.get(): $account")
-        if (account != null) {
-            logd("BackupSeedPhraseVM", "account.wallet: ${account.wallet}")
-            logd("BackupSeedPhraseVM", "account.wallet?.walletAddress(): ${account.wallet?.walletAddress()}")
-            logd("BackupSeedPhraseVM", "account.prefix: ${account.prefix}")
-            logd("BackupSeedPhraseVM", "account.userInfo: ${account.userInfo}")
-        }
-        
+
         // Debug current account's crypto provider
-        logd("BackupSeedPhraseVM", "=== CURRENT ACCOUNT CRYPTO PROVIDER DEBUG ===")
         val currentCryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
-        logd("BackupSeedPhraseVM", "Current crypto provider: $currentCryptoProvider")
-        logd("BackupSeedPhraseVM", "Current crypto provider type: ${currentCryptoProvider?.javaClass?.simpleName}")
-        if (currentCryptoProvider != null) {
-            logd("BackupSeedPhraseVM", "Current crypto provider public key: ${currentCryptoProvider.getPublicKey()}")
-            logd("BackupSeedPhraseVM", "Current crypto provider signature algo: ${currentCryptoProvider.getSignatureAlgorithm()}")
-            logd("BackupSeedPhraseVM", "Current crypto provider hash algo: ${currentCryptoProvider.getHashAlgorithm()}")
-            logd("BackupSeedPhraseVM", "Current crypto provider key weight: ${currentCryptoProvider.getKeyWeight()}")
-        }
-        
-        // Debug crypto provider generation step by step
-        logd("BackupSeedPhraseVM", "=== CRYPTO PROVIDER GENERATION DEBUG ===")
-        if (account != null) {
-            logd("BackupSeedPhraseVM", "Testing generateAccountCryptoProvider with current account:")
-            logd("BackupSeedPhraseVM", "  account.keyStoreInfo.isNullOrBlank(): ${account.keyStoreInfo.isNullOrBlank()}")
-            logd("BackupSeedPhraseVM", "  account.prefix.isNullOrBlank(): ${account.prefix.isNullOrBlank()}")
-            logd("BackupSeedPhraseVM", "  account.isActive: ${account.isActive}")
-            
-            val testCryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
-            logd("BackupSeedPhraseVM", "  Generated crypto provider: $testCryptoProvider")
-            logd("BackupSeedPhraseVM", "  Generated crypto provider type: ${testCryptoProvider?.javaClass?.simpleName}")
-            
-            // Test global mnemonic availability for active accounts
-            if (account.isActive) {
-                try {
-                    val globalMnemonic = Wallet.store().mnemonic()
-                    logd("BackupSeedPhraseVM", "  Global mnemonic for active account: '$globalMnemonic'")
-                    logd("BackupSeedPhraseVM", "  Global mnemonic length: ${globalMnemonic.split(" ")?.size} words")
-                } catch (e: Exception) {
-                    logd("BackupSeedPhraseVM", "  Error getting global mnemonic: ${e.message}")
-                }
-            }
-        }
-        logd("BackupSeedPhraseVM", "=== END CRYPTO PROVIDER GENERATION DEBUG ===")
-        logd("BackupSeedPhraseVM", "=== END CRYPTO PROVIDER DEBUG ===")
-        
-        // Test key matching logic with actual keys
-        logd("BackupSeedPhraseVM", "=== KEY MATCHING TEST ===")
-        val testCurrentKey = "0x0480cfba8f0465a25d5a26e9d171281f23a723d3c5b12049cfe3a1ea515c6a5594b38201a5ad3c36f26438556a98875e36b8295cbbd6056101ab208e8bc416199a"
-        val testOnChainKey = "80cfba8f0465a25d5a26e9d171281f23a723d3c5b12049cfe3a1ea515c6a5594b38201a5ad3c36f26438556a98875e36b8295cbbd6056101ab208e8bc416199a"
-        
-        // Apply the same logic as findMatchingAccountKey
-        val pubRaw = testCurrentKey.removePrefix("0x").lowercase()
-        val pubStripped = if (pubRaw.startsWith("04") && pubRaw.length == 130) pubRaw.substring(2) else pubRaw
-        val accPubRaw = testOnChainKey.removePrefix("0x").lowercase()
-        
-        logd("BackupSeedPhraseVM", "Test current key: $testCurrentKey")
-        logd("BackupSeedPhraseVM", "Test on-chain key: $testOnChainKey")
-        logd("BackupSeedPhraseVM", "Current key (raw): $pubRaw")
-        logd("BackupSeedPhraseVM", "Current key (stripped): $pubStripped")
-        logd("BackupSeedPhraseVM", "On-chain key (raw): $accPubRaw")
-        logd("BackupSeedPhraseVM", "Match check: accPubRaw == pubRaw: ${accPubRaw == pubRaw}")
-        logd("BackupSeedPhraseVM", "Match check: accPubRaw == pubStripped: ${accPubRaw == pubStripped}")
-        logd("BackupSeedPhraseVM", "Should match: ${accPubRaw == pubRaw || accPubRaw == pubStripped}")
-        logd("BackupSeedPhraseVM", "=== END KEY MATCHING TEST ===")
-        
+
         ioScope {
             try {
                 withTimeout(45000) { // 45 second timeout (longer than Flow's 30s to catch timeouts)
                     try {
-                        logd("BackupSeedPhraseVM", "Starting transaction to add backup key")
-                        
                         // Debug on-chain account keys first
-                        logd("BackupSeedPhraseVM", "=== ON-CHAIN ACCOUNT KEYS DEBUG ===")
                         val walletAddress = WalletManager.selectedWalletAddress()
                         if (currentCryptoProvider != null) {
                             try {
                                 val onChainAccount = FlowCadenceApi.getAccount(walletAddress)
-                                logd("BackupSeedPhraseVM", "On-chain account: ${onChainAccount.address}")
-                                logd("BackupSeedPhraseVM", "On-chain account keys count: ${onChainAccount.keys?.size ?: 0}")
-                                onChainAccount.keys?.forEachIndexed { index, key ->
-                                    logd("BackupSeedPhraseVM", "Key $index: index=${key.index}, publicKey=${key.publicKey}, signAlgo=${key.signingAlgorithm}, hashAlgo=${key.hashingAlgorithm}, weight=${key.weight}, revoked=${key.revoked}, seqNum=${key.sequenceNumber}")
-                                }
-                                
+
                                 // Check if current provider key matches any on-chain key
                                 val currentProviderPubKey = currentCryptoProvider.getPublicKey()
                                 val currentProviderPubKeyRaw = currentProviderPubKey.removePrefix("0x").lowercase()
@@ -252,10 +156,6 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                                 } else {
                                     currentProviderPubKeyRaw
                                 }
-                                
-                                logd("BackupSeedPhraseVM", "Current provider public key: $currentProviderPubKey")
-                                logd("BackupSeedPhraseVM", "Current provider public key (raw): $currentProviderPubKeyRaw")
-                                logd("BackupSeedPhraseVM", "Current provider public key (stripped): $currentProviderPubKeyStripped")
                                 
                                 var foundMatch = false
                                 onChainAccount.keys?.forEach { key ->
@@ -273,13 +173,10 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                                     
                                     if (isDirectMatch || isStrippedMatch || isProviderStrippedMatch || isBothStrippedMatch) {
                                         foundMatch = true
-                                        logd("BackupSeedPhraseVM", "MATCH FOUND! Key index ${key.index} matches current provider")
-                                        logd("BackupSeedPhraseVM", "  On-chain key: ${key.publicKey}")
-                                        logd("BackupSeedPhraseVM", "  Match type: direct=$isDirectMatch, stripped=$isStrippedMatch, providerStripped=$isProviderStrippedMatch, bothStripped=$isBothStrippedMatch")
                                     } else {
                                         logd("BackupSeedPhraseVM", "No match for key index ${key.index}")
-                                        logd("BackupSeedPhraseVM", "  On-chain key (raw): $onChainPubKeyRaw")
-                                        logd("BackupSeedPhraseVM", "  On-chain key (stripped): $onChainPubKeyStripped")
+                                        logd("BackupSeedPhraseVM", "On-chain key (raw): $onChainPubKeyRaw")
+                                        logd("BackupSeedPhraseVM", "On-chain key (stripped): $onChainPubKeyStripped")
                                     }
                                 }
                                 
@@ -291,10 +188,9 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                                 logd("BackupSeedPhraseVM", "Error fetching on-chain account keys: ${e.message}")
                             }
                         } else {
-                            logd("BackupSeedPhraseVM", "Cannot debug on-chain keys: walletAddress=$walletAddress, currentCryptoProvider=$currentCryptoProvider")
+                            logd("BackupSeedPhraseVM", "Cannot debug on-chain keys: walletAddress=$walletAddress")
                         }
-                        logd("BackupSeedPhraseVM", "=== END ON-CHAIN ACCOUNT KEYS DEBUG ===")
-                        
+
                         val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                             val newPubKeyWithPrefix = backupProvider.getPublicKey() // e.g., "0x04..."
                             val newPubKeyHexRaw = newPubKeyWithPrefix.removePrefix("0x")
@@ -306,9 +202,6 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                             } else {
                                 newPubKeyHexRaw
                             }
-                            logd("BackupSeedPhraseVM", "Original new public key: $newPubKeyWithPrefix")
-                            logd("BackupSeedPhraseVM", "Stripped public key for Cadence: $newPubKeyForCadence")
-                            logd("BackupSeedPhraseVM", "Public key length for Cadence: ${newPubKeyForCadence.length}")
 
                             arg { string(newPubKeyForCadence) }
                             arg { uint8(backupProvider.getSignatureAlgorithm().cadenceIndex.toUByte()) }

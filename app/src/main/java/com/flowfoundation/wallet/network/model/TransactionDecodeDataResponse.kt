@@ -17,13 +17,6 @@ data class DecodedData(
     val name: String? = null,
     val params: List<ParamData>? = null
 ) {
-    fun getFunctionName(): String? {
-        return when {
-            name != null -> name
-            allPossibilities.isNotEmpty() -> allPossibilities.first().function
-            else -> null
-        }
-    }
 
     fun getParams(): Any? {
         return when {

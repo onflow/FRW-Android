@@ -90,20 +90,10 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             val apiPubKey = info.pubKey.publicKey.removePrefix("0x")
                             val isRevoked = accountKey.revoked
 
-                            logd(
-                                TAG,
-                                "  Comparing normalized keys - API: '$apiPubKey', Account: '$accountPubKey', revoked: $isRevoked"
-                            )
-                            logd(TAG, "  Normalized keys match: ${apiPubKey == accountPubKey}")
-
                             apiPubKey == accountPubKey && !isRevoked
                         }
 
                         if (matchingKey != null) {
-                            logd(
-                                TAG,
-                                "  ✅ MATCH FOUND! Creating BackupKey with keyId: ${matchingKey.index}"
-                            )
                             BackupKey(
                                 matchingKey.index.toInt(),
                                 info,
@@ -115,24 +105,10 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             null
                         }
                     }
-                    logd(TAG, "Mapped key list size: ${keyList.size}")
-
-                    // Log current key for reference
-                    logd(TAG, "Current device key: '$currentKey'")
-
-                    // Log all account keys for debugging
-                    logd(TAG, "All account keys:")
-                    keys.forEachIndexed { index, key ->
-                        logd(
-                            TAG,
-                            "  [$index] pubKey: '${key.publicKey}', index: ${key.index}, revoked: ${key.revoked}"
-                        )
-                    }
 
                     val multiKeyList = keyList.filter {
                         it.info?.backupInfo?.type != BackupType.FULL_WEIGHT_SEED_PHRASE.index
                     }
-                    logd(TAG, "Multi backup keys: ${multiKeyList.size}")
 
                     BackupListManager.setBackupTypeList(multiKeyList)
                     backupList.clear()
@@ -140,7 +116,6 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                     if (backupList.size > 0) {
                         backupList.add(0, BackupListTitle.MULTI_BACKUP)
                     }
-                    logd(TAG, "Final backup list size: ${backupList.size}")
                     backupListLiveData.postValue(backupList)
 
                     seedPhraseList.clear()
@@ -151,7 +126,6 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                     if (seedPhraseList.isNotEmpty()) {
                         seedPhraseList.add(0, BackupListTitle.FULL_WEIGHT_SEED_PHRASE)
                     }
-                    logd(TAG, "Final seed phrase list size: ${seedPhraseList.size}")
                     seedPhraseListLiveData.postValue(seedPhraseList)
                 }
             } catch (e: Exception) {
@@ -167,17 +141,14 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
     private fun loadDevices() {
         viewModelIOScope(this) {
             try {
-                logd(TAG, "Loading device list...")
                 val service = retrofit().create(ApiService::class.java)
                 val response = service.getDeviceList()
                 val deviceInfoList = response.data ?: emptyList()
-                logd(TAG, "Device info list size: ${deviceInfoList.size}")
 
                 val infoResponse = service.getKeyDeviceInfo()
                 val keyDeviceList = infoResponse.data.result?.filter {
                     it.backupInfo != null && it.backupInfo.type < 0
                 } ?: emptyList()
-                logd(TAG, "Key device list size: ${keyDeviceList.size}")
 
                 val account = FlowAddress(
                     WalletManager.wallet()?.walletAddress().orEmpty()
@@ -225,10 +196,6 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             TAG,
                             "  ❌ NO DEVICE KEY found in keyDeviceList for device ID: ${device.id}"
                         )
-
-                        // Debug: show all available device IDs in keyDeviceList
-                        val availableDeviceIds = keyDeviceList.mapNotNull { it.device?.id }
-                        logd(TAG, "    Available device IDs in keyDeviceList: $availableDeviceIds")
                     }
                 }
                 logd(TAG, "Final device list size: ${deviceList.size}")
@@ -250,7 +217,6 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                             devices.add(BackupListTitle.OTHER_DEVICES)
                             devices.addAll(otherDevice)
                         }
-                        logd(TAG, "Final devices list for UI: ${devices.size}")
                         devicesLiveData.postValue(devices)
                     } else {
                         logd(TAG, "No devices to display")

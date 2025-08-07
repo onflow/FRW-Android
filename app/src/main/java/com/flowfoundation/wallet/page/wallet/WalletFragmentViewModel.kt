@@ -58,6 +58,59 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         }
     }
 
+    fun refreshWithCurrentTokens() {
+        viewModelIOScope(this) {
+            // Force re-sync with properly filtered tokens
+            // Get all tokens first, then apply current filters manually to ensure consistency
+            val allTokens = FungibleTokenListManager.getCurrentTokenListSnapshot()
+            val isHideDust = FungibleTokenListManager.isHideDustTokens()
+            val isOnlyVerified = FungibleTokenListManager.isOnlyShowVerifiedTokens()
+            
+            logd(TAG, "refreshWithCurrentTokens: isHideDustTokens=$isHideDust, isOnlyVerified=$isOnlyVerified")
+            logd(TAG, "refreshWithCurrentTokens: allTokens.size=${allTokens.size}")
+            
+            // Apply filters manually to ensure consistency
+            var filteredTokens = allTokens
+            
+            if (isHideDust) {
+                filteredTokens = filteredTokens.filter { it.tokenBalanceInUSD() > java.math.BigDecimal(0.01) }
+                logd(TAG, "refreshWithCurrentTokens: After dust filter: ${filteredTokens.size}")
+            }
+            
+            if (isOnlyVerified) {
+                filteredTokens = filteredTokens.filter { it.isVerified }
+                logd(TAG, "refreshWithCurrentTokens: After verified filter: ${filteredTokens.size}")
+            }
+            
+            // Only show tokens that are in the current display list (user selected)
+            val displayTokens = FungibleTokenListManager.getCurrentDisplayTokenListSnapshot()
+            val finalTokens = filteredTokens.filter { token ->
+                displayTokens.any { it.isSameToken(token.contractId()) }
+            }
+            
+            logd(TAG, "refreshWithCurrentTokens: Final tokens: ${finalTokens.size}")
+            finalTokens.forEach { token ->
+                logd(TAG, "refreshWithCurrentTokens: ${token.symbol} balance=${token.tokenBalanceInUSD()}")
+            }
+            
+            if (finalTokens.isNotEmpty() || allTokens.isNotEmpty()) {
+                val isHideBalance = isHideWalletBalance()
+                uiScope {
+                    dataList.clear()
+                    dataList.addAll(finalTokens.map {
+                        WalletCoinItemModel(
+                            it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
+                        )
+                    })
+                    sortDataList()
+                    dataListLiveData.postValue(dataList.toList())
+                    updateWalletHeader(count = dataList.size)
+                    logd(TAG, "refreshWithCurrentTokens: Updated UI with ${finalTokens.size} tokens")
+                }
+            }
+        }
+    }
+
     override fun onUserInfoReload() {
         viewModelIOScope(this) {
             loadWallet(true)
@@ -123,6 +176,28 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
             if (isRefresh || dataList.isEmpty()) {
                 logd(TAG, "loadCoinInfo :: fetchState")
                 FungibleTokenListManager.reload()
+            } else {
+                // If not reloading, make sure we still use the current filtered display tokens
+                val displayTokens = FungibleTokenListManager.getCurrentDisplayTokenListSnapshot()
+                logd(TAG, "loadCoinInfo: displayTokens.size=${displayTokens.size}")
+                ioScope {
+                    val isHideBalance = isHideWalletBalance()
+                    uiScope {
+                        dataList.clear()
+                        if (displayTokens.isNotEmpty()) {
+                            dataList.addAll(displayTokens.map {
+                                WalletCoinItemModel(
+                                    it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
+                                )
+                            })
+                        } else {
+                            logd(TAG, "loadCoinInfo: No tokens to display (filtered out)")
+                        }
+                        sortDataList()
+                        dataListLiveData.postValue(dataList.toList())
+                        updateWalletHeader(count = dataList.size)
+                    }
+                }
             }
             ChildAccountCollectionManager.loadChildAccountTokenList()
         }
@@ -158,18 +233,22 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
     override fun onTokenListUpdated(list: List<FungibleToken>) {
         ioScope {
             logd(TAG, "coinList :: ${list.size}")
-            if (list.isEmpty()) {
-                return@ioScope
-            }
+            val displayTokens = FungibleTokenListManager.getCurrentDisplayTokenListSnapshot()
+            logd(TAG, "onTokenListUpdated: displayTokens.size=${displayTokens.size}")
+            
             val isHideBalance = isHideWalletBalance()
             uiScope {
                 dataList.clear()
-                dataList.addAll(list.map {
-                    WalletCoinItemModel(
-                        it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
-                    )
-                })
-                logd(TAG, "loadCoinList dataList:${dataList.map { it.token.contractId() }}")
+                if (displayTokens.isNotEmpty()) {
+                    dataList.addAll(displayTokens.map {
+                        WalletCoinItemModel(
+                            it, isHideBalance, StakingManager.isStaked(), StakingManager.stakingCount()
+                        )
+                    })
+                    logd(TAG, "loadCoinList dataList:${dataList.map { it.token.contractId() }}")
+                } else {
+                    logd(TAG, "onTokenListUpdated: No tokens to display (filtered out or empty)")
+                }
                 sortDataList()
                 dataListLiveData.postValue(dataList.toList())
                 updateWalletHeader(count = dataList.size)
@@ -184,6 +263,11 @@ class WalletFragmentViewModel : ViewModel(), OnWalletDataUpdate, CurrencyUpdateL
         if (isAdd) {
             if (dataList.any { it.token.isSameToken(token.contractId()) }) {
                 return
+            }
+            // Check if token should be displayed based on current filters
+            val displayTokens = FungibleTokenListManager.getCurrentDisplayTokenListSnapshot()
+            if (displayTokens.none { it.isSameToken(token.contractId()) }) {
+                return // Token is filtered out, don't add it
             }
             ioScope {
                 val isHideBalance = isHideWalletBalance()

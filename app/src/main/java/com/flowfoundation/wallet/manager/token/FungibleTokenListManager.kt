@@ -139,7 +139,8 @@ object FungibleTokenListManager {
             tokenListCache[address]?.let { cachedList ->
                 if (cachedList.displayTokenList.isNotEmpty()) {
                     currentDisplayTokenList.clear()
-                    currentDisplayTokenList.addAll(cachedList.displayTokenList.distinctBy { it.contractId() })
+                    val filteredList = applyFilters(cachedList.displayTokenList.distinctBy { it.contractId() })
+                    currentDisplayTokenList.addAll(filteredList)
                     dispatchListeners()
                     logd(TAG, "Loaded token list from cache for address: $address")
                 }
@@ -175,7 +176,8 @@ object FungibleTokenListManager {
             val freshList = provider.getTokenList(address, currency, network)
 
             if (currentDisplayTokenList.isEmpty()) {
-                currentDisplayTokenList.addAll(freshList.distinctBy { it.contractId() })
+                val filteredList = applyFilters(freshList.distinctBy { it.contractId() })
+                currentDisplayTokenList.addAll(filteredList)
                 updateDisplayTokenListCache(address)
                 dispatchListeners()
                 logd(TAG, "Initial load from provider for token list for address: $address. Count: ${currentDisplayTokenList.size}")
@@ -199,7 +201,8 @@ object FungibleTokenListManager {
             }
 
             currentDisplayTokenList.clear()
-            currentDisplayTokenList.addAll(updatedFinalTokens.distinctBy { it.contractId() })
+            val finalFilteredList = applyFilters(updatedFinalTokens.distinctBy { it.contractId() })
+            currentDisplayTokenList.addAll(finalFilteredList)
             updateDisplayTokenListCache(address)
             logd(TAG, "Successfully updated token list for address: $address. Count: ${currentDisplayTokenList.size}")
             dispatchListeners()
@@ -218,6 +221,20 @@ object FungibleTokenListManager {
         DisplayTokenCacheManager.cache(tokenListCache)
     }
 
+    private fun applyFilters(tokens: List<FungibleToken>): List<FungibleToken> {
+        var filteredList = tokens
+        
+        if (isHideDustTokens()) {
+            filteredList = filteredList.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }
+        }
+        
+        if (isOnlyShowVerifiedTokens()) {
+            filteredList = filteredList.filter { it.isVerified }
+        }
+        
+        return filteredList
+    }
+
     fun isHideDustTokens(): Boolean {
         return tokenListCache[WalletManager.selectedWalletAddress()]?.hideDustTokens ?: false
     }
@@ -231,9 +248,14 @@ object FungibleTokenListManager {
         if (address.isBlank()) {
             return
         }
+        logd(TAG, "setHideDustTokens: hide=$hide, currentDisplayTokenList.size=${currentDisplayTokenList.size}")
+        currentDisplayTokenList.forEach { token ->
+            logd(TAG, "setHideDustTokens: Before - ${token.symbol} balance=${token.tokenBalanceInUSD()}")
+        }
         val oldItem = tokenListCache[address] ?: DisplayTokenListCache()
         if (hide) {
             val filteredList = currentDisplayTokenList.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }
+            logd(TAG, "setHideDustTokens: Filtered out ${currentDisplayTokenList.size - filteredList.size} dust tokens")
             currentDisplayTokenList.clear()
             currentDisplayTokenList.addAll(filteredList)
             tokenListCache[address] = oldItem.copy(hideDustTokens = true, displayTokenList = filteredList)
@@ -330,6 +352,14 @@ object FungibleTokenListManager {
                 logd(TAG, "Token ${token.contractId()} already in display list.")
                 return@ioScope
             }
+            
+            // Check if token should be filtered out
+            val shouldShow = applyFilters(listOf(token)).isNotEmpty()
+            if (!shouldShow) {
+                logd(TAG, "Token ${token.contractId()} filtered out (dust/unverified), not adding to display list.")
+                return@ioScope
+            }
+            
             currentDisplayTokenList.add(token)
             val address = WalletManager.selectedWalletAddress()
             if (address.isNotBlank()) {

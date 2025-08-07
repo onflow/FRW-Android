@@ -98,7 +98,7 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
 
     }
 
-    private suspend fun isCurrentDevice(publicKey: AccountPublicKey): Boolean {
+    private fun isCurrentDevice(publicKey: AccountPublicKey): Boolean {
         val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
         return cryptoProvider?.getPublicKey() == publicKey.publicKey
     }

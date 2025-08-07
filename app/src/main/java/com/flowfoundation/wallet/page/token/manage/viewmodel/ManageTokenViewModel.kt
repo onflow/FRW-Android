@@ -25,6 +25,11 @@ class ManageTokenViewModel: ViewModel(), FungibleTokenListUpdateListener {
             tokenList.clear()
             tokenList.addAll(FungibleTokenListManager.getCurrentTokenListSnapshot())
             tokenListLiveData.postValue(tokenList)
+            
+            // If no tokens are available, trigger a reload
+            if (tokenList.isEmpty()) {
+                FungibleTokenListManager.reload()
+            }
         }
     }
 
@@ -45,8 +50,9 @@ class ManageTokenViewModel: ViewModel(), FungibleTokenListUpdateListener {
     }
 
     override fun onTokenListUpdated(list: List<FungibleToken>) {
-        val currentList = tokenListLiveData.value
-        tokenListLiveData.postValue(currentList ?: emptyList())
+        tokenList.clear()
+        tokenList.addAll(FungibleTokenListManager.getCurrentTokenListSnapshot())
+        search(keyword)
     }
 
     override fun onTokenDisplayUpdated(token: FungibleToken, isAdd: Boolean) {

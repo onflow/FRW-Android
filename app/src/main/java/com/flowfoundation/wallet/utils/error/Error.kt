@@ -23,7 +23,6 @@ enum class AccountError(
     DESERIALIZE_ACCOUNT_FAILED("deserializeAccountFailed"),
     DESERIALIZE_PREFIX_FAILED("deserializePrefixFailed"),
     DESERIALIZE_DISPLAY_TOKEN_FAILED("deserializeDisplayTokenFailed"),
-    MIGRATE_PREFIX_FAILED("migratePrefixFailed"),
     SET_ANONYMOUS_FAILED("setAnonymousFiled"),
     REGISTER_USER_FAILED("registerUserFailed"),
     GET_CRYPTO_PROVIDER_FAILED("getCryptoProviderFailed"),
@@ -60,7 +59,6 @@ enum class BackupError(
     RESTORE_LOGIN_FAILED("restoreLoginFailed"),
     RESTORE_IMPORT_FAILED("restoreImportFailed"),
     ADD_PUBLIC_KEY_FAILED("addPublicKeyFailed"),
-    MNEMONIC_RESTORE_FAILED("mnemonicRestoreFailed");
 }
 
 enum class GoogleBackupError(

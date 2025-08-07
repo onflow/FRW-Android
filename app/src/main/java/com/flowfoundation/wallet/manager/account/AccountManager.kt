@@ -42,6 +42,7 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.serialization.Serializable
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
@@ -346,13 +347,12 @@ object AccountManager {
                 logd(TAG, "Error clearing AccountEmojiManager: ${e.message}")
             }
             
-            // Clear any cached wallet passwords or multi-backup data
+            // Remove only this account's password from the map, preserve others
             try {
-                val emptyPasswordMap = HashMap<String, String>()
-                storeWalletPassword(Gson().toJson(emptyPasswordMap))
-                logd(TAG, "Cleared wallet password cache")
+                removeAccountFromPasswordMap(account)
+                logd(TAG, "Removed wallet password for account: ${account.wallet?.id ?: account.userInfo.username}")
             } catch (e: Exception) {
-                logd(TAG, "Error clearing wallet password cache: ${e.message}")
+                logd(TAG, "Error removing account wallet password: ${e.message}")
             }
             
             // Clear uploaded address set
@@ -671,6 +671,35 @@ object AccountManager {
         userPrefixes.clear()
         switchAccounts.clear()
         AccountCacheManager.cache(emptyList())
+    }
+
+    private fun removeAccountFromPasswordMap(account: Account) {
+        val accountId = account.wallet?.id
+        if (accountId.isNullOrBlank()) {
+            logd(TAG, "Account wallet ID is null or blank, skipping password removal")
+            return
+        }
+
+        val passwordMap = getPasswordMap()
+        if (passwordMap.containsKey(accountId)) {
+            passwordMap.remove(accountId)
+            storeWalletPassword(Gson().toJson(passwordMap))
+            logd(TAG, "Successfully removed password for account ID: $accountId")
+        } else {
+            logd(TAG, "No password found for account ID: $accountId")
+        }
+    }
+
+    private fun getPasswordMap(): HashMap<String, String> {
+        val pref = runCatching { com.flowfoundation.wallet.utils.readWalletPassword() }.getOrNull()
+        return if (pref.isNullOrBlank()) {
+            HashMap()
+        } else {
+            runCatching {
+                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+                    ?: HashMap<String, String>()
+            }.getOrElse { HashMap() }
+        }
     }
 
     private suspend fun switchAccount(switchAccount: LocalSwitchAccount, callback: (isSuccess: Boolean) -> Unit) {

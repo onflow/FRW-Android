@@ -120,7 +120,7 @@ class SendAmountActivity : BaseActivity(), OnTransactionStateChange {
             logd("SendAmountActivity", "Successfully started MainActivity, now finishing")
             finish()
         } catch (e: Exception) {
-            android.util.Log.e("SendAmountActivity", "Error launching MainActivity: ${e.message}")
+            logd("SendAmountActivity", "Error launching MainActivity: ${e.message}")
             finish()
         }
     }

@@ -29,7 +29,7 @@ fun BubbleItem.icon(): Any? {
 fun BubbleItem.title(): String {
     return when (data) {
         is BrowserTab -> data.title().orEmpty()
-        is TransactionState -> data.title()
+        is TransactionState -> title()
         else -> ""
     }
 }
@@ -46,6 +46,6 @@ private fun TransactionState.icon(): Any {
     }
 }
 
-private fun TransactionState.title(): String {
+private fun title(): String {
     return R.string.pending_transaction.res2String()
 }
