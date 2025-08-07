@@ -299,7 +299,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun getEnv(): WritableMap {
+    override fun getEnvKeys(): WritableMap {
         val environmentVariables = RNBridge.EnvironmentVariables(
             NODE_API_URL = BASE_HOST,
             GO_API_URL = API_HOST,
@@ -392,6 +392,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
         val selectedAddress = WalletManager.selectedWalletAddress()
         return selectedAddress.equals(address, ignoreCase = true)
+    }
+
+    override fun getProposer(promise: Promise) {
+        // TODO: Implement getProposer method
+        promise.reject("NOT_IMPLEMENTED", "getProposer method not implemented")
+    }
+
+    override fun getPayer(promise: Promise) {
+        // TODO: Implement getPayer method  
+        promise.reject("NOT_IMPLEMENTED", "getPayer method not implemented")
+    }
+
+    override fun getAuthorizations(promise: Promise) {
+        // TODO: Implement getAuthorizations method
+        promise.reject("NOT_IMPLEMENTED", "getAuthorizations method not implemented")
     }
 
     companion object {
