@@ -22,6 +22,10 @@ import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryCOATokenBalance
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.utils.isDev
+import com.flowfoundation.wallet.utils.isTesting
+import com.flowfoundation.wallet.network.API_HOST
+import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -295,70 +299,18 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun getProposer(promise: Promise) {
-        ioScope {
-            try {
-                // TODO: Implement getProposer logic
-                val proposer = WalletManager.selectedWalletAddress()
-                uiScope {
-                    promise.resolve(proposer)
-                }
-            } catch (e: Exception) {
-                uiScope {
-                    promise.reject("PROPOSER_ERROR", "Failed to get proposer: ${e.message}", e)
-                }
+    override fun getEnv(): WritableMap {
+        val environmentVariables = RNBridge.EnvironmentVariables(
+            NODE_API_URL = BASE_HOST,
+            GO_API_URL = API_HOST,
+            INSTABUG_TOKEN = if (isTesting() || isDev()) {
+                BuildConfig.INSTABUG_RN_TOKEN_DEV
+            } else {
+                BuildConfig.INSTABUG_RN_TOKEN_PROD
             }
-        }
-    }
+        )
 
-    override fun getPayer(promise: Promise) {
-        ioScope {
-            try {
-                // TODO: Implement getPayer logic
-                val payer = WalletManager.selectedWalletAddress()
-                uiScope {
-                    promise.resolve(payer)
-                }
-            } catch (e: Exception) {
-                uiScope {
-                    promise.reject("PAYER_ERROR", "Failed to get payer: ${e.message}", e)
-                }
-            }
-        }
-    }
-
-    override fun getAuthorizations(promise: Promise) {
-        ioScope {
-            try {
-                // TODO: Implement getAuthorizations logic
-                val authorizations = WritableNativeArray()
-                uiScope {
-                    promise.resolve(authorizations)
-                }
-            } catch (e: Exception) {
-                uiScope {
-                    promise.reject("AUTHORIZATIONS_ERROR", "Failed to get authorizations: ${e.message}", e)
-                }
-            }
-        }
-    }
-
-    override fun getEnvKeys(): WritableMap {
-        val envMap = WritableNativeMap()
-        
-        // Add environment keys - using available BuildConfig values or defaults
-        envMap.putString("NODE_API_URL", "https://access-mainnet-beta.onflow.org")
-        envMap.putString("GO_API_URL", "https://rest-mainnet.onflow.org")
-        
-        // Use appropriate Instabug token based on build variant
-        val instabugToken = if (com.flowfoundation.wallet.utils.isDev()) {
-            BuildConfig.INSTABUG_TOKEN_DEV
-        } else {
-            BuildConfig.INSTABUG_TOKEN_PROD
-        }
-        envMap.putString("INSTABUG_TOKEN", instabugToken)
-        
-        return envMap
+        return bridgeModelToWritableMap(environmentVariables)
     }
 
 
