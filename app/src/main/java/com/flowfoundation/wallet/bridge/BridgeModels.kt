@@ -118,6 +118,11 @@ class RNBridge {
         val INSTABUG_TOKEN: String
     )
 
+    data class NFTPostMedia(
+        @SerializedName("image")
+        val image: String?
+    )
+
     data class NFTModel(
         @SerializedName("id")
         val id: String?,
