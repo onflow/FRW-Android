@@ -9,10 +9,13 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.facebook.react.soloader.OpenSourceMergedSoMapping
+import com.facebook.soloader.SoLoader
 import com.flowfoundation.wallet.crowdin.crowdinInitialize
 import com.flowfoundation.wallet.manager.LaunchManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.bridge.NativeFRWBridgePackage
+import com.microsoft.codepush.react.CodePush
 
 class FlowWalletApplication : Application(), ReactApplication {
 
@@ -24,6 +27,10 @@ class FlowWalletApplication : Application(), ReactApplication {
                      add(NativeFRWBridgePackage())
                      // CodePush will be added automatically via autolinking
                 }
+
+            override fun getJSBundleFile(): String {
+                return CodePush.getJSBundleFile()
+            }
 
             override fun getJSMainModuleName(): String = "index"
 

@@ -14,6 +14,8 @@ plugins {
 //    id 'com.google.ar.sceneform.plugin'
 }
 
+apply from: "../../node_modules/@revopush/react-native-code-push/android/codepush.gradle"
+
 def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
 properties.load(inputStream)
