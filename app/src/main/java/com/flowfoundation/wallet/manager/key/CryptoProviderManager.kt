@@ -27,6 +27,8 @@ import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flow.wallet.storage.StorageProtocol
 import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
+import com.flowfoundation.wallet.wallet.Wallet
+import org.onflow.flow.models.toHexString
 
 /**
  * A CryptoProvider that handles multi-restore accounts by combining multiple backup providers
@@ -517,7 +519,12 @@ object CryptoProviderManager {
             // Handle wallet-specific mnemonic accounts
             else {
                 logd(TAG, "  Branch: Inactive account.")
-                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
+                val mnemonic = if (account.isActive) {
+                    Wallet.store().wallet().mnemonic()
+                } else {
+                    AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
+                }
+
                 if (mnemonic == null) {
                     loge(TAG, "  Inactive account: Failed to get existing HDWallet by UID: ${account.wallet?.id}")
                     ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)

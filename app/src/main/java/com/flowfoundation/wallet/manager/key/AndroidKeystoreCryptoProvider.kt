@@ -159,13 +159,7 @@ class AndroidKeystoreCryptoProvider(
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
-        return hashingAlgorithm ?: run {
-            when (signingAlgorithm) {
-                SigningAlgorithm.ECDSA_secp256k1 -> HashingAlgorithm.SHA2_256
-                SigningAlgorithm.ECDSA_P256 -> HashingAlgorithm.SHA3_256
-                else -> HashingAlgorithm.SHA3_256
-            }
-        }
+        return hashingAlgorithm ?: HashingAlgorithm.SHA2_256
     }
 
     override fun getSignatureAlgorithm(): SigningAlgorithm {
@@ -180,11 +174,7 @@ class AndroidKeystoreCryptoProvider(
      * Get the Java signature algorithm name for the given signing and hashing algorithms
      */
     private fun getJavaSignatureAlgorithm(signingAlgorithm: SigningAlgorithm, hashingAlgorithm: HashingAlgorithm): String {
-        val hashName = when (hashingAlgorithm) {
-            HashingAlgorithm.SHA2_256 -> "SHA256"
-            HashingAlgorithm.SHA3_256 -> "SHA256" // Android Keystore doesn't support SHA3, use SHA2
-            else -> "SHA256"
-        }
+        val hashName = "SHA256"
         
         return when (signingAlgorithm) {
             SigningAlgorithm.ECDSA_P256 -> "${hashName}withECDSA"
