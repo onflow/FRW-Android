@@ -117,14 +117,7 @@ class PrivateKeyCryptoProvider(
      */
     override fun getHashAlgorithm(): HashingAlgorithm {
         // Return the dynamically determined hashing algorithm if available
-        return hashingAlgorithm ?: run {
-            // Fallback to sensible defaults based on signing algorithm
-            when (signingAlgorithm) {
-                SigningAlgorithm.ECDSA_secp256k1 -> HashingAlgorithm.SHA2_256
-                SigningAlgorithm.ECDSA_P256 -> HashingAlgorithm.SHA3_256
-                else -> HashingAlgorithm.SHA3_256
-            }
-        }
+        return hashingAlgorithm ?: HashingAlgorithm.SHA2_256
     }
 
     /**

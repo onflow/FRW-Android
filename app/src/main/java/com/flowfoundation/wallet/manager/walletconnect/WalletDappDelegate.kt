@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.walletconnect
 
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.flow.wallet.KeyManager
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
@@ -33,8 +34,8 @@ import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
-import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -162,12 +163,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
 
     private fun addDeviceKeyResponse() {
         val activity = BaseActivity.getCurrentActivity() ?: return
-        val currentAccount = AccountManager.get()
-        if (currentAccount == null) {
-            toast(msgRes = R.string.login_failure)
-            return
-        }
-        login(currentAccount.prefix ?: "") { isSuccess ->
+        login(KeyManager.getCurrentPrefix()) { isSuccess ->
             uiScope {
                 if (isSuccess) {
                     MixpanelManager.accountRestore(deviceBackupAddress, RestoreType.DEVICE_BACKUP)
@@ -183,7 +179,24 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
     private fun login(prefix: String, callback: (isSuccess: Boolean) -> Unit) {
         ioScope {
             val baseDir = File(Env.getApp().filesDir, "wallet")
-            val privateKey = PrivateKey.create(FileSystemStorage(baseDir))
+            val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix,FileSystemStorage(baseDir))
+            val publicKeyBytes = privateKey?.publicKey(SigningAlgorithm.ECDSA_P256)
+            if (publicKeyBytes == null) {
+                logd(TAG, "Failed to get public key from private key")
+                callback.invoke(false)
+                return@ioScope
+            }
+
+            logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
+
+            // Convert public key to hex string, removing "04" prefix if present
+            // Flow expects uncompressed public keys without the format indicator
+            val hexPublicKey = if (publicKeyBytes.size == 65 && publicKeyBytes[0] == 0x04.toByte()) {
+                // Remove the "04" prefix for uncompressed keys
+                publicKeyBytes.copyOfRange(1, publicKeyBytes.size).joinToString("") { "%02x".format(it) }
+            } else {
+                publicKeyBytes.joinToString("") { "%02x".format(it) }
+            }
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false)
@@ -197,11 +210,11 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                 signature = privateKey.sign(
                                     getFirebaseJwt().toByteArray(),
                                     SigningAlgorithm.ECDSA_P256,
-                                    HashingAlgorithm.SHA3_256
+                                    HashingAlgorithm.SHA2_256
                                 ).let { String(it) },
                                 accountKey = AccountKey(
-                                    publicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.let { String(it) } ?: "",
-                                    hashAlgo = HashingAlgorithm.SHA3_256.cadenceIndex,
+                                    publicKey = hexPublicKey,
+                                    hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
                                     signAlgo = SigningAlgorithm.ECDSA_P256.cadenceIndex
                                 ),
                                 deviceInfo = deviceInfoRequest
