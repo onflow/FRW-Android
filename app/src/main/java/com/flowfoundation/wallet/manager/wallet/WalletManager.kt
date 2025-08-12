@@ -340,6 +340,10 @@ object WalletManager {
         currentWallet
     }
 
+    fun getCurrentWallet(): Wallet? {
+        return currentWallet
+    }
+
     fun isEVMAccountSelected(): Boolean {
         return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
     }

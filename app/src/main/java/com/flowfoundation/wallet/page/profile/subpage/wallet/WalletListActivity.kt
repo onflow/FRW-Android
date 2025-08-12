@@ -33,6 +33,7 @@ import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.format
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.shortenEVMString
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
@@ -67,12 +68,12 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                 uiScope {
                     llMainWallet.removeAllViews()
 
-                    val wallet = WalletManager.wallet() ?: return@uiScope
+                    val walletAddress = WalletManager.getCurrentWallet().walletAddress() ?: return@uiScope
                     val list = mutableListOf<WalletData?>().apply {
                         add(WalletData(
                             blockchain = listOf(
                                 BlockchainData(
-                                address = wallet.walletAddress() ?: "",
+                                address = walletAddress,
                                 chainId = chainNetWorkString()
                             )
                             ),
