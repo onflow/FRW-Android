@@ -38,6 +38,7 @@ import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.onflow.flow.models.DomainTag
 import java.io.File
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
@@ -205,13 +206,16 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
+                        // Sign JWT with the new private key using detected algorithms
+                        val jwt = getFirebaseJwt()
+                        val domainTagBytes = DomainTag.User.bytes
+                        val jwtBytes = jwt.encodeToByteArray()
+                        val dataToSign = domainTagBytes + jwtBytes
+                        val signatureBytes = privateKey.sign(dataToSign, SigningAlgorithm.ECDSA_P256, HashingAlgorithm.SHA2_256)
+                        val signature = signatureBytes.joinToString("") { "%02x".format(it) }
                         val resp = service.login(
-                            LoginRequest( // to-do : switch methods
-                                signature = privateKey.sign(
-                                    getFirebaseJwt().toByteArray(),
-                                    SigningAlgorithm.ECDSA_P256,
-                                    HashingAlgorithm.SHA2_256
-                                ).let { String(it) },
+                            LoginRequest(
+                                signature = signature,
                                 accountKey = AccountKey(
                                     publicKey = hexPublicKey,
                                     hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
