@@ -40,6 +40,7 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import wallet.core.jni.HDWallet
 
 class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
 
@@ -52,11 +53,11 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
     // For backup, we need to generate a NEW crypto provider from the stored mnemonic
     private val backupCryptoProvider: HDWalletCryptoProvider? by lazy {
         try {
-            val globalMnemonic = Wallet.store().mnemonic()
-            if (globalMnemonic.isNotBlank()) {
+            val newMnemonic = HDWallet(128, "").mnemonic()
+            if (newMnemonic.isNotBlank()) {
                 val baseDir = File(Env.getApp().filesDir, "wallet")
                 val seedPhraseKey = SeedPhraseKey(
-                    mnemonicString = globalMnemonic,
+                    mnemonicString = newMnemonic,
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
                     keyPair = null,
@@ -86,16 +87,7 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
     }
 
     fun getMnemonic(): String {
-        // Always get mnemonic from global storage for display
-        return try {
-            val globalMnemonic = Wallet.store().mnemonic()
-            globalMnemonic.ifBlank {
-                ""
-            }
-        } catch (e: Exception) {
-            logd("BackupSeedPhraseVM", "Failed to get global mnemonic: ${e.message}")
-            ""
-        }
+        return backupCryptoProvider?.getMnemonic() ?: ""
     }
 
     fun loadMnemonic() {
