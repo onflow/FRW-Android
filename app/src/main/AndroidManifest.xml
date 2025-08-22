@@ -77,6 +77,14 @@
             android:windowSoftInputMode="adjustResize"/>
 
         <activity
+            android:name=".NativeMainActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|uiMode"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
             android:name=".manager.drive.GoogleDriveAuthActivity"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Transparent.FullScreen"/>

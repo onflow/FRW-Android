@@ -14,7 +14,7 @@ plugins {
 //    id 'com.google.ar.sceneform.plugin'
 }
 
-apply from: "../../node_modules/@revopush/react-native-code-push/android/codepush.gradle"
+//apply from: "../../node_modules/@outblock/react-native-code-push/android/codepush.gradle"
 
 def properties = new Properties()
 def inputStream = project.rootProject.file('local.properties').newDataInputStream()
@@ -165,7 +165,7 @@ android {
             debuggable false
             matchingFallbacks.add('releaseDebug')
             signingConfig signingConfigs.release
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             firebaseAppDistribution {
                 artifactType = "APK"
                 releaseNotes = "Automatic build from CI/CD pipeline."
@@ -232,21 +232,6 @@ configurations.all {
         force 'com.google.protobuf:protobuf-javalite:3.22.3'
         force 'com.google.api.grpc:proto-google-common-protos:2.0.1'
         force 'org.bouncycastle:bcprov-jdk18on:1.77'
-    }
-}
-
-// Fix RevoPush CodePush duplicate class conflict
-android.packagingOptions.pickFirsts += [
-    '**/NativeFRWBridgeSpec.class'
-]
-
-// Clean task to remove conflicting generated classes
-task cleanCodegenClasses {
-    doLast {
-        delete "${buildDir}/generated/source/codegen"
-        delete "${buildDir}/tmp/kotlin-classes"
-        delete "${buildDir}/intermediates/javac"
-        delete "${buildDir}/intermediates/runtime_library_classes_jar"
     }
 }
 

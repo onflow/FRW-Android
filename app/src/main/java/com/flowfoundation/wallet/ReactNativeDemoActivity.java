@@ -8,7 +8,6 @@ import android.util.Log;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
-import com.flowfoundation.wallet.bridge.QRCodeScanManager;
 import com.flowfoundation.wallet.bridge.RNBridge;
 import com.flowfoundation.wallet.manager.wallet.WalletManager;
 import com.flowfoundation.wallet.manager.app.ChainNetworkKt;
@@ -114,7 +113,7 @@ public class ReactNativeDemoActivity extends ReactActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Handle QR scan result
-        QRCodeScanManager.INSTANCE.handleScanResult(resultCode, data);
+//        QRCodeScanManager.INSTANCE.handleScanResult(resultCode, data);
     }
 
     /**
