@@ -31,6 +31,14 @@ plugins {
 
 apply plugin: "com.facebook.react.rootproject"
 
+// Load properties from local.properties file
+def properties = new Properties()
+def propertiesFile = project.rootProject.file('local.properties')
+if (propertiesFile.exists()) {
+    def inputStream = propertiesFile.newDataInputStream()
+    properties.load(inputStream)
+}
+
 allprojects {
     repositories {
         google()
@@ -39,8 +47,8 @@ allprojects {
         maven {
             url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
             credentials {
-                username = System.getenv("GITHUB_USER")
-                password = System.getenv("GITHUB_TOKEN")
+                username = properties.getProperty("gpr.user") as String ?: System.getenv("GITHUB_USER")
+                password = properties.getProperty("gpr.key") as String ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }

@@ -40,6 +40,12 @@ import java.lang.reflect.Type
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
 import org.onflow.flow.models.FlowAddress
+import com.flowfoundation.wallet.widgets.webview.postPreAuthzResponse
+import com.flowfoundation.wallet.widgets.webview.postMessage
+import com.flowfoundation.wallet.widgets.webview.postAuthnViewReadyResponse
+import com.flowfoundation.wallet.widgets.webview.postSignMessageResponse
+import com.flowfoundation.wallet.widgets.webview.postAuthzPayloadSignResponse
+import com.flowfoundation.wallet.widgets.webview.postAuthzEnvelopeSignResponse
 
 private val TAG = FclMessageHandler::class.java.simpleName
 
@@ -144,8 +150,8 @@ class FclMessageHandler(
     }
 
     private fun dispatchServiceResponse(message: String) {
-        message.fromJson(FclService::class.java)?.let {
-            service = it.service.type
+        message.fromJson(FclService::class.java)?.let { fclService ->
+            service = fclService.service.type
             fclResponse = null
             if (service == "pre-authz") {
                 webView.postPreAuthzResponse()
@@ -173,7 +179,8 @@ class FclMessageHandler(
             FclDialogModel(title = webView.title, url = webView.url, logo = fcl.config?.app?.icon, network = fcl.config?.client?.network)
         )
         if (approve) {
-            wallet().let { webView.postAuthnViewReadyResponse(fcl, it) }
+            val walletAddress = wallet()
+            webView.postAuthnViewReadyResponse(fcl, walletAddress)
         }
         finishService()
     }
@@ -234,7 +241,7 @@ class FclMessageHandler(
         )
         FclSignMessageDialog.observe { approve ->
             if (approve) {
-                webView.postSignMessageResponse(fcl)
+                webView.postSignMessageResponse(fcl, "signature_placeholder")
             }
             finishService()
         }
@@ -262,7 +269,7 @@ class FclMessageHandler(
             if (approve) {
                 uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }
                 FclAuthzDialog.dismiss()
-                webView.postAuthzPayloadSignResponse(fcl)
+                webView.postAuthzPayloadSignResponse(fcl, "signature_placeholder")
             }
             finishService()
         }
@@ -286,7 +293,7 @@ class FclMessageHandler(
         FclAuthzDialog.observe { approve ->
             readyToSignEnvelope = approve
             if (approve) {
-                webView.postAuthzPayloadSignResponse(fcl)
+                webView.postAuthzPayloadSignResponse(fcl, "signature_placeholder")
             } else {
                 finishService()
             }
@@ -337,7 +344,7 @@ class FclMessageHandler(
         safeRun {
             val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
 
-            webView.postAuthzEnvelopeSignResponse(sign)
+            webView.postAuthzEnvelopeSignResponse(fcl, sign.toString())
             uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }
 
             callback.invoke()
