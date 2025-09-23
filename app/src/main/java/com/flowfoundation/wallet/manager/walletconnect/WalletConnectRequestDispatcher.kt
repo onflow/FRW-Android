@@ -322,13 +322,20 @@ private suspend fun WCRequest.respondAuthn() {
         )
         logd(TAG, "Sending response: $response")
 
-        // Send response with retry logic
+        // Send response with improved retry logic
         var retryCount = 0
-        val maxRetries = 3
+        val maxRetries = 5
         var success = false
 
         while (!success && retryCount < maxRetries) {
             try {
+                // Check if session is still valid before attempting to respond
+                val activeSession = SignClient.getActiveSessionByTopic(topic)
+                if (activeSession == null && retryCount > 0) {
+                    loge(TAG, "Session no longer active, aborting response")
+                    break
+                }
+
                 SignClient.respond(response, onSuccess = { result ->
                     logd(TAG, "Response sent successfully: $result")
                     success = true
@@ -354,21 +361,28 @@ private suspend fun WCRequest.respondAuthn() {
                     loge(error.throwable)
                     retryCount++
                     if (retryCount >= maxRetries) {
+                        loge(TAG, "Max retries reached, rejecting request")
                         reject()
                     }
                 }
-                if (!success) {
-                    delay(1000L * (retryCount + 1))
+                if (!success && retryCount < maxRetries) {
+                    // Exponential backoff with jitter
+                    val backoffDelay = (1000L * Math.pow(2.0, retryCount.toDouble())).toLong() + (0..500).random()
+                    logd(TAG, "Retrying response in ${backoffDelay}ms")
+                    delay(backoffDelay)
                 }
             } catch (e: Exception) {
                 loge(TAG, "Error sending response (attempt ${retryCount + 1}): ${e.message}")
                 loge(e)
                 retryCount++
                 if (retryCount >= maxRetries) {
+                    loge(TAG, "Max retries reached due to exceptions, rejecting request")
                     reject()
                     break
                 }
-                delay(1000L * (retryCount + 1))
+                // Exponential backoff with jitter for exceptions too
+                val backoffDelay = (1000L * Math.pow(2.0, retryCount.toDouble())).toLong() + (0..500).random()
+                delay(backoffDelay)
             }
         }
     } catch (e: Exception) {

@@ -766,6 +766,9 @@
     <string name="wallet_connect_proposal_error">Failed to process connection request. Please try again.</string>
     <string name="wallet_connect_initialization_error">Error initializing Wallet Connect.</string>
     <string name="wallet_connect_approval_error">Error approving Wallet Connect session.</string>
+    <string name="wallet_connect_connection_error">Connection error. Please check your network and try again.</string>
+    <string name="wallet_connect_session_error">Session error. Please try connecting again.</string>
+    <string name="wallet_connect_user_rejected">Connection was declined.</string>
     <string name="verified_tip">This is an unverified token, only interact with tokens you trust.</string>
     <string name="hide_dust_token_tip">Tokens with less than 0.01$ USD balance</string>
     <string name="transfer_success">Transaction Success</string>

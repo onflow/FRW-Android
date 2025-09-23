@@ -119,10 +119,22 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         logd(TAG, "onError() error:$error")
         loge(error.throwable)
 
-        // Show user-friendly error message
+        val errorMessage = error.throwable.message ?: "Unknown error"
+        
+        // Show user-friendly error message based on error type
         uiScope {
-            val errorMessage = when {
-                error.throwable.message?.contains("No proposal or pending session") == true -> {
+            val userMessageRes = when {
+                // Network and connection errors
+                errorMessage.contains("timeout", ignoreCase = true) ||
+                errorMessage.contains("connection", ignoreCase = true) ||
+                errorMessage.contains("network", ignoreCase = true) -> {
+                    logd(TAG, "Network connectivity issue detected")
+                    R.string.wallet_connect_connection_error
+                }
+                
+                // Session management errors
+                errorMessage.contains("No proposal or pending session") -> {
+                    logd(TAG, "Session management issue, cleaning up stale sessions")
                     // Clean up any stale sessions when we get this error
                     try {
                         val activeSessions = SignClient.getListOfActiveSessions()
@@ -139,19 +151,33 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                         loge(TAG, "Error cleaning up sessions: ${e.message}")
                         loge(e)
                     }
-                    R.string.wallet_connect_no_proposal
+                    R.string.wallet_connect_session_error
                 }
-                error.throwable.message?.contains("pairing topic") == true -> {
+                
+                // Pairing related errors
+                errorMessage.contains("pairing topic", ignoreCase = true) ||
+                errorMessage.contains("Pairing URI expired", ignoreCase = true) -> {
                     R.string.wallet_connect_pairing_error
                 }
-                error.throwable.message?.contains("Pairing URI expired") == true -> {
-                    R.string.wallet_connect_pairing_error
+                
+                // Expired requests/sessions
+                errorMessage.contains("expired", ignoreCase = true) -> {
+                    R.string.wallet_connect_request_expired
                 }
+                
+                // User rejection (handled gracefully)
+                errorMessage.contains("rejected", ignoreCase = true) ||
+                errorMessage.contains("denied", ignoreCase = true) -> {
+                    // Don't show error toast for user rejections
+                    return@uiScope
+                }
+                
                 else -> R.string.wallet_connect_generic_error
             }
+            
             try {
-                toast(errorMessage)
-                logd(TAG, "Showed error toast for message: ${error.throwable.message}")
+                toast(userMessageRes)
+                logd(TAG, "Showed error toast for message: $errorMessage")
             } catch (e: Exception) {
                 loge(TAG, "Failed to show error toast: ${e.message}")
                 loge(e)
@@ -223,19 +249,21 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
         // Try to get the activity with a more robust approach
         ioScope {
             var attempts = 0
-            val maxAttempts = 15  // Increased attempts
+            val maxAttempts = 20  // Increased attempts
             var activity: BaseActivity? = null
             var lastError: Exception? = null
 
-            // First add a small delay to allow any activity transitions to complete
-            delay(300)
+            // First add a delay to allow any activity transitions to complete
+            delay(500)
 
             while (attempts < maxAttempts && activity == null) {
                 try {
                     activity = BaseActivity.getCurrentActivity()
                     if (activity == null) {
                         logd(TAG, "Activity not found, attempt ${attempts + 1} of $maxAttempts")
-                        delay(500)
+                        // Progressive delay with jitter
+                        val delayTime = 300L + (attempts * 200L) + (0..200).random()
+                        delay(delayTime)
                         attempts++
                     } else {
                         logd(TAG, "Found activity: ${activity.javaClass.simpleName}")
@@ -245,6 +273,14 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
                             activity = null
                             delay(500)
                             attempts++
+                        } else {
+                            // Double check activity is still valid before proceeding
+                            delay(200)
+                            if (activity.isFinishing || activity.isDestroyed) {
+                                logd(TAG, "Activity became invalid during verification")
+                                activity = null
+                                attempts++
+                            }
                         }
                     }
                 } catch (e: Exception) {

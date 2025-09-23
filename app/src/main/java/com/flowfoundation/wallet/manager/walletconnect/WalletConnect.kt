@@ -48,19 +48,20 @@ class WalletConnect {
 
     private var pairingInProgress = false
 
-    private suspend fun waitForInitialization(timeoutMs: Long = 10000): Boolean {
+    private suspend fun waitForInitialization(timeoutMs: Long = 30000): Boolean {
         if (!isInitialized()) {
             logd(TAG, "WalletConnect not initialized. Waiting for initialization...")
             return withTimeoutOrNull(timeoutMs) {
-                var waitTime = 100L
+                var waitTime = 200L
                 var attempts = 0
-                val maxAttempts = 20
+                val maxAttempts = 30
 
                 while (!isInitialized() && attempts < maxAttempts) {
                     logd(TAG, "Waiting for WalletConnect initialization, attempt ${attempts + 1} of $maxAttempts (waiting ${waitTime}ms)")
                     delay(waitTime)
                     attempts++
-                    waitTime = minOf(waitTime * 2, 1000)
+                    // Use exponential backoff with jitter
+                    waitTime = minOf(waitTime * 2 + (0..100).random(), 2000)
                 }
 
                 isInitialized()
@@ -78,9 +79,9 @@ class WalletConnect {
             logd(TAG, "Pairing already in progress, ignoring new pairing request")
             return
         }
-        
+
         pairingInProgress = true
-        
+
         // Show connecting toast immediately when pairing starts
         val activity = BaseActivity.getCurrentActivity()
         if (activity != null) {
@@ -90,7 +91,7 @@ class WalletConnect {
                 toast.show()
             }
         }
-        
+
         ioScope {
             try {
                 // First, ensure WalletConnect is initialized
@@ -103,7 +104,7 @@ class WalletConnect {
                     pairingInProgress = false
                     return@ioScope
                 }
-                
+
                 // Clean up all active sessions before pairing
                 try {
                     cleanupActiveSessions()
@@ -117,40 +118,54 @@ class WalletConnect {
                 delay(500)
 
                 logd(TAG, "CoreClient.Relay isConnectionAvailable: ${isConnectionAvailable.value}")
-                
+
                 if (!isConnectionAvailable.value) {
                     logd(TAG, "Connection not available, attempting to establish connection")
-                    // Try to establish connection
+                    // Try to establish connection with improved retry logic
                     var connected = false
-                    for (attempt in 1..3) {
-                        logd(TAG, "Attempting to connect relay (attempt $attempt of 3)")
-                        safeRun {
+                    for (attempt in 1..5) {
+                        logd(TAG, "Attempting to connect relay (attempt $attempt of 5)")
+                        try {
                             CoreClient.Relay.connect { error: Core.Model.Error ->
                                 loge(TAG, "CoreClient.Relay connect error: $error")
                             }
-                        }
-                        
-                        // Wait for connection to establish
-                        for (i in 1..5) {
-                            if (isConnectionAvailable.value) {
-                                connected = true
-                                break
+
+                            // Wait for connection to establish with longer timeout
+                            for (i in 1..10) {
+                                if (isConnectionAvailable.value) {
+                                    connected = true
+                                    break
+                                }
+                                delay(500)
                             }
-                            delay(300)
+
+                            if (connected) {
+                                logd(TAG, "Connection established successfully")
+                                break
+                            } else {
+                                logd(TAG, "Connection attempt $attempt failed, retrying...")
+                                // Progressive delay between attempts
+                                delay(1000L * attempt)
+                            }
+                        } catch (e: Exception) {
+                            loge(TAG, "Error during connection attempt $attempt: ${e.message}")
+                            delay(1000L * attempt)
                         }
-                        
-                        if (connected) break
                     }
-                    
+
                     if (!connected) {
-                        logd(TAG, "Failed to establish connection after multiple attempts")
-                        // Try pairing anyway as a last resort
+                        logd(TAG, "Failed to establish connection after 5 attempts")
+                        uiScope {
+                            toast(R.string.wallet_connect_pairing_error)
+                        }
+                        pairingInProgress = false
+                        return@ioScope
                     } else {
                         // Add a short delay after connection is established
-                        delay(500)
+                        delay(1000)
                     }
                 }
-                
+
                 // Proceed with pairing
                 logd(TAG, "Attempting to pair with URI: $uri")
                 try {
@@ -168,7 +183,7 @@ class WalletConnect {
                         }
                     }
                     logd(TAG, "Pairing request sent successfully")
-                    
+
                     // Check if sessions were established after a short delay
                     delay(1000)
                     val sessions = SignClient.getListOfActiveSessions()
@@ -241,7 +256,7 @@ class WalletConnect {
                 logd(TAG, "WalletConnect initialization already started, skipping")
                 return
             }
-            
+
             initializationStarted = true
             ioScope {
                 try {

@@ -113,13 +113,33 @@ internal fun WCRequest.approve(result: String) {
     SignClient.respond(response) { error -> loge(error.throwable) }
 }
 
-internal fun WCRequest.reject() {
-    SignClient.respond(
-        Sign.Params.Response(
-            sessionTopic = topic,
-            jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcError(requestId, 0, "User rejected")
-        )
-    ) { error -> loge(error.throwable) }
+internal fun WCRequest.reject(reason: String = "User rejected") {
+    logd(TAG, "Rejecting request $requestId with reason: $reason")
+    try {
+        // Check if session is still active before rejecting
+        val activeSession = SignClient.getActiveSessionByTopic(topic)
+        if (activeSession == null) {
+            logd(TAG, "Session no longer active, skipping rejection for request $requestId")
+            return
+        }
+
+        SignClient.respond(
+            Sign.Params.Response(
+                sessionTopic = topic,
+                jsonRpcResponse = Sign.Model.JsonRpcResponse.JsonRpcError(
+                    requestId,
+                    0,
+                    reason
+                )
+            )
+        ) { error ->
+            loge(TAG, "Error sending rejection: ${error.throwable.message}")
+            loge(error.throwable)
+        }
+    } catch (e: Exception) {
+        loge(TAG, "Exception during request rejection: ${e.message}")
+        loge(e)
+    }
 }
 
 internal class SignableMessage(
