@@ -76,7 +76,12 @@ class WalletHeaderPresenter(
                 // Launch React Native Demo Activity instead of TransactionSendActivity
                 ReactNativeActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
             }
-            cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
+            cvReceive.setOnClickListener {
+                // TEMPORARY: Launch onboarding flow for testing
+                // TODO: Remove this and restore original receive functionality
+                ReactNativeActivity.launch(view.context, RNBridge.ScreenType.ONBOARDING)
+                // Original code: ReceiveActivity.launch(view.context)
+            }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address
             ivCopy.setVisible(address.isNotBlank())

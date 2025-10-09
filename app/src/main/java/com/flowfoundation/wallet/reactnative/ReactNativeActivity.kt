@@ -122,6 +122,7 @@ class ReactNativeActivity : ReactActivity() {
                     } ?: "SelectTokens"
                 }
                 RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
+                RNBridge.ScreenType.ONBOARDING -> "GetStarted"
             }
         }
 
@@ -165,7 +166,11 @@ class ReactNativeActivity : ReactActivity() {
             }
             screenType?.let {
                 // Convert screen enum to string and determine route based on screen type
-                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+                val screenString = when (it) {
+                    RNBridge.ScreenType.SEND_ASSET -> "send-asset"
+                    RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
+                    RNBridge.ScreenType.ONBOARDING -> "onboarding"
+                }
                 val routeName = getRouteName(it, null)
 
                 intent.putExtra("screen", screenString)
@@ -198,7 +203,11 @@ class ReactNativeActivity : ReactActivity() {
             }
 
             // Convert screen enum to string and determine route based on screen type and config
-            val screenString = if (screenType == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+            val screenString = when (screenType) {
+                RNBridge.ScreenType.SEND_ASSET -> "send-asset"
+                RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
+                RNBridge.ScreenType.ONBOARDING -> "onboarding"
+            }
             val routeName = getRouteName(screenType, sendToConfig)
 
             intent.putExtra("screen", screenString)
