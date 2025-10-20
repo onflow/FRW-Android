@@ -211,4 +211,18 @@
     <color name="button_warning">#F29E0D</color>
     <color name="button_bg_secondary">#1E1E1F</color>
     <color name="bg_navi">#F0F0F0</color>
+
+    <!-- Surge Pricing Modal Colors -->
+    <color name="surge_modal_bg">#FFFFFF</color>
+    <color name="surge_modal_overlay">#CC000000</color>
+    <color name="surge_error">#FF5252</color>
+    <color name="surge_warning">#FDB022</color>
+    <color name="surge_warning_bg">#26FDB022</color>
+    <color name="surge_border">#E6E6E6</color>
+    <color name="surge_text_primary">#000000</color>
+    <color name="surge_text_secondary">#9CA3AF</color>
+    <color name="surge_button_overlay">#33FFFFFF</color>
+    <color name="surge_card_bg">#FFFFFF</color>
+    <color name="surge_button_bg">#F04438</color>
+    <color name="surge_button_progress">#F97066</color>
 </resources>

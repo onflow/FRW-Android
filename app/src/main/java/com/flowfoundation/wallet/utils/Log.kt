@@ -26,7 +26,7 @@ fun loge(throwable: Throwable?, printStackTrace: Boolean = true, report: Boolean
     val message = throwable?.message ?: ""
     log("Exception", message, Log.ERROR)
     InstabugLog.e("Exception: $message : ${throwable?.cause ?: ""}")
-    
+
     if (printLog() && printStackTrace) {
         throwable?.printStackTrace()
     }
@@ -99,3 +99,51 @@ private fun print(tag: String, msg: String, level: Int) {
 }
 
 private fun printLog() = BuildConfig.DEBUG || isDev()
+
+/**
+ * Native logging method for React Native bridge callback
+ * Directly reports to Instabug for reliable logging
+ */
+fun logToInstabug(level: String, message: String, vararg args: String) {
+    try {
+        // Combine message with args
+        val fullMessage = if (args.isNotEmpty()) {
+            "$message ${args.joinToString(" ")}"
+        } else {
+            message
+        }
+
+        // Add FRW-Native prefix to the message for identification
+        val taggedMessage = "[FRW-Native] $fullMessage"
+
+        // Convert string level to Android Log level constant for DebugViewerDataSource
+        val logLevel = when (level.lowercase()) {
+            "debug" -> {
+                InstabugLog.d(taggedMessage)
+                Log.DEBUG
+            }
+            "info" -> {
+                InstabugLog.i(taggedMessage)
+                Log.INFO
+            }
+            "warn" -> {
+                InstabugLog.w(taggedMessage)
+                Log.WARN
+            }
+            "error" -> {
+                InstabugLog.e(taggedMessage)
+                Log.ERROR
+            }
+            else -> {
+                InstabugLog.i(taggedMessage)
+                Log.INFO
+            }
+        }
+
+        // Also log to DebugViewer with correct level type
+        DebugViewerDataSource.log(logLevel, "FRW-Native", taggedMessage)
+    } catch (e: Exception) {
+        // Fallback to direct Instabug error report to avoid recursion
+        InstabugLog.e("[FRW-Native] Error in logToNative: ${e.message}")
+    }
+}

@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.network
 import com.flowfoundation.wallet.network.interceptor.GzipRequestInterceptor
 import com.flowfoundation.wallet.network.interceptor.GzipResponseInterceptor
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
+import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
@@ -51,6 +52,7 @@ fun retrofitApi(): Retrofit {
 fun cadenceScriptApi(): Retrofit {
     val client = OkHttpClient.Builder().apply {
         addInterceptor(HeaderInterceptor(false))
+        addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
         addInterceptor(InstabugOkhttpInterceptor())
         addInterceptor(GzipRequestInterceptor())
         addInterceptor(GzipResponseInterceptor())

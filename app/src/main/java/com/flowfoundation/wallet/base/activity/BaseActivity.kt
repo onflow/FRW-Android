@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.base.activity
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.BaseContextWrappingDelegate
+import com.flowfoundation.wallet.manager.app.ActivityManager
 import java.lang.ref.WeakReference
 
 open class BaseActivity : AppCompatActivity() {
@@ -10,6 +11,7 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         currentActivity = WeakReference(this)
+        ActivityManager.setCurrentActivity(this)  // Register with ActivityManager
         super.onCreate(savedInstanceState)
     }
 
@@ -17,6 +19,7 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onResume() {
         currentActivity = WeakReference(this)
+        ActivityManager.setCurrentActivity(this)  // Update ActivityManager on resume
         super.onResume()
         if (firstVisible) {
             onFirstVisible()
@@ -30,6 +33,7 @@ open class BaseActivity : AppCompatActivity() {
         super.onDestroy()
         if (currentActivity?.get() == this) {
             currentActivity = null
+            ActivityManager.setCurrentActivity(null)  // Clear ActivityManager on destroy
         }
     }
 

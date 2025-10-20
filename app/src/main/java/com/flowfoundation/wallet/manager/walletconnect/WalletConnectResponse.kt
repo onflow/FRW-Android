@@ -3,9 +3,14 @@ package com.flowfoundation.wallet.manager.walletconnect
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
 import org.onflow.flow.models.FlowAddress
@@ -100,6 +105,30 @@ private fun userSign(address: String, keyId: Int): String {
 }
 
 private suspend fun preAuthz(): String {
+    val payerInfo = SurgePricingManager.getFeePayer()
+    val payerAddress = if (isGasFree() && payerInfo != null) {
+        payerInfo.address()
+    } else {
+        // When surge pricing is active (payerInfo is null), show alert to user
+        // User can choose to accept (continue with wallet address as payer) or decline (cancel)
+        try {
+            SurgePricingManager.showSurgePricingAlertWithContinuation()
+            logd("WalletConnectResponse", "User accepted surge pricing, using wallet address as payer")
+            WalletManager.wallet().walletAddress()
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            logd("WalletConnectResponse", "User declined surge pricing, cancelling pre-authz")
+            return "" // Return empty string to indicate cancellation
+        }
+    }
+    val payerKeyIndex = if (payerInfo != null) {
+        payerInfo.keyId()
+    } else {
+        if (payerAddress.isNullOrBlank()) {
+            0
+        } else {
+            FlowAddress(payerAddress).payerAccountKeyId()
+        }
+    }
     return """
 {
     "f_type": "Service",
@@ -109,8 +138,8 @@ private suspend fun preAuthz(): String {
     "endpoint": "flow_pre_authz",
     "method": "WC/RPC",
     "data": {
-      "address": "${AppConfig.payer().address.toAddress()}",
-      "keyId": ${FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId()}
+      "address": "$payerAddress",
+      "keyId": $payerKeyIndex
     }
 }
     """.trimIndent()

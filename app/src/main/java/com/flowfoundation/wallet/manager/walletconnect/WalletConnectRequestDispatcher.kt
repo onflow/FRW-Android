@@ -10,10 +10,14 @@ import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
-import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
+import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
+import com.flowfoundation.wallet.manager.flowjvm.transaction.FeePayerSignRequest
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.Signable
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.Identity
@@ -421,7 +425,12 @@ private suspend fun WCRequest.respondAuthz() {
 
 private suspend fun WCRequest.respondPreAuthz() {
     val walletAddress = WalletManager.wallet()?.walletAddress() ?: return
-    val payerAddress = if (AppConfig.isFreeGas()) AppConfig.payer().address else walletAddress
+    val payerInfo = SurgePricingManager.getFeePayer()
+    val payerAddress = if (isGasFree() && payerInfo != null) {
+        payerInfo.address()
+    } else {
+        walletAddress
+    }
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
 
     // Clean addresses for Flow-KMM (remove "0x" prefix)
@@ -429,6 +438,9 @@ private suspend fun WCRequest.respondPreAuthz() {
     val cleanPayerAddress = payerAddress.removePrefix("0x")
 
     val keyId = FlowAddress(cleanWalletAddress).currentKeyId(cryptoProvider.getPublicKey())
+    val payerId = if (isGasFree() && payerInfo != null) {
+        payerInfo.keyId()
+    } else FlowAddress(cleanWalletAddress).payerAccountKeyId()
 
     val response = PollingResponse(
         status = ResponseStatus.APPROVED,
@@ -450,7 +462,7 @@ private suspend fun WCRequest.respondPreAuthz() {
                     fVsn = "1.0.0",
                     type = "authz",
                     uid =  "https://frw-link.lilico.app/wc",
-                    identity = Identity(address = cleanPayerAddress, keyId = AppConfig.payer().keyId),
+                    identity = Identity(address = cleanPayerAddress, keyId = payerId),
                     method = "WC/RPC",
                     endpoint = WalletConnectMethod.SIGN_PAYER.value,
                 )
@@ -544,14 +556,14 @@ private suspend fun WCRequest.respondSignPayer() {
 
     val message = signable.message ?: return
     val server = executeHttpFunction(
-        FUNCTION_SIGN_AS_PAYER, PayerSignable(
-            transaction = transaction,
-            message = PayerSignable.Message(message)
+        FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
+            message = FeePayerSignRequest.FeePayerMessage(envelopeMessage = message),
+            network = chainNetWorkString()
         )
     )
 
     safeRun {
-        val sigs = gson().fromJson(server, SignPayerResponse::class.java).envelopeSigs
+        val sigs = gson().fromJson(server, SignPayerResponse::class.java).data
         val response = PollingResponse(
             status = ResponseStatus.APPROVED,
             data = PollingData(

@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.sendBridgeTransacti
 import com.flowfoundation.wallet.manager.flowjvm.transaction.sendTransaction
 import com.flowfoundation.wallet.manager.token.formatCadence
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
+import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
@@ -718,12 +719,12 @@ suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceA
         logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
         wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
     }
-    
+
     if (walletAddress == null) {
         logd(TAG, "transactionByMainWallet() failed: no wallet address available")
         return null
     }
-    
+
     logd(TAG, "transactionByMainWallet() walletAddress:$walletAddress")
     val args = CadenceArgumentsBuilder().apply { arguments(this) }
     val txId = try {
@@ -752,20 +753,21 @@ suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArguments
         logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
         wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
     }
-    
+
     if (walletAddress == null) {
         logd(TAG, "transactionWithBridgePayer() failed: no wallet address available")
         return null
     }
-    
+
     logd(TAG, "transactionBridge() walletAddress:$walletAddress")
     val args = CadenceArgumentsBuilder().apply { arguments(this) }
+    val bridgePayer = SurgePricingManager.getBridgePayer()
     val txId = try {
         sendBridgeTransaction {
             args.build().forEach { arg(it) }
             walletAddress(walletAddress)
             script(this@transactionWithBridgePayer.getScript().addPlatformInfo())
-            payer(AppConfig.bridgeFeePayer().address)
+            payer(bridgePayer?.address() ?: walletAddress)
             scriptId(this@transactionWithBridgePayer.scriptId)
         }
     } catch (e: Exception) {

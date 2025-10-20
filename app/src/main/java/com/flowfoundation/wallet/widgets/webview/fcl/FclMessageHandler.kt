@@ -6,8 +6,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.flowfoundation.wallet.manager.flowjvm.transaction.PayerSignable
+import com.flowfoundation.wallet.manager.flowjvm.transaction.FeePayerSignRequest
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
@@ -58,7 +59,7 @@ class FclMessageHandler(
             logd(TAG, "Got wallet address from WalletManager: '$walletAddress'")
             return walletAddress
         }
-        
+
         // If empty, try from AccountManager
         val account = AccountManager.get()
         val accountWalletAddress = account?.wallet?.walletAddress()
@@ -66,14 +67,14 @@ class FclMessageHandler(
             logd(TAG, "Got wallet address from AccountManager: '$accountWalletAddress'")
             return accountWalletAddress
         }
-        
+
         // If still empty, try getting from current account directly
         val selectedAddress = WalletManager.selectedWalletAddress()
         if (selectedAddress.isNotBlank()) {
             logd(TAG, "Got wallet address from WalletManager.selectedWalletAddress(): '$selectedAddress'")
             return selectedAddress
         }
-        
+
         logd(TAG, "Could not find any wallet address")
         return ""
     }
@@ -295,7 +296,7 @@ class FclMessageHandler(
 
     private suspend fun signEnvelope(fcl: FclAuthzResponse, webView: WebView, callback: () -> Unit) {
         val voucher = fcl.body.voucher
-        
+
         // Get the proper key ID instead of defaulting to 0
         val proposerAddress = voucher.proposalKey.address ?: ""
         val keyId = if (voucher.proposalKey.keyId != null) {
@@ -312,7 +313,7 @@ class FclMessageHandler(
             }
             validKeyId
         }
-        
+
         val transaction = org.onflow.flow.models.Transaction(
             script = voucher.cadence ?: "",
             arguments = voucher.arguments?.map { Cadence.string(it.toString()) } ?: emptyList(),
@@ -328,14 +329,14 @@ class FclMessageHandler(
         )
 
         val response = executeHttpFunction(
-            FUNCTION_SIGN_AS_PAYER, PayerSignable(
-                transaction = transaction,
-                message = PayerSignable.Message(fcl.body.message)
+            FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
+                message = FeePayerSignRequest.FeePayerMessage(envelopeMessage = fcl.body.message),
+                network = chainNetWorkString()
             )
         )
 
         safeRun {
-            val sign = Gson().fromJson(response, SignPayerResponse::class.java).envelopeSigs
+            val sign = Gson().fromJson(response, SignPayerResponse::class.java).data
 
             webView.postAuthzEnvelopeSignResponse(sign)
             uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }

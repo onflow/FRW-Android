@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.network.functions
 import com.google.gson.GsonBuilder
 import com.flowfoundation.wallet.firebase.analytics.reportEvent
 import com.flowfoundation.wallet.network.interceptor.HeaderInterceptor
+import com.flowfoundation.wallet.network.interceptor.PayerServiceInterceptor
 import com.flowfoundation.wallet.utils.*
 import com.instabug.library.okhttplogger.InstabugOkhttpInterceptor
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -16,8 +17,8 @@ import kotlin.coroutines.resume
 
 private const val TAG = "FirebaseFunctions"
 
-const val FUNCTION_SIGN_AS_PAYER = "signAsPayer"
-const val FUNCTION_SIGN_AS_BRIDGE_PAYER = "/api/signAsBridgeFeePayer"
+const val FUNCTION_SIGN_AS_PAYER = "/api/signAsFeePayer"  // Need leading slash for BASE_HOST
+const val FUNCTION_SIGN_AS_BRIDGE_PAYER = "/api/signAsBridgePayer"
 
 // https://us-central1-lilico-dev.cloudfunctions.net/moonPaySignature?url=https://buy-sandbox.moonpay.com?apiKey=pk_test_F0Y1SznEgbvGOWxFYJqStfjLeZ7XT&defaultCurrencyCode=FLOW&colorCode=%23FC814A&walletAddress=0x7d2b880d506db7cc
 const val FUNCTION_MOON_PAY_SIGN = "moonPaySignature"
@@ -43,14 +44,22 @@ private suspend fun executeHttp(host: String, functionName: String, data: Any? =
         writeTimeout(10, TimeUnit.SECONDS)
 
         addInterceptor(HeaderInterceptor())
+        addInterceptor(PayerServiceInterceptor())  // Add payer service interceptor
         addInterceptor(InstabugOkhttpInterceptor())
         if (isTesting()) {
             addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
         }
     }.build()
-    val body = if (data == null) data else (if (data is String) data else GsonBuilder().serializeNulls().create().toJson(data))
+    val body = if (data == null) data else (data as? String ?: GsonBuilder().serializeNulls().create().toJson(data))
 
-    val request = Request.Builder().url("$host$functionName")
+    // Fix double slash issue by removing trailing slash from host or leading slash from functionName
+    val url = when {
+        host.endsWith("/") && functionName.startsWith("/") -> host + functionName.substring(1)
+        host.endsWith("/") || functionName.startsWith("/") -> host + functionName
+        else -> "$host/$functionName"
+    }
+
+    val request = Request.Builder().url(url)
         .post(body.orEmpty().toRequestBody("application/json; charset=utf-8".toMediaType()))
         .build()
     val response = client.newCall(request).execute()

@@ -116,5 +116,19 @@
     <color name="disable_button_text">#40FFFFFF</color>
     <color name="button_bg_secondary">#E5E5E6</color>
     <color name="bg_navi">#0A0A0B</color>
+
+    <!-- Surge Pricing Dialog Colors for Dark Mode -->
+    <color name="surge_card_bg">#2A2A2A</color> <!-- Dark mode dialog background -->
+    <color name="surge_modal_bg">#2A2A2A</color>
+    <color name="surge_modal_overlay">#CC1A1A1A</color>
+    <color name="surge_error">#FF5252</color>
+    <color name="surge_warning">#FDB022</color>
+    <color name="surge_warning_bg">#26FDB022</color>
+    <color name="surge_border">#374151</color>
+    <color name="surge_text_primary">#F9FAFB</color> <!-- Light text for dark mode -->
+    <color name="surge_text_secondary">#9CA3AF</color>
+    <color name="surge_button_overlay">#33FFFFFF</color>
+    <color name="surge_button_bg">#F04438</color> <!-- Keep button red -->
+    <color name="surge_button_progress">#F97066</color> <!-- Keep progress red -->
 </resources>
 

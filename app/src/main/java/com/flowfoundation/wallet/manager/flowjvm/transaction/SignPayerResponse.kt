@@ -4,8 +4,8 @@ package com.flowfoundation.wallet.manager.flowjvm.transaction
 import com.google.gson.annotations.SerializedName
 
 data class SignPayerResponse(
-    @SerializedName("envelopeSigs")
-    val envelopeSigs: EnvelopeSigs
+    @SerializedName("data")
+    val data: EnvelopeSigs
 ) {
     data class EnvelopeSigs(
         @SerializedName("address")

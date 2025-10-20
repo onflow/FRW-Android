@@ -7,6 +7,8 @@ import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.flowjvm.payerAccountKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.model.FclAuthnResponse
 import org.onflow.flow.models.DomainTag
@@ -278,13 +280,15 @@ suspend fun fclAuthnResponseWithAccountProofSign(
         )
 }
 
-fun fclPreAuthzResponse(address: String, keyId: Int): String {
-    val payerKeyId = runBlocking { FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId() }
+suspend fun fclPreAuthzResponse(address: String, keyId: Int): String {
+    val payerInfo = SurgePricingManager.getFeePayer()
+    val payerAddress = payerInfo?.address() ?: address
+    val payerKeyIndex = payerInfo?.keyId() ?: keyId
     return FCL_PRE_AUTHZ_RESPONSE
         .replace(ADDRESS_REPLACEMENT, address)
         .replace(KEY_ID_REPLACEMENT, "$keyId")
-        .replace(PAYER_ADDRESS_REPLACEMENT, AppConfig.payer().address)
-        .replace(PAYER_KEY_ID_REPLACEMENT, payerKeyId.toString())
+        .replace(PAYER_ADDRESS_REPLACEMENT, payerAddress)
+        .replace(PAYER_KEY_ID_REPLACEMENT, payerKeyIndex.toString())
 }
 
 fun fclAuthzResponse(address: String, signature: String, keyId: Int): String {
@@ -309,8 +313,8 @@ suspend fun fclSignMessageResponse(message: String?, address: String): String {
 }
 
 private suspend fun generateAuthnPreAuthz(): String {
-    return if (isGasFree()) {
-        val payerKeyId = FlowAddress(AppConfig.payer().address.toAddress()).payerAccountKeyId()
+    val payerInfo = SurgePricingManager.getFeePayer()
+    return if (isGasFree() && payerInfo != null) {
         """
             {
                 "f_type": "Service",
@@ -320,11 +324,22 @@ private suspend fun generateAuthnPreAuthz(): String {
                 "endpoint": "android://pre-authz.lilico.app",
                 "method": "EXT/RPC",
                 "data": {
-                    "address": "${AppConfig.payer().address.toAddress()}",
-                    "keyId": $payerKeyId
+                    "address": "${payerInfo.address()}",
+                    "keyId": ${payerInfo.keyId()}
                 }
             },
         """.trimIndent()
-    } else ""
+    } else {
+        // When surge pricing is active (payerInfo is null), show alert to user
+        // User can choose to accept (continue without pre-authz) or decline (cancel)
+        try {
+            SurgePricingManager.showSurgePricingAlertWithContinuation()
+            logd("FclScript", "User accepted surge pricing, not providing pre-authz service")
+            "" // Return empty string - no pre-authz service provided
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            logd("FclScript", "User declined surge pricing, cancelling FCL authentication")
+            throw e // Re-throw to cancel the FCL authentication flow
+        }
+    }
 }
 

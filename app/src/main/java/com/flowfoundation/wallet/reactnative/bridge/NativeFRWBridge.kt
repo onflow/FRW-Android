@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.reactnative.bridge
 
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableMap
@@ -40,9 +41,11 @@ import com.google.gson.Gson
 import org.json.JSONObject
 import org.json.JSONArray
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.logToInstabug
 import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
@@ -565,107 +568,127 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
 
+    private fun createWalletProfileFromAccount(account: Account): RNBridge.WalletProfile? {
+        return try {
+            android.util.Log.d(TAG, "createWalletProfileFromAccount() - creating profile for account: ${account.userInfo.username}")
+
+            // Get user info from the specific account (similar to AccountManager.userInfo())
+            val userInfo = account.userInfo
+            android.util.Log.d(TAG, "createWalletProfileFromAccount() - userInfo: ${userInfo.username}, avatar: ${userInfo.avatar}")
+
+            // Get user ID similar to the original implementation
+            val userId = account.wallet?.id ?: ""
+            android.util.Log.d(TAG, "createWalletProfileFromAccount() - userId: $userId")
+
+            val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
+
+            // Get main wallet address from account
+            val mainAddress = account.wallet?.walletAddress()
+            if (mainAddress.isNullOrEmpty()) {
+                android.util.Log.w(TAG, "createWalletProfileFromAccount() - no main address found for account: ${account.userInfo.username}")
+                return null
+            }
+
+            val mainEmojiInfo = createEmojiInfo(mainAddress)
+            val mainAccount = RNBridge.WalletAccount(
+                id = "main",
+                name = mainEmojiInfo?.name ?: "Main Account",
+                address = mainAddress,
+                emojiInfo = mainEmojiInfo,
+                parentEmoji = null,
+                parentAddress = null,
+                avatar = null,
+                isActive = isSelectedWalletAddress(mainAddress),
+                type = RNBridge.AccountType.MAIN,
+                balance = null,
+                nfts = null,
+            )
+            bridgeAccounts.add(mainAccount)
+
+            // Get child accounts
+            try {
+                val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
+                childAccounts?.forEach { childAccount ->
+                    val childAccountBridge = RNBridge.WalletAccount(
+                        id = "child_${childAccount.address}",
+                        name = childAccount.name,
+                        address = childAccount.address,
+                        emojiInfo = null,
+                        parentEmoji = mainEmojiInfo,
+                        parentAddress = mainAddress,
+                        avatar = childAccount.icon,
+                        isActive = isSelectedWalletAddress(childAccount.address),
+                        type = RNBridge.AccountType.CHILD,
+                        balance = null,
+                        nfts = null,
+                    )
+                    bridgeAccounts.add(childAccountBridge)
+                }
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "createWalletProfileFromAccount() - child accounts not available: ${e.message}")
+            }
+
+            // Get EVM address if available
+            try {
+                val evmAddress = EVMWalletManager.getEVMAddress()
+                if (!evmAddress.isNullOrEmpty()) {
+                    val evmEmojiInfo = createEmojiInfo(evmAddress)
+                    val evmAccount = RNBridge.WalletAccount(
+                        id = "evm",
+                        name = evmEmojiInfo?.name ?: "EVM Account",
+                        address = evmAddress,
+                        parentAddress = mainAddress,
+                        emojiInfo = evmEmojiInfo,
+                        parentEmoji = mainEmojiInfo,
+                        avatar = null,
+                        isActive = isSelectedWalletAddress(evmAddress),
+                        type = RNBridge.AccountType.EVM,
+                        balance = null,
+                        nfts = null,
+                    )
+                    bridgeAccounts.add(evmAccount)
+                }
+            } catch (e: Exception) {
+                android.util.Log.w(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e.message}")
+            }
+
+            // Create wallet profile
+            RNBridge.WalletProfile(
+                name = account.userInfo.nickname,
+                avatar = account.userInfo.avatar,
+                uid = userId,
+                accounts = bridgeAccounts
+            )
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "createWalletProfileFromAccount() - error creating profile for account: ${account.userInfo.username}, error: ${e.message}")
+            null
+        }
+    }
+
     override fun getWalletProfiles(promise: Promise) {
         android.util.Log.d(TAG, "getWalletProfiles() called")
         ioScope {
             try {
-                android.util.Log.d(TAG, "getWalletProfiles() - getting user info and wallet accounts...")
+                android.util.Log.d(TAG, "getWalletProfiles() - getting all accounts from AccountManager...")
 
-                // Get user info from cache
-                val userInfo = AccountManager.userInfo()
-                val userId = firebaseUid() ?: AccountManager.get()?.wallet?.id ?: ""
+                // Get all accounts from AccountManager
+                val accounts = AccountManager.list()
+                android.util.Log.d(TAG, "getWalletProfiles() - found ${accounts.size} accounts")
 
-                // Get wallet accounts (reuse logic from getWalletAccounts)
-                val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
+                val profiles = mutableListOf<RNBridge.WalletProfile>()
 
-                // Get main wallet address - for hardware-backed keys, wallet() returns null,
-                // so we need to use selectedWalletAddress() as fallback
-                var mainAddress = WalletManager.wallet()?.walletAddress()
-                if (mainAddress.isNullOrEmpty()) {
-                    // Hardware-backed key fallback: use the selected address
-                    mainAddress = WalletManager.selectedWalletAddress()
-                }
-                val mainEmojiInfo = createEmojiInfo(mainAddress)
-                if (!mainAddress.isNullOrEmpty()) {
-                    val mainAccount = RNBridge.WalletAccount(
-                        id = "main",
-                        name = mainEmojiInfo?.name ?: "Main Account",
-                        address = mainAddress,
-                        emojiInfo = mainEmojiInfo,
-                        parentEmoji = null,
-                        parentAddress = null,
-                        avatar = null,
-                        isActive = isSelectedWalletAddress(mainAddress),
-                        type = RNBridge.AccountType.MAIN,
-                        balance = null,
-                        nfts = null,
-                    )
-                    bridgeAccounts.add(mainAccount)
-                }
-
-                // Get child accounts
-                try {
-                    val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
-                    childAccounts?.forEach { childAccount ->
-                        val childAccountBridge = RNBridge.WalletAccount(
-                            id = "child_${childAccount.address}",
-                            name = childAccount.name ?: "Child Account",
-                            address = childAccount.address,
-                            emojiInfo = null,
-                            parentEmoji = mainEmojiInfo,
-                            parentAddress = mainAddress,
-                            avatar = childAccount.icon,
-                            isActive = isSelectedWalletAddress(childAccount.address),
-                            type = RNBridge.AccountType.CHILD,
-                            balance = null,
-                            nfts = null,
-                        )
-                        bridgeAccounts.add(childAccountBridge)
+                // Create wallet profile for each account
+                accounts.forEach { account ->
+                    createWalletProfileFromAccount(account)?.let { profile ->
+                        profiles.add(profile)
+                        android.util.Log.d(TAG, "getWalletProfiles() - added profile for account: ${account.userInfo.username}")
                     }
-                } catch (e: Exception) {
-                    android.util.Log.w(TAG, "getWalletProfiles() - child accounts not available: ${e.message}")
                 }
 
-                // Get EVM address if available
-                try {
-                    val evmAddress = EVMWalletManager.getEVMAddress()
-                    if (!evmAddress.isNullOrEmpty()) {
-                        val evmEmojiInfo = createEmojiInfo(evmAddress)
-
-                        val evmAccount = RNBridge.WalletAccount(
-                            id = "evm",
-                            name = evmEmojiInfo?.name ?: "EVM Account",
-                            address = evmAddress,
-                            parentAddress = mainAddress,
-                            emojiInfo = evmEmojiInfo,
-                            parentEmoji = mainEmojiInfo,
-                            avatar = null,
-                            isActive = isSelectedWalletAddress(evmAddress),
-                            type = RNBridge.AccountType.EVM,
-                            balance = null,
-                            nfts = null,
-                        )
-                        bridgeAccounts.add(evmAccount)
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.w(TAG, "getWalletProfiles() - EVM account not available: ${e.message}")
-                }
-
-                // Create wallet profile
-                val walletProfile = RNBridge.WalletProfile(
-                    name = userInfo?.nickname ?: "",
-                    avatar = userInfo?.avatar ?: "",
-                    uid = userId,
-                    accounts = bridgeAccounts
-                )
-
-                // For now, we return a single profile. In the future, this could be extended
-                // to support multiple profiles if the app supports multiple users/profiles
-                val profiles = listOf(walletProfile)
                 val response = RNBridge.WalletProfilesResponse(profiles = profiles)
                 val result = bridgeModelToWritableMap(response)
 
-                android.util.Log.d(TAG, "getWalletProfiles() - profiles mapped successfully")
+                android.util.Log.d(TAG, "getWalletProfiles() - ${profiles.size} profiles mapped successfully")
                 uiScope {
                     promise.resolve(result)
                 }
@@ -914,6 +937,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             uiScope {
                 promise.reject("PERMISSION_ERROR", "Failed to check notification permission: ${e.message}", e)
             }
+        }
+    }
+
+    override fun logToNative(level: String, message: String, args: ReadableArray) {
+        try {
+            // Convert ReadableArray to String array
+            val stringArgs = Array(args.size()) { i ->
+                args.getString(i) ?: ""
+            }
+
+            // Delegate to the centralized Instabug logging system in Log.kt
+            logToInstabug(level, message, *stringArgs)
+        } catch (e: Exception) {
+            // Fallback with just the message if args conversion fails
+            logToInstabug(level, message)
         }
     }
 

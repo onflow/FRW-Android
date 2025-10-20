@@ -48,6 +48,13 @@
     <string name="explore">Explore</string>
     <string name="profile">Settings</string>
     <string name="things_you">Things You \nNeed to Know</string>
+
+    <!-- Surge Pricing Dialog -->
+    <string name="surge_pricing_title">Are you really sure that you want to continue with surge pricing?</string>
+    <string name="surge_current_fee">Your transaction fee:</string>
+    <string name="surge_active">Surge price active</string>
+    <string name="surge_description">Due to high network activity, transaction fees are elevated, and Flow Wallet is temporarily not paying for your gas. Current network fees are 4× higher than usual.</string>
+    <string name="surge_hold_to_confirm">Hold to agree to surge pricing</string>
     <string name="wallet_create_warning_tip">In the next step, you will see a secret phrase (12 words). The secret phrase is the only key to recover your wallet.</string>
     <string name="create_wallet_warning1">If I lose my secret phrases, I cannot access my account forever.</string>
     <string name="create_wallet_warning2">If I expose my secret phrases anywhere, my funds can be stolen.</string>

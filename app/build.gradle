@@ -68,6 +68,16 @@ def dropboxKeyProd = apiKeys.getProperty("DROPBOX_APP_KEY_PROD") ?: "fallbackPro
 def codePushKeyStaging = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_STAGING") ?: "staging-placeholder"
 def codePushKeyProduction = apiKeys.getProperty("CODEPUSH_KEY_ANDROID_PRODUCTION") ?: "production-placeholder"
 
+// Normalize versionName prefixes per buildType
+// - debug/dev -> dX.Y.Z (development)
+// - releaseDebug -> iX.Y.Z (internal QA)
+// - release -> rX.Y.Z (production)
+def vNameRaw = vName
+def vNum = (vNameRaw ?: "0.0.0").replaceAll("^[a-zA-Z]", "")
+def verNameDev = "d${vNum}"
+def verNameInternal = "i${vNum}"
+def verNameRelease = "r${vNum}"
+
 android {
     compileSdk 35
 
@@ -273,6 +283,25 @@ android {
         checkAllWarnings true
         abortOnError true // stop the build if errors found
         warningsAsErrors false // do not treat warnings as errors
+    }
+}
+
+// Set versionName per buildType using Variant API (AGP 7/8)
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def num = (vName ?: "0.0.0").replaceAll('^[a-zA-Z]', '')
+        def bt = variant.hasProperty('buildType') ? variant.buildType : variant.name
+        def prefix = 'd'
+        if (bt == 'release') {
+            prefix = 'r'
+        } else if (bt == 'releaseDebug') {
+            prefix = 'i'
+        } else if (bt == 'dev' || bt == 'debug') {
+            prefix = 'd'
+        }
+        variant.outputs.each { output ->
+            output.versionName.set(prefix + num)
+        }
     }
 }
 

@@ -250,6 +250,18 @@ object MixpanelManager {
         trackEvent(EVENT_ACCOUNT_RECOVERED, properties)
     }
 
+    fun surgePricingAlertShown() {
+        trackEvent(EVENT_SURGE_PRICING_ALERT_SHOWN)
+    }
+
+    fun surgePricingAccepted() {
+        trackEvent(EVENT_SURGE_PRICING_ACCEPTED)
+    }
+
+    fun surgePricingDeclined() {
+        trackEvent(EVENT_SURGE_PRICING_DECLINED)
+    }
+
     private fun trackMultiBackupEvent(eventName: String, provider: MixpanelBackupProvider?) {
         val properties = JSONObject().apply {
             put(KEY_ADDRESS, WalletManager.wallet()?.walletAddress())
@@ -280,6 +292,14 @@ object MixpanelManager {
         } else {
             loge(TAG, "Mixpanel is not initialized")
         }
+    }
+
+    fun track(eventName: String, properties: Map<String, Any>) {
+        val jsonProperties = JSONObject()
+        properties.forEach { (key, value) ->
+            jsonProperties.put(key, value)
+        }
+        trackEvent(eventName, jsonProperties)
     }
 
     private fun trackEvent(eventName: String, properties: JSONObject? = null) {
