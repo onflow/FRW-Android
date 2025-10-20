@@ -274,4 +274,26 @@ class RNBridge {
         @SerializedName("evm") EVM
     }
 
+    data class RecoveryPhraseResponse(
+        @SerializedName("phrase")
+        val phrase: List<String>,
+        @SerializedName("mnemonic")
+        val mnemonic: String
+    )
+
+    data class CreateAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String?,
+        @SerializedName("username")
+        val username: String?,
+        @SerializedName("mnemonic")
+        val mnemonic: String?,
+        @SerializedName("phrase")
+        val phrase: List<String>?,
+        @SerializedName("error")
+        val error: String?
+    )
+
 }

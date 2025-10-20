@@ -735,6 +735,188 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun generateRecoveryPhrase(promise: Promise) {
+        android.util.Log.d(TAG, "generateRecoveryPhrase() called")
+        ioScope {
+            try {
+                android.util.Log.d(TAG, "generateRecoveryPhrase() - generating new mnemonic...")
+                
+                // Generate a new 12-word mnemonic using BIP39
+                val mnemonic = com.flow.wallet.crypto.BIP39.generate(
+                    com.flow.wallet.crypto.BIP39.SeedPhraseLength.TWELVE
+                )
+                
+                android.util.Log.d(TAG, "generateRecoveryPhrase() - mnemonic generated successfully")
+                
+                // Split into array of words
+                val phraseWords = mnemonic.split(" ")
+                
+                // Create response
+                val response = RNBridge.RecoveryPhraseResponse(
+                    phrase = phraseWords,
+                    mnemonic = mnemonic
+                )
+                
+                val result = bridgeModelToWritableMap(response)
+                
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "generateRecoveryPhrase() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("RECOVERY_PHRASE_ERROR", "Failed to generate recovery phrase: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    override fun createAccount(promise: Promise) {
+        android.util.Log.d(TAG, "createAccount() called")
+        ioScope {
+            try {
+                // Auto-generate username using timestamp
+                val username = "user_${System.currentTimeMillis()}"
+                android.util.Log.d(TAG, "createAccount() - generated username: $username")
+                android.util.Log.d(TAG, "createAccount() - starting account registration...")
+                
+                // Use the existing registerOutblock function which handles:
+                // - Generating mnemonic and keys
+                // - Registering with backend server
+                // - Creating Flow blockchain account
+                // - Setting up Firebase authentication
+                // - Creating local Account in AccountManager
+                val success = com.flowfoundation.wallet.network.registerOutblock(username)
+                
+                if (success) {
+                    android.util.Log.d(TAG, "createAccount() - account created successfully")
+                    
+                    // Get the created account details
+                    val account = AccountManager.get()
+                    val address = WalletManager.selectedWalletAddress()
+                    
+                    // Retrieve the mnemonic that was generated during registration
+                    val mnemonic = try {
+                        com.flowfoundation.wallet.wallet.Wallet.store().mnemonic()
+                    } catch (e: Exception) {
+                        android.util.Log.e(TAG, "Failed to retrieve mnemonic: ${e.message}")
+                        null
+                    }
+                    
+                    val phraseWords = mnemonic?.split(" ")
+                    
+                    val response = RNBridge.CreateAccountResponse(
+                        success = true,
+                        address = address,
+                        username = account?.userInfo?.username ?: username,
+                        mnemonic = mnemonic,
+                        phrase = phraseWords,
+                        error = null
+                    )
+                    
+                    val result = bridgeModelToWritableMap(response)
+                    
+                    uiScope {
+                        promise.resolve(result)
+                    }
+                } else {
+                    android.util.Log.e(TAG, "createAccount() - account creation failed")
+                    
+                    val response = RNBridge.CreateAccountResponse(
+                        success = false,
+                        address = null,
+                        username = null,
+                        mnemonic = null,
+                        phrase = null,
+                        error = "Failed to create account"
+                    )
+                    
+                    val result = bridgeModelToWritableMap(response)
+                    
+                    uiScope {
+                        promise.resolve(result)
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "createAccount() - error: ${e.message}")
+                e.printStackTrace()
+                
+                val response = RNBridge.CreateAccountResponse(
+                    success = false,
+                    address = null,
+                    username = null,
+                    mnemonic = null,
+                    phrase = null,
+                    error = e.message ?: "Unknown error"
+                )
+                
+                val result = bridgeModelToWritableMap(response)
+                
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
+    }
+
+    override fun requestNotificationPermission(promise: Promise) {
+        android.util.Log.d(TAG, "requestNotificationPermission() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            
+            if (currentActivity == null) {
+                android.util.Log.e(TAG, "requestNotificationPermission() - no current activity")
+                uiScope {
+                    promise.reject("NO_ACTIVITY", "No current activity available")
+                }
+                return
+            }
+            
+            // Check Android version
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                android.util.Log.d(TAG, "requestNotificationPermission() - launching NotificationPermissionActivity")
+                
+                // Launch the existing notification permission activity
+                com.flowfoundation.wallet.page.others.NotificationPermissionActivity.launch(currentActivity)
+                
+                uiScope {
+                    promise.resolve(true)
+                }
+            } else {
+                // Notifications are automatically granted on Android < 13
+                android.util.Log.d(TAG, "requestNotificationPermission() - Android < 13, permission auto-granted")
+                uiScope {
+                    promise.resolve(true)
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "requestNotificationPermission() - error: ${e.message}")
+            e.printStackTrace()
+            uiScope {
+                promise.reject("PERMISSION_ERROR", "Failed to request notification permission: ${e.message}", e)
+            }
+        }
+    }
+
+    override fun checkNotificationPermission(promise: Promise) {
+        android.util.Log.d(TAG, "checkNotificationPermission() called")
+        try {
+            val isGranted = com.flowfoundation.wallet.utils.isNotificationPermissionGrand(reactApplicationContext)
+            android.util.Log.d(TAG, "checkNotificationPermission() - isGranted: $isGranted")
+            
+            uiScope {
+                promise.resolve(isGranted)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "checkNotificationPermission() - error: ${e.message}")
+            e.printStackTrace()
+            uiScope {
+                promise.reject("PERMISSION_ERROR", "Failed to check notification permission: ${e.message}", e)
+            }
+        }
+    }
+
     companion object {
         const val NAME = "NativeFRWBridge"
     }
