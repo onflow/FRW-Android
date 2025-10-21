@@ -13,7 +13,8 @@ import com.flowfoundation.wallet.databinding.FragmentWalletUnregisteredBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.wallet.adapter.WalletAccountAdapter
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
@@ -43,7 +44,8 @@ class WalletUnregisteredFragment : Fragment() {
                 if (isTestnet()) {
                     SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
                 } else {
-                    WalletCreateActivity.launch(requireContext())
+                    // Launch React Native onboarding flow
+                    ReactNativeActivity.launch(requireContext(), RNBridge.ScreenType.ONBOARDING)
                 }
             }
             importButton.setOnClickListener { WalletRestoreActivity.launch(requireContext()) }

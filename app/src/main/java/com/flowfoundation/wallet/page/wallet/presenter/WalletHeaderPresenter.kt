@@ -77,10 +77,7 @@ class WalletHeaderPresenter(
                 ReactNativeActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
             }
             cvReceive.setOnClickListener {
-                // TEMPORARY: Launch onboarding flow for testing
-                // TODO: Remove this and restore original receive functionality
-                ReactNativeActivity.launch(view.context, RNBridge.ScreenType.ONBOARDING)
-                // Original code: ReceiveActivity.launch(view.context)
+                ReceiveActivity.launch(view.context)
             }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address

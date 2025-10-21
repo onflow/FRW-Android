@@ -26,8 +26,8 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.BlockchainData
 import com.flowfoundation.wallet.network.model.WalletData
-import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.extensions.res2String
 import com.flowfoundation.wallet.utils.extensions.setVisible
 import com.flowfoundation.wallet.utils.format
@@ -170,7 +170,12 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                 if (isTestnet()) {
                     SwitchNetworkDialog(this, DialogType.CREATE).show()
                 } else {
-                    WalletCreateActivity.launch(this, step = WALLET_CREATE_STEP_USERNAME)
+                    // Launch React Native onboarding at ProfileTypeSelection screen
+                    val intent = android.content.Intent(this, ReactNativeActivity::class.java)
+                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.putExtra("screen", "onboarding")
+                    intent.putExtra("initialRoute", "ProfileTypeSelection")
+                    startActivity(intent)
                 }
             }
 
