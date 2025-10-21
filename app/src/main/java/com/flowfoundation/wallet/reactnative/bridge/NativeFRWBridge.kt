@@ -1,51 +1,48 @@
 package com.flowfoundation.wallet.reactnative.bridge
 
+import android.content.Intent
+import android.widget.Toast
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
-import com.facebook.react.bridge.WritableNativeMap
-import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableMap
+import com.facebook.react.bridge.WritableNativeArray
+import com.facebook.react.bridge.WritableNativeMap
 import com.flow.wallet.errors.WalletError
-import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.BuildConfig
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
-import com.flowfoundation.wallet.manager.emoji.model.Emoji
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.cache.recentTransactionCache
-import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
-import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.utils.isDev
-import com.flowfoundation.wallet.utils.isTesting
-import com.flowfoundation.wallet.network.API_HOST
-import com.flowfoundation.wallet.network.BASE_HOST
-import com.flowfoundation.wallet.manager.config.isGasFree
-import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.transaction.TransactionState
-import com.flowfoundation.wallet.manager.price.CurrencyManager
-import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
-import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
-import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
-import org.onflow.flow.models.TransactionStatus
-import org.onflow.flow.models.hexToBytes
-import org.onflow.flow.models.FlowAddress
-import android.content.Intent
-import android.widget.Toast
-import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
-import com.google.gson.Gson
-import org.json.JSONObject
-import org.json.JSONArray
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.config.isGasFree
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.manager.price.CurrencyManager
+import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
+import com.flowfoundation.wallet.manager.transaction.TransactionState
+import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.network.API_HOST
+import com.flowfoundation.wallet.network.BASE_HOST
+import com.flowfoundation.wallet.page.profile.subpage.currency.model.selectedCurrency
+import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
+import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.ioScope
+import com.flowfoundation.wallet.utils.isDev
+import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logToInstabug
+import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.uiScope
+import com.google.gson.Gson
+import org.json.JSONArray
+import org.json.JSONObject
+import org.onflow.flow.models.FlowAddress
+import org.onflow.flow.models.TransactionStatus
+import org.onflow.flow.models.hexToBytes
 import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
@@ -763,25 +760,25 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         ioScope {
             try {
                 android.util.Log.d(TAG, "generateRecoveryPhrase() - generating new mnemonic...")
-                
+
                 // Generate a new 12-word mnemonic using BIP39
                 val mnemonic = com.flow.wallet.crypto.BIP39.generate(
                     com.flow.wallet.crypto.BIP39.SeedPhraseLength.TWELVE
                 )
-                
+
                 android.util.Log.d(TAG, "generateRecoveryPhrase() - mnemonic generated successfully")
-                
+
                 // Split into array of words
                 val phraseWords = mnemonic.split(" ")
-                
+
                 // Create response
                 val response = RNBridge.RecoveryPhraseResponse(
                     phrase = phraseWords,
                     mnemonic = mnemonic
                 )
-                
+
                 val result = bridgeModelToWritableMap(response)
-                
+
                 uiScope {
                     promise.resolve(result)
                 }
@@ -800,7 +797,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         ioScope {
             try {
                 android.util.Log.d(TAG, "createEOAAccount() - TODO: Implement pure EOA account creation using Flow Wallet Kit")
-                
+
                 // TODO: Implement pure EOA (Externally Owned Account) creation
                 // This should:
                 // 1. Generate a new 12-word mnemonic
@@ -811,7 +808,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // 6. Pure mnemonic-based account for EVM compatibility
                 //
                 // Implementation will use Flow Wallet Kit when available
-                
+
                 uiScope {
                     promise.reject(
                         "NOT_IMPLEMENTED",
@@ -822,7 +819,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "createEOAAccount() - error: ${e.message}")
                 e.printStackTrace()
-                
+
                 val response = RNBridge.CreateAccountResponse(
                     success = false,
                     address = null,
@@ -832,9 +829,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     accountType = "eoa",
                     error = e.message ?: "Unknown error"
                 )
-                
+
                 val result = bridgeModelToWritableMap(response)
-                
+
                 uiScope {
                     promise.resolve(result)
                 }
@@ -850,7 +847,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val username = "user_${System.currentTimeMillis()}"
                 android.util.Log.d(TAG, "createCOAAccount() - generated username: $username")
                 android.util.Log.d(TAG, "createCOAAccount() - starting account registration...")
-                
+
                 // Use the existing registerOutblock function which creates a COA/Hybrid account:
                 // - Generates mnemonic and keys
                 // - Registers with backend server (COA characteristic)
@@ -858,14 +855,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // - Sets up Firebase authentication (COA characteristic)
                 // - Creates local Account in AccountManager
                 val success = com.flowfoundation.wallet.network.registerOutblock(username)
-                
+
                 if (success) {
                     android.util.Log.d(TAG, "createCOAAccount() - COA account created successfully")
-                    
+
                     // Get the created account details
                     val account = AccountManager.get()
                     val address = WalletManager.selectedWalletAddress()
-                    
+
                     // Retrieve the mnemonic that was generated during registration
                     val mnemonic = try {
                         com.flowfoundation.wallet.wallet.Wallet.store().mnemonic()
@@ -873,9 +870,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         android.util.Log.e(TAG, "Failed to retrieve mnemonic: ${e.message}")
                         null
                     }
-                    
+
                     val phraseWords = mnemonic?.split(" ")
-                    
+
                     val response = RNBridge.CreateAccountResponse(
                         success = true,
                         address = address,
@@ -885,15 +882,15 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         accountType = "coa",
                         error = null
                     )
-                    
+
                     val result = bridgeModelToWritableMap(response)
-                    
+
                     uiScope {
                         promise.resolve(result)
                     }
                 } else {
                     android.util.Log.e(TAG, "createCOAAccount() - account creation failed")
-                    
+
                     val response = RNBridge.CreateAccountResponse(
                         success = false,
                         address = null,
@@ -903,9 +900,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         accountType = "coa",
                         error = "Failed to create account"
                     )
-                    
+
                     val result = bridgeModelToWritableMap(response)
-                    
+
                     uiScope {
                         promise.resolve(result)
                     }
@@ -913,7 +910,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "createCOAAccount() - error: ${e.message}")
                 e.printStackTrace()
-                
+
                 val response = RNBridge.CreateAccountResponse(
                     success = false,
                     address = null,
@@ -923,9 +920,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     accountType = "coa",
                     error = e.message ?: "Unknown error"
                 )
-                
+
                 val result = bridgeModelToWritableMap(response)
-                
+
                 uiScope {
                     promise.resolve(result)
                 }
@@ -937,7 +934,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         android.util.Log.d(TAG, "requestNotificationPermission() called")
         try {
             val currentActivity = reactApplicationContext.currentActivity
-            
+
             if (currentActivity == null) {
                 android.util.Log.e(TAG, "requestNotificationPermission() - no current activity")
                 uiScope {
@@ -945,14 +942,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 }
                 return
             }
-            
+
             // Check Android version
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
                 android.util.Log.d(TAG, "requestNotificationPermission() - launching NotificationPermissionActivity")
-                
+
                 // Launch the existing notification permission activity
                 com.flowfoundation.wallet.page.others.NotificationPermissionActivity.launch(currentActivity)
-                
+
                 uiScope {
                     promise.resolve(true)
                 }
@@ -977,7 +974,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         try {
             val isGranted = com.flowfoundation.wallet.utils.isNotificationPermissionGrand(reactApplicationContext)
             android.util.Log.d(TAG, "checkNotificationPermission() - isGranted: $isGranted")
-            
+
             uiScope {
                 promise.resolve(isGranted)
             }
@@ -1009,12 +1006,12 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         android.util.Log.d(TAG, "setScreenSecurityLevel() called with level: $level")
         try {
             val currentActivity = reactApplicationContext.currentActivity
-            
+
             if (currentActivity == null) {
                 android.util.Log.w(TAG, "setScreenSecurityLevel() - no current activity")
                 return
             }
-            
+
             currentActivity.runOnUiThread {
                 when (level) {
                     "secure" -> {
