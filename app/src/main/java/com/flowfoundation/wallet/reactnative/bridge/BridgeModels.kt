@@ -281,6 +281,11 @@ class RNBridge {
         val mnemonic: String
     )
 
+    enum class ScreenSecurityLevel {
+        @SerializedName("normal") NORMAL,
+        @SerializedName("secure") SECURE
+    }
+
     data class CreateAccountResponse(
         @SerializedName("success")
         val success: Boolean,
@@ -292,6 +297,8 @@ class RNBridge {
         val mnemonic: String?,
         @SerializedName("phrase")
         val phrase: List<String>?,
+        @SerializedName("accountType")
+        val accountType: String?, // "eoa" or "coa"
         @SerializedName("error")
         val error: String?
     )

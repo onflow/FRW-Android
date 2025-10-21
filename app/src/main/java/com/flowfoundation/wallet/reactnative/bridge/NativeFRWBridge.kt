@@ -795,25 +795,72 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun createAccount(promise: Promise) {
-        android.util.Log.d(TAG, "createAccount() called")
+    override fun createEOAAccount(promise: Promise) {
+        android.util.Log.d(TAG, "createEOAAccount() called")
+        ioScope {
+            try {
+                android.util.Log.d(TAG, "createEOAAccount() - TODO: Implement pure EOA account creation using Flow Wallet Kit")
+                
+                // TODO: Implement pure EOA (Externally Owned Account) creation
+                // This should:
+                // 1. Generate a new 12-word mnemonic
+                // 2. Derive private key from mnemonic (m/44'/539'/0'/0/0)
+                // 3. Create Flow account on-chain WITHOUT server registration
+                // 4. Store mnemonic securely (encrypted local storage)
+                // 5. NO Firebase sync, NO backend registration
+                // 6. Pure mnemonic-based account for EVM compatibility
+                //
+                // Implementation will use Flow Wallet Kit when available
+                
+                uiScope {
+                    promise.reject(
+                        "NOT_IMPLEMENTED",
+                        "Pure EOA account creation not yet implemented. Will use Flow Wallet Kit in future.",
+                        null
+                    )
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "createEOAAccount() - error: ${e.message}")
+                e.printStackTrace()
+                
+                val response = RNBridge.CreateAccountResponse(
+                    success = false,
+                    address = null,
+                    username = null,
+                    mnemonic = null,
+                    phrase = null,
+                    accountType = "eoa",
+                    error = e.message ?: "Unknown error"
+                )
+                
+                val result = bridgeModelToWritableMap(response)
+                
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
+    }
+
+    override fun createCOAAccount(promise: Promise) {
+        android.util.Log.d(TAG, "createCOAAccount() called (Secure Enclave/Hybrid account)")
         ioScope {
             try {
                 // Auto-generate username using timestamp
                 val username = "user_${System.currentTimeMillis()}"
-                android.util.Log.d(TAG, "createAccount() - generated username: $username")
-                android.util.Log.d(TAG, "createAccount() - starting account registration...")
+                android.util.Log.d(TAG, "createCOAAccount() - generated username: $username")
+                android.util.Log.d(TAG, "createCOAAccount() - starting account registration...")
                 
-                // Use the existing registerOutblock function which handles:
-                // - Generating mnemonic and keys
-                // - Registering with backend server
-                // - Creating Flow blockchain account
-                // - Setting up Firebase authentication
-                // - Creating local Account in AccountManager
+                // Use the existing registerOutblock function which creates a COA/Hybrid account:
+                // - Generates mnemonic and keys
+                // - Registers with backend server (COA characteristic)
+                // - Creates Flow blockchain account
+                // - Sets up Firebase authentication (COA characteristic)
+                // - Creates local Account in AccountManager
                 val success = com.flowfoundation.wallet.network.registerOutblock(username)
                 
                 if (success) {
-                    android.util.Log.d(TAG, "createAccount() - account created successfully")
+                    android.util.Log.d(TAG, "createCOAAccount() - COA account created successfully")
                     
                     // Get the created account details
                     val account = AccountManager.get()
@@ -835,6 +882,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         username = account?.userInfo?.username ?: username,
                         mnemonic = mnemonic,
                         phrase = phraseWords,
+                        accountType = "coa",
                         error = null
                     )
                     
@@ -844,7 +892,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         promise.resolve(result)
                     }
                 } else {
-                    android.util.Log.e(TAG, "createAccount() - account creation failed")
+                    android.util.Log.e(TAG, "createCOAAccount() - account creation failed")
                     
                     val response = RNBridge.CreateAccountResponse(
                         success = false,
@@ -852,6 +900,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         username = null,
                         mnemonic = null,
                         phrase = null,
+                        accountType = "coa",
                         error = "Failed to create account"
                     )
                     
@@ -862,7 +911,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     }
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "createAccount() - error: ${e.message}")
+                android.util.Log.e(TAG, "createCOAAccount() - error: ${e.message}")
                 e.printStackTrace()
                 
                 val response = RNBridge.CreateAccountResponse(
@@ -871,6 +920,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     username = null,
                     mnemonic = null,
                     phrase = null,
+                    accountType = "coa",
                     error = e.message ?: "Unknown error"
                 )
                 
@@ -952,6 +1002,44 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         } catch (e: Exception) {
             // Fallback with just the message if args conversion fails
             logToInstabug(level, message)
+        }
+    }
+
+    override fun setScreenSecurityLevel(level: String) {
+        android.util.Log.d(TAG, "setScreenSecurityLevel() called with level: $level")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "setScreenSecurityLevel() - no current activity")
+                return
+            }
+            
+            currentActivity.runOnUiThread {
+                when (level) {
+                    "secure" -> {
+                        // Prevent screenshots and screen recording
+                        currentActivity.window.setFlags(
+                            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+                            android.view.WindowManager.LayoutParams.FLAG_SECURE
+                        )
+                        android.util.Log.d(TAG, "setScreenSecurityLevel() - FLAG_SECURE enabled")
+                    }
+                    "normal" -> {
+                        // Allow screenshots again
+                        currentActivity.window.clearFlags(
+                            android.view.WindowManager.LayoutParams.FLAG_SECURE
+                        )
+                        android.util.Log.d(TAG, "setScreenSecurityLevel() - FLAG_SECURE disabled")
+                    }
+                    else -> {
+                        android.util.Log.w(TAG, "setScreenSecurityLevel() - unknown level: $level")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "setScreenSecurityLevel() error: ${e.message}")
+            e.printStackTrace()
         }
     }
 
