@@ -1040,6 +1040,64 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun launchMultiBackup() {
+        android.util.Log.d(TAG, "launchMultiBackup() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchMultiBackup() - no current activity")
+                return
+            }
+            
+            // Launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
+            com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(currentActivity)
+            android.util.Log.d(TAG, "launchMultiBackup() - launched MultiBackupActivity")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchMultiBackup() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun launchDeviceBackup() {
+        android.util.Log.d(TAG, "launchDeviceBackup() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchDeviceBackup() - no current activity")
+                return
+            }
+            
+            // Launch CreateDeviceBackupActivity (QR code sync between devices)
+            com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(currentActivity)
+            android.util.Log.d(TAG, "launchDeviceBackup() - launched CreateDeviceBackupActivity")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchDeviceBackup() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun launchSeedPhraseBackup() {
+        android.util.Log.d(TAG, "launchSeedPhraseBackup() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchSeedPhraseBackup() - no current activity")
+                return
+            }
+            
+            // Launch BackupRecoveryPhraseActivity (View/create recovery phrase)
+            val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(currentActivity)
+            currentActivity.startActivity(intent)
+            android.util.Log.d(TAG, "launchSeedPhraseBackup() - launched BackupRecoveryPhraseActivity")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchSeedPhraseBackup() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
     companion object {
         const val NAME = "NativeFRWBridge"
     }
