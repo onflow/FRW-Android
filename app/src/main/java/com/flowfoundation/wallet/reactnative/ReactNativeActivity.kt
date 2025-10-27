@@ -248,5 +248,29 @@ class ReactNativeActivity : ReactActivity() {
             val sendToConfig = RNBridge.SendToConfig(null, finalFromAccount, null, targetAddress)
             launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network)
         }
+
+        /**
+         * Launch the Receive screen with default address and network
+         */
+        fun launchReceive(context: Context) {
+            Log.d(TAG, "Launching ReactNativeActivity for Receive screen")
+
+            val address = WalletManager.selectedWalletAddress().toAddress()
+            val network = chainNetWorkString()
+
+            val intent = Intent(context, ReactNativeActivity::class.java)
+
+            // Add flags to ensure the activity comes to the foreground prominently
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+
+            intent.putExtra("address", address)
+            intent.putExtra("network", network)
+            intent.putExtra("initialRoute", "Receive")
+
+            Log.d(TAG, "Launching Receive screen with address: $address, network: $network")
+            context.startActivity(intent)
+        }
     }
 }
