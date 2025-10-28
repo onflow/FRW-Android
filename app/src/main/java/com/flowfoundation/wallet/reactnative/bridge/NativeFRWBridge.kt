@@ -48,6 +48,8 @@ import com.flowfoundation.wallet.utils.logToInstabug
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
+import java.io.File
+import java.io.FileOutputStream
 import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
@@ -242,10 +244,10 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
 
                 // Save bitmap to cache directory
-                val cachePath = android.os.File(reactApplicationContext.cacheDir, "images")
+                val cachePath = File(reactApplicationContext.cacheDir, "images")
                 cachePath.mkdirs()
-                val file = android.os.File(cachePath, "qr_code_${System.currentTimeMillis()}.png")
-                val fileOutputStream = java.io.FileOutputStream(file)
+                val file = File(cachePath, "qr_code_${System.currentTimeMillis()}.png")
+                val fileOutputStream = FileOutputStream(file)
                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, fileOutputStream)
                 fileOutputStream.close()
 
