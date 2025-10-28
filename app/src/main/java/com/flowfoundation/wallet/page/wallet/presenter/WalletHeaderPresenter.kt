@@ -26,7 +26,6 @@ import com.flowfoundation.wallet.page.notification.model.Priority
 import com.flowfoundation.wallet.page.notification.model.Type
 import com.flowfoundation.wallet.page.notification.model.WalletNotification
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.model.PendingRequestModel
-import com.flowfoundation.wallet.page.receive.ReceiveActivity
 import com.flowfoundation.wallet.page.token.addtoken.AddTokenActivity
 import com.flowfoundation.wallet.page.token.custom.AddCustomTokenActivity
 import com.flowfoundation.wallet.page.token.manage.ManageTokenActivity
@@ -76,7 +75,7 @@ class WalletHeaderPresenter(
                 // Launch React Native Demo Activity instead of TransactionSendActivity
                 ReactNativeActivity.launch(view.context, RNBridge.ScreenType.SEND_ASSET)
             }
-            cvReceive.setOnClickListener { ReceiveActivity.launch(view.context) }
+            cvReceive.setOnClickListener { ReactNativeActivity.launchReceive(view.context) }
             val address = shortenEVMString(WalletManager.selectedWalletAddress().toAddress())
             tvAddress.text = address
             ivCopy.setVisible(address.isNotBlank())

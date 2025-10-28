@@ -254,7 +254,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 // Get content URI using FileProvider
                 val contentUri = androidx.core.content.FileProvider.getUriForFile(
                     reactApplicationContext,
-                    "${reactApplicationContext.packageName}.fileprovider",
+                    "${reactApplicationContext.packageName}.provider",
                     file
                 )
 
