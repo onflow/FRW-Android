@@ -262,7 +262,7 @@ android {
     }
 
     namespace 'com.flowfoundation.wallet'
-    
+
     // Android App Bundle configuration for 16 KB page size support
     bundle {
         language {
@@ -278,7 +278,7 @@ android {
             enableSplit = true
         }
     }
-    
+
     lintOptions {
         checkAllWarnings true
         abortOnError true // stop the build if errors found
@@ -352,7 +352,7 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     // Fetch Flow Wallet Kit from GitHub Packages
-    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.1.9'
+    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.0-p1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
