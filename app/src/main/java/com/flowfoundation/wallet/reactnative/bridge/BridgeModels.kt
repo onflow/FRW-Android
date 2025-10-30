@@ -153,6 +153,13 @@ class RNBridge {
         val rate: String
     )
 
+    data class SaveMnemonicResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("error")
+        val error: String
+    )
+
     data class NFTModel(
         @SerializedName("id")
         val id: String?,
@@ -273,34 +280,5 @@ class RNBridge {
         @SerializedName("flow") FLOW,
         @SerializedName("evm") EVM
     }
-
-    data class RecoveryPhraseResponse(
-        @SerializedName("phrase")
-        val phrase: List<String>,
-        @SerializedName("mnemonic")
-        val mnemonic: String
-    )
-
-    enum class ScreenSecurityLevel {
-        @SerializedName("normal") NORMAL,
-        @SerializedName("secure") SECURE
-    }
-
-    data class CreateAccountResponse(
-        @SerializedName("success")
-        val success: Boolean,
-        @SerializedName("address")
-        val address: String?,
-        @SerializedName("username")
-        val username: String?,
-        @SerializedName("mnemonic")
-        val mnemonic: String?,
-        @SerializedName("phrase")
-        val phrase: List<String>?,
-        @SerializedName("accountType")
-        val accountType: String?, // "eoa" or "coa"
-        @SerializedName("error")
-        val error: String?
-    )
 
 }

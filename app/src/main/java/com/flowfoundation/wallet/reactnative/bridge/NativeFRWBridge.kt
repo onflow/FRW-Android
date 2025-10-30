@@ -930,6 +930,77 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun saveMnemonic(mnemonic: String, address: String, promise: Promise) {
+        android.util.Log.d(TAG, "saveMnemonic() called for address: $address")
+        ioScope {
+            try {
+                // 1. Store mnemonic securely using Wallet.store()
+                // This uses the existing secure storage infrastructure
+                val walletStore = com.flowfoundation.wallet.wallet.Wallet.store()
+
+                // Save the mnemonic (it will be encrypted by the wallet store)
+                walletStore.saveMnemonic(mnemonic)
+                android.util.Log.d(TAG, "saveMnemonic() - mnemonic saved to secure storage")
+
+                // 2. Create a basic Account object for EOA and add to AccountManager
+                // EOA accounts don't have Firebase UID or backend registration
+                val account = Account(
+                    userInfo = UserInfo(
+                        username = "eoa_${address.removePrefix("0x")}",
+                        avatar = null,
+                        nickname = "EOA Account"
+                    ),
+                    prefix = address,
+                    wallet = WalletListData(
+                        wallets = listOf(
+                            WalletData(
+                                blockchain = listOf(
+                                    Blockchain(
+                                        address = address,
+                                        chainId = chainNetWorkString() // "mainnet" or "testnet"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+
+                // Add account to AccountManager without Firebase UID (null = EOA)
+                AccountManager.add(account, null)
+                android.util.Log.d(TAG, "saveMnemonic() - EOA account added to AccountManager")
+
+                // Initialize WalletManager to pick up the new account
+                WalletManager.init()
+                android.util.Log.d(TAG, "saveMnemonic() - WalletManager initialized")
+
+                val response = RNBridge.SaveMnemonicResponse(
+                    success = true,
+                    error = null
+                )
+
+                val result = bridgeModelToWritableMap(response)
+
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "saveMnemonic() - error: ${e.message}")
+                e.printStackTrace()
+
+                val response = RNBridge.SaveMnemonicResponse(
+                    success = false,
+                    error = e.message ?: "Failed to save mnemonic"
+                )
+
+                val result = bridgeModelToWritableMap(response)
+
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
+    }
+
     override fun requestNotificationPermission(promise: Promise) {
         android.util.Log.d(TAG, "requestNotificationPermission() called")
         try {
