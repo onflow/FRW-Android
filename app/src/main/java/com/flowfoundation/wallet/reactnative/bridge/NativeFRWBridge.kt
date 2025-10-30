@@ -189,50 +189,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun generateQRCode(data: String, promise: Promise) {
-        ioScope {
-            try {
-                logd(TAG, "generateQRCode() called for data: $data")
-
-                // Generate QR code bitmap using zxing
-                val qrCodeBitmap = com.google.zxing.qrcode.QRCodeWriter().encode(
-                    data,
-                    com.google.zxing.BarcodeFormat.QR_CODE,
-                    800, // width
-                    800  // height
-                )
-
-                // Convert BitMatrix to Bitmap
-                val width = qrCodeBitmap.width
-                val height = qrCodeBitmap.height
-                val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.RGB_565)
-
-                for (x in 0 until width) {
-                    for (y in 0 until height) {
-                        bitmap.setPixel(x, y, if (qrCodeBitmap[x, y]) android.graphics.Color.BLACK else android.graphics.Color.WHITE)
-                    }
-                }
-
-                // Convert bitmap to base64 data URL
-                val outputStream = java.io.ByteArrayOutputStream()
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, outputStream)
-                val byteArray = outputStream.toByteArray()
-                val base64String = android.util.Base64.encodeToString(byteArray, android.util.Base64.NO_WRAP)
-                val dataUrl = "data:image/png;base64,$base64String"
-
-                logd(TAG, "generateQRCode() - QR code generated successfully")
-                uiScope {
-                    promise.resolve(dataUrl)
-                }
-            } catch (e: Exception) {
-                loge(TAG, "generateQRCode() - error: ${e.message}")
-                uiScope {
-                    promise.reject("QR_GENERATION_ERROR", "Failed to generate QR code: ${e.message}", e)
-                }
-            }
-        }
-    }
-
     override fun shareQRCode(address: String, qrCodeDataUrl: String, promise: Promise) {
         ioScope {
             try {
