@@ -189,59 +189,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun shareQRCode(address: String, qrCodeDataUrl: String, promise: Promise) {
-        ioScope {
-            try {
-                logd(TAG, "shareQRCode() called for address: $address")
-
-                // Decode base64 data URL to bitmap
-                val base64String = qrCodeDataUrl.substring(qrCodeDataUrl.indexOf(",") + 1)
-                val decodedBytes = android.util.Base64.decode(base64String, android.util.Base64.DEFAULT)
-                val bitmap = android.graphics.BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
-
-                // Save bitmap to cache directory
-                val cachePath = File(reactApplicationContext.cacheDir, "images")
-                cachePath.mkdirs()
-                val file = File(cachePath, "qr_code_${System.currentTimeMillis()}.png")
-                val fileOutputStream = FileOutputStream(file)
-                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, fileOutputStream)
-                fileOutputStream.close()
-
-                // Get content URI using FileProvider
-                val contentUri = androidx.core.content.FileProvider.getUriForFile(
-                    reactApplicationContext,
-                    "${reactApplicationContext.packageName}.provider",
-                    file
-                )
-
-                // Create share intent
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "image/png"
-                    putExtra(Intent.EXTRA_STREAM, contentUri)
-                    putExtra(Intent.EXTRA_TEXT, "Flow Address: $address")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-
-                // Launch share chooser
-                val chooserIntent = Intent.createChooser(shareIntent, "Share QR Code")
-                chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-
-                uiScope {
-                    reactApplicationContext.startActivity(chooserIntent)
-                    promise.resolve(null)
-                }
-
-                logd(TAG, "shareQRCode() - share dialog launched successfully")
-            } catch (e: Exception) {
-                loge(TAG, "shareQRCode() - error: ${e.message}")
-                uiScope {
-                    promise.reject("QR_SHARE_ERROR", "Failed to share QR code: ${e.message}", e)
-                }
-            }
-        }
-    }
-
     override fun getRecentContacts(promise: Promise) {
         ioScope {
             try {
