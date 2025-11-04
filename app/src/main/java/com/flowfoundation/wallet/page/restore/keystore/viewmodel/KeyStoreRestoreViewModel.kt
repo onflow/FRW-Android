@@ -474,10 +474,15 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     fun importWithUsername(username: String) {
+        logd("KeyStoreRestoreViewModel", "=== importWithUsername START ===")
+        logd("KeyStoreRestoreViewModel", "Username: $username")
+        logd("KeyStoreRestoreViewModel", "currentKeyStoreAddress: $currentKeyStoreAddress")
+
         if (currentKeyStoreAddress == null || username.isEmpty()
             || currentKeyStoreAddress?.address.isNullOrEmpty()
             || currentKeyStoreAddress?.address == "0x"
         ) {
+            logd("KeyStoreRestoreViewModel", "ERROR: Validation failed - currentKeyStoreAddress=$currentKeyStoreAddress, username=$username")
             loadingLiveData.postValue(false)
             toast(msgRes = R.string.login_failure)
             return
@@ -495,40 +500,69 @@ class KeyStoreRestoreViewModel : ViewModel() {
             return
         }
         ioScope {
-            val cryptoProvider =
-                PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
-            val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
-            val currentKey = currentKeyStoreAddress?.run {
-                val flowAccount = FlowCadenceApi.getAccount(this.address)
-                flowAccount.keys?.find { it.publicKey == publicKey }
-            } ?: run {
-                toast(msgRes = R.string.login_failure)
-                activity.finish()
-                return@ioScope
-            }
-            if (currentKey.weight.toInt() < 1000) {
-                toast(msgRes = R.string.restore_failure_insufficient_weight)
-                activity.finish()
-                return@ioScope
-            }
-            if (currentKey.revoked) {
-                toast(msgRes = R.string.restore_failure_key_revoked)
-                activity.finish()
-                return@ioScope
-            }
-            import(cryptoProvider, username) { isSuccess ->
-                uiScope {
-                    loadingLiveData.postValue(false)
-                    if (isSuccess) {
-                        CryptoProviderManager.clear()
-                        delay(200)
-                        MixpanelManager.accountRestore(cryptoProvider.getAddress(), restoreType)
-                        MainActivity.relaunch(activity, clearTop = true)
-                    } else {
-                        toast(msgRes = R.string.login_failure)
-                        activity.finish()
+            try {
+                logd("KeyStoreRestoreViewModel", "Creating CryptoProvider with KeystoreAddress")
+                val cryptoProvider =
+                    PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
+                logd("KeyStoreRestoreViewModel", "CryptoProvider created successfully")
+
+                val activity = BaseActivity.getCurrentActivity() ?: run {
+                    logd("KeyStoreRestoreViewModel", "ERROR: No current activity found")
+                    return@ioScope
+                }
+
+                logd("KeyStoreRestoreViewModel", "Fetching on-chain account for verification: ${currentKeyStoreAddress?.address}")
+                val currentKey = currentKeyStoreAddress?.run {
+                    val flowAccount = FlowCadenceApi.getAccount(this.address)
+                    logd("KeyStoreRestoreViewModel", "Got Flow account, keys count: ${flowAccount.keys?.size}")
+                    flowAccount.keys?.find { it.publicKey == publicKey }
+                } ?: run {
+                    logd("KeyStoreRestoreViewModel", "ERROR: Could not find matching key on-chain for public key: ${currentKeyStoreAddress?.publicKey}")
+                    toast(msgRes = R.string.login_failure)
+                    activity.finish()
+                    return@ioScope
+                }
+
+                logd("KeyStoreRestoreViewModel", "Found matching key - keyId: ${currentKey.index}, weight: ${currentKey.weight}, revoked: ${currentKey.revoked}")
+
+                if (currentKey.weight.toInt() < 1000) {
+                    logd("KeyStoreRestoreViewModel", "ERROR: Key weight insufficient: ${currentKey.weight}")
+                    toast(msgRes = R.string.restore_failure_insufficient_weight)
+                    activity.finish()
+                    return@ioScope
+                }
+                if (currentKey.revoked) {
+                    logd("KeyStoreRestoreViewModel", "ERROR: Key is revoked")
+                    toast(msgRes = R.string.restore_failure_key_revoked)
+                    activity.finish()
+                    return@ioScope
+                }
+
+                logd("KeyStoreRestoreViewModel", "Key validation passed, starting import process")
+                import(cryptoProvider, username) { isSuccess ->
+                    logd("KeyStoreRestoreViewModel", "Import process completed with result: $isSuccess")
+                    uiScope {
+                        loadingLiveData.postValue(false)
+                        if (isSuccess) {
+                            logd("KeyStoreRestoreViewModel", "Import successful, clearing CryptoProvider and launching MainActivity")
+                            CryptoProviderManager.clear()
+                            delay(200)
+                            MixpanelManager.accountRestore(cryptoProvider.getAddress(), restoreType)
+                            MainActivity.relaunch(activity, clearTop = true)
+                        } else {
+                            logd("KeyStoreRestoreViewModel", "ERROR: Import failed")
+                            toast(msgRes = R.string.login_failure)
+                            activity.finish()
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                logd("KeyStoreRestoreViewModel", "EXCEPTION in importWithUsername: ${e.message}")
+                loge(e)
+                loadingLiveData.postValue(false)
+                toast(msgRes = R.string.login_failure)
+                val activity = BaseActivity.getCurrentActivity()
+                activity?.finish()
             }
         }
     }
@@ -537,48 +571,83 @@ class KeyStoreRestoreViewModel : ViewModel() {
         cryptoProvider: PrivateKeyStoreCryptoProvider, username: String, callback:
             (isSuccess: Boolean) -> Unit
     ) {
+        logd("KeyStoreRestoreViewModel", "=== import() START ===")
+        logd("KeyStoreRestoreViewModel", "Address: ${cryptoProvider.getAddress()}, Username: $username")
         ioScope {
+            logd("KeyStoreRestoreViewModel", "Getting Firebase UID")
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
+                    logd("KeyStoreRestoreViewModel", "ERROR: Firebase UID is null or blank")
                     callback.invoke(false)
                     return@getFirebaseUid
                 }
+                logd("KeyStoreRestoreViewModel", "Firebase UID obtained: $uid")
+
                 runBlocking {
                     val catching = runCatching {
+                        logd("KeyStoreRestoreViewModel", "Preparing import request")
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+                        logd("KeyStoreRestoreViewModel", "Device info: $deviceInfoRequest")
+
                         val service = retrofit().create(ApiService::class.java)
-                        val resp = service.import(
-                            ImportRequest(
-                                address = cryptoProvider.getAddress(),
-                                username = username,
-                                accountKey = AccountKey(
-                                    publicKey = cryptoProvider.getPublicKey(),
-                                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
-                                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
-                                ),
-                                deviceInfo = deviceInfoRequest
-                            )
+                        val importRequest = ImportRequest(
+                            address = cryptoProvider.getAddress(),
+                            username = username,
+                            accountKey = AccountKey(
+                                publicKey = cryptoProvider.getPublicKey(),
+                                hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                                signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex
+                            ),
+                            deviceInfo = deviceInfoRequest
                         )
+                        logd("KeyStoreRestoreViewModel", "Import request created - publicKey: ${cryptoProvider.getPublicKey()}, hashAlgo: ${cryptoProvider.getHashAlgorithm().cadenceIndex}, signAlgo: ${cryptoProvider.getSignatureAlgorithm().cadenceIndex}")
+
+                        logd("KeyStoreRestoreViewModel", "Calling API service.import()")
+                        val resp = service.import(importRequest)
+                        logd("KeyStoreRestoreViewModel", "API import response received - status: ${resp.status}, message: ${resp.message}")
+
                         if (resp.data?.customToken.isNullOrBlank()) {
+                            logd("KeyStoreRestoreViewModel", "ERROR: No custom token in import response")
                             callback.invoke(false)
                         } else {
+                            logd("KeyStoreRestoreViewModel", "Custom token received, starting Firebase login")
                             firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                                logd("KeyStoreRestoreViewModel", "Firebase login result: $isSuccess")
                                 if (isSuccess) {
+                                    logd("KeyStoreRestoreViewModel", "Setting registered and backup flags")
                                     setRegistered()
                                     setBackupManually()
                                     ioScope {
-                                        AccountManager.add(
-                                            Account(
-                                                userInfo = service.userInfo().data,
-                                                keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                        try {
+                                            logd("KeyStoreRestoreViewModel", "Fetching user info from API")
+                                            val userInfo = service.userInfo().data
+                                            logd("KeyStoreRestoreViewModel", "User info received: $userInfo")
+
+                                            logd("KeyStoreRestoreViewModel", "Adding account to AccountManager")
+                                            AccountManager.add(
+                                                Account(
+                                                    userInfo = userInfo,
+                                                    keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                                )
                                             )
-                                        )
-                                        WalletManager.init()
-                                        CryptoProviderManager.clear()
-                                        clearUserCache()
-                                        callback.invoke(true)
+                                            logd("KeyStoreRestoreViewModel", "Account added successfully")
+
+                                            logd("KeyStoreRestoreViewModel", "Initializing WalletManager")
+                                            WalletManager.init()
+                                            logd("KeyStoreRestoreViewModel", "WalletManager initialized")
+
+                                            CryptoProviderManager.clear()
+                                            clearUserCache()
+                                            logd("KeyStoreRestoreViewModel", "Import process completed successfully")
+                                            callback.invoke(true)
+                                        } catch (e: Exception) {
+                                            logd("KeyStoreRestoreViewModel", "ERROR during post-import setup: ${e.message}")
+                                            loge(e)
+                                            callback.invoke(false)
+                                        }
                                     }
                                 } else {
+                                    logd("KeyStoreRestoreViewModel", "ERROR: Firebase login failed")
                                     callback.invoke(false)
                                 }
                             }
@@ -586,8 +655,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     }
 
                     if (catching.isFailure) {
-                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_IMPORT_FAILED, catching.exceptionOrNull())
-                        loge(catching.exceptionOrNull())
+                        val error = catching.exceptionOrNull()
+                        logd("KeyStoreRestoreViewModel", "ERROR: Import failed with exception: ${error?.message}")
+                        logd("KeyStoreRestoreViewModel", "Stack trace: ${error?.stackTraceToString()}")
+                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_IMPORT_FAILED, error)
+                        loge(error)
                         callback.invoke(false)
                     }
                 }
@@ -660,18 +732,22 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             "testnet" -> ChainId.Testnet
                                             else -> ChainId.Mainnet
                                         }
-                                        
+                                        logd("KeyStoreRestoreViewModel", "Chain ID: $chainId, Public key for lookup: $publicKey")
+
                                         val keyIndexerResponse = com.flow.wallet.Network.findAccount(publicKey, chainId)
-                                        logd("KeyStoreRestoreViewModel", "Key indexer response: $keyIndexerResponse")
+                                        logd("KeyStoreRestoreViewModel", "Key indexer response - accounts count: ${keyIndexerResponse.accounts.size}")
+                                        logd("KeyStoreRestoreViewModel", "Key indexer full response: $keyIndexerResponse")
 
                                         finalWalletAddress = keyIndexerResponse.accounts.firstOrNull()?.address
 
                                         if (finalWalletAddress.isNullOrBlank()) {
-                                            logd("KeyStoreRestoreViewModel", "WARNING: No wallet address found in key indexer after login.")
+                                            logd("KeyStoreRestoreViewModel", "ERROR: No wallet address found in key indexer after login")
+                                            logd("KeyStoreRestoreViewModel", "Public key used for lookup: $publicKey")
+                                            logd("KeyStoreRestoreViewModel", "Chain ID used: $chainId")
                                             loginProcessCallback.invoke(false)
                                             return@ioScope
                                         }
-                                        logd("KeyStoreRestoreViewModel", "Wallet address from key indexer: '$finalWalletAddress'")
+                                        logd("KeyStoreRestoreViewModel", "SUCCESS: Wallet address from key indexer: '$finalWalletAddress'")
 
                                         var determinedKeyId = 0
                                         var determinedWeight = 1000
