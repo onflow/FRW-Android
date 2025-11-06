@@ -998,15 +998,23 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         android.util.Log.d(TAG, "launchMultiBackup() called")
         try {
             val currentActivity = reactApplicationContext.currentActivity
-            
+
             if (currentActivity == null) {
                 android.util.Log.w(TAG, "launchMultiBackup() - no current activity")
                 return
             }
-            
-            // Launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
-            com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(currentActivity)
-            android.util.Log.d(TAG, "launchMultiBackup() - launched MultiBackupActivity")
+
+            // First launch WalletBackupActivity (parent) so back navigation works correctly
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+            // Then immediately launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
+            // When user presses back, they will return to WalletBackupActivity
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                reactApplicationContext.currentActivity?.let { activity ->
+                    com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(activity)
+                    android.util.Log.d(TAG, "launchMultiBackup() - launched MultiBackupActivity on top of WalletBackupActivity")
+                }
+            }, 300) // Small delay to ensure WalletBackupActivity is created first
         } catch (e: Exception) {
             android.util.Log.e(TAG, "launchMultiBackup() error: ${e.message}")
             e.printStackTrace()
@@ -1017,15 +1025,23 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         android.util.Log.d(TAG, "launchDeviceBackup() called")
         try {
             val currentActivity = reactApplicationContext.currentActivity
-            
+
             if (currentActivity == null) {
                 android.util.Log.w(TAG, "launchDeviceBackup() - no current activity")
                 return
             }
-            
-            // Launch CreateDeviceBackupActivity (QR code sync between devices)
-            com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(currentActivity)
-            android.util.Log.d(TAG, "launchDeviceBackup() - launched CreateDeviceBackupActivity")
+
+            // First launch WalletBackupActivity (parent) so back navigation works correctly
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+            // Then immediately launch CreateDeviceBackupActivity (QR code sync between devices)
+            // When user presses back, they will return to WalletBackupActivity
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                reactApplicationContext.currentActivity?.let { activity ->
+                    com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(activity)
+                    android.util.Log.d(TAG, "launchDeviceBackup() - launched CreateDeviceBackupActivity on top of WalletBackupActivity")
+                }
+            }, 300) // Small delay to ensure WalletBackupActivity is created first
         } catch (e: Exception) {
             android.util.Log.e(TAG, "launchDeviceBackup() error: ${e.message}")
             e.printStackTrace()
@@ -1036,16 +1052,24 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         android.util.Log.d(TAG, "launchSeedPhraseBackup() called")
         try {
             val currentActivity = reactApplicationContext.currentActivity
-            
+
             if (currentActivity == null) {
                 android.util.Log.w(TAG, "launchSeedPhraseBackup() - no current activity")
                 return
             }
-            
-            // Launch BackupRecoveryPhraseActivity (View/create recovery phrase)
-            val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(currentActivity)
-            currentActivity.startActivity(intent)
-            android.util.Log.d(TAG, "launchSeedPhraseBackup() - launched BackupRecoveryPhraseActivity")
+
+            // First launch WalletBackupActivity (parent) so back navigation works correctly
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+            // Then immediately launch BackupRecoveryPhraseActivity (View/create recovery phrase)
+            // When user presses back, they will return to WalletBackupActivity
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                reactApplicationContext.currentActivity?.let { activity ->
+                    val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(activity)
+                    activity.startActivity(intent)
+                    android.util.Log.d(TAG, "launchSeedPhraseBackup() - launched BackupRecoveryPhraseActivity on top of WalletBackupActivity")
+                }
+            }, 300) // Small delay to ensure WalletBackupActivity is created first
         } catch (e: Exception) {
             android.util.Log.e(TAG, "launchSeedPhraseBackup() error: ${e.message}")
             e.printStackTrace()
