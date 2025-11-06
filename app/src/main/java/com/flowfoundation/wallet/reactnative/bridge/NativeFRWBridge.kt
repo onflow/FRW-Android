@@ -1052,6 +1052,25 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun launchNativeBackupOptions() {
+        android.util.Log.d(TAG, "launchNativeBackupOptions() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchNativeBackupOptions() - no current activity")
+                return
+            }
+
+            // Launch WalletBackupActivity (Native backup options screen)
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+            android.util.Log.d(TAG, "launchNativeBackupOptions() - launched WalletBackupActivity")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchNativeBackupOptions() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
     companion object {
         const val NAME = "NativeFRWBridge"
     }
