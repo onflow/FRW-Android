@@ -39,7 +39,10 @@ import com.ionspin.kotlin.bignum.integer.toBigInteger
 import org.onflow.flow.infrastructure.Cadence
 import java.lang.reflect.Type
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccountKeyId
+import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
+import com.flowfoundation.wallet.network.BASE_HOST
 import org.onflow.flow.models.FlowAddress
 
 private val TAG = FclMessageHandler::class.java.simpleName
@@ -254,16 +257,27 @@ class FclMessageHandler(
             finishService()
             return
         }
-
         FclAuthzDialog.show(
             activity.supportFragmentManager,
             data,
         )
         FclAuthzDialog.observe { approve ->
             if (approve) {
-                uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }
                 FclAuthzDialog.dismiss()
-                webView.postAuthzPayloadSignResponse(fcl)
+                ioScope {
+                    try {
+                        if (isGasFree()) {
+                            val payerInfo = SurgePricingManager.getFeePayer()
+                            if (payerInfo == null) {
+                                SurgePricingManager.showSurgePricingAlertWithContinuation()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        return@ioScope
+                    }
+                    uiScope { authzTransaction = fcl.toAuthzTransaction(webView) }
+                    webView.postAuthzPayloadSignResponse(fcl)
+                }
             }
             finishService()
         }
@@ -300,7 +314,7 @@ class FclMessageHandler(
         // Get the proper key ID instead of defaulting to 0
         val proposerAddress = voucher.proposalKey.address ?: ""
         val keyId = if (voucher.proposalKey.keyId != null) {
-            voucher.proposalKey.keyId!!
+            voucher.proposalKey.keyId
         } else {
             // Use the account's valid key ID instead of defaulting to 0
             val validKeyId = FlowAddress(proposerAddress).lastBlockAccountKeyId()
@@ -332,7 +346,7 @@ class FclMessageHandler(
             FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
                 message = FeePayerSignRequest.FeePayerMessage(envelopeMessage = fcl.body.message),
                 network = chainNetWorkString()
-            )
+            ), BASE_HOST
         )
 
         safeRun {

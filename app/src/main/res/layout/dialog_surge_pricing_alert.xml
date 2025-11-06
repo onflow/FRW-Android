@@ -203,12 +203,17 @@
                         android:id="@+id/holdButtonText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:paddingStart="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="52dp"
+                        android:layout_marginEnd="12dp"
                         android:text="@string/surge_hold_to_confirm"
                         android:textColor="@android:color/white"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"
+                        android:lines="1"
+                        android:maxLines="1"
+                        app:autoSizeTextType="uniform"
+                        app:autoSizeMinTextSize="8sp" />
 
                 </FrameLayout>
 

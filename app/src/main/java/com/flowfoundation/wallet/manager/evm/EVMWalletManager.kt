@@ -52,6 +52,7 @@ import org.onflow.flow.ChainId
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
 import com.google.gson.Gson
+import kotlin.text.isNullOrBlank
 
 private val TAG = EVMWalletManager::class.java.simpleName
 
@@ -85,7 +86,7 @@ object EVMWalletManager {
         }
     }
 
-    private fun toChecksumEVMAddress(evmAddress: String): String {
+    fun toChecksumEVMAddress(evmAddress: String): String {
         return Keys.toChecksumAddress(evmAddress)
     }
 
@@ -114,7 +115,7 @@ object EVMWalletManager {
                         callback?.invoke(false)
                         return@ioScope
                     }
-                    
+
                     evmAddressMap[networkAddress] = formattedAddress
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
                     callback?.invoke(true)
@@ -134,7 +135,7 @@ object EVMWalletManager {
             if (!walletAddress.isNullOrBlank()) {
                 return walletAddress
             }
-            
+
             // If wallet.walletAddress() returns null, try to get directly from wallet accounts
             val currentNetwork = network ?: chainNetWorkString()
             val networkAccount = wallet.accounts.entries.firstOrNull { (chainId, _) ->
@@ -144,12 +145,12 @@ object EVMWalletManager {
                     else -> false
                 }
             }?.value?.firstOrNull()
-            
+
             if (networkAccount != null) {
                 return networkAccount.address
             }
         }
-        
+
         // Fallback to AccountManager server data
         return AccountManager.get()?.wallet?.chainNetworkWallet(network)?.address()
     }
@@ -189,22 +190,22 @@ object EVMWalletManager {
         }
     }
 
-    private fun isValidEVMAddress(address: String): Boolean {
+    fun isValidEVMAddress(address: String): Boolean {
         // Check if address matches valid EVM address pattern and doesn't have suspicious patterns
         if (!address.matches(Regex("^0x[a-fA-F0-9]{40}$"))) {
             return false
         }
-        
+
         // Check for addresses with too many leading zeros (likely corrupted)
         val hexPart = address.removePrefix("0x")
         val leadingZeros = hexPart.takeWhile { it == '0' }.length
-        
+
         // If more than 30 characters are zeros (out of 40), it's likely corrupted
         if (leadingZeros > 30) {
             logd(TAG, "Address appears corrupted due to excessive leading zeros: $leadingZeros")
             return false
         }
-        
+
         return true
     }
 
@@ -429,7 +430,7 @@ object EVMWalletManager {
         )
     }
 
-    private suspend fun bridgeTokenFromChildToCOA(flowIdentifier: String, amount: BigDecimal, 
+    private suspend fun bridgeTokenFromChildToCOA(flowIdentifier: String, amount: BigDecimal,
                                                   childAddress: String, token: FungibleToken, callback: (isSuccess: Boolean) -> Unit) {
         executeTransaction(
             action = { cadenceBridgeChildFTToCOA(flowIdentifier, childAddress, amount) },
@@ -482,7 +483,7 @@ object EVMWalletManager {
             logd("EVMWalletManager", "executeTransaction starting: $operationName")
             val txId = action()
             logd("EVMWalletManager", "executeTransaction got txId: $txId for $operationName")
-            
+
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation(operationName))
@@ -500,7 +501,7 @@ object EVMWalletManager {
                 operationName.contains("fund") || operationName.contains("withdraw") || operationName.contains("bridge") -> TransactionState.TYPE_TRANSFER_COIN
                 else -> TransactionState.TYPE_TRANSACTION_DEFAULT
             }
-            
+
             // Create proper transaction data
             val transactionData = if (transactionType == TransactionState.TYPE_TRANSFER_COIN) {
                 // Create a TransactionModel for TYPE_TRANSFER_COIN so the bubble shows the token icon
@@ -519,7 +520,7 @@ object EVMWalletManager {
             } else {
                 operationName // Fallback to operation name for non-coin transactions
             }
-            
+
             logd("EVMWalletManager", "Creating TransactionState for $operationName with type $transactionType")
             val transactionState = TransactionState(
                 transactionId = txId,
@@ -538,15 +539,15 @@ object EVMWalletManager {
                     result.isExecuteFinished() -> {
                         logd(TAG, "$operationName success")
                         logd("EVMWalletManager", "Transaction $txId finished successfully")
-                        
+
                         // Update token list and trigger navigation for token operations
-                        if (operationName.contains("fund") || operationName.contains("withdraw") || 
+                        if (operationName.contains("fund") || operationName.contains("withdraw") ||
                             operationName.contains("bridge") || operationName.contains("transfer token")) {
                             ioScope {
                                 FungibleTokenListManager.updateTokenList()
                             }
                         }
-                        
+
                         callback(true)
                     }
                     result.isFailed() -> {
@@ -598,7 +599,7 @@ object EVMWalletManager {
             logd("EVMWalletManager", "executeNFTTransaction starting: $operationName")
             val txId = action()
             logd("EVMWalletManager", "executeNFTTransaction got txId: $txId for $operationName")
-            
+
             if (txId.isNullOrBlank()) {
                 logd(TAG, "$operationName failed")
                 ErrorReporter.reportMoveAssetsError(getCurrentCodeLocation(operationName))
@@ -608,7 +609,7 @@ object EVMWalletManager {
 
             // Add transaction to mini window (bubble stack) immediately
             val transactionType = TransactionState.TYPE_MOVE_NFT
-            
+
             logd("EVMWalletManager", "Creating TransactionState for $operationName with type $transactionType")
             val transactionState = TransactionState(
                 transactionId = txId,

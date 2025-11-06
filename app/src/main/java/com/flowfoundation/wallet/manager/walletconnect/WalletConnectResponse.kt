@@ -109,26 +109,14 @@ private suspend fun preAuthz(): String {
     val payerAddress = if (isGasFree() && payerInfo != null) {
         payerInfo.address()
     } else {
-        // When surge pricing is active (payerInfo is null), show alert to user
-        // User can choose to accept (continue with wallet address as payer) or decline (cancel)
-        try {
-            SurgePricingManager.showSurgePricingAlertWithContinuation()
-            logd("WalletConnectResponse", "User accepted surge pricing, using wallet address as payer")
-            WalletManager.wallet().walletAddress()
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            logd("WalletConnectResponse", "User declined surge pricing, cancelling pre-authz")
-            return "" // Return empty string to indicate cancellation
-        }
+        WalletManager.wallet().walletAddress()
     }
-    val payerKeyIndex = if (payerInfo != null) {
-        payerInfo.keyId()
-    } else {
-        if (payerAddress.isNullOrBlank()) {
+    val payerKeyIndex = payerInfo?.keyId()
+        ?: if (payerAddress.isNullOrBlank()) {
             0
         } else {
             FlowAddress(payerAddress).payerAccountKeyId()
         }
-    }
     return """
 {
     "f_type": "Service",

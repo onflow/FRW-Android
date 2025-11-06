@@ -31,6 +31,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
 import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
+import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 
 private const val TAG = "Transaction"
@@ -723,18 +725,24 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
 
   // Determine payer and authorizers
   val payer = builder.payer?.removeHexPrefix() ?: run {
-    if (builder.isBridgePayer) {
+    val address = if (builder.isBridgePayer) {
       val bridgePayer = SurgePricingManager.getBridgePayer()
-      bridgePayer?.address() ?: builder.walletAddress?.removeHexPrefix().orEmpty()
+      bridgePayer?.address() ?: builder.walletAddress
     } else {
       if (isGasFree()) {
         // Check if fee payer service should be used based on surge pricing
         val feePayer = SurgePricingManager.getFeePayer()
-        feePayer?.address() ?: builder.walletAddress?.removeHexPrefix().orEmpty()
+        if (feePayer != null) {
+          feePayer.address()
+        } else {
+          SurgePricingManager.showSurgePricingAlertWithContinuation()
+          builder.walletAddress
+        }
       } else {
-        builder.walletAddress?.removeHexPrefix().orEmpty()
+        builder.walletAddress
       }
     }
+    address?.removeHexPrefix().orEmpty()
   }
   val authorizers = determineAuthorizers(builder, flowAccount.address, payer)
 

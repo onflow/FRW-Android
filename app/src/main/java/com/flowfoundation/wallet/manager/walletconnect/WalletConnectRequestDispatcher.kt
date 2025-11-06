@@ -5,7 +5,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
-import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
@@ -32,6 +31,7 @@ import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.manager.walletconnect.model.WatchAsset
 import com.flowfoundation.wallet.manager.walletconnect.model.walletConnectWalletInfoResponse
+import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.main.MainActivity
@@ -345,7 +345,7 @@ private suspend fun WCRequest.respondAuthn() {
                             if (session?.metaData?.redirect.isNullOrEmpty()) {
                                 logd(TAG, "No redirect URL found in session metadata")
                             } else {
-                                logd(TAG, "Found redirect URL in session metadata: ${session?.metaData?.redirect}")
+                                logd(TAG, "Found redirect URL in session metadata: ${session.metaData?.redirect}")
                             }
                         } catch (e: Exception) {
                             loge(TAG, "Error during authn response cleanup: ${e.message}")
@@ -392,7 +392,6 @@ private suspend fun WCRequest.respondAuthz() {
 
     // Clean address for Flow-KMM (remove "0x" prefix)
     val cleanAddress = address.removePrefix("0x")
-
     uiScope {
         val data = FclDialogModel(
             title = metaData?.name,
@@ -415,9 +414,21 @@ private suspend fun WCRequest.respondAuthz() {
             ioScope {
                 val signature = cryptoProvider.signData(message.hexToBytes())
                 val keyId = FlowAddress(cleanAddress).currentKeyId(cryptoProvider.getPublicKey())
-
-                if (isApprove) approve(fclAuthzResponse(cleanAddress, signature, keyId)) else reject()
                 uiScope { FclAuthzDialog.dismiss() }
+                if (isApprove) {
+                    try {
+                        if (isGasFree()) {
+                          val payerInfo = SurgePricingManager.getFeePayer()
+                          if (payerInfo == null) {
+                            SurgePricingManager.showSurgePricingAlertWithContinuation()
+                          }
+                      }
+                    } catch (_: Exception) {
+                        reject()
+                        return@ioScope
+                    }
+                    approve(fclAuthzResponse(cleanAddress, signature, keyId))
+                } else reject()
             }
         }
     }
@@ -559,7 +570,7 @@ private suspend fun WCRequest.respondSignPayer() {
         FUNCTION_SIGN_AS_PAYER, FeePayerSignRequest(
             message = FeePayerSignRequest.FeePayerMessage(envelopeMessage = message),
             network = chainNetWorkString()
-        )
+        ), BASE_HOST
     )
 
     safeRun {

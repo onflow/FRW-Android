@@ -330,16 +330,7 @@ private suspend fun generateAuthnPreAuthz(): String {
             },
         """.trimIndent()
     } else {
-        // When surge pricing is active (payerInfo is null), show alert to user
-        // User can choose to accept (continue without pre-authz) or decline (cancel)
-        try {
-            SurgePricingManager.showSurgePricingAlertWithContinuation()
-            logd("FclScript", "User accepted surge pricing, not providing pre-authz service")
-            "" // Return empty string - no pre-authz service provided
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            logd("FclScript", "User declined surge pricing, cancelling FCL authentication")
-            throw e // Re-throw to cancel the FCL authentication flow
-        }
+        ""
     }
 }
 

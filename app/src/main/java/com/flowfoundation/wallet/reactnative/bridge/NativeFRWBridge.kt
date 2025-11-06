@@ -17,6 +17,8 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager.isValidEVMAddress
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -35,6 +37,9 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logToInstabug
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
@@ -50,22 +55,22 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     private val TAG = "NativeFRWBridge"
 
     init {
-        android.util.Log.d(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
-        android.util.Log.d(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
+        logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
+        logd(TAG, "React context is active: ${reactContext.hasActiveCatalystInstance()}")
     }
 
     override fun getName(): String {
-        android.util.Log.d(TAG, "getName() called, returning: $NAME")
+        logd(TAG, "getName() called, returning: $NAME")
         return NAME
     }
 
     override fun getSelectedAddress(): String? {
         try {
             val address = WalletManager.selectedWalletAddress()
-            android.util.Log.d(TAG, "getSelectedAddress() called, returning: $address")
+            logd(TAG, "getSelectedAddress() called, returning: $address")
             return address
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "getSelectedAddress() error: ${e.message}")
+            loge(TAG, "getSelectedAddress() error: ${e.message}")
             return null
         }
     }
@@ -77,10 +82,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
               null
             }
 
-            android.util.Log.d(TAG, "getDebugAddress() called, watchAddress: '$watchAddress', returning: $resultAddress")
+            logd(TAG, "getDebugAddress() called, watchAddress: '$watchAddress', returning: " +
+              "$resultAddress")
             return resultAddress
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "getDebugAddress() error: ${e.message}")
+            loge(TAG, "getDebugAddress() error: ${e.message}")
             return null
         }
     }
@@ -88,26 +94,26 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun getNetwork(): String {
         try {
             val network = chainNetWorkString()
-            android.util.Log.d(TAG, "getNetwork() called, returning: $network")
+            logd(TAG, "getNetwork() called, returning: $network")
             return network
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "getNetwork() error: ${e.message}")
+            loge(TAG, "getNetwork() error: ${e.message}")
             return "mainnet"
         }
     }
 
     override fun getJWT(promise: Promise) {
-        android.util.Log.d(TAG, "getJWT() called")
+        logd(TAG, "getJWT() called")
         ioScope {
             try {
-                android.util.Log.d(TAG, "getJWT() - getting Firebase JWT...")
+                logd(TAG, "getJWT() - getting Firebase JWT...")
                 val jwt = getFirebaseJwt()
-                android.util.Log.d(TAG, "getJWT() - JWT obtained successfully")
+                logd(TAG, "getJWT() - JWT obtained successfully")
                 uiScope {
                     promise.resolve(jwt)
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "getJWT() - error: ${e.message}")
+                loge(TAG, "getJWT() - error: ${e.message}")
                 uiScope {
                     promise.reject("JWT_ERROR", "Failed to get Firebase JWT: ${e.message}", e)
                 }
@@ -370,7 +376,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             if (keyId == -1) 0.0 else keyId.toDouble()
         } catch (e: Exception) {
             // Return 0 as default key index on any error
-            android.util.Log.w(TAG, "getSignKeyIndex() error: ${e.message}")
+            logw(TAG, "getSignKeyIndex() error: ${e.message}")
             0.0
         }
     }
@@ -405,19 +411,19 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun getSelectedAccount(promise: Promise) {
-        android.util.Log.d(TAG, "getSelectedAccount() called")
+        logd(TAG, "getSelectedAccount() called")
         ioScope {
             try {
-                android.util.Log.d(TAG, "getSelectedAccount() - getting selected address...")
+                logd(TAG, "getSelectedAccount() - getting selected address...")
                 val selectedAddress = WalletManager.selectedWalletAddress()
                 if (selectedAddress.isNullOrEmpty()) {
-                    android.util.Log.w(TAG, "getSelectedAccount() - no selected address found")
+                    logw(TAG, "getSelectedAccount() - no selected address found")
                     uiScope {
                         promise.reject("NO_SELECTED_ACCOUNT", "No wallet address selected", null)
                     }
                     return@ioScope
                 }
-                android.util.Log.d(TAG, "getSelectedAccount() - selected address: $selectedAddress")
+                logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
                 val mainAddress = WalletManager.wallet()?.walletAddress()
@@ -444,12 +450,12 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 )
 
                 val result = bridgeModelToWritableMap(selectedAccount)
-                android.util.Log.d(TAG, "getSelectedAccount() - account mapped successfully")
+                logd(TAG, "getSelectedAccount() - account mapped successfully")
                 uiScope {
                     promise.resolve(result)
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "getSelectedAccount() - error: ${e.message}")
+                loge(TAG, "getSelectedAccount() - error: ${e.message}")
                 e.printStackTrace()
                 uiScope {
                     promise.reject("SELECTED_ACCOUNT_ERROR", "Failed to get selected account: ${e.message}", e)
@@ -567,22 +573,24 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     private fun createWalletProfileFromAccount(account: Account): RNBridge.WalletProfile? {
         return try {
-            android.util.Log.d(TAG, "createWalletProfileFromAccount() - creating profile for account: ${account.userInfo.username}")
+            logd(TAG, "createWalletProfileFromAccount() - creating profile for account: ${account.userInfo.username}")
 
             // Get user info from the specific account (similar to AccountManager.userInfo())
             val userInfo = account.userInfo
-            android.util.Log.d(TAG, "createWalletProfileFromAccount() - userInfo: ${userInfo.username}, avatar: ${userInfo.avatar}")
+            logd(TAG, "createWalletProfileFromAccount() - userInfo: ${userInfo.username}, avatar:" +
+              " ${userInfo.avatar}")
 
             // Get user ID similar to the original implementation
             val userId = account.wallet?.id ?: ""
-            android.util.Log.d(TAG, "createWalletProfileFromAccount() - userId: $userId")
+            logd(TAG, "createWalletProfileFromAccount() - userId: $userId")
 
             val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
 
             // Get main wallet address from account
             val mainAddress = account.wallet?.walletAddress()
             if (mainAddress.isNullOrEmpty()) {
-                android.util.Log.w(TAG, "createWalletProfileFromAccount() - no main address found for account: ${account.userInfo.username}")
+                logw(TAG, "createWalletProfileFromAccount() - no main address found for account: " +
+                  "${account.userInfo.username}")
                 return null
             }
 
@@ -622,12 +630,27 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     bridgeAccounts.add(childAccountBridge)
                 }
             } catch (e: Exception) {
-                android.util.Log.w(TAG, "createWalletProfileFromAccount() - child accounts not available: ${e.message}")
+                logw(TAG, "createWalletProfileFromAccount() - child accounts not available: ${e.message}")
             }
 
             // Get EVM address if available
             try {
-                val evmAddress = EVMWalletManager.getEVMAddress()
+                val evmAddress = if (isSelectedWalletAddress(mainAddress)) {
+                    EVMWalletManager.getEVMAddress()
+                } else {
+                    val address = account.evmAddressData?.evmAddressMap?.get(mainAddress)
+                    if (address.isNullOrBlank() || address == "0x") {
+                        null
+                    } else {
+                      val checksumAddress = toChecksumEVMAddress(address)
+                      // Validate the address format - if it's corrupted, try to refresh it
+                      if (!isValidEVMAddress(checksumAddress)) {
+                        logd(TAG, "Detected corrupted EVM address: $checksumAddress, attempting to refresh")
+                        return null
+                      }
+                      checksumAddress
+                    }
+                }
                 if (!evmAddress.isNullOrEmpty()) {
                     val evmEmojiInfo = createEmojiInfo(evmAddress)
                     val evmAccount = RNBridge.WalletAccount(
@@ -646,7 +669,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     bridgeAccounts.add(evmAccount)
                 }
             } catch (e: Exception) {
-                android.util.Log.w(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e.message}")
+                logw(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e
+                  .message}")
             }
 
             // Create wallet profile
@@ -657,20 +681,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 accounts = bridgeAccounts
             )
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "createWalletProfileFromAccount() - error creating profile for account: ${account.userInfo.username}, error: ${e.message}")
+            loge(TAG, "createWalletProfileFromAccount() - error creating profile for account: " +
+              "${account.userInfo.username}, error: ${e.message}")
             null
         }
     }
 
     override fun getWalletProfiles(promise: Promise) {
-        android.util.Log.d(TAG, "getWalletProfiles() called")
+        logd(TAG, "getWalletProfiles() called")
         ioScope {
             try {
-                android.util.Log.d(TAG, "getWalletProfiles() - getting all accounts from AccountManager...")
+                logd(TAG, "getWalletProfiles() - getting all accounts from AccountManager...")
 
                 // Get all accounts from AccountManager
                 val accounts = AccountManager.list()
-                android.util.Log.d(TAG, "getWalletProfiles() - found ${accounts.size} accounts")
+                logd(TAG, "getWalletProfiles() - found ${accounts.size} accounts")
 
                 val profiles = mutableListOf<RNBridge.WalletProfile>()
 
@@ -678,19 +703,20 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 accounts.forEach { account ->
                     createWalletProfileFromAccount(account)?.let { profile ->
                         profiles.add(profile)
-                        android.util.Log.d(TAG, "getWalletProfiles() - added profile for account: ${account.userInfo.username}")
+                        logd(TAG, "getWalletProfiles() - added profile for account: ${account
+                          .userInfo.username}")
                     }
                 }
 
                 val response = RNBridge.WalletProfilesResponse(profiles = profiles)
                 val result = bridgeModelToWritableMap(response)
 
-                android.util.Log.d(TAG, "getWalletProfiles() - ${profiles.size} profiles mapped successfully")
+                logd(TAG, "getWalletProfiles() - ${profiles.size} profiles mapped successfully")
                 uiScope {
                     promise.resolve(result)
                 }
             } catch (e: Exception) {
-                android.util.Log.e(TAG, "getWalletProfiles() - error: ${e.message}")
+                loge(TAG, "getWalletProfiles() - error: ${e.message}")
                 e.printStackTrace()
 
                 // Return empty profiles on error to maintain consistency
@@ -714,13 +740,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 else -> ""
             }
             if (displayMessage.isEmpty()) {
-                android.util.Log.w(TAG, "showToast() skipped - empty message")
+                logw(TAG, "showToast() skipped - empty message")
                 return
             }
 
             val toastDuration = duration ?: 2000.0
 
-            android.util.Log.d(TAG, "showToast() called - title: $title, message: $message, type:" +
+            logd(TAG, "showToast() called - title: $title, message: $message, type:" +
               " ${type ?: "info"}, duration: ${toastDuration}ms")
 
             // Convert duration from milliseconds to boolean (long or short)
@@ -730,28 +756,28 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 toast(msg = displayMessage, duration = if (isLongDuration) Toast.LENGTH_LONG else Toast.LENGTH_SHORT)
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "showToast() error: ${e.message}")
+            loge(TAG, "showToast() error: ${e.message}")
             e.printStackTrace()
         }
     }
 
     override fun hideToast(id: String) {
         try {
-            android.util.Log.d(TAG, "hideToast() called - id: $id")
+            logd(TAG, "hideToast() called - id: $id")
             // Android native toast typically auto-dismiss, but we can implement custom logic here
             // For now, this is mainly for API compatibility
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "hideToast() error: ${e.message}")
+            loge(TAG, "hideToast() error: ${e.message}")
         }
     }
 
     override fun clearAllToasts() {
         try {
-            android.util.Log.d(TAG, "clearAllToasts() called")
+            logd(TAG, "clearAllToasts() called")
             // Android native toast typically auto-dismiss, but we can implement custom logic here
             // For now, this is mainly for API compatibility
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "clearAllToasts() error: ${e.message}")
+            loge(TAG, "clearAllToasts() error: ${e.message}")
         }
     }
 
