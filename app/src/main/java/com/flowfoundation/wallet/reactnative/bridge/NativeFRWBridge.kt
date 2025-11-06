@@ -781,14 +781,102 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun createCOAAccount(promise: Promise) {
+        logd(TAG, "createCOAAccount() called - Creating Secure Enclave/Hybrid account")
+        ioScope {
+            try {
+                // Auto-generate username (3-15 chars as per server requirement)
+                // Use last 8 digits of timestamp to keep it within length limit
+                val timestamp = System.currentTimeMillis().toString()
+                val username = "u${timestamp.takeLast(8)}"  // e.g., "u12345678" (9 chars)
+                logd(TAG, "createCOAAccount() - generated username: $username")
+                logd(TAG, "createCOAAccount() - starting account registration...")
+
+                // Use the existing registerOutblock function which creates a COA/Hybrid account:
+                // - Generates keys (secure enclave on supported devices)
+                // - Registers with backend server
+                // - Creates Flow blockchain account
+                // - Sets up Firebase authentication
+                // - Creates local Account in AccountManager
+                val success = com.flowfoundation.wallet.network.registerOutblock(username)
+
+                if (success) {
+                    logd(TAG, "createCOAAccount() - account created successfully")
+
+                    // Get the created account details
+                    val account = AccountManager.get()
+                    val address = WalletManager.selectedWalletAddress()
+
+                    // Retrieve the mnemonic that was generated during registration
+                    val mnemonic = try {
+                        com.flowfoundation.wallet.wallet.Wallet.store().mnemonic()
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to retrieve mnemonic: ${e.message}")
+                        null
+                    }
+
+                    val phraseWords = mnemonic?.split(" ")
+
+                    // Create success response using WritableMap
+                    val response = WritableNativeMap()
+                    response.putBoolean("success", true)
+                    response.putString("address", address)
+                    response.putString("username", account?.userInfo?.username ?: username)
+                    response.putString("mnemonic", mnemonic)
+
+                    val phraseArray = WritableNativeArray()
+                    phraseWords?.forEach { word -> phraseArray.pushString(word) }
+                    response.putArray("phrase", phraseArray)
+
+                    response.putString("accountType", "coa")
+                    response.putNull("error")
+
+                    uiScope {
+                        promise.resolve(response)
+                    }
+                } else {
+                    loge(TAG, "createCOAAccount() - account creation failed")
+
+                    val response = WritableNativeMap()
+                    response.putBoolean("success", false)
+                    response.putNull("address")
+                    response.putNull("username")
+                    response.putNull("mnemonic")
+                    response.putNull("phrase")
+                    response.putString("accountType", "coa")
+                    response.putString("error", "Failed to create account")
+
+                    uiScope {
+                        promise.resolve(response)
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "createCOAAccount() - error: ${e.message}")
+                e.printStackTrace()
+
+                val response = WritableNativeMap()
+                response.putBoolean("success", false)
+                response.putNull("address")
+                response.putNull("username")
+                response.putNull("mnemonic")
+                response.putNull("phrase")
+                response.putString("accountType", "coa")
+                response.putString("error", e.message ?: "Unknown error")
+
+                uiScope {
+                    promise.resolve(response)
+                }
+            }
+        }
+    }
 
     override fun requestNotificationPermission(promise: Promise) {
-        android.util.Log.d(TAG, "requestNotificationPermission() called")
+        logd(TAG, "requestNotificationPermission() called")
         try {
             val currentActivity = reactApplicationContext.currentActivity
 
             if (currentActivity == null) {
-                android.util.Log.e(TAG, "requestNotificationPermission() - no current activity")
+                loge(TAG, "requestNotificationPermission() - no current activity")
                 uiScope {
                     promise.reject("NO_ACTIVITY", "No current activity available")
                 }
@@ -797,23 +885,37 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
             // Check Android version
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                android.util.Log.d(TAG, "requestNotificationPermission() - launching NotificationPermissionActivity")
+                logd(TAG, "requestNotificationPermission() - requesting POST_NOTIFICATIONS permission")
 
-                // Launch the existing notification permission activity
-                com.flowfoundation.wallet.page.others.NotificationPermissionActivity.launch(currentActivity)
+                // Request permission directly using PermissionX (skip native activity)
+                // Cast to FragmentActivity as required by PermissionX
+                val fragmentActivity = currentActivity as? androidx.fragment.app.FragmentActivity
+                if (fragmentActivity == null) {
+                    logd(TAG, "requestNotificationPermission() - activity is not a FragmentActivity")
+                    uiScope {
+                        promise.reject("INVALID_ACTIVITY", "Activity is not a FragmentActivity")
+                    }
+                    return
+                }
 
+                // Must run on UI thread
                 uiScope {
-                    promise.resolve(true)
+                    com.permissionx.guolindev.PermissionX.init(fragmentActivity)
+                        .permissions(android.Manifest.permission.POST_NOTIFICATIONS)
+                        .request { allGranted, _, _ ->
+                            logd(TAG, "requestNotificationPermission() - permission result: $allGranted")
+                            promise.resolve(allGranted)
+                        }
                 }
             } else {
                 // Notifications are automatically granted on Android < 13
-                android.util.Log.d(TAG, "requestNotificationPermission() - Android < 13, permission auto-granted")
+                logd(TAG, "requestNotificationPermission() - Android < 13, permission auto-granted")
                 uiScope {
                     promise.resolve(true)
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "requestNotificationPermission() - error: ${e.message}")
+            loge(TAG, "requestNotificationPermission() - error: ${e.message}")
             e.printStackTrace()
             uiScope {
                 promise.reject("PERMISSION_ERROR", "Failed to request notification permission: ${e.message}", e)
