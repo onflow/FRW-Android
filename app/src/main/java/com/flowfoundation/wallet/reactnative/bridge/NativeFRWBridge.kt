@@ -160,27 +160,27 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
   override fun ethSign(hexData: String?, promise: Promise?) {
-    ioScope {
-      try {
-        logd(TAG, "ethSign() called with hexData: $hexData")
-        val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"))
-        if (signature != null && signature.isNotEmpty()) {
-          val result = Numeric.toHexString(signature)
-          logd(TAG, "ethSign() - signature $result")
-          uiScope {
-            promise?.resolve(result)
+      ioScope {
+          try {
+              logd(TAG, "ethSign() called with hexData: $hexData")
+              val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"))
+              if (signature != null && signature.isNotEmpty()) {
+                  val result = Numeric.toHexString(signature)
+                  logd(TAG, "ethSign() - signature $result")
+                  uiScope {
+                      promise?.resolve(result)
+                  }
+              } else {
+                  uiScope {
+                      promise?.reject("SIGN_ERROR", "Failed to sign data", null)
+                  }
+              }
+          } catch (e: Exception) {
+              uiScope {
+                  promise?.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
+              }
           }
-        } else {
-          uiScope {
-            promise?.reject("SIGN_ERROR", "Failed to sign data", null)
-          }
-        }
-      } catch (e: Exception) {
-        uiScope {
-          promise?.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
-        }
       }
-    }
   }
 
   override fun listenTransaction(txid: String) {
