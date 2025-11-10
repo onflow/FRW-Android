@@ -38,17 +38,20 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
+
+        // Load local.properties once for reuse in maven repos
+        def localProperties = new Properties()
+        def localPropertiesFile = rootProject.file('local.properties')
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.withInputStream { localProperties.load(it) }
+        }
+
         maven {
             url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
             credentials {
                 // Read from local.properties, gradle.properties, or environment variables
-                def localProperties = new Properties()
-                def localPropertiesFile = rootProject.file('local.properties')
-                if (localPropertiesFile.exists()) {
-                    localPropertiesFile.withInputStream { localProperties.load(it) }
-                }
-                username = localProperties.getProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME") ?: "lealobanov"
-                password = localProperties.getProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN") ?: project.findProperty("github.token") ?: ""
+                username = localProperties.getProperty("gpr.user") ?: project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+                password = localProperties.getProperty("gpr.key") ?: project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
             }
         }
         // Flow Wallet Kit (Android) from GitHub Packages
@@ -56,11 +59,6 @@ allprojects {
             url = uri("https://maven.pkg.github.com/onflow/Flow-Wallet-Kit")
             credentials {
                 // Read from local.properties, gradle.properties, or environment variables
-                def localProperties = new Properties()
-                def localPropertiesFile = rootProject.file('local.properties')
-                if (localPropertiesFile.exists()) {
-                    localPropertiesFile.withInputStream { localProperties.load(it) }
-                }
                 username = localProperties.getProperty("gpr.user") ?: project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
                 password = localProperties.getProperty("gpr.key") ?: project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
             }

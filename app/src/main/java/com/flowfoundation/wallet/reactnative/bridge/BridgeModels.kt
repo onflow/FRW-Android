@@ -16,10 +16,10 @@ class RNBridge {
         @SerializedName("evm") EVM
     }
 
-    enum class ScreenType {
-        @SerializedName("send-asset") SEND_ASSET,
-        @SerializedName("token-detail") TOKEN_DETAIL,
-        @SerializedName("onboarding") ONBOARDING
+    enum class ScreenType(val screenName: String) {
+        @SerializedName("send-asset") SEND_ASSET("send-asset"),
+        @SerializedName("token-detail") TOKEN_DETAIL("token-detail"),
+        @SerializedName("onboarding") ONBOARDING("onboarding")
     }
 
     data class EmojiInfo(

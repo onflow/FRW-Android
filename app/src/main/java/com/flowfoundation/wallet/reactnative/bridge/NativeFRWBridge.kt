@@ -1076,41 +1076,29 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                                 // Clear cache
                                 com.flowfoundation.wallet.network.clearUserCache()
 
-                                // Return success
-                                val response = WritableNativeMap()
-                                response.putBoolean("success", true)
-                                response.putNull("error")
-
-                                uiScope {
-                                    promise.resolve(response)
-                                }
-
                                 logd(TAG, "saveMnemonic() - EOA account initialization complete!")
 
                                 // Step 12: Close React Native view (handled by caller)
                                 // Step 13: Notification permission (handled by caller)
 
+                                // Return success - resolve with null (no response object needed)
+                                uiScope {
+                                    promise.resolve(null)
+                                }
+
                             } catch (e: Exception) {
                                 loge(TAG, "saveMnemonic() - Wallet initialization error: ${e.message}")
                                 e.printStackTrace()
 
-                                val response = WritableNativeMap()
-                                response.putBoolean("success", false)
-                                response.putString("error", "Wallet initialization failed: ${e.message}")
-
                                 uiScope {
-                                    promise.resolve(response)
+                                    promise.reject("WALLET_INIT_ERROR", "Wallet initialization failed: ${e.message}", e)
                                 }
                             }
                         } else {
                             loge(TAG, "saveMnemonic() - Firebase authentication failed")
 
-                            val response = WritableNativeMap()
-                            response.putBoolean("success", false)
-                            response.putString("error", "Firebase authentication failed")
-
                             uiScope {
-                                promise.resolve(response)
+                                promise.reject("FIREBASE_AUTH_ERROR", "Firebase authentication failed")
                             }
                         }
                     }
@@ -1120,12 +1108,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 loge(TAG, "saveMnemonic() - error: ${e.message}")
                 e.printStackTrace()
 
-                val response = WritableNativeMap()
-                response.putBoolean("success", false)
-                response.putString("error", e.message ?: "Unknown error")
-
                 uiScope {
-                    promise.resolve(response)
+                    promise.reject("SAVE_MNEMONIC_ERROR", e.message ?: "Unknown error", e)
                 }
             }
         }
