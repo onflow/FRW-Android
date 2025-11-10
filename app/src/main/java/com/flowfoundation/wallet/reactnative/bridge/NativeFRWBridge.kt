@@ -12,6 +12,8 @@ import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
@@ -863,6 +865,211 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 response.putString("accountType", "coa")
                 response.putString("error", e.message ?: "Unknown error")
 
+                uiScope {
+                    promise.resolve(response)
+                }
+            }
+        }
+    }
+
+    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, promise: Promise) {
+        logd(TAG, "saveMnemonic() called - EOA account initialization")
+        logd(TAG, "saveMnemonic() - txId: $txId")
+        
+        ioScope {
+            try {
+                // Step 8: Securely store the mnemonic
+                logd(TAG, "saveMnemonic() - Step 8: Storing mnemonic securely...")
+                
+                // Store mnemonic in secure storage (similar to registerOutblock's password storage)
+                val passwordMap = try {
+                    val pref = com.flowfoundation.wallet.utils.readWalletPassword()
+                    if (pref.isBlank()) {
+                        HashMap<String, String>()
+                    } else {
+                        Gson().fromJson(pref, object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type)
+                    }
+                } catch (e: Exception) {
+                    HashMap<String, String>()
+                }
+                
+                // Generate a unique prefix for this EOA account
+                val timestamp = System.currentTimeMillis().toString()
+                val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa_$timestamp")
+                
+                // Store mnemonic globally for backup support
+                com.flowfoundation.wallet.utils.storeWalletPassword(
+                    Gson().toJson(passwordMap.apply { put("global", mnemonic) })
+                )
+                logd(TAG, "saveMnemonic() - Mnemonic stored with prefix: $prefix")
+                
+                // Step 9: Firebase authentication with custom token
+                logd(TAG, "saveMnemonic() - Step 9: Authenticating with Firebase...")
+                var authSuccess = false
+                
+                // Delete existing Firebase token and user
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+                com.google.firebase.ktx.Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
+                    logd(TAG, "saveMnemonic() - Previous Firebase user deleted")
+                }
+                
+                // Sign in with custom token
+                com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, _ ->
+                    ioScope {
+                        if (isSuccessful) {
+                            logd(TAG, "saveMnemonic() - Firebase authentication successful")
+                            authSuccess = true
+                            
+                            // Step 10 & 11: Initialize Wallet-Kit and account discovery
+                            try {
+                                logd(TAG, "saveMnemonic() - Step 10-11: Initializing Wallet-Kit and discovering account...")
+                                
+                                // Create SeedPhraseKey from mnemonic using Flow-Wallet-Kit
+                                val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
+                                val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
+                                
+                                // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
+                                val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
+                                    mnemonicString = mnemonic,
+                                    passphrase = "",
+                                    derivationPath = "m/44'/539'/0'/0/0",
+                                    keyPair = null,
+                                    storage = storage
+                                )
+                                
+                                // Store the seed phrase key with prefix as ID
+                                val keyId = "prefix_key_$prefix"
+                                seedPhraseKey.store(keyId, prefix)
+                                logd(TAG, "saveMnemonic() - SeedPhraseKey stored with ID: $keyId")
+                                
+                                // Get the public key
+                                val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_P256)
+                                if (publicKeyBytes == null) {
+                                    throw IllegalStateException("Failed to get public key from seed phrase key")
+                                }
+                                
+                                // Fetch user info and wallet list from backend
+                                val service = com.flowfoundation.wallet.network.retrofit().create(com.flowfoundation.wallet.network.ApiService::class.java)
+                                val userInfo = service.userInfo().data
+                                val walletListData = service.getWalletList().data
+                                
+                                if (walletListData == null) {
+                                    throw IllegalStateException("No wallet data found")
+                                }
+                                
+                                // Initialize Wallet SDK with account from Flow network using txId for fast discovery
+                                val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                                    seedPhraseKey,
+                                    setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                                    storage
+                                )
+                                
+                                // Use txId to fetch account from Flow network
+                                walletListData.wallets?.forEach { walletData ->
+                                    walletData.blockchain?.forEach { blockchain ->
+                                        try {
+                                            val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
+                                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                                                "testnet" -> org.onflow.flow.ChainId.Testnet
+                                                else -> null
+                                            }
+                                            if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
+                                                val address = if (blockchain.address.startsWith("0x")) {
+                                                    blockchain.address
+                                                } else {
+                                                    "0x${blockchain.address}"
+                                                }
+                                                logd(TAG, "saveMnemonic() - Fetching account $address using txId: $txId")
+                                                walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
+                                                logd(TAG, "saveMnemonic() - Account fetched successfully")
+                                            }
+                                        } catch (e: Exception) {
+                                            logd(TAG, "saveMnemonic() - Warning: Could not fetch account: ${e.message}")
+                                        }
+                                    }
+                                }
+                                
+                                // Add account to AccountManager
+                                AccountManager.add(
+                                    Account(
+                                        userInfo = userInfo,
+                                        prefix = prefix,
+                                        wallet = walletListData
+                                    ),
+                                    com.flowfoundation.wallet.firebase.auth.firebaseUid()
+                                )
+                                logd(TAG, "saveMnemonic() - Account added to AccountManager")
+                                
+                                // Initialize WalletManager
+                                WalletManager.init()
+                                logd(TAG, "saveMnemonic() - WalletManager initialized")
+                                
+                                // Get crypto provider
+                                val currentAccount = AccountManager.get()
+                                val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount!!)
+                                logd(TAG, "saveMnemonic() - Crypto provider generated")
+                                
+                                // Track account creation
+                                // Note: AccountCreateKeyType.SEED_PHRASE may not exist in enum, using KEY_STORE as fallback
+                                // The actual key type is tracked via the mnemonic storage
+                                com.flowfoundation.wallet.mixpanel.MixpanelManager.accountCreated(
+                                    cryptoProvider!!.getPublicKey(),
+                                    com.flowfoundation.wallet.mixpanel.AccountCreateKeyType.KEY_STORE,
+                                    cryptoProvider.getSignatureAlgorithm().value,
+                                    cryptoProvider.getHashAlgorithm().algorithm
+                                )
+                                
+                                // Clear cache
+                                com.flowfoundation.wallet.network.clearUserCache()
+                                
+                                // Return success
+                                val response = WritableNativeMap()
+                                response.putBoolean("success", true)
+                                response.putNull("error")
+                                
+                                uiScope {
+                                    promise.resolve(response)
+                                }
+                                
+                                logd(TAG, "saveMnemonic() - EOA account initialization complete!")
+                                
+                                // Step 12: Close React Native view (handled by caller)
+                                // Step 13: Notification permission (handled by caller)
+                                
+                            } catch (e: Exception) {
+                                loge(TAG, "saveMnemonic() - Wallet initialization error: ${e.message}")
+                                e.printStackTrace()
+                                
+                                val response = WritableNativeMap()
+                                response.putBoolean("success", false)
+                                response.putString("error", "Wallet initialization failed: ${e.message}")
+                                
+                                uiScope {
+                                    promise.resolve(response)
+                                }
+                            }
+                        } else {
+                            loge(TAG, "saveMnemonic() - Firebase authentication failed")
+                            
+                            val response = WritableNativeMap()
+                            response.putBoolean("success", false)
+                            response.putString("error", "Firebase authentication failed")
+                            
+                            uiScope {
+                                promise.resolve(response)
+                            }
+                        }
+                    }
+                }
+                
+            } catch (e: Exception) {
+                loge(TAG, "saveMnemonic() - error: ${e.message}")
+                e.printStackTrace()
+                
+                val response = WritableNativeMap()
+                response.putBoolean("success", false)
+                response.putString("error", e.message ?: "Unknown error")
+                
                 uiScope {
                     promise.resolve(response)
                 }
