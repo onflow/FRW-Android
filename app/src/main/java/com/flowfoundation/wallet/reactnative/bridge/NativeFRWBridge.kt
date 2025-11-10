@@ -858,15 +858,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun createCOAAccount(promise: Promise) {
+    override fun createCOAAccount(username: String, promise: Promise) {
         logd(TAG, "createCOAAccount() called - Creating Secure Enclave/Hybrid account")
+        logd(TAG, "createCOAAccount() - username: $username")
         ioScope {
             try {
-                // Auto-generate username (3-15 chars as per server requirement)
-                // Use last 8 digits of timestamp to keep it within length limit
-                val timestamp = System.currentTimeMillis().toString()
-                val username = "u${timestamp.takeLast(8)}"  // e.g., "u12345678" (9 chars)
-                logd(TAG, "createCOAAccount() - generated username: $username")
                 logd(TAG, "createCOAAccount() - starting account registration...")
 
                 // Use the existing registerOutblock function which creates a COA/Hybrid account:
@@ -884,27 +880,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     val account = AccountManager.get()
                     val address = WalletManager.selectedWalletAddress()
 
-                    // Retrieve the mnemonic that was generated during registration
-                    val mnemonic = try {
-                        com.flowfoundation.wallet.wallet.Wallet.store().mnemonic()
-                    } catch (e: Exception) {
-                        loge(TAG, "Failed to retrieve mnemonic: ${e.message}")
-                        null
-                    }
-
-                    val phraseWords = mnemonic?.split(" ")
+                    // Note: COA accounts use Secure Enclave/hardware-backed keys
+                    // No mnemonic is generated or stored for these accounts
 
                     // Create success response using WritableMap
                     val response = WritableNativeMap()
                     response.putBoolean("success", true)
                     response.putString("address", address)
                     response.putString("username", account?.userInfo?.username ?: username)
-                    response.putString("mnemonic", mnemonic)
-
-                    val phraseArray = WritableNativeArray()
-                    phraseWords?.forEach { word -> phraseArray.pushString(word) }
-                    response.putArray("phrase", phraseArray)
-
                     response.putString("accountType", "coa")
                     response.putNull("error")
 
@@ -918,8 +901,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putNull("mnemonic")
-                    response.putNull("phrase")
                     response.putString("accountType", "coa")
                     response.putString("error", "Failed to create account")
 
@@ -935,8 +916,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 response.putBoolean("success", false)
                 response.putNull("address")
                 response.putNull("username")
-                response.putNull("mnemonic")
-                response.putNull("phrase")
                 response.putString("accountType", "coa")
                 response.putString("error", e.message ?: "Unknown error")
 
@@ -969,8 +948,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 }
 
                 // Generate a unique prefix for this EOA account
-                val timestamp = System.currentTimeMillis().toString()
-                val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa_$timestamp")
+                // Note: generatePrefix() already adds timestamp internally, just pass the account type
+                val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa")
 
                 // Store mnemonic globally for backup support
                 com.flowfoundation.wallet.utils.storeWalletPassword(
@@ -1276,103 +1255,75 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun launchMultiBackup() {
-        android.util.Log.d(TAG, "launchMultiBackup() called")
+    override fun launchNativeScreen(screenName: String, params: String?) {
+        logd(TAG, "launchNativeScreen() called - screen: $screenName, params: $params")
+
         try {
             val currentActivity = reactApplicationContext.currentActivity
 
             if (currentActivity == null) {
-                android.util.Log.w(TAG, "launchMultiBackup() - no current activity")
+                logw(TAG, "launchNativeScreen() - no current activity")
                 return
             }
 
-            // First launch WalletBackupActivity (parent) so back navigation works correctly
-            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+            val screen = NativeScreen.fromString(screenName)
+            if (screen == null) {
+                loge(TAG, "launchNativeScreen() - unknown screen: $screenName")
+                return
+            }
 
-            // Then immediately launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
-            // When user presses back, they will return to WalletBackupActivity
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                reactApplicationContext.currentActivity?.let { activity ->
-                    com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(activity)
-                    android.util.Log.d(TAG, "launchMultiBackup() - launched MultiBackupActivity on top of WalletBackupActivity")
+            when (screen) {
+                NativeScreen.MULTI_BACKUP -> {
+                    // First launch WalletBackupActivity (parent) so back navigation works correctly
+                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+                    // Then immediately launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
+                    // When user presses back, they will return to WalletBackupActivity
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        reactApplicationContext.currentActivity?.let { activity ->
+                            com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(activity)
+                            logd(TAG, "launchNativeScreen() - launched MultiBackupActivity")
+                        }
+                    }, 300) // Small delay to ensure WalletBackupActivity is created first
                 }
-            }, 300) // Small delay to ensure WalletBackupActivity is created first
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "launchMultiBackup() error: ${e.message}")
-            e.printStackTrace()
-        }
-    }
 
-    override fun launchDeviceBackup() {
-        android.util.Log.d(TAG, "launchDeviceBackup() called")
-        try {
-            val currentActivity = reactApplicationContext.currentActivity
+                NativeScreen.DEVICE_BACKUP -> {
+                    // First launch WalletBackupActivity (parent) so back navigation works correctly
+                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
 
-            if (currentActivity == null) {
-                android.util.Log.w(TAG, "launchDeviceBackup() - no current activity")
-                return
-            }
-
-            // First launch WalletBackupActivity (parent) so back navigation works correctly
-            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
-
-            // Then immediately launch CreateDeviceBackupActivity (QR code sync between devices)
-            // When user presses back, they will return to WalletBackupActivity
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                reactApplicationContext.currentActivity?.let { activity ->
-                    com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(activity)
-                    android.util.Log.d(TAG, "launchDeviceBackup() - launched CreateDeviceBackupActivity on top of WalletBackupActivity")
+                    // Then immediately launch CreateDeviceBackupActivity (QR code sync between devices)
+                    // When user presses back, they will return to WalletBackupActivity
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        reactApplicationContext.currentActivity?.let { activity ->
+                            com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(activity)
+                            logd(TAG, "launchNativeScreen() - launched CreateDeviceBackupActivity")
+                        }
+                    }, 300) // Small delay to ensure WalletBackupActivity is created first
                 }
-            }, 300) // Small delay to ensure WalletBackupActivity is created first
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "launchDeviceBackup() error: ${e.message}")
-            e.printStackTrace()
-        }
-    }
 
-    override fun launchSeedPhraseBackup() {
-        android.util.Log.d(TAG, "launchSeedPhraseBackup() called")
-        try {
-            val currentActivity = reactApplicationContext.currentActivity
+                NativeScreen.SEED_PHRASE_BACKUP -> {
+                    // First launch WalletBackupActivity (parent) so back navigation works correctly
+                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
 
-            if (currentActivity == null) {
-                android.util.Log.w(TAG, "launchSeedPhraseBackup() - no current activity")
-                return
-            }
-
-            // First launch WalletBackupActivity (parent) so back navigation works correctly
-            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
-
-            // Then immediately launch BackupRecoveryPhraseActivity (View/create recovery phrase)
-            // When user presses back, they will return to WalletBackupActivity
-            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                reactApplicationContext.currentActivity?.let { activity ->
-                    val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(activity)
-                    activity.startActivity(intent)
-                    android.util.Log.d(TAG, "launchSeedPhraseBackup() - launched BackupRecoveryPhraseActivity on top of WalletBackupActivity")
+                    // Then immediately launch BackupRecoveryPhraseActivity (View/create recovery phrase)
+                    // When user presses back, they will return to WalletBackupActivity
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        reactApplicationContext.currentActivity?.let { activity ->
+                            val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(activity)
+                            activity.startActivity(intent)
+                            logd(TAG, "launchNativeScreen() - launched BackupRecoveryPhraseActivity")
+                        }
+                    }, 300) // Small delay to ensure WalletBackupActivity is created first
                 }
-            }, 300) // Small delay to ensure WalletBackupActivity is created first
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "launchSeedPhraseBackup() error: ${e.message}")
-            e.printStackTrace()
-        }
-    }
 
-    override fun launchNativeBackupOptions() {
-        android.util.Log.d(TAG, "launchNativeBackupOptions() called")
-        try {
-            val currentActivity = reactApplicationContext.currentActivity
-
-            if (currentActivity == null) {
-                android.util.Log.w(TAG, "launchNativeBackupOptions() - no current activity")
-                return
+                NativeScreen.BACKUP_OPTIONS -> {
+                    // Launch WalletBackupActivity (Native backup options screen)
+                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+                    logd(TAG, "launchNativeScreen() - launched WalletBackupActivity")
+                }
             }
-
-            // Launch WalletBackupActivity (Native backup options screen)
-            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
-            android.util.Log.d(TAG, "launchNativeBackupOptions() - launched WalletBackupActivity")
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "launchNativeBackupOptions() error: ${e.message}")
+            loge(TAG, "launchNativeScreen() error: ${e.message}")
             e.printStackTrace()
         }
     }
