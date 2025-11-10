@@ -352,7 +352,7 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     // Fetch Flow Wallet Kit from GitHub Packages
-    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.0-p1'
+    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.0'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
@@ -368,9 +368,11 @@ dependencies {
 
     // HD Wallet implementation
     implementation('com.trustwallet:wallet-core:4.3.2') {
-        exclude group: 'com.trustwallet', module: 'wallet-core-proto'
         exclude group: 'com.google.protobuf', module: 'protobuf-java'
     }
+    // Add wallet-core-proto separately to avoid conflicts
+    // Note: wallet-core-proto may require protobuf-java, so we allow it for this dependency only
+    implementation('com.trustwallet:wallet-core-proto:4.3.2')
 
     // room https://developer.android.google.cn/training/data-storage/room?hl=zh-cn
     implementation "androidx.room:room-runtime:2.6.1"
