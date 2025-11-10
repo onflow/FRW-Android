@@ -60,6 +60,47 @@
 
     </FrameLayout>
 
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/cl_network"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="12dp"
+    android:background="@drawable/bg_round_12dp"
+    android:backgroundTint="@color/neutrals10"
+    android:paddingHorizontal="18dp"
+    android:paddingVertical="14dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/fl_blocked_tip">
+
+    <ImageView
+      android:id="@+id/iv_network_icon"
+      android:layout_width="20dp"
+      android:layout_height="20dp"
+      android:src="@drawable/ic_network"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+      android:id="@+id/tv_network"
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:ellipsize="middle"
+      android:fontFamily="@font/inter"
+      android:layout_marginStart="8dp"
+      android:gravity="start"
+      android:lines="1"
+      android:text=""
+      android:textColor="@color/text"
+      android:textSize="12sp"
+      tools:text="Connecting on Flow Mainnet"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toEndOf="@id/iv_network_icon"
+      app:layout_constraintTop_toTopOf="parent"/>
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/ll_website_info"
         android:layout_width="match_parent"
@@ -70,7 +111,7 @@
         android:orientation="horizontal"
         android:paddingHorizontal="18dp"
         android:paddingVertical="14dp"
-        app:layout_constraintTop_toBottomOf="@id/fl_blocked_tip">
+        app:layout_constraintTop_toBottomOf="@id/cl_network">
 
         <ImageView
             android:layout_width="20dp"
@@ -81,10 +122,10 @@
             android:id="@+id/tv_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
+            android:layout_marginStart="8dp"
             android:textColor="@color/text"
             android:textSize="14sp"
-            tools:text="google.com"/>
+            tools:text="google.com is requesting access to:"/>
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -100,15 +141,6 @@
         android:paddingVertical="16dp"
         app:layout_constraintTop_toBottomOf="@id/ll_website_info">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/fcl_connect_permission_title"
-            android:textAllCaps="true"
-            android:textColor="@color/neutrals5"
-            android:textSize="14sp"/>
-
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -116,14 +148,14 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="17dp"
-                android:layout_height="17dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_check_round"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/fcl_permission_read_balance"
                 android:textColor="@color/text"
                 android:textSize="14sp"/>
@@ -137,14 +169,14 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="17dp"
-                android:layout_height="17dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@drawable/ic_check_round"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
+                android:layout_marginStart="8dp"
                 android:text="@string/fcl_permission_transaction"
                 android:textColor="@color/text"
                 android:textSize="14sp"/>
@@ -152,122 +184,33 @@
 
     </androidx.appcompat.widget.LinearLayoutCompat>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_wallet_address"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        android:background="@drawable/bg_round_12dp"
-        android:backgroundTint="@color/neutrals10"
-        android:paddingHorizontal="18dp"
-        android:paddingVertical="10dp"
-        app:layout_constraintEnd_toStartOf="@id/cl_network"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ll_desc">
+    <TextView
+      android:id="@+id/tv_connecting_account"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="13dp"
+      android:text="@string/connecting_account"
+      android:textColor="@color/text"
+      android:textSize="14sp"
+      app:layout_constraintTop_toBottomOf="@id/ll_desc"/>
 
-        <TextView
-            android:id="@+id/tv_wallet_icon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:background="@drawable/bg_round_24dp"
-            android:backgroundTint="@color/emoji_peach"
-            android:gravity="center"
-            android:text="🍑"
-            android:textSize="10sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+    <FrameLayout
+      android:id="@+id/fl_selected_account"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="15dp"
+      app:layout_constraintTop_toBottomOf="@id/tv_connecting_account">
 
-        <TextView
-            android:id="@+id/tv_wallet_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:fontFamily="@font/inter"
-            android:text="EVM Wallet"
-            android:textColor="@color/text_3"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@id/tv_wallet_icon"
-            app:layout_constraintStart_toEndOf="@id/tv_wallet_icon"
-            app:layout_constraintTop_toTopOf="@id/tv_wallet_icon"/>
-
-        <TextView
-            android:id="@+id/tv_wallet_address"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
-            android:ellipsize="middle"
-            android:fontFamily="@font/inter"
-            android:gravity="start"
-            android:lines="1"
-            android:text=""
-            android:textColor="@color/text"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_wallet_icon"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_network"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_round_12dp"
-        android:backgroundTint="@color/neutrals10"
-        android:paddingHorizontal="18dp"
-        android:paddingVertical="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/cl_wallet_address"
-        app:layout_constraintTop_toTopOf="@id/cl_wallet_address"
-        app:layout_constraintBottom_toBottomOf="@id/cl_wallet_address">
-
-        <ImageView
-            android:id="@+id/iv_network_icon"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/ic_network"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <TextView
-            android:id="@+id/tv_network_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:fontFamily="@font/inter"
-            android:text="@string/network"
-            android:textColor="@color/text_3"
-            android:textSize="12sp"
-            app:layout_constraintBottom_toBottomOf="@id/iv_network_icon"
-            app:layout_constraintStart_toEndOf="@id/iv_network_icon"
-            app:layout_constraintTop_toTopOf="@id/iv_network_icon"/>
-
-        <TextView
-            android:id="@+id/tv_network"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="11dp"
-            android:ellipsize="middle"
-            android:fontFamily="@font/inter"
-            android:gravity="start"
-            android:lines="1"
-            android:text="Mainnet"
-            android:textColor="@color/text"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_network_icon"/>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+      <include layout="@layout/item_selected_evm_account"/>
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/fl_blocked_connect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/cl_wallet_address">
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/fl_selected_account">
         <include layout="@layout/layout_blocked_connect"/>
     </FrameLayout>
 

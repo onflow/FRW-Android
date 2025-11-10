@@ -20,7 +20,8 @@ import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 
 class PrivateKeyStoreUsernamePresenter(
     private val fragment: Fragment,
-    private val binding: FragmentPrivateKeyStoreUsernameBinding
+    private val binding: FragmentPrivateKeyStoreUsernameBinding,
+    private val isCreateAccount: Boolean = false
 ): BasePresenter<WalletCreateUsernameModel> {
     private val viewModel by lazy { ViewModelProvider(fragment)[WalletCreateUsernameViewModel::class.java] }
 
@@ -46,7 +47,11 @@ class PrivateKeyStoreUsernamePresenter(
         binding.nextButton.setOnClickListener {
             binding.editText.hideKeyboard()
             binding.nextButton.setProgressVisible(true)
-            restoreViewModel.importWithUsername(binding.editText.text.toString())
+            if (isCreateAccount) {
+                restoreViewModel.createAccountWithUsername(binding.editText.text.toString())
+            } else {
+                restoreViewModel.importWithUsername(binding.editText.text.toString())
+            }
         }
         observeKeyboardVisible()
     }

@@ -13,6 +13,7 @@ enum class WalletConnectMethod(val value: String) {
     PROXY_ACCOUNT("frw_proxy_account"),
     PROXY_SIGN("frw_proxy_sign"),
     EVM_SIGN_MESSAGE("personal_sign"),
+    EVM_EC_RECOVER("personal_ecRecover"),
     EVM_SEND_TRANSACTION("eth_sendTransaction"),
     EVM_SIGN_TYPED_DATA("eth_signTypedData"),
     EVM_SIGN_TYPED_DATA_V3("eth_signTypedData_v3"),
@@ -32,7 +33,7 @@ enum class WalletConnectMethod(val value: String) {
         fun getSupportedEVMMethod(): List<String> {
             return listOf(EVM_SIGN_MESSAGE.value, EVM_SEND_TRANSACTION.value, EVM_SIGN_TYPED_DATA.value,
                 EVM_SIGN_TYPED_DATA_V3.value,
-                EVM_SIGN_TYPED_DATA_V4.value, WALLET_WATCH_ASSETS.value)
+                EVM_SIGN_TYPED_DATA_V4.value, WALLET_WATCH_ASSETS.value, EVM_EC_RECOVER.value)
         }
 
     }

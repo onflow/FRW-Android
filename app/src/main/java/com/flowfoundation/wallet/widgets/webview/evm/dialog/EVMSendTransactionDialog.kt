@@ -176,6 +176,7 @@ class EVMSendTransactionDialog: BottomSheetDialogFragment() {
                 e.printStackTrace()
                 uiScope {
                     binding.cvContactInfo.gone()
+                    binding.cvCallData.gone()
                 }
             }
         }

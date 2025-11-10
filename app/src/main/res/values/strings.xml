@@ -199,6 +199,7 @@
     <string name="developer_mode">Developer Mode</string>
     <string name="network">Network</string>
     <string name="selected">Selected</string>
+    <string name="selected_account">Selected Account</string>
     <string name="mainnet">Mainnet</string>
     <string name="testnet">Testnet</string>
     <string name="switch_network_failed">Switch network failed</string>
@@ -233,7 +234,10 @@
     <string name="made_by_outblock">Made by <a href="https://flow.com/">Flow</a></string>
     <string name="about_version">Version %1$s</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="connecting_on">Connecting on %1$s</string>
     <string name="connecting">Connecting...</string>
+    <string name="connecting_account">Connecting Account</string>
+    <string name="requesting_access">%1$s is requesting access to:</string>
     <string name="transaction_to">Transaction Request from</string>
     <string name="message_to">Sign Message Request from</string>
     <string name="fcl_connect_permission_title">This App would like to</string>
@@ -308,6 +312,7 @@
     <string name="estimated_fees">Estimated Fees</string>
     <string name="select">Select</string>
     <string name="select_token">Select Token</string>
+    <string name="select_account">Select Account</string>
     <string name="swap_price">Swap price</string>
     <string name="hold_to_swap">Hold to swap</string>
     <string name="swap_failed">Swap failed</string>
@@ -555,6 +560,7 @@
     <string name="evm_on_flow">EVM on Flow</string>
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
+    <string name="label_eoa">EOA</string>
     <string name="move">Move</string>
     <string name="current_vm">Current Network</string>
     <string name="cadence">Cadence</string>

@@ -42,6 +42,7 @@ import com.flowfoundation.wallet.utils.logToInstabug
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
+<<<<<<< HEAD
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.google.gson.Gson
@@ -50,6 +51,8 @@ import org.json.JSONObject
 import org.onflow.flow.models.FlowAddress
 import org.onflow.flow.models.TransactionStatus
 import org.onflow.flow.models.hexToBytes
+import org.onflow.flow.models.toHexString
+import org.web3j.utils.Numeric
 import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
@@ -157,7 +160,31 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun listenTransaction(txid: String) {
+  override fun ethSign(hexData: String?, promise: Promise?) {
+      ioScope {
+          try {
+              logd(TAG, "ethSign() called with hexData: $hexData")
+              val signature = WalletManager.wallet()?.ethSignDigest(hexData?.hexToBytes() ?: throw IllegalArgumentException("hexData is null"))
+              if (signature != null && signature.isNotEmpty()) {
+                  val result = Numeric.toHexString(signature)
+                  logd(TAG, "ethSign() - signature $result")
+                  uiScope {
+                      promise?.resolve(result)
+                  }
+              } else {
+                  uiScope {
+                      promise?.reject("SIGN_ERROR", "Failed to sign data", null)
+                  }
+              }
+          } catch (e: Exception) {
+              uiScope {
+                  promise?.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
+              }
+          }
+      }
+  }
+
+  override fun listenTransaction(txid: String) {
         val transactionState = TransactionState(
             transactionId = txid,
             time = System.currentTimeMillis(),
@@ -238,7 +265,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     mainAddress = WalletManager.selectedWalletAddress()
                 }
                 val mainEmojiInfo = createEmojiInfo(mainAddress)
-                if (!mainAddress.isNullOrEmpty()) {
+                if (mainAddress.isNotEmpty()) {
                     val mainAccount = RNBridge.WalletAccount(
                         id = "main",
                         name = mainEmojiInfo?.name ?: "Main Account",
@@ -264,7 +291,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
                         val childAccountBridge = RNBridge.WalletAccount(
                             id = "child_${childAccount.address}",
-                            name = childAccount.name ?: "Child Account",
+                            name = childAccount.name,
                             address = childAccount.address,
                             emojiInfo = null,
                             parentEmoji = mainEmojiInfo,
@@ -308,6 +335,30 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     println("EVM account not available: ${e.message}")
                 }
 
+                try {
+                    val eoaAddress = WalletManager.getEOAAddressCached()
+                    if (!eoaAddress.isNullOrEmpty()) {
+                        val eoaEmojiInfo = createEmojiInfo(eoaAddress)
+                        val eoaAccount = RNBridge.WalletAccount(
+                            id = "eoa",
+                            name = eoaEmojiInfo?.name ?: "EOA Account",
+                            address = eoaAddress,
+                            parentAddress = mainAddress,
+                            emojiInfo = eoaEmojiInfo,
+                            parentEmoji = mainEmojiInfo,
+                            avatar = null,
+                            isActive = isSelectedWalletAddress(eoaAddress),
+                            type = RNBridge.AccountType.EVM,
+                            balance = null,
+                            nfts = null,
+                        )
+                        bridgeAccounts.add(eoaAccount)
+                    }
+                } catch (e: Exception) {
+                    // EVM account might not be available, continue without it
+                    println("EVM account not available: ${e.message}")
+                }
+
                 val response = RNBridge.WalletAccountsResponse(accounts = bridgeAccounts)
                 val result = bridgeModelToWritableMap(response)
 
@@ -333,11 +384,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     try {
                         if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
                             // Use finishAndRemoveTask() to completely remove the activity from recents
-                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                                currentActivity.finishAndRemoveTask()
-                            } else {
-                                currentActivity.finish()
-                            }
+                            currentActivity.finishAndRemoveTask()
                         }
                     } catch (e: Exception) {
                         println("Failed to finish activity on UI thread: ${e.message}")
@@ -364,7 +411,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
             val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
 
-            if (address.isNullOrEmpty() || cryptoProvider == null) {
+            if (address.isEmpty() || cryptoProvider == null) {
                 return 0.0
             }
 
@@ -418,7 +465,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             try {
                 logd(TAG, "getSelectedAccount() - getting selected address...")
                 val selectedAddress = WalletManager.selectedWalletAddress()
-                if (selectedAddress.isNullOrEmpty()) {
+                if (selectedAddress.isEmpty()) {
                     logw(TAG, "getSelectedAccount() - no selected address found")
                     uiScope {
                         promise.reject("NO_SELECTED_ACCOUNT", "No wallet address selected", null)
@@ -431,7 +478,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val mainAddress = WalletManager.wallet()?.walletAddress()
 
                 val accountType = when {
-                    EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
+                    EVMWalletManager.isEOAAddress(selectedAddress) || EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
                     WalletManager.isChildAccount(selectedAddress) -> RNBridge.AccountType.CHILD
                     else -> RNBridge.AccountType.MAIN
                 }
@@ -592,7 +639,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             val mainAddress = account.wallet?.walletAddress()
             if (mainAddress.isNullOrEmpty()) {
                 logw(TAG, "createWalletProfileFromAccount() - no main address found for account: " +
-                  "${account.userInfo.username}")
+                  account.userInfo.username
+                )
                 return null
             }
 
@@ -669,6 +717,34 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         nfts = null,
                     )
                     bridgeAccounts.add(evmAccount)
+                }
+            } catch (e: Exception) {
+                logw(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e
+                  .message}")
+            }
+
+            try {
+                val eoaAddress = if (isSelectedWalletAddress(mainAddress)) {
+                    WalletManager.getEOAAddressCached()
+                } else {
+                    ""
+                }
+              if (!eoaAddress.isNullOrEmpty()) {
+                  val eoaEmojiInfo = createEmojiInfo(eoaAddress)
+                  val eoaAccount = RNBridge.WalletAccount(
+                    id = "eoa",
+                    name = eoaEmojiInfo?.name ?: "EOA Account",
+                    address = eoaAddress,
+                    parentAddress = mainAddress,
+                    emojiInfo = eoaEmojiInfo,
+                    parentEmoji = mainEmojiInfo,
+                    avatar = null,
+                    isActive = isSelectedWalletAddress(eoaAddress),
+                    type = RNBridge.AccountType.EVM,
+                    balance = null,
+                    nfts = null,
+                  )
+                  bridgeAccounts.add(eoaAccount)
                 }
             } catch (e: Exception) {
                 logw(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e

@@ -26,27 +26,48 @@ fun isUserSignIn(): Boolean {
 }
 
 fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
+    logd(TAG, "=== firebaseCustomLogin START ===")
     val auth = Firebase.auth
-    if (auth.currentUser != null) {
-        logd(TAG, "have signed in")
+    val currentUser = auth.currentUser
+    logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}")
+
+    if (currentUser != null) {
+        logd(TAG, "User already signed in, UID: ${currentUser.uid}, isAnonymous: ${currentUser.isAnonymous}")
         onComplete.invoke(true, null)
         return
     }
+
+    logd(TAG, "Attempting to sign in with custom token (length: ${token.length})")
     auth.signInWithCustomToken(token).addOnCompleteListener { task ->
+        logd(TAG, "signInWithCustomToken completed - success: ${task.isSuccessful}")
+        if (!task.isSuccessful) {
+            logd(TAG, "ERROR: signInWithCustomToken failed - ${task.exception?.message}")
+        }
+
         ioScope {
             clearUserCache()
             if (task.isSuccessful) {
-                auth.currentUser?.getIdToken(true)?.addOnSuccessListener { result ->
+                val newUser = auth.currentUser
+                logd(TAG, "Sign in successful, new user UID: ${newUser?.uid}")
+                logd(TAG, "Requesting ID token refresh")
+
+                newUser?.getIdToken(true)?.addOnSuccessListener { result ->
+                    logd(TAG, "ID token obtained successfully")
                     uiScope {
                         onComplete.invoke(true, null)
                     }
                     getFirebaseMessagingToken()
                 }?.addOnFailureListener { e ->
+                    logd(TAG, "ERROR: Failed to get ID token - ${e.message}")
                     uiScope { onComplete.invoke(false, e) }
                 }
             } else {
+                logd(TAG, "ERROR: Task unsuccessful, calling failure callback")
+                val exception = task.exception
+                logd(TAG, "Exception type: ${exception?.javaClass?.simpleName}")
+                logd(TAG, "Exception message: ${exception?.message}")
                 uiScope {
-                    onComplete.invoke(false, task.exception)
+                    onComplete.invoke(false, exception)
                 }
             }
         }
