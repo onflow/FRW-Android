@@ -8,22 +8,25 @@ import com.facebook.react.bridge.WritableMap
 import com.flow.wallet.errors.WalletError
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.config.isGasFree
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager.isValidEVMAddress
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddress
+import com.flowfoundation.wallet.manager.evm.signEthereumMessage
+import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.cache.recentTransactionCache
-import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.network.API_HOST
 import com.flowfoundation.wallet.network.BASE_HOST
-import com.flowfoundation.wallet.manager.config.isGasFree
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.price.CurrencyManager
@@ -144,6 +147,36 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             } catch (e: Exception) {
                 uiScope {
                     promise.reject("SIGN_ERROR", "Failed to sign data: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    override fun ethSign(hexData: String, promise: Promise) {
+        ioScope {
+            try {
+                // Convert hex string to regular string (Ethereum message signing expects a string message)
+                val message = try {
+                    // Try to decode hex string to string
+                    String(hexData.hexToBytes())
+                } catch (e: Exception) {
+                    // If it's not valid hex, use it as-is (might already be a string)
+                    hexData
+                }
+                
+                val signature = signEthereumMessage(message)
+                if (signature.isNotEmpty()) {
+                    uiScope {
+                        promise.resolve(signature)
+                    }
+                } else {
+                    uiScope {
+                        promise.reject("ETH_SIGN_ERROR", "Failed to sign Ethereum message", null)
+                    }
+                }
+            } catch (e: Exception) {
+                uiScope {
+                    promise.reject("ETH_SIGN_ERROR", "Failed to sign Ethereum message: ${e.message}", e)
                 }
             }
         }
@@ -757,7 +790,557 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             // Android native toast typically auto-dismiss, but we can implement custom logic here
             // For now, this is mainly for API compatibility
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "clearAllToasts() error: ${e.message}")
+            loge(TAG, "clearAllToasts() error: ${e.message}")
+        }
+    }
+
+    override fun createCOAAccount(promise: Promise) {
+        logd(TAG, "createCOAAccount() called - Creating Secure Enclave/Hybrid account")
+        ioScope {
+            try {
+                // Auto-generate username (3-15 chars as per server requirement)
+                // Use last 8 digits of timestamp to keep it within length limit
+                val timestamp = System.currentTimeMillis().toString()
+                val username = "u${timestamp.takeLast(8)}"  // e.g., "u12345678" (9 chars)
+                logd(TAG, "createCOAAccount() - generated username: $username")
+                logd(TAG, "createCOAAccount() - starting account registration...")
+
+                // Use the existing registerOutblock function which creates a COA/Hybrid account:
+                // - Generates keys (secure enclave on supported devices)
+                // - Registers with backend server
+                // - Creates Flow blockchain account
+                // - Sets up Firebase authentication
+                // - Creates local Account in AccountManager
+                val success = com.flowfoundation.wallet.network.registerOutblock(username)
+
+                if (success) {
+                    logd(TAG, "createCOAAccount() - account created successfully")
+
+                    // Get the created account details
+                    val account = AccountManager.get()
+                    val address = WalletManager.selectedWalletAddress()
+
+                    // Retrieve the mnemonic that was generated during registration
+                    val mnemonic = try {
+                        com.flowfoundation.wallet.wallet.Wallet.store().mnemonic()
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to retrieve mnemonic: ${e.message}")
+                        null
+                    }
+
+                    val phraseWords = mnemonic?.split(" ")
+
+                    // Create success response using WritableMap
+                    val response = WritableNativeMap()
+                    response.putBoolean("success", true)
+                    response.putString("address", address)
+                    response.putString("username", account?.userInfo?.username ?: username)
+                    response.putString("mnemonic", mnemonic)
+
+                    val phraseArray = WritableNativeArray()
+                    phraseWords?.forEach { word -> phraseArray.pushString(word) }
+                    response.putArray("phrase", phraseArray)
+
+                    response.putString("accountType", "coa")
+                    response.putNull("error")
+
+                    uiScope {
+                        promise.resolve(response)
+                    }
+                } else {
+                    loge(TAG, "createCOAAccount() - account creation failed")
+
+                    val response = WritableNativeMap()
+                    response.putBoolean("success", false)
+                    response.putNull("address")
+                    response.putNull("username")
+                    response.putNull("mnemonic")
+                    response.putNull("phrase")
+                    response.putString("accountType", "coa")
+                    response.putString("error", "Failed to create account")
+
+                    uiScope {
+                        promise.resolve(response)
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "createCOAAccount() - error: ${e.message}")
+                e.printStackTrace()
+
+                val response = WritableNativeMap()
+                response.putBoolean("success", false)
+                response.putNull("address")
+                response.putNull("username")
+                response.putNull("mnemonic")
+                response.putNull("phrase")
+                response.putString("accountType", "coa")
+                response.putString("error", e.message ?: "Unknown error")
+
+                uiScope {
+                    promise.resolve(response)
+                }
+            }
+        }
+    }
+
+    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, promise: Promise) {
+        logd(TAG, "saveMnemonic() called - EOA account initialization")
+        logd(TAG, "saveMnemonic() - txId: $txId")
+        
+        ioScope {
+            try {
+                // Step 8: Securely store the mnemonic
+                logd(TAG, "saveMnemonic() - Step 8: Storing mnemonic securely...")
+                
+                // Store mnemonic in secure storage (similar to registerOutblock's password storage)
+                val passwordMap = try {
+                    val pref = com.flowfoundation.wallet.utils.readWalletPassword()
+                    if (pref.isBlank()) {
+                        HashMap<String, String>()
+                    } else {
+                        Gson().fromJson(pref, object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type)
+                    }
+                } catch (e: Exception) {
+                    HashMap<String, String>()
+                }
+                
+                // Generate a unique prefix for this EOA account
+                val timestamp = System.currentTimeMillis().toString()
+                val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa_$timestamp")
+                
+                // Store mnemonic globally for backup support
+                com.flowfoundation.wallet.utils.storeWalletPassword(
+                    Gson().toJson(passwordMap.apply { put("global", mnemonic) })
+                )
+                logd(TAG, "saveMnemonic() - Mnemonic stored with prefix: $prefix")
+                
+                // Step 9: Firebase authentication with custom token
+                logd(TAG, "saveMnemonic() - Step 9: Authenticating with Firebase...")
+                var authSuccess = false
+                
+                // Delete existing Firebase token and user
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+                com.google.firebase.ktx.Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
+                    logd(TAG, "saveMnemonic() - Previous Firebase user deleted")
+                }
+                
+                // Sign in with custom token
+                com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, _ ->
+                    ioScope {
+                        if (isSuccessful) {
+                            logd(TAG, "saveMnemonic() - Firebase authentication successful")
+                            authSuccess = true
+                            
+                            // Step 10 & 11: Initialize Wallet-Kit and account discovery
+                            try {
+                                logd(TAG, "saveMnemonic() - Step 10-11: Initializing Wallet-Kit and discovering account...")
+                                
+                                // Create SeedPhraseKey from mnemonic using Flow-Wallet-Kit
+                                val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
+                                val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
+                                
+                                // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
+                                val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
+                                    mnemonicString = mnemonic,
+                                    passphrase = "",
+                                    derivationPath = "m/44'/539'/0'/0/0",
+                                    keyPair = null,
+                                    storage = storage
+                                )
+                                
+                                // Store the seed phrase key with prefix as ID
+                                // Ensure prefix is explicitly a String to avoid Any type inference
+                                val keyId: String = "prefix_key_$prefix"
+                                val prefixString: String = prefix.toString()
+                                seedPhraseKey.store(keyId, prefixString)
+                                logd(TAG, "saveMnemonic() - SeedPhraseKey stored with ID: $keyId")
+                                
+                                // Get the public key
+                                val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_P256)
+                                if (publicKeyBytes == null) {
+                                    throw IllegalStateException("Failed to get public key from seed phrase key")
+                                }
+                                
+                                // Fetch user info and wallet list from backend
+                                val service = com.flowfoundation.wallet.network.retrofit().create(com.flowfoundation.wallet.network.ApiService::class.java)
+                                val userInfo = service.userInfo().data
+                                val walletListData = service.getWalletList().data
+                                
+                                if (walletListData == null) {
+                                    throw IllegalStateException("No wallet data found")
+                                }
+                                
+                                // Initialize Wallet SDK with account from Flow network using txId for fast discovery
+                                val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                                    seedPhraseKey,
+                                    setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                                    storage
+                                )
+                                
+                                // Use txId to fetch account from Flow network
+                                walletListData.wallets?.forEach { walletData ->
+                                    walletData.blockchain?.forEach { blockchain ->
+                                        try {
+                                            val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
+                                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                                                "testnet" -> org.onflow.flow.ChainId.Testnet
+                                                else -> null
+                                            }
+                                            if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
+                                                val address = if (blockchain.address.startsWith("0x")) {
+                                                    blockchain.address
+                                                } else {
+                                                    "0x${blockchain.address}"
+                                                }
+                                                logd(TAG, "saveMnemonic() - Fetching account $address using txId: $txId")
+                                                walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
+                                                logd(TAG, "saveMnemonic() - Account fetched successfully")
+                                            }
+                                        } catch (e: Exception) {
+                                            logd(TAG, "saveMnemonic() - Warning: Could not fetch account: ${e.message}")
+                                        }
+                                    }
+                                }
+                                
+                                // Add account to AccountManager
+                                // Ensure all types are explicit to avoid Any type inference
+                                val firebaseUid: String? = com.flowfoundation.wallet.firebase.auth.firebaseUid()
+                                val accountToAdd = Account(
+                                    userInfo = userInfo,
+                                    prefix = prefixString,
+                                    wallet = walletListData
+                                )
+                                AccountManager.add(accountToAdd, firebaseUid)
+                                logd(TAG, "saveMnemonic() - Account added to AccountManager")
+                                
+                                // Initialize WalletManager
+                                try {
+                                    logd(TAG, "saveMnemonic() - Calling WalletManager.init()...")
+                                    WalletManager.init()
+                                    logd(TAG, "saveMnemonic() - WalletManager initialized")
+                                } catch (e: Exception) {
+                                    loge(TAG, "saveMnemonic() - WalletManager.init() failed: ${e.message}")
+                                    e.printStackTrace()
+                                    throw Exception("WalletManager initialization failed: ${e.message}", e)
+                                }
+                                
+                                // Get crypto provider
+                                try {
+                                    val currentAccount = AccountManager.get()
+                                    if (currentAccount == null) {
+                                        throw IllegalStateException("Account not found after adding to AccountManager")
+                                    }
+                                    logd(TAG, "saveMnemonic() - Getting crypto provider for account: ${currentAccount.prefix}")
+                                    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount)
+                                    if (cryptoProvider == null) {
+                                        throw IllegalStateException("Failed to generate crypto provider")
+                                    }
+                                    logd(TAG, "saveMnemonic() - Crypto provider generated")
+                                    
+                                    // Track account creation
+                                    // Note: AccountCreateKeyType.SEED_PHRASE may not exist in enum, using KEY_STORE as fallback
+                                    // The actual key type is tracked via the mnemonic storage
+                                    com.flowfoundation.wallet.mixpanel.MixpanelManager.accountCreated(
+                                        cryptoProvider.getPublicKey(),
+                                        com.flowfoundation.wallet.mixpanel.AccountCreateKeyType.KEY_STORE,
+                                        cryptoProvider.getSignatureAlgorithm().value,
+                                        cryptoProvider.getHashAlgorithm().algorithm
+                                    )
+                                } catch (e: Exception) {
+                                    loge(TAG, "saveMnemonic() - Crypto provider generation failed: ${e.message}")
+                                    e.printStackTrace()
+                                    throw Exception("Crypto provider generation failed: ${e.message}", e)
+                                }
+                                
+                                // Clear cache
+                                com.flowfoundation.wallet.network.clearUserCache()
+                                
+                                // Return success
+                                val response = WritableNativeMap()
+                                response.putBoolean("success", true)
+                                response.putNull("error")
+                                
+                                uiScope {
+                                    promise.resolve(response)
+                                }
+                                
+                                logd(TAG, "saveMnemonic() - EOA account initialization complete!")
+                                
+                                // Step 12: Close React Native view (handled by caller)
+                                // Step 13: Notification permission (handled by caller)
+                                
+                            } catch (e: Exception) {
+                                loge(TAG, "saveMnemonic() - Wallet initialization error: ${e.message}")
+                                e.printStackTrace()
+                                
+                                // Log the full stack trace to identify where the serialization error occurs
+                                val stackTrace = e.stackTraceToString()
+                                loge(TAG, "saveMnemonic() - Full stack trace: $stackTrace")
+                                
+                                val response = WritableNativeMap()
+                                response.putBoolean("success", false)
+                                val errorMessage = if (e.message?.contains("Serializer") == true) {
+                                    "Wallet initialization failed: ${e.message}. This may be a serialization issue in the wallet SDK."
+                                } else {
+                                    "Wallet initialization failed: ${e.message}"
+                                }
+                                response.putString("error", errorMessage)
+                                
+                                uiScope {
+                                    promise.resolve(response)
+                                }
+                            }
+                        } else {
+                            loge(TAG, "saveMnemonic() - Firebase authentication failed")
+                            
+                            val response = WritableNativeMap()
+                            response.putBoolean("success", false)
+                            response.putString("error", "Firebase authentication failed")
+                            
+                            uiScope {
+                                promise.resolve(response)
+                            }
+                        }
+                    }
+                }
+                
+            } catch (e: Exception) {
+                loge(TAG, "saveMnemonic() - error: ${e.message}")
+                e.printStackTrace()
+                
+                val response = WritableNativeMap()
+                response.putBoolean("success", false)
+                response.putString("error", e.message ?: "Unknown error")
+                
+                uiScope {
+                    promise.resolve(response)
+                }
+            }
+        }
+    }
+
+    override fun requestNotificationPermission(promise: Promise) {
+        logd(TAG, "requestNotificationPermission() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                loge(TAG, "requestNotificationPermission() - no current activity")
+                uiScope {
+                    promise.reject("NO_ACTIVITY", "No current activity available")
+                }
+                return
+            }
+
+            // Check Android version
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                logd(TAG, "requestNotificationPermission() - requesting POST_NOTIFICATIONS permission")
+
+                // Request permission directly using PermissionX (skip native activity)
+                // Cast to FragmentActivity as required by PermissionX
+                val fragmentActivity = currentActivity as? androidx.fragment.app.FragmentActivity
+                if (fragmentActivity == null) {
+                    logd(TAG, "requestNotificationPermission() - activity is not a FragmentActivity")
+                    uiScope {
+                        promise.reject("INVALID_ACTIVITY", "Activity is not a FragmentActivity")
+                    }
+                    return
+                }
+
+                // Must run on UI thread
+                uiScope {
+                    com.permissionx.guolindev.PermissionX.init(fragmentActivity)
+                        .permissions(android.Manifest.permission.POST_NOTIFICATIONS)
+                        .request { allGranted, _, _ ->
+                            logd(TAG, "requestNotificationPermission() - permission result: $allGranted")
+                            promise.resolve(allGranted)
+                        }
+                }
+            } else {
+                // Notifications are automatically granted on Android < 13
+                logd(TAG, "requestNotificationPermission() - Android < 13, permission auto-granted")
+                uiScope {
+                    promise.resolve(true)
+                }
+            }
+        } catch (e: Exception) {
+            loge(TAG, "requestNotificationPermission() - error: ${e.message}")
+            e.printStackTrace()
+            uiScope {
+                promise.reject("PERMISSION_ERROR", "Failed to request notification permission: ${e.message}", e)
+            }
+        }
+    }
+
+    override fun checkNotificationPermission(promise: Promise) {
+        android.util.Log.d(TAG, "checkNotificationPermission() called")
+        try {
+            val isGranted = com.flowfoundation.wallet.utils.isNotificationPermissionGrand(reactApplicationContext)
+            android.util.Log.d(TAG, "checkNotificationPermission() - isGranted: $isGranted")
+
+            uiScope {
+                promise.resolve(isGranted)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "checkNotificationPermission() - error: ${e.message}")
+            e.printStackTrace()
+            uiScope {
+                promise.reject("PERMISSION_ERROR", "Failed to check notification permission: ${e.message}", e)
+            }
+        }
+    }
+
+    override fun logToNative(level: String, message: String, args: ReadableArray) {
+        try {
+            // Convert ReadableArray to String array
+            val stringArgs = Array(args.size()) { i ->
+                args.getString(i) ?: ""
+            }
+
+            // Delegate to the centralized Instabug logging system in Log.kt
+            logToInstabug(level, message, *stringArgs)
+        } catch (e: Exception) {
+            // Fallback with just the message if args conversion fails
+            logToInstabug(level, message)
+        }
+    }
+
+    override fun setScreenSecurityLevel(level: String) {
+        android.util.Log.d(TAG, "setScreenSecurityLevel() called with level: $level")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "setScreenSecurityLevel() - no current activity")
+                return
+            }
+
+            currentActivity.runOnUiThread {
+                when (level) {
+                    "secure" -> {
+                        // Prevent screenshots and screen recording
+                        currentActivity.window.setFlags(
+                            android.view.WindowManager.LayoutParams.FLAG_SECURE,
+                            android.view.WindowManager.LayoutParams.FLAG_SECURE
+                        )
+                        android.util.Log.d(TAG, "setScreenSecurityLevel() - FLAG_SECURE enabled")
+                    }
+                    "normal" -> {
+                        // Allow screenshots again
+                        currentActivity.window.clearFlags(
+                            android.view.WindowManager.LayoutParams.FLAG_SECURE
+                        )
+                        android.util.Log.d(TAG, "setScreenSecurityLevel() - FLAG_SECURE disabled")
+                    }
+                    else -> {
+                        android.util.Log.w(TAG, "setScreenSecurityLevel() - unknown level: $level")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "setScreenSecurityLevel() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun launchMultiBackup() {
+        android.util.Log.d(TAG, "launchMultiBackup() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchMultiBackup() - no current activity")
+                return
+            }
+
+            // First launch WalletBackupActivity (parent) so back navigation works correctly
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+            // Then immediately launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
+            // When user presses back, they will return to WalletBackupActivity
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                reactApplicationContext.currentActivity?.let { activity ->
+                    com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(activity)
+                    android.util.Log.d(TAG, "launchMultiBackup() - launched MultiBackupActivity on top of WalletBackupActivity")
+                }
+            }, 300) // Small delay to ensure WalletBackupActivity is created first
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchMultiBackup() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun launchDeviceBackup() {
+        android.util.Log.d(TAG, "launchDeviceBackup() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchDeviceBackup() - no current activity")
+                return
+            }
+
+            // First launch WalletBackupActivity (parent) so back navigation works correctly
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+            // Then immediately launch CreateDeviceBackupActivity (QR code sync between devices)
+            // When user presses back, they will return to WalletBackupActivity
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                reactApplicationContext.currentActivity?.let { activity ->
+                    com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(activity)
+                    android.util.Log.d(TAG, "launchDeviceBackup() - launched CreateDeviceBackupActivity on top of WalletBackupActivity")
+                }
+            }, 300) // Small delay to ensure WalletBackupActivity is created first
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchDeviceBackup() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun launchSeedPhraseBackup() {
+        android.util.Log.d(TAG, "launchSeedPhraseBackup() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchSeedPhraseBackup() - no current activity")
+                return
+            }
+
+            // First launch WalletBackupActivity (parent) so back navigation works correctly
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+
+            // Then immediately launch BackupRecoveryPhraseActivity (View/create recovery phrase)
+            // When user presses back, they will return to WalletBackupActivity
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                reactApplicationContext.currentActivity?.let { activity ->
+                    val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(activity)
+                    activity.startActivity(intent)
+                    android.util.Log.d(TAG, "launchSeedPhraseBackup() - launched BackupRecoveryPhraseActivity on top of WalletBackupActivity")
+                }
+            }, 300) // Small delay to ensure WalletBackupActivity is created first
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchSeedPhraseBackup() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    override fun launchNativeBackupOptions() {
+        android.util.Log.d(TAG, "launchNativeBackupOptions() called")
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+
+            if (currentActivity == null) {
+                android.util.Log.w(TAG, "launchNativeBackupOptions() - no current activity")
+                return
+            }
+
+            // Launch WalletBackupActivity (Native backup options screen)
+            com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+            android.util.Log.d(TAG, "launchNativeBackupOptions() - launched WalletBackupActivity")
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "launchNativeBackupOptions() error: ${e.message}")
+            e.printStackTrace()
         }
     }
 

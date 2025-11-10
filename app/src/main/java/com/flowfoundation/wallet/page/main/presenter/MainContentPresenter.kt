@@ -12,6 +12,8 @@ import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.setSvgDrawable
 import com.flowfoundation.wallet.page.wallet.fragment.WalletUnregisteredFragment
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isRegistered
@@ -43,8 +45,16 @@ class MainContentPresenter(
         if (isRegistered() && isUserSignIn()) {
             showMainContent()
         } else {
-            showUnregisteredFragment()
+            // Launch React Native onboarding flow directly instead of showing native "Let's get started" screen
+            launchReactNativeOnboarding()
         }
+    }
+
+    private fun launchReactNativeOnboarding() {
+        // Launch React Native onboarding flow directly
+        ReactNativeActivity.launch(activity, RNBridge.ScreenType.ONBOARDING)
+        // Finish MainActivity so user doesn't see the native screen
+        activity.finish()
     }
 
     private fun showUnregisteredFragment() {
