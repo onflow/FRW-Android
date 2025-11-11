@@ -48,8 +48,6 @@ import com.flowfoundation.wallet.utils.logToInstabug
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
-import java.io.File
-import java.io.FileOutputStream
 import java.util.Locale
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {

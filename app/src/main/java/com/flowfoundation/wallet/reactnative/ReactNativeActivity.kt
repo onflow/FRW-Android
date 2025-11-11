@@ -144,11 +144,12 @@ class ReactNativeActivity : ReactActivity() {
         /**
          * Launch the React Native Demo Activity with parameters
          */
-        fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?) {
+        fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?, initialRoute: String? = null) {
             Log.d(TAG, "Launching ReactNativeActivity with params:")
             Log.d(TAG, "  screenType: $screenType")
             Log.d(TAG, "  address: $address")
             Log.d(TAG, "  network: $network")
+            Log.d(TAG, "  initialRoute: $initialRoute")
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
@@ -163,14 +164,18 @@ class ReactNativeActivity : ReactActivity() {
             network?.let {
                 intent.putExtra("network", it)
             }
-            screenType?.let {
-                // Convert screen enum to string and determine route based on screen type
-                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
-                val routeName = getRouteName(it, null)
 
+            // Use explicit initialRoute if provided, otherwise determine from screenType
+            val routeName = initialRoute ?: screenType?.let {
+                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
                 intent.putExtra("screen", screenString)
-                intent.putExtra("initialRoute", routeName)
+                getRouteName(it, null)
             }
+
+            routeName?.let {
+                intent.putExtra("initialRoute", it)
+            }
+
             context.startActivity(intent)
         }
 
@@ -251,6 +256,7 @@ class ReactNativeActivity : ReactActivity() {
 
         /**
          * Launch the Receive screen with default address and network
+         * Reuses existing launch method to avoid duplicating activity flags
          */
         fun launchReceive(context: Context) {
             Log.d(TAG, "Launching ReactNativeActivity for Receive screen")
@@ -258,19 +264,10 @@ class ReactNativeActivity : ReactActivity() {
             val address = WalletManager.selectedWalletAddress().toAddress()
             val network = chainNetWorkString()
 
-            val intent = Intent(context, ReactNativeActivity::class.java)
+            // Reuse existing launch method with "Receive" as the initialRoute
+            launch(context, null, address, network, "Receive")
 
-            // Add flags to ensure the activity comes to the foreground prominently
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-
-            intent.putExtra("address", address)
-            intent.putExtra("network", network)
-            intent.putExtra("initialRoute", "Receive")
-
-            Log.d(TAG, "Launching Receive screen with address: $address, network: $network")
-            context.startActivity(intent)
+            Log.d(TAG, "Launched Receive screen with address: $address, network: $network")
         }
     }
 }
