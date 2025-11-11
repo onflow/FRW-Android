@@ -121,6 +121,12 @@ class WalletBackupActivity: BaseActivity() {
 
     private fun finishBackupActivity() {
         if (fromRegistration) {
+            // When coming from React Native onboarding, add a small delay before relaunching MainActivity
+            // to ensure registration status is fully updated (saveMnemonic completes asynchronously)
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                MainActivity.relaunch(this, clearTop = true)
+            }, 500) // 500ms delay to allow registration status to update
+        } else {
             MainActivity.relaunch(this, clearTop = true)
         }
         finish()
