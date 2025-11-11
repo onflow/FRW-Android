@@ -153,13 +153,6 @@ class RNBridge {
         val rate: String
     )
 
-    data class SaveMnemonicResponse(
-        @SerializedName("success")
-        val success: Boolean,
-        @SerializedName("error")
-        val error: String
-    )
-
     data class NFTModel(
         @SerializedName("id")
         val id: String?,
