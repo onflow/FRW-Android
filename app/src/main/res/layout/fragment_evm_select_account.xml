@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/rootView"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:minHeight="500dp"
+  android:background="@drawable/bg_top_radius_16dp"
+  android:backgroundTint="@color/deep_bg"
+  android:padding="24dp">
+
+  <TextView
+    android:id="@+id/title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:fontFamily="@font/inter_semi_bold"
+    android:text="@string/select_account"
+    android:textColor="@color/text_1"
+    android:textSize="18sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <ImageView
+    android:id="@+id/close_button"
+    android:layout_width="24dp"
+    android:layout_height="24dp"
+    android:src="@drawable/ic_back_arrow"
+    app:layout_constraintBottom_toBottomOf="@id/title"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="@id/title"
+    app:tint="@color/text_1" />
+
+  <TextView
+    android:id="@+id/tv_selected_account"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="18dp"
+    android:text="@string/selected_account"
+    android:textColor="@color/text"
+    android:textSize="14sp"
+    app:layout_constraintTop_toBottomOf="@id/title"/>
+
+  <FrameLayout
+    android:id="@+id/fl_selected_account"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="15dp"
+    app:layout_constraintTop_toBottomOf="@id/tv_selected_account">
+
+    <include layout="@layout/item_selected_evm_account"/>
+  </FrameLayout>
+
+  <View
+    android:id="@+id/v_divider"
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:background="@color/text_3"
+    android:layout_marginTop="15dp"
+    app:layout_constraintTop_toBottomOf="@id/fl_selected_account"/>
+
+  <LinearLayout
+    android:id="@+id/fl_unselected_account"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="15dp"
+    android:orientation="vertical"
+    app:layout_constraintTop_toBottomOf="@id/v_divider">
+
+  </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

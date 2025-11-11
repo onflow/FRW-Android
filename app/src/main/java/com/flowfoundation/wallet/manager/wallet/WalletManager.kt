@@ -36,6 +36,9 @@ import java.util.concurrent.atomic.AtomicReference
 import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
+import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
+import kotlinx.coroutines.flow.firstOrNull
+import org.onflow.flow.models.SigningAlgorithm
 
 object WalletManager {
     private val TAG = WalletManager::class.java.simpleName
@@ -51,6 +54,66 @@ object WalletManager {
     // Add a job reference and callback mechanism
     private var initializationJob: kotlinx.coroutines.Job? = null
     private val walletReadyCallbacks = mutableListOf<() -> Unit>()
+
+    // EOA address caching
+    private var cachedEOAAddress: String? = null
+    private var eoaAddressCacheTime = 0L
+    private const val EOA_CACHE_DURATION = 30000L // 30 seconds cache duration
+
+    /**
+     * Cache EOA address for non-suspend access
+     */
+    private fun cacheEOAAddress() {
+        ioScope {
+            try {
+                val walletInstance = currentWallet
+                if (walletInstance != null) {
+                    // Generate EOA address and cache it
+                    val eoaAddress = walletInstance.ethAddress(0)
+                    synchronized(initializationLock) {
+                        cachedEOAAddress = eoaAddress
+                        eoaAddressCacheTime = System.currentTimeMillis()
+                    }
+                    logd(TAG, "Cached EOA address: $eoaAddress")
+                } else {
+                    logd(TAG, "Cannot cache EOA address - wallet is null (hardware-backed key)")
+                }
+            } catch (e: Exception) {
+                logd(TAG, "Error caching EOA address: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Get cached EOA address (non-suspend method)
+     */
+    fun getEOAAddressCached(): String? {
+        synchronized(initializationLock) {
+            val currentTime = System.currentTimeMillis()
+            if (cachedEOAAddress != null && (currentTime - eoaAddressCacheTime) < EOA_CACHE_DURATION) {
+                logd(TAG, "Returning cached EOA address: $cachedEOAAddress")
+                return cachedEOAAddress
+            }
+
+            // Cache is expired or empty, trigger refresh
+            if (currentWallet != null) {
+                logd(TAG, "EOA address cache expired or empty, refreshing...")
+                cacheEOAAddress()
+            }
+
+            return cachedEOAAddress // Return current cached value even if expired
+        }
+    }
+
+    /**
+     * Clear EOA address cache
+     */
+    private fun clearEOAAddressCache() {
+        synchronized(initializationLock) {
+            cachedEOAAddress = null
+            eoaAddressCacheTime = 0L
+        }
+    }
 
     private fun triggerWalletReadyCallbacks() {
         walletReadyCallbacks.forEach { it.invoke() }
@@ -159,7 +222,17 @@ object WalletManager {
                 // For hardware-backed keys, we cannot create a wallet object because the key cannot be extracted
                 // The CryptoProviderManager will handle cryptographic operations using AndroidKeystoreCryptoProvider
                 // Transactions will get the address from account data instead of wallet object
-                currentWallet = null
+                if (e.alias == null) {
+                    logd(TAG, "Hardware-backed key alias is null")
+                    return false
+                }
+                val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256,null)
+                val newWallet = WalletFactory.createProxyWallet(
+                  provider,
+                  setOf(ChainId.Mainnet, ChainId.Testnet),
+                  storage
+                )
+                currentWallet = newWallet
                 logd(TAG, "Hardware-backed key configuration complete")
             }
         }
@@ -284,6 +357,12 @@ object WalletManager {
             logd(TAG, "No wallet address found to select (this may be normal for hardware-backed keys)")
         }
 
+        /* 5. Cache EOA address for non-suspend access */
+        if (currentWallet != null) {
+            logd(TAG, "Wallet initialized successfully, caching EOA address...")
+            cacheEOAAddress()
+        }
+
         return true
     }
 
@@ -295,7 +374,7 @@ object WalletManager {
         } else {
             // Hardware-backed key - initialize child accounts using selected address
             val selectedAddress = selectedWalletAddress()
-            if (!selectedAddress.isNullOrEmpty()) {
+            if (selectedAddress.isNotEmpty()) {
                 logd(TAG, "Hardware-backed key detected in walletUpdate, initializing child accounts for: $selectedAddress")
                 refreshChildAccountForHardwareBackedKey(selectedAddress)
             }
@@ -328,8 +407,9 @@ object WalletManager {
                 val isSelectedActuallyEvm = EVMWalletManager.isEVMWalletAddress(currentSelected)
                 // 'wallet' here is the non-null currentWallet from the outer let scope
                 val isSelectedActuallyParentFlow = wallet.accounts.values.flatten().any { it.address.equals(currentSelected, ignoreCase = true) }
+                val isSelectedActuallyEOA = EVMWalletManager.isEOAAddress(currentSelected)
 
-                val isOverallValidSelection = currentSelected.isNotBlank() && (isSelectedActuallyChild || isSelectedActuallyEvm || isSelectedActuallyParentFlow)
+                val isOverallValidSelection = currentSelected.isNotBlank() && (isSelectedActuallyChild || isSelectedActuallyEvm || isSelectedActuallyParentFlow || isSelectedActuallyEOA)
 
                 if (!isOverallValidSelection) {
                     logd(TAG, "No valid address selected or selection is of unknown type (${currentSelected}), setting network account: ${networkAccount.address}")
@@ -337,7 +417,7 @@ object WalletManager {
                     updateSelectedWalletAddress(networkAccount.address)
                 } else {
                     // currentSelected is a valid type (Child, EVM, or ParentFlow)
-                    if (isSelectedActuallyParentFlow && !isSelectedActuallyChild && !isSelectedActuallyEvm) {
+                    if (isSelectedActuallyParentFlow && !isSelectedActuallyChild && !isSelectedActuallyEvm && !isSelectedActuallyEOA) {
                         // It's a Parent Flow account (and not simultaneously a child/EVM type).
                         // Check if it matches the current network's primary Flow account.
                         if (!networkAccount.address.equals(currentSelected, ignoreCase = true)) {
@@ -356,7 +436,7 @@ object WalletManager {
     }
 
     fun isEVMAccountSelected(): Boolean {
-        return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true)
+        return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true) || selectedWalletAddress().toAddress().equals(getEOAAddressCached(), ignoreCase = true)
     }
 
     fun isSelfFlowAddress(address: String): Boolean {
@@ -402,6 +482,50 @@ object WalletManager {
 
     fun refreshChildAccount() {
         childAccountMap.values.forEach { it.refresh() }
+    }
+
+    suspend fun getEOAAddress(): String? {
+        logd(TAG, "=== getEOAAddress() optimized START ===")
+
+        val walletInstance = wallet()
+        if (walletInstance == null) {
+            logd(TAG, "Wallet is null - likely hardware-backed key scenario")
+            return null
+        }
+
+        return try {
+            // Step 1: Check if EOA addresses are already cached
+            val cachedAddresses = walletInstance.eoaAddresses.value
+            logd(TAG, "Cached EOA addresses: $cachedAddresses (size: ${cachedAddresses.size})")
+
+            if (cachedAddresses.isNotEmpty()) {
+                val firstAddress = cachedAddresses.first()
+                logd(TAG, "EOA address from cache: $firstAddress")
+                return firstAddress
+            }
+
+            // Step 2: Generate EOA address (this will trigger updateEoaCache)
+            logd(TAG, "No cached EOA addresses, generating new one...")
+
+            // This call to ethAddress(0) will:
+            // 1. Generate the Ethereum address
+            // 2. Call updateEoaCache() which updates _eoaAddresses StateFlow
+            // 3. Return the generated address
+            val generatedAddress = walletInstance.ethAddress(0)
+            logd(TAG, "Generated EOA address: $generatedAddress")
+            generatedAddress
+
+        } catch (e: Exception) {
+            logd(TAG, "ERROR generating EOA address: ${e.message}")
+            logd(TAG, "Error type: ${e.javaClass.simpleName}")
+
+            // Fallback: Check if somehow an address exists in the StateFlow
+            val fallbackAddresses = walletInstance.eoaAddresses.value
+            val fallbackAddress = fallbackAddresses.firstOrNull()
+            logd(TAG, "Fallback EOA address: $fallbackAddress")
+            logd(TAG, "=== getEOAAddress() END (error fallback) ===")
+            fallbackAddress
+        }
     }
 
     fun changeNetwork() {
@@ -486,10 +610,11 @@ object WalletManager {
         val isChildAccount = childAccount(pref) != null
         val isEVMAddress = EVMWalletManager.isEVMWalletAddress(pref)
         val isInChildMap = childAccountMap.keys.contains(pref)
+        val isEOAAddress = EVMWalletManager.isEOAAddress(pref)
 
         logd(TAG, "Address existence check - isChildAccount: $isChildAccount, isEVMAddress: $isEVMAddress, isInChildMap: $isInChildMap")
 
-        val isExist = isInChildMap || isChildAccount || isEVMAddress
+        val isExist = isInChildMap || isChildAccount || isEVMAddress || isEOAAddress
         if (isExist) {
             logd(TAG, "Address exists in our maps, returning: '$pref'")
             return pref
@@ -537,6 +662,7 @@ object WalletManager {
             currentWallet = null
             lastAddressCheck = 0
             isInitialized = false
+            clearEOAAddressCache()
         }
     }
 
@@ -695,6 +821,10 @@ object WalletManager {
                 // Update the current wallet reference
                 currentWallet = newWallet
                 logd(TAG, "Updated current wallet reference")
+
+                // Cache EOA address after wallet update
+                logd(TAG, "Wallet updated successfully, caching EOA address...")
+                cacheEOAAddress()
 
                 // Manually add accounts from server to the wallet (keep this async as it's not critical)
                 // This is needed because new accounts may not be indexed yet by the key indexer

@@ -52,6 +52,7 @@ import org.onflow.flow.ChainId
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
 import com.google.gson.Gson
+import kotlinx.coroutines.flow.first
 import kotlin.text.isNullOrBlank
 
 private val TAG = EVMWalletManager::class.java.simpleName
@@ -215,6 +216,13 @@ object EVMWalletManager {
         logd(TAG, "isEVMWalletAddress result: $result")
         return result
     }
+
+    fun isEOAAddress(address: String): Boolean {
+        val result = address.equals(WalletManager.getEOAAddressCached(), ignoreCase = true)
+        logd(TAG, "isEOAAddress result: $result")
+        return result
+    }
+
 
     suspend fun moveFlowToken(
         token: FungibleToken,

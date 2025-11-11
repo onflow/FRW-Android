@@ -30,6 +30,7 @@ import com.flowfoundation.wallet.page.browser.subpage.filepicker.showWebviewFile
 import com.flowfoundation.wallet.page.component.deeplinking.DeepLinkScheme
 import com.flowfoundation.wallet.page.component.deeplinking.UriHandler
 import com.flowfoundation.wallet.utils.extensions.dp2px
+import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.flowfoundation.wallet.utils.uiScope
@@ -229,7 +230,12 @@ class LilicoWebView : WebView {
                 view.executeJs(JS_LISTEN_WINDOW_FCL_MESSAGE)
                 view.executeJs(JS_LISTEN_FLOW_WALLET_TRANSACTION)
                 view?.evaluateJavascript(loadProviderJS(), null)
-                view?.evaluateJavascript(loadInitJS(), null)
+                ioScope {
+                    val initJS = loadInitJS()
+                    uiScope {
+                        view?.evaluateJavascript(initJS, null)
+                    }
+                }
             } catch (e: Exception) {
                 logd(TAG, "Error in onPageStarted: ${e.message}")
                 isLoading = false

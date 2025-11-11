@@ -12,7 +12,9 @@ import com.flowfoundation.wallet.page.walletcreate.fragments.username.WalletCrea
 import com.flowfoundation.wallet.page.walletcreate.fragments.username.WalletCreateUsernameViewModel
 
 
-class PrivateKeyStoreUsernameFragment: Fragment() {
+class PrivateKeyStoreUsernameFragment(
+    private val isCreateAccount: Boolean = false
+): Fragment() {
 
     private lateinit var binding: FragmentPrivateKeyStoreUsernameBinding
     private lateinit var presenter: PrivateKeyStoreUsernamePresenter
@@ -28,7 +30,7 @@ class PrivateKeyStoreUsernameFragment: Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        presenter = PrivateKeyStoreUsernamePresenter(this, binding)
+        presenter = PrivateKeyStoreUsernamePresenter(this, binding, isCreateAccount)
         viewModel = ViewModelProvider(this)[WalletCreateUsernameViewModel::class.java].apply {
             usernameStateLiveData.observe(viewLifecycleOwner) { presenter.bind(
                 WalletCreateUsernameModel(state = it)

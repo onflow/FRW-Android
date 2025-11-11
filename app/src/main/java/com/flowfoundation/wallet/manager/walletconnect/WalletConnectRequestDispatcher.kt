@@ -5,7 +5,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.AppLifecycleObserver
-import com.flowfoundation.wallet.manager.evm.sendEthereumTransaction
+import com.flowfoundation.wallet.manager.evm.sendCOATransaction
 import com.flowfoundation.wallet.manager.evm.signEthereumMessage
 import com.flowfoundation.wallet.manager.evm.signTypedData
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
@@ -15,6 +15,9 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.flowjvm.transaction.Signable
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.config.isGasFree
+import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.evm.sendEOATransaction
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
@@ -78,6 +81,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import org.onflow.flow.models.Transaction
 import com.ionspin.kotlin.bignum.integer.toBigInteger
+import org.web3j.utils.Numeric
 
 private const val TAG = "WalletConnectRequestDispatcher"
 
@@ -98,18 +102,79 @@ suspend fun WCRequest.dispatch() {
         WalletConnectMethod.EVM_SIGN_TYPED_DATA.value, WalletConnectMethod.EVM_SIGN_TYPED_DATA_V3.value,
         WalletConnectMethod.EVM_SIGN_TYPED_DATA_V4.value -> evmSignTypedData()
         WalletConnectMethod.WALLET_WATCH_ASSETS.value -> watchAssets()
+        WalletConnectMethod.EVM_EC_RECOVER.value -> evmECRecover()
+    }
+}
+
+suspend fun WCRequest.evmECRecover() {
+    logd(TAG, "=== evmECRecover Debug ===")
+    logd(TAG, "Raw params: $params")
+
+    try {
+        // Parse params as JSON array: ["Hello, Flow EVM!", "0x...signature..."]
+        val json = Gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
+
+        if (json.size < 2) {
+            logd(TAG, "ERROR: Insufficient parameters for ecRecover")
+            reject()
+            return
+        }
+
+        val message = json[0]
+        val signatureHex = json[1]
+
+        logd(TAG, "Message: $message")
+        logd(TAG, "Signature: $signatureHex")
+
+        try {
+            val signature = Numeric.hexStringToByteArray(signatureHex)
+            val messageData = message.toByteArray()
+            val address = WalletManager.wallet()?.ethRecoverAddress(signature, messageData) ?: ""
+            logd(TAG, "Recovered address: $address")
+            approve(address)
+        } catch (e: Exception) {
+            logd(TAG, "ERROR: Exception in ecRecover: ${e.message}")
+            e.printStackTrace()
+            reject()
+        }
+
+    } catch (e: Exception) {
+        logd(TAG, "ERROR: Failed to parse ecRecover params: ${e.message}")
+        e.printStackTrace()
+        reject()
     }
 }
 
 suspend fun WCRequest.evmSignTypedData() {
     val activity = topActivity() ?: return
+
+    // Debug logging for JSON parsing issue
+    logd(TAG, "=== evmSignTypedData Debug ===")
+    logd(TAG, "Raw params: $params")
+    logd(TAG, "Params type: ${params.javaClass.simpleName}")
+    logd(TAG, "Params length: ${params.length}")
+    if (params.length <= 1000) {
+        logd(TAG, "Params content first 500 chars: ${params.take(500)}")
+    }
+
     val jsonArray = Gson().fromJson(params, JsonArray::class.java)
+    logd(TAG, "Successfully parsed JsonArray, size: ${jsonArray.size()}")
+
     val messageObject = if (jsonArray.get(0).isJsonObject) {
+        logd(TAG, "Using first element as message object")
         jsonArray.get(0)
     } else {
+        logd(TAG, "Using second element as message object")
         jsonArray.get(1)
     } ?: return
+
     val message = Gson().toJson(messageObject)
+    logd(TAG, "Message JSON length: ${message.length}")
+    if (message.length <= 1000) {
+        logd(TAG, "Message JSON: $message")
+    } else {
+        logd(TAG, "Message JSON (first 500 chars): ${message.take(500)}")
+    }
     val dataEncoder = StructuredDataEncoder(message)
     val hashData = dataEncoder.hashStructuredData()
     logd(TAG, "hashData::$hashData")
@@ -126,13 +191,21 @@ suspend fun WCRequest.evmSignTypedData() {
         )
         EVMSignTypedDataDialog.observe { isApprove ->
             ioScope {
-                if (isApprove) approve(signTypedData(hashData)) else reject()
+                val result = if (DAppEVMConnectionManager.isCurrentEOAAccount()) {
+                    val data = WalletManager.wallet()?.ethSignTypedData(message)
+                    Numeric.toHexString(data)
+                } else {
+                    signTypedData(hashData)
+                }
+                if (isApprove) approve(result) else reject()
             }
         }
     }
 }
 
 private suspend fun WCRequest.evmSendTransaction() {
+    logd(TAG, "=== evmSendTransaction Debug ===")
+    logd(TAG, "Raw params: $params")
     val activity = topActivity() ?: return
     val json = Gson().fromJson<List<EvmTransaction>>(params, object : TypeToken<List<EvmTransaction>>() {}.type)
     val transaction = json.firstOrNull() ?: return
@@ -149,14 +222,25 @@ private suspend fun WCRequest.evmSendTransaction() {
             activity.supportFragmentManager,
             model
         )
+        val fromAddress = transaction.from ?: DAppEVMConnectionManager.getCurrentAccount()?.address.orEmpty()
         EVMSendTransactionDialog.observe { isApprove ->
             ioScope {
                 if (isApprove) {
-                    sendEthereumTransaction(transaction) { txHash ->
-                        if (txHash.isEmpty()) {
-                            reject()
-                        } else {
-                            approve(txHash)
+                    if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                        sendCOATransaction(transaction) { txHash ->
+                            if (txHash.isEmpty()) {
+                                reject()
+                            } else {
+                                approve(txHash)
+                            }
+                        }
+                    } else {
+                        sendEOATransaction(chainId, transaction) { txHash ->
+                            if (txHash.isEmpty()) {
+                                reject()
+                            } else {
+                                approve(txHash)
+                            }
                         }
                     }
                 } else reject()
@@ -187,10 +271,13 @@ private suspend fun WCRequest.watchAssets() {
 }
 
 private suspend fun WCRequest.evmSignMessage() {
+    logd(TAG, "=== evmSignMessage Debug ===")
+    logd(TAG, "Raw params: $params")
     val activity = topActivity() ?: return
     val json = Gson().fromJson<List<String>>(params, object : TypeToken<List<String>>() {}.type)
     val hexMessage = json.firstOrNull() ?: return
     val message = String(hexMessage.hexToBytes(), Charsets.UTF_8)
+    val fromAddress = json.lastOrNull() ?: DAppEVMConnectionManager.getCurrentAccount()?.address.orEmpty()
     uiScope {
         val model = FclDialogModel(
             title = metaData?.name,
@@ -204,7 +291,13 @@ private suspend fun WCRequest.evmSignMessage() {
         )
         EVMSignMessageDialog.observe { isApprove ->
             ioScope {
-                if (isApprove) approve(signEthereumMessage(message)) else reject()
+                val result = if (EVMWalletManager.isEVMWalletAddress(fromAddress)) {
+                    signEthereumMessage(message)
+                } else {
+                    val data = WalletManager.wallet()?.ethSignPersonalMessage(hexMessage.hexToBytes())
+                    Numeric.toHexString(data)
+                }
+                if (isApprove) approve(result) else reject()
             }
         }
     }

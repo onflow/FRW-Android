@@ -31,7 +31,8 @@ enum class TransferAccountType(val value: String) {
 }
 
 enum class AccountCreateKeyType(val value: String) {
-    KEY_STORE("secure_enclave")
+    KEY_STORE("secure_enclave"),
+    RESTORE_KEYSTORE("keystore"),
 }
 
 enum class RestoreType(val value: String) {

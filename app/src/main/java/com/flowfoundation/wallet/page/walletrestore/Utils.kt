@@ -218,34 +218,65 @@ fun requestWalletRestoreLogin(
 
 @WorkerThread
 suspend fun firebaseLogin(customToken: String, callback: (isSuccess: Boolean) -> Unit) {
-    logd(TAG, "start delete user")
-    val isSuccess = if (isAnonymousSignIn()) {
-        deleteAnonymousUser()
+    logd(TAG, "=== firebaseLogin START ===")
+    logd(TAG, "Custom token received, length: ${customToken.length}")
+
+    val isAnonymous = isAnonymousSignIn()
+    logd(TAG, "Current Firebase auth state - isAnonymous: $isAnonymous")
+    logd(TAG, "Current user UID: ${Firebase.auth.currentUser?.uid}")
+
+    val isSuccess = if (isAnonymous) {
+        logd(TAG, "Attempting to delete anonymous user")
+        val deleteResult = deleteAnonymousUser()
+        logd(TAG, "Delete anonymous user result: $deleteResult")
+        deleteResult
     } else {
-        // wallet reset
+        logd(TAG, "Signing out existing Firebase user")
         Firebase.auth.signOut()
+        logd(TAG, "Firebase sign out completed")
         true
     }
+
     if (isSuccess) {
+        logd(TAG, "Auth cleanup successful, waiting 1 second before custom login")
         // Add a delay to ensure Firebase auth state is cleared
         delay(1000)
-        firebaseCustomLogin(customToken) { isSuccessful, _ ->
+        logd(TAG, "Starting Firebase custom login with token")
+        firebaseCustomLogin(customToken) { isSuccessful, errorMsg ->
+            logd(TAG, "Firebase custom login completed - success: $isSuccessful, error: $errorMsg")
             if (isSuccessful) {
+                logd(TAG, "Firebase login successful, identifying user profile with Mixpanel")
                 MixpanelManager.identifyUserProfile()
+                logd(TAG, "Calling success callback")
                 callback(true)
-            } else callback(false)
+            } else {
+                logd(TAG, "ERROR: Firebase custom login failed - $errorMsg")
+                callback(false)
+            }
         }
-    } else callback(false)
+    } else {
+        logd(TAG, "ERROR: Auth cleanup failed, calling failure callback")
+        callback(false)
+    }
 }
 
 suspend fun getFirebaseUid(callback: (uid: String?) -> Unit) {
-    val uid = Firebase.auth.currentUser?.uid
+    logd(TAG, "=== getFirebaseUid START ===")
+    val currentUser = Firebase.auth.currentUser
+    logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}")
+    logd(TAG, "Is anonymous: ${currentUser?.isAnonymous ?: "n/a"}")
+
+    val uid = currentUser?.uid
     if (!uid.isNullOrBlank()) {
+        logd(TAG, "Firebase UID already available: $uid")
         callback.invoke(uid)
         return
     }
 
+    logd(TAG, "No Firebase UID found, attempting to get Firebase JWT")
     getFirebaseJwt(true)
 
-    callback.invoke(Firebase.auth.currentUser?.uid)
+    val newUid = Firebase.auth.currentUser?.uid
+    logd(TAG, "After getFirebaseJwt - new UID: ${newUid ?: "still null"}")
+    callback.invoke(newUid)
 }
