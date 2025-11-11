@@ -48,6 +48,7 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.google.gson.annotations.SerializedName
 import org.onflow.flow.models.TransactionStatus
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 import org.onflow.flow.ChainId
 import org.web3j.crypto.Keys
 import java.math.BigDecimal
@@ -658,6 +659,7 @@ object EVMWalletManager {
 
 @Serializable
 data class EVMAddressData(
+    @SerialName("evmAddressMap")
     @SerializedName("evmAddressMap")
     var evmAddressMap: Map<String, String>? = null
 )
