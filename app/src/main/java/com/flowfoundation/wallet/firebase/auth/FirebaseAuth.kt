@@ -30,14 +30,26 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     logd(TAG, "=== firebaseCustomLogin START ===")
     val auth = Firebase.auth
     val currentUser = auth.currentUser
-    logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}")
+    logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}, isAnonymous: ${currentUser?.isAnonymous ?: false}")
 
-    if (currentUser != null) {
-        logd(TAG, "User already signed in, UID: ${currentUser.uid}, isAnonymous: ${currentUser.isAnonymous}")
-        onComplete.invoke(true, null)
+    // If user exists and is NOT anonymous, we need to sign out first to replace with custom token user
+    // If user is anonymous, we can proceed to sign in with custom token (Firebase will replace the user)
+    if (currentUser != null && !currentUser.isAnonymous) {
+        logd(TAG, "Non-anonymous user already signed in (UID: ${currentUser.uid}), signing out first...")
+        auth.signOut()
+        // Wait a moment for sign out to complete, then proceed
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            signInWithCustomTokenInternal(token, onComplete)
+        }, 100)
         return
     }
 
+    // If anonymous or no user, proceed directly to sign in with custom token
+    signInWithCustomTokenInternal(token, onComplete)
+}
+
+private fun signInWithCustomTokenInternal(token: String, onComplete: FirebaseAuthCallback) {
+    val auth = Firebase.auth
     logd(TAG, "Attempting to sign in with custom token (length: ${token.length})")
     auth.signInWithCustomToken(token).addOnCompleteListener { task ->
         logd(TAG, "signInWithCustomToken completed - success: ${task.isSuccessful}")
@@ -53,7 +65,12 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
                 logd(TAG, "Requesting ID token refresh")
 
                 newUser?.getIdToken(true)?.addOnSuccessListener { result ->
-                    logd(TAG, "ID token obtained successfully")
+                    val token = result.token
+                    if (token != null) {
+                        logd(TAG, "ID token obtained successfully (length: ${token.length})")
+                    } else {
+                        logd(TAG, "ID token obtained but token is null")
+                    }
                     uiScope {
                         onComplete.invoke(true, null)
                     }

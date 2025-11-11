@@ -379,26 +379,36 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun closeRN(id: String?) {
+        logd(TAG, "closeRN() called - id: $id")
         try {
             val currentActivity = reactApplicationContext.currentActivity
+            logd(TAG, "closeRN() - currentActivity: ${currentActivity?.javaClass?.simpleName}, isFinishing: ${currentActivity?.isFinishing}, isDestroyed: ${currentActivity?.isDestroyed}")
+            
             if (currentActivity != null && !currentActivity.isFinishing && !currentActivity.isDestroyed) {
                 // Use runOnUiThread to ensure activity operations run on main thread
                 currentActivity.runOnUiThread {
                     try {
                         if (!currentActivity.isFinishing && !currentActivity.isDestroyed) {
-                            // Use finishAndRemoveTask() to completely remove the activity from recents
-                            currentActivity.finishAndRemoveTask()
+                            logd(TAG, "closeRN() - Calling finish() to close React Native activity and return to previous activity")
+                            // Use finish() to close the activity and return to the previous activity in the task stack
+                            // This should return to the native home screen that launched React Native
+                            currentActivity.setResult(android.app.Activity.RESULT_OK)
+                            currentActivity.finish()
+                            logd(TAG, "closeRN() - finish() called successfully")
+                        } else {
+                            logw(TAG, "closeRN() - Activity already finishing or destroyed, skipping")
                         }
                     } catch (e: Exception) {
-                        println("Failed to finish activity on UI thread: ${e.message}")
+                        loge(TAG, "closeRN() - Failed to finish activity on UI thread: ${e.message}")
+                        e.printStackTrace()
                     }
                 }
             } else {
-                println("Activity is null, finishing, or destroyed - skipping closeRN")
+                logw(TAG, "closeRN() - Activity is null, finishing, or destroyed - skipping closeRN")
             }
         } catch (e: Exception) {
             // If finishing activity fails, log error but don't crash
-            println("Failed to close React Native activity: ${e.message}")
+            loge(TAG, "closeRN() - Failed to close React Native activity: ${e.message}")
             e.printStackTrace()
         }
     }
@@ -937,24 +947,24 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     private fun storeMnemonicSecurely(mnemonic: String): String {
         logd(TAG, "storeMnemonicSecurely() - Storing mnemonic securely...")
 
-        val passwordMap = try {
-            val pref = com.flowfoundation.wallet.utils.readWalletPassword()
-            if (pref.isBlank()) {
-                HashMap<String, String>()
-            } else {
-                Gson().fromJson(pref, object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type)
-            }
-        } catch (e: Exception) {
-            HashMap<String, String>()
-        }
+                val passwordMap = try {
+                    val pref = com.flowfoundation.wallet.utils.readWalletPassword()
+                    if (pref.isBlank()) {
+                        HashMap<String, String>()
+                    } else {
+                        Gson().fromJson(pref, object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type)
+                    }
+                } catch (e: Exception) {
+                    HashMap<String, String>()
+                }
 
-        // Generate a unique prefix for this EOA account
-        val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa")
+                // Generate a unique prefix for this EOA account
+                val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa")
 
-        // Store mnemonic globally for backup support
-        com.flowfoundation.wallet.utils.storeWalletPassword(
-            Gson().toJson(passwordMap.apply { put("global", mnemonic) })
-        )
+                // Store mnemonic globally for backup support
+                com.flowfoundation.wallet.utils.storeWalletPassword(
+                    Gson().toJson(passwordMap.apply { put("global", mnemonic) })
+                )
         logd(TAG, "storeMnemonicSecurely() - Mnemonic stored with prefix: $prefix")
 
         return prefix
@@ -962,24 +972,40 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     /**
      * Step 9: Authenticate with Firebase using custom token
-     * Deletes existing Firebase user/token and signs in with the custom token from backend
+     * Only authenticates if not already authenticated with a non-anonymous user
+     * Custom tokens can only be used once, so we skip if already authenticated
      */
     private fun authenticateWithFirebase(
         customToken: String,
         onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
+        logd(TAG, "authenticateWithFirebase() - Checking current Firebase auth state...")
+        
+        val currentUser = Firebase.auth.currentUser
+        val isAnonymous = currentUser?.isAnonymous ?: true
+        
+        // If already authenticated with non-anonymous user, skip authentication
+        // This happens when signInWithCustomToken() was called before saveMnemonic()
+        if (currentUser != null && !isAnonymous) {
+            logd(TAG, "authenticateWithFirebase() - Already authenticated with non-anonymous user (UID: ${currentUser.uid}), skipping authentication")
+            onSuccess()
+            return
+        }
+        
         logd(TAG, "authenticateWithFirebase() - Starting Firebase authentication...")
 
-        // Delete existing Firebase token and user
-        com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-        Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
-            logd(TAG, "authenticateWithFirebase() - Previous Firebase user deleted")
-        }
+        // Delete existing Firebase token and user (only if anonymous or no user)
+                com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+        if (currentUser != null) {
+            currentUser.delete()?.addOnCompleteListener {
+                logd(TAG, "authenticateWithFirebase() - Previous Firebase user deleted")
+            }
+                }
 
-        // Sign in with custom token
+                // Sign in with custom token
         com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
-            if (isSuccessful) {
+                        if (isSuccessful) {
                 logd(TAG, "authenticateWithFirebase() - Firebase authentication successful")
                 onSuccess()
             } else {
@@ -999,25 +1025,25 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.flow.wallet.keys.SeedPhraseKey {
         logd(TAG, "initializeWalletKit() - Creating SeedPhraseKey from mnemonic...")
 
-        val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
-        val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
+                                val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
+                                val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
 
-        // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
-        val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
-            mnemonicString = mnemonic,
-            passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
-            storage = storage
-        )
+                                // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
+                                val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
+                                    mnemonicString = mnemonic,
+                                    passphrase = "",
+                                    derivationPath = "m/44'/539'/0'/0/0",
+                                    keyPair = null,
+                                    storage = storage
+                                )
 
         logd(TAG, "initializeWalletKit() - SeedPhraseKey created")
 
         // Validate public key can be extracted (using ECDSA_secp256k1 as that's what we registered with)
         val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
-        if (publicKeyBytes == null) {
-            throw IllegalStateException("Failed to get public key from seed phrase key")
-        }
+                                if (publicKeyBytes == null) {
+                                    throw IllegalStateException("Failed to get public key from seed phrase key")
+                                }
 
         logd(TAG, "initializeWalletKit() - Public key validated successfully")
 
@@ -1057,32 +1083,32 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
 
         // Initialize Wallet SDK with account from Flow network
-        val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
-            storage
-        )
+                                val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                                    seedPhraseKey,
+                                    setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                                    storage
+                                )
 
         // Use txId to fetch account from Flow network for fast discovery
-        walletListData.wallets?.forEach { walletData ->
-            walletData.blockchain?.forEach { blockchain ->
-                try {
-                    val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                        "mainnet" -> org.onflow.flow.ChainId.Mainnet
-                        "testnet" -> org.onflow.flow.ChainId.Testnet
-                        else -> null
-                    }
-                    if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                        val address = if (blockchain.address.startsWith("0x")) {
-                            blockchain.address
-                        } else {
-                            "0x${blockchain.address}"
-                        }
+                                walletListData.wallets?.forEach { walletData ->
+                                    walletData.blockchain?.forEach { blockchain ->
+                                        try {
+                                            val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
+                                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                                                "testnet" -> org.onflow.flow.ChainId.Testnet
+                                                else -> null
+                                            }
+                                            if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
+                                                val address = if (blockchain.address.startsWith("0x")) {
+                                                    blockchain.address
+                                                } else {
+                                                    "0x${blockchain.address}"
+                                                }
                         logd(TAG, "discoverAccountFast() - Fetching account $address using txId: $txId")
-                        walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
+                                                walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
                         logd(TAG, "discoverAccountFast() - Account fetched successfully")
-                    }
-                } catch (e: Exception) {
+                                            }
+                                        } catch (e: Exception) {
                     logd(TAG, "discoverAccountFast() - Warning: Could not fetch account: ${e.message}")
                 }
             }
@@ -1099,23 +1125,23 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     ): CryptoProvider {
         logd(TAG, "setupAccountAndWallet() - Setting up AccountManager and WalletManager...")
 
-        // Add account to AccountManager
-        AccountManager.add(
-            Account(
-                userInfo = userInfo,
-                prefix = prefix,
-                wallet = walletListData
-            ),
-            com.flowfoundation.wallet.firebase.auth.firebaseUid()
-        )
+                                // Add account to AccountManager
+                                AccountManager.add(
+                                    Account(
+                                        userInfo = userInfo,
+                                        prefix = prefix,
+                                        wallet = walletListData
+                                    ),
+                                    com.flowfoundation.wallet.firebase.auth.firebaseUid()
+                                )
         logd(TAG, "setupAccountAndWallet() - Account added to AccountManager")
 
-        // Initialize WalletManager
-        WalletManager.init()
+                                // Initialize WalletManager
+                                WalletManager.init()
         logd(TAG, "setupAccountAndWallet() - WalletManager initialized")
 
         // Get crypto provider for the current account
-        val currentAccount = AccountManager.get()
+                                val currentAccount = AccountManager.get()
             ?: throw IllegalStateException("Account not found after adding to AccountManager")
 
         val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount)
@@ -1133,16 +1159,113 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         logd(TAG, "trackAccountCreation() - Tracking account creation...")
 
         // Track account creation analytics
-        com.flowfoundation.wallet.mixpanel.MixpanelManager.accountCreated(
+                                com.flowfoundation.wallet.mixpanel.MixpanelManager.accountCreated(
             cryptoProvider.getPublicKey(),
-            com.flowfoundation.wallet.mixpanel.AccountCreateKeyType.KEY_STORE,
-            cryptoProvider.getSignatureAlgorithm().value,
-            cryptoProvider.getHashAlgorithm().algorithm
-        )
+                                    com.flowfoundation.wallet.mixpanel.AccountCreateKeyType.KEY_STORE,
+                                    cryptoProvider.getSignatureAlgorithm().value,
+                                    cryptoProvider.getHashAlgorithm().algorithm
+                                )
 
-        // Clear cache
-        com.flowfoundation.wallet.network.clearUserCache()
+                                // Clear cache
+                                com.flowfoundation.wallet.network.clearUserCache()
         logd(TAG, "trackAccountCreation() - Account creation tracked and cache cleared")
+    }
+
+    /**
+     * Sign out of Firebase and sign in anonymously
+     * Required before creating a new account to ensure clean authentication state
+     */
+    override fun signOutAndSignInAnonymously(promise: Promise) {
+        logd(TAG, "signOutAndSignInAnonymously() called")
+        ioScope {
+            try {
+                val auth = Firebase.auth
+                val currentUser = auth.currentUser
+                
+                if (currentUser != null) {
+                    logd(TAG, "signOutAndSignInAnonymously() - Signing out current user: ${currentUser.uid}")
+                    auth.signOut()
+                    logd(TAG, "signOutAndSignInAnonymously() - Signed out successfully")
+                } else {
+                    logd(TAG, "signOutAndSignInAnonymously() - No current user to sign out")
+                }
+                
+                // Sign in anonymously
+                logd(TAG, "signOutAndSignInAnonymously() - Signing in anonymously...")
+                auth.signInAnonymously().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val anonymousUser = auth.currentUser
+                        logd(TAG, "signOutAndSignInAnonymously() - Anonymous sign-in successful, UID: ${anonymousUser?.uid}")
+                        
+                        // Wait for ID token to be available (ensures token is refreshed and ready)
+                        anonymousUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
+                            if (tokenTask.isSuccessful && tokenTask.result != null) {
+                                val token = tokenTask.result.token
+                                if (token != null && token.isNotEmpty()) {
+                                    logd(TAG, "signOutAndSignInAnonymously() - ID token obtained successfully (length: ${token.length})")
+                                    uiScope {
+                                        promise.resolve(null)
+                                    }
+                                } else {
+                                    loge(TAG, "signOutAndSignInAnonymously() - ID token is null or empty")
+                                    uiScope {
+                                        promise.reject("TOKEN_ERROR", "ID token is null or empty")
+                                    }
+                                }
+                            } else {
+                                val exception = tokenTask.exception
+                                val errorMessage = exception?.message ?: "Failed to get ID token"
+                                loge(TAG, "signOutAndSignInAnonymously() - Failed to get ID token: $errorMessage")
+                                uiScope {
+                                    promise.reject("TOKEN_ERROR", errorMessage, exception)
+                                }
+                            }
+                        }
+                    } else {
+                        val exception = task.exception
+                        val errorMessage = exception?.message ?: "Anonymous sign-in failed"
+                        loge(TAG, "signOutAndSignInAnonymously() - Failed: $errorMessage")
+                        uiScope {
+                            promise.reject("ANONYMOUS_SIGN_IN_ERROR", errorMessage, exception)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "signOutAndSignInAnonymously() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("SIGN_OUT_ERROR", e.message ?: "Unknown error", e)
+                }
+            }
+        }
+    }
+
+    override fun signInWithCustomToken(customToken: String, promise: Promise) {
+        logd(TAG, "signInWithCustomToken() called")
+        ioScope {
+            try {
+                com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
+                    if (isSuccessful) {
+                        logd(TAG, "signInWithCustomToken() - Custom token authentication successful")
+                        uiScope {
+                            promise.resolve(null)
+                        }
+                    } else {
+                        val errorMessage = exception?.message ?: "Custom token authentication failed"
+                        loge(TAG, "signInWithCustomToken() - Failed: $errorMessage")
+                        uiScope {
+                            promise.reject("CUSTOM_TOKEN_AUTH_ERROR", errorMessage, exception)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "signInWithCustomToken() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("CUSTOM_TOKEN_ERROR", e.message ?: "Unknown error", e)
+                }
+            }
+        }
     }
 
     /**
@@ -1183,6 +1306,10 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                                 // Setup AccountManager and WalletManager
                                 val cryptoProvider = setupAccountAndWallet(prefix, userInfo, walletListData)
 
+                                // Mark user as registered so app knows they've completed onboarding
+                                com.flowfoundation.wallet.utils.setRegistered()
+                                logd(TAG, "saveMnemonic() - User marked as registered")
+
                                 // Track account creation
                                 trackAccountCreation(cryptoProvider)
 
@@ -1203,11 +1330,11 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         }
                     },
                     onFailure = { errorMessage ->
-                        loge(TAG, "saveMnemonic() - Firebase authentication failed")
-                        uiScope {
+                            loge(TAG, "saveMnemonic() - Firebase authentication failed")
+                            uiScope {
                             promise.reject("FIREBASE_AUTH_ERROR", errorMessage)
+                            }
                         }
-                    }
                 )
             } catch (e: Exception) {
                 loge(TAG, "saveMnemonic() - error: ${e.message}")
