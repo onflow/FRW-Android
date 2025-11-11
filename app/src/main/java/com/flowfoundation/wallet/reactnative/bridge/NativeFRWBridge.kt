@@ -992,8 +992,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     /**
      * Step 10: Initialize Wallet-Kit with seed phrase key
-     * Creates SeedPhraseKey from mnemonic
-     * Note: Storage is handled by WalletFactory.createKeyWallet() in discoverAccountFast()
+     * Creates SeedPhraseKey from mnemonic and stores a derived PrivateKey for CryptoProviderManager
+     * Note: WalletFactory.createKeyWallet() handles wallet storage, but we need to store PrivateKey separately
+     * for CryptoProviderManager to retrieve it using the prefix
      */
     private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.flow.wallet.keys.SeedPhraseKey {
         logd(TAG, "initializeWalletKit() - Creating SeedPhraseKey from mnemonic...")
@@ -1002,7 +1003,6 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
 
         // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
-        // Note: We don't call store() here - WalletFactory.createKeyWallet() handles storage internally
         val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
             mnemonicString = mnemonic,
             passphrase = "",
@@ -1011,15 +1011,34 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             storage = storage
         )
 
-        logd(TAG, "initializeWalletKit() - SeedPhraseKey created (storage will be handled by WalletFactory)")
+        logd(TAG, "initializeWalletKit() - SeedPhraseKey created")
 
-        // Validate public key can be extracted
-        val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_P256)
+        // Validate public key can be extracted (using ECDSA_secp256k1 as that's what we registered with)
+        val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
         if (publicKeyBytes == null) {
             throw IllegalStateException("Failed to get public key from seed phrase key")
         }
 
         logd(TAG, "initializeWalletKit() - Public key validated successfully")
+
+        // Derive private key bytes from SeedPhraseKey and store as PrivateKey for CryptoProviderManager
+        // CryptoProviderManager expects a PrivateKey stored with ID "prefix_key_${prefix}"
+        val privateKeyBytes = seedPhraseKey.privateKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
+        if (privateKeyBytes == null) {
+            throw IllegalStateException("Failed to get private key from seed phrase key")
+        }
+
+        logd(TAG, "initializeWalletKit() - Derived private key bytes, creating PrivateKey...")
+
+        // Create PrivateKey from the derived bytes
+        val privateKey = com.flow.wallet.keys.PrivateKey.create(storage)
+        privateKey.importPrivateKey(privateKeyBytes, com.flow.wallet.keys.KeyFormat.RAW)
+
+        // Store the PrivateKey with prefix so CryptoProviderManager can find it
+        val keyId = "prefix_key_$prefix"
+        privateKey.store(keyId, prefix)
+        logd(TAG, "initializeWalletKit() - PrivateKey stored with ID: $keyId")
+
         return seedPhraseKey
     }
 
