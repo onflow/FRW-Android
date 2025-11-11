@@ -146,18 +146,33 @@ object AccountCacheManager{
     }
 
     private fun cacheSync(data: List<Account>) {
-        val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
-
-        // Validate JSON before writing
         try {
-            Json.decodeFromString(ListSerializer(Account.serializer()), str)
-        } catch (e: Exception) {
-            loge(TAG, "Generated invalid JSON, not writing to cache: $e")
-            return
-        }
+            val str = Json.encodeToString(ListSerializer(Account.serializer()), data)
 
-        str.saveToFile(file)
-        logd(TAG, "Successfully cached ${data.size} accounts")
+            // Validate JSON before writing
+            try {
+                Json.decodeFromString(ListSerializer(Account.serializer()), str)
+            } catch (e: Exception) {
+                loge(TAG, "Generated invalid JSON, not writing to cache: $e")
+                return
+            }
+
+            str.saveToFile(file)
+            logd(TAG, "Successfully cached ${data.size} accounts")
+        } catch (e: Exception) {
+            loge(TAG, "Error during cacheSync: $e")
+            loge(TAG, "Exception type: ${e.javaClass.name}")
+            e.printStackTrace()
+            // Log account structure for debugging
+            if (data.isNotEmpty()) {
+                val firstAccount = data.first()
+                loge(TAG, "First account structure: userInfo=${firstAccount.userInfo.javaClass.name}, " +
+                    "wallet=${firstAccount.wallet?.javaClass?.name}, " +
+                    "walletEmojiList=${firstAccount.walletEmojiList?.javaClass?.name}, " +
+                    "evmAddressData=${firstAccount.evmAddressData?.javaClass?.name}")
+            }
+            throw e
+        }
     }
 
     fun clearCache() {

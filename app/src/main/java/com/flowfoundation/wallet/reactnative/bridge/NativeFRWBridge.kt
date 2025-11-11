@@ -992,7 +992,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     /**
      * Step 10: Initialize Wallet-Kit with seed phrase key
-     * Creates SeedPhraseKey from mnemonic and stores it securely
+     * Creates SeedPhraseKey from mnemonic
+     * Note: Storage is handled by WalletFactory.createKeyWallet() in discoverAccountFast()
      */
     private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.flow.wallet.keys.SeedPhraseKey {
         logd(TAG, "initializeWalletKit() - Creating SeedPhraseKey from mnemonic...")
@@ -1001,6 +1002,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
 
         // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
+        // Note: We don't call store() here - WalletFactory.createKeyWallet() handles storage internally
         val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
             mnemonicString = mnemonic,
             passphrase = "",
@@ -1009,10 +1011,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             storage = storage
         )
 
-        // Store the seed phrase key with prefix as ID
-        val keyId = "prefix_key_$prefix"
-        seedPhraseKey.store(keyId, prefix)
-        logd(TAG, "initializeWalletKit() - SeedPhraseKey stored with ID: $keyId")
+        logd(TAG, "initializeWalletKit() - SeedPhraseKey created (storage will be handled by WalletFactory)")
 
         // Validate public key can be extracted
         val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_P256)
@@ -1020,6 +1019,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
             throw IllegalStateException("Failed to get public key from seed phrase key")
         }
 
+        logd(TAG, "initializeWalletKit() - Public key validated successfully")
         return seedPhraseKey
     }
 
