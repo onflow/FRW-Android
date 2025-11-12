@@ -39,7 +39,7 @@ class WalletCreateUsernameViewModel : ViewModel() {
 
     fun createUser(username: String) {
         viewModelIOScope(this) {
-            val isSuccess = registerOutblock(username.lowercase(Locale.getDefault()))
+            val isSuccess = registerOutblock(username)
             createUserLiveData.postValue(isSuccess)
         }
     }
