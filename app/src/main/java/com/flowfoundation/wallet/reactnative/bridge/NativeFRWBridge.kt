@@ -1536,6 +1536,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
                     logd(TAG, "launchNativeScreen() - launched WalletBackupActivity")
                 }
+
+                NativeScreen.WALLET_RESTORE -> {
+                    // Launch WalletRestoreActivity (Native account restore/recovery screen)
+                    val intent = Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
+                    currentActivity.startActivity(intent)
+                    logd(TAG, "launchNativeScreen() - launched WalletRestoreActivity")
+                }
             }
         } catch (e: Exception) {
             loge(TAG, "launchNativeScreen() error: ${e.message}")

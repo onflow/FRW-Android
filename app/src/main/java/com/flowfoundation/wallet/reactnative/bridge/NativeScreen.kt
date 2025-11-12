@@ -7,7 +7,8 @@ enum class NativeScreen(val screenName: String) {
     MULTI_BACKUP("multiBackup"),
     DEVICE_BACKUP("deviceBackup"),
     SEED_PHRASE_BACKUP("seedPhraseBackup"),
-    BACKUP_OPTIONS("backupOptions");
+    BACKUP_OPTIONS("backupOptions"),
+    WALLET_RESTORE("walletRestore");
 
     companion object {
         fun fromString(value: String): NativeScreen? {
