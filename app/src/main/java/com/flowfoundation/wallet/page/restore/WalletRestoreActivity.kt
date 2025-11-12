@@ -11,6 +11,8 @@ import com.flowfoundation.wallet.databinding.ActivityWalletRestoreBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
@@ -56,10 +58,26 @@ class WalletRestoreActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> {
+                // Navigate back to React Native onboarding GetStarted screen
+                // instead of just closing the activity
+                navigateBackToOnboarding()
+            }
             else -> super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    override fun onBackPressed() {
+        // Handle system back button the same as toolbar back button
+        navigateBackToOnboarding()
+    }
+
+    private fun navigateBackToOnboarding() {
+        // Launch React Native onboarding flow (will show GetStarted screen)
+        ReactNativeActivity.launch(this, RNBridge.ScreenType.ONBOARDING)
+        // Finish this activity so back button from GetStarted goes to previous screen
+        finish()
     }
 
     private fun setupToolbar() {

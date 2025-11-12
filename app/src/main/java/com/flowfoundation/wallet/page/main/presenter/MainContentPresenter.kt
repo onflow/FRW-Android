@@ -53,8 +53,9 @@ class MainContentPresenter(
     private fun launchReactNativeOnboarding() {
         // Launch React Native onboarding flow directly
         ReactNativeActivity.launch(activity, RNBridge.ScreenType.ONBOARDING)
-        // Finish MainActivity so user doesn't see the native screen
-        activity.finish()
+        // Keep MainActivity in the background instead of finishing it
+        // This allows proper state management when user returns from onboarding
+        // MainActivity will only refresh when registration is completed
     }
 
     private fun showUnregisteredFragment() {

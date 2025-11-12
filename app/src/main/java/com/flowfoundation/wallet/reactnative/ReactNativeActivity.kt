@@ -164,9 +164,10 @@ class ReactNativeActivity : ReactActivity() {
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
-            // Add flags to ensure the activity comes to the foreground prominently
+            // Add flags to ensure only one instance of ReactNativeActivity exists
+            // SINGLE_TOP prevents creating a new instance if one already exists at the top of the stack
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
 
             address?.let {
@@ -196,9 +197,10 @@ class ReactNativeActivity : ReactActivity() {
 
             val intent = Intent(context, ReactNativeActivity::class.java)
 
-            // Add flags to ensure the activity comes to the foreground prominently
+            // Add flags to ensure only one instance of ReactNativeActivity exists
+            // SINGLE_TOP prevents creating a new instance if one already exists at the top of the stack
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
 
             address?.let {
