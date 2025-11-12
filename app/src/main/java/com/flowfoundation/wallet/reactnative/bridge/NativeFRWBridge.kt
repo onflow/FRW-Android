@@ -1538,10 +1538,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 }
 
                 NativeScreen.WALLET_RESTORE -> {
-                    // Launch WalletRestoreActivity (Native account restore/recovery screen)
-                    val intent = Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
+                    // Launch WalletRestoreActivity (Native account restore/recovery screen with multiple options)
+                    // Use com.flowfoundation.wallet.page.restore.WalletRestoreActivity which shows:
+                    // - Import from Device
+                    // - Import from Backup
+                    // - Import from Raw Key
+                    val intent = Intent(currentActivity, com.flowfoundation.wallet.page.restore.WalletRestoreActivity::class.java)
                     currentActivity.startActivity(intent)
-                    logd(TAG, "launchNativeScreen() - launched WalletRestoreActivity")
+                    logd(TAG, "launchNativeScreen() - launched WalletRestoreActivity with restore options")
                 }
             }
         } catch (e: Exception) {
