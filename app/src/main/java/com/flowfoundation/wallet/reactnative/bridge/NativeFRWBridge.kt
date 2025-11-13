@@ -941,6 +941,41 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     /**
+     * Create linked COA account for Recovery Phrase flow
+     * This creates a COA child account linked to the current main account via Cadence transaction
+     * Returns the transaction ID to track the transaction status
+     */
+    override fun createLinkedCOAAccount(promise: Promise) {
+        logd(TAG, "createLinkedCOAAccount() called - Creating linked COA account for Recovery Phrase flow")
+        ioScope {
+            try {
+                // Execute Cadence transaction to create linked COA account
+                val txId = com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount()
+
+                if (txId.isNullOrBlank()) {
+                    loge(TAG, "createLinkedCOAAccount() - Transaction ID is null or empty")
+                    uiScope {
+                        promise.reject("COA_CREATION_ERROR", "Failed to create COA account: transaction ID is null")
+                    }
+                    return@ioScope
+                }
+
+                logd(TAG, "createLinkedCOAAccount() - COA account creation transaction submitted: $txId")
+
+                uiScope {
+                    promise.resolve(txId)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "createLinkedCOAAccount() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("COA_CREATION_ERROR", "Failed to create linked COA account: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    /**
      * Step 8: Securely store the mnemonic for EOA account
      * Generates a unique prefix and stores mnemonic globally for backup support
      */
