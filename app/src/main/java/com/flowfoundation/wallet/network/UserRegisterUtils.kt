@@ -80,7 +80,10 @@ suspend fun registerOutblock(
                     // Declare service here for fetching user and wallet info
                     val service = retrofit().create(ApiService::class.java)
 
-                    createWalletFromServer() // This should ideally ensure the WalletManager is aware of the new account
+                    // Initialize wallet structure on backend (needed for COA account visibility)
+                    // This initializes the wallet record but does NOT create an EOA account
+                    // The COA account is created by registerServer() above
+                    createWalletFromServer()
                     setRegistered()
 
                     // Wallet and Account object creation should use data from the successful registration (via registerServer)

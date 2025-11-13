@@ -951,6 +951,43 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         logd(TAG, "createLinkedCOAAccount() called - Creating linked COA account for Recovery Phrase flow")
         ioScope {
             try {
+                // Ensure WalletManager is initialized and wallet is ready
+                // Wait for wallet to be available (with retries)
+                var retries = 0
+                val maxRetries = 10
+                val retryDelayMs = 200L
+                
+                while (retries < maxRetries) {
+                    WalletManager.init() // Ensure initialization
+                    val wallet = WalletManager.wallet()
+                    val selectedAddress = WalletManager.selectedWalletAddress()
+                    
+                    if (wallet != null || !selectedAddress.isNullOrBlank()) {
+                        logd(TAG, "createLinkedCOAAccount() - Wallet is ready (attempt ${retries + 1})")
+                        break
+                    }
+                    
+                    retries++
+                    if (retries < maxRetries) {
+                        logd(TAG, "createLinkedCOAAccount() - Wallet not ready yet, waiting... (attempt $retries/$maxRetries)")
+                        kotlinx.coroutines.delay(retryDelayMs)
+                    }
+                }
+                
+                // Verify wallet is ready
+                val finalWallet = WalletManager.wallet()
+                val finalAddress = WalletManager.selectedWalletAddress()
+                
+                if (finalWallet == null && finalAddress.isNullOrBlank()) {
+                    loge(TAG, "createLinkedCOAAccount() - Wallet not ready after $maxRetries attempts")
+                    uiScope {
+                        promise.reject("COA_CREATION_ERROR", "Wallet not ready: cannot create COA account. Wallet: ${finalWallet != null}, Address: ${finalAddress.isNullOrBlank()}")
+                    }
+                    return@ioScope
+                }
+                
+                logd(TAG, "createLinkedCOAAccount() - Wallet ready, creating COA account...")
+                
                 // Execute Cadence transaction to create linked COA account
                 val txId = com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount()
 
@@ -1084,7 +1121,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 com.flowfoundation.wallet.utils.storeWalletPassword(
                     Gson().toJson(passwordMap.apply { put("global", mnemonic) })
                 )
-        logd(TAG, "storeMnemonicSecurely() - Mnemonic stored with prefix: $prefix")
+        logd(TAG, "storeMnemonicSecurely() - Mnemonic stored securely")
 
         return prefix
     }
@@ -1182,7 +1219,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         // Store the PrivateKey with prefix so CryptoProviderManager can find it
         val keyId = "prefix_key_$prefix"
         privateKey.store(keyId, prefix)
-        logd(TAG, "initializeWalletKit() - PrivateKey stored with ID: $keyId")
+        logd(TAG, "initializeWalletKit() - PrivateKey stored successfully")
 
         return seedPhraseKey
     }
