@@ -872,14 +872,14 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
-    override fun createCOAAccount(username: String, promise: Promise) {
-        logd(TAG, "createCOAAccount() called - Creating Secure Enclave/Hybrid account")
-        logd(TAG, "createCOAAccount() - username: $username")
+    override fun registerSecureTypeAccount(username: String, promise: Promise) {
+        logd(TAG, "registerSecureTypeAccount() called - Registering Secure Type Account (Secure Enclave)")
+        logd(TAG, "registerSecureTypeAccount() - username: $username")
         ioScope {
             try {
-                logd(TAG, "createCOAAccount() - starting account registration...")
+                logd(TAG, "registerSecureTypeAccount() - starting account registration...")
 
-                // Use the existing registerOutblock function which creates a COA/Hybrid account:
+                // Use the existing registerOutblock function which creates a Secure Type/COA account:
                 // - Generates keys (secure enclave on supported devices)
                 // - Registers with backend server
                 // - Creates Flow blockchain account
@@ -888,13 +888,13 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val success = com.flowfoundation.wallet.network.registerOutblock(username)
 
                 if (success) {
-                    logd(TAG, "createCOAAccount() - account created successfully")
+                    logd(TAG, "registerSecureTypeAccount() - account created successfully")
 
                     // Get the created account details
                     val account = AccountManager.get()
                     val address = WalletManager.selectedWalletAddress()
 
-                    // Note: COA accounts use Secure Enclave/hardware-backed keys
+                    // Note: Secure Type accounts use hardware-backed keys (Secure Enclave)
                     // No mnemonic is generated or stored for these accounts
 
                     // Create success response using WritableMap
@@ -909,21 +909,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         promise.resolve(response)
                     }
                 } else {
-                    loge(TAG, "createCOAAccount() - account creation failed")
+                    loge(TAG, "registerSecureTypeAccount() - account creation failed")
 
                     val response = WritableNativeMap()
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
                     response.putString("accountType", "coa")
-                    response.putString("error", "Failed to create account")
+                    response.putString("error", "Failed to register secure type account")
 
                     uiScope {
                         promise.resolve(response)
                     }
                 }
             } catch (e: Exception) {
-                loge(TAG, "createCOAAccount() - error: ${e.message}")
+                loge(TAG, "registerSecureTypeAccount() - error: ${e.message}")
                 e.printStackTrace()
 
                 val response = WritableNativeMap()
