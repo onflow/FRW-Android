@@ -602,37 +602,9 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccountForHardwareBackedKey(
         }
     }
 
-    // Check EOA account for hardware-backed keys
-    try {
-        ioScope {
-            val eoaAddress = WalletManager.getEOAAddressCached()
-            logd("DrawerLayoutPresenter", "EOA address: $eoaAddress")
-
-            eoaAddress?.let { address ->
-                uiScope {
-                    logd("DrawerLayoutPresenter", "Creating EOA account view...")
-
-                    val childView = LayoutInflater.from(root.context)
-                        .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
-
-                    val walletItemData = WalletItemData(
-                        address = address,
-                        name = "",
-                        icon = "",
-                        isSelected = WalletManager.selectedWalletAddress() == address
-                    )
-
-                    logd("DrawerLayoutPresenter", "Created EOA WalletItemData: address=${walletItemData.address}, isSelected=${walletItemData.isSelected}")
-
-                    childView.setupWalletItem(walletItemData, isEOAAccount = true)
-                    llLinkedAccount.addView(childView)
-                    logd("DrawerLayoutPresenter", "Added EOA account to UI")
-                }
-            }
-        }
-    } catch (e: Exception) {
-        logd("DrawerLayoutPresenter", "Error setting up EOA account: ${e.message}")
-    }
+    // Note: Secure Enclave/COA accounts do NOT have EOA addresses
+    // EOA addresses are only for seed phrase-based accounts
+    // Hardware-backed keys create COA accounts with EVM addresses (displayed above)
 
     // Get main wallet address from server data (since wallet is null for hardware-backed keys)
     var mainWalletAddress: String? = null
