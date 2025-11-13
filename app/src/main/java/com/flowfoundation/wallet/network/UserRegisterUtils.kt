@@ -194,7 +194,7 @@ suspend fun registerOutblock(
                     continuation.resume(true)
                 } else {
                     // Registration failed in registerOutblockUserInternal (e.g., server or Firebase issue)
-                    loge(TAG, "registerOutblockUserInternal indicated failure.")
+                    loge(TAG, "registerOutblock() - registerOutblockUserInternal indicated failure. Check logs above for details.")
                     // resumeAccount() // This was here, consider if it's needed or if failure is handled by caller
                     continuation.resume(false)
                 }
@@ -210,6 +210,7 @@ private suspend fun registerOutblockUserInternal(
     val prefix = generatePrefix(username)
     try {
         if (!setToAnonymous()) {
+            loge(TAG, "registerOutblockUserInternal() - Failed to set Firebase to anonymous sign-in")
             resumeAccount()
             callback.invoke(false, prefix)
             return
@@ -217,15 +218,21 @@ private suspend fun registerOutblockUserInternal(
         val user = registerServer(username, prefix)
 
         if (user.status > 400) {
+            loge(TAG, "registerOutblockUserInternal() - Server registration failed with status: ${user.status}, message: ${user.message}")
             callback(false, prefix)
             return
         }
         logd(TAG, "SYNC Register userId:::${user.data.uid}")
         logd(TAG, "start delete user")
         registerFirebase(user) { isSuccess ->
+            if (!isSuccess) {
+                loge(TAG, "registerOutblockUserInternal() - Firebase registration failed")
+            }
             callback.invoke(isSuccess, prefix)
         }
     } catch (e: Exception) {
+        loge(TAG, "registerOutblockUserInternal() - Exception occurred: ${e.message}")
+        loge(TAG, "registerOutblockUserInternal() - Stack trace: ${e.stackTraceToString()}")
         if (e is IllegalStateException) {
             ErrorReporter.reportCriticalWithMixpanel(WalletError.KEY_STORE_FAILED, e)
         } else {
@@ -236,17 +243,26 @@ private suspend fun registerOutblockUserInternal(
 }
 
 private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
+    logd(TAG, "registerFirebase() - Starting Firebase registration")
     FirebaseMessaging.getInstance().deleteToken()
     Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
-        logd(TAG, "delete user finish exception:${it.exception}")
+        logd(TAG, "registerFirebase() - delete user finish exception:${it.exception}")
         if (it.isSuccessful) {
-            firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
+            logd(TAG, "registerFirebase() - User deleted successfully, attempting custom login")
+            firebaseCustomLogin(user.data.customToken) { isSuccessful, error ->
                 if (isSuccessful) {
+                    logd(TAG, "registerFirebase() - Custom login successful")
                     MixpanelManager.identifyUserProfile()
                     callback(true)
-                } else callback(false)
+                } else {
+                    loge(TAG, "registerFirebase() - Custom login failed: $error")
+                    callback(false)
+                }
             }
-        } else callback(false)
+        } else {
+            loge(TAG, "registerFirebase() - Failed to delete current user: ${it.exception?.message}")
+            callback(false)
+        }
     }
 }
 
