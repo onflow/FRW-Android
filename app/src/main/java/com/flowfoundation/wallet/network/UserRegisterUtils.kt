@@ -61,7 +61,9 @@ import kotlin.coroutines.suspendCoroutine
 
 private const val TAG = "UserRegisterUtils"
 
-// register one step, create user & create wallet
+// Register Secure Type/COA account (Secure Enclave profile - hardware-backed keys only)
+// This creates a COA account WITHOUT a mnemonic (no seed phrase backup)
+// For EOA accounts with seed phrase, use the React Native flow with saveMnemonic()
 suspend fun registerOutblock(
     username: String,
 ) = suspendCoroutine { continuation ->
@@ -249,33 +251,15 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 }
 
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
-    logd(TAG, "Starting server registration for username: $username")
+    logd(TAG, "Starting server registration for Secure Type/COA account (username: $username)")
+    logd(TAG, "Note: No mnemonic is generated for Secure Type accounts (hardware-backed keys only)")
     val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
     val service = retrofit().create(ApiService::class.java)
     val baseDir = File(Env.getApp().filesDir, "wallet")
     val storage = FileSystemStorage(baseDir)
-    
+
     try {
-        // Generate and store mnemonic globally for seed phrase backup support
-        val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
-        logd(TAG, "Generated new 12-word mnemonic for backup support")
-        
-        val passwordMap = try {
-            val pref = readWalletPassword()
-            if (pref.isBlank()) {
-                HashMap<String, String>()
-            } else {
-                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-            }
-        } catch (e: Exception) {
-            HashMap<String, String>()
-        }
-        
-        // Store mnemonic globally (this will make it accessible via Wallet.store().mnemonic())
-        storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
-        logd(TAG, "Stored mnemonic globally for backup support")
-        
-        // Create a new private key
+        // Create a new hardware-backed private key (no mnemonic)
         val privateKey = PrivateKey.create(storage)
         logd(TAG, "Created new private key for registration")
         
