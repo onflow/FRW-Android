@@ -56,6 +56,7 @@ import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.toHexString
 import org.web3j.utils.Numeric
 import java.util.Locale
+import com.flow.wallet.crypto.BIP39
 
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
@@ -909,14 +910,15 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         promise.resolve(response)
                     }
                 } else {
-                    loge(TAG, "registerSecureTypeAccount() - account creation failed")
+                    loge(TAG, "registerSecureTypeAccount() - account creation failed (registerOutblock returned false)")
+                    loge(TAG, "registerSecureTypeAccount() - Check UserRegisterUtils logs for detailed error information")
 
                     val response = WritableNativeMap()
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
                     response.putString("accountType", "coa")
-                    response.putString("error", "Failed to register secure type account")
+                    response.putString("error", "Failed to register secure type account. Check logs for details.")
 
                     uiScope {
                         promise.resolve(response)
@@ -970,6 +972,88 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 e.printStackTrace()
                 uiScope {
                     promise.reject("COA_CREATION_ERROR", "Failed to create linked COA account: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    /**
+     * Generate seed phrase (mnemonic) and derive account key using flow-wallet-kit
+     * Returns mnemonic, account key (public key + algorithm info), and derivation path
+     */
+    override fun generateSeedPhrase(strength: Double?, promise: Promise) {
+        // Default to 128 (12 words) if strength is not provided
+        val strengthInt = (strength?.toInt() ?: 128)
+        logd(TAG, "generateSeedPhrase() called - strength: $strengthInt")
+        ioScope {
+            try {
+                // Use flow-wallet-kit BIP39 to generate mnemonic
+                val length = when (strengthInt) {
+                    128 -> BIP39.SeedPhraseLength.TWELVE
+                    160 -> BIP39.SeedPhraseLength.FIFTEEN
+                    256 -> BIP39.SeedPhraseLength.TWENTY_FOUR
+                    else -> BIP39.SeedPhraseLength.TWELVE // Default to 12 words
+                }
+                val mnemonic = BIP39.generate(length, "")
+                
+                logd(TAG, "generateSeedPhrase() - Generated mnemonic with ${mnemonic.split(" ").size} words")
+                
+                // Create SeedPhraseKey from mnemonic to derive account key
+                val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
+                val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
+                
+                // Use Flow derivation path: m/44'/539'/0'/0/0
+                val derivationPath = "m/44'/539'/0'/0/0"
+                
+                val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
+                    mnemonicString = mnemonic,
+                    passphrase = "",
+                    derivationPath = derivationPath,
+                    keyPair = null,
+                    storage = storage
+                )
+                
+                // Derive public key using ECDSA_secp256k1 (matches EOA flow default)
+                val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
+                if (publicKeyBytes == null) {
+                    throw IllegalStateException("Failed to get public key from seed phrase key")
+                }
+                
+                // Convert public key bytes to hex string (remove 0x04 prefix if present)
+                val publicKeyHex = publicKeyBytes.toHexString().removePrefix("04")
+                
+                logd(TAG, "generateSeedPhrase() - Derived public key: ${publicKeyHex.take(16)}...")
+                
+                // Create AccountKey response
+                // ECDSA_secp256k1 = sign_algo 2, SHA2_256 = hash_algo 1 (matches extension defaults)
+                val accountKey = RNBridge.AccountKey(
+                    publicKey = publicKeyHex,
+                    hashAlgoStr = "SHA2_256",
+                    signAlgoStr = "ECDSA_secp256k1",
+                    weight = 1000, // Standard weight for Flow accounts
+                    hashAlgo = 1, // SHA2_256
+                    signAlgo = 2  // ECDSA_secp256k1
+                )
+                
+                // Create SPResponse
+                val response = RNBridge.SPResponse(
+                    mnemonic = mnemonic,
+                    accountKey = accountKey,
+                    drivepath = derivationPath
+                )
+                
+                // Convert to WritableMap for React Native
+                val result = bridgeModelToWritableMap(response)
+                
+                logd(TAG, "generateSeedPhrase() - Successfully generated seed phrase and account key")
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "generateSeedPhrase() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("GENERATE_SEED_PHRASE_ERROR", "Failed to generate seed phrase: ${e.message}", e)
                 }
             }
         }

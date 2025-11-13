@@ -281,4 +281,28 @@ class RNBridge {
         @SerializedName("evm") EVM
     }
 
+    data class AccountKey(
+        @SerializedName("publicKey")
+        val publicKey: String,
+        @SerializedName("hashAlgoStr")
+        val hashAlgoStr: String,
+        @SerializedName("signAlgoStr")
+        val signAlgoStr: String,
+        @SerializedName("weight")
+        val weight: Int,
+        @SerializedName("hashAlgo")
+        val hashAlgo: Int,
+        @SerializedName("signAlgo")
+        val signAlgo: Int
+    )
+
+    data class SPResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String
+    )
+
 }
