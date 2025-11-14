@@ -171,11 +171,11 @@ class WalletListActivity : BaseActivity(), OnEmojiUpdate {
                     SwitchNetworkDialog(this, DialogType.CREATE).show()
                 } else {
                     // Launch React Native onboarding at ProfileTypeSelection screen
-                    val intent = android.content.Intent(this, ReactNativeActivity::class.java)
-                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                    intent.putExtra("screen", "onboarding")
-                    intent.putExtra("initialRoute", "ProfileTypeSelection")
-                    startActivity(intent)
+                    ReactNativeActivity.launchWithRoute(
+                        this,
+                        RNBridge.ScreenType.ONBOARDING,
+                        RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+                    )
                 }
             }
 

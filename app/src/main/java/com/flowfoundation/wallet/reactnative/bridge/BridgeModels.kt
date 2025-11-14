@@ -22,6 +22,15 @@ class RNBridge {
         @SerializedName("onboarding") ONBOARDING
     }
 
+    enum class InitialRoute(val routeName: String) {
+        GET_STARTED("GetStarted"),
+        PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        SELECT_TOKENS("SelectTokens"),
+        SEND_TO("SendTo"),
+        SEND_TOKENS("SendTokens"),
+        HOME("Home")
+    }
+
     data class EmojiInfo(
         @SerializedName("emoji")
         val emoji: String,

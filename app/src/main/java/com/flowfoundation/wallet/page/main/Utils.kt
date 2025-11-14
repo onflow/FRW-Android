@@ -420,31 +420,39 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     }
 
     // Check EOA account
-    try {
-        ioScope {
-            val eoaAddress = WalletManager.getEOAAddressCached()
+    // Skip EOA account for secure enclave (hardware-backed keys) - they only have COA/EVM accounts
+    // Check if account has prefix (secure enclave accounts use prefix-based keys)
+    val currentAccount = AccountManager.get()
+    val isSecureEnclave = currentAccount?.prefix != null && currentAccount.keyStoreInfo == null
+    if (!isSecureEnclave) {
+        try {
+            ioScope {
+                val eoaAddress = WalletManager.getEOAAddressCached()
 
-            eoaAddress?.let { address ->
-                uiScope {
-                    val childView = LayoutInflater.from(root.context)
-                        .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
+                eoaAddress?.let { address ->
+                    uiScope {
+                        val childView = LayoutInflater.from(root.context)
+                            .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
 
-                    val walletItemData = WalletItemData(
-                        address = address,
-                        name = "",
-                        icon = "",
-                        isSelected = WalletManager.selectedWalletAddress() == address
-                    )
+                        val walletItemData = WalletItemData(
+                            address = address,
+                            name = "",
+                            icon = "",
+                            isSelected = WalletManager.selectedWalletAddress() == address
+                        )
 
-                    childView.setupWalletItem(walletItemData, isEOAAccount = true)
+                        childView.setupWalletItem(walletItemData, isEOAAccount = true)
 
-                    llLinkedAccount.addView(childView)
+                        llLinkedAccount.addView(childView)
+                    }
                 }
             }
+        } catch (e: Exception) {
+            logd("DrawerLayoutPresenter", "Error getting EOA account: ${e.message}")
+            logd("DrawerLayoutPresenter", "Error stack trace: ${e.stackTraceToString()}")
         }
-    } catch (e: Exception) {
-        logd("DrawerLayoutPresenter", "Error getting EOA account: ${e.message}")
-        logd("DrawerLayoutPresenter", "Error stack trace: ${e.stackTraceToString()}")
+    } else {
+        logd("DrawerLayoutPresenter", "Skipping EOA account for secure enclave (hardware-backed keys)")
     }
 
     // Get main wallet address with fallbacks
@@ -487,6 +495,7 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     }
 
     // Check child accounts - simplified without blocking retries
+    // For EOA accounts (wallet is not null), child accounts are regular child accounts (not COA/EVM)
     if (!mainWalletAddress.isNullOrBlank()) {
         try {
             val childAccounts = WalletManager.childAccountList(mainWalletAddress)?.get()
@@ -494,7 +503,10 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
                 val childView = LayoutInflater.from(root.context)
                     .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
                 childAccount.address.walletData(userInfo)?.let { data ->
-                    childView.setupWalletItem(data)
+                    // For EOA accounts, check if child account has EVM capabilities
+                    val evmAddress = EVMWalletManager.getEVMAddress()
+                    val isEVMAccount = evmAddress != null && childAccount.address.equals(evmAddress, ignoreCase = true)
+                    childView.setupWalletItem(data, isCOAAccount = isEVMAccount)
                     llLinkedAccount.addView(childView)
                 }
             }
@@ -564,48 +576,6 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccountForHardwareBackedKey(
         logd("DrawerLayoutPresenter", "Error setting up main account for hardware-backed key: ${e.message}")
     }
 
-    // Check EVM account - simplified without blocking retries
-    val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
-    logd("DrawerLayoutPresenter", "Show EVM account: $showEVMAccount")
-    logd("DrawerLayoutPresenter", "Current network: ${chainNetWorkString()}")
-
-    if (showEVMAccount) {
-        try {
-            val evmAccount = EVMWalletManager.getEVMAccount()
-            logd("DrawerLayoutPresenter", "EVM account: ${evmAccount?.address}")
-            logd("DrawerLayoutPresenter", "EVM account name: ${evmAccount?.name}")
-            logd("DrawerLayoutPresenter", "WalletManager.selectedWalletAddress(): ${WalletManager.selectedWalletAddress()}")
-
-            evmAccount?.let { account ->
-                logd("DrawerLayoutPresenter", "Creating EVM account view...")
-
-                val childView = LayoutInflater.from(root.context)
-                    .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
-
-                logd("DrawerLayoutPresenter", "Inflated child view: $childView")
-
-                val walletItemData = WalletItemData(
-                    address = account.address,
-                    name = account.name,
-                    icon = account.icon,
-                    isSelected = WalletManager.selectedWalletAddress() == account.address
-                )
-
-                logd("DrawerLayoutPresenter", "Created WalletItemData: address=${walletItemData.address}, name=${walletItemData.name}, isSelected=${walletItemData.isSelected}")
-
-                childView.setupWalletItem(walletItemData, isCOAAccount = true)
-                llLinkedAccount.addView(childView)
-                logd("DrawerLayoutPresenter", "Added EVM account to UI")
-            }
-        } catch (e: Exception) {
-            logd("DrawerLayoutPresenter", "Error setting up EVM account: ${e.message}")
-        }
-    }
-
-    // Note: Secure Enclave/COA accounts do NOT have EOA addresses
-    // EOA addresses are only for seed phrase-based accounts
-    // Hardware-backed keys create COA accounts with EVM addresses (displayed above)
-
     // Get main wallet address from server data (since wallet is null for hardware-backed keys)
     var mainWalletAddress: String? = null
 
@@ -628,6 +598,68 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccountForHardwareBackedKey(
         logd("DrawerLayoutPresenter", "Error getting server address for hardware-backed key: ${e.message}")
     }
 
+    // Check EVM account - simplified without blocking retries
+    // For secure enclave, the EVM account is the same as the child account (COA),
+    // so we'll add it as a child account with isCOAAccount=true instead of separately
+    val showEVMAccount = EVMWalletManager.showEVMAccount(chainNetWorkString())
+    logd("DrawerLayoutPresenter", "Show EVM account: $showEVMAccount")
+    logd("DrawerLayoutPresenter", "Current network: ${chainNetWorkString()}")
+
+    // Get child accounts first to check if EVM account is already in the list
+    var childAccountAddresses: Set<String> = emptySet()
+    if (!mainWalletAddress.isNullOrBlank()) {
+        try {
+            val childAccounts = WalletManager.childAccountList(mainWalletAddress)?.get()
+            childAccountAddresses = childAccounts?.map { it.address.lowercase() }?.toSet() ?: emptySet()
+        } catch (e: Exception) {
+            logd("DrawerLayoutPresenter", "Error getting child accounts for EVM check: ${e.message}")
+        }
+    }
+
+    if (showEVMAccount) {
+        try {
+            val evmAccount = EVMWalletManager.getEVMAccount()
+            logd("DrawerLayoutPresenter", "EVM account: ${evmAccount?.address}")
+            logd("DrawerLayoutPresenter", "EVM account name: ${evmAccount?.name}")
+            logd("DrawerLayoutPresenter", "WalletManager.selectedWalletAddress(): ${WalletManager.selectedWalletAddress()}")
+
+            evmAccount?.let { account ->
+                // Only add EVM account separately if it's not already in the child accounts list
+                // For secure enclave, the EVM account is the child account (COA), so skip adding it separately
+                val isInChildAccounts = childAccountAddresses.contains(account.address.lowercase())
+                if (!isInChildAccounts) {
+                    logd("DrawerLayoutPresenter", "Creating EVM account view (not in child accounts)...")
+
+                    val childView = LayoutInflater.from(root.context)
+                        .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
+
+                    logd("DrawerLayoutPresenter", "Inflated child view: $childView")
+
+                    val walletItemData = WalletItemData(
+                        address = account.address,
+                        name = account.name,
+                        icon = account.icon,
+                        isSelected = WalletManager.selectedWalletAddress() == account.address
+                    )
+
+                    logd("DrawerLayoutPresenter", "Created WalletItemData: address=${walletItemData.address}, name=${walletItemData.name}, isSelected=${walletItemData.isSelected}")
+
+                    childView.setupWalletItem(walletItemData, isCOAAccount = true)
+                    llLinkedAccount.addView(childView)
+                    logd("DrawerLayoutPresenter", "Added EVM account to UI")
+                } else {
+                    logd("DrawerLayoutPresenter", "Skipping EVM account - already in child accounts list")
+                }
+            }
+        } catch (e: Exception) {
+            logd("DrawerLayoutPresenter", "Error setting up EVM account: ${e.message}")
+        }
+    }
+
+    // Note: Secure Enclave/COA accounts do NOT have EOA addresses
+    // EOA addresses are only for seed phrase-based accounts
+    // Hardware-backed keys create COA accounts with EVM addresses (displayed above)
+
     // Check child accounts - simplified without blocking retries
     if (!mainWalletAddress.isNullOrBlank()) {
         try {
@@ -640,7 +672,10 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccountForHardwareBackedKey(
                     .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
                 childAccount.address.walletData(userInfo)?.let { data ->
                     logd("DrawerLayoutPresenter", "Adding child account to UI: ${data.address}, name: ${data.name}")
-                    childView.setupWalletItem(data)
+                    // For secure enclave (hardware-backed keys), ALL child accounts are COA accounts which are EVM
+                    // Since this function is only called for hardware-backed keys (wallet is null),
+                    // all child accounts should show EVM chip
+                    childView.setupWalletItem(data, isCOAAccount = true)
                     llLinkedAccount.addView(childView)
                 }
             }

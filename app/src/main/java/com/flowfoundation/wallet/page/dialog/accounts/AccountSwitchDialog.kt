@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.extensions.dp2px
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.setVisible
@@ -68,11 +69,11 @@ class AccountSwitchDialog : BottomSheetDialogFragment() {
                 SwitchNetworkDialog(requireContext(), DialogType.CREATE).show()
             } else {
                 // Launch React Native onboarding at ProfileTypeSelection screen
-                val intent = android.content.Intent(requireContext(), ReactNativeActivity::class.java)
-                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.putExtra("screen", "onboarding")
-                intent.putExtra("initialRoute", "ProfileTypeSelection")
-                requireContext().startActivity(intent)
+                ReactNativeActivity.launchWithRoute(
+                    requireContext(),
+                    RNBridge.ScreenType.ONBOARDING,
+                    RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+                )
                 dismiss()
             }
         }

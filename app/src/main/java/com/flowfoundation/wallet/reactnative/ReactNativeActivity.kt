@@ -122,19 +122,32 @@ class ReactNativeActivity : ReactActivity() {
                     sendToConfig?.let { config ->
                         when {
                             // If both targetAddress and selectedToken exist, go to sendToken
-                            config.targetAddress != null && config.selectedToken != null -> "SendTokens"
+                            config.targetAddress != null && config.selectedToken != null -> RNBridge.InitialRoute.SEND_TOKENS.routeName
                             // If only selectedToken exists, go to selectAddress
-                            config.selectedToken != null -> "SendTo"
+                            config.selectedToken != null -> RNBridge.InitialRoute.SEND_TO.routeName
                             // If selectedNFTs exist and not empty, go to selectAddress
-                            config.selectedNFTs != null && config.selectedNFTs.isNotEmpty() -> "SendTo"
+                            config.selectedNFTs != null && config.selectedNFTs.isNotEmpty() -> RNBridge.InitialRoute.SEND_TO.routeName
                             // Otherwise, go to selectAssets
-                            else -> "SelectTokens"
+                            else -> RNBridge.InitialRoute.SELECT_TOKENS.routeName
                         }
-                    } ?: "SelectTokens"
+                    } ?: RNBridge.InitialRoute.SELECT_TOKENS.routeName
                 }
-                RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
-                RNBridge.ScreenType.ONBOARDING -> "GetStarted"
+                RNBridge.ScreenType.TOKEN_DETAIL -> RNBridge.InitialRoute.HOME.routeName
+                RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
             }
+        }
+
+        /**
+         * Launch with specific screen type and initial route using enums
+         */
+        fun launchWithRoute(context: Context, screenType: RNBridge.ScreenType, initialRoute: RNBridge.InitialRoute) {
+            val intent = Intent(context, ReactNativeActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            intent.putExtra("screen", getScreenName(screenType))
+            intent.putExtra("initialRoute", initialRoute.routeName)
+            context.startActivity(intent)
         }
 
         /**

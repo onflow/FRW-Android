@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.manager.account
 
 import android.content.Intent
 import android.widget.Toast
-import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.cache.UserPrefixCacheManager
@@ -42,9 +41,11 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
 import com.flowfoundation.wallet.manager.wallet.walletAddress
@@ -684,7 +685,7 @@ object AccountManager {
         val passwordMap = getPasswordMap()
         if (passwordMap.containsKey(accountId)) {
             passwordMap.remove(accountId)
-            storeWalletPassword(Gson().toJson(passwordMap))
+            storeWalletPassword(Json.encodeToString(passwordMap))
             logd(TAG, "Successfully removed password for account ID: $accountId")
         } else {
             logd(TAG, "No password found for account ID: $accountId")
@@ -697,8 +698,7 @@ object AccountManager {
             HashMap()
         } else {
             runCatching {
-                Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-                    ?: HashMap<String, String>()
+                Json.decodeFromString<Map<String, String>>(pref).toMap(HashMap())
             }.getOrElse { HashMap() }
         }
     }
@@ -823,35 +823,18 @@ fun username() = AccountManager.get()!!.userInfo.username
 @Serializable
 data class Account(
     @SerialName("username")
-    @SerializedName("username")
     var userInfo: UserInfoData,
-    @SerialName("isActive")
-    @SerializedName("isActive")
     var isActive: Boolean = false,
-    @SerialName("wallet")
-    @SerializedName("wallet")
     var wallet: WalletListData? = null,
-    @SerialName("prefix")
-    @SerializedName("prefix")
     var prefix: String? = null,
-    @SerialName("evmAddressData")
-    @SerializedName("evmAddressData")
     var evmAddressData: EVMAddressData? = null,
-    @SerialName("walletEmojiList")
-    @SerializedName("walletEmojiList")
     var walletEmojiList: List<WalletEmojiInfo>? = null,
-    @SerialName("keyStoreInfo")
-    @SerializedName("keyStoreInfo")
     var keyStoreInfo: String? = null
 )
 
 @Serializable
 data class UserPrefix(
-    @SerialName("userId")
-    @SerializedName("userId")
     val userId: String,
-    @SerialName("prefix")
-    @SerializedName("prefix")
     var prefix: String
 )
 
