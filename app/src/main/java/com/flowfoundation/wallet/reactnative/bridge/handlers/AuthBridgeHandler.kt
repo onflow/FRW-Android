@@ -190,9 +190,35 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                         continue
                     }
                     
-                    // Get Flow address from the exact account's wallet data
-                    // This is the authoritative source - comes from backend WalletListData
-                    val flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
+                    // Try to get Flow address from multiple sources:
+                    // 1. From Account.wallet data (backend WalletListData) - most reliable but may not be synced yet
+                    // 2. From WalletManager.wallet().accounts (wallet SDK discovered accounts) - available after transaction finalizes
+                    var flowAddress: String? = null
+                    
+                    // First, try account's wallet data (backend)
+                    flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
+                    
+                    // If not available from backend, try wallet SDK's discovered accounts
+                    if (flowAddress.isNullOrBlank()) {
+                        val wallet = WalletManager.wallet()
+                        if (wallet != null) {
+                            val chainId = when (currentNetwork.lowercase()) {
+                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                                "testnet" -> org.onflow.flow.ChainId.Testnet
+                                else -> null
+                            }
+                            if (chainId != null) {
+                                val walletAccounts = wallet.accounts[chainId]
+                                walletAccounts?.firstOrNull()?.let { flowAccount ->
+                                    val discoveredAddress = flowAccount.address?.toString()
+                                    if (!discoveredAddress.isNullOrBlank()) {
+                                        flowAddress = discoveredAddress
+                                        logd(TAG, "createLinkedCOAAccount() - Found Flow address from wallet SDK discovered accounts: $flowAddress")
+                                    }
+                                }
+                            }
+                        }
+                    }
                     
                     if (flowAddress != null && flowAddress.isNotBlank()) {
                         // Found the Flow address for the exact account
@@ -203,8 +229,20 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                         break
                     } else {
                         // Account exists but Flow address not populated yet - continue waiting
-                        logd(TAG, "createLinkedCOAAccount() - Current account exists (${currentAccount.userInfo.username}) but Flow address not populated yet (attempt ${accountRetries + 1})")
-                        logd(TAG, "createLinkedCOAAccount() - Waiting for Flow address to be populated from backend WalletListData...")
+                        logd(TAG, "createLinkedCOAAccount() - Current account exists (${currentAccount.userInfo.username}) but Flow address not available yet (attempt ${accountRetries + 1})")
+                        logd(TAG, "createLinkedCOAAccount() - Waiting for Flow address to be discovered...")
+                        val wallet = WalletManager.wallet()
+                        if (wallet != null) {
+                            val chainId = when (currentNetwork.lowercase()) {
+                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                                "testnet" -> org.onflow.flow.ChainId.Testnet
+                                else -> null
+                            }
+                            val walletAccounts = chainId?.let { wallet.accounts[it] }
+                            logd(TAG, "createLinkedCOAAccount() - Wallet accounts for $currentNetwork: ${walletAccounts?.size ?: 0}")
+                        } else {
+                            logd(TAG, "createLinkedCOAAccount() - WalletManager.wallet() is null")
+                        }
                     }
                     
                     accountRetries++
