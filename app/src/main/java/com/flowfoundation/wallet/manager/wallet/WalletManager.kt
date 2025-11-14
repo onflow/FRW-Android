@@ -85,6 +85,17 @@ object WalletManager {
   }
 
   /**
+   * Synchronously cache EOA address (for use after wallet initialization)
+   */
+  fun cacheEOAAddressSync(eoaAddress: String) {
+    synchronized(initializationLock) {
+      cachedEOAAddress = eoaAddress
+      eoaAddressCacheTime = System.currentTimeMillis()
+      logd(TAG, "Synchronously cached EOA address: $eoaAddress")
+    }
+  }
+
+  /**
    * Get cached EOA address (non-suspend method)
    */
   fun getEOAAddressCached(): String? {

@@ -165,77 +165,104 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 logd(TAG, "createLinkedCOAAccount() - Wallet ready, creating COA account...")
                 logd(TAG, "createLinkedCOAAccount() - Final wallet: ${finalWallet != null}, Final address: $finalAddress")
                 
-                // Wait for account to be available in AccountManager with Flow address populated
-                // After saveMnemonic, the account exists but Flow address might not be set yet
+                // Wait for the exact account created by saveMnemonic to have its Flow address populated
+                // After saveMnemonic, the account is set as current via AccountManager
+                // We must use AccountManager.get() to get the exact account that was just created
+                // and wait for its Flow address to be populated from Account.wallet data
                 var accountRetries = 0
-                val maxAccountRetries = 20
-                val accountRetryDelayMs = 300L
+                val maxAccountRetries = 30 // Increased retries to allow more time for transaction finalization
+                val accountRetryDelayMs = 500L // Increased delay to allow transaction to finalize
                 val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
                 
                 var finalAccount: com.flowfoundation.wallet.manager.account.Account? = null
                 var finalAccountAddress: String? = null
                 
                 while (accountRetries < maxAccountRetries) {
-                    val accountList = com.flowfoundation.wallet.manager.account.AccountManager.list()
+                    // Get the exact current account - this is the account that was just created by saveMnemonic
+                    val currentAccount = com.flowfoundation.wallet.manager.account.AccountManager.get()
                     
-                    // Find account with Flow address populated
-                    // If finalAddress is available, use it; otherwise find any account with Flow address
-                    val account = if (!finalAddress.isNullOrBlank()) {
-                        accountList.find { acc ->
-                            val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-                            accAddressString != null && accAddressString.lowercase() == finalAddress.lowercase()
+                    if (currentAccount == null) {
+                        logd(TAG, "createLinkedCOAAccount() - Current account not available yet (attempt ${accountRetries + 1})")
+                        accountRetries++
+                        if (accountRetries < maxAccountRetries) {
+                            kotlinx.coroutines.delay(accountRetryDelayMs)
                         }
-                    } else {
-                        // Find the first account that has a Flow address (should be the newly created one)
-                        accountList.firstOrNull { acc ->
-                            val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-                            accAddressString != null && accAddressString.isNotBlank()
-                        }
+                        continue
                     }
                     
-                    if (account != null) {
-                        val accAddressString = account.getFlowAddress(currentNetwork, TAG)
-                        if (accAddressString != null && accAddressString.isNotBlank()) {
-                            finalAccount = account
-                            finalAccountAddress = accAddressString
-                            logd(TAG, "createLinkedCOAAccount() - Account found with Flow address (attempt ${accountRetries + 1})")
-                            logd(TAG, "createLinkedCOAAccount() - Account username: ${account.userInfo.username}, prefix: ${account.prefix}, address: $accAddressString")
-                            break
-                        }
+                    // Get Flow address from the exact account's wallet data
+                    // This is the authoritative source - comes from backend WalletListData
+                    val flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
+                    
+                    if (flowAddress != null && flowAddress.isNotBlank()) {
+                        // Found the Flow address for the exact account
+                        finalAccount = currentAccount
+                        finalAccountAddress = flowAddress
+                        logd(TAG, "createLinkedCOAAccount() - Found Flow address for current account (attempt ${accountRetries + 1})")
+                        logd(TAG, "createLinkedCOAAccount() - Account username: ${currentAccount.userInfo.username}, prefix: ${currentAccount.prefix}, address: $flowAddress")
+                        break
+                    } else {
+                        // Account exists but Flow address not populated yet - continue waiting
+                        logd(TAG, "createLinkedCOAAccount() - Current account exists (${currentAccount.userInfo.username}) but Flow address not populated yet (attempt ${accountRetries + 1})")
+                        logd(TAG, "createLinkedCOAAccount() - Waiting for Flow address to be populated from backend WalletListData...")
                     }
                     
                     accountRetries++
                     if (accountRetries < maxAccountRetries) {
-                        logd(TAG, "createLinkedCOAAccount() - Waiting for account Flow address... (attempt $accountRetries/$maxAccountRetries)")
-                        logd(TAG, "createLinkedCOAAccount() - AccountManager.list() size: ${accountList.size}")
-                        accountList.forEach { acc ->
-                            val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-                            logd(TAG, "createLinkedCOAAccount() - Account: username=${acc.userInfo.username}, address=$accAddressString")
-                        }
                         kotlinx.coroutines.delay(accountRetryDelayMs)
                     }
                 }
                 
                 if (finalAccount == null || finalAccountAddress == null) {
-                    val accountList = com.flowfoundation.wallet.manager.account.AccountManager.list()
-                    loge(TAG, "createLinkedCOAAccount() - Account with Flow address not found after $maxAccountRetries attempts")
-                    loge(TAG, "createLinkedCOAAccount() - AccountManager.list() size: ${accountList.size}")
-                    accountList.forEach { acc ->
-                        val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-                        logd(TAG, "createLinkedCOAAccount() - Account in list: username=${acc.userInfo.username}, address=$accAddressString")
+                    val currentAccount = com.flowfoundation.wallet.manager.account.AccountManager.get()
+                    loge(TAG, "createLinkedCOAAccount() - Flow address not found for current account after $maxAccountRetries attempts")
+                    if (currentAccount != null) {
+                        val flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
+                        loge(TAG, "createLinkedCOAAccount() - Current account: username=${currentAccount.userInfo.username}, prefix=${currentAccount.prefix}, address=$flowAddress")
+                        loge(TAG, "createLinkedCOAAccount() - Account.wallet is null: ${currentAccount.wallet == null}")
+                    } else {
+                        loge(TAG, "createLinkedCOAAccount() - Current account is null")
                     }
                     uiScope {
-                        promise.reject("COA_CREATION_ERROR", "Account Flow address not available: cannot create COA account. Found accounts: ${accountList.size}")
+                        promise.reject("COA_CREATION_ERROR", "Account Flow address not available: cannot create COA account. Current account Flow address not populated.")
                     }
                     return@ioScope
                 }
                 
                 logd(TAG, "createLinkedCOAAccount() - Account verified with Flow address: $finalAccountAddress, proceeding with COA creation...")
                 
+                // Check if COA account already exists before creating one
+                // This prevents errors if COA account was already created (e.g., in Secure Enclave flow)
+                val coaAlreadyExists = try {
+                    com.flowfoundation.wallet.manager.flowjvm.cadenceCheckCOALink(finalAccountAddress)
+                } catch (e: Exception) {
+                    logw(TAG, "createLinkedCOAAccount() - Could not check COA link status: ${e.message}")
+                    null // If check fails, proceed with creation attempt
+                }
+                
+                if (coaAlreadyExists == true) {
+                    logd(TAG, "createLinkedCOAAccount() - COA account already exists for address $finalAccountAddress, skipping creation")
+                    uiScope {
+                        // Return a success response indicating COA already exists
+                        // This allows the flow to continue without error
+                        promise.resolve("COA_ALREADY_EXISTS")
+                    }
+                    return@ioScope
+                }
+                
                 // Execute Cadence transaction to create linked COA account
                 val txId = try {
                     com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount()
                 } catch (e: Exception) {
+                    // Check if error is due to COA already existing
+                    val errorMessage = e.message?.lowercase() ?: ""
+                    if (errorMessage.contains("already") || errorMessage.contains("exists") || errorMessage.contains("duplicate")) {
+                        logd(TAG, "createLinkedCOAAccount() - COA account already exists (detected from error), skipping creation")
+                        uiScope {
+                            promise.resolve("COA_ALREADY_EXISTS")
+                        }
+                        return@ioScope
+                    }
                     loge(TAG, "createLinkedCOAAccount() - Exception calling cadenceCreateCOAAccount: ${e.message}")
                     e.printStackTrace()
                     null
@@ -436,9 +463,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, promise: Promise) {
+    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise) {
         logd(TAG, "saveMnemonic() called - EOA account initialization")
-        logd(TAG, "saveMnemonic() - txId: $txId")
+        logd(TAG, "saveMnemonic() - txId: $txId, username: $username")
 
         ioScope {
             try {
@@ -464,11 +491,42 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 val walletListData = walletListResponse.data
                                     ?: throw IllegalStateException("No wallet data found")
 
+                                // Preserve original username capitalization (backend API may return lowercase)
+                                // Use the username passed from React Native which has proper capitalization
+                                // Create a new UserInfoData with the original username
+                                val userInfoWithOriginalUsername = UserInfoData(
+                                    nickname = userInfo.nickname,
+                                    username = username, // Use original capitalization
+                                    avatar = userInfo.avatar,
+                                    address = userInfo.address,
+                                    isPrivate = userInfo.isPrivate,
+                                    created = userInfo.created
+                                )
+                                logd(TAG, "saveMnemonic() - Preserved original username capitalization: $username (backend returned: ${userInfo.username})")
+
                                 // Step 11: Fast account discovery using txId
                                 discoverAccountFast(seedPhraseKey, txId, walletListData)
 
+                                // Cache EOA address immediately from seedPhraseKey (before wallet initialization)
+                                // This ensures the EOA address is available when getWalletAccounts() is called
+                                try {
+                                    val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
+                                    val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
+                                    val tempWallet = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+                                        seedPhraseKey,
+                                        setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+                                        storage
+                                    )
+                                    val eoaAddress = tempWallet.ethAddress(0)
+                                    WalletManager.cacheEOAAddressSync(eoaAddress)
+                                    logd(TAG, "saveMnemonic() - EOA address cached immediately: $eoaAddress")
+                                } catch (e: Exception) {
+                                    logw(TAG, "saveMnemonic() - Warning: Could not cache EOA address immediately: ${e.message}")
+                                }
+
                                 // Setup AccountManager and WalletManager
-                                val cryptoProvider = setupAccountAndWallet(prefix, userInfo, walletListData)
+                                // Use userInfoWithOriginalUsername to preserve proper capitalization
+                                val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
 
                                 // Mark user as registered so app knows they've completed onboarding
                                 com.flowfoundation.wallet.utils.setRegistered()
@@ -635,35 +693,48 @@ private suspend fun discoverAccountFast(
         val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
 
         // Initialize Wallet SDK with account from Flow network
-                                val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
-                                    seedPhraseKey,
-                                    setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
-                                    storage
-                                )
+        val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
+            seedPhraseKey,
+            setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
+            storage
+        )
 
         // Use txId to fetch account from Flow network for fast discovery
-                                walletListData.wallets?.forEach { walletData ->
-                                    walletData.blockchain?.forEach { blockchain ->
-                                        try {
-                                            val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
-                                                "testnet" -> org.onflow.flow.ChainId.Testnet
-                                                else -> null
-                                            }
-                                            if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                                                val address = if (blockchain.address.startsWith("0x")) {
-                                                    blockchain.address
-                                                } else {
-                                                    "0x${blockchain.address}"
-                                                }
+        // Note: walletListData might not have addresses yet if transaction hasn't finalized
+        // In that case, the wallet will discover accounts automatically after transaction finalizes
+        walletListData.wallets?.forEach { walletData ->
+            walletData.blockchain?.forEach { blockchain ->
+                try {
+                    val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
+                        "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                        "testnet" -> org.onflow.flow.ChainId.Testnet
+                        else -> null
+                    }
+                    if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
+                        val address = if (blockchain.address.startsWith("0x")) {
+                            blockchain.address
+                        } else {
+                            "0x${blockchain.address}"
+                        }
                         logd(TAG, "discoverAccountFast() - Fetching account $address using txId: $txId")
-                                                walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
+                        walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
                         logd(TAG, "discoverAccountFast() - Account fetched successfully")
-                                            }
-                                        } catch (e: Exception) {
+                    } else if (chainIdForBlockchain != null) {
+                        logd(TAG, "discoverAccountFast() - Address not available yet for ${blockchain.chainId}, wallet will discover after transaction finalizes")
+                    }
+                } catch (e: Exception) {
                     logd(TAG, "discoverAccountFast() - Warning: Could not fetch account: ${e.message}")
                 }
             }
+        }
+        
+        // If no addresses were found in walletListData, log that wallet will discover automatically
+        val hasAddresses = walletListData.wallets?.any { walletData ->
+            walletData.blockchain?.any { blockchain -> blockchain.address.isNotBlank() } == true
+        } == true
+        
+        if (!hasAddresses) {
+            logd(TAG, "discoverAccountFast() - No addresses in walletListData yet (transaction may not be finalized). Wallet will discover accounts automatically.")
         }
     }
 

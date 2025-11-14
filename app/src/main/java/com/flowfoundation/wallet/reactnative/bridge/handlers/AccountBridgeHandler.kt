@@ -248,11 +248,19 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                     val eoaAddress = WalletManager.getEOAAddressCached()
                     if (!eoaAddress.isNullOrEmpty()) {
                         // Only add EOA account if it's different from EVM address
-                        // and if not secure enclave (hardware-backed keys)
+                        // Check if account is Secure Enclave by checking if it has a prefix
+                        // Recovery Phrase accounts have a prefix, Secure Enclave accounts don't
+                        val currentAccount = com.flowfoundation.wallet.manager.account.AccountManager.get()
+                        val isSecureEnclaveAccount = currentAccount?.prefix.isNullOrBlank() && 
+                            currentAccount?.keyStoreInfo.isNullOrBlank()
+                        
+                        // Only add EOA if:
+                        // 1. EOA address is different from EVM address, AND
+                        // 2. Account is NOT Secure Enclave (has prefix or keystore info)
                         val isDifferentFromEVM = evmAddress == null ||
                             !eoaAddress.equals(evmAddress, ignoreCase = true)
 
-                        if (isDifferentFromEVM && !isSecureEnclave) {
+                        if (isDifferentFromEVM && !isSecureEnclaveAccount) {
                             val eoaEmojiInfo = createEmojiInfo(eoaAddress)
                             val eoaAccount = RNBridge.WalletAccount(
                                 id = "eoa",
