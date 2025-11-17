@@ -323,7 +323,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
         publicKey: String
     ): Boolean {
         logd("KeyStoreRestoreViewModel", "Checking if key matches account: $account")
-        val accountKey = account.keys?.lastOrNull { it.publicKey == publicKey }
+        
+        // Normalize the local public key for comparison
+        val localPubKeyHex = publicKey.removePrefix("0x").lowercase()
+        val localPubKeyStripped = if (localPubKeyHex.startsWith("04") && localPubKeyHex.length == 130) {
+            localPubKeyHex.substring(2)
+        } else {
+            localPubKeyHex
+        }
+        
+        val accountKey = account.keys?.lastOrNull { acctKey ->
+            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
+            acctPubKeyHex == localPubKeyHex || acctPubKeyHex == localPubKeyStripped
+        }
         return accountKey?.run {
             logd("KeyStoreRestoreViewModel", "Found matching key: $this")
             checkAndImportKeyStoreAddress(
@@ -356,7 +368,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val k1Response = queryService.queryAddress(k1PublicKey)
         logd("KeyStoreRestoreViewModel", "K1 response: $k1Response")
 
-        if (k1Response.publicKey == k1PublicKey && k1Response.accounts.isNotEmpty()) {
+        // Normalize public keys for comparison
+        val k1ResponsePubKey = k1Response.publicKey.removePrefix("0x").lowercase()
+        val k1LocalPubKey = k1PublicKey.removePrefix("0x").lowercase()
+        
+        if (k1ResponsePubKey == k1LocalPubKey && k1Response.accounts.isNotEmpty()) {
             logd("KeyStoreRestoreViewModel", "Found K1 accounts: ${k1Response.accounts}")
             addressList.addAll(k1Response.accounts.map {
                 KeystoreAddress(
@@ -375,7 +391,11 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val p1Response = queryService.queryAddress(p1PublicKey)
         logd("KeyStoreRestoreViewModel", "P256 response: $p1Response")
 
-        if (p1Response.publicKey == p1PublicKey && p1Response.accounts.isNotEmpty()) {
+        // Normalize public keys for comparison
+        val p1ResponsePubKey = p1Response.publicKey.removePrefix("0x").lowercase()
+        val p1LocalPubKey = p1PublicKey.removePrefix("0x").lowercase()
+        
+        if (p1ResponsePubKey == p1LocalPubKey && p1Response.accounts.isNotEmpty()) {
             logd("KeyStoreRestoreViewModel", "Found P256 accounts: ${p1Response.accounts}")
             addressList.addAll(p1Response.accounts.map {
                 KeystoreAddress(
@@ -536,7 +556,26 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val currentKey = currentKeyStoreAddress?.run {
                     val flowAccount = FlowCadenceApi.getAccount(this.address)
                     logd("KeyStoreRestoreViewModel", "Got Flow account, keys count: ${flowAccount.keys?.size}")
-                    flowAccount.keys?.find { it.publicKey == publicKey }
+                    
+                    // Normalize the local public key for comparison
+                    val localPubKeyHex = publicKey.removePrefix("0x").lowercase()
+                    val localPubKeyStripped = if (localPubKeyHex.startsWith("04") && localPubKeyHex.length == 130) {
+                        localPubKeyHex.substring(2)
+                    } else {
+                        localPubKeyHex
+                    }
+                    
+                    logd("KeyStoreRestoreViewModel", "Comparing keys - Local public key (normalized): $localPubKeyHex")
+                    logd("KeyStoreRestoreViewModel", "Comparing keys - Local public key (stripped): $localPubKeyStripped")
+                    
+                    flowAccount.keys?.find { acctKey ->
+                        val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
+                        val isMatch = acctPubKeyHex == localPubKeyHex || acctPubKeyHex == localPubKeyStripped
+                        if (isMatch) {
+                            logd("KeyStoreRestoreViewModel", "Found matching on-chain key: index=${acctKey.index}, publicKey=${acctKey.publicKey}")
+                        }
+                        isMatch
+                    }
                 } ?: run {
                     logd("KeyStoreRestoreViewModel", "ERROR: Could not find matching key on-chain for public key: ${currentKeyStoreAddress?.publicKey}")
                     toast(msgRes = R.string.login_failure)

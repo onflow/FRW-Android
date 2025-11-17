@@ -69,12 +69,16 @@ class AccountKeyViewModel : ViewModel(), OnTransactionStateChange {
             val keyDeviceInfo = response.data.result ?: emptyList()
             uiScope {
                 keyList.forEach { accountKey ->
-                    keyDeviceInfo.find { it.pubKey.publicKey == accountKey.publicKey.publicKey }
-                        ?.let {
-                            accountKey.deviceName = it.backupInfo?.name.takeIf { name -> !name.isNullOrEmpty() } ?: it.device?.device_name ?: ""
-                            accountKey.deviceType = it.device?.device_type ?: -1
-                            accountKey.backupType = it.backupInfo?.type ?: -1
-                        }
+                    keyDeviceInfo.find { deviceInfo ->
+                        // Normalize public keys for comparison
+                        val devicePubKey = deviceInfo.pubKey.publicKey.removePrefix("0x").lowercase()
+                        val accountPubKey = accountKey.publicKey.publicKey.removePrefix("0x").lowercase()
+                        devicePubKey == accountPubKey
+                    }?.let {
+                        accountKey.deviceName = it.backupInfo?.name.takeIf { name -> !name.isNullOrEmpty() } ?: it.device?.device_name ?: ""
+                        accountKey.deviceType = it.device?.device_type ?: -1
+                        accountKey.backupType = it.backupInfo?.type ?: -1
+                    }
                 }
                 keyListLiveData.value = keyList
             }

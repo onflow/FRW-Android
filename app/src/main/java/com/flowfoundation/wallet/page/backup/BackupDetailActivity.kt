@@ -59,7 +59,10 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 binding.btnRecoveryPhrase.setProgressVisible(false)
                 val data = intent?.getParcelableArrayListExtra<BackupItem>(EXTRA_CONTENT) ?: return
                 data.firstOrNull {
-                    it.publicKey == backupKey?.info?.pubKey?.publicKey
+                    // Normalize public keys for comparison
+                    val itemPubKey = it.publicKey?.removePrefix("0x")?.lowercase()
+                    val backupPubKey = backupKey?.info?.pubKey?.publicKey?.removePrefix("0x")?.lowercase()
+                    itemPubKey == backupPubKey
                 }?.let {
                     BackupViewMnemonicActivity.launch(this@BackupDetailActivity, it.data)
                 } ?: run {
@@ -75,7 +78,10 @@ class BackupDetailActivity : BaseActivity(), OnMapReadyCallback, OnTransactionSt
                 binding.btnRecoveryPhrase.setProgressVisible(false)
                 val data = intent?.getParcelableArrayListExtra<BackupItem>(com.flowfoundation.wallet.manager.dropbox.EXTRA_CONTENT) ?: return
                 data.firstOrNull {
-                    it.publicKey == backupKey?.info?.pubKey?.publicKey
+                    // Normalize public keys for comparison
+                    val itemPubKey = it.publicKey?.removePrefix("0x")?.lowercase()
+                    val backupPubKey = backupKey?.info?.pubKey?.publicKey?.removePrefix("0x")?.lowercase()
+                    itemPubKey == backupPubKey
                 }?.let {
                     BackupViewMnemonicActivity.launch(this@BackupDetailActivity, it.data)
                 } ?: run {
