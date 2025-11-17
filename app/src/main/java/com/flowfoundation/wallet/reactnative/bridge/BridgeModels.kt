@@ -22,6 +22,12 @@ class RNBridge {
         @SerializedName("onboarding") ONBOARDING
     }
 
+    enum class AccountTypeType {
+        @SerializedName("eoa") EOA,
+        @SerializedName("coa") COA,
+        @SerializedName("null") NULL
+    }
+
     enum class InitialRoute(val routeName: String) {
         GET_STARTED("GetStarted"),
         PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
@@ -169,6 +175,71 @@ class RNBridge {
         val error: String
     )
 
+    data class CreateAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("txId")
+        val txId: String,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class CreateEOAAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("phrase")
+        val phrase: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("error")
+        val error: String
+    )
+
+    data class AccountKey(
+        @SerializedName("publicKey")
+        val publicKey: String,
+        @SerializedName("hashAlgoStr")
+        val hashAlgoStr: String,
+        @SerializedName("signAlgoStr")
+        val signAlgoStr: String,
+        @SerializedName("weight")
+        val weight: Int,
+        @SerializedName("hashAlgo")
+        val hashAlgo: Int,
+        @SerializedName("signAlgo")
+        val signAlgo: Int
+    )
+
+    data class SeedPhraseGenerationResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String
+    )
+
+    data class SPResponse(
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("accountKey")
+        val accountKey: AccountKey,
+        @SerializedName("drivepath")
+        val drivepath: String
+    )
+
     data class NFTModel(
         @SerializedName("id")
         val id: String?,
@@ -289,29 +360,5 @@ class RNBridge {
         @SerializedName("flow") FLOW,
         @SerializedName("evm") EVM
     }
-
-    data class AccountKey(
-        @SerializedName("publicKey")
-        val publicKey: String,
-        @SerializedName("hashAlgoStr")
-        val hashAlgoStr: String,
-        @SerializedName("signAlgoStr")
-        val signAlgoStr: String,
-        @SerializedName("weight")
-        val weight: Int,
-        @SerializedName("hashAlgo")
-        val hashAlgo: Int,
-        @SerializedName("signAlgo")
-        val signAlgo: Int
-    )
-
-    data class SPResponse(
-        @SerializedName("mnemonic")
-        val mnemonic: String,
-        @SerializedName("accountKey")
-        val accountKey: AccountKey,
-        @SerializedName("drivepath")
-        val drivepath: String
-    )
 
 }
