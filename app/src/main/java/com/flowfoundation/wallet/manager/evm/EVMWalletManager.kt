@@ -102,7 +102,6 @@ object EVMWalletManager {
         ioScope {
             val address = cadenceQueryEVMAddress()
             if (address.isNullOrEmpty()) {
-                ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                 callback?.invoke(false)
             } else {
                 val networkAddress = getNetworkAddress()
@@ -112,7 +111,6 @@ object EVMWalletManager {
                     // Validate the address before storing it
                     if (!isValidEVMAddress(formattedAddress)) {
                         logd(TAG, "fetchEVMAddress received invalid address: '$formattedAddress'")
-                        ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                         callback?.invoke(false)
                         return@ioScope
                     }
@@ -121,7 +119,6 @@ object EVMWalletManager {
                     AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
                     callback?.invoke(true)
                 } else {
-                    ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
                     callback?.invoke(false)
                 }
             }
@@ -178,7 +175,6 @@ object EVMWalletManager {
     fun getEVMAddress(network: String? = chainNetWorkString()): String? {
         val address = evmAddressMap[getNetworkAddress(network)]
         return if (address.isNullOrBlank() || address == "0x") {
-            ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
             return null
         } else {
             val checksumAddress = toChecksumEVMAddress(address)

@@ -89,13 +89,6 @@ enum class StakingError(
     STAKING_GET_DELEGATOR_INFO_FAILED("stakingGetDelegatorInfoFailed");
 }
 
-enum class EVMError(
-    override val rawValue: String,
-    override val baseCode: Int = 7000
-) : BaseError {
-    QUERY_EVM_ADDRESS_FAILED("queryEVMAddressFailed");
-}
-
 enum class CadenceError(
     override val rawValue: String,
     override val baseCode: Int = 8000
