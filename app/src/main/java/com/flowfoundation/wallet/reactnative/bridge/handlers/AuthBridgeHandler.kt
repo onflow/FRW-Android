@@ -574,6 +574,42 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 trackAccountCreation(cryptoProvider)
 
                                 logd(TAG, "saveMnemonic() - EOA account initialization complete!")
+                                
+                                // Wait for wallet info to be populated with Flow address
+                                // This ensures the account is ready for COA creation
+                                logd(TAG, "saveMnemonic() - Waiting for wallet info to be populated...")
+                                var waitRetries = 0
+                                val maxWaitRetries = 30 // 15 seconds max
+                                val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
+                                
+                                while (waitRetries < maxWaitRetries) {
+                                    val currentAccount = AccountManager.get()
+                                    val flowAddress = currentAccount?.getFlowAddress(currentNetwork, TAG)
+                                    
+                                    if (!flowAddress.isNullOrBlank()) {
+                                        logd(TAG, "saveMnemonic() - Flow address populated: $flowAddress")
+                                        break
+                                    }
+                                    
+                                    logd(TAG, "saveMnemonic() - Waiting for Flow address... (attempt ${waitRetries + 1}/$maxWaitRetries)")
+                                    kotlinx.coroutines.delay(500)
+                                    waitRetries++
+                                    
+                                    // Try to update wallet info from WalletFetcher
+                                    if (waitRetries % 5 == 0) {
+                                        logd(TAG, "saveMnemonic() - Triggering WalletFetcher to refresh wallet data")
+                                        com.flowfoundation.wallet.manager.account.WalletFetcher.fetch()
+                                    }
+                                }
+                                
+                                val finalAccount = AccountManager.get()
+                                val finalFlowAddress = finalAccount?.getFlowAddress(currentNetwork, TAG)
+                                if (finalFlowAddress.isNullOrBlank()) {
+                                    logw(TAG, "saveMnemonic() - Flow address not populated after waiting, but continuing anyway")
+                                } else {
+                                    logd(TAG, "saveMnemonic() - Account ready with Flow address: $finalFlowAddress")
+                                }
+                                
                                 // Step 12: Close React Native view (handled by caller)
                                 // Step 13: Notification permission (handled by caller)
 
