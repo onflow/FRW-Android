@@ -84,7 +84,7 @@ object FungibleTokenListManager {
 
     private fun getProvider(address: String): TokenListProvider {
 
-        val isEVMForAddress = EVMWalletManager.isEVMWalletAddress(address)
+        val isEVMForAddress = EVMWalletManager.isEVMWalletAddress(address) || EVMWalletManager.isEOAAddress(address)
         val existingProvider = currentTokenProvider
 
         if (existingProvider != null) {
@@ -223,15 +223,15 @@ object FungibleTokenListManager {
 
     private fun applyFilters(tokens: List<FungibleToken>): List<FungibleToken> {
         var filteredList = tokens
-        
+
         if (isHideDustTokens()) {
             filteredList = filteredList.filter { it.tokenBalanceInUSD() > BigDecimal(0.01) }
         }
-        
+
         if (isOnlyShowVerifiedTokens()) {
             filteredList = filteredList.filter { it.isVerified }
         }
-        
+
         return filteredList
     }
 
@@ -352,14 +352,14 @@ object FungibleTokenListManager {
                 logd(TAG, "Token ${token.contractId()} already in display list.")
                 return@ioScope
             }
-            
+
             // Check if token should be filtered out
             val shouldShow = applyFilters(listOf(token)).isNotEmpty()
             if (!shouldShow) {
                 logd(TAG, "Token ${token.contractId()} filtered out (dust/unverified), not adding to display list.")
                 return@ioScope
             }
-            
+
             currentDisplayTokenList.add(token)
             val address = WalletManager.selectedWalletAddress()
             if (address.isNotBlank()) {

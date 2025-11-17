@@ -62,7 +62,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
                     }
                 } else {
                     uiScope {
-                        KeyStoreNoAccountDialog().show(supportFragmentManager, "")
+                        KeyStoreNoAccountDialog(this@KeyStoreRestoreActivity).show()
                     }
                 }
             }
@@ -98,6 +98,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
             KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> PrivateKeyInfoFragment()
             KeyStoreOption.INPUT_SEED_PHRASE_INFO -> SeedPhraseInfoFragment()
             KeyStoreOption.CREATE_USERNAME -> PrivateKeyStoreUsernameFragment()
+            KeyStoreOption.CREATE_ACCOUNT_WITH_USERNAME -> PrivateKeyStoreUsernameFragment(isCreateAccount = true)
         }
         fragment.enterTransition = transition
         supportFragmentManager.beginTransaction()

@@ -16,6 +16,7 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.nft.NftCollectionStateManager
@@ -74,7 +75,7 @@ suspend fun registerOutblock(
                 if (isSuccess) {
                     // At this point, user is registered on server, Firebase is synced,
                     // and the correct private key (from registerServer) is stored with the prefix.
-                    
+
                     // Declare service here for fetching user and wallet info
                     val service = retrofit().create(ApiService::class.java)
 
@@ -85,28 +86,28 @@ suspend fun registerOutblock(
                     // The service calls here should ideally just fetch the latest state if needed,
                     // not perform new registrations or key creations.
 
-                    val userInfo = try { service.userInfo().data } catch (e: Exception) { 
+                    val userInfo = try { service.userInfo().data } catch (e: Exception) {
                         logd(TAG, "Failed to fetch user info after registration")
                         continuation.resume(false)
                         return@ioScope
                     }
-                    
+
                     // Use the reliable getWalletList API call that gets account info directly from server
-                    val walletListData = try { 
-                        service.getWalletList().data 
+                    val walletListData = try {
+                        service.getWalletList().data
                     } catch (e: Exception) {
                         logd(TAG, "Failed to fetch wallet list after registration")
                         continuation.resume(false)
                         return@ioScope
                     }
-                    
+
                     if (walletListData == null) {
                         logd(TAG, "No wallet data found for registered user")
                         continuation.resume(false)
                         return@ioScope
                     }
 
-                    // Now that we have the wallet data with account address, use fetchAccountByAddress 
+                    // Now that we have the wallet data with account address, use fetchAccountByAddress
                     // to populate the wallet SDK with the account details from Flow network
                     val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
                     val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
@@ -115,7 +116,7 @@ suspend fun registerOutblock(
                         continuation.resume(false)
                         return@ioScope
                     }
-                    
+
                     val walletForSDK = WalletFactory.createKeyWallet(
                         keyForWalletSDK,
                         setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -127,7 +128,7 @@ suspend fun registerOutblock(
                         "testnet" -> ChainId.Testnet
                         else -> ChainId.Mainnet
                     }
-                    
+
                     // Use fetchAccountByAddress to populate wallet SDK with account from Flow network
                     walletListData.wallets?.forEach { walletData ->
                         walletData.blockchain?.forEach { blockchain ->
@@ -149,7 +150,7 @@ suspend fun registerOutblock(
                             }
                         }
                     }
-                    
+
                     AccountManager.add(
                         Account(
                             userInfo = userInfo,
@@ -159,7 +160,7 @@ suspend fun registerOutblock(
                         firebaseUid()
                     )
                     logd(TAG, "Account added to AccountManager.")
-                    
+
                     // Initialize WalletManager to pick up the new account/wallet state
                     WalletManager.init()
 
@@ -178,7 +179,7 @@ suspend fun registerOutblock(
                         return@ioScope
                     }
                     logd(TAG, "Crypto provider generated successfully for registered account. Public key: ${cryptoProvider.getPublicKey()}")
-                    
+
                     // The public key from this cryptoProvider SHOULD now match the on-chain key
                     // because both originate from the single private key created and stored in registerServer.
 
@@ -254,12 +255,12 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
     val service = retrofit().create(ApiService::class.java)
     val baseDir = File(Env.getApp().filesDir, "wallet")
     val storage = FileSystemStorage(baseDir)
-    
+
     try {
         // Generate and store mnemonic globally for seed phrase backup support
         val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
         logd(TAG, "Generated new 12-word mnemonic for backup support")
-        
+
         val passwordMap = try {
             val pref = readWalletPassword()
             if (pref.isBlank()) {
@@ -270,29 +271,29 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
         } catch (e: Exception) {
             HashMap<String, String>()
         }
-        
+
         // Store mnemonic globally (this will make it accessible via Wallet.store().mnemonic())
         storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
         logd(TAG, "Stored mnemonic globally for backup support")
-        
+
         // Create a new private key
         val privateKey = PrivateKey.create(storage)
         logd(TAG, "Created new private key for registration")
-        
+
         // Store the private key with prefix as ID for later retrieval
         val keyId = "prefix_key_$prefix"
         privateKey.store(keyId, prefix) // Use prefix as password for simplicity
         logd(TAG, "Stored private key with ID: $keyId")
-        
+
         // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
         val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
         if (publicKeyBytes == null) {
             logd(TAG, "Failed to get public key from private key")
             throw IllegalStateException("Failed to get public key from private key")
         }
-        
+
         logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
-        
+
         // Convert public key to hex string, removing "04" prefix if present
         // Flow expects uncompressed public keys without the format indicator
         val hexPublicKey = if (publicKeyBytes.size == 65 && publicKeyBytes[0] == 0x04.toByte()) {
@@ -302,7 +303,7 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
             publicKeyBytes.joinToString("") { "%02x".format(it) }
         }
         logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
-        
+
         // Create registration request with correct algorithm parameters
         val request = RegisterRequest(
             username = username,
@@ -312,17 +313,17 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
             ),
             deviceInfo = deviceInfoRequest
         )
-        
+
         logd(TAG, "Sending registration request: $request")
         try {
             val user = service.register(request)
             logd(TAG, "Registration response: $user")
-            
+
             if (user.status > 400) {
                 logd(TAG, "Registration failed with status: ${user.status}, message: ${user.message}")
                 throw IllegalStateException("Registration failed with status: ${user.status}, message: ${user.message}")
             }
-            
+
             return user
         } catch (e: retrofit2.HttpException) {
             val errorBody = e.response()?.errorBody()?.string()
@@ -399,6 +400,7 @@ suspend fun clearUserCache() {
     setMeowDomainClaimed(false)
     FungibleTokenListManager.clear()
     WalletManager.clear()
+    DAppEVMConnectionManager.clearPreferences()
     NftCollectionStateManager.clear()
     TransactionStateManager.reload()
     StakingManager.clear()

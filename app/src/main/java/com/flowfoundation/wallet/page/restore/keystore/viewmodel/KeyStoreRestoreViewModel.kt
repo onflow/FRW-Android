@@ -46,14 +46,21 @@ import org.onflow.flow.models.SigningAlgorithm
 import retrofit2.HttpException
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.keys.PrivateKey
-import com.flow.wallet.wallet.WalletFactory
+import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
 import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
+import com.flowfoundation.wallet.network.model.RegisterRequest
+import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.wallet.createWalletFromServer
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import org.onflow.flow.ChainId
 import org.onflow.flow.models.hexToBytes
 
@@ -106,17 +113,17 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 }
                 logd("KeyStoreRestoreViewModel", "Key created and imported: $key")
 
-                // Create a new wallet using the private key directly
-                WalletFactory.createKeyWallet(
-                    key,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                )
-                logd("KeyStoreRestoreViewModel", "Created key wallet")
-
-                // Initialize WalletManager with the new wallet
-                WalletManager.init()
-                logd("KeyStoreRestoreViewModel", "Initialized WalletManager")
+//                // Create a new wallet using the private key directly
+//                WalletFactory.createKeyWallet(
+//                    key,
+//                    setOf(ChainId.Mainnet, ChainId.Testnet),
+//                    storage
+//                )
+//                logd("KeyStoreRestoreViewModel", "Created key wallet")
+//
+//                // Initialize WalletManager with the new wallet
+//                WalletManager.init()
+//                logd("KeyStoreRestoreViewModel", "Initialized WalletManager")
 
                 // Get public keys and format them correctly
                 val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
@@ -169,14 +176,14 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 logd("KeyStoreRestoreViewModel", key)
 
                 // Create a new wallet using the private key directly
-                WalletFactory.createKeyWallet(
-                    key,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                )
-
-                // Initialize WalletManager with the new wallet
-                WalletManager.init()
+//                WalletFactory.createKeyWallet(
+//                    key,
+//                    setOf(ChainId.Mainnet, ChainId.Testnet),
+//                    storage
+//                )
+//
+//                // Initialize WalletManager with the new wallet
+//                WalletManager.init()
 
                 val p1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = key.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
@@ -222,14 +229,14 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 )
 
                 // Create a new wallet using the seed phrase key
-                WalletFactory.createKeyWallet(
-                    seedPhraseKey,
-                    setOf(ChainId.Mainnet, ChainId.Testnet),
-                    storage
-                )
-
-                // Initialize WalletManager with the new wallet
-                WalletManager.init()
+//                WalletFactory.createKeyWallet(
+//                    seedPhraseKey,
+//                    setOf(ChainId.Mainnet, ChainId.Testnet),
+//                    storage
+//                )
+//
+//                // Initialize WalletManager with the new wallet
+//                WalletManager.init()
 
                 val p1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04")
                 val k1PublicKey = seedPhraseKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()?.removePrefix("04")
@@ -404,6 +411,17 @@ class KeyStoreRestoreViewModel : ViewModel() {
         }
 
         loadingLiveData.postValue(false)
+        if (addressList.isEmpty()) {
+          currentKeyStoreAddress = KeystoreAddress(
+              address = "",
+              publicKey = k1PublicKey,
+              privateKey = k1PrivateKey,
+              keyId = 0,
+              weight = 1000,
+              hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
+              signAlgo = SigningAlgorithm.ECDSA_secp256k1.cadenceIndex
+          )
+        }
         addressListLiveData.postValue(addressList)
         logd("KeyStoreRestoreViewModel", "Final address list: $addressList")
     }
@@ -430,14 +448,16 @@ class KeyStoreRestoreViewModel : ViewModel() {
             return false
         } catch (e: Exception) {
             logd("KeyStoreRestoreViewModel", "Error checking login: ${e.message}")
-            (e as? HttpException)?.let {
-                if (it.code() == 409) {
+
+            val httpException = e as? HttpException
+            return if (httpException != null) {
+                if (httpException.code() == 409) {
                     logd("KeyStoreRestoreViewModel", "Key already exists (409), attempting loginWithPrivateKey")
                     // loginWithPrivateKey handles its own UI and async flow.
                     // We return true here to indicate that a login attempt has been initiated.
                     // The success/failure of that login is handled by loginWithPrivateKey's own callback.
                     loginWithPrivateKey(privateKey, publicKey, signAlgo) { isLoginSuccess ->
-                        // This callback is primarily for any specific actions needed *immediately after* 
+                        // This callback is primarily for any specific actions needed *immediately after*
                         // loginWithPrivateKey completes, if checkIsLogin itself needed to do more.
                         // In the current structure, loginWithPrivateKey handles navigation, so this callback here
                         // might not need to do much more than log.
@@ -453,13 +473,14 @@ class KeyStoreRestoreViewModel : ViewModel() {
                             // The original code returned true from here.
                         }
                     }
-                    return true // Indicate login process was initiated.
+                    true // Indicate login process was initiated.
+                } else {
+                    logd("KeyStoreRestoreViewModel", "checkKeystorePublicKeyImport HTTP error was not 409 (was ${httpException.code()}).")
+                    false // Not a 409, so not a login attempt via this path
                 }
-                logd("KeyStoreRestoreViewModel", "checkKeystorePublicKeyImport HTTP error was not 409 (was ${it.code()}).")
-                return false // Not a 409, so not a login attempt via this path
-            } ?: run {
+            } else {
                 logd("KeyStoreRestoreViewModel", "checkKeystorePublicKeyImport error was not HTTP.")
-                return false // Non-HTTP error, not a login attempt via this path
+                false // Non-HTTP error, not a login attempt via this path
             }
         }
     }
@@ -817,9 +838,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                                         logd("KeyStoreRestoreViewModel", "Creating KeystoreAddress with: address=$finalWalletAddress, keyId=$determinedKeyId, signAlgo=$determinedSignAlgo, hashAlgo=$determinedHashAlgo")
                                         val keystoreAddress = KeystoreAddress(
-                                            address = finalWalletAddress, 
+                                            address = finalWalletAddress,
                                             publicKey = formattedPublicKey,
-                                            privateKey = privateKey, 
+                                            privateKey = privateKey,
                                             keyId = determinedKeyId,
                                             weight = determinedWeight,
                                             hashAlgo = determinedHashAlgo,
@@ -841,23 +862,23 @@ class KeyStoreRestoreViewModel : ViewModel() {
 
                                     } catch (e: Exception) {
                                         logd("KeyStoreRestoreViewModel", "Error during post-login data processing: ${e.message}")
-                                        loge(e) 
-                                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e) 
+                                        loge(e)
+                                        ErrorReporter.reportWithMixpanel(BackupError.RESTORE_LOGIN_FAILED, e)
                                         // accountSuccessfullyAdded remains false
                                     }
 
                                     if (accountSuccessfullyAdded) {
-                                        delay(500) 
+                                        delay(500)
                                         loadingLiveData.postValue(false)
                                         val activity = BaseActivity.getCurrentActivity()
                                         if (activity != null) {
                                             MainActivity.relaunch(activity, clearTop = true)
                                         }
-                                        loginProcessCallback.invoke(true) 
+                                        loginProcessCallback.invoke(true)
                                     } else {
                                         loadingLiveData.postValue(false)
-                                        toast(msgRes = R.string.login_failure) 
-                                        loginProcessCallback.invoke(false) 
+                                        toast(msgRes = R.string.login_failure)
+                                        loginProcessCallback.invoke(false)
                                     }
                                 }
                             } else {
@@ -998,9 +1019,9 @@ class KeyStoreRestoreViewModel : ViewModel() {
     ): String {
         logd("KeyStoreRestoreViewModel", "Generating signature using wallet module PrivateKey")
         logd("KeyStoreRestoreViewModel", "Hash algorithm: $hashAlgo, Sign algorithm: $signAlgo")
-        
+
         val storage = getStorage()
-        
+
         // Create PrivateKey instance from wallet module
         val key = PrivateKey.create(storage).apply {
             val keyBytes = privateKey.hexToBytes()
@@ -1012,12 +1033,12 @@ class KeyStoreRestoreViewModel : ViewModel() {
         val domainTagBytes = DomainTag.User.bytes
         val jwtBytes = jwt.encodeToByteArray()
         val dataToSign = domainTagBytes + jwtBytes
-        
+
         logd("KeyStoreRestoreViewModel", "Data to sign length: ${dataToSign.size}")
-        
+
         // Sign using the wallet module's signing method
         val signatureBytes = key.sign(dataToSign, signAlgo, hashAlgo)
-        
+
         // Remove recovery ID if present (wallet module includes it, but server expects standard 64-byte signature)
         val finalSignatureBytes = if (signatureBytes.size == 65) {
             logd("KeyStoreRestoreViewModel", "Removing recovery ID from 65-byte signature")
@@ -1026,12 +1047,128 @@ class KeyStoreRestoreViewModel : ViewModel() {
             logd("KeyStoreRestoreViewModel", "Using signature as-is (${signatureBytes.size} bytes)")
             signatureBytes
         }
-        
+
         val signature = finalSignatureBytes.joinToString("") { "%02x".format(it) }
-        
+
         logd("KeyStoreRestoreViewModel", "Generated signature: $signature")
         logd("KeyStoreRestoreViewModel", "Signature length: ${signature.length}")
-        
+
         return signature
+    }
+
+    /**
+     * Handle create new account request from KeyStoreNoAccountDialog
+     */
+    fun createNewAccountFromKeystore() {
+        loadingLiveData.postValue(false)
+        changeOption(KeyStoreOption.CREATE_ACCOUNT_WITH_USERNAME)
+    }
+
+    /**
+     * Handle create account with username
+     */
+    fun createAccountWithUsername(username: String) {
+        if (currentKeyStoreAddress == null || username.isEmpty()) {
+            toast(msgRes = R.string.login_failure)
+            loadingLiveData.postValue(false)
+            return
+        }
+        logd("KeyStoreRestoreViewModel", "Starting create account with username: $username")
+        ioScope {
+            val cryptoProvider = PrivateKeyStoreCryptoProvider(Gson().toJson(currentKeyStoreAddress))
+            val activity = BaseActivity.getCurrentActivity() ?: return@ioScope
+            createAccount(username, cryptoProvider) { isSuccess ->
+                uiScope {
+                    loadingLiveData.postValue(false)
+                    if (isSuccess) {
+                        CryptoProviderManager.clear()
+                        delay(200)
+                        MainActivity.relaunch(activity, clearTop = true)
+                    } else {
+                        toast(msgRes = R.string.login_failure)
+                        activity.finish()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createAccount(
+        username: String,
+        cryptoProvider: PrivateKeyStoreCryptoProvider,
+        callback: (isSuccess: Boolean) -> Unit
+    ) {
+        ioScope {
+            val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
+            val service = retrofit().create(ApiService::class.java)
+            val request = RegisterRequest(
+                username = username,
+                accountKey = AccountKey(
+                    publicKey = cryptoProvider.getPublicKey(),
+                    signAlgo = cryptoProvider.getSignatureAlgorithm().cadenceIndex,
+                    hashAlgo = cryptoProvider.getHashAlgorithm().cadenceIndex,
+                ),
+                deviceInfo = deviceInfoRequest
+            )
+            try {
+                val user = service.register(request)
+                logd("KeyStoreRestoreViewModel", "Registration response: $user")
+
+                if (user.status > 400) {
+                    logd("KeyStoreRestoreViewModel", "Registration failed with status: ${user.status}, message: ${user.message}")
+                    throw IllegalStateException("Registration failed with status: ${user.status}, message: ${user.message}")
+                }
+                registerFirebase(user) { isSuccess ->
+                    ioScope {
+                        if (isSuccess) {
+                            createWalletFromServer()
+                            setRegistered()
+                            val userInfo = try {  } catch (e: Exception) {
+                                logd("KeyStoreRestoreViewModel", "Failed to fetch user info after registration")
+                                callback.invoke(false)
+                                return@ioScope
+                            }
+                            AccountManager.add(
+                                Account(
+                                    userInfo = service.userInfo().data,
+                                    keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                )
+                            )
+                            WalletManager.init()
+                            MixpanelManager.accountCreated(
+                                cryptoProvider.getPublicKey(),
+                                AccountCreateKeyType.RESTORE_KEYSTORE,
+                                cryptoProvider.getSignatureAlgorithm().value,
+                                cryptoProvider.getHashAlgorithm().algorithm
+                            )
+                            clearUserCache()
+                            callback.invoke(true)
+                        } else {
+                            callback.invoke(false)
+                        }
+                    }
+                }
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                logd("KeyStoreRestoreViewModel", "HTTP Error: ${e.code()}, Response: $errorBody")
+                callback.invoke(false)
+                throw e
+            }
+        }
+    }
+
+    private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boolean) -> Unit) {
+        FirebaseMessaging.getInstance().deleteToken()
+        Firebase.auth.currentUser?.delete()?.addOnCompleteListener {
+            logd("KeyStoreRestoreViewModel", "delete user finish exception:${it.exception}")
+            if (it.isSuccessful) {
+                firebaseCustomLogin(user.data.customToken) { isSuccessful, _ ->
+                    if (isSuccessful) {
+                        MixpanelManager.identifyUserProfile()
+                        callback(true)
+                    } else callback(false)
+                }
+            } else callback(false)
+        }
     }
 }
