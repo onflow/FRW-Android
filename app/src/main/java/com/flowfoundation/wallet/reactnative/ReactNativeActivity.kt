@@ -2,7 +2,6 @@ package com.flowfoundation.wallet.reactnative
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultReactActivityDelegate
@@ -12,6 +11,7 @@ import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.reactnative.bridge.createWalletAccountFromAddress
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.utils.logd
 import com.google.gson.Gson
 
 class ReactNativeActivity : ReactActivity() {
@@ -39,18 +39,14 @@ class ReactNativeActivity : ReactActivity() {
                     val screen = intent.getStringExtra("screen")
                     val sendToConfigJson = intent.getStringExtra("sendToConfig")
 
-                    // Top level props
                     address?.let {
                         launchOptions.putString("address", it)
-                        Log.d(TAG, "Added address to launch options: $it")
                     }
                     network?.let {
                         launchOptions.putString("network", it)
-                        Log.d(TAG, "Added network to launch options: $it")
                     }
                     initialRoute?.let {
                         launchOptions.putString("initialRoute", it)
-                        Log.d(TAG, "Added initialRoute to launch options: $it")
                     }
 
                     // Create initialProps object if we have screen or sendToConfig
@@ -59,37 +55,21 @@ class ReactNativeActivity : ReactActivity() {
 
                         screen?.let {
                             initialPropsBundle.putString("screen", it)
-                            Log.d(TAG, "Added screen to initialProps: $it")
                         }
                         sendToConfigJson?.let { jsonString ->
-                            Log.d(TAG, "Processing sendToConfig JSON: $jsonString")
                             initialPropsBundle.putString("sendToConfig", jsonString)
                         }
 
                         launchOptions.putBundle("initialProps", initialPropsBundle)
-                        Log.d(TAG, "Added initialProps bundle with ${initialPropsBundle.size()} properties")
                     }
                 }
-
-                Log.d(TAG, "Launch options created with ${launchOptions.size()} properties")
                 return launchOptions
             }
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d(TAG, "onCreate called")
         super.onCreate(savedInstanceState)
-
-        // Log the intent extras for debugging
-        intent?.let {
-            Log.d(TAG, "Intent extras:")
-            Log.d(TAG, "  address: ${it.getStringExtra("address")}")
-            Log.d(TAG, "  network: ${it.getStringExtra("network")}")
-            Log.d(TAG, "  initialRoute: ${it.getStringExtra("initialRoute")}")
-            Log.d(TAG, "  screen: ${it.getStringExtra("screen")}")
-            Log.d(TAG, "  sendToConfig: ${it.getStringExtra("sendToConfig")}")
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -170,11 +150,6 @@ class ReactNativeActivity : ReactActivity() {
          * Launch the React Native Demo Activity with parameters
          */
         fun launch(context: Context, screenType: RNBridge.ScreenType?, address: String?, network: String?) {
-            Log.d(TAG, "Launching ReactNativeActivity with params:")
-            Log.d(TAG, "  screenType: $screenType")
-            Log.d(TAG, "  address: $address")
-            Log.d(TAG, "  network: $network")
-
             val intent = Intent(context, ReactNativeActivity::class.java)
 
             // Add flags to ensure only one instance of ReactNativeActivity exists
@@ -203,11 +178,6 @@ class ReactNativeActivity : ReactActivity() {
          * Launch with InitialProps containing screen and SendToConfig
          */
         fun launchWithConfig(context: Context, screenType: RNBridge.ScreenType, sendToConfig: RNBridge.SendToConfig?, address: String?, network: String?) {
-            Log.d(TAG, "Launching ReactNativeActivity with config:")
-            Log.d(TAG, "  screenType: $screenType")
-            Log.d(TAG, "  address: $address")
-            Log.d(TAG, "  network: $network")
-
             val intent = Intent(context, ReactNativeActivity::class.java)
 
             // Add flags to ensure only one instance of ReactNativeActivity exists
@@ -233,7 +203,6 @@ class ReactNativeActivity : ReactActivity() {
             sendToConfig?.let {
                 val sendToConfigJson = Gson().toJson(it)
                 intent.putExtra("sendToConfig", sendToConfigJson)
-                Log.d(TAG, "sendToConfig JSON: $sendToConfigJson")
             }
 
             context.startActivity(intent)

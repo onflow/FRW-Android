@@ -148,9 +148,6 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 try {
                     val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
                     childAccounts?.forEach { childAccount ->
-                        // Debug: Log child account data to see if icon is available
-                        println("DEBUG: Child account - name: ${childAccount.name}, icon: ${childAccount.icon}, address: ${childAccount.address}")
-
                         // For secure enclave COA accounts, check if the address has EVM capabilities
                         // If it does, set type to EVM instead of CHILD
                         // Check both evmAddressMap and getEVMAddress() since evmAddressMap might not be populated yet
