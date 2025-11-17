@@ -556,6 +556,17 @@ object CryptoProviderManager {
 
             // Handle prefix-based accounts
             else if (account.prefix.isNullOrBlank().not()) {
+                // Check if this is a Recovery Phrase account (has EOA address in evmAddressMap)
+                // Recovery Phrase accounts use ECDSA_secp256k1, Secure Enclave uses ECDSA_P256
+                val hasEOAAddress = account.evmAddressData?.evmAddressMap?.containsKey("") == true
+                val algorithmToUse = if (hasEOAAddress) {
+                    SigningAlgorithm.ECDSA_secp256k1  // Recovery Phrase accounts
+                } else {
+                    SigningAlgorithm.ECDSA_P256  // Secure Enclave accounts
+                }
+                
+                logd("CryptoProviderManager", "getSwitchAccountCryptoProvider - account: ${account.userInfo.username}, hasEOAAddress: $hasEOAAddress, using algorithm: $algorithmToUse")
+                
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"
                 val privateKey = try {
@@ -626,11 +637,13 @@ object CryptoProviderManager {
                     storage
                 ) as KeyWallet
 
-                // Determine the correct signing algorithm for this private key from on-chain data
-                val currentProviderPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                    ?: privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
-                var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256 // Default
+                // Use the algorithm we determined based on account type (Recovery Phrase vs Secure Enclave)
+                // Get public key using the correct algorithm
+                val currentProviderPublicKey = privateKey.publicKey(algorithmToUse)?.toHexString()
+                var determinedSigningAlgorithm = algorithmToUse // Use the algorithm we determined
                 var determinedHashingAlgorithm: HashingAlgorithm? = null
+                
+                logd("CryptoProviderManager", "Using algorithm $algorithmToUse for account ${account.userInfo.username}")
 
                 if (currentProviderPublicKey != null && account.wallet?.walletAddress() != null) {
                     try {
