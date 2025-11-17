@@ -567,31 +567,39 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 // Use userInfoWithOriginalUsername to preserve proper capitalization
                                 val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
                                 
-                                // Initialize EVMWalletManager to fetch COA address
-                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.updateEVMAddress()
-                                
-                                // Add EOA address to evmAddressMap after account is created and COA is fetched
-                                // This ensures it shows up in the sidebar with its own emoji
+                                // Add EOA address to evmAddressMap before fetching COA
+                                // EVMWalletManager.updateEVMAddress() will merge with this, preserving both addresses
                                 if (eoaAddress != null) {
                                     try {
-                                        // Wait a bit for EVMWalletManager to initialize
-                                        kotlinx.coroutines.delay(500)
-                                        
-                                        val currentEvmMap = AccountManager.evmAddressData()?.evmAddressMap?.toMutableMap() ?: mutableMapOf()
-                                        logd(TAG, "saveMnemonic() - Current evmAddressMap before adding EOA: $currentEvmMap")
-                                        
-                                        currentEvmMap[""] = eoaAddress // Empty string key for EOA address (matches convention)
-                                        AccountManager.updateEVMAddressInfo(currentEvmMap)
-                                        
+                                        val evmMap = mutableMapOf<String, String>()
+                                        evmMap[""] = eoaAddress // Empty string key for EOA address
+                                        AccountManager.updateEVMAddressInfo(evmMap)
                                         logd(TAG, "saveMnemonic() - EOA address added to evmAddressMap: $eoaAddress")
-                                        logd(TAG, "saveMnemonic() - Updated evmAddressMap: $currentEvmMap")
-                                        
-                                        // Re-initialize AccountEmojiManager to generate walletEmojiList with the EOA address
-                                        // This creates emoji assignments for all addresses including the newly added EOA
-                                        com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
-                                        logd(TAG, "saveMnemonic() - AccountEmojiManager re-initialized to include EOA address")
                                     } catch (e: Exception) {
-                                        logw(TAG, "saveMnemonic() - Warning: Could not add EOA address to evmAddressMap: ${e.message}")
+                                        logw(TAG, "saveMnemonic() - Warning: Could not add EOA address: ${e.message}")
+                                        e.printStackTrace()
+                                    }
+                                }
+                                
+                                // Initialize EVMWalletManager to fetch and add COA address
+                                // EVMWalletManager now preserves existing entries (like EOA) when adding COA
+                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.updateEVMAddress()
+                                
+                                // Wait for COA fetch to complete, then re-initialize emoji manager
+                                kotlinx.coroutines.delay(1000)
+                                
+                                // Verify and log final state
+                                if (eoaAddress != null) {
+                                    try {
+                                        val finalEvmMap = AccountManager.evmAddressData()?.evmAddressMap
+                                        logd(TAG, "saveMnemonic() - Final evmAddressMap: $finalEvmMap")
+                                        logd(TAG, "saveMnemonic() - Contains EOA: ${finalEvmMap?.containsKey("")}, Contains COA: ${finalEvmMap?.size ?: 0 > 1}")
+                                        
+                                        // Re-initialize AccountEmojiManager to generate walletEmojiList with all addresses
+                                        com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
+                                        logd(TAG, "saveMnemonic() - AccountEmojiManager initialized with ${finalEvmMap?.size ?: 0} addresses")
+                                    } catch (e: Exception) {
+                                        logw(TAG, "saveMnemonic() - Warning: Could not verify evmAddressMap: ${e.message}")
                                         e.printStackTrace()
                                     }
                                 }

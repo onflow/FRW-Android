@@ -119,7 +119,13 @@ object EVMWalletManager {
                     }
 
                     evmAddressMap[networkAddress] = formattedAddress
-                    AccountManager.updateEVMAddressInfo(evmAddressMap.toMutableMap())
+                    
+                    // Preserve existing entries from account's evmAddressData (e.g., EOA address with empty string key)
+                    // Merge with internal evmAddressMap to avoid overwriting EOA addresses
+                    val existingMap = AccountManager.evmAddressData()?.evmAddressMap?.toMutableMap() ?: mutableMapOf()
+                    existingMap.putAll(evmAddressMap)
+                    AccountManager.updateEVMAddressInfo(existingMap)
+                    
                     callback?.invoke(true)
                 } else {
                     ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())

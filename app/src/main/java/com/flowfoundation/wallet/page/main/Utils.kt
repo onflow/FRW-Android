@@ -420,54 +420,41 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
     }
 
     // Check EOA account
-    // Skip EOA account for secure enclave (hardware-backed keys) - they only have COA/EVM accounts
-    // Recovery Phrase accounts have EOA, Secure Enclave accounts don't
-    // Distinguish by checking if mnemonic is stored (Recovery Phrase accounts store mnemonic with "global" key)
+    // Only Recovery Phrase accounts have EOA addresses (from mnemonic)
+    // Secure Enclave accounts only have COA/EVM accounts (hardware-backed keys)
+    // Check if THIS account has an EOA address by looking for empty string key in evmAddressMap
     val currentAccount = AccountManager.get()
-    val hasStoredMnemonic = try {
-        val pref = com.flowfoundation.wallet.utils.readWalletPassword()
-        if (pref.isNotBlank()) {
-            val passwordMap: HashMap<String, String> = com.google.gson.Gson().fromJson(
-                pref, 
-                object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type
-            )
-            passwordMap.containsKey("global") && !passwordMap["global"].isNullOrBlank()
-        } else {
-            false
-        }
-    } catch (e: Exception) {
-        false
-    }
-    val isRecoveryPhraseAccount = hasStoredMnemonic
-    if (isRecoveryPhraseAccount) {
+    val evmAddressMapData = currentAccount?.evmAddressData?.evmAddressMap
+    val eoaAddressFromMap = evmAddressMapData?.get("") // Get EOA from THIS account's map
+    val hasEOAAddress = !eoaAddressFromMap.isNullOrBlank()
+    
+    logd("DrawerLayoutPresenter", "EOA check - hasEOAAddress: $hasEOAAddress, eoaAddress: $eoaAddressFromMap")
+    logd("DrawerLayoutPresenter", "EOA check - account: ${currentAccount?.userInfo?.username}, prefix: ${currentAccount?.prefix}")
+    logd("DrawerLayoutPresenter", "EOA check - evmAddressMap: $evmAddressMapData")
+    
+    if (hasEOAAddress && eoaAddressFromMap != null) {
         try {
-            ioScope {
-                val eoaAddress = WalletManager.getEOAAddressCached()
+            // Use the EOA address from THIS account's evmAddressMap
+            val childView = LayoutInflater.from(root.context)
+                .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
 
-                eoaAddress?.let { address ->
-                    uiScope {
-                        val childView = LayoutInflater.from(root.context)
-                            .inflate(R.layout.item_wallet_list_child_account, llLinkedAccount, false)
+            val walletItemData = WalletItemData(
+                address = eoaAddressFromMap,
+                name = "",
+                icon = "",
+                isSelected = WalletManager.selectedWalletAddress() == eoaAddressFromMap
+            )
 
-                        val walletItemData = WalletItemData(
-                            address = address,
-                            name = "",
-                            icon = "",
-                            isSelected = WalletManager.selectedWalletAddress() == address
-                        )
-
-                        childView.setupWalletItem(walletItemData, isEOAAccount = true)
-
-                        llLinkedAccount.addView(childView)
-                    }
-                }
-            }
+            childView.setupWalletItem(walletItemData, isEOAAccount = true)
+            llLinkedAccount.addView(childView)
+            
+            logd("DrawerLayoutPresenter", "Added EOA account to sidebar: $eoaAddressFromMap")
         } catch (e: Exception) {
-            logd("DrawerLayoutPresenter", "Error getting EOA account: ${e.message}")
+            logd("DrawerLayoutPresenter", "Error setting up EOA account: ${e.message}")
             logd("DrawerLayoutPresenter", "Error stack trace: ${e.stackTraceToString()}")
         }
     } else {
-        logd("DrawerLayoutPresenter", "Skipping EOA account for secure enclave (hardware-backed keys)")
+        logd("DrawerLayoutPresenter", "No EOA address in evmAddressMap - skipping EOA chip")
     }
 
     // Get main wallet address with fallbacks
