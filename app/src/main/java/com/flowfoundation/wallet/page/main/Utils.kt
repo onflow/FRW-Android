@@ -421,10 +421,25 @@ fun LayoutMainDrawerLayoutBinding.setupLinkedAccount(
 
     // Check EOA account
     // Skip EOA account for secure enclave (hardware-backed keys) - they only have COA/EVM accounts
-    // Check if account has prefix (secure enclave accounts use prefix-based keys)
+    // Recovery Phrase accounts have EOA, Secure Enclave accounts don't
+    // Distinguish by checking if mnemonic is stored (Recovery Phrase accounts store mnemonic with "global" key)
     val currentAccount = AccountManager.get()
-    val isSecureEnclave = currentAccount?.prefix != null && currentAccount.keyStoreInfo == null
-    if (!isSecureEnclave) {
+    val hasStoredMnemonic = try {
+        val pref = com.flowfoundation.wallet.utils.readWalletPassword()
+        if (pref.isNotBlank()) {
+            val passwordMap: HashMap<String, String> = com.google.gson.Gson().fromJson(
+                pref, 
+                object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type
+            )
+            passwordMap.containsKey("global") && !passwordMap["global"].isNullOrBlank()
+        } else {
+            false
+        }
+    } catch (e: Exception) {
+        false
+    }
+    val isRecoveryPhraseAccount = hasStoredMnemonic
+    if (isRecoveryPhraseAccount) {
         try {
             ioScope {
                 val eoaAddress = WalletManager.getEOAAddressCached()

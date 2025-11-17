@@ -547,6 +547,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                                 // Cache EOA address immediately from seedPhraseKey (before wallet initialization)
                                 // This ensures the EOA address is available when getWalletAccounts() is called
+                                var eoaAddress: String? = null
                                 try {
                                     val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
                                     val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
@@ -555,7 +556,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
                                         storage
                                     )
-                                    val eoaAddress = tempWallet.ethAddress(0)
+                                    eoaAddress = tempWallet.ethAddress(0)
                                     WalletManager.cacheEOAAddressSync(eoaAddress)
                                     logd(TAG, "saveMnemonic() - EOA address cached immediately: $eoaAddress")
                                 } catch (e: Exception) {
@@ -565,6 +566,35 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 // Setup AccountManager and WalletManager
                                 // Use userInfoWithOriginalUsername to preserve proper capitalization
                                 val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
+                                
+                                // Initialize EVMWalletManager to fetch COA address
+                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.updateEVMAddress()
+                                
+                                // Add EOA address to evmAddressMap after account is created and COA is fetched
+                                // This ensures it shows up in the sidebar with its own emoji
+                                if (eoaAddress != null) {
+                                    try {
+                                        // Wait a bit for EVMWalletManager to initialize
+                                        kotlinx.coroutines.delay(500)
+                                        
+                                        val currentEvmMap = AccountManager.evmAddressData()?.evmAddressMap?.toMutableMap() ?: mutableMapOf()
+                                        logd(TAG, "saveMnemonic() - Current evmAddressMap before adding EOA: $currentEvmMap")
+                                        
+                                        currentEvmMap[""] = eoaAddress // Empty string key for EOA address (matches convention)
+                                        AccountManager.updateEVMAddressInfo(currentEvmMap)
+                                        
+                                        logd(TAG, "saveMnemonic() - EOA address added to evmAddressMap: $eoaAddress")
+                                        logd(TAG, "saveMnemonic() - Updated evmAddressMap: $currentEvmMap")
+                                        
+                                        // Re-initialize AccountEmojiManager to generate walletEmojiList with the EOA address
+                                        // This creates emoji assignments for all addresses including the newly added EOA
+                                        com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
+                                        logd(TAG, "saveMnemonic() - AccountEmojiManager re-initialized to include EOA address")
+                                    } catch (e: Exception) {
+                                        logw(TAG, "saveMnemonic() - Warning: Could not add EOA address to evmAddressMap: ${e.message}")
+                                        e.printStackTrace()
+                                    }
+                                }
 
                                 // Mark user as registered so app knows they've completed onboarding
                                 com.flowfoundation.wallet.utils.setRegistered()
