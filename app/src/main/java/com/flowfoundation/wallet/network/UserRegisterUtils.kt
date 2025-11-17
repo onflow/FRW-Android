@@ -194,6 +194,18 @@ suspend fun registerOutblock(
                         cryptoProvider.getHashAlgorithm().algorithm
                     )
                     clearUserCache()
+                    
+                    // Trigger wallet data update to refresh UI (e.g., drawer sidebar)
+                    // This ensures the sidebar shows COA with correct EVM badge immediately
+                    walletListData?.let { data ->
+                        AccountManager.updateWalletInfo(data)
+                        logd(TAG, "registerOutblock() - Triggered UI refresh via updateWalletInfo")
+                        
+                        // Close the drawer to show the updated account in the main view
+                        com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
+                        logd(TAG, "registerOutblock() - Closed drawer to show updated account")
+                    }
+                    
                     continuation.resume(true)
                 } else {
                     // Registration failed in registerOutblockUserInternal (e.g., server or Firebase issue)

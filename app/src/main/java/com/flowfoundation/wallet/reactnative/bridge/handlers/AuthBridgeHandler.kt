@@ -598,6 +598,15 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         // Re-initialize AccountEmojiManager to generate walletEmojiList with all addresses
                                         com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
                                         logd(TAG, "saveMnemonic() - AccountEmojiManager initialized with ${finalEvmMap?.size ?: 0} addresses")
+                                        
+                                        // Trigger wallet data update to refresh UI (e.g., drawer sidebar)
+                                        // This ensures the sidebar shows all addresses including EOA immediately
+                                        AccountManager.updateWalletInfo(walletListData)
+                                        logd(TAG, "saveMnemonic() - Triggered UI refresh via updateWalletInfo")
+                                        
+                                        // Close the drawer to show the updated account in the main view
+                                        com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
+                                        logd(TAG, "saveMnemonic() - Closed drawer to show updated account")
                                     } catch (e: Exception) {
                                         logw(TAG, "saveMnemonic() - Warning: Could not verify evmAddressMap: ${e.message}")
                                         e.printStackTrace()

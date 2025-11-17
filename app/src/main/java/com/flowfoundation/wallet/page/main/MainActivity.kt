@@ -155,6 +155,12 @@ class MainActivity : BaseActivity() {
         super.onDestroy()
     }
 
+    fun closeDrawer() {
+        uiScope {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
+        }
+    }
+
     companion object {
         private const val EXTRA_TARGET_TAB = "extra_target_tab"
 
