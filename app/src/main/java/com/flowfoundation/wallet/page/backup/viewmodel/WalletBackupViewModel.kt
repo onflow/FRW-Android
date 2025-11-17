@@ -94,11 +94,15 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                         }
 
                         if (matchingKey != null) {
+                            // Normalize public keys for comparison
+                            val infoPubKey = info.pubKey.publicKey.removePrefix("0x").lowercase()
+                            val currentKeyNormalized = currentKey?.removePrefix("0x")?.lowercase()
+                            
                             BackupKey(
                                 matchingKey.index.toInt(),
                                 info,
                                 isRevoking = false,
-                                isCurrentKey = info.pubKey.publicKey == currentKey
+                                isCurrentKey = infoPubKey == currentKeyNormalized
                             )
                         } else {
                             logd(TAG, "  ❌ NO MATCH - skipping this backup key")
