@@ -10,8 +10,8 @@ fun Account.getFlowAddress(networkName: String, logTag: String = "AccountExtensi
             walletData.blockchain?.asSequence() ?: emptySequence()
         }
         ?.find { blockchainData ->
-            val matches = blockchainData.chainId == networkName
-
+            // Compare case-insensitively since chainId from backend might be "mainnet" but networkName might be "Mainnet"
+            val matches = blockchainData.chainId?.lowercase() == networkName.lowercase()
             matches
         }?.address
     logd(logTag, "  Returning address: $foundAddress for ${this.userInfo.username} on $networkName")
