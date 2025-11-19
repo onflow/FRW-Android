@@ -199,8 +199,11 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                     // - Import from Backup
                     // - Import from Raw Key
                     val intent = Intent(currentActivity, com.flowfoundation.wallet.page.restore.WalletRestoreActivity::class.java)
+                    // Pass flag to indicate this was launched from RN GetStartedScreen
+                    // so back button can navigate back to GetStartedScreen
+                    intent.putExtra("launchedFromRN", true)
                     currentActivity.startActivity(intent)
-                    logd(TAG, "launchNativeScreen() - launched WalletRestoreActivity with restore options")
+                    logd(TAG, "launchNativeScreen() - launched WalletRestoreActivity with restore options from RN")
                 }
             }
         } catch (e: Exception) {
