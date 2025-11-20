@@ -103,6 +103,17 @@ class ReactNativeActivity : ReactActivity() {
         private const val TAG = "ReactNativeActivity"
 
         /**
+         * Convert ScreenType enum to screen string
+         */
+        private fun screenTypeToString(screenType: RNBridge.ScreenType): String {
+            return when (screenType) {
+                RNBridge.ScreenType.SEND_ASSET -> "send-asset"
+                RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
+                RNBridge.ScreenType.RECEIVE -> "receive"
+            }
+        }
+
+        /**
          * Determine the route name based on screen type and sendToConfig
          */
         private fun getRouteName(screenType: RNBridge.ScreenType, sendToConfig: RNBridge.SendToConfig?): String {
@@ -122,6 +133,7 @@ class ReactNativeActivity : ReactActivity() {
                     } ?: "SelectTokens"
                 }
                 RNBridge.ScreenType.TOKEN_DETAIL -> "Home"
+                RNBridge.ScreenType.RECEIVE -> "Receive"
             }
         }
 
@@ -167,7 +179,7 @@ class ReactNativeActivity : ReactActivity() {
 
             // Use explicit initialRoute if provided, otherwise determine from screenType
             val routeName = initialRoute ?: screenType?.let {
-                val screenString = if (it == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+                val screenString = screenTypeToString(it)
                 intent.putExtra("screen", screenString)
                 getRouteName(it, null)
             }
@@ -203,7 +215,7 @@ class ReactNativeActivity : ReactActivity() {
             }
 
             // Convert screen enum to string and determine route based on screen type and config
-            val screenString = if (screenType == RNBridge.ScreenType.SEND_ASSET) "send-asset" else "token-detail"
+            val screenString = screenTypeToString(screenType)
             val routeName = getRouteName(screenType, sendToConfig)
 
             intent.putExtra("screen", screenString)
@@ -256,18 +268,11 @@ class ReactNativeActivity : ReactActivity() {
 
         /**
          * Launch the Receive screen with default address and network
-         * Reuses existing launch method to avoid duplicating activity flags
          */
         fun launchReceive(context: Context) {
             Log.d(TAG, "Launching ReactNativeActivity for Receive screen")
-
-            val address = WalletManager.selectedWalletAddress().toAddress()
-            val network = chainNetWorkString()
-
-            // Reuse existing launch method with "Receive" as the initialRoute
-            launch(context, null, address, network, "Receive")
-
-            Log.d(TAG, "Launched Receive screen with address: $address, network: $network")
+            launch(context, RNBridge.ScreenType.RECEIVE)
+            Log.d(TAG, "Launched Receive screen")
         }
     }
 }
