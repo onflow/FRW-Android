@@ -345,7 +345,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                             parentEmoji = mainEmojiInfo,
                             avatar = null,
                             isActive = isSelectedWalletAddress(eoaAddress),
-                            type = RNBridge.AccountType.EVM,
+                            type = RNBridge.AccountType.EOA,
                             balance = null,
                             nfts = null,
                         )
@@ -475,8 +475,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 val mainAddress = WalletManager.wallet()?.walletAddress()
 
                 val accountType = when {
-                    EVMWalletManager.isEOAAddress(selectedAddress) || EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
+                    EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
                     WalletManager.isChildAccount(selectedAddress) -> RNBridge.AccountType.CHILD
+                    EVMWalletManager.isEOAAddress(selectedAddress) -> RNBridge.AccountType.EOA
                     else -> RNBridge.AccountType.MAIN
                 }
 
@@ -737,7 +738,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                     parentEmoji = mainEmojiInfo,
                     avatar = null,
                     isActive = isSelectedWalletAddress(eoaAddress),
-                    type = RNBridge.AccountType.EVM,
+                    type = RNBridge.AccountType.EOA,
                     balance = null,
                     nfts = null,
                   )

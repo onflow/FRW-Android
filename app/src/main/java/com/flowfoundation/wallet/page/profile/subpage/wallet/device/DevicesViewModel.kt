@@ -36,12 +36,17 @@ class DevicesViewModel : ViewModel() {
                 val deviceKey = keyDeviceList.lastOrNull { it.device?.id == device.id }
                 if (deviceKey != null) {
                     val unRevokedDevice = keys.firstOrNull {
-                        it.publicKey ==
-                                deviceKey.pubKey.publicKey && it.revoked.not()
+                        // Normalize public keys for comparison
+                        val onChainPubKey = it.publicKey.removePrefix("0x").lowercase()
+                        val devicePubKey = deviceKey.pubKey.publicKey.removePrefix("0x").lowercase()
+                        onChainPubKey == devicePubKey && it.revoked.not()
                     }
                     if (unRevokedDevice != null) {
                         val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
-                        val keyId = if (unRevokedDevice.publicKey == currentKey) null else unRevokedDevice.index
+                        // Normalize public keys for comparison
+                        val unRevokedPubKey = unRevokedDevice.publicKey.removePrefix("0x").lowercase()
+                        val currentKeyNormalized = currentKey?.removePrefix("0x")?.lowercase()
+                        val keyId = if (unRevokedPubKey == currentKeyNormalized) null else unRevokedDevice.index
                         if (keyId != null) {
                             deviceList.add(
                                 DeviceKeyModel(
