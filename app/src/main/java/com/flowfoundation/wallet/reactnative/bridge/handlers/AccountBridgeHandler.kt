@@ -268,7 +268,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 parentEmoji = mainEmojiInfo,
                                 avatar = null,
                                 isActive = isSelectedWalletAddress(eoaAddress),
-                                type = RNBridge.AccountType.EVM,
+                                type = RNBridge.AccountType.EOA,
                                 balance = null,
                                 nfts = null,
                             )
@@ -344,7 +344,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val mainAddress = WalletManager.wallet()?.walletAddress()
 
                 val accountType = when {
-                    EVMWalletManager.isEOAAddress(selectedAddress) || EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
+                    EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
                     // For child accounts, check if they have EVM capabilities (e.g., secure enclave COA accounts)
                     // Check both evmAddressMap and getEVMAddress() since evmAddressMap might not be populated yet
                     // For hardware-backed keys (secure enclave), WalletManager.wallet() returns null
@@ -374,6 +374,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                     // For secure enclave COA accounts, the main address might be the EVM address
                     // Check if selected address is the main address and has EVM capabilities
                     selectedAddress.equals(mainAddress, ignoreCase = true) && EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
+                    EVMWalletManager.isEOAAddress(selectedAddress) -> RNBridge.AccountType.EOA
                     else -> RNBridge.AccountType.MAIN
                 }
 
@@ -622,7 +623,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         parentEmoji = mainEmojiInfo,
                         avatar = null,
                         isActive = isSelectedWalletAddress(eoaAddress),
-                        type = RNBridge.AccountType.EVM,
+                        type = RNBridge.AccountType.EOA,
                         balance = null,
                         nfts = null,
                       )

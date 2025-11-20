@@ -13,7 +13,8 @@ class RNBridge {
     enum class AccountType {
         @SerializedName("main") MAIN,
         @SerializedName("child") CHILD,
-        @SerializedName("evm") EVM
+        @SerializedName("evm") EVM,
+        @SerializedName("eoa") EOA
     }
 
     enum class ScreenType {
