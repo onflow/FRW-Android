@@ -229,4 +229,8 @@ interface ApiService {
         @Query("chain_type") chainType: String,
         @Query("network") currency: String?,
     ): AddTokenListResponse
+
+    @POST("/api/v4/onramp/coinbase")
+    suspend fun createCoinbaseOnRampSession(@Body params: CoinbaseOnRampRequest): CoinbaseOnRampResponse
+
 }

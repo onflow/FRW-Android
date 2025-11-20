@@ -13,14 +13,20 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.databinding.DialogSwapCoinListBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.MixpanelRampSource
+import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.functions.FUNCTION_MOON_PAY_SIGN
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
+import com.flowfoundation.wallet.network.model.CoinbaseOnRampRequest
+import com.flowfoundation.wallet.network.retrofitApi
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
+import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import java.net.URLEncoder
+import com.flowfoundation.wallet.widgets.ProgressDialog
 
 class SwapDialog : BottomSheetDialogFragment() {
 
@@ -43,22 +49,53 @@ class SwapDialog : BottomSheetDialogFragment() {
                 openUrl(viewModel.moonPayUrl)
             }
             coinbaseButton.setOnClickListener {
-                MixpanelManager.onRampClicked(MixpanelRampSource.COINBASE)
-                openUrl(coinBaseUrl())
+                val address = WalletManager.wallet().walletAddress() ?: return@setOnClickListener
+                loadCoinbaseUrl(address)
             }
         }
     }
+
+    private fun loadCoinbaseUrl(walletAddress: String) {
+        val progressDialog = ProgressDialog(requireContext())
+
+        uiScope {
+            progressDialog.show()
+        }
+
+        ioScope {
+            try {
+                val service = retrofitApi().create(ApiService::class.java)
+                val response = service.createCoinbaseOnRampSession(
+                    CoinbaseOnRampRequest(
+                        address = walletAddress
+                    )
+                )
+                val onRampUrl = response.data?.session?.onRampUrl.orEmpty()
+                logd(TAG, "Coinbase onRamp url:$onRampUrl")
+
+                uiScope {
+                    progressDialog.dismiss()
+
+                    if (onRampUrl.isNotEmpty()) {
+                        MixpanelManager.onRampClicked(MixpanelRampSource.COINBASE)
+                        openUrl(onRampUrl)
+                    }
+                }
+            } catch (e: Exception) {
+                logd(TAG, "Failed to load Coinbase URL: ${e.message}")
+                uiScope {
+                    progressDialog.dismiss()
+                }
+            }
+        }
+    }
+
+
 
     private fun openUrl(url: String?) {
         url ?: return
         url.openInSystemBrowser(requireActivity())
         dismiss()
-    }
-
-    private fun coinBaseUrl(): String {
-        // https://pay.coinbase.com/buy/input?appId=d22a56bd-68b7-4321-9b25-aa357fc7f9ce&destinationWallets=[{"address":"0x7d2b880d506db7cc","blockchains":["flow"]}]
-        val json = """[{"address":"${viewModel.address}","blockchains":["flow"]}]"""
-        return "https://pay.coinbase.com/buy/input?appId=d22a56bd-68b7-4321-9b25-aa357fc7f9ce&destinationWallets=${URLEncoder.encode(json, "UTF-8")}"
     }
 
     companion object {
