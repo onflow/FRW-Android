@@ -721,37 +721,31 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                   .message}")
             }
 
-            // Derive EOA address for this account
-            try {
-                val eoaAddress = if (isSelectedWalletAddress(mainAddress)) {
-                    // Use cached address for currently selected wallet
-                    WalletManager.getEOAAddressCached()
-                } else {
-                    // Derive EOA address from this account's wallet
-                    account.wallet?.let { walletData ->
-                        WalletManager.deriveEOAAddress(walletData)
+            // Add EOA address only for currently selected wallet
+            // (Receive screen only shows current account, no need for non-selected EOA addresses)
+            if (isSelectedWalletAddress(mainAddress)) {
+                try {
+                    val eoaAddress = WalletManager.getEOAAddressCached()
+                    if (!eoaAddress.isNullOrEmpty()) {
+                        val eoaEmojiInfo = createEmojiInfo(eoaAddress)
+                        val eoaAccount = RNBridge.WalletAccount(
+                            id = "eoa",
+                            name = eoaEmojiInfo?.name ?: "EVM Account (EOA)",
+                            address = eoaAddress,
+                            parentAddress = mainAddress,
+                            emojiInfo = eoaEmojiInfo,
+                            parentEmoji = null,
+                            avatar = null,
+                            isActive = isSelectedWalletAddress(eoaAddress),
+                            type = RNBridge.AccountType.EOA,
+                            balance = null,
+                            nfts = null,
+                        )
+                        bridgeAccounts.add(eoaAccount)
                     }
+                } catch (e: Exception) {
+                    logw(TAG, "createWalletProfileFromAccount() - EOA account not available: ${e.message}")
                 }
-
-                if (!eoaAddress.isNullOrEmpty()) {
-                    val eoaEmojiInfo = createEmojiInfo(eoaAddress)
-                    val eoaAccount = RNBridge.WalletAccount(
-                        id = "eoa",
-                        name = eoaEmojiInfo?.name ?: "EVM Account (EOA)",
-                        address = eoaAddress,
-                        parentAddress = mainAddress,
-                        emojiInfo = eoaEmojiInfo,
-                        parentEmoji = null,
-                        avatar = null,
-                        isActive = isSelectedWalletAddress(eoaAddress),
-                        type = RNBridge.AccountType.EOA,
-                        balance = null,
-                        nfts = null,
-                    )
-                    bridgeAccounts.add(eoaAccount)
-                }
-            } catch (e: Exception) {
-                logw(TAG, "createWalletProfileFromAccount() - EOA account not available: ${e.message}")
             }
 
             // Create wallet profile

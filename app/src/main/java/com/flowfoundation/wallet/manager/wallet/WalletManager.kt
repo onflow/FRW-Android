@@ -878,52 +878,6 @@ object WalletManager {
         }
     }
 
-    /**
-     * Derive EOA (Externally Owned Account) address for a given wallet
-     *
-     * This creates a temporary wallet instance to derive the EVM address using the
-     * wallet's ethAddress() method, which should internally use the correct EVM BIP44
-     * path (m/44'/60'/0'/0/0) for address derivation.
-     *
-     * Note: We need a separate wallet instance for each account because:
-     * - Each account may have a different mnemonic
-     * - The currently selected wallet (currentWallet) is for a different account
-     * - EOA addresses must be derived consistently across all accounts
-     */
-    suspend fun deriveEOAAddress(walletData: WalletListData): String? {
-        return try {
-            val storage = getStorage()
-
-            // Get the mnemonic for this wallet
-            val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(walletData.id ?: "")
-            if (mnemonic == null) {
-                logd(TAG, "Cannot derive EOA - mnemonic not available for wallet ${walletData.id}")
-                return null
-            }
-
-            // Create a temporary wallet instance to derive the EOA address
-            // The initialization path doesn't matter - ethAddress() should use EVM path internally
-            val seedPhraseKey = SeedPhraseKey(
-                mnemonicString = mnemonic,
-                passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",  // Flow path for account discovery
-                keyPair = null,
-                storage = storage
-            )
-
-            val wallet = WalletFactory.createKeyWallet(
-                seedPhraseKey,
-                setOf(ChainId.Mainnet, ChainId.Testnet),
-                storage
-            )
-
-            // Derive EOA address - wallet.ethAddress() uses EVM BIP44 path (m/44'/60'/0'/0/0)
-            wallet.ethAddress(0)
-        } catch (e: Exception) {
-            logd(TAG, "Error deriving EOA address: ${e.message}")
-            null
-        }
-    }
 }
 
 // Extension functions for backward compatibility
