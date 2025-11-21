@@ -29,15 +29,6 @@ class RNBridge {
         @SerializedName("null") NULL
     }
 
-    enum class InitialRoute(val routeName: String) {
-        GET_STARTED("GetStarted"),
-        PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
-        SELECT_TOKENS("SelectTokens"),
-        SEND_TO("SendTo"),
-        SEND_TOKENS("SendTokens"),
-        HOME("Home")
-    }
-
     data class EmojiInfo(
         @SerializedName("emoji")
         val emoji: String,
@@ -240,6 +231,23 @@ class RNBridge {
         @SerializedName("drivepath")
         val drivepath: String
     )
+
+    enum class InitialRoute(val routeName: String) {
+        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
+        @SerializedName("SendTo") SEND_TO("SendTo"),
+        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
+        @SerializedName("Home") HOME("Home")
+    }
+
+    enum class NativeScreenName {
+        @SerializedName("multiBackup") MULTI_BACKUP,
+        @SerializedName("deviceBackup") DEVICE_BACKUP,
+        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
+        @SerializedName("backupOptions") BACKUP_OPTIONS,
+        @SerializedName("walletRestore") WALLET_RESTORE
+    }
 
     data class NFTModel(
         @SerializedName("id")
