@@ -744,7 +744,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                         parentEmoji = null,
                         avatar = null,
                         isActive = isSelectedWalletAddress(eoaAddress),
-                        type = RNBridge.AccountType.EVM,
+                        type = RNBridge.AccountType.EOA,
                         balance = null,
                         nfts = null,
                     )
