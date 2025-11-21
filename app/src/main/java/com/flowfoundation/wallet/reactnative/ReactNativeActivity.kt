@@ -266,13 +266,5 @@ class ReactNativeActivity : ReactActivity() {
             launchWithConfig(context, RNBridge.ScreenType.SEND_ASSET, sendToConfig, address, network)
         }
 
-        /**
-         * Launch the Receive screen with default address and network
-         */
-        fun launchReceive(context: Context) {
-            Log.d(TAG, "Launching ReactNativeActivity for Receive screen")
-            launch(context, RNBridge.ScreenType.RECEIVE)
-            Log.d(TAG, "Launched Receive screen")
-        }
     }
 }

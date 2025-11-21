@@ -71,7 +71,7 @@ class TokenDetailPresenter(
             clVerifiedTip.setVisible(token.isVerified.not())
             btnReceive.setOnClickListener {
                 // Launch React Native Receive screen
-                ReactNativeActivity.launchReceive(activity)
+                ReactNativeActivity.launch(activity, RNBridge.ScreenType.RECEIVE)
             }
             btnSwap.setOnClickListener {
                 if (WalletManager.isChildAccountSelected()) {
