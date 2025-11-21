@@ -618,7 +618,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
 
-    private fun createWalletProfileFromAccount(account: Account): RNBridge.WalletProfile? {
+    private suspend fun createWalletProfileFromAccount(account: Account): RNBridge.WalletProfile? {
         return try {
             logd(TAG, "createWalletProfileFromAccount() - creating profile for account: ${account.userInfo.username}")
 
@@ -729,9 +729,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 } else {
                     // Derive EOA address from this account's wallet
                     account.wallet?.let { walletData ->
-                        runBlocking {
-                            WalletManager.deriveEOAAddress(walletData)
-                        }
+                        WalletManager.deriveEOAAddress(walletData)
                     }
                 }
 
