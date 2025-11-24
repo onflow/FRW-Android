@@ -20,7 +20,8 @@ class RNBridge {
     enum class ScreenType {
         @SerializedName("send-asset") SEND_ASSET,
         @SerializedName("token-detail") TOKEN_DETAIL,
-        @SerializedName("onboarding") ONBOARDING
+        @SerializedName("onboarding") ONBOARDING,
+        @SerializedName("receive") RECEIVE
     }
 
     enum class AccountTypeType {

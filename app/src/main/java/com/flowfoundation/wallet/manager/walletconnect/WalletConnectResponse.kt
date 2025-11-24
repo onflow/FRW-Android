@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
+import com.flowfoundation.wallet.network.BASE_HOST
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.fcl.encodeAccountProof
@@ -36,7 +37,7 @@ suspend fun walletConnectAuthnServiceResponse(
             ${authn(address.toAddress(), keyId)},
             ${authz(address.toAddress(), keyId)},
             ${userSign(address.toAddress(), keyId)},
-            ${preAuthz()},
+            ${preAuthz(address.toAddress(), keyId)},
             ${signMessage() + if (nonce.isNullOrBlank() || appIdentifier.isNullOrBlank()) "" else ","}
             ${accountProof(address, keyId, nonce, appIdentifier)}
         """.trimIndent()
@@ -104,31 +105,22 @@ private fun userSign(address: String, keyId: Int): String {
     """.trimIndent()
 }
 
-private suspend fun preAuthz(): String {
-    val payerInfo = SurgePricingManager.getFeePayer()
-    val payerAddress = if (isGasFree() && payerInfo != null) {
-        payerInfo.address()
-    } else {
-        WalletManager.wallet().walletAddress()
-    }
-    val payerKeyIndex = payerInfo?.keyId()
-        ?: if (payerAddress.isNullOrBlank()) {
-            0
-        } else {
-            FlowAddress(payerAddress).payerAccountKeyId()
-        }
+private fun preAuthz(address: String, keyId: Int): String {
+
     return """
 {
     "f_type": "Service",
     "f_vsn": "1.0.0",
     "type": "pre-authz",
     "uid": "https://frw-link.lilico.app/wc",
-    "endpoint": "flow_pre_authz",
-    "method": "WC/RPC",
-    "data": {
-      "address": "$payerAddress",
-      "keyId": $payerKeyIndex
-    }
+    "endpoint": "${BASE_HOST}/api/wc/pre-authz",
+    "method": "HTTP/POST",
+    "params": {
+        "address": "$address",
+        "keyId": $keyId,
+        "network": "${chainNetWorkString()}"
+    },
+    "data": {}
 }
     """.trimIndent()
 }

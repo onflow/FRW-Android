@@ -90,6 +90,7 @@ class ReactNativeActivity : ReactActivity() {
                 RNBridge.ScreenType.SEND_ASSET -> "send-asset"
                 RNBridge.ScreenType.TOKEN_DETAIL -> "token-detail"
                 RNBridge.ScreenType.ONBOARDING -> "onboarding"
+                RNBridge.ScreenType.RECEIVE -> "receive"
             }
         }
 
@@ -114,6 +115,7 @@ class ReactNativeActivity : ReactActivity() {
                 }
                 RNBridge.ScreenType.TOKEN_DETAIL -> RNBridge.InitialRoute.HOME.routeName
                 RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
+                RNBridge.ScreenType.RECEIVE -> "Receive"
             }
         }
 
