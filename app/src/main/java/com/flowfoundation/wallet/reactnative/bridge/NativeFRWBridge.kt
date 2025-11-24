@@ -207,7 +207,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun registerSecureTypeAccount(username: String, promise: Promise) = authHandler.registerSecureTypeAccount(username, promise)
 
-    override fun createLinkedCOAAccount(promise: Promise) = authHandler.createLinkedCOAAccount(promise)
+    override fun linkCOAAccountOnChain(promise: Promise) = authHandler.linkCOAAccountOnChain(promise)
 
     override fun generateSeedPhrase(strength: Double?, promise: Promise) = authHandler.generateSeedPhrase(strength, promise, ::bridgeModelToWritableMap)
 
