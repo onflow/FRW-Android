@@ -1,31 +1,28 @@
 package com.flowfoundation.wallet.reactnative.bridge.handlers
 
-import android.widget.Toast
-import com.flowfoundation.wallet.reactnative.bridge.RNBridge
-import com.flowfoundation.wallet.reactnative.bridge.createEmojiInfo
-import com.flowfoundation.wallet.reactnative.bridge.isSelectedWalletAddress
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
-import com.flow.wallet.CryptoProvider
 import com.flowfoundation.wallet.cache.recentTransactionCache
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager.isValidEVMAddress
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
+import com.flowfoundation.wallet.reactnative.bridge.createEmojiInfo
+import com.flowfoundation.wallet.reactnative.bridge.isSelectedWalletAddress
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.toast
-import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.logw
+import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.Wallet
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager.isValidEVMAddress
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddress
 import org.onflow.flow.models.FlowAddress
 
 /**
@@ -118,7 +115,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                     val mainAccountType = try {
                         val isEVM = EVMWalletManager.isEVMWalletAddress(mainAddress) ||
                             mainAddress.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                            EVMWalletManager.isValidEVMAddress(mainAddress)
+                            isValidEVMAddress(mainAddress)
                         if (isEVM) {
                             RNBridge.AccountType.EVM
                         } else {
@@ -163,7 +160,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 // EOA accounts: check if address has EVM capabilities
                                 EVMWalletManager.isEVMWalletAddress(childAccount.address) ||
                                 childAccount.address.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                                EVMWalletManager.isValidEVMAddress(childAccount.address)
+                                isValidEVMAddress(childAccount.address)
                             }
 
                             if (isEVM) {
@@ -247,10 +244,10 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         // Only add EOA account if it's different from EVM address
                         // Check if account is Secure Enclave by checking if it has a prefix
                         // Recovery Phrase accounts have a prefix, Secure Enclave accounts don't
-                        val currentAccount = com.flowfoundation.wallet.manager.account.AccountManager.get()
-                        val isSecureEnclaveAccount = currentAccount?.prefix.isNullOrBlank() && 
+                        val currentAccount = AccountManager.get()
+                        val isSecureEnclaveAccount = currentAccount?.prefix.isNullOrBlank() &&
                             currentAccount?.keyStoreInfo.isNullOrBlank()
-                        
+
                         // Only add EOA if:
                         // 1. EOA address is different from EVM address, AND
                         // 2. Account is NOT Secure Enclave (has prefix or keystore info)
@@ -359,7 +356,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                             try {
                                 EVMWalletManager.isEVMWalletAddress(selectedAddress) ||
                                 selectedAddress.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                                EVMWalletManager.isValidEVMAddress(selectedAddress)
+                                isValidEVMAddress(selectedAddress)
                             } catch (e: Exception) {
                                 false
                             }
@@ -505,7 +502,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                             // EOA accounts: check if address has EVM capabilities
                             EVMWalletManager.isEVMWalletAddress(childAccount.address) ||
                             childAccount.address.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                            EVMWalletManager.isValidEVMAddress(childAccount.address)
+                            isValidEVMAddress(childAccount.address)
                         }
 
                         if (isEVM) {

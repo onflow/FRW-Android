@@ -23,7 +23,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.flow.wallet.crypto.BIP39
-import org.onflow.flow.models.hexToBytes
 import org.onflow.flow.models.toHexString
 
 /**
@@ -132,13 +131,13 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 var retries = 0
                 val maxRetries = 10
                 val retryDelayMs = 200L
-                
+
                 while (retries < maxRetries) {
                     WalletManager.init() // Ensure initialization
                     val wallet = WalletManager.wallet()
                     val selectedAddress = WalletManager.selectedWalletAddress()
-                    
-                    if (wallet != null || !selectedAddress.isNullOrBlank()) {
+
+                    if (wallet != null || selectedAddress.isNotBlank()) {
                         logd(TAG, "linkCOAAccountOnChain() - Wallet is ready (attempt ${retries + 1})")
                         break
                     }
@@ -154,17 +153,17 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val finalWallet = WalletManager.wallet()
                 val finalAddress = WalletManager.selectedWalletAddress()
 
-                if (finalWallet == null && finalAddress.isNullOrBlank()) {
+                if (finalWallet == null && finalAddress.isBlank()) {
                     loge(TAG, "linkCOAAccountOnChain() - Wallet not ready after $maxRetries attempts")
                     uiScope {
-                        promise.reject("COA_CREATION_ERROR", "Wallet not ready: cannot link COA account on-chain. Wallet: ${finalWallet != null}, Address: ${finalAddress.isNullOrBlank()}")
+                        promise.reject("COA_CREATION_ERROR", "Wallet not ready: cannot link COA account on-chain. Wallet: ${false}, Address: ${finalAddress.isNullOrBlank()}")
                     }
                     return@ioScope
                 }
 
                 logd(TAG, "linkCOAAccountOnChain() - Wallet ready, linking COA account on-chain...")
                 logd(TAG, "linkCOAAccountOnChain() - Final wallet: ${finalWallet != null}, Final address: $finalAddress")
-                
+
                 // Wait for the exact account created by saveMnemonic to have its Flow address populated
                 // After saveMnemonic, the account is set as current via AccountManager
                 // We must use AccountManager.get() to get the exact account that was just created
@@ -173,13 +172,13 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val maxAccountRetries = 30 // Increased retries to allow more time for transaction finalization
                 val accountRetryDelayMs = 500L // Increased delay to allow transaction to finalize
                 val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
-                
-                var finalAccount: com.flowfoundation.wallet.manager.account.Account? = null
+
+                var finalAccount: Account? = null
                 var finalAccountAddress: String? = null
-                
+
                 while (accountRetries < maxAccountRetries) {
                     // Get the exact current account - this is the account that was just created by saveMnemonic
-                    val currentAccount = com.flowfoundation.wallet.manager.account.AccountManager.get()
+                    val currentAccount = AccountManager.get()
 
                     if (currentAccount == null) {
                         logd(TAG, "linkCOAAccountOnChain() - Current account not available yet (attempt ${accountRetries + 1})")
@@ -189,15 +188,15 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                         }
                         continue
                     }
-                    
+
                     // Try to get Flow address from multiple sources:
                     // 1. From Account.wallet data (backend WalletListData) - most reliable but may not be synced yet
                     // 2. From WalletManager.wallet().accounts (wallet SDK discovered accounts) - available after transaction finalizes
                     var flowAddress: String? = null
-                    
+
                     // First, try account's wallet data (backend)
                     flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
-                    
+
                     // If not available from backend, try wallet SDK's discovered accounts
                     if (flowAddress.isNullOrBlank()) {
                         val wallet = WalletManager.wallet()
@@ -210,8 +209,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                             if (chainId != null) {
                                 val walletAccounts = wallet.accounts[chainId]
                                 walletAccounts?.firstOrNull()?.let { flowAccount ->
-                                    val discoveredAddress = flowAccount.address?.toString()
-                                    if (!discoveredAddress.isNullOrBlank()) {
+                                    val discoveredAddress = flowAccount.address
+                                    if (discoveredAddress.isNotBlank()) {
                                         flowAddress = discoveredAddress
                                         logd(TAG, "linkCOAAccountOnChain() - Found Flow address from wallet SDK discovered accounts: $flowAddress")
                                     }
@@ -244,15 +243,15 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                             logd(TAG, "linkCOAAccountOnChain() - WalletManager.wallet() is null")
                         }
                     }
-                    
+
                     accountRetries++
                     if (accountRetries < maxAccountRetries) {
                         kotlinx.coroutines.delay(accountRetryDelayMs)
                     }
                 }
-                
+
                 if (finalAccount == null || finalAccountAddress == null) {
-                    val currentAccount = com.flowfoundation.wallet.manager.account.AccountManager.get()
+                    val currentAccount = AccountManager.get()
                     loge(TAG, "linkCOAAccountOnChain() - Flow address not found for current account after $maxAccountRetries attempts")
                     if (currentAccount != null) {
                         val flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
@@ -268,7 +267,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 }
 
                 logd(TAG, "linkCOAAccountOnChain() - Account verified with Flow address: $finalAccountAddress, proceeding with COA link transaction...")
-                
+
                 // Check if COA account already exists before creating one
                 // This prevents errors if COA account was already created (e.g., in Secure Enclave flow)
                 val coaAlreadyExists = try {
@@ -310,7 +309,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     loge(TAG, "linkCOAAccountOnChain() - Transaction ID is null or empty")
                     loge(TAG, "linkCOAAccountOnChain() - Wallet state: wallet=${finalWallet != null}, address=$finalAddress")
                     uiScope {
-                        promise.reject("COA_CREATION_ERROR", "Failed to link COA account on-chain: transaction ID is null. Wallet: ${finalWallet != null}, Address: ${finalAddress.isNullOrBlank()}")
+                        promise.reject("COA_CREATION_ERROR", "Failed to link COA account on-chain: transaction ID is null. Wallet: ${finalWallet != null}, Address: ${finalAddress.isBlank()}")
                     }
                     return@ioScope
                 }
@@ -344,16 +343,16 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     else -> BIP39.SeedPhraseLength.TWELVE // Default to 12 words
                 }
                 val mnemonic = BIP39.generate(length, "")
-                
+
                 logd(TAG, "generateSeedPhrase() - Generated mnemonic with ${mnemonic.split(" ").size} words")
-                
+
                 // Create SeedPhraseKey from mnemonic to derive account key
                 val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
                 val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
-                
+
                 // Use Flow derivation path: m/44'/539'/0'/0/0
                 val derivationPath = "m/44'/539'/0'/0/0"
-                
+
                 val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
                     mnemonicString = mnemonic,
                     passphrase = "",
@@ -361,18 +360,16 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     keyPair = null,
                     storage = storage
                 )
-                
+
                 // Derive public key using ECDSA_secp256k1 (matches EOA flow default)
                 val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
-                if (publicKeyBytes == null) {
-                    throw IllegalStateException("Failed to get public key from seed phrase key")
-                }
-                
-                // Convert public key bytes to hex string (remove 0x04 prefix if present)
+                  ?: throw IllegalStateException("Failed to get public key from seed phrase key")
+
+              // Convert public key bytes to hex string (remove 0x04 prefix if present)
                 val publicKeyHex = publicKeyBytes.toHexString().removePrefix("04")
-                
+
                 logd(TAG, "generateSeedPhrase() - Derived public key: ${publicKeyHex.take(16)}...")
-                
+
                 // Create AccountKey response
                 // ECDSA_secp256k1 = sign_algo 2, SHA2_256 = hash_algo 1 (matches extension defaults)
                 val accountKey = RNBridge.AccountKey(
@@ -383,17 +380,17 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     hashAlgo = 1, // SHA2_256
                     signAlgo = 2  // ECDSA_secp256k1
                 )
-                
+
                 // Create SPResponse
                 val response = RNBridge.SPResponse(
                     mnemonic = mnemonic,
                     accountKey = accountKey,
                     drivepath = derivationPath
                 )
-                
+
                 // Convert to WritableMap for React Native
                 val result = bridgeModelToWritableMap(response)
-                
+
                 logd(TAG, "generateSeedPhrase() - Successfully generated seed phrase and account key")
                 uiScope {
                     promise.resolve(result)
@@ -414,7 +411,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
             try {
                 val auth = Firebase.auth
                 val currentUser = auth.currentUser
-                
+
                 if (currentUser != null) {
                     logd(TAG, "signOutAndSignInAnonymously() - Signing out current user: ${currentUser.uid}")
                     auth.signOut()
@@ -422,19 +419,19 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 } else {
                     logd(TAG, "signOutAndSignInAnonymously() - No current user to sign out")
                 }
-                
+
                 // Sign in anonymously
                 logd(TAG, "signOutAndSignInAnonymously() - Signing in anonymously...")
                 auth.signInAnonymously().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val anonymousUser = auth.currentUser
                         logd(TAG, "signOutAndSignInAnonymously() - Anonymous sign-in successful, UID: ${anonymousUser?.uid}")
-                        
+
                         // Wait for ID token to be available (ensures token is refreshed and ready)
                         anonymousUser?.getIdToken(true)?.addOnCompleteListener { tokenTask ->
                             if (tokenTask.isSuccessful && tokenTask.result != null) {
                                 val token = tokenTask.result.token
-                                if (token != null && token.isNotEmpty()) {
+                                if (!token.isNullOrEmpty()) {
                                     logd(TAG, "signOutAndSignInAnonymously() - ID token obtained successfully (length: ${token.length})")
                                     uiScope {
                                         promise.resolve(null)
@@ -524,7 +521,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     .create(com.flowfoundation.wallet.network.ApiService::class.java)
                                 val userInfoResponse = service.userInfo()
                                 val walletListResponse = service.getWalletList()
-                                
+
                                 val userInfo = userInfoResponse.data
                                 val walletListData = walletListResponse.data
                                     ?: throw IllegalStateException("No wallet data found")
@@ -566,7 +563,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 // Setup AccountManager and WalletManager
                                 // Use userInfoWithOriginalUsername to preserve proper capitalization
                                 val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
-                                
+
                                 // Add EOA address to evmAddressMap before fetching COA
                                 // EVMWalletManager.updateEVMAddress() will merge with this, preserving both addresses
                                 if (eoaAddress != null) {
@@ -580,30 +577,30 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         e.printStackTrace()
                                     }
                                 }
-                                
+
                                 // Initialize EVMWalletManager to fetch and add COA address
                                 // EVMWalletManager now preserves existing entries (like EOA) when adding COA
                                 com.flowfoundation.wallet.manager.evm.EVMWalletManager.updateEVMAddress()
-                                
+
                                 // Wait for COA fetch to complete, then re-initialize emoji manager
                                 kotlinx.coroutines.delay(1000)
-                                
+
                                 // Verify and log final state
                                 if (eoaAddress != null) {
                                     try {
                                         val finalEvmMap = AccountManager.evmAddressData()?.evmAddressMap
                                         logd(TAG, "saveMnemonic() - Final evmAddressMap: $finalEvmMap")
-                                        logd(TAG, "saveMnemonic() - Contains EOA: ${finalEvmMap?.containsKey("")}, Contains COA: ${finalEvmMap?.size ?: 0 > 1}")
-                                        
+                                        logd(TAG, "saveMnemonic() - Contains EOA: ${finalEvmMap?.containsKey("")}, Contains COA: ${(finalEvmMap?.size ?: 0) > 1}")
+
                                         // Re-initialize AccountEmojiManager to generate walletEmojiList with all addresses
                                         com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
                                         logd(TAG, "saveMnemonic() - AccountEmojiManager initialized with ${finalEvmMap?.size ?: 0} addresses")
-                                        
+
                                         // Trigger wallet data update to refresh UI (e.g., drawer sidebar)
                                         // This ensures the sidebar shows all addresses including EOA immediately
                                         AccountManager.updateWalletInfo(walletListData)
                                         logd(TAG, "saveMnemonic() - Triggered UI refresh via updateWalletInfo")
-                                        
+
                                         // Close the drawer to show the updated account in the main view
                                         com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
                                         logd(TAG, "saveMnemonic() - Closed drawer to show updated account")
@@ -621,34 +618,34 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 trackAccountCreation(cryptoProvider)
 
                                 logd(TAG, "saveMnemonic() - EOA account initialization complete!")
-                                
+
                                 // Wait for wallet info to be populated with Flow address
                                 // This ensures the account is ready for COA creation
                                 logd(TAG, "saveMnemonic() - Waiting for wallet info to be populated...")
                                 var waitRetries = 0
                                 val maxWaitRetries = 30 // 15 seconds max
                                 val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
-                                
+
                                 while (waitRetries < maxWaitRetries) {
                                     val currentAccount = AccountManager.get()
                                     val flowAddress = currentAccount?.getFlowAddress(currentNetwork, TAG)
-                                    
+
                                     if (!flowAddress.isNullOrBlank()) {
                                         logd(TAG, "saveMnemonic() - Flow address populated: $flowAddress")
                                         break
                                     }
-                                    
+
                                     logd(TAG, "saveMnemonic() - Waiting for Flow address... (attempt ${waitRetries + 1}/$maxWaitRetries)")
                                     kotlinx.coroutines.delay(500)
                                     waitRetries++
-                                    
+
                                     // Try to update wallet info from WalletFetcher
                                     if (waitRetries % 5 == 0) {
                                         logd(TAG, "saveMnemonic() - Triggering WalletFetcher to refresh wallet data")
                                         com.flowfoundation.wallet.manager.account.WalletFetcher.fetch()
                                     }
                                 }
-                                
+
                                 val finalAccount = AccountManager.get()
                                 val finalFlowAddress = finalAccount?.getFlowAddress(currentNetwork, TAG)
                                 if (finalFlowAddress.isNullOrBlank()) {
@@ -656,7 +653,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 } else {
                                     logd(TAG, "saveMnemonic() - Account ready with Flow address: $finalFlowAddress")
                                 }
-                                
+
                                 // Step 12: Close React Native view (handled by caller)
                                 // Step 13: Notification permission (handled by caller)
 
@@ -722,10 +719,10 @@ private fun authenticateWithFirebase(
         onFailure: (String) -> Unit
     ) {
         logd(TAG, "authenticateWithFirebase() - Checking current Firebase auth state...")
-        
+
         val currentUser = Firebase.auth.currentUser
         val isAnonymous = currentUser?.isAnonymous ?: true
-        
+
         // If already authenticated with non-anonymous user, skip authentication
         // This happens when signInWithCustomToken() was called before saveMnemonic()
         if (currentUser != null && !isAnonymous) {
@@ -733,16 +730,14 @@ private fun authenticateWithFirebase(
             onSuccess()
             return
         }
-        
+
         logd(TAG, "authenticateWithFirebase() - Starting Firebase authentication...")
 
         // Delete existing Firebase token and user (only if anonymous or no user)
                 com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-        if (currentUser != null) {
-            currentUser.delete()?.addOnCompleteListener {
-                logd(TAG, "authenticateWithFirebase() - Previous Firebase user deleted")
-            }
-                }
+  currentUser?.delete()?.addOnCompleteListener {
+    logd(TAG, "authenticateWithFirebase() - Previous Firebase user deleted")
+  }
 
                 // Sign in with custom token
         com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
@@ -776,20 +771,16 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
 
         // Validate public key can be extracted (using ECDSA_secp256k1 as that's what we registered with)
         val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
-                                if (publicKeyBytes == null) {
-                                    throw IllegalStateException("Failed to get public key from seed phrase key")
-                                }
+          ?: throw IllegalStateException("Failed to get public key from seed phrase key")
 
-        logd(TAG, "initializeWalletKit() - Public key validated successfully")
+  logd(TAG, "initializeWalletKit() - Public key validated successfully")
 
         // Derive private key bytes from SeedPhraseKey and store as PrivateKey for CryptoProviderManager
         // CryptoProviderManager expects a PrivateKey stored with ID "prefix_key_${prefix}"
         val privateKeyBytes = seedPhraseKey.privateKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
-        if (privateKeyBytes == null) {
-            throw IllegalStateException("Failed to get private key from seed phrase key")
-        }
+          ?: throw IllegalStateException("Failed to get private key from seed phrase key")
 
-        logd(TAG, "initializeWalletKit() - Derived private key bytes, creating PrivateKey...")
+  logd(TAG, "initializeWalletKit() - Derived private key bytes, creating PrivateKey...")
 
         // Create PrivateKey from the derived bytes
         val privateKey = com.flow.wallet.keys.PrivateKey.create(storage)
@@ -848,12 +839,12 @@ private suspend fun discoverAccountFast(
                 }
             }
         }
-        
+
         // If no addresses were found in walletListData, log that wallet will discover automatically
         val hasAddresses = walletListData.wallets?.any { walletData ->
             walletData.blockchain?.any { blockchain -> blockchain.address.isNotBlank() } == true
         } == true
-        
+
         if (!hasAddresses) {
             logd(TAG, "discoverAccountFast() - No addresses in walletListData yet (transaction may not be finalized). Wallet will discover accounts automatically.")
         }
