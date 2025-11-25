@@ -4,6 +4,11 @@ import android.content.Intent
 import android.widget.Toast
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
+import com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity
+import com.flowfoundation.wallet.page.backup.WalletBackupActivity
+import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
+import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
+import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
 import com.flowfoundation.wallet.reactnative.bridge.NativeScreen
@@ -145,13 +150,13 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
             when (screen) {
                 NativeScreen.MULTI_BACKUP -> {
                     // First launch WalletBackupActivity (parent) so back navigation works correctly
-                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+                    WalletBackupActivity.launch(currentActivity, fromRegistration = true)
 
                     // Then immediately launch MultiBackupActivity (Cloud backup: Google Drive, Passkey, Recovery Phrase)
                     // When user presses back, they will return to WalletBackupActivity
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         reactContext.currentActivity?.let { activity ->
-                            com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity.launch(activity)
+                            MultiBackupActivity.launch(activity)
                             logd(TAG, "launchNativeScreen() - launched MultiBackupActivity")
                         }
                     }, 300) // Small delay to ensure WalletBackupActivity is created first
@@ -159,13 +164,13 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 NativeScreen.DEVICE_BACKUP -> {
                     // First launch WalletBackupActivity (parent) so back navigation works correctly
-                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+                    WalletBackupActivity.launch(currentActivity, fromRegistration = true)
 
                     // Then immediately launch CreateDeviceBackupActivity (QR code sync between devices)
                     // When user presses back, they will return to WalletBackupActivity
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         reactContext.currentActivity?.let { activity ->
-                            com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity.launch(activity)
+                            CreateDeviceBackupActivity.launch(activity)
                             logd(TAG, "launchNativeScreen() - launched CreateDeviceBackupActivity")
                         }
                     }, 300) // Small delay to ensure WalletBackupActivity is created first
@@ -173,13 +178,13 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 NativeScreen.SEED_PHRASE_BACKUP -> {
                     // First launch WalletBackupActivity (parent) so back navigation works correctly
-                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+                    WalletBackupActivity.launch(currentActivity, fromRegistration = true)
 
                     // Then immediately launch BackupRecoveryPhraseActivity (View/create recovery phrase)
                     // When user presses back, they will return to WalletBackupActivity
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                         reactContext.currentActivity?.let { activity ->
-                            val intent = com.flowfoundation.wallet.page.backup.BackupRecoveryPhraseActivity.createIntent(activity)
+                            val intent = BackupRecoveryPhraseActivity.createIntent(activity)
                             activity.startActivity(intent)
                             logd(TAG, "launchNativeScreen() - launched BackupRecoveryPhraseActivity")
                         }
@@ -188,7 +193,7 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 NativeScreen.BACKUP_OPTIONS -> {
                     // Launch WalletBackupActivity (Native backup options screen)
-                    com.flowfoundation.wallet.page.backup.WalletBackupActivity.launch(currentActivity, fromRegistration = true)
+                    WalletBackupActivity.launch(currentActivity, fromRegistration = true)
                     logd(TAG, "launchNativeScreen() - launched WalletBackupActivity")
                 }
 
@@ -198,7 +203,7 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                     // - Import from Device
                     // - Import from Backup
                     // - Import from Raw Key
-                    val intent = Intent(currentActivity, com.flowfoundation.wallet.page.restore.WalletRestoreActivity::class.java)
+                    val intent = Intent(currentActivity, WalletRestoreActivity::class.java)
                     // Pass flag to indicate this was launched from RN GetStartedScreen
                     // so back button can navigate back to GetStartedScreen
                     intent.putExtra("launchedFromRN", true)

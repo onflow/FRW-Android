@@ -20,6 +20,7 @@ import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logToInstabug
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
 import java.util.Locale
 
@@ -175,16 +176,16 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
     }
 
     fun checkNotificationPermission(promise: Promise) {
-        android.util.Log.d(TAG, "checkNotificationPermission() called")
+        logd(TAG, "checkNotificationPermission() called")
         try {
             val isGranted = com.flowfoundation.wallet.utils.isNotificationPermissionGrand(reactContext)
-            android.util.Log.d(TAG, "checkNotificationPermission() - isGranted: $isGranted")
+            logd(TAG, "checkNotificationPermission() - isGranted: $isGranted")
 
             uiScope {
                 promise.resolve(isGranted)
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "checkNotificationPermission() - error: ${e.message}")
+            loge(TAG, "checkNotificationPermission() - error: ${e.message}")
             e.printStackTrace()
             uiScope {
                 promise.reject("PERMISSION_ERROR", "Failed to check notification permission: ${e.message}", e)
@@ -208,12 +209,12 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
     }
 
     fun setScreenSecurityLevel(level: String) {
-        android.util.Log.d(TAG, "setScreenSecurityLevel() called with level: $level")
+        logd(TAG, "setScreenSecurityLevel() called with level: $level")
         try {
             val currentActivity = reactContext.currentActivity
 
             if (currentActivity == null) {
-                android.util.Log.w(TAG, "setScreenSecurityLevel() - no current activity")
+                logw(TAG, "setScreenSecurityLevel() - no current activity")
                 return
             }
 
@@ -221,7 +222,7 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
                 when (level) {
                     "secure" -> {
                         // Prevent screenshots and screen recording
-                        android.util.Log.d(TAG, "setScreenSecurityLevel() - enabling secure mode")
+                        logd(TAG, "setScreenSecurityLevel() - enabling secure mode")
                         currentActivity.window.setFlags(
                             android.view.WindowManager.LayoutParams.FLAG_SECURE,
                             android.view.WindowManager.LayoutParams.FLAG_SECURE
@@ -229,18 +230,18 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
                     }
                     "normal" -> {
                         // Allow screenshots and screen recording
-                        android.util.Log.d(TAG, "setScreenSecurityLevel() - disabling secure mode")
+                        logd(TAG, "setScreenSecurityLevel() - disabling secure mode")
                         currentActivity.window.clearFlags(
                             android.view.WindowManager.LayoutParams.FLAG_SECURE
                         )
                     }
                     else -> {
-                        android.util.Log.w(TAG, "setScreenSecurityLevel() - unknown level: $level")
+                        logw(TAG, "setScreenSecurityLevel() - unknown level: $level")
                     }
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "setScreenSecurityLevel() - error: ${e.message}")
+            loge(TAG, "setScreenSecurityLevel() - error: ${e.message}")
             e.printStackTrace()
         }
     }
