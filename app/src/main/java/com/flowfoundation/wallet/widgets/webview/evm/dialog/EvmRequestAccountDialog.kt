@@ -16,6 +16,8 @@ import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.widgets.webview.evm.fragment.EvmSelectAccountFragment
 import com.flowfoundation.wallet.widgets.webview.evm.model.EVMDialogModel
 import com.flowfoundation.wallet.widgets.webview.evm.viewmodel.EVMDialogViewModel
+import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.evm.DAppEVMAccountType
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 import kotlin.coroutines.Continuation
@@ -59,6 +61,24 @@ class EvmRequestAccountDialog : BottomSheetDialogFragment() {
         data?.let {
             logd(TAG, "Setting dialog data: ${it.title}, URL: ${it.url}")
             viewModel.setDialogData(it)
+            
+            // Check if URL is COA domain and force COA account selection
+            it.url?.let { url ->
+                if (AppConfig.isCOADomain(url)) {
+                    logd(TAG, "URL is COA domain, forcing COA account selection")
+                    // Find and set COA account if available
+                    DAppEVMConnectionManager.availableAccounts.value.find { account ->
+                        account.type == DAppEVMAccountType.COA
+                    }?.let { coaAccount ->
+                        logd(TAG, "Setting COA account: ${coaAccount.address}")
+                        DAppEVMConnectionManager.setSelectedAccount(coaAccount)
+                    } ?: run {
+                        logd(TAG, "No COA account found for COA domain")
+                    }
+                } else {
+                    logd(TAG, "URL is not COA domain, using default account selection")
+                }
+            }
         }
 
         // Ensure the Manager is loaded with the latest accounts

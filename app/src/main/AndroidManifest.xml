@@ -297,6 +297,10 @@
             android:screenOrientation="portrait"/>
 
         <activity
+            android:name=".page.account.AccountListActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name=".page.landing.LandingActivity"
             android:screenOrientation="portrait"/>
 

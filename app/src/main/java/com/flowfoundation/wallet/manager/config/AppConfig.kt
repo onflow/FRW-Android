@@ -7,12 +7,16 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
+import com.flowfoundation.wallet.page.explore.model.DAppModel
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
 import com.flowfoundation.wallet.utils.isTesting
+import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
+import com.google.firebase.remoteconfig.get
+import com.google.gson.reflect.TypeToken
 
 suspend fun isGasFree() = AppConfig.isFreeGas() && isFreeGasPreferenceEnable()
 
@@ -20,6 +24,8 @@ object AppConfig {
 
     private var config: Config? = null
     private var flowAddressRegistry: FlowAddressRegistry? = null
+
+    private var coaDomains: List<String> = emptyList()
 
     fun isFreeGas() = config().getFeatures().freeGas
 
@@ -54,6 +60,7 @@ object AppConfig {
         ioScope {
             reloadConfig()
             reloadNotification()
+            reloadCOADomains()
             reloadFlowAddressRegistry()
         }
     }
@@ -90,6 +97,14 @@ object AppConfig {
         return config!!
     }
 
+    private fun reloadCOADomains(): List<String> {
+        val text = Firebase.remoteConfig.getString("coa_domains")
+        safeRun {
+          coaDomains = Gson().fromJson(text, object : TypeToken<List<String>>() {}.type)
+        }
+        return coaDomains
+    }
+
     private fun reloadFlowAddressRegistry(): FlowAddressRegistry {
         val text = Firebase.remoteConfig.getString("contract_address")
         safeRun {
@@ -101,6 +116,12 @@ object AppConfig {
     private fun config() = config ?: reloadConfig()
 
     private fun flowAddressRegistry() = flowAddressRegistry ?: reloadFlowAddressRegistry()
+
+    fun isCOADomain(url: String): Boolean {
+        return coaDomains.any { coaDomain ->
+            url.contains(coaDomain, ignoreCase = true)
+        }
+    }
 }
 
 private data class Config(

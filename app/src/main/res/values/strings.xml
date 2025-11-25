@@ -560,6 +560,7 @@
     <string name="evm_on_flow">EVM on Flow</string>
     <string name="flow_evm">FlowEVM</string>
     <string name="label_evm">EVM</string>
+    <string name="label_flow">FLOW</string>
     <string name="label_eoa">EOA</string>
     <string name="move">Move</string>
     <string name="current_vm">Current Network</string>
@@ -788,4 +789,7 @@
     <string name="my_own_address">My Own Address</string>
     <string name="custom_address">Custom Address</string>
     <string name="enter_custom_address">Enter custom address</string>
+    <string name="add_evm_account">Add an %1$s account on Flow</string>
+    <string name="active_account">Active account</string>
+    <string name="add_account">Add account</string>
 </resources>

@@ -198,6 +198,22 @@ object EVMWalletManager {
         }
     }
 
+    fun getEVMAddressByAddress(address: String): String? {
+        val evmAddress = evmAddressMap[address]
+        return if (evmAddress.isNullOrBlank() || evmAddress == "0x") {
+            ErrorReporter.reportWithMixpanel(EVMError.QUERY_EVM_ADDRESS_FAILED, getCurrentCodeLocation())
+            return null
+        } else {
+            val checksumAddress = toChecksumEVMAddress(evmAddress)
+            // Validate the address format - if it's corrupted, try to refresh it
+            if (!isValidEVMAddress(checksumAddress)) {
+              logd(TAG, "Detected corrupted EVM address: $checksumAddress, attempting to refresh")
+              return null
+            }
+            checksumAddress
+        }
+    }
+
     fun isValidEVMAddress(address: String): Boolean {
         // Check if address matches valid EVM address pattern and doesn't have suspicious patterns
         if (!address.matches(Regex("^0x[a-fA-F0-9]{40}$"))) {

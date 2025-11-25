@@ -15,7 +15,7 @@ import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.backup.WalletBackupActivity
-import com.flowfoundation.wallet.page.dialog.accounts.AccountSwitchDialog
+import com.flowfoundation.wallet.page.dialog.profile.ProfileSwitchDialog
 import com.flowfoundation.wallet.page.inbox.InboxActivity
 import com.flowfoundation.wallet.page.main.HomeTab
 import com.flowfoundation.wallet.page.main.MainActivityViewModel
@@ -28,7 +28,7 @@ import com.flowfoundation.wallet.page.profile.subpage.currency.CurrencyListActiv
 import com.flowfoundation.wallet.page.profile.subpage.currency.model.findCurrencyFromFlag
 import com.flowfoundation.wallet.page.profile.subpage.developer.DeveloperModeActivity
 import com.flowfoundation.wallet.page.profile.subpage.theme.ThemeSettingActivity
-import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletListActivity
+import com.flowfoundation.wallet.page.account.AccountListActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.account.ChildAccountsActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.device.DevicesActivity
 import com.flowfoundation.wallet.page.profile.subpage.walletconnect.session.WalletConnectSessionActivity
@@ -61,7 +61,7 @@ class ProfileFragmentPresenter(
         }
         binding.userInfo.nicknameView.setOnClickListener {
             logd("ProfileFragmentPresenter", "nicknameView clicked")
-            AccountSwitchDialog.show(fragment.childFragmentManager)
+            ProfileSwitchDialog.show(fragment.childFragmentManager)
         }
         binding.notLoggedIn.root.setOnClickListener {
             ViewModelProvider(fragment.requireActivity())[MainActivityViewModel::class.java].changeTab(
@@ -69,7 +69,7 @@ class ProfileFragmentPresenter(
             )
         }
         binding.actionGroup.addressButton.setOnClickListener { AddressBookActivity.launch(context) }
-        binding.actionGroup.walletButton.setOnClickListener { WalletListActivity.launch(context) }
+        binding.actionGroup.walletButton.setOnClickListener { AccountListActivity.launch(context) }
         binding.actionGroup.inboxButton.setOnClickListener { InboxActivity.launch(context) }
 
         binding.group0.backupPreference.setOnClickListener { WalletBackupActivity.launch(context) }
@@ -107,7 +107,7 @@ class ProfileFragmentPresenter(
         binding.group3.aboutPreference.setOnClickListener { AboutActivity.launch(context) }
         binding.group4.switchAccountPreference.setOnClickListener {
             logd("ProfileFragmentPresenter", "switchAccountPreference clicked")
-            AccountSwitchDialog.show(fragment.childFragmentManager)
+            ProfileSwitchDialog.show(fragment.childFragmentManager)
         }
 
         updatePreferenceState()
@@ -127,7 +127,6 @@ class ProfileFragmentPresenter(
         this.userInfo = userInfo
         with(binding.userInfo) {
             if (isAvatarChange) avatarView.loadAvatar(userInfo.avatar)
-            useridView.text = userInfo.username
             nicknameView.text = userInfo.nickname
 
             avatarView.setOnClickListener { ViewAvatarActivity.launch(context, userInfo) }

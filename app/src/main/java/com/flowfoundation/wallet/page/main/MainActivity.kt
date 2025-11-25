@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.page.main.model.MainDrawerLayoutModel
 import com.flowfoundation.wallet.page.main.presenter.DrawerLayoutPresenter
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
 import com.flowfoundation.wallet.BuildConfig
+import com.flowfoundation.wallet.page.main.presenter.setupDrawerLayoutCompose
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
@@ -61,10 +62,11 @@ class MainActivity : BaseActivity() {
             windowInsets
         }
         contentPresenter = MainContentPresenter(this, binding)
-        drawerLayoutPresenter = DrawerLayoutPresenter(binding.drawerLayout, binding.drawerLayoutContent)
+        setupDrawerLayoutCompose(binding.drawerLayout)
+        binding.drawerLayout.close()
         viewModel = ViewModelProvider(this)[MainActivityViewModel::class.java].apply {
             changeTabLiveData.observe(this@MainActivity) { contentPresenter.bind(MainContentModel(onChangeTab = it)) }
-            openDrawerLayoutLiveData.observe(this@MainActivity) { drawerLayoutPresenter.bind(MainDrawerLayoutModel(openDrawer = it)) }
+            openDrawerLayoutLiveData.observe(this@MainActivity) { binding.drawerLayout.open() }
         }
         uiScope {
             isRegistered = isRegistered()
@@ -72,7 +74,7 @@ class MainActivity : BaseActivity() {
                 firebaseInformationCheck()
             }
             contentPresenter.checkAndShowContent()
-            
+
             // Navigate to target tab if specified
             if (targetTabIndex >= 0) {
                 val targetTab = HomeTab.values().find { it.index == targetTabIndex }
@@ -124,7 +126,6 @@ class MainActivity : BaseActivity() {
                 // If still not registered, don't re-launch onboarding
                 // The existing ReactNativeActivity will handle it
             }
-            drawerLayoutPresenter.bind(MainDrawerLayoutModel(refreshData = true))
         }
     }
 
