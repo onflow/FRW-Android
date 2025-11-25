@@ -347,8 +347,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 logd(TAG, "generateSeedPhrase() - Generated mnemonic with ${mnemonic.split(" ").size} words")
 
                 // Create SeedPhraseKey from mnemonic to derive account key
-                val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
-                val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
+                // IMPORTANT: Use in-memory storage only - mnemonic is NOT confirmed yet
+                // It will be saved to disk later when saveMnemonic() is called after user confirmation
+                val inMemoryStorage = com.flow.wallet.storage.InMemoryStorage()
 
                 // Use Flow derivation path: m/44'/539'/0'/0/0
                 val derivationPath = "m/44'/539'/0'/0/0"
@@ -358,7 +359,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     passphrase = "",
                     derivationPath = derivationPath,
                     keyPair = null,
-                    storage = storage
+                    storage = inMemoryStorage
                 )
 
                 // Derive public key using ECDSA_secp256k1 (matches EOA flow default)
