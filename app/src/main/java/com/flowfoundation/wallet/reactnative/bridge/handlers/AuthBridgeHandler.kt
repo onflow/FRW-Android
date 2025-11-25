@@ -366,10 +366,19 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
                   ?: throw IllegalStateException("Failed to get public key from seed phrase key")
 
-              // Convert public key bytes to hex string (remove 0x04 prefix if present)
-                val publicKeyHex = publicKeyBytes.toHexString().removePrefix("04")
+                // Convert public key bytes to hex string
+                val publicKeyHexRaw = publicKeyBytes.toHexString()
 
-                logd(TAG, "generateSeedPhrase() - Derived public key: ${publicKeyHex.take(16)}...")
+                // Remove 0x04 prefix if present (uncompressed public key format)
+                // ECDSA secp256k1 uncompressed public keys are 65 bytes (130 hex chars) with 0x04 prefix
+                // Only remove prefix if the key has the expected length and starts with "04"
+                val publicKeyHex = if (publicKeyHexRaw.length == 130 && publicKeyHexRaw.startsWith("04")) {
+                    publicKeyHexRaw.removePrefix("04")
+                } else {
+                    publicKeyHexRaw
+                }
+
+                logd(TAG, "generateSeedPhrase() - Derived public key (raw length: ${publicKeyHexRaw.length}, final length: ${publicKeyHex.length}): ${publicKeyHex.take(16)}...")
 
                 // Create AccountKey response
                 // ECDSA_secp256k1 = sign_algo 2, SHA2_256 = hash_algo 1 (matches extension defaults)
