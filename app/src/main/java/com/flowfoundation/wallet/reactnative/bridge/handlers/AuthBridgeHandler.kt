@@ -122,8 +122,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun linkCOAAccountOnChain(promise: Promise) {
-        logd(TAG, "linkCOAAccountOnChain() called - Linking COA account on-chain for Recovery Phrase flow")
+    fun registerAccountWithBackend(promise: Promise) {
+        logd(TAG, "registerAccountWithBackend() called - Linking COA account on-chain for Recovery Phrase flow")
         ioScope {
             try {
                 // Ensure WalletManager is initialized and wallet is ready
@@ -138,13 +138,13 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     val selectedAddress = WalletManager.selectedWalletAddress()
 
                     if (wallet != null || selectedAddress.isNotBlank()) {
-                        logd(TAG, "linkCOAAccountOnChain() - Wallet is ready (attempt ${retries + 1})")
+                        logd(TAG, "registerAccountWithBackend() - Wallet is ready (attempt ${retries + 1})")
                         break
                     }
 
                     retries++
                     if (retries < maxRetries) {
-                        logd(TAG, "linkCOAAccountOnChain() - Wallet not ready yet, waiting... (attempt $retries/$maxRetries)")
+                        logd(TAG, "registerAccountWithBackend() - Wallet not ready yet, waiting... (attempt $retries/$maxRetries)")
                         kotlinx.coroutines.delay(retryDelayMs)
                     }
                 }
@@ -154,15 +154,15 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val finalAddress = WalletManager.selectedWalletAddress()
 
                 if (finalWallet == null && finalAddress.isBlank()) {
-                    loge(TAG, "linkCOAAccountOnChain() - Wallet not ready after $maxRetries attempts")
+                    loge(TAG, "registerAccountWithBackend() - Wallet not ready after $maxRetries attempts")
                     uiScope {
                         promise.reject("COA_CREATION_ERROR", "Wallet not ready: cannot link COA account on-chain. Wallet: ${false}, Address: ${finalAddress.isNullOrBlank()}")
                     }
                     return@ioScope
                 }
 
-                logd(TAG, "linkCOAAccountOnChain() - Wallet ready, linking COA account on-chain...")
-                logd(TAG, "linkCOAAccountOnChain() - Final wallet: ${finalWallet != null}, Final address: $finalAddress")
+                logd(TAG, "registerAccountWithBackend() - Wallet ready, linking COA account on-chain...")
+                logd(TAG, "registerAccountWithBackend() - Final wallet: ${finalWallet != null}, Final address: $finalAddress")
 
                 // Wait for the exact account created by saveMnemonic to have its Flow address populated
                 // After saveMnemonic, the account is set as current via AccountManager
@@ -181,7 +181,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     val currentAccount = AccountManager.get()
 
                     if (currentAccount == null) {
-                        logd(TAG, "linkCOAAccountOnChain() - Current account not available yet (attempt ${accountRetries + 1})")
+                        logd(TAG, "registerAccountWithBackend() - Current account not available yet (attempt ${accountRetries + 1})")
                         accountRetries++
                         if (accountRetries < maxAccountRetries) {
                             kotlinx.coroutines.delay(accountRetryDelayMs)
@@ -212,7 +212,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     val discoveredAddress = flowAccount.address
                                     if (discoveredAddress.isNotBlank()) {
                                         flowAddress = discoveredAddress
-                                        logd(TAG, "linkCOAAccountOnChain() - Found Flow address from wallet SDK discovered accounts: $flowAddress")
+                                        logd(TAG, "registerAccountWithBackend() - Found Flow address from wallet SDK discovered accounts: $flowAddress")
                                     }
                                 }
                             }
@@ -223,13 +223,13 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                         // Found the Flow address for the exact account
                         finalAccount = currentAccount
                         finalAccountAddress = flowAddress
-                        logd(TAG, "linkCOAAccountOnChain() - Found Flow address for current account (attempt ${accountRetries + 1})")
-                        logd(TAG, "linkCOAAccountOnChain() - Account username: ${currentAccount.userInfo.username}, prefix: ${currentAccount.prefix}, address: $flowAddress")
+                        logd(TAG, "registerAccountWithBackend() - Found Flow address for current account (attempt ${accountRetries + 1})")
+                        logd(TAG, "registerAccountWithBackend() - Account username: ${currentAccount.userInfo.username}, prefix: ${currentAccount.prefix}, address: $flowAddress")
                         break
                     } else {
                         // Account exists but Flow address not populated yet - continue waiting
-                        logd(TAG, "linkCOAAccountOnChain() - Current account exists (${currentAccount.userInfo.username}) but Flow address not available yet (attempt ${accountRetries + 1})")
-                        logd(TAG, "linkCOAAccountOnChain() - Waiting for Flow address to be discovered...")
+                        logd(TAG, "registerAccountWithBackend() - Current account exists (${currentAccount.userInfo.username}) but Flow address not available yet (attempt ${accountRetries + 1})")
+                        logd(TAG, "registerAccountWithBackend() - Waiting for Flow address to be discovered...")
                         val wallet = WalletManager.wallet()
                         if (wallet != null) {
                             val chainId = when (currentNetwork.lowercase()) {
@@ -238,9 +238,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 else -> null
                             }
                             val walletAccounts = chainId?.let { wallet.accounts[it] }
-                            logd(TAG, "linkCOAAccountOnChain() - Wallet accounts for $currentNetwork: ${walletAccounts?.size ?: 0}")
+                            logd(TAG, "registerAccountWithBackend() - Wallet accounts for $currentNetwork: ${walletAccounts?.size ?: 0}")
                         } else {
-                            logd(TAG, "linkCOAAccountOnChain() - WalletManager.wallet() is null")
+                            logd(TAG, "registerAccountWithBackend() - WalletManager.wallet() is null")
                         }
                     }
 
@@ -252,13 +252,13 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 if (finalAccount == null || finalAccountAddress == null) {
                     val currentAccount = AccountManager.get()
-                    loge(TAG, "linkCOAAccountOnChain() - Flow address not found for current account after $maxAccountRetries attempts")
+                    loge(TAG, "registerAccountWithBackend() - Flow address not found for current account after $maxAccountRetries attempts")
                     if (currentAccount != null) {
                         val flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
-                        loge(TAG, "linkCOAAccountOnChain() - Current account: username=${currentAccount.userInfo.username}, prefix=${currentAccount.prefix}, address=$flowAddress")
-                        loge(TAG, "linkCOAAccountOnChain() - Account.wallet is null: ${currentAccount.wallet == null}")
+                        loge(TAG, "registerAccountWithBackend() - Current account: username=${currentAccount.userInfo.username}, prefix=${currentAccount.prefix}, address=$flowAddress")
+                        loge(TAG, "registerAccountWithBackend() - Account.wallet is null: ${currentAccount.wallet == null}")
                     } else {
-                        loge(TAG, "linkCOAAccountOnChain() - Current account is null")
+                        loge(TAG, "registerAccountWithBackend() - Current account is null")
                     }
                     uiScope {
                         promise.reject("COA_CREATION_ERROR", "Account Flow address not available: cannot link COA account on-chain. Current account Flow address not populated.")
@@ -266,19 +266,19 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     return@ioScope
                 }
 
-                logd(TAG, "linkCOAAccountOnChain() - Account verified with Flow address: $finalAccountAddress, proceeding with COA link transaction...")
+                logd(TAG, "registerAccountWithBackend() - Account verified with Flow address: $finalAccountAddress, proceeding with COA link transaction...")
 
                 // Check if COA account already exists before creating one
                 // This prevents errors if COA account was already created (e.g., in Secure Enclave flow)
                 val coaAlreadyExists = try {
                     com.flowfoundation.wallet.manager.flowjvm.cadenceCheckCOALink(finalAccountAddress)
                 } catch (e: Exception) {
-                    logw(TAG, "linkCOAAccountOnChain() - Could not check COA link status: ${e.message}")
+                    logw(TAG, "registerAccountWithBackend() - Could not check COA link status: ${e.message}")
                     null // If check fails, proceed with link attempt
                 }
 
                 if (coaAlreadyExists == true) {
-                    logd(TAG, "linkCOAAccountOnChain() - COA account already linked for address $finalAccountAddress, skipping")
+                    logd(TAG, "registerAccountWithBackend() - COA account already linked for address $finalAccountAddress, skipping")
                     uiScope {
                         // Return a success response indicating COA already exists
                         // This allows the flow to continue without error
@@ -294,33 +294,33 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     // Check if error is due to COA already existing
                     val errorMessage = e.message?.lowercase() ?: ""
                     if (errorMessage.contains("already") || errorMessage.contains("exists") || errorMessage.contains("duplicate")) {
-                        logd(TAG, "linkCOAAccountOnChain() - COA account already linked (detected from error), skipping")
+                        logd(TAG, "registerAccountWithBackend() - COA account already linked (detected from error), skipping")
                         uiScope {
                             promise.resolve("COA_ALREADY_EXISTS")
                         }
                         return@ioScope
                     }
-                    loge(TAG, "linkCOAAccountOnChain() - Exception calling cadenceCreateCOAAccount: ${e.message}")
+                    loge(TAG, "registerAccountWithBackend() - Exception calling cadenceCreateCOAAccount: ${e.message}")
                     e.printStackTrace()
                     null
                 }
 
                 if (txId.isNullOrBlank()) {
-                    loge(TAG, "linkCOAAccountOnChain() - Transaction ID is null or empty")
-                    loge(TAG, "linkCOAAccountOnChain() - Wallet state: wallet=${finalWallet != null}, address=$finalAddress")
+                    loge(TAG, "registerAccountWithBackend() - Transaction ID is null or empty")
+                    loge(TAG, "registerAccountWithBackend() - Wallet state: wallet=${finalWallet != null}, address=$finalAddress")
                     uiScope {
                         promise.reject("COA_CREATION_ERROR", "Failed to link COA account on-chain: transaction ID is null. Wallet: ${finalWallet != null}, Address: ${finalAddress.isBlank()}")
                     }
                     return@ioScope
                 }
 
-                logd(TAG, "linkCOAAccountOnChain() - COA link transaction submitted: $txId")
+                logd(TAG, "registerAccountWithBackend() - COA link transaction submitted: $txId")
 
                 uiScope {
                     promise.resolve(txId)
                 }
             } catch (e: Exception) {
-                loge(TAG, "linkCOAAccountOnChain() - error: ${e.message}")
+                loge(TAG, "registerAccountWithBackend() - error: ${e.message}")
                 e.printStackTrace()
                 uiScope {
                     promise.reject("COA_CREATION_ERROR", "Failed to link COA account on-chain: ${e.message}", e)
