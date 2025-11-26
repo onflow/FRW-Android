@@ -115,9 +115,8 @@ class ReactNativeActivity : ReactActivity() {
                     } ?: RNBridge.InitialRoute.SELECT_TOKENS.routeName
                 }
                 RNBridge.ScreenType.TOKEN_DETAIL -> RNBridge.InitialRoute.HOME.routeName
-                RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.GET_STARTED.routeName
+                RNBridge.ScreenType.ONBOARDING -> RNBridge.InitialRoute.PROFILE_TYPE_SELECTION.routeName
                 RNBridge.ScreenType.RECEIVE -> "Receive"
-                RNBridge.ScreenType.ONBOARDING -> "Onboarding"
             }
         }
 
