@@ -52,6 +52,8 @@ import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.page.wallet.view.ProfileItemSection
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.getActivityFromContext
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
@@ -190,11 +192,11 @@ private fun ProfileSwitchContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        logd("ProfileSwitchDialog", "Create new profile clicked")
+                        logd("ProfileSwitchDialog", "Create new profile clicked - launching RN onboarding")
                         if (isTestnet()) {
                             SwitchNetworkDialog(context, DialogType.CREATE).show()
                         } else {
-                            WalletCreateActivity.launch(context, step = WALLET_CREATE_STEP_USERNAME)
+                            ReactNativeActivity.launch(context, RNBridge.ScreenType.ONBOARDING)
                             onDismiss()
                         }
                     }

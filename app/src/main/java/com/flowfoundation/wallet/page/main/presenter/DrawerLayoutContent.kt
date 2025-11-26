@@ -74,6 +74,8 @@ import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.wallet.view.LinkedAccountSection
 import com.flowfoundation.wallet.page.wallet.view.WalletAccountSection
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.clearCacheDir
@@ -192,8 +194,8 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
             modifier = Modifier.fillMaxWidth()
         )
         BottomSection(
-            onImportWalletClick = {
-                WalletRestoreActivity.launch(activity)
+            onAddAccountClick = {
+                ReactNativeActivity.launch(activity, RNBridge.ScreenType.ONBOARDING)
             }
         )
     }
@@ -673,13 +675,13 @@ fun AccountListSection(
 
 @Composable
 fun BottomSection(
-    onImportWalletClick: () -> Unit
+    onAddAccountClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 16.dp)
-            .clickable(onClick = onImportWalletClick),
+            .clickable(onClick = onAddAccountClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier
