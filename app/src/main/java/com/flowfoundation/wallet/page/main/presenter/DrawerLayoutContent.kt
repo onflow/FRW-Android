@@ -55,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.doNetworkChangeTask
+import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
@@ -74,8 +75,8 @@ import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.wallet.view.LinkedAccountSection
 import com.flowfoundation.wallet.page.wallet.view.WalletAccountSection
-import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.reactnative.bridge.RNBridge
+import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
+import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.clearCacheDir
@@ -89,7 +90,9 @@ import com.flowfoundation.wallet.utils.textToClipboard
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.FlowLoadingDialog
+import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
 import kotlinx.coroutines.delay
 
 @Composable
@@ -194,8 +197,15 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
             modifier = Modifier.fillMaxWidth()
         )
         BottomSection(
-            onAddAccountClick = {
-                ReactNativeActivity.launch(activity, RNBridge.ScreenType.ONBOARDING)
+            onImportWalletClick = {
+                WalletRestoreActivity.launch(activity)
+            },
+            onAddProfileClick = {
+                if (isTestnet()) {
+                    SwitchNetworkDialog(context, DialogType.CREATE).show()
+                } else {
+                    WalletCreateActivity.launch(context, step = WALLET_CREATE_STEP_USERNAME)
+                }
             }
         )
     }
@@ -675,13 +685,13 @@ fun AccountListSection(
 
 @Composable
 fun BottomSection(
-    onAddAccountClick: () -> Unit
+    onImportWalletClick: () -> Unit,
+    onAddProfileClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp)
-            .clickable(onClick = onAddAccountClick),
+            .padding(top = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier
@@ -689,7 +699,8 @@ fun BottomSection(
             .background(
                 color = colorResource(id = R.color.bg_card),
                 shape = CircleShape
-            ),
+            )
+            .clickable(onClick = onAddProfileClick),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -700,10 +711,11 @@ fun BottomSection(
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = stringResource(id = R.string.add_account),
+            text = stringResource(id = R.string.recover_profile),
             color = colorResource(id = R.color.text_2),
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.clickable(onClick = onImportWalletClick)
         )
     }
 }

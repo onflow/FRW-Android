@@ -777,4 +777,5 @@
     <string name="confirm_to_copy_address">确认复制地址</string>
     <string name="confirm_copy_address_tips">您已复制了 Flow 网络上的 EVM 地址，请确保仅将 Flow 网络上的资产发送到此地址，否则将丢失。</string>
     <string name="evm_on_flow_address">Flow 上的 EVM 地址</string>
+    <string name="recover_profile">恢复个人资料</string>
 </resources>

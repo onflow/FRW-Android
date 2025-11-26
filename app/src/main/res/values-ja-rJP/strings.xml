@@ -778,4 +778,5 @@ Secure Enclave は、デバイスのハードウェア レベルのセキュリ�
     <string name="confirm_to_copy_address">アドレスをコピーすることを確認</string>
     <string name="confirm_copy_address_tips">FlowネットワークのEVMアドレスをコピーしました。このアドレスにはFlowネットワークのアセットのみを送信してください。そうでなければ失われます。</string>
     <string name="evm_on_flow_address">Flow上のEVMアドレス</string>
+    <string name="recover_profile">プロファイルを復元</string>
 </resources>

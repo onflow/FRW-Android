@@ -774,4 +774,5 @@
     <string name="device_setting">裝置設定</string>
     <string name="about_setting">關於設定</string>
     <string name="bug_report">錯誤回報</string>
+    <string name="recover_profile">恢復個人檔案</string>
 </resources>

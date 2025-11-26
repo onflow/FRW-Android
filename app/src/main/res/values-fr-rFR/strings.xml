@@ -649,7 +649,7 @@
     <string name="raw_key_restore_private_key_note">Importer avec une clé hexadécimale brute.</string>
     <string name="sign_type_message_from">Signer le type de message de</string>
     <string name="message">Message</string>
-    <string name="current_account">Compte Actuel</string>
+    <string name="current_account">Compte actuel</string>
     <string name="other_accounts">Autres comptes</string>
     <string name="local_account_keys">Clés du compte local</string>
     <string name="reload_config">Recharger la configuration</string>
@@ -775,4 +775,5 @@
     <string name="confirm_to_copy_address">Confirmez pour copier l\'adresse</string>
     <string name="confirm_copy_address_tips">Vous avez copié une adresse EVM sur le réseau Flow, assurez-vous de n\'envoyer que des actifs sur le réseau Flow à cette adresse sinon ils seront perdus.</string>
     <string name="evm_on_flow_address">Adresse EVM sur Flow</string>
+    <string name="recover_profile">Récupérer le profil</string>
 </resources>

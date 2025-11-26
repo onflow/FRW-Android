@@ -778,4 +778,5 @@
     <string name="confirm_to_copy_address">Confirma para copiar la dirección</string>
     <string name="confirm_copy_address_tips">Has copiado una dirección EVM en la red Flow, asegúrate de enviar solo activos en la red Flow a esta dirección o se perderán.</string>
     <string name="evm_on_flow_address">Dirección EVM en Flow</string>
+    <string name="recover_profile">Recuperar perfil</string>
 </resources>
