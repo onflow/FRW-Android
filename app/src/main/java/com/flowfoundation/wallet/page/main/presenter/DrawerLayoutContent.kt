@@ -70,6 +70,7 @@ import com.flowfoundation.wallet.page.evm.EnableEVMActivity
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.main.drawer.DrawerLayoutViewModel
 import com.flowfoundation.wallet.page.main.model.WalletAccountData
+import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.wallet.view.LinkedAccountSection
 import com.flowfoundation.wallet.page.wallet.view.WalletAccountSection
@@ -155,7 +156,11 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
         AccountListSection(
             accounts = accounts,
             balanceMap = balanceMap,
-            onCopyClick = { address ->
+            onCopyClick = onCopyClick@{ address ->
+                if (EVMWalletManager.isEVMWalletAddress(address)) {
+                    CopyCOAAddressDialog(context, address).show()
+                    return@onCopyClick
+                }
                 textToClipboard(address)
                 toast(msgRes = R.string.copy_address_toast)
             },

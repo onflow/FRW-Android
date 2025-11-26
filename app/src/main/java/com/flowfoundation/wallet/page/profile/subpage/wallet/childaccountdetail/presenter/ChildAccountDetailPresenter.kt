@@ -6,6 +6,8 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.ActivityChildAccountDetailBinding
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.ChildAccountDetailActivity
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.CoinData
 import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.CollectionData
@@ -100,6 +102,10 @@ class ChildAccountDetailPresenter(
             descriptionTitleView.setVisible(!account.description.isNullOrEmpty())
 
             addressCopyButton.setOnClickListener {
+                if (EVMWalletManager.isEVMWalletAddress(account.address)) {
+                    CopyCOAAddressDialog(activity, account.address).show()
+                    return@setOnClickListener
+                }
                 textToClipboard(account.address)
                 toast(msgRes = R.string.copy_address_toast)
             }

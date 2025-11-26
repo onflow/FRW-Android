@@ -22,7 +22,8 @@ fun AccountItemSection(
     account: WalletAccountData,
     balanceMap: Map<String, String>,
     onItemSelected: (String) -> Unit,
-    onVisibilityToggle: ((WalletAccountData) -> Unit)? = null
+    onVisibilityToggle: ((WalletAccountData) -> Unit)? = null,
+    hiddenAccounts: Set<String> = emptySet()
 ) {
     Column(
         modifier = Modifier
@@ -41,7 +42,8 @@ fun AccountItemSection(
             onAccountClick = { onItemSelected(account.address) },
             onVisibilityToggle = if (onVisibilityToggle != null) {
                 { onVisibilityToggle(account) }
-            } else null
+            } else null,
+            hiddenAccounts = hiddenAccounts
         )
         account.linkedAccounts.forEach { linkedAccount ->
             LinkedAccountSection(

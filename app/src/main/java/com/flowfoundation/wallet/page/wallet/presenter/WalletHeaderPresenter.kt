@@ -15,12 +15,14 @@ import com.flowfoundation.wallet.base.recyclerview.BaseViewHolder
 import com.flowfoundation.wallet.databinding.LayoutWalletCoordinatorHeaderBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletconnect.WalletConnect
 import com.flowfoundation.wallet.manager.walletconnect.getWalletConnectPendingRequests
 import com.flowfoundation.wallet.page.browser.openBrowser
+import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.notification.model.DisplayType
 import com.flowfoundation.wallet.page.notification.model.Priority
 import com.flowfoundation.wallet.page.notification.model.Type
@@ -128,9 +130,12 @@ class WalletHeaderPresenter(
     }
 
     private fun copyAddress(text: String) {
+        if (EVMWalletManager.isEVMWalletAddress(text)) {
+            CopyCOAAddressDialog(view.context, text).show()
+            return
+        }
         textToClipboard(text)
-        Toast.makeText(view.context, R.string.copy_address_toast.res2String(), Toast.LENGTH_SHORT)
-            .show()
+        toast(R.string.copy_address_toast)
     }
 
     private fun bindPendingRequest() {

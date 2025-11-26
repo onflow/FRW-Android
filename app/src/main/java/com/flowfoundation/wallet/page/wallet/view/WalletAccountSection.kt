@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -43,13 +44,14 @@ fun WalletAccountSection(
     canSelected: Boolean = false,
     onCopyClick: ((String) -> Unit)? = null,
     onAccountClick: (() -> Unit)? = null,
-    onVisibilityToggle: (() -> Unit)? = null
+    onVisibilityToggle: (() -> Unit)? = null,
+    hiddenAccounts: Set<String>? = null
 ) {
     // Check if this is account list scenario (canSelected=false and onCopyClick=null)
     val isAccountListMode = !canSelected && onCopyClick == null
     val userInfo = AccountManager.userInfo()
     val isHidden = if (isAccountListMode && userInfo != null) {
-        AccountVisibilityManager.isCurrentProfileAccountHidden(item.address)
+        hiddenAccounts?.contains(item.address) ?: AccountVisibilityManager.isCurrentProfileAccountHidden(item.address)
     } else {
         false
     }

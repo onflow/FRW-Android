@@ -32,6 +32,9 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
     private val _balanceMap = MutableStateFlow<Map<String, String>>(emptyMap())
     val balanceMap: StateFlow<Map<String, String>> = _balanceMap.asStateFlow()
 
+    private val _hiddenAccounts = MutableStateFlow<Set<String>>(emptySet())
+    val hiddenAccounts: StateFlow<Set<String>> = _hiddenAccounts.asStateFlow()
+
     private val service by lazy { retrofitApi().create(ApiService::class.java) }
 
     // Cache for verified EVM addresses that should be included in linkedAccounts
@@ -136,7 +139,18 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                 addressList.add(address)
             }
 
+            // Note: AccountListViewModel shows all accounts (including hidden ones)
+            // because this is the account management screen where users can see and manage all accounts
             _accounts.value = accounts
+
+            // Update hidden accounts state
+            val userId = firebaseUid()
+            if (userId != null) {
+                val hiddenAccountsSet = addressList.filter { address ->
+                    AccountVisibilityManager.isAccountHidden(userId, address)
+                }.toSet()
+                _hiddenAccounts.value = hiddenAccountsSet
+            }
 
             if (refreshBalance) {
                 fetchAllBalances(addressList, pendingEvmAddresses)
@@ -224,7 +238,7 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
 
     fun toggleAccountVisibility(address: String) {
         val userId = firebaseUid() ?: return
-        AccountVisibilityManager.toggleAccountVisibility(userId, address)
+        AccountVisibilityManager.showAccount(userId, address)
 
         // Refresh the account list to reflect the new visibility state
         refreshWalletList(false)

@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,12 +15,11 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -31,24 +29,28 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
-import com.flowfoundation.wallet.manager.account.AccountVisibilityManager
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.dialog.profile.ProfileSwitchDialog
-import com.flowfoundation.wallet.page.main.model.WalletAccountData
 import com.flowfoundation.wallet.page.wallet.view.AccountItemSection
 import com.flowfoundation.wallet.page.profile.subpage.wallet.WalletSettingActivity
+import com.flowfoundation.wallet.page.profile.subpage.wallet.childaccountdetail.ChildAccountDetailActivity
 import com.flowfoundation.wallet.utils.getActivityFromContext
 import com.flowfoundation.wallet.utils.isNightMode
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
@@ -88,11 +90,26 @@ fun AccountListScreen(
 ) {
     val accounts by viewModel.accounts.collectAsState()
     val balanceMap by viewModel.balanceMap.collectAsState()
+    val hiddenAccounts by viewModel.hiddenAccounts.collectAsState()
     val context = LocalContext.current
     val activity = remember { getActivityFromContext(context) as FragmentActivity }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadData()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -114,7 +131,7 @@ fun AccountListScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = colorResource(id = R.color.icon)
                         )
@@ -153,8 +170,16 @@ fun AccountListScreen(
                     AccountItemSection(
                         account = account,
                         balanceMap = balanceMap,
+                        hiddenAccounts = hiddenAccounts,
                         onItemSelected = { address ->
-                            WalletSettingActivity.launch(activity, address)
+                            if (WalletManager.isChildAccount(address)) {
+                                val childAccount = WalletManager.childAccount(address)
+                                childAccount?.let { model ->
+                                    ChildAccountDetailActivity.launch(activity, model)
+                                }
+                            } else {
+                                WalletSettingActivity.launch(activity, address)
+                            }
                         },
                         onVisibilityToggle = { accountData ->
                             viewModel.toggleAccountVisibility(accountData.address)

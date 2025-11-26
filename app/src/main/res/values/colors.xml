@@ -28,13 +28,17 @@
     <color name="transparent">#00000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="white_8">#14FFFFFF</color>
+    <color name="white_10">#1AFFFFFF</color>
     <color name="white_20">#33FFFFFF</color>
     <color name="white_30">#4DFFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
     <color name="white_80">#CCFFFFFF</color>
 
     <color name="gray_33">#333333</color>
     <color name="gray_55">#555555</color>
     <color name="gray_88">#888888</color>
+    <color name="gray_99">#999999</color>
+    <color name="gray_99_40">#66999999</color>
     <color name="gray_cc">#CCCCCC</color>
     <color name="gray_ef">#efefef</color>
 

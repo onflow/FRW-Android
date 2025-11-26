@@ -41,8 +41,10 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isNightMode
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
+import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
 import com.flowfoundation.wallet.utils.loadAvatar
 import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.setFreeGasPreferenceEnable
 import com.flowfoundation.wallet.utils.uiScope
 
 class ProfileFragmentPresenter(
@@ -109,6 +111,9 @@ class ProfileFragmentPresenter(
             logd("ProfileFragmentPresenter", "switchAccountPreference clicked")
             ProfileSwitchDialog.show(fragment.childFragmentManager)
         }
+
+        // Free gas preference setup
+        setupFreeGasPreference()
 
         updatePreferenceState()
 //        updateClaimDomainState()
@@ -181,6 +186,21 @@ class ProfileFragmentPresenter(
             val count = WalletConnect.get().sessionCount()
             uiScope {
                 binding.group1.walletConnectPreference.setMarkText(if (count == 0) "" else "$count")
+            }
+        }
+    }
+
+    private fun setupFreeGasPreference() {
+        ioScope {
+            val isEnabled = isFreeGasPreferenceEnable()
+            uiScope {
+                binding.groupGas.freeGasPreference.setChecked(isEnabled)
+            }
+        }
+        
+        binding.groupGas.freeGasPreference.setOnCheckedChangeListener { isChecked ->
+            uiScope {
+                setFreeGasPreferenceEnable(isChecked)
             }
         }
     }

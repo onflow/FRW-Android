@@ -237,9 +237,7 @@
     <string name="restore_with_recovery_phrase">Ripristino con frase di recupero</string>
     <string name="not_logged_in_toast">Non hai effettuato l\'accesso al portafoglio</string>
     <string name="free_gas_fee">Tassa sul gas gratuita</string>
-    <string name="free_gas_fee_desc">Consentire a Flow Wallet di pagare la tariffa del gas per tutte le mie transazioni
-        .</string>
-    <string name="file_picker_title">Selezionare il file</string>
+    <string name="free_gas_fee_desc">* Consentire a Flow Wallet di pagare la tariffa del gas pertutte le mie transazioni.</string>
     <string name="transaction_fee">Costo della Transazione</string>
     <string name="hold_to_confirm">Tenere premuto per confermare</string>
     <string name="hold_to_sign">Tieni premuto per firmare</string>
@@ -697,7 +695,6 @@
     <string name="connect_to_dropbox">Connetti a Dropbox</string>
     <string name="connect_dropbox">Collega Dropbox</string>
     <string name="deposit_evm_tip">Assicurati che il tuo deposito sia sulla rete FLOW EVM, se il tuo deposito tramite un\'altra rete potrebbe andare perso.</string>
-    <string name="legal_message">"     <![CDATA[     Utilizzando Flow Wallet accetti i Termini di Servizio <a href="https://wallet.flow.com/terms-of-service"><u></u></a> e <a href="https://wallet.flow.com/privacy-policy"><u>Privacy Policy</u></a>     ]]>     "</string>
     <string name="get_started">Iniziamo</string>
     <string name="on_flow">#onFlow</string>
     <string name="choose_swap_provider">Scegli Provider Di Swap</string>
@@ -722,4 +719,63 @@
     <string name="blocked_tip">Questa app è stata contrassegnata come pericolosa.</string>
     <string name="switch_to">Passa a %1$s</string>
     <string name="deeplink_login_failed">Impossibile aprire, prima si prega di creare un portafoglio.</string>
+    <string name="surge_pricing_title">Sei davvero sicuro di voler continuare con il prezzo di picco?</string>
+    <string name="surge_current_fee">La tua commissione di transazione:</string>
+    <string name="surge_active">Prezzo di picco attivo</string>
+    <string name="surge_description">A causa dell\'alta attività di rete, le commissioni di transazione sono elevate, e Flow Wallet temporaneamente non sta pagando per il tuo gas. Le commissioni di rete attuali sono 4× più alte del solito.</string>
+    <string name="surge_hold_to_confirm">Tieni premuto per accettare il prezzo di picco</string>
+    <string name="selected_account">Account Selezionato</string>
+    <string name="connecting_on">Connessione su %1$s</string>
+    <string name="connecting_account">Connessione Account</string>
+    <string name="requesting_access">%1$s sta richiedendo accesso a:</string>
+    <string name="show_in_account_list">Mostra nella lista account</string>
+    <string name="file_picker_title">Seleziona File</string>
+    <string name="select_account">Seleziona Account</string>
+    <string name="label_flow">FLOW</string>
+    <string name="label_eoa">EOA</string>
+    <string name="telegram_not_installed">L\'app Telegram non è installata</string>
+    <string name="legal_message">"     <![CDATA[     Utilizzando Flow Wallet accetti i <a href="https://wallet.flow.com/terms-of-service"><u>Termini di Servizio</u></a> e la <a href="https://wallet.flow.com/privacy-policy"><u>Politica sulla Privacy</u></a>     ]]>     "</string>
+    <string name="punch_swap" translatable="false">Punch Swap</string>
+    <string name="punch_swap_url" translatable="false">swap.kittypunch.xyz</string>
+    <string name="trado_url" translatable="false">trado.one</string>
+    <string name="trado" translatable="false">Trado</string>
+    <string name="increment_finance" translatable="false">Increment Finance</string>
+    <string name="increment_url" translatable="false">increment.fi</string>
+    <string name="json" translatable="false">JSON</string>
+    <string name="required_asterisk" translatable="false">" *"</string>
+    <string name="cadence_script_version" translatable="false">Cadence Script Version: %1$s</string>
+    <string name="return_to_browser_to_continue">Per favore torna al browser per continuare la tua sessione.</string>
+    <string name="manage_tokens">Gestisci Token</string>
+    <string name="filters">Filtri</string>
+    <string name="hide_dust_token">Nascondi token polvere</string>
+    <string name="display_verified_token">Mostra solo token verificati</string>
+    <string name="tokens">Token</string>
+    <string name="verified">Verificato</string>
+    <string name="contract_address">Indirizzo contratto</string>
+    <string name="no">No</string>
+    <string name="yes">Sì</string>
+    <string name="wallet_connect_no_proposal">Impossibile stabilire la connessione. Per favore riprova.</string>
+    <string name="wallet_connect_pairing_error">Connessione fallita. Per favore riprova.</string>
+    <string name="wallet_connect_generic_error">Si è verificato un errore durante la connessione. Per favore riprova.</string>
+    <string name="wallet_connect_proposal_expired">La richiesta di connessione è scaduta. Per favore riprova.</string>
+    <string name="wallet_connect_request_expired">La richiesta è scaduta. Per favore riprova.</string>
+    <string name="wallet_connect_activity_error">Impossibile mostrare il prompt di connessione. Per favore riprova.</string>
+    <string name="wallet_connect_proposal_error">Elaborazione della richiesta di connessione fallita. Per favore riprova.</string>
+    <string name="wallet_connect_initialization_error">Errore nell\'inizializzazione di Wallet Connect.</string>
+    <string name="wallet_connect_approval_error">Errore nell\'approvazione della sessione Wallet Connect.</string>
+    <string name="verified_tip">Questo è un token non verificato, interagisci solo con token di cui ti fidi.</string>
+    <string name="hide_dust_token_tip">Token con meno di 0,01$ USD di saldo</string>
+    <string name="transfer_success">Transazione Riuscita</string>
+    <string name="transfer_failed">Transazione Fallita</string>
+    <string name="nft_amount_items">%1$s Oggetti</string>
+    <string name="pending_request_from">Hai una richiesta in sospeso da %1$s</string>
+    <string name="my_own_address">Il Mio Indirizzo</string>
+    <string name="custom_address">Indirizzo Personalizzato</string>
+    <string name="enter_custom_address">Inserisci indirizzo personalizzato</string>
+    <string name="add_evm_account">Aggiungi un account %1$s su Flow</string>
+    <string name="active_account">Account attivo</string>
+    <string name="add_account">Aggiungi account</string>
+    <string name="confirm_to_copy_address">Conferma per copiare l\'indirizzo</string>
+    <string name="confirm_copy_address_tips">Hai copiato un indirizzo EVM sulla rete Flow, assicurati di inviare solo asset sulla rete Flow a questo indirizzo altrimenti andranno persi.</string>
+    <string name="evm_on_flow_address">Indirizzo EVM su Flow</string>
 </resources>

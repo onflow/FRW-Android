@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/group_gas"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="18dp"
+    android:layout_marginTop="16dp"
+    app:cardBackgroundColor="@color/deep_bg"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp">
+
+    <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
+        android:id="@+id/free_gas_preference"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:iconEnable="false"
+        app:subtitleId="@string/free_gas_fee_desc"
+        app:titleId="@string/free_gas_fee"/>
+        
+</com.google.android.material.card.MaterialCardView>

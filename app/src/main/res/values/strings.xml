@@ -250,8 +250,8 @@
     <string name="restore_with_recovery_phrase">Restore with Recovery Phrase</string>
     <string name="not_logged_in_toast">You are not logged in to the wallet</string>
     <string name="free_gas_fee">Free gas fee</string>
-    <string name="free_gas_fee_desc">Allow Flow Wallet to pay the gas fee for all my transactions
-        .</string>
+    <string name="free_gas_fee_desc">* Allow Flow Wallet to pay the gas fee for all my transactions.</string>
+    <string name="show_in_account_list">Show in account list</string>
     <string name="file_picker_title">Select File</string>
     <string name="transaction_fee">Transaction Fee</string>
     <string name="hold_to_confirm">Hold to Confirm</string>
@@ -792,4 +792,7 @@
     <string name="add_evm_account">Add an %1$s account on Flow</string>
     <string name="active_account">Active account</string>
     <string name="add_account">Add account</string>
+    <string name="confirm_to_copy_address">Confirm to copy address</string>
+    <string name="confirm_copy_address_tips">You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost.</string>
+    <string name="evm_on_flow_address">EVM on Flow address</string>
 </resources>
