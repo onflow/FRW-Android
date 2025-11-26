@@ -81,8 +81,13 @@ class WalletRestoreActivity : BaseActivity() {
         // Only launch RN GetStarted screen if we came from RN
         // Otherwise, just finish this activity to return to wherever we came from
         if (launchedFromRN) {
-            // Launch React Native onboarding flow (will show GetStarted screen)
-            ReactNativeActivity.launch(this, RNBridge.ScreenType.ONBOARDING)
+            // Launch React Native onboarding flow - skip GetStarted and go directly to profile type selection
+            // since this is an existing user importing a wallet
+            ReactNativeActivity.launchWithRoute(
+                this,
+                RNBridge.ScreenType.ONBOARDING,
+                RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+            )
         }
         // Finish this activity in both cases
         finish()

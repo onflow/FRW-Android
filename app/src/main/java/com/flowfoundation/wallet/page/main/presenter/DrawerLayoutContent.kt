@@ -198,7 +198,11 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
                 WalletRestoreActivity.launch(activity)
             },
             onAddProfileClick = {
-                ReactNativeActivity.launch(activity, RNBridge.ScreenType.ONBOARDING)
+                ReactNativeActivity.launchWithRoute(
+                    activity,
+                    RNBridge.ScreenType.ONBOARDING,
+                    RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+                )
             }
         )
     }
