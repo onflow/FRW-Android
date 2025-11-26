@@ -772,4 +772,5 @@
     <string name="confirm_to_copy_address">주소 복사를 확인</string>
     <string name="confirm_copy_address_tips">Flow 네트워크의 EVM 주소를 복사했습니다. 이 주소로는 Flow 네트워크의 자산만 전송해야 하며, 그렇지 않으면 손실됩니다.</string>
     <string name="evm_on_flow_address">Flow의 EVM 주소</string>
+    <string name="recover_profile">프로필 복구</string>
 </resources>

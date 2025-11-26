@@ -775,4 +775,5 @@
     <string name="confirm_to_copy_address">Подтвердите копирование адреса</string>
     <string name="confirm_copy_address_tips">Вы скопировали EVM адрес в сети Flow, убедитесь, что отправляете только активы сети Flow на этот адрес, иначе они будут потеряны.</string>
     <string name="evm_on_flow_address">EVM адрес в Flow</string>
+    <string name="recover_profile">Восстановить профиль</string>
 </resources>

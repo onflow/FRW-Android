@@ -652,8 +652,8 @@
     <string name="raw_key_restore_private_key_note">Mit rohem Hex-Schlüssel importieren.</string>
     <string name="sign_type_message_from">Signaturtyp Nachricht von</string>
     <string name="message">Nachricht</string>
-    <string name="current_account">Aktuelles Konto</string>
-    <string name="other_accounts">Andere Konten</string>
+    <string name="current_account">Aktuelles konto</string>
+    <string name="other_accounts">Andere konten</string>
     <string name="local_account_keys">Lokale Kontoschlüssel</string>
     <string name="reload_config">Konfigurationsdatei neu laden</string>
     <string name="move_fee">Verschiebe Gebühr</string>
@@ -778,4 +778,5 @@
     <string name="confirm_to_copy_address">Bestätigen Sie, um die Adresse zu kopieren</string>
     <string name="confirm_copy_address_tips">Sie haben eine EVM-Adresse im Flow-Netzwerk kopiert. Bitte stellen Sie sicher, dass Sie nur Assets im Flow-Netzwerk an diese Adresse senden, andernfalls gehen sie verloren.</string>
     <string name="evm_on_flow_address">EVM auf Flow-Adresse</string>
+    <string name="recover_profile">Profil wiederherstellen</string>
 </resources>

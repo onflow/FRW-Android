@@ -682,8 +682,8 @@
     <string name="raw_key_restore_private_key_note">Import with raw hex key.</string>
     <string name="sign_type_message_from">Sign Type Message from</string>
     <string name="message">Message</string>
-    <string name="current_account">Current Account</string>
-    <string name="other_accounts">Other Accounts</string>
+    <string name="current_account">Current account</string>
+    <string name="other_accounts">Other accounts</string>
     <string name="local_account_keys">Local Account Keys</string>
     <string name="reload_config">Reload Config</string>
     <string name="move_fee">Move Fee</string>
@@ -795,4 +795,5 @@
     <string name="confirm_to_copy_address">Confirm to copy address</string>
     <string name="confirm_copy_address_tips">You have copied an EVM address on the Flow network, please make sure you only send assets on the Flow network to this address otherwise they will be lost.</string>
     <string name="evm_on_flow_address">EVM on Flow address</string>
+    <string name="recover_profile">Recover profile</string>
 </resources>
