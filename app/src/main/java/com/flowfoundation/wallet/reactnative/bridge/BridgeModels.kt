@@ -233,6 +233,45 @@ class RNBridge {
         val drivepath: String
     )
 
+    data class DeviceInfo(
+        @SerializedName("device_id")
+        val device_id: String?,
+        @SerializedName("name")
+        val name: String?,
+        @SerializedName("type")
+        val type: String?,
+        @SerializedName("user_agent")
+        val user_agent: String?,
+        @SerializedName("ip")
+        val ip: String?,
+        @SerializedName("city")
+        val city: String?,
+        @SerializedName("country")
+        val country: String?,
+        @SerializedName("countryCode")
+        val countryCode: String?,
+        @SerializedName("continent")
+        val continent: String?,
+        @SerializedName("continentCode")
+        val continentCode: String?,
+        @SerializedName("regionName")
+        val regionName: String?,
+        @SerializedName("district")
+        val district: String?,
+        @SerializedName("zip")
+        val zip: String?,
+        @SerializedName("lat")
+        val lat: Int?,
+        @SerializedName("lon")
+        val lon: Int?,
+        @SerializedName("isp")
+        val isp: String?,
+        @SerializedName("org")
+        val org: String?,
+        @SerializedName("currency")
+        val currency: String?
+    )
+
     enum class InitialRoute(val routeName: String) {
         @SerializedName("GetStarted") GET_STARTED("GetStarted"),
         @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
