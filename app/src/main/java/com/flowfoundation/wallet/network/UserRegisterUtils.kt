@@ -46,6 +46,9 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.wallet.Wallet
+import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
+import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
+import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.wallet.createWalletFromServer
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -72,7 +75,7 @@ suspend fun registerOutblock(
         // registerOutblockUserInternal will call registerServer, which creates and stores
         // the primary private key associated with the prefix, and performs the actual
         // server registration using that key's public key.
-        registerOutblockUserInternal(username) { isSuccess, prefix ->
+        registerOutblockUserInternal(username) { isSuccess, prefix, txId ->
             ioScope {
                 if (isSuccess) {
                     // At this point, user is registered on server, Firebase is synced,
@@ -81,8 +84,32 @@ suspend fun registerOutblock(
                     // Declare service here for fetching user and wallet info
                     val service = retrofit().create(ApiService::class.java)
 
+                    // Get the transaction ID for the Flow account creation
+                    if (txId.isNullOrBlank()) {
+                        loge(TAG, "No transaction ID returned from registration")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    logd(TAG, "Flow account creation txId: $txId")
+
+                    // Wait for the Flow transaction to complete and get the created address
+                    val chainId = when (chainNetWorkString()) {
+                        "mainnet" -> ChainId.Mainnet
+                        "testnet" -> ChainId.Testnet
+                        else -> ChainId.Mainnet
+                    }
+
+                    val createdFlowAddress = getCreatedAddressFromTx(txId)
+                    if (createdFlowAddress == null) {
+                        loge(TAG, "Failed to get Flow address from transaction $txId")
+                        continuation.resume(false)
+                        return@ioScope
+                    }
+                    logd(TAG, "Flow account created successfully with address: $createdFlowAddress")
+
                     // Initialize wallet structure on backend (needed for COA account visibility)
                     // This initializes the wallet record but does NOT create an EOA account
+
                     // The COA account is created by registerServer() above
                     createWalletFromServer()
                     setRegistered()
@@ -91,26 +118,85 @@ suspend fun registerOutblock(
                     // The service calls here should ideally just fetch the latest state if needed,
                     // not perform new registrations or key creations.
 
-                    val userInfo = try { service.userInfo().data } catch (e: Exception) {
-                        logd(TAG, "Failed to fetch user info after registration")
-                        continuation.resume(false)
-                        return@ioScope
+                    // Retry fetching user info with exponential backoff
+                    // Sometimes the user is created but not immediately available via the API
+                    var userInfo: com.flowfoundation.wallet.network.model.UserInfoData? = null
+                    var retryCount = 0
+                    val maxRetries = 5
+
+                    while (userInfo == null && retryCount < maxRetries) {
+                        try {
+                            val delayMs = when (retryCount) {
+                                0 -> 500L   // First attempt after 500ms
+                                1 -> 1000L  // Second attempt after 1s
+                                2 -> 2000L  // Third attempt after 2s
+                                3 -> 3000L  // Fourth attempt after 3s
+                                else -> 5000L // Final attempt after 5s
+                            }
+                            delay(delayMs)
+
+                            logd(TAG, "Attempting to fetch user info (attempt ${retryCount + 1}/$maxRetries)")
+                            userInfo = service.userInfo().data
+                            logd(TAG, "Successfully fetched user info on attempt ${retryCount + 1}")
+                        } catch (e: Exception) {
+                            retryCount++
+                            if (retryCount >= maxRetries) {
+                                loge(TAG, "Failed to fetch user info after $maxRetries attempts: ${e.message}")
+                                continuation.resume(false)
+                                return@ioScope
+                            }
+                            logd(TAG, "Failed to fetch user info (attempt $retryCount/$maxRetries): ${e.message}, retrying...")
+                        }
                     }
 
-                    // Use the reliable getWalletList API call that gets account info directly from server
-                    val walletListData = try {
-                        service.getWalletList().data
-                    } catch (e: Exception) {
-                        logd(TAG, "Failed to fetch wallet list after registration")
-                        continuation.resume(false)
-                        return@ioScope
+                    // Retry fetching wallet list with exponential backoff
+                    var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
+                    retryCount = 0
+
+                    while (walletListData == null && retryCount < maxRetries) {
+                        try {
+                            val delayMs = when (retryCount) {
+                                0 -> 500L   // First attempt after 500ms
+                                1 -> 1000L  // Second attempt after 1s
+                                2 -> 2000L  // Third attempt after 2s
+                                3 -> 3000L  // Fourth attempt after 3s
+                                else -> 5000L // Final attempt after 5s
+                            }
+                            delay(delayMs)
+
+                            logd(TAG, "Attempting to fetch wallet list (attempt ${retryCount + 1}/$maxRetries)")
+                            val fetchedData = service.getWalletList().data
+                            if (fetchedData != null) {
+                                walletListData = fetchedData
+                                logd(TAG, "Successfully fetched wallet list on attempt ${retryCount + 1}")
+                            } else {
+                                logd(TAG, "Wallet list data is null on attempt ${retryCount + 1}, retrying...")
+                                retryCount++
+                            }
+                        } catch (e: Exception) {
+                            retryCount++
+                            if (retryCount >= maxRetries) {
+                                loge(TAG, "Failed to fetch wallet list after $maxRetries attempts: ${e.message}")
+                                continuation.resume(false)
+                                return@ioScope
+                            }
+                            logd(TAG, "Failed to fetch wallet list (attempt $retryCount/$maxRetries): ${e.message}, retrying...")
+                        }
                     }
 
                     if (walletListData == null) {
-                        logd(TAG, "No wallet data found for registered user")
+                        loge(TAG, "No wallet data found after $maxRetries attempts")
                         continuation.resume(false)
                         return@ioScope
                     }
+
+                    // Log the wallet addresses from backend
+                    logd(TAG, "Wallet list data:")
+                    logd(TAG, "  - Blockchain count: ${walletListData.blockchain?.size}")
+                    walletListData.blockchain?.forEach { blockchain ->
+                        logd(TAG, "  - Blockchain: ${blockchain.chainId}, Address: ${blockchain.address}")
+                    }
+                    logd(TAG, "Expected Flow address from transaction: $createdFlowAddress")
 
                     // Now that we have the wallet data with account address, use fetchAccountByAddress
                     // to populate the wallet SDK with the account details from Flow network
@@ -128,43 +214,31 @@ suspend fun registerOutblock(
                         storage
                     )
 
-                    when (chainNetWorkString()) {
-                        "mainnet" -> ChainId.Mainnet
-                        "testnet" -> ChainId.Testnet
-                        else -> ChainId.Mainnet
+                    // Use fetchAccountByAddress to populate wallet SDK with the created Flow account
+                    try {
+                        logd(TAG, "Fetching account by address: $createdFlowAddress from Flow network")
+                        walletForSDK.fetchAccountByAddress(createdFlowAddress, chainId)
+                        logd(TAG, "Successfully populated wallet SDK with Flow account from network")
+                    } catch (e: Exception) {
+                        loge(TAG, "Failed to fetch Flow account $createdFlowAddress into Wallet SDK: ${e.message}")
+                        // Continue anyway - the account exists on-chain even if SDK fetch failed
                     }
 
-                    // Use fetchAccountByAddress to populate wallet SDK with account from Flow network
-                    walletListData.wallets?.forEach { walletData ->
-                        walletData.blockchain?.forEach { blockchain ->
-                            try {
-                                val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                                    "mainnet" -> ChainId.Mainnet
-                                    "testnet" -> ChainId.Testnet
-                                    else -> null
-                                }
-                                if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                                    val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
-                                    logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with account $address")
-                                    walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
-                                    logd(TAG, "Successfully populated wallet SDK with account from Flow network")
-                                }
-                            } catch (e: Exception) {
-                                logd(TAG, "Warning: Could not fetch account ${blockchain.address} into Wallet SDK: ${e.message}")
-                                // Continue anyway, we have the wallet data from server
-                            }
-                        }
+                    if (userInfo != null) {
+                        AccountManager.add(
+                            Account(
+                                userInfo = userInfo,
+                                prefix = prefix, // This prefix matches the one used to store the key in registerServer
+                                wallet = walletListData
+                            ),
+                            firebaseUid()
+                        )
+                        logd(TAG, "Account added to AccountManager.")
+                    } else {
+                        loge(TAG, "Cannot add account - userInfo is null")
+                        continuation.resume(false)
+                        return@ioScope
                     }
-
-                    AccountManager.add(
-                        Account(
-                            userInfo = userInfo,
-                            prefix = prefix, // This prefix matches the one used to store the key in registerServer
-                            wallet = walletListData
-                        ),
-                        firebaseUid()
-                    )
-                    logd(TAG, "Account added to AccountManager.")
 
                     // Initialize WalletManager to pick up the new account/wallet state
                     WalletManager.init()
@@ -195,18 +269,18 @@ suspend fun registerOutblock(
                         cryptoProvider.getHashAlgorithm().algorithm
                     )
                     clearUserCache()
-                    
+
                     // Trigger wallet data update to refresh UI (e.g., drawer sidebar)
                     // This ensures the sidebar shows COA with correct EVM badge immediately
                     walletListData?.let { data ->
                         AccountManager.updateWalletInfo(data)
                         logd(TAG, "registerOutblock() - Triggered UI refresh via updateWalletInfo")
-                        
+
                         // Close the drawer to show the updated account in the main view
                         com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
                         logd(TAG, "registerOutblock() - Closed drawer to show updated account")
                     }
-                    
+
                     continuation.resume(true)
                 } else {
                     // Registration failed in registerOutblockUserInternal (e.g., server or Firebase issue)
@@ -221,30 +295,61 @@ suspend fun registerOutblock(
 
 private suspend fun registerOutblockUserInternal(
     username: String,
-    callback: (isSuccess: Boolean, prefix: String) -> Unit,
+    callback: (isSuccess: Boolean, prefix: String, txId: String?) -> Unit,
 ) {
     val prefix = generatePrefix(username)
     try {
         if (!setToAnonymous()) {
             loge(TAG, "registerOutblockUserInternal() - Failed to set Firebase to anonymous sign-in")
             resumeAccount()
-            callback.invoke(false, prefix)
+            callback.invoke(false, prefix, null)
             return
         }
         val user = registerServer(username, prefix)
 
         if (user.status > 400) {
             loge(TAG, "registerOutblockUserInternal() - Server registration failed with status: ${user.status}, message: ${user.message}")
-            callback(false, prefix)
+            callback(false, prefix, null)
             return
         }
         logd(TAG, "SYNC Register userId:::${user.data.uid}")
+        logd(TAG, "Transaction ID from /v3/register: ${user.data.txId}")
         logd(TAG, "start delete user")
         registerFirebase(user) { isSuccess ->
             if (!isSuccess) {
                 loge(TAG, "registerOutblockUserInternal() - Firebase registration failed")
+                callback.invoke(false, prefix, null)
+                return@registerFirebase
             }
-            callback.invoke(isSuccess, prefix)
+
+            // After Firebase registration, create the Flow address to get the transaction ID
+            // This matches the recovery phrase flow which calls createFlowAddress() (v2 endpoint) separately
+            ioScope {
+                try {
+                    logd(TAG, "Creating Flow address via /v2/user/address endpoint...")
+                    val service = retrofit().create(ApiService::class.java)
+                    val createFlowAddressResponse = service.createFlowAddress()
+
+                    logd(TAG, "Flow address creation response: $createFlowAddressResponse")
+                    logd(TAG, "Response status: ${createFlowAddressResponse.status}")
+                    logd(TAG, "Response message: ${createFlowAddressResponse.message}")
+                    logd(TAG, "Response data: ${createFlowAddressResponse.data}")
+
+                    val txId = createFlowAddressResponse.data?.txId
+
+                    if (txId.isNullOrBlank()) {
+                        loge(TAG, "No transaction ID returned from /v2/user/address endpoint")
+                        callback.invoke(false, prefix, null)
+                    } else {
+                        logd(TAG, "Flow address creation successful, txId: $txId")
+                        callback.invoke(true, prefix, txId)
+                    }
+                } catch (e: Exception) {
+                    loge(TAG, "Failed to create Flow address: ${e.message}")
+                    loge(TAG, "Stack trace: ${e.stackTraceToString()}")
+                    callback.invoke(false, prefix, null)
+                }
+            }
         }
     } catch (e: Exception) {
         loge(TAG, "registerOutblockUserInternal() - Exception occurred: ${e.message}")
@@ -254,7 +359,7 @@ private suspend fun registerOutblockUserInternal(
         } else {
             ErrorReporter.reportWithMixpanel(AccountError.REGISTER_USER_FAILED, e)
         }
-        callback.invoke(false, prefix)
+        callback.invoke(false, prefix, null)
     }
 }
 
@@ -352,6 +457,13 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
         try {
             val user = service.register(request)
             logd(TAG, "Registration response: $user")
+            logd(TAG, "Registration response details:")
+            logd(TAG, "  - status: ${user.status}")
+            logd(TAG, "  - message: ${user.message}")
+            logd(TAG, "  - data.uid: ${user.data.uid}")
+            logd(TAG, "  - data.txId: ${user.data.txId}")
+            logd(TAG, "  - data.txId isNullOrBlank: ${user.data.txId.isNullOrBlank()}")
+            logd(TAG, "  - data.customToken length: ${user.data.customToken.length}")
 
             if (user.status > 400) {
                 logd(TAG, "Registration failed with status: ${user.status}, message: ${user.message}")
@@ -445,4 +557,128 @@ suspend fun clearUserCache() {
 
 fun clearWebViewCache() {
     WebStorage.getInstance().deleteAllData()
+}
+
+/**
+ * Wait for a Flow transaction to complete and extract the created address from events
+ * Similar to iOS fetchAccountsByCreationTxId implementation
+ */
+private suspend fun getCreatedAddressFromTx(txId: String): String? {
+    return try {
+        logd(TAG, "Waiting for transaction $txId to seal...")
+
+        // Use Flow Cadence API to wait for transaction to seal
+        val result = FlowCadenceApi.waitForSeal(txId)
+
+        logd(TAG, "Transaction result received")
+        logd(TAG, "Transaction status: ${result.status}")
+        logd(TAG, "Transaction execution: ${result.execution}")
+        logd(TAG, "Transaction error message: ${result.errorMessage}")
+        logd(TAG, "Transaction events count: ${result.events.size}")
+        logd(TAG, "isExecuteFinished: ${result.isExecuteFinished()}")
+
+        // Check if transaction has events (executed successfully) even if not sealed yet
+        // For account creation, events are available once executed
+        val hasEvents = result.events.isNotEmpty()
+        val hasNoErrors = result.errorMessage.isBlank()
+
+        if (hasEvents && hasNoErrors) {
+            logd(TAG, "Transaction has events and no errors, attempting to extract address...")
+            // Transaction succeeded, extract created address from events
+            // Look for flow.AccountCreated event
+            val createdEvent = result.events.find { it.type.contains("flow.AccountCreated") }
+
+            if (createdEvent != null) {
+                // Try to extract address from event payload
+                // The event structure typically has: { address: "0x..." }
+                val eventPayload = createdEvent.payload
+                logd(TAG, "AccountCreated event payload: $eventPayload")
+                logd(TAG, "Event payload type: ${eventPayload.javaClass.name}")
+
+                // Try to parse the address field from the payload
+                try {
+                    // The payload is a Cadence.Value.EventValue containing a CompositeValue
+                    logd(TAG, "Attempting to extract address from event payload...")
+
+                    // Access the actual value inside the EventValue
+                    if (eventPayload is org.onflow.flow.infrastructure.Cadence.Value.EventValue) {
+                        val compositeValue = eventPayload.value
+                        logd(TAG, "Composite value: $compositeValue")
+                        logd(TAG, "Composite value type: ${compositeValue.javaClass.name}")
+
+                        if (compositeValue is org.onflow.flow.infrastructure.Cadence.CompositeValue) {
+                            // Get the fields from the composite value
+                            val fields = compositeValue.fields
+                            logd(TAG, "Composite fields count: ${fields.size}")
+
+                            // Find the address field
+                            val addressField = fields.find { it.name == "address" }
+                            if (addressField != null) {
+                                logd(TAG, "Found address field: ${addressField.value}")
+                                logd(TAG, "Address field type: ${addressField.value.javaClass.name}")
+
+                                // The address value should be an AddressValue
+                                if (addressField.value is org.onflow.flow.infrastructure.Cadence.Value.AddressValue) {
+                                    val addressValue = addressField.value as org.onflow.flow.infrastructure.Cadence.Value.AddressValue
+                                    val rawAddress = addressValue.value
+                                    logd(TAG, "Extracted raw Flow address: $rawAddress")
+
+                                    // Format the address: remove leading zeros and ensure 0x prefix
+                                    val cleanAddress = rawAddress.trimStart('0')
+                                    val formattedAddress = if (cleanAddress.startsWith("0x")) {
+                                        cleanAddress
+                                    } else {
+                                        "0x$cleanAddress"
+                                    }
+                                    logd(TAG, "Formatted Flow address: $formattedAddress")
+                                    return formattedAddress
+                                } else {
+                                    // Try to extract from string representation
+                                    val addressString = addressField.value.toString()
+                                    logd(TAG, "Address value string: $addressString")
+
+                                    // Look for hex address pattern (with or without 0x prefix)
+                                    // Flow addresses can be 40 chars (full format) or 16 chars (short format)
+                                    val addressRegex = Regex("[0-9a-fA-F]{16,40}")
+                                    val addressMatch = addressRegex.find(addressString)
+
+                                    if (addressMatch != null) {
+                                        val rawAddress = addressMatch.value
+                                        logd(TAG, "Found raw address via regex: $rawAddress")
+
+                                        // Trim leading zeros and add 0x prefix
+                                        val cleanAddress = rawAddress.trimStart('0')
+                                        val formattedAddress = "0x$cleanAddress"
+                                        logd(TAG, "Formatted address: $formattedAddress")
+                                        return formattedAddress
+                                    }
+                                }
+                            } else {
+                                loge(TAG, "No 'address' field found in composite value")
+                                logd(TAG, "Available fields: ${fields.map { it.name }.joinToString()}")
+                            }
+                        }
+                    }
+
+                    loge(TAG, "Could not extract address from event payload structure")
+                } catch (e: Exception) {
+                    loge(TAG, "Could not extract address from payload: ${e.message}")
+                    loge(TAG, "Stack trace: ${e.stackTraceToString()}")
+                }
+
+                loge(TAG, "Could not extract address from AccountCreated event")
+            } else {
+                loge(TAG, "Transaction completed but no AccountCreated event found")
+                logd(TAG, "All events in transaction:")
+                result.events.forEach { event ->
+                    logd(TAG, "  - Event type: ${event.type}")
+                }
+            }
+        }
+        null
+    } catch (e: Exception) {
+        loge(TAG, "Failed to get created address from transaction: ${e.message}")
+        e.printStackTrace()
+        null
+    }
 }

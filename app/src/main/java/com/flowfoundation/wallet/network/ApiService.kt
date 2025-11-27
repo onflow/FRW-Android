@@ -16,6 +16,9 @@ interface ApiService {
     @POST("/v1/user/address")
     suspend fun createWallet(): CreateWalletResponse
 
+    @POST("/v2/user/address")
+    suspend fun createFlowAddress(): CreateFlowAddressResponse
+
     @GET("/v1/user/check")
     suspend fun checkUsername(@Query("username") username: String): UsernameCheckResponse
 
