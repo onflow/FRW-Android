@@ -48,6 +48,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun getLanguage(): String? = utilsHandler.getLanguage()
 
+    override fun getDeviceId(): String = utilsHandler.getDeviceId()
+
     override fun sign(hexData: String, promise: Promise) = walletHandler.sign(hexData, promise)
 
     override fun ethSign(hexData: String?, promise: Promise?) = walletHandler.ethSign(hexData, promise)

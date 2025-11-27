@@ -22,6 +22,7 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import java.util.Locale
 
 /**
@@ -58,6 +59,10 @@ class UtilsBridgeHandler(private val reactContext: ReactApplicationContext) {
 
     fun getLanguage(): String? {
         return Locale.getDefault().language
+    }
+
+    fun getDeviceId(): String {
+        return DeviceInfoManager.getDeviceID()
     }
 
     fun isFreeGasEnabled(promise: Promise) {
