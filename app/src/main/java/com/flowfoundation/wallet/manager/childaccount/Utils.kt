@@ -57,47 +57,11 @@ class DataClasses {
     )
 }
 
-/**
- * Checks if an address is a COA (Cadence Owned Account)
- * COA addresses start with 0x000000 when in full EVM format
- * @return true if the address is a COA, false otherwise
- */
-fun String.isCOAAddress(): Boolean {
-    if (!this.startsWith("0x")) {
-        return false
-    }
-    val normalized = this.lowercase()
-    return normalized.startsWith("0x000000")
-}
-
-/**
- * Convert Flow address to full EVM format for COA addresses
- * COA addresses need to be in 42-character EVM format with leading zeros
- * Example: 0x676e6955fdd27bad -> 0x000000000000000000000000676e6955fdd27bad
- */
-private fun String.toFullEVMFormat(): String {
-    val addressWithout0x = this.removePrefix("0x")
-
-    // If already 40 characters, it's already in EVM format
-    if (addressWithout0x.length == 40) {
-        return "0x$addressWithout0x"
-    }
-
-    // If it's 16 characters (Flow address), convert to EVM format with leading zeros
-    if (addressWithout0x.length == 16) {
-        val paddedAddress = addressWithout0x.padStart(40, '0')
-        return "0x$paddedAddress"
-    }
-
-    // Return as-is for other formats
-    return this
-}
-
 fun String.parseAccountMetas(): List<ChildAccount> {
     val root = Gson().fromJson(this, DataClasses.Root::class.java)
 
     return root.value.map { valueItem ->
-        val rawAddress = valueItem.key.value
+        val address = valueItem.key.value
         var name: String? = null
         var icon: String? = null
         var description: String? = null
@@ -128,9 +92,6 @@ fun String.parseAccountMetas(): List<ChildAccount> {
                 }
             }
         }
-
-        // Convert to full EVM format (COA addresses need 42-char format with leading zeros)
-        val address = rawAddress.toFullEVMFormat()
 
         ChildAccount(
             address = address,
