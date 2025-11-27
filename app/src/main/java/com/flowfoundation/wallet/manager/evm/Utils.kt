@@ -48,46 +48,46 @@ import wallet.core.jni.Hash
 import java.math.BigInteger
 
 suspend fun loadInitJS(): String {
-  // Refresh account data first
-  DAppEVMConnectionManager.refreshAccounts()
+    // Refresh account data first
+    DAppEVMConnectionManager.refreshAccounts()
 
-  // Get address list: prefer StateFlow data, fallback to direct retrieval
-  val addressList = mutableListOf<String>()
-  val availableAccounts = DAppEVMConnectionManager.availableAccounts.value
+    // Get address list: prefer StateFlow data, fallback to direct retrieval
+    val addressList = mutableListOf<String>()
+    val availableAccounts = DAppEVMConnectionManager.availableAccounts.value
 
-  if (availableAccounts.isNotEmpty()) {
-    // Use account data from StateFlow
-    availableAccounts.forEach { account ->
-      if (account.address.isNotEmpty()) {
-        addressList.add(account.address)
-      }
+    if (availableAccounts.isNotEmpty()) {
+        // Use account data from StateFlow
+        availableAccounts.forEach { account ->
+            if (account.address.isNotEmpty()) {
+                addressList.add(account.address)
+            }
+        }
+    } else {
+        // StateFlow is empty, get directly from WalletManager
+        EVMWalletManager.getEVMAddress()?.let { coaAddress ->
+            if (coaAddress.isNotEmpty()) {
+                addressList.add(coaAddress)
+            }
+        }
+
+        WalletManager.getEOAAddressCached()?.let { eoaAddress ->
+            if (eoaAddress.isNotEmpty()) {
+                addressList.add(eoaAddress)
+            }
+        }
     }
-  } else {
-    // StateFlow is empty, get directly from WalletManager
-    EVMWalletManager.getEVMAddress()?.let { coaAddress ->
-      if (coaAddress.isNotEmpty()) {
-        addressList.add(coaAddress)
-      }
-    }
 
-    WalletManager.getEOAAddressCached()?.let { eoaAddress ->
-      if (eoaAddress.isNotEmpty()) {
-        addressList.add(eoaAddress)
-      }
-    }
-  }
+    // Build addresses array string following Swift format
+    val addressesArray = addressList.joinToString(", ") { "\"$it\"" }
+    
+    // Get primary address (prefer COA, then EOA)
+    val primaryAddress = EVMWalletManager.getEVMAddress() ?: WalletManager.getEOAAddressCached() ?: ""
+    
+    logd("EvmUtils", "loadInitJS addresses: $addressList")
+    logd("EvmUtils", "loadInitJS primaryAddress: $primaryAddress")
+    logd("EvmUtils", "loadInitJS addressesArray: $addressesArray")
 
-  // Build addresses array string following Swift format
-  val addressesArray = addressList.joinToString(", ") { "\"$it\"" }
-
-  // Get primary address (prefer COA, then EOA)
-  val primaryAddress = EVMWalletManager.getEVMAddress() ?: WalletManager.getEOAAddressCached() ?: ""
-
-  logd("EvmUtils", "loadInitJS addresses: $addressList")
-  logd("EvmUtils", "loadInitJS primaryAddress: $primaryAddress")
-  logd("EvmUtils", "loadInitJS addressesArray: $addressesArray")
-
-  return """
+    return """
         (function() {
             var config = {
                 ethereum: {
@@ -128,315 +128,315 @@ suspend fun loadInitJS(): String {
 }
 
 fun loadProviderJS(): String {
-  return Env.getApp().resources.openRawResource(R.raw.flow_web3_min).bufferedReader()
-    .use { it.readText() }
+    return Env.getApp().resources.openRawResource(R.raw.flow_web3_min).bufferedReader()
+        .use { it.readText() }
 }
 
 fun sendEOATransaction(chain: String?, transaction: EvmTransaction, callback: (txHash: String) ->
 Unit) {
-  ioScope {
-    try {
-      // Log all incoming parameters
-      logd("EOATransaction", "=== EOA Transaction Parameters ===")
-      logd("EOATransaction", "chain: $chain")
-      logd("EOATransaction", "transaction.to: ${transaction.to}")
-      logd("EOATransaction", "transaction.value: ${transaction.value}")
-      logd("EOATransaction", "transaction.gas: ${transaction.gas}")
-      logd("EOATransaction", "transaction.data: ${transaction.data}")
-      logd("EOATransaction", "networkRPCUrl: ${networkRPCUrl()}")
-
-      val address = DAppEVMConnectionManager.getCurrentAccount()?.address
-      logd("EOATransaction", "current EOA address: $address")
-      if (address.isNullOrBlank()) {
-        logd("EOATransaction", "ERROR: No current EOA address found")
-        callback.invoke("")
-        return@ioScope
-      }
-      val web3j = Web3j.build(HttpService(networkRPCUrl()))
-
-      logd("EOATransaction", "=== Network Requests ===")
-
-      // Get nonce from network
-      logd("EOATransaction", "Getting nonce for address: $address")
-      val ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).sendAsync().get()
-      val nonce = ethGetTransactionCount.transactionCount
-      logd("EOATransaction", "Got nonce: $nonce")
-
-      // Get gas price from network
-      logd("EOATransaction", "Getting gas price from network")
-      val gasPrice = web3j.ethGasPrice().sendAsync().get().gasPrice
-      logd("EOATransaction", "Got gas price: $gasPrice")
-
-      // Parse transaction parameters
-      val chainId = if (chain.isNullOrBlank()) {
-        val networkChainId = networkChainId()
-        logd("EOATransaction", "using network chainId: $networkChainId")
-        networkChainId.toBigInteger()
-      } else {
-        // Handle EIP-155 format: "eip155:747" -> "747"
-        val actualChainId = if (chain.startsWith("eip155:")) {
-          chain.substringAfter("eip155:")
-        } else {
-          chain
-        }
-        val parsedChainId = actualChainId.toBigInteger()
-        logd("EOATransaction", "parsed chainId: $parsedChainId from: $chain")
-        parsedChainId
-      }
-
-      val valueAmount = Numeric.decodeQuantity(transaction.value ?: "0x0")
-      val gasLimit = Numeric.decodeQuantity(transaction.gas ?: "0x5208") // Default 21000 gas for simple transfer
-
-      logd("EOATransaction", "=== Final Transaction Parameters ===")
-      logd("EOATransaction", "chainId: $chainId")
-      logd("EOATransaction", "nonce: $nonce")
-      logd("EOATransaction", "gasPrice: $gasPrice")
-      logd("EOATransaction", "gasLimit: $gasLimit")
-      logd("EOATransaction", "valueAmount: $valueAmount")
-      logd("EOATransaction", "toAddress: ${transaction.to}")
-      logd("EOATransaction", "data: ${transaction.data}")
-
-      val input = Ethereum.SigningInput.newBuilder().apply {
-        setChainId(ByteString.copyFrom(chainId.toByteArray()))
-        setNonce(ByteString.copyFrom(nonce.toByteArray()))
-        setGasPrice(ByteString.copyFrom(gasPrice.toByteArray()))
-        setGasLimit(ByteString.copyFrom(gasLimit.toByteArray()))
-        toAddress = transaction.to ?: ""
-
-        // Handle both transfer and contract call transactions (like iOS logic)
-        val dataString = transaction.data
-        if (!dataString.isNullOrEmpty() && dataString != "0x") {
-          // Contract call transaction
-          val dataBytes = Numeric.hexStringToByteArray(dataString)
-          logd("EOATransaction", "Contract call with data: $dataString")
-          setTransaction(Ethereum.Transaction.newBuilder().apply {
-            setContractGeneric(Ethereum.Transaction.ContractGeneric.newBuilder().apply {
-              amount = ByteString.copyFrom(valueAmount.toByteArray())
-              data = ByteString.copyFrom(dataBytes)
-            })
-          })
-        } else {
-          // Simple transfer transaction
-          logd("EOATransaction", "Simple transfer transaction")
-          setTransaction(Ethereum.Transaction.newBuilder().apply {
-            setTransfer(Ethereum.Transaction.Transfer.newBuilder().apply {
-              amount = ByteString.copyFrom(valueAmount.toByteArray())
-            })
-          })
-        }
-      }.build()
-
-      logd("EOATransaction", "=== Transaction Signing ===")
-      // Sign the transaction (similar to iOS walletEntity?.ethSignTransaction)
-      val output = WalletManager.wallet()?.ethSignTransaction(input)
-
-      if (output == null) {
-        logd("EOATransaction", "ERROR: Failed to sign transaction")
-        callback.invoke("")
-        return@ioScope
-      }
-
-      logd("EOATransaction", "Transaction signed successfully")
-      val signedTxHex = Numeric.toHexString(output.encoded.toByteArray())
-      logd("EOATransaction", "Signed transaction hex: $signedTxHex")
-
-      logd("EOATransaction", "=== Sending Transaction ===")
-      // Send raw transaction to the network (similar to iOS web3.eth.send(raw:))
-      logd("EOATransaction", "Sending raw transaction to network...")
-      val ethSendTransaction = web3j.ethSendRawTransaction(signedTxHex).sendAsync().get()
-      logd("EOATransaction", "Raw transaction sent, processing response...")
-
-      if (ethSendTransaction.hasError()) {
-        logd("EOATransaction", "Send transaction error: ${ethSendTransaction.error?.message}")
-        callback.invoke("")
-      } else {
-        val txHash = ethSendTransaction.transactionHash
-        logd("EOATransaction", "Transaction sent successfully with hash: $txHash")
-
-        // Optionally get transaction receipt (similar to iOS)
+    ioScope {
         try {
-          val receipt = web3j.ethGetTransactionReceipt(txHash).sendAsync().get()
-          if (receipt.transactionReceipt.isPresent) {
-            logd("EOATransaction", "Transaction receipt status: ${receipt.transactionReceipt.get().status}")
-          }
+            // Log all incoming parameters
+            logd("EOATransaction", "=== EOA Transaction Parameters ===")
+            logd("EOATransaction", "chain: $chain")
+            logd("EOATransaction", "transaction.to: ${transaction.to}")
+            logd("EOATransaction", "transaction.value: ${transaction.value}")
+            logd("EOATransaction", "transaction.gas: ${transaction.gas}")
+            logd("EOATransaction", "transaction.data: ${transaction.data}")
+            logd("EOATransaction", "networkRPCUrl: ${networkRPCUrl()}")
+
+            val address = DAppEVMConnectionManager.getCurrentAccount()?.address
+            logd("EOATransaction", "current EOA address: $address")
+            if (address.isNullOrBlank()) {
+                logd("EOATransaction", "ERROR: No current EOA address found")
+                callback.invoke("")
+                return@ioScope
+            }
+            val web3j = Web3j.build(HttpService(networkRPCUrl()))
+
+            logd("EOATransaction", "=== Network Requests ===")
+
+            // Get nonce from network
+            logd("EOATransaction", "Getting nonce for address: $address")
+            val ethGetTransactionCount = web3j.ethGetTransactionCount(address, DefaultBlockParameterName.LATEST).sendAsync().get()
+            val nonce = ethGetTransactionCount.transactionCount
+            logd("EOATransaction", "Got nonce: $nonce")
+
+            // Get gas price from network
+            logd("EOATransaction", "Getting gas price from network")
+            val gasPrice = web3j.ethGasPrice().sendAsync().get().gasPrice
+            logd("EOATransaction", "Got gas price: $gasPrice")
+
+            // Parse transaction parameters
+            val chainId = if (chain.isNullOrBlank()) {
+                val networkChainId = networkChainId()
+                logd("EOATransaction", "using network chainId: $networkChainId")
+                networkChainId.toBigInteger()
+            } else {
+                // Handle EIP-155 format: "eip155:747" -> "747"
+                val actualChainId = if (chain.startsWith("eip155:")) {
+                    chain.substringAfter("eip155:")
+                } else {
+                    chain
+                }
+                val parsedChainId = actualChainId.toBigInteger()
+                logd("EOATransaction", "parsed chainId: $parsedChainId from: $chain")
+                parsedChainId
+            }
+
+            val valueAmount = Numeric.decodeQuantity(transaction.value ?: "0x0")
+            val gasLimit = Numeric.decodeQuantity(transaction.gas ?: "0x5208") // Default 21000 gas for simple transfer
+
+            logd("EOATransaction", "=== Final Transaction Parameters ===")
+            logd("EOATransaction", "chainId: $chainId")
+            logd("EOATransaction", "nonce: $nonce")
+            logd("EOATransaction", "gasPrice: $gasPrice")
+            logd("EOATransaction", "gasLimit: $gasLimit")
+            logd("EOATransaction", "valueAmount: $valueAmount")
+            logd("EOATransaction", "toAddress: ${transaction.to}")
+            logd("EOATransaction", "data: ${transaction.data}")
+
+            val input = Ethereum.SigningInput.newBuilder().apply {
+                setChainId(ByteString.copyFrom(chainId.toByteArray()))
+                setNonce(ByteString.copyFrom(nonce.toByteArray()))
+                setGasPrice(ByteString.copyFrom(gasPrice.toByteArray()))
+                setGasLimit(ByteString.copyFrom(gasLimit.toByteArray()))
+                toAddress = transaction.to ?: ""
+
+                // Handle both transfer and contract call transactions (like iOS logic)
+                val dataString = transaction.data
+                if (!dataString.isNullOrEmpty() && dataString != "0x") {
+                    // Contract call transaction
+                    val dataBytes = Numeric.hexStringToByteArray(dataString)
+                    logd("EOATransaction", "Contract call with data: $dataString")
+                    setTransaction(Ethereum.Transaction.newBuilder().apply {
+                        setContractGeneric(Ethereum.Transaction.ContractGeneric.newBuilder().apply {
+                            amount = ByteString.copyFrom(valueAmount.toByteArray())
+                            data = ByteString.copyFrom(dataBytes)
+                        })
+                    })
+                } else {
+                    // Simple transfer transaction
+                    logd("EOATransaction", "Simple transfer transaction")
+                    setTransaction(Ethereum.Transaction.newBuilder().apply {
+                        setTransfer(Ethereum.Transaction.Transfer.newBuilder().apply {
+                            amount = ByteString.copyFrom(valueAmount.toByteArray())
+                        })
+                    })
+                }
+            }.build()
+
+            logd("EOATransaction", "=== Transaction Signing ===")
+            // Sign the transaction (similar to iOS walletEntity?.ethSignTransaction)
+            val output = WalletManager.wallet()?.ethSignTransaction(input)
+
+            if (output == null) {
+                logd("EOATransaction", "ERROR: Failed to sign transaction")
+                callback.invoke("")
+                return@ioScope
+            }
+
+            logd("EOATransaction", "Transaction signed successfully")
+            val signedTxHex = Numeric.toHexString(output.encoded.toByteArray())
+            logd("EOATransaction", "Signed transaction hex: $signedTxHex")
+
+            logd("EOATransaction", "=== Sending Transaction ===")
+            // Send raw transaction to the network (similar to iOS web3.eth.send(raw:))
+            logd("EOATransaction", "Sending raw transaction to network...")
+            val ethSendTransaction = web3j.ethSendRawTransaction(signedTxHex).sendAsync().get()
+            logd("EOATransaction", "Raw transaction sent, processing response...")
+
+            if (ethSendTransaction.hasError()) {
+                logd("EOATransaction", "Send transaction error: ${ethSendTransaction.error?.message}")
+                callback.invoke("")
+            } else {
+                val txHash = ethSendTransaction.transactionHash
+                logd("EOATransaction", "Transaction sent successfully with hash: $txHash")
+
+                // Optionally get transaction receipt (similar to iOS)
+                try {
+                    val receipt = web3j.ethGetTransactionReceipt(txHash).sendAsync().get()
+                    if (receipt.transactionReceipt.isPresent) {
+                        logd("EOATransaction", "Transaction receipt status: ${receipt.transactionReceipt.get().status}")
+                    }
+                } catch (e: Exception) {
+                    logd("EOATransaction", "Failed to get receipt: ${e.message}")
+                }
+
+                callback.invoke(txHash)
+            }
+
         } catch (e: Exception) {
-          logd("EOATransaction", "Failed to get receipt: ${e.message}")
+            logd("EOATransaction", "ERROR: Exception in sendEOATransaction")
+            logd("EOATransaction", "Exception type: ${e.javaClass.simpleName}")
+            logd("EOATransaction", "Exception message: ${e.message}")
+            logd("EOATransaction", "Exception cause: ${e.cause?.message}")
+            e.printStackTrace()
+            callback.invoke("")
         }
-
-        callback.invoke(txHash)
-      }
-
-    } catch (e: Exception) {
-      logd("EOATransaction", "ERROR: Exception in sendEOATransaction")
-      logd("EOATransaction", "Exception type: ${e.javaClass.simpleName}")
-      logd("EOATransaction", "Exception message: ${e.message}")
-      logd("EOATransaction", "Exception cause: ${e.cause?.message}")
-      e.printStackTrace()
-      callback.invoke("")
     }
-  }
 }
 
 fun sendCOATransaction(transaction: EvmTransaction, callback: (txHash: String) -> Unit) {
-  ioScope {
-    val amountValue = Numeric.decodeQuantity(transaction.value ?: "0")
-    val toAddress = transaction.to?.removeAddressPrefix() ?: ""
-    val gasValue = transaction.gas?.run {
-      Numeric.decodeQuantity(this).toInt()
-    } ?: EVM_GAS_LIMIT
-    val value = Convert.fromWei(amountValue.toString(), Convert.Unit.ETHER)
-    logd(EvmInterface.TAG, "amountValue:::$amountValue")
-    logd(EvmInterface.TAG, "toAddress:::${toAddress}")
-    logd(EvmInterface.TAG, "gasValue:::${gasValue}")
-    logd(EvmInterface.TAG, "value:::$value")
-    val data = Numeric.hexStringToByteArray(transaction.data ?: "")
-    val txId = cadenceSendEVMV2Transaction(toAddress, amountValue.toBigDecimal(), data, gasValue)
-    val address = EVMWalletManager.getEVMAddress()?.removeAddressPrefix()
-    if (txId.isNullOrBlank() || address.isNullOrBlank() || toAddress.isEmpty()) {
-      logd(EvmInterface.TAG, "send transaction failed")
-      evmTransactionSigned("", false)
-      callback.invoke("")
-      return@ioScope
-    }
-    logd(EvmInterface.TAG, "send transaction transactionId:$txId")
-
-    val nonce = cadenceGetNonce(address)
-    if (nonce == null) {
-      TransactionStateWatcher(txId).watch { result ->
-        if (result.isExecuteFinished()) {
-          evmTransactionSigned(txId, true)
-          val event = result.events.find {
-            it.type.contains(
-              "evm.TransactionExecuted",
-              ignoreCase = true
-            )
-          }
-          if (event == null) {
+    ioScope {
+        val amountValue = Numeric.decodeQuantity(transaction.value ?: "0")
+        val toAddress = transaction.to?.removeAddressPrefix() ?: ""
+        val gasValue = transaction.gas?.run {
+            Numeric.decodeQuantity(this).toInt()
+        } ?: EVM_GAS_LIMIT
+        val value = Convert.fromWei(amountValue.toString(), Convert.Unit.ETHER)
+        logd(EvmInterface.TAG, "amountValue:::$amountValue")
+        logd(EvmInterface.TAG, "toAddress:::${toAddress}")
+        logd(EvmInterface.TAG, "gasValue:::${gasValue}")
+        logd(EvmInterface.TAG, "value:::$value")
+        val data = Numeric.hexStringToByteArray(transaction.data ?: "")
+        val txId = cadenceSendEVMV2Transaction(toAddress, amountValue.toBigDecimal(), data, gasValue)
+        val address = EVMWalletManager.getEVMAddress()?.removeAddressPrefix()
+        if (txId.isNullOrBlank() || address.isNullOrBlank() || toAddress.isEmpty()) {
+            logd(EvmInterface.TAG, "send transaction failed")
+            evmTransactionSigned("", false)
             callback.invoke("")
-          } else {
-            val element = event.payload.decodeToAny().toJsonElement()
-            try {
-              val eventHash = jsonArrayToByteArray(
-                element.jsonObject["hash"] as
-                  JsonArray
-              ).bytesToHex().toAddress()
-              logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
-              callback.invoke(eventHash)
-              refreshBalance(value.toFloat())
-            } catch (_: Exception) {
-              refreshBalance(value.toFloat())
-            }
-          }
-        } else if (result.isFailed()) {
-          evmTransactionSigned(txId, false)
+            return@ioScope
         }
-      }
-      return@ioScope
+        logd(EvmInterface.TAG, "send transaction transactionId:$txId")
+
+        val nonce = cadenceGetNonce(address)
+        if (nonce == null) {
+            TransactionStateWatcher(txId).watch { result ->
+                if (result.isExecuteFinished()) {
+                    evmTransactionSigned(txId, true)
+                    val event = result.events.find {
+                        it.type.contains(
+                            "evm.TransactionExecuted",
+                            ignoreCase = true
+                        )
+                    }
+                    if (event == null) {
+                        callback.invoke("")
+                    } else {
+                        val element = event.payload.decodeToAny().toJsonElement()
+                        try {
+                            val eventHash = jsonArrayToByteArray(
+                                element.jsonObject["hash"] as
+                                        JsonArray
+                            ).bytesToHex().toAddress()
+                            logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
+                            callback.invoke(eventHash)
+                            refreshBalance(value.toFloat())
+                        } catch (_: Exception) {
+                            refreshBalance(value.toFloat())
+                        }
+                    }
+                } else if (result.isFailed()) {
+                    evmTransactionSigned(txId, false)
+                }
+            }
+            return@ioScope
+        }
+        logd(EvmInterface.TAG, "account nonce:$nonce")
+        val directCallTxType = 255
+        val contractCallSubType = 5
+        val rlpList = RlpList(listOf<RlpType>(
+            RlpString.create(nonce.toBigInteger()),
+            RlpString.create(BigInteger.ZERO),
+            RlpString.create(gasValue.toBigInteger()),
+            RlpString.create(Numeric.hexStringToByteArray(toAddress.toAddress())),
+            RlpString.create(amountValue),
+            RlpString.create(data),
+            RlpString.create(directCallTxType.toBigInteger()),
+            RlpString.create(BigInteger(address, 16)),
+            RlpString.create(contractCallSubType.toBigInteger())
+        ))
+        val encoded = RlpEncoder.encode(rlpList)
+        val eventHash = Hash.keccak256(encoded).bytesToHex()
+        evmTransactionSigned(txId, true)
+        logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
+        callback.invoke(eventHash.toAddress())
+        refreshBalance(value.toFloat())
     }
-    logd(EvmInterface.TAG, "account nonce:$nonce")
-    val directCallTxType = 255
-    val contractCallSubType = 5
-    val rlpList = RlpList(listOf<RlpType>(
-      RlpString.create(nonce.toBigInteger()),
-      RlpString.create(BigInteger.ZERO),
-      RlpString.create(gasValue.toBigInteger()),
-      RlpString.create(Numeric.hexStringToByteArray(toAddress.toAddress())),
-      RlpString.create(amountValue),
-      RlpString.create(data),
-      RlpString.create(directCallTxType.toBigInteger()),
-      RlpString.create(BigInteger(address, 16)),
-      RlpString.create(contractCallSubType.toBigInteger())
-    ))
-    val encoded = RlpEncoder.encode(rlpList)
-    val eventHash = Hash.keccak256(encoded).bytesToHex()
-    evmTransactionSigned(txId, true)
-    logd(EvmInterface.TAG, "eth transaction hash:$eventHash")
-    callback.invoke(eventHash.toAddress())
-    refreshBalance(value.toFloat())
-  }
 }
 
 
 private fun evmTransactionSigned(txId: String, isSuccess: Boolean) {
-  MixpanelManager.evmTransactionSigned(
-    txId = txId,
-    flowAddress = WalletManager.wallet()?.walletAddress().orEmpty(),
-    evmAddress = EVMWalletManager.getEVMAddress().orEmpty(),
-    isSuccess = isSuccess
-  )
+    MixpanelManager.evmTransactionSigned(
+        txId = txId,
+        flowAddress = WalletManager.wallet()?.walletAddress().orEmpty(),
+        evmAddress = EVMWalletManager.getEVMAddress().orEmpty(),
+        isSuccess = isSuccess
+    )
 }
 
 private fun jsonArrayToByteArray(jsonArray: JsonArray): ByteArray {
-  val byteArray = ByteArray(jsonArray.size)
-  for (i in jsonArray.indices) {
-    val byteValue = (jsonArray[i] as JsonPrimitive).int and 0xFF
-    byteArray[i] = byteValue.toByte()
-  }
-  return byteArray
+    val byteArray = ByteArray(jsonArray.size)
+    for (i in jsonArray.indices) {
+        val byteValue = (jsonArray[i] as JsonPrimitive).int and 0xFF
+        byteArray[i] = byteValue.toByte()
+    }
+    return byteArray
 }
 
 fun refreshBalance(value: Float) {
-  if (WalletManager.isEVMAccountSelected() && value > 0) {
-    ioScope {
-      FungibleTokenListManager.updateTokenList()
+    if (WalletManager.isEVMAccountSelected() && value > 0) {
+        ioScope {
+            FungibleTokenListManager.updateTokenList()
+        }
     }
-  }
 }
 
 suspend fun signTypedData(data: ByteArray): String {
-  val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-  val address = WalletManager.wallet()?.walletAddress() ?: return ""
-  val flowAddress = FlowAddress(address)
-  val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val flowAddress = FlowAddress(address)
+    val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
-  val signableData = DomainTag.User.bytes + data
-  val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256).sign(signableData)
-  val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
-  val encoded = RlpEncoder.encode(rlpList)
+    val signableData = DomainTag.User.bytes + data
+    val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256).sign(signableData)
+    val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
+    val encoded = RlpEncoder.encode(rlpList)
 
-  logd(EvmInterface.TAG, "signableData:::${signableData.bytesToHex()}")
-  logd(EvmInterface.TAG, "sign:::${sign.bytesToHex()}")
-  logd(EvmInterface.TAG, "encoded:::${encoded.bytesToHex()}")
-  logd(EvmInterface.TAG, "signResult:::${Numeric.toHexString(encoded)}")
+    logd(EvmInterface.TAG, "signableData:::${signableData.bytesToHex()}")
+    logd(EvmInterface.TAG, "sign:::${sign.bytesToHex()}")
+    logd(EvmInterface.TAG, "encoded:::${encoded.bytesToHex()}")
+    logd(EvmInterface.TAG, "signResult:::${Numeric.toHexString(encoded)}")
 
-  return Numeric.toHexString(encoded)
+    return Numeric.toHexString(encoded)
 }
 
 suspend fun signEthereumMessage(message: String): String {
-  val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-  val address = WalletManager.wallet()?.walletAddress() ?: return ""
-  val flowAddress = FlowAddress(address)
-  val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
+    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val flowAddress = FlowAddress(address)
+    val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
-  val hashedData = hashPersonalMessage(message.toByteArray())
-  val signableData = DomainTag.User.bytes + hashedData
-  val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256).sign(signableData)
-  val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
-  val encoded = RlpEncoder.encode(rlpList)
+    val hashedData = hashPersonalMessage(message.toByteArray())
+    val signableData = DomainTag.User.bytes + hashedData
+    val sign = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256).sign(signableData)
+    val rlpList = RlpList(asRlpValues(keyIndex, flowAddress.bytes, sign))
+    val encoded = RlpEncoder.encode(rlpList)
 
-  logd(EvmInterface.TAG, "hashedData:::${hashedData.bytesToHex()}")
-  logd(EvmInterface.TAG, "signableData:::${signableData.bytesToHex()}")
-  logd(EvmInterface.TAG, "sign:::${sign.bytesToHex()}")
-  logd(EvmInterface.TAG, "encoded:::${encoded.bytesToHex()}")
-  logd(EvmInterface.TAG, "signResult:::${Numeric.toHexString(encoded)}")
+    logd(EvmInterface.TAG, "hashedData:::${hashedData.bytesToHex()}")
+    logd(EvmInterface.TAG, "signableData:::${signableData.bytesToHex()}")
+    logd(EvmInterface.TAG, "sign:::${sign.bytesToHex()}")
+    logd(EvmInterface.TAG, "encoded:::${encoded.bytesToHex()}")
+    logd(EvmInterface.TAG, "signResult:::${Numeric.toHexString(encoded)}")
 
-  return Numeric.toHexString(encoded)
+    return Numeric.toHexString(encoded)
 }
 
 private fun asRlpValues(keyIndex: Int, address: ByteArray, signature: ByteArray): List<RlpType> {
-  return listOf(
-    RlpList(RlpString.create(keyIndex.toBigInteger())),
-    RlpString.create(address),
-    RlpString.create("evm"),
-    RlpList(RlpString.create(signature))
-  )
+    return listOf(
+        RlpList(RlpString.create(keyIndex.toBigInteger())),
+        RlpString.create(address),
+        RlpString.create("evm"),
+        RlpList(RlpString.create(signature))
+    )
 }
 
 private fun hashPersonalMessage(message: ByteArray): ByteArray {
-  val messagePrefix = "\u0019Ethereum Signed Message:\n"
-  val prefix = (messagePrefix + message.size).toByteArray()
-  val result = ByteArray(prefix.size + message.size)
-  System.arraycopy(prefix, 0, result, 0, prefix.size)
-  System.arraycopy(message, 0, result, prefix.size, message.size)
-  return Hash.keccak256(result)
+    val messagePrefix = "\u0019Ethereum Signed Message:\n"
+    val prefix = (messagePrefix + message.size).toByteArray()
+    val result = ByteArray(prefix.size + message.size)
+    System.arraycopy(prefix, 0, result, 0, prefix.size)
+    System.arraycopy(message, 0, result, prefix.size, message.size)
+    return Hash.keccak256(result)
 }

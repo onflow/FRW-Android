@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.token.formatCadence
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -285,20 +284,10 @@ suspend fun cadenceQueryMinFlowBalance(): BigDecimal? {
 }
 
 suspend fun cadenceCreateCOAAccount(): String? {
-    logd(TAG, "cadenceCreateCOAAccount() - Starting COA account creation")
-    try {
-        val transactionId = CadenceScript.CADENCE_CREATE_COA_ACCOUNT.transactionByMainWallet {}
-        if (transactionId.isNullOrBlank()) {
-            loge(TAG, "cadenceCreateCOAAccount() - transactionByMainWallet returned null or empty")
-        } else {
-            logd(TAG, "cadenceCreateCOAAccount() - Successfully created transaction: $transactionId")
-        }
-        return transactionId
-    } catch (e: Exception) {
-        loge(TAG, "cadenceCreateCOAAccount() - Exception occurred: ${e.message}")
-        e.printStackTrace()
-        return null
-    }
+    logd(TAG, "cadenceCreateCOAAccount()")
+    val transactionId = CadenceScript.CADENCE_CREATE_COA_ACCOUNT.transactionByMainWallet {}
+    logd(TAG, "cadenceCreateCOAAccount() transactionId:$transactionId")
+    return transactionId
 }
 
 suspend fun cadenceCheckCOALink(address: String): Boolean? {
@@ -723,84 +712,34 @@ suspend fun CadenceScript.transactionByMainWallet(arguments: CadenceArgumentsBui
 suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
     val wallet = WalletManager.wallet()
-    var walletAddress = if (wallet != null) {
+    val walletAddress = if (wallet != null) {
         wallet.walletAddress()
     } else {
         // Handle hardware-backed keys where wallet() returns null
-        logd(TAG, "Wallet is null (likely hardware-backed key), using selectedWalletAddress()")
-        WalletManager.selectedWalletAddress()
+        logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
+        wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
     }
 
-    // Verify account is available in AccountManager (required by sendTransaction)
-    val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
-    val accountList = com.flowfoundation.wallet.manager.account.AccountManager.list()
-    
-    // If walletAddress is empty, try to find an account with Flow address
-    if (walletAddress.isNullOrBlank()) {
-        logd(TAG, "transactionByMainWallet() - walletAddress is empty, searching for account with Flow address")
-        val accountWithAddress = accountList.firstOrNull { acc ->
-            val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-            accAddressString != null && accAddressString.isNotBlank()
-        }
-        if (accountWithAddress != null) {
-            walletAddress = accountWithAddress.getFlowAddress(currentNetwork, TAG)
-            logd(TAG, "transactionByMainWallet() - Found account with Flow address: $walletAddress")
-        }
-    }
-    
-    if (walletAddress.isNullOrBlank()) {
-        loge(TAG, "transactionByMainWallet() failed: no wallet address available")
-        accountList.forEach { acc ->
-            val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-            logd(TAG, "transactionByMainWallet() - Account in list: username=${acc.userInfo.username}, address=$accAddressString")
-        }
+    if (walletAddress == null) {
+        logd(TAG, "transactionByMainWallet() failed: no wallet address available")
         return null
     }
 
-    logd(TAG, "transactionByMainWallet() walletAddress:$walletAddress, scriptId: $scriptId")
-    
-    val account = accountList.find { acc ->
-        val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-        accAddressString != null && accAddressString.lowercase() == walletAddress.lowercase()
-    }
-    
-    if (account == null) {
-        loge(TAG, "transactionByMainWallet() - Account not found in AccountManager for address: $walletAddress")
-        loge(TAG, "transactionByMainWallet() - AccountManager.list() size: ${accountList.size}")
-        accountList.forEach { acc ->
-            val accAddressString = acc.getFlowAddress(currentNetwork, TAG)
-            logd(TAG, "transactionByMainWallet() - Account in list: username=${acc.userInfo.username}, address=$accAddressString")
-        }
-        return null
-    }
-    
-    logd(TAG, "transactionByMainWallet() - Account found: username=${account.userInfo.username}, prefix=${account.prefix}")
-    
+    logd(TAG, "transactionByMainWallet() walletAddress:$walletAddress")
     val args = CadenceArgumentsBuilder().apply { arguments(this) }
     val txId = try {
-        logd(TAG, "transactionByMainWallet() - Calling sendTransaction with scriptId: $scriptId")
-        val result = sendTransaction {
+        sendTransaction {
             args.build().forEach { arg(it) }
             walletAddress(walletAddress)
             script(this@transactionByMainWallet.addPlatformInfo())
             scriptId(scriptId)
         }
-        if (result.isNullOrBlank()) {
-            loge(TAG, "transactionByMainWallet() - sendTransaction returned null or empty")
-        } else {
-            logd(TAG, "transactionByMainWallet() - sendTransaction returned: $result")
-        }
-        result
     } catch (e: Exception) {
-        loge(TAG, "transactionByMainWallet() - Exception in sendTransaction: ${e.message}")
-        loge(TAG, "transactionByMainWallet() - Exception type: ${e.javaClass.simpleName}")
-        e.printStackTrace()
+        loge(e)
         null
     }?.apply {
         TransactionStateManager.recordTransactionScript(this, scriptId)
-        logd(TAG, "transactionByMainWallet() - Transaction recorded with scriptId: $scriptId")
     }
-    logd(TAG, "transactionByMainWallet() - Returning txId: $txId")
     return txId
 }
 
@@ -811,11 +750,11 @@ suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArguments
         wallet.walletAddress()
     } else {
         // Handle hardware-backed keys where wallet() returns null
-        logd(TAG, "Wallet is null (likely hardware-backed key), using selectedWalletAddress()")
-        WalletManager.selectedWalletAddress()
+        logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
+        wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
     }
 
-    if (walletAddress.isNullOrBlank()) {
+    if (walletAddress == null) {
         logd(TAG, "transactionWithBridgePayer() failed: no wallet address available")
         return null
     }
