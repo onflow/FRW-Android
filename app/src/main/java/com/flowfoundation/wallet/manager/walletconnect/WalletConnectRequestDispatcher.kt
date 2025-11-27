@@ -520,7 +520,11 @@ private suspend fun WCRequest.respondAuthz() {
                         reject()
                         return@ioScope
                     }
-                    approve(fclAuthzResponse(cleanAddress, signature, keyId))
+                    val redirectUrl = findRedirectUrl()
+                    approve(fclAuthzResponse(cleanAddress, signature, keyId)) {
+                        logd(TAG, "Authz response sent successfully for topic: $topic")
+                        handleRedirectIfNeeded(redirectUrl, activity)
+                    }
                 } else reject()
             }
         }
