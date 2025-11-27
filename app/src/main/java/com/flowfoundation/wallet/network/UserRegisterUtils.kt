@@ -192,9 +192,11 @@ suspend fun registerOutblock(
 
                     // Log the wallet addresses from backend
                     logd(TAG, "Wallet list data:")
-                    logd(TAG, "  - Blockchain count: ${walletListData.blockchain?.size}")
-                    walletListData.blockchain?.forEach { blockchain ->
-                        logd(TAG, "  - Blockchain: ${blockchain.chainId}, Address: ${blockchain.address}")
+                    logd(TAG, "  - Wallets count: ${walletListData.wallets?.size}")
+                    walletListData.wallets?.forEach { wallet ->
+                        wallet.blockchain?.forEach { blockchain ->
+                            logd(TAG, "  - Blockchain: ${blockchain.chainId}, Address: ${blockchain.address}")
+                        }
                     }
                     logd(TAG, "Expected Flow address from transaction: $createdFlowAddress")
 
@@ -313,7 +315,6 @@ private suspend fun registerOutblockUserInternal(
             return
         }
         logd(TAG, "SYNC Register userId:::${user.data.uid}")
-        logd(TAG, "Transaction ID from /v3/register: ${user.data.txId}")
         logd(TAG, "start delete user")
         registerFirebase(user) { isSuccess ->
             if (!isSuccess) {
@@ -461,8 +462,6 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
             logd(TAG, "  - status: ${user.status}")
             logd(TAG, "  - message: ${user.message}")
             logd(TAG, "  - data.uid: ${user.data.uid}")
-            logd(TAG, "  - data.txId: ${user.data.txId}")
-            logd(TAG, "  - data.txId isNullOrBlank: ${user.data.txId.isNullOrBlank()}")
             logd(TAG, "  - data.customToken length: ${user.data.customToken.length}")
 
             if (user.status > 400) {
