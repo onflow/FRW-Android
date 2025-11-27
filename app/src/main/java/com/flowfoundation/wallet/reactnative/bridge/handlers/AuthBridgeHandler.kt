@@ -83,7 +83,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", true)
                     response.putString("address", address)
                     response.putString("username", account?.userInfo?.username ?: username)
-                    response.putString("accountType", "coa")
+                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
                     response.putNull("error")
 
                     uiScope {
@@ -97,7 +97,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putString("accountType", "coa")
+                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
                     response.putString("error", "Failed to register secure type account. Check logs for details.")
 
                     uiScope {
@@ -112,7 +112,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 response.putBoolean("success", false)
                 response.putNull("address")
                 response.putNull("username")
-                response.putString("accountType", "coa")
+                response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
                 response.putString("error", e.message ?: "Unknown error")
 
                 uiScope {
@@ -867,20 +867,79 @@ private fun setupAccountAndWallet(
     ): CryptoProvider {
         logd(TAG, "setupAccountAndWallet() - Setting up AccountManager and WalletManager...")
 
+                                // Clear any cached EOA address from previous accounts FIRST
+                                // This must happen before AccountManager.add() to prevent drawer from reading stale cache
+                                // Secure enclave accounts don't have EOAs (hardware-backed keys only)
+                                WalletManager.clearEOAAddressCache()
+                                
+                                // Also clear EVMWalletManager which may have persisted EOA data
+                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
+                                
+                                logd(TAG, "setupAccountAndWallet() - Cleared EOA address cache and EVM data before adding new account")
+
+                                // Log wallet data structure for debugging
+                                logd(TAG, "setupAccountAndWallet() - WalletListData: wallets count=${walletListData.wallets?.size}")
+                                walletListData.wallets?.forEachIndexed { idx, wallet ->
+                                    logd(TAG, "setupAccountAndWallet() -   Wallet $idx: name=${wallet.name}, blockchain count=${wallet.blockchain?.size}")
+                                    wallet.blockchain?.forEach { blockchain ->
+                                        logd(TAG, "setupAccountAndWallet() -     Blockchain: chainId=${blockchain.chainId}, address=${blockchain.address}")
+                                    }
+                                }
+
                                 // Add account to AccountManager
                                 AccountManager.add(
                                     Account(
                                         userInfo = userInfo,
                                         prefix = prefix,
-                                        wallet = walletListData
+                                        wallet = walletListData,
+                                        evmAddressData = null // Explicitly set to null for new account (no EOA for secure enclave)
                                     ),
                                     com.flowfoundation.wallet.firebase.auth.firebaseUid()
                                 )
         logd(TAG, "setupAccountAndWallet() - Account added to AccountManager")
 
+                                // Reinitialize EVMWalletManager to load clean state from the new account
+                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.init()
+                                logd(TAG, "setupAccountAndWallet() - EVMWalletManager reinitialized with clean state")
+
+                                // Initialize AccountEmojiManager to generate emoji list for the new account
+                                com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
+                                logd(TAG, "setupAccountAndWallet() - AccountEmojiManager initialized for new account")
+
                                 // Initialize WalletManager
                                 WalletManager.init()
         logd(TAG, "setupAccountAndWallet() - WalletManager initialized")
+                                
+                                // Wait for WalletManager to initialize, then select the Flow address
+                                WalletManager.onWalletReady {
+                                    logd(TAG, "setupAccountAndWallet() - WalletManager ready callback triggered")
+                                    
+                                    // Get the Flow address from AccountManager (should be populated now)
+                                    val currentAcct = AccountManager.get()
+                                    
+                                    // Find the first wallet that has a blockchain address (don't just use firstOrNull)
+                                    val flowAddr = currentAcct?.wallet?.wallets
+                                        ?.firstOrNull { wallet -> wallet.blockchain?.any { it.address.isNotBlank() } == true }
+                                        ?.blockchain?.firstOrNull()?.address
+                                    
+                                    if (!flowAddr.isNullOrBlank()) {
+                                        val formattedAddr = if (flowAddr.startsWith("0x")) flowAddr else "0x$flowAddr"
+                                        WalletManager.selectWalletAddress(formattedAddr)
+                                        logd(TAG, "setupAccountAndWallet() - Wallet ready: Selected Flow address: $formattedAddr")
+                                        
+                                        // Trigger UI update to refresh drawer with new account
+                                        com.flowfoundation.wallet.utils.uiScope {
+                                            AccountManager.updateWalletInfo(currentAcct.wallet!!)
+                                            logd(TAG, "setupAccountAndWallet() - Wallet ready: Triggered UI refresh")
+                                        }
+                                    } else {
+                                        logd(TAG, "setupAccountAndWallet() - Wallet ready: Warning - Flow address still not available")
+                                    }
+                                }
+
+                                // Close the drawer immediately to prevent showing old account data
+                                com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
+                                logd(TAG, "setupAccountAndWallet() - Closed drawer to prevent flash of old account data")
 
         // Get crypto provider for the current account
                                 val currentAccount = AccountManager.get()

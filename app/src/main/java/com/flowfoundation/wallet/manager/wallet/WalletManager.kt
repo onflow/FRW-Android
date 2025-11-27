@@ -85,13 +85,13 @@ object WalletManager {
   }
 
   /**
-   * Synchronously cache EOA address (for use after wallet initialization)
+   * Synchronously cache an EOA address (used during registration)
    */
-  fun cacheEOAAddressSync(eoaAddress: String) {
+  fun cacheEOAAddressSync(address: String?) {
     synchronized(initializationLock) {
-      cachedEOAAddress = eoaAddress
+      cachedEOAAddress = address
       eoaAddressCacheTime = System.currentTimeMillis()
-      logd(TAG, "Synchronously cached EOA address: $eoaAddress")
+      logd(TAG, "Synchronously cached EOA address: $address")
     }
   }
 
@@ -117,12 +117,13 @@ object WalletManager {
   }
 
   /**
-   * Clear EOA address cache
+   * Clear EOA address cache (public for account switching/creation)
    */
-  private fun clearEOAAddressCache() {
+  fun clearEOAAddressCache() {
     synchronized(initializationLock) {
       cachedEOAAddress = null
       eoaAddressCacheTime = 0L
+      logd(TAG, "EOA address cache cleared")
     }
   }
 
@@ -888,6 +889,7 @@ object WalletManager {
       }
     }
   }
+
 }
 
 // Extension functions for backward compatibility

@@ -1,7 +1,5 @@
 package com.flowfoundation.wallet.network
 
-import com.flowfoundation.wallet.manager.account.model.EVMTokenBalanceResponse
-import com.flowfoundation.wallet.manager.coin.model.TokenPriceResponse
 import com.flowfoundation.wallet.network.model.*
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -16,10 +14,7 @@ interface ApiService {
     @POST("/v1/user/address")
     suspend fun createWallet(): CreateWalletResponse
 
-    @POST("/v2/user/address")
-    suspend fun createFlowAddress(): CreateFlowAddressResponse
-
-    @GET("/v1/user/check")
+  @GET("/v1/user/check")
     suspend fun checkUsername(@Query("username") username: String): UsernameCheckResponse
 
     @GET("/v2/user/wallet")

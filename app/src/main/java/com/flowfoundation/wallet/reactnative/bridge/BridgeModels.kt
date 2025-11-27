@@ -25,8 +25,8 @@ class RNBridge {
     }
 
     enum class AccountTypeType {
-        @SerializedName("eoa") EOA,
-        @SerializedName("coa") COA,
+        @SerializedName("full") FULL,      // Mnemonic-based account with seed phrase
+        @SerializedName("hardware") HARDWARE,  // Secure enclave with hardware-backed keys
         @SerializedName("null") NULL
     }
 

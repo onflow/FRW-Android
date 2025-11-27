@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.firebase.messaging.uploadPushToken
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.WalletEmojiInfo
+import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.evm.EVMAddressData
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
@@ -255,6 +256,10 @@ object AccountManager {
             UserPrefixCacheManager.cache(UserPrefixes().apply { addAll(userPrefixes) })
         }
         initEmojiAndEVMInfo()
+
+        // Dispatch to listeners to refresh UI (e.g., sidebar/drawer account list)
+        dispatchListeners(account)
+        logd(TAG, "Dispatched account update to listeners after adding account")
     }
 
     fun get(): Account? {
