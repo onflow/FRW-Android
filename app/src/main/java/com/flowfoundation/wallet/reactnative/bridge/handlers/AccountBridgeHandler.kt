@@ -145,33 +145,6 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 try {
                     val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
                     childAccounts?.forEach { childAccount ->
-                        // For secure enclave COA accounts, check if the address has EVM capabilities
-                        // If it does, set type to EVM instead of CHILD
-                        // Check both evmAddressMap and getEVMAddress() since evmAddressMap might not be populated yet
-                        // For hardware-backed keys (secure enclave), WalletManager.wallet() returns null
-                        val childAccountType = try {
-                            val isSecureEnclave = WalletManager.wallet() == null
-
-                            // For secure enclave accounts (hardware-backed keys), child accounts are COA accounts which are EVM
-                            val isEVM = if (isSecureEnclave) {
-                                // Secure enclave: COA accounts are EVM accounts
-                                true
-                            } else {
-                                // EOA accounts: check if address has EVM capabilities
-                                EVMWalletManager.isEVMWalletAddress(childAccount.address) ||
-                                childAccount.address.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                                isValidEVMAddress(childAccount.address)
-                            }
-
-                            if (isEVM) {
-                                RNBridge.AccountType.EVM
-                            } else {
-                                RNBridge.AccountType.CHILD
-                            }
-                        } catch (e: Exception) {
-                            RNBridge.AccountType.CHILD
-                        }
-
                         val childAccountBridge = RNBridge.WalletAccount(
                             id = "child_${childAccount.address}",
                             name = childAccount.name,
@@ -179,9 +152,9 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                             emojiInfo = null,
                             parentEmoji = mainEmojiInfo,
                             parentAddress = mainAddress,
-                            avatar = childAccount.icon, // Include the squid avatar!
+                            avatar = childAccount.icon,
                             isActive = isSelectedWalletAddress(childAccount.address),
-                            type = childAccountType,
+                            type = RNBridge.AccountType.CHILD,
                             balance = null,
                             nfts = null,
                         )
@@ -193,10 +166,11 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 }
 
                 // Get EVM address if available
-                // For secure enclave (hardware-backed keys), skip adding separate EVM account entry
+                // For Secure Type (hardware-backed keys), skip adding separate EVM account entry
                 // because the COA child account already represents the EVM account
                 var evmAddress: String? = null
-                val isSecureEnclave = WalletManager.wallet() == null
+                val currentAccount = AccountManager.get()
+                val isSecureType = !currentAccount?.prefix.isNullOrBlank()
 
                 try {
                     evmAddress = EVMWalletManager.getEVMAddress()
@@ -209,9 +183,9 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         } ?: false
 
                         // Only add EVM account entry if:
-                        // 1. Not secure enclave (EOA flow), OR
+                        // 1. Not Secure Type (Recovery Phrase flow), OR
                         // 2. EVM address doesn't match any child account (shouldn't happen, but safety check)
-                        if (!isSecureEnclave || !evmMatchesChildAccount) {
+                        if (!isSecureType || !evmMatchesChildAccount) {
                             val evmEmojiInfo = createEmojiInfo(evmAddress)
 
                             val evmAccount = RNBridge.WalletAccount(
@@ -236,25 +210,22 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 }
 
                 // Get EOA address only if it's different from EVM address
-                // For secure enclave (COA) accounts, EOA and EVM addresses are the same,
+                // For Secure Type (COA) accounts, EOA and EVM addresses are the same,
                 // so we should only show the EVM account to avoid duplicate "EOA" chip
                 try {
                     val eoaAddress = WalletManager.getEOAAddressCached()
                     if (!eoaAddress.isNullOrEmpty()) {
                         // Only add EOA account if it's different from EVM address
-                        // Check if account is Secure Enclave by checking if it has a prefix
-                        // Recovery Phrase accounts have a prefix, Secure Enclave accounts don't
-                        val currentAccount = AccountManager.get()
-                        val isSecureEnclaveAccount = currentAccount?.prefix.isNullOrBlank() &&
-                            currentAccount?.keyStoreInfo.isNullOrBlank()
+                        // Secure Type accounts have a prefix field, Recovery Phrase accounts don't
+                        val isSecureTypeAccount = !currentAccount?.prefix.isNullOrBlank()
 
                         // Only add EOA if:
                         // 1. EOA address is different from EVM address, AND
-                        // 2. Account is NOT Secure Enclave (has prefix or keystore info)
+                        // 2. Account is NOT Secure Type (Recovery Phrase account)
                         val isDifferentFromEVM = evmAddress == null ||
                             !eoaAddress.equals(evmAddress, ignoreCase = true)
 
-                        if (isDifferentFromEVM && !isSecureEnclaveAccount) {
+                        if (isDifferentFromEVM && !isSecureTypeAccount) {
                             val eoaEmojiInfo = createEmojiInfo(eoaAddress)
                             val eoaAccount = RNBridge.WalletAccount(
                                 id = "eoa",
@@ -342,35 +313,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
-                    // For child accounts, check if they have EVM capabilities (e.g., secure enclave COA accounts)
-                    // Check both evmAddressMap and getEVMAddress() since evmAddressMap might not be populated yet
-                    // For hardware-backed keys (secure enclave), WalletManager.wallet() returns null
-                    WalletManager.isChildAccount(selectedAddress) -> {
-                        val isSecureEnclave = WalletManager.wallet() == null
-
-                        val isEVM = if (isSecureEnclave) {
-                            // Secure enclave: COA accounts are EVM accounts
-                            true
-                        } else {
-                            // EOA accounts: check if address has EVM capabilities
-                            try {
-                                EVMWalletManager.isEVMWalletAddress(selectedAddress) ||
-                                selectedAddress.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                                isValidEVMAddress(selectedAddress)
-                            } catch (e: Exception) {
-                                false
-                            }
-                        }
-
-                        if (isEVM) {
-                            RNBridge.AccountType.EVM
-                        } else {
-                            RNBridge.AccountType.CHILD
-                        }
-                    }
-                    // For secure enclave COA accounts, the main address might be the EVM address
-                    // Check if selected address is the main address and has EVM capabilities
-                    selectedAddress.equals(mainAddress, ignoreCase = true) && EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
+                    WalletManager.isChildAccount(selectedAddress) -> RNBridge.AccountType.CHILD
                     EVMWalletManager.isEOAAddress(selectedAddress) -> RNBridge.AccountType.EOA
                     else -> RNBridge.AccountType.MAIN
                 }
@@ -487,33 +430,6 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
             try {
                 val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
                 childAccounts?.forEach { childAccount ->
-                    // For secure enclave COA accounts, check if the address has EVM capabilities
-                    // If it does, set type to EVM instead of CHILD
-                    // Check both evmAddressMap and getEVMAddress() since evmAddressMap might not be populated yet
-                    // For hardware-backed keys (secure enclave), WalletManager.wallet() returns null
-                    val childAccountType = try {
-                        val isSecureEnclave = WalletManager.wallet() == null
-
-                        // For secure enclave accounts (hardware-backed keys), child accounts are COA accounts which are EVM
-                        val isEVM = if (isSecureEnclave) {
-                            // Secure enclave: COA accounts are EVM accounts
-                            true
-                        } else {
-                            // EOA accounts: check if address has EVM capabilities
-                            EVMWalletManager.isEVMWalletAddress(childAccount.address) ||
-                            childAccount.address.equals(EVMWalletManager.getEVMAddress(), ignoreCase = true) ||
-                            isValidEVMAddress(childAccount.address)
-                        }
-
-                        if (isEVM) {
-                            RNBridge.AccountType.EVM
-                        } else {
-                            RNBridge.AccountType.CHILD
-                        }
-                    } catch (e: Exception) {
-                        RNBridge.AccountType.CHILD
-                    }
-
                     val childAccountBridge = RNBridge.WalletAccount(
                         id = "child_${childAccount.address}",
                         name = childAccount.name,
@@ -523,7 +439,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                         parentAddress = mainAddress,
                         avatar = childAccount.icon,
                         isActive = isSelectedWalletAddress(childAccount.address),
-                        type = childAccountType,
+                        type = RNBridge.AccountType.CHILD,
                         balance = null,
                         nfts = null,
                     )
@@ -534,13 +450,8 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
             }
 
             // Get EVM address if available
-            // For secure enclave (hardware-backed keys), skip adding separate EVM account entry
-            // because the COA child account already represents the EVM account
-            var evmAddress: String? = null
-            val isSecureEnclave = WalletManager.wallet() == null
-
             try {
-                evmAddress = if (isSelectedWalletAddress(mainAddress)) {
+                val evmAddress = if (isSelectedWalletAddress(mainAddress)) {
                     EVMWalletManager.getEVMAddress()
                 } else {
                     val address = account.evmAddressData?.evmAddressMap?.get(mainAddress)
@@ -557,78 +468,51 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                     }
                 }
                 if (!evmAddress.isNullOrEmpty()) {
-                    // Check if EVM address matches any child account address
-                    // If it does, don't add a separate EVM account entry (it's already represented as a child account)
-                    val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
-                    val evmMatchesChildAccount = childAccounts?.any {
-                        it.address.equals(evmAddress, ignoreCase = true)
-                    } ?: false
-
-                    // Only add EVM account entry if:
-                    // 1. Not secure enclave (EOA flow), OR
-                    // 2. EVM address doesn't match any child account (shouldn't happen, but safety check)
-                    if (!isSecureEnclave || !evmMatchesChildAccount) {
-                        val evmEmojiInfo = createEmojiInfo(evmAddress)
-                        val evmAccount = RNBridge.WalletAccount(
-                            id = "evm",
-                            name = evmEmojiInfo?.name ?: "EVM Account",
-                            address = evmAddress,
-                            parentAddress = mainAddress,
-                            emojiInfo = evmEmojiInfo,
-                            parentEmoji = mainEmojiInfo,
-                            avatar = null,
-                            isActive = isSelectedWalletAddress(evmAddress),
-                            type = RNBridge.AccountType.EVM,
-                            balance = null,
-                            nfts = null,
-                        )
-                        bridgeAccounts.add(evmAccount)
-                    }
+                    val evmEmojiInfo = createEmojiInfo(evmAddress)
+                    val evmAccount = RNBridge.WalletAccount(
+                        id = "evm",
+                        name = evmEmojiInfo?.name ?: "EVM Account",
+                        address = evmAddress,
+                        parentAddress = mainAddress,
+                        emojiInfo = evmEmojiInfo,
+                        parentEmoji = mainEmojiInfo,
+                        avatar = null,
+                        isActive = isSelectedWalletAddress(evmAddress),
+                        type = RNBridge.AccountType.EVM,
+                        balance = null,
+                        nfts = null,
+                    )
+                    bridgeAccounts.add(evmAccount)
                 }
             } catch (e: Exception) {
                 logw(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e.message}")
             }
 
-            // Get EOA address only if it's different from EVM address
-            // For secure enclave (COA) accounts, EOA and EVM addresses are the same,
-            // so we should only show the EVM account to avoid duplicate "EOA" chip
-            try {
-                val eoaAddress = if (isSelectedWalletAddress(mainAddress)) {
-                    WalletManager.getEOAAddressCached()
-                } else {
-                    ""
+            // Add EOA address only for currently selected wallet
+            // (Receive screen only shows current account, no need for non-selected EOA addresses)
+            if (isSelectedWalletAddress(mainAddress)) {
+                try {
+                    val eoaAddress = WalletManager.getEOAAddressCached()
+                    if (!eoaAddress.isNullOrEmpty()) {
+                        val eoaEmojiInfo = createEmojiInfo(eoaAddress)
+                        val eoaAccount = RNBridge.WalletAccount(
+                            id = "eoa",
+                            name = eoaEmojiInfo?.name ?: "EVM Account (EOA)",
+                            address = eoaAddress,
+                            parentAddress = mainAddress,
+                            emojiInfo = eoaEmojiInfo,
+                            parentEmoji = null,
+                            avatar = null,
+                            isActive = isSelectedWalletAddress(eoaAddress),
+                            type = RNBridge.AccountType.EOA,
+                            balance = null,
+                            nfts = null,
+                        )
+                        bridgeAccounts.add(eoaAccount)
+                    }
+                } catch (e: Exception) {
+                    logw(TAG, "createWalletProfileFromAccount() - EOA account not available: ${e.message}")
                 }
-              if (!eoaAddress.isNullOrEmpty()) {
-                  // Only add EOA account if it's different from EVM address
-                  // and if wallet has a mnemonic (not secure enclave)
-                  val isDifferentFromEVM = evmAddress == null ||
-                      !eoaAddress.equals(evmAddress, ignoreCase = true)
-                  val hasMnemonic = try {
-                      Wallet.store().mnemonic().isNotEmpty()
-                  } catch (e: Exception) {
-                      false // No mnemonic (secure enclave)
-                  }
-
-                  if (isDifferentFromEVM && hasMnemonic) {
-                      val eoaEmojiInfo = createEmojiInfo(eoaAddress)
-                      val eoaAccount = RNBridge.WalletAccount(
-                        id = "eoa",
-                        name = eoaEmojiInfo?.name ?: "EOA Account",
-                        address = eoaAddress,
-                        parentAddress = mainAddress,
-                        emojiInfo = eoaEmojiInfo,
-                        parentEmoji = mainEmojiInfo,
-                        avatar = null,
-                        isActive = isSelectedWalletAddress(eoaAddress),
-                        type = RNBridge.AccountType.EOA,
-                        balance = null,
-                        nfts = null,
-                      )
-                      bridgeAccounts.add(eoaAccount)
-                  }
-                }
-            } catch (e: Exception) {
-                logw(TAG, "createWalletProfileFromAccount() - EOA account not available: ${e.message}")
             }
 
             // Create wallet profile
