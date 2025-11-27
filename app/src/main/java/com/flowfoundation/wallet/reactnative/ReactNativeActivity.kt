@@ -72,6 +72,12 @@ class ReactNativeActivity : ReactActivity() {
         super.onCreate(savedInstanceState)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // When activity is reused with SINGLE_TOP, update the intent so getLaunchOptions() uses new data
+        setIntent(intent)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -126,8 +132,16 @@ class ReactNativeActivity : ReactActivity() {
         fun launchWithRoute(context: Context, screenType: RNBridge.ScreenType, initialRoute: RNBridge.InitialRoute) {
             val intent = Intent(context, ReactNativeActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+
+            // For onboarding, always create a fresh instance with CLEAR_TOP
+            // This ensures the initialRoute is properly set when launched from MainActivity
+            if (screenType == RNBridge.ScreenType.ONBOARDING) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            } else {
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            }
+
             intent.putExtra("screen", getScreenName(screenType))
             intent.putExtra("initialRoute", initialRoute.routeName)
             context.startActivity(intent)

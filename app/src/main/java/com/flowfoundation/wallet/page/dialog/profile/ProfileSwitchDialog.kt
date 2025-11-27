@@ -196,7 +196,11 @@ private fun ProfileSwitchContent(
                         if (isTestnet()) {
                             SwitchNetworkDialog(context, DialogType.CREATE).show()
                         } else {
-                            ReactNativeActivity.launch(context, RNBridge.ScreenType.ONBOARDING)
+                            ReactNativeActivity.launchWithRoute(
+                                context,
+                                RNBridge.ScreenType.ONBOARDING,
+                                RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
+                            )
                             onDismiss()
                         }
                     }
