@@ -25,3 +25,7 @@ google-services.json
 service-account.json
 /app/.cxx
 /app/release
+
+# React Native auto-generated resources
+app/src/main/res/drawable-*/__node_modules_*
+app/src/main/res/drawable-*/__packages_*
