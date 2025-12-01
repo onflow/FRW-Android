@@ -6,6 +6,7 @@ import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
+import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.flowfoundation.wallet.reactnative.bridge.handlers.AccountBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.AuthBridgeHandler
 import com.flowfoundation.wallet.reactnative.bridge.handlers.UIBridgeHandler
@@ -26,6 +27,21 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     private val authHandler = AuthBridgeHandler(reactContext)
     private val uiHandler = UIBridgeHandler(reactContext)
     private val walletHandler = WalletBridgeHandler(reactContext)
+
+    /**
+     * Send an event to React Native JavaScript
+     * @param eventName The name of the event
+     * @param params The parameters to send with the event
+     */
+    fun sendEvent(eventName: String, params: WritableMap?) {
+        try {
+            reactApplicationContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit(eventName, params)
+        } catch (e: Exception) {
+            logd(TAG, "Failed to send event $eventName: ${e.message}")
+        }
+    }
 
     init {
         logd(TAG, "NativeFRWBridge initialized with context: ${reactContext != null}")
@@ -158,7 +174,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun clearAllToasts() = uiHandler.clearAllToasts()
 
-    override fun registerSecureTypeAccount(username: String, promise: Promise) = authHandler.registerSecureTypeAccount(username, promise)
+    override fun registerSecureTypeAccount(username: String, promise: Promise) = authHandler.registerSecureTypeAccount(username, promise, ::sendEvent)
 
     override fun registerAccountWithBackend(promise: Promise) = authHandler.registerAccountWithBackend(promise)
 
@@ -168,7 +184,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun signInWithCustomToken(customToken: String, promise: Promise) = authHandler.signInWithCustomToken(customToken, promise)
 
-    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise) = authHandler.saveMnemonic(mnemonic, customToken, txId, username, promise)
+    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise) = authHandler.saveMnemonic(mnemonic, customToken, txId, username, promise, ::sendEvent)
 
     override fun requestNotificationPermission(promise: Promise) = utilsHandler.requestNotificationPermission(promise)
 

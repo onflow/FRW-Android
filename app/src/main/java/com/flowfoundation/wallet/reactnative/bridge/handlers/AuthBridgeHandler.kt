@@ -53,12 +53,18 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun registerSecureTypeAccount(username: String, promise: Promise) {
+    fun registerSecureTypeAccount(username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
         logd(TAG, "registerSecureTypeAccount() called - Registering Secure Type Account (Secure Enclave)")
         logd(TAG, "registerSecureTypeAccount() - username: $username")
         ioScope {
             try {
+                // Send progress: 0% - Starting
+                sendProgressEvent(sendEvent, 0, "Starting account creation")
+
                 logd(TAG, "registerSecureTypeAccount() - starting account registration...")
+
+                // Send progress: 20% - Generating keys
+                sendProgressEvent(sendEvent, 20, "Generating secure keys")
 
                 // Use the existing registerOutblock function which creates a Secure Type/COA account:
                 // - Generates keys (secure enclave on supported devices)
@@ -66,9 +72,16 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 // - Creates Flow blockchain account
                 // - Sets up Firebase authentication
                 // - Creates local Account in AccountManager
+                
+                // Send progress: 40% - Registering with backend
+                sendProgressEvent(sendEvent, 40, "Registering with backend")
+                
                 val success = com.flowfoundation.wallet.network.registerOutblock(username)
 
                 if (success) {
+                    // Send progress: 80% - Account created
+                    sendProgressEvent(sendEvent, 80, "Account created successfully")
+                    
                     logd(TAG, "registerSecureTypeAccount() - account created successfully")
 
                     // Get the created account details
@@ -77,6 +90,12 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                     // Note: Secure Type accounts use hardware-backed keys (Secure Enclave)
                     // No mnemonic is generated or stored for these accounts
+
+                    // Send progress: 100% - Complete
+                    sendProgressEvent(sendEvent, 100, "Account ready")
+
+                    // Small delay to ensure progress events are delivered before promise resolves
+                    kotlinx.coroutines.delay(100)
 
                     // Create success response using WritableMap
                     val response = WritableNativeMap()
@@ -508,12 +527,15 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise) {
+    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
         logd(TAG, "saveMnemonic() called - EOA account initialization")
         logd(TAG, "saveMnemonic() - txId: $txId, username: $username")
 
         ioScope {
             try {
+                // Send progress: 0% - Starting
+                sendProgressEvent(sendEvent, 0, "Starting account setup")
+
                 // Clear in-memory caches from previous active account FIRST
                 // This prevents stale data from appearing in the UI
                 WalletManager.clear()
@@ -522,9 +544,11 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 logd(TAG, "saveMnemonic() - Cleared all in-memory caches before adding new account")
 
                 // Step 8: Securely store the mnemonic
+                sendProgressEvent(sendEvent, 5, "Securing recovery phrase")
                 val prefix = storeMnemonicSecurely(mnemonic)
 
                 // Step 9: Authenticate with Firebase
+                sendProgressEvent(sendEvent, 10, "Authenticating account")
                 authenticateWithFirebase(
                     customToken = customToken,
                     onSuccess = {
@@ -532,6 +556,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                             try {
                                 // Force Firebase ID token refresh to get the new account's JWT
                                 // This ensures API requests use the new account's credentials
+                                sendProgressEvent(sendEvent, 15, "Verifying authentication")
                                 logd(TAG, "saveMnemonic() - Forcing Firebase ID token refresh...")
                                 var tokenRefreshed = false
                                 var refreshAttempts = 0
@@ -583,15 +608,18 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 // Step 10: Initialize Wallet-Kit
+                                sendProgressEvent(sendEvent, 25, "Initializing wallet")
                                 val seedPhraseKey = initializeWalletKit(mnemonic, prefix)
 
                                 // Fetch user info from backend
+                                sendProgressEvent(sendEvent, 30, "Fetching account info")
                                 val service = com.flowfoundation.wallet.network.retrofit()
                                     .create(com.flowfoundation.wallet.network.ApiService::class.java)
                                 val userInfoResponse = service.userInfo()
                                 val userInfo = userInfoResponse.data
 
                                 // Create Flow account on-chain via backend API
+                                sendProgressEvent(sendEvent, 35, "Creating Flow account")
                                 logd(TAG, "saveMnemonic() - Creating Flow account via /v1/user/address...")
                                 try {
                                     val createWalletResponse = service.createWallet()
@@ -602,6 +630,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 // Wait for wallet address to be populated by server (may take a few seconds after account creation)
+                                sendProgressEvent(sendEvent, 40, "Waiting for blockchain confirmation")
                                 logd(TAG, "saveMnemonic() - Waiting for server to index Flow account address...")
                                 var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
                                 var retries = 0
@@ -610,6 +639,12 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 
                                 while (retries < maxRetries) {
                                     try {
+                                        // Update progress gradually during polling (40% -> 65%)
+                                        val pollingProgress = 40 + ((retries.toFloat() / maxRetries) * 25).toInt()
+                                        if (retries % 5 == 0) { // Update every 5 attempts to avoid spamming
+                                            sendProgressEvent(sendEvent, pollingProgress, "Indexing account on blockchain")
+                                        }
+                                        
                                         val fetchedData = service.getWalletList().data
                                         
                                         // Log detailed response structure
@@ -641,6 +676,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         
                                         if (hasAddress) {
                                             walletListData = fetchedData
+                                            sendProgressEvent(sendEvent, 65, "Account indexed successfully")
                                             logd(TAG, "saveMnemonic() - Flow account address found after $retries retries (${retries * delayMs / 1000}s)")
                                             break
                                         } else {
@@ -669,6 +705,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     throw IllegalStateException("Wallet data has no valid blockchain addresses after $maxRetries attempts")
                                 }
 
+                                // Send progress: 70% - Discovered account
+                                sendProgressEvent(sendEvent, 70, "Configuring account")
+                                
                                 // Preserve original username capitalization (backend API may return lowercase)
                                 // Use the username passed from React Native which has proper capitalization
                                 // Create a new UserInfoData with the original username
@@ -704,6 +743,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 // Setup AccountManager and WalletManager
+                                sendProgressEvent(sendEvent, 80, "Setting up wallet")
                                 // Use userInfoWithOriginalUsername to preserve proper capitalization
                                 val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
 
@@ -722,6 +762,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 // Initialize EVMWalletManager to fetch and add COA address
+                                sendProgressEvent(sendEvent, 85, "Initializing EVM wallet")
                                 // EVMWalletManager now preserves existing entries (like EOA) when adding COA
                                 com.flowfoundation.wallet.manager.evm.EVMWalletManager.updateEVMAddress()
 
@@ -754,10 +795,12 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 // Mark user as registered so app knows they've completed onboarding
+                                sendProgressEvent(sendEvent, 90, "Finalizing account")
                                 com.flowfoundation.wallet.utils.setRegistered()
                                 logd(TAG, "saveMnemonic() - User marked as registered")
 
                                 // Track account creation
+                                sendProgressEvent(sendEvent, 95, "Completing setup")
                                 trackAccountCreation(cryptoProvider)
 
                                 logd(TAG, "saveMnemonic() - EOA account initialization complete!")
@@ -800,6 +843,12 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 // Step 12: Close React Native view (handled by caller)
                                 // Step 13: Notification permission (handled by caller)
 
+                                // Send progress: 100% - Complete
+                                sendProgressEvent(sendEvent, 100, "Account ready")
+                                
+                                // Small delay to ensure progress event is delivered before promise resolves
+                                kotlinx.coroutines.delay(100)
+                                
                                 uiScope {
                                     promise.resolve(null)
                                 }
@@ -1134,6 +1183,26 @@ private fun setupAccountAndWallet(
                                 // Clear cache
                                 com.flowfoundation.wallet.network.clearUserCache()
         logd(TAG, "trackAccountCreation() - Account creation tracked and cache cleared")
+    }
+
+    /**
+     * Send progress event to React Native
+     * @param sendEvent The event sender function from the bridge
+     * @param progress Progress percentage (0-100)
+     * @param status Status message
+     */
+    private fun sendProgressEvent(sendEvent: (String, WritableMap?) -> Unit, progress: Int, status: String) {
+        try {
+            logd(TAG, "Attempting to send progress event: $progress% - $status")
+            val params = WritableNativeMap()
+            params.putInt("progress", progress)
+            params.putString("status", status)
+            sendEvent("AccountCreationProgress", params)
+            logd(TAG, "Successfully sent progress event: $progress%")
+        } catch (e: Exception) {
+            loge(TAG, "Failed to send progress event $progress%: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
 }
