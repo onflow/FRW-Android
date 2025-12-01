@@ -514,6 +514,13 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
         ioScope {
             try {
+                // Clear in-memory caches from previous active account FIRST
+                // This prevents stale data from appearing in the UI
+                WalletManager.clear()
+                com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
+                com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.clear()
+                logd(TAG, "saveMnemonic() - Cleared all in-memory caches before adding new account")
+
                 // Step 8: Securely store the mnemonic
                 val prefix = storeMnemonicSecurely(mnemonic)
 
@@ -523,18 +530,144 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     onSuccess = {
                         ioScope {
                             try {
+                                // Force Firebase ID token refresh to get the new account's JWT
+                                // This ensures API requests use the new account's credentials
+                                logd(TAG, "saveMnemonic() - Forcing Firebase ID token refresh...")
+                                var tokenRefreshed = false
+                                var refreshAttempts = 0
+                                val maxRefreshAttempts = 10
+                                
+                                while (!tokenRefreshed && refreshAttempts < maxRefreshAttempts) {
+                                    kotlinx.coroutines.delay(500) // Wait 500ms between checks
+                                    refreshAttempts++
+                                    try {
+                                        // Force refresh the token
+                                        val jwt = com.flowfoundation.wallet.firebase.auth.getFirebaseJwt(forceRefresh = true)
+                                        val currentUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
+                                        
+                                        if (!jwt.isNullOrBlank() && currentUid != null) {
+                                            tokenRefreshed = true
+                                            logd(TAG, "saveMnemonic() - Firebase ID token refreshed after $refreshAttempts attempt(s), UID: $currentUid")
+                                            
+                                            // Verify the username matches by making a test API call
+                                            try {
+                                                val testService = com.flowfoundation.wallet.network.retrofit()
+                                                    .create(com.flowfoundation.wallet.network.ApiService::class.java)
+                                                val testUserInfo = testService.userInfo().data
+                                                logd(TAG, "saveMnemonic() - Token validated, backend returned username: ${testUserInfo.username}")
+                                                
+                                                // Check if username matches (case-insensitive, ignoring numeric suffix)
+                                                // Backend normalizes to lowercase and adds suffix: "FancyRiverVolcano" -> "fancyrivervolcano_476"
+                                                val backendUsernameBase = testUserInfo.username.substringBefore("_").lowercase()
+                                                val expectedUsernameBase = username.lowercase()
+                                                
+                                                if (backendUsernameBase != expectedUsernameBase) {
+                                                    logw(TAG, "saveMnemonic() - Username mismatch! Expected: $expectedUsernameBase, Got: $backendUsernameBase. Retrying...")
+                                                    tokenRefreshed = false // Retry
+                                                } else {
+                                                    logd(TAG, "saveMnemonic() - Username validated: $expectedUsernameBase matches $backendUsernameBase")
+                                                }
+                                            } catch (e: Exception) {
+                                                logw(TAG, "saveMnemonic() - Could not validate token with backend, continuing: ${e.message}")
+                                            }
+                                        } else {
+                                            logd(TAG, "saveMnemonic() - Waiting for token refresh (attempt $refreshAttempts/$maxRefreshAttempts)")
+                                        }
+                                    } catch (e: Exception) {
+                                        logd(TAG, "saveMnemonic() - Error during token refresh (attempt $refreshAttempts): ${e.message}")
+                                    }
+                                }
+                                
+                                if (!tokenRefreshed) {
+                                    logw(TAG, "saveMnemonic() - Warning: Token may not be for correct user, proceeding anyway")
+                                }
+
                                 // Step 10: Initialize Wallet-Kit
                                 val seedPhraseKey = initializeWalletKit(mnemonic, prefix)
 
-                                // Fetch user info and wallet list from backend
+                                // Fetch user info from backend
                                 val service = com.flowfoundation.wallet.network.retrofit()
                                     .create(com.flowfoundation.wallet.network.ApiService::class.java)
                                 val userInfoResponse = service.userInfo()
-                                val walletListResponse = service.getWalletList()
-
                                 val userInfo = userInfoResponse.data
-                                val walletListData = walletListResponse.data
-                                    ?: throw IllegalStateException("No wallet data found")
+
+                                // Create Flow account on-chain via backend API
+                                logd(TAG, "saveMnemonic() - Creating Flow account via /v1/user/address...")
+                                try {
+                                    val createWalletResponse = service.createWallet()
+                                    logd(TAG, "saveMnemonic() - Flow account creation initiated successfully")
+                                } catch (e: Exception) {
+                                    logw(TAG, "saveMnemonic() - Warning: Flow account creation API call failed: ${e.message}")
+                                    // Continue anyway - account might already exist or will be created by another mechanism
+                                }
+
+                                // Wait for wallet address to be populated by server (may take a few seconds after account creation)
+                                logd(TAG, "saveMnemonic() - Waiting for server to index Flow account address...")
+                                var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
+                                var retries = 0
+                                val maxRetries = 60 // 60 attempts (2 minutes total - dev server can be very slow)
+                                val delayMs = 2000L // 2 seconds between attempts
+                                
+                                while (retries < maxRetries) {
+                                    try {
+                                        val fetchedData = service.getWalletList().data
+                                        
+                                        // Log detailed response structure
+                                        logd(TAG, "saveMnemonic() - getWalletList response (attempt ${retries + 1}/$maxRetries):")
+                                        logd(TAG, "  fetchedData is null: ${fetchedData == null}")
+                                        logd(TAG, "  wallets count: ${fetchedData?.wallets?.size ?: 0}")
+                                        
+                                        fetchedData?.wallets?.forEachIndexed { idx, wallet ->
+                                            logd(TAG, "  Wallet[$idx]:")
+                                            logd(TAG, "    name: ${wallet.name}")
+                                            logd(TAG, "    blockchain is null: ${wallet.blockchain == null}")
+                                            logd(TAG, "    blockchain count: ${wallet.blockchain?.size ?: 0}")
+                                            wallet.blockchain?.forEachIndexed { bIdx, blockchain ->
+                                                logd(TAG, "      Blockchain[$bIdx]:")
+                                                logd(TAG, "        chainId: '${blockchain.chainId}'")
+                                                logd(TAG, "        address: '${blockchain.address}'")
+                                                logd(TAG, "        address.isNotBlank(): ${blockchain.address.isNotBlank()}")
+                                            }
+                                        }
+                                        
+                                        // Check if blockchain addresses are populated
+                                        val hasAddress = fetchedData?.wallets?.any { wallet ->
+                                            val result = wallet.blockchain?.any { it.address.isNotBlank() } == true
+                                            logd(TAG, "  Wallet '${wallet.name}' has address: $result")
+                                            result
+                                        } == true
+                                        
+                                        logd(TAG, "  Overall hasAddress: $hasAddress")
+                                        
+                                        if (hasAddress) {
+                                            walletListData = fetchedData
+                                            logd(TAG, "saveMnemonic() - Flow account address found after $retries retries (${retries * delayMs / 1000}s)")
+                                            break
+                                        } else {
+                                            logd(TAG, "saveMnemonic() - Waiting for blockchain addresses to populate...")
+                                            kotlinx.coroutines.delay(delayMs) // Wait before retry
+                                            retries++
+                                        }
+                                    } catch (e: Exception) {
+                                        logd(TAG, "saveMnemonic() - Error fetching wallet list (attempt ${retries + 1}): ${e.message}")
+                                        e.printStackTrace()
+                                        kotlinx.coroutines.delay(delayMs)
+                                        retries++
+                                    }
+                                }
+
+                                if (walletListData == null) {
+                                    throw IllegalStateException("Failed to fetch wallet list with addresses after $maxRetries attempts")
+                                }
+                                
+                                // Verify we have at least one address
+                                val hasValidAddress = walletListData.wallets?.any { wallet ->
+                                    wallet.blockchain?.any { it.address.isNotBlank() } == true
+                                } == true
+                                
+                                if (!hasValidAddress) {
+                                    throw IllegalStateException("Wallet data has no valid blockchain addresses after $maxRetries attempts")
+                                }
 
                                 // Preserve original username capitalization (backend API may return lowercase)
                                 // Use the username passed from React Native which has proper capitalization
@@ -731,28 +864,39 @@ private fun authenticateWithFirebase(
         logd(TAG, "authenticateWithFirebase() - Checking current Firebase auth state...")
 
         val currentUser = Firebase.auth.currentUser
+        val currentUid = currentUser?.uid
         val isAnonymous = currentUser?.isAnonymous ?: true
 
-        // If already authenticated with non-anonymous user, skip authentication
-        // This happens when signInWithCustomToken() was called before saveMnemonic()
-        if (currentUser != null && !isAnonymous) {
-            logd(TAG, "authenticateWithFirebase() - Already authenticated with non-anonymous user (UID: ${currentUser.uid}), skipping authentication")
-            onSuccess()
-            return
+        if (currentUser != null) {
+            logd(TAG, "authenticateWithFirebase() - Current user: UID=$currentUid, isAnonymous=$isAnonymous")
         }
 
-        logd(TAG, "authenticateWithFirebase() - Starting Firebase authentication...")
+        // If already authenticated with a non-anonymous user, we MUST sign out first
+        // to switch to the new account. Firebase won't switch users without signing out.
+        if (currentUser != null && !isAnonymous) {
+            logd(TAG, "authenticateWithFirebase() - Signing out current user to switch accounts...")
+            
+            // Sign out the current user
+            Firebase.auth.signOut()
+            logd(TAG, "authenticateWithFirebase() - User signed out successfully")
+            
+            // Delete Firebase messaging token for the old user
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+        } else if (isAnonymous) {
+            // Delete anonymous user
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
+            currentUser?.delete()?.addOnCompleteListener {
+                logd(TAG, "authenticateWithFirebase() - Previous anonymous user deleted")
+            }
+        }
 
-        // Delete existing Firebase token and user (only if anonymous or no user)
-                com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
-  currentUser?.delete()?.addOnCompleteListener {
-    logd(TAG, "authenticateWithFirebase() - Previous Firebase user deleted")
-  }
+        logd(TAG, "authenticateWithFirebase() - Signing in with new custom token...")
 
-                // Sign in with custom token
+        // Sign in with the new account's custom token
         com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
-                        if (isSuccessful) {
-                logd(TAG, "authenticateWithFirebase() - Firebase authentication successful")
+            if (isSuccessful) {
+                val newUid = Firebase.auth.currentUser?.uid
+                logd(TAG, "authenticateWithFirebase() - Firebase authentication successful, new UID: $newUid")
                 onSuccess()
             } else {
                 val errorMessage = exception?.message ?: "Firebase authentication failed"
@@ -867,15 +1011,14 @@ private fun setupAccountAndWallet(
     ): CryptoProvider {
         logd(TAG, "setupAccountAndWallet() - Setting up AccountManager and WalletManager...")
 
-                                // Clear any cached EOA address from previous accounts FIRST
-                                // This must happen before AccountManager.add() to prevent drawer from reading stale cache
-                                // Secure enclave accounts don't have EOAs (hardware-backed keys only)
-                                WalletManager.clearEOAAddressCache()
+                                // Clear in-memory caches from previous active account
+                                // This prevents stale EOA/EVM data from appearing in the UI
+                                // Note: We don't remove the old account - it stays for profile switching
+                                WalletManager.clear() // Clears currentWallet, selectedAddress, and EOA cache
+                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear() // Clears evmAddressMap
+                                com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.clear() // Clears emoji cache
                                 
-                                // Also clear EVMWalletManager which may have persisted EOA data
-                                com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
-                                
-                                logd(TAG, "setupAccountAndWallet() - Cleared EOA address cache and EVM data before adding new account")
+                                logd(TAG, "setupAccountAndWallet() - Cleared all in-memory caches (old account preserved for switching)")
 
                                 // Log wallet data structure for debugging
                                 logd(TAG, "setupAccountAndWallet() - WalletListData: wallets count=${walletListData.wallets?.size}")
@@ -928,18 +1071,39 @@ private fun setupAccountAndWallet(
                                         logd(TAG, "setupAccountAndWallet() - Wallet ready: Selected Flow address: $formattedAddr")
                                         
                                         // Trigger UI update to refresh drawer with new account
+                                        // This will update both the wallet data AND trigger drawer refresh
                                         com.flowfoundation.wallet.utils.uiScope {
-                                            AccountManager.updateWalletInfo(currentAcct.wallet!!)
-                                            logd(TAG, "setupAccountAndWallet() - Wallet ready: Triggered UI refresh")
+                                            if (currentAcct.wallet != null) {
+                                                AccountManager.updateWalletInfo(currentAcct.wallet!!)
+                                                logd(TAG, "setupAccountAndWallet() - Wallet ready: Triggered drawer refresh via updateWalletInfo")
+                                            }
+                                            
+                                            // Also explicitly refresh the drawer ViewModel
+                                            val mainActivity = com.flowfoundation.wallet.page.main.MainActivity.getInstance()
+                                            if (mainActivity != null) {
+                                                try {
+                                                    val viewModel = androidx.lifecycle.ViewModelProvider(mainActivity)[com.flowfoundation.wallet.page.main.drawer.DrawerLayoutViewModel::class.java]
+                                                    viewModel.loadData()
+                                                    logd(TAG, "setupAccountAndWallet() - Wallet ready: Explicitly refreshed drawer ViewModel")
+                                                } catch (e: Exception) {
+                                                    logd(TAG, "setupAccountAndWallet() - Wallet ready: Could not refresh drawer ViewModel: ${e.message}")
+                                                }
+                                            }
                                         }
                                     } else {
                                         logd(TAG, "setupAccountAndWallet() - Wallet ready: Warning - Flow address still not available")
                                     }
                                 }
 
-                                // Close the drawer immediately to prevent showing old account data
-                                com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
-                                logd(TAG, "setupAccountAndWallet() - Closed drawer to prevent flash of old account data")
+                                // Relaunch MainActivity to ensure all state is completely fresh
+                                // This recreates all ViewModels and managers with the new account
+                                com.flowfoundation.wallet.utils.uiScope {
+                                    com.flowfoundation.wallet.page.main.MainActivity.relaunch(
+                                        com.flowfoundation.wallet.utils.Env.getApp(), 
+                                        clearTop = true
+                                    )
+                                }
+                                logd(TAG, "setupAccountAndWallet() - Scheduled MainActivity relaunch for fresh state")
 
         // Get crypto provider for the current account
                                 val currentAccount = AccountManager.get()
