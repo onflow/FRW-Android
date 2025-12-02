@@ -23,6 +23,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.flow.wallet.crypto.BIP39
+import org.onflow.flow.waitForCreatedAccountAddress
 import org.onflow.flow.models.toHexString
 
 /**
@@ -141,212 +142,6 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun registerAccountWithBackend(promise: Promise) {
-        logd(TAG, "registerAccountWithBackend() called - Linking COA account on-chain for Recovery Phrase flow")
-        ioScope {
-            try {
-                // Ensure WalletManager is initialized and wallet is ready
-                // Wait for wallet to be available (with retries)
-                var retries = 0
-                val maxRetries = 10
-                val retryDelayMs = 200L
-
-                while (retries < maxRetries) {
-                    WalletManager.init() // Ensure initialization
-                    val wallet = WalletManager.wallet()
-                    val selectedAddress = WalletManager.selectedWalletAddress()
-
-                    if (wallet != null || selectedAddress.isNotBlank()) {
-                        logd(TAG, "registerAccountWithBackend() - Wallet is ready (attempt ${retries + 1})")
-                        break
-                    }
-
-                    retries++
-                    if (retries < maxRetries) {
-                        logd(TAG, "registerAccountWithBackend() - Wallet not ready yet, waiting... (attempt $retries/$maxRetries)")
-                        kotlinx.coroutines.delay(retryDelayMs)
-                    }
-                }
-
-                // Verify wallet is ready
-                val finalWallet = WalletManager.wallet()
-                val finalAddress = WalletManager.selectedWalletAddress()
-
-                if (finalWallet == null && finalAddress.isBlank()) {
-                    loge(TAG, "registerAccountWithBackend() - Wallet not ready after $maxRetries attempts")
-                    uiScope {
-                        promise.reject("COA_CREATION_ERROR", "Wallet not ready: cannot link COA account on-chain. Wallet: ${false}, Address: ${finalAddress.isNullOrBlank()}")
-                    }
-                    return@ioScope
-                }
-
-                logd(TAG, "registerAccountWithBackend() - Wallet ready, linking COA account on-chain...")
-                logd(TAG, "registerAccountWithBackend() - Final wallet: ${finalWallet != null}, Final address: $finalAddress")
-
-                // Wait for the exact account created by saveMnemonic to have its Flow address populated
-                // After saveMnemonic, the account is set as current via AccountManager
-                // We must use AccountManager.get() to get the exact account that was just created
-                // and wait for its Flow address to be populated from Account.wallet data
-                var accountRetries = 0
-                val maxAccountRetries = 30 // Increased retries to allow more time for transaction finalization
-                val accountRetryDelayMs = 500L // Increased delay to allow transaction to finalize
-                val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
-
-                var finalAccount: Account? = null
-                var finalAccountAddress: String? = null
-
-                while (accountRetries < maxAccountRetries) {
-                    // Get the exact current account - this is the account that was just created by saveMnemonic
-                    val currentAccount = AccountManager.get()
-
-                    if (currentAccount == null) {
-                        logd(TAG, "registerAccountWithBackend() - Current account not available yet (attempt ${accountRetries + 1})")
-                        accountRetries++
-                        if (accountRetries < maxAccountRetries) {
-                            kotlinx.coroutines.delay(accountRetryDelayMs)
-                        }
-                        continue
-                    }
-
-                    // Try to get Flow address from multiple sources:
-                    // 1. From Account.wallet data (backend WalletListData) - most reliable but may not be synced yet
-                    // 2. From WalletManager.wallet().accounts (wallet SDK discovered accounts) - available after transaction finalizes
-                    var flowAddress: String? = null
-
-                    // First, try account's wallet data (backend)
-                    flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
-
-                    // If not available from backend, try wallet SDK's discovered accounts
-                    if (flowAddress.isNullOrBlank()) {
-                        val wallet = WalletManager.wallet()
-                        if (wallet != null) {
-                            val chainId = when (currentNetwork.lowercase()) {
-                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
-                                "testnet" -> org.onflow.flow.ChainId.Testnet
-                                else -> null
-                            }
-                            if (chainId != null) {
-                                val walletAccounts = wallet.accounts[chainId]
-                                walletAccounts?.firstOrNull()?.let { flowAccount ->
-                                    val discoveredAddress = flowAccount.address
-                                    if (discoveredAddress.isNotBlank()) {
-                                        flowAddress = discoveredAddress
-                                        logd(TAG, "registerAccountWithBackend() - Found Flow address from wallet SDK discovered accounts: $flowAddress")
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (flowAddress != null && flowAddress.isNotBlank()) {
-                        // Found the Flow address for the exact account
-                        finalAccount = currentAccount
-                        finalAccountAddress = flowAddress
-                        logd(TAG, "registerAccountWithBackend() - Found Flow address for current account (attempt ${accountRetries + 1})")
-                        logd(TAG, "registerAccountWithBackend() - Account username: ${currentAccount.userInfo.username}, prefix: ${currentAccount.prefix}, address: $flowAddress")
-                        break
-                    } else {
-                        // Account exists but Flow address not populated yet - continue waiting
-                        logd(TAG, "registerAccountWithBackend() - Current account exists (${currentAccount.userInfo.username}) but Flow address not available yet (attempt ${accountRetries + 1})")
-                        logd(TAG, "registerAccountWithBackend() - Waiting for Flow address to be discovered...")
-                        val wallet = WalletManager.wallet()
-                        if (wallet != null) {
-                            val chainId = when (currentNetwork.lowercase()) {
-                                "mainnet" -> org.onflow.flow.ChainId.Mainnet
-                                "testnet" -> org.onflow.flow.ChainId.Testnet
-                                else -> null
-                            }
-                            val walletAccounts = chainId?.let { wallet.accounts[it] }
-                            logd(TAG, "registerAccountWithBackend() - Wallet accounts for $currentNetwork: ${walletAccounts?.size ?: 0}")
-                        } else {
-                            logd(TAG, "registerAccountWithBackend() - WalletManager.wallet() is null")
-                        }
-                    }
-
-                    accountRetries++
-                    if (accountRetries < maxAccountRetries) {
-                        kotlinx.coroutines.delay(accountRetryDelayMs)
-                    }
-                }
-
-                if (finalAccount == null || finalAccountAddress == null) {
-                    val currentAccount = AccountManager.get()
-                    loge(TAG, "registerAccountWithBackend() - Flow address not found for current account after $maxAccountRetries attempts")
-                    if (currentAccount != null) {
-                        val flowAddress = currentAccount.getFlowAddress(currentNetwork, TAG)
-                        loge(TAG, "registerAccountWithBackend() - Current account: username=${currentAccount.userInfo.username}, prefix=${currentAccount.prefix}, address=$flowAddress")
-                        loge(TAG, "registerAccountWithBackend() - Account.wallet is null: ${currentAccount.wallet == null}")
-                    } else {
-                        loge(TAG, "registerAccountWithBackend() - Current account is null")
-                    }
-                    uiScope {
-                        promise.reject("COA_CREATION_ERROR", "Account Flow address not available: cannot link COA account on-chain. Current account Flow address not populated.")
-                    }
-                    return@ioScope
-                }
-
-                logd(TAG, "registerAccountWithBackend() - Account verified with Flow address: $finalAccountAddress, proceeding with COA link transaction...")
-
-                // Check if COA account already exists before creating one
-                // This prevents errors if COA account was already created (e.g., in Secure Enclave flow)
-                val coaAlreadyExists = try {
-                    com.flowfoundation.wallet.manager.flowjvm.cadenceCheckCOALink(finalAccountAddress)
-                } catch (e: Exception) {
-                    logw(TAG, "registerAccountWithBackend() - Could not check COA link status: ${e.message}")
-                    null // If check fails, proceed with link attempt
-                }
-
-                if (coaAlreadyExists == true) {
-                    logd(TAG, "registerAccountWithBackend() - COA account already linked for address $finalAccountAddress, skipping")
-                    uiScope {
-                        // Return a success response indicating COA already exists
-                        // This allows the flow to continue without error
-                        promise.resolve("COA_ALREADY_EXISTS")
-                    }
-                    return@ioScope
-                }
-
-                // Execute Cadence transaction to link COA account on-chain
-                val txId = try {
-                    com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount()
-                } catch (e: Exception) {
-                    // Check if error is due to COA already existing
-                    val errorMessage = e.message?.lowercase() ?: ""
-                    if (errorMessage.contains("already") || errorMessage.contains("exists") || errorMessage.contains("duplicate")) {
-                        logd(TAG, "registerAccountWithBackend() - COA account already linked (detected from error), skipping")
-                        uiScope {
-                            promise.resolve("COA_ALREADY_EXISTS")
-                        }
-                        return@ioScope
-                    }
-                    loge(TAG, "registerAccountWithBackend() - Exception calling cadenceCreateCOAAccount: ${e.message}")
-                    e.printStackTrace()
-                    null
-                }
-
-                if (txId.isNullOrBlank()) {
-                    loge(TAG, "registerAccountWithBackend() - Transaction ID is null or empty")
-                    loge(TAG, "registerAccountWithBackend() - Wallet state: wallet=${finalWallet != null}, address=$finalAddress")
-                    uiScope {
-                        promise.reject("COA_CREATION_ERROR", "Failed to link COA account on-chain: transaction ID is null. Wallet: ${finalWallet != null}, Address: ${finalAddress.isBlank()}")
-                    }
-                    return@ioScope
-                }
-
-                logd(TAG, "registerAccountWithBackend() - COA link transaction submitted: $txId")
-
-                uiScope {
-                    promise.resolve(txId)
-                }
-            } catch (e: Exception) {
-                loge(TAG, "registerAccountWithBackend() - error: ${e.message}")
-                e.printStackTrace()
-                uiScope {
-                    promise.reject("COA_CREATION_ERROR", "Failed to link COA account on-chain: ${e.message}", e)
-                }
-            }
-        }
-    }
 
     fun generateSeedPhrase(strength: Double?, promise: Promise, bridgeModelToWritableMap: (Any) -> WritableMap) {
         // Default to 128 (12 words) if strength is not provided
@@ -553,91 +348,89 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 val userInfoResponse = service.userInfo()
                                 val userInfo = userInfoResponse.data
 
-                                // Create Flow account on-chain via backend API
+                                // Create Flow account on-chain via backend API (using v2 endpoint that returns txId)
                                 sendProgressEvent(sendEvent, 35, "Creating Flow account")
-                                logd(TAG, "saveMnemonic() - Creating Flow account via /v1/user/address...")
+                                logd(TAG, "saveMnemonic() - Creating Flow account via /v2/user/address...")
+
+                                val txIdFromBackend: String?
                                 try {
-                                    val createWalletResponse = service.createWallet()
-                                    logd(TAG, "saveMnemonic() - Flow account creation initiated successfully")
+                                    val createWalletResponse = service.createWalletV2()
+                                    txIdFromBackend = createWalletResponse.data?.txid
+                                        ?: createWalletResponse.data?.transactionId
+                                    if (txIdFromBackend != null) {
+                                        logd(TAG, "saveMnemonic() - Flow account creation initiated, txId: $txIdFromBackend")
+                                    } else {
+                                        logd(TAG, "saveMnemonic() - Flow account creation initiated (no txId returned)")
+                                    }
                                 } catch (e: Exception) {
                                     logw(TAG, "saveMnemonic() - Warning: Flow account creation API call failed: ${e.message}")
-                                    // Continue anyway - account might already exist or will be created by another mechanism
+                                    throw IllegalStateException("Failed to create Flow account: ${e.message}", e)
                                 }
 
-                                // Wait for wallet address to be populated by server (may take a few seconds after account creation)
-                                sendProgressEvent(sendEvent, 40, "Waiting for blockchain confirmation")
-                                logd(TAG, "saveMnemonic() - Waiting for server to index Flow account address...")
+                                // Use flow-kmm helper to wait for account creation on-chain
+                                if (txIdFromBackend != null) {
+                                    sendProgressEvent(sendEvent, 40, "Waiting for blockchain confirmation")
+                                    logd(TAG, "saveMnemonic() - Using flow-kmm helper to wait for account creation (txId: $txIdFromBackend)")
+                                    try {
+                                        val chainId = when (com.flowfoundation.wallet.manager.app.chainNetWorkString()) {
+                                            "mainnet" -> org.onflow.flow.ChainId.Mainnet
+                                            "testnet" -> org.onflow.flow.ChainId.Testnet
+                                            else -> org.onflow.flow.ChainId.Mainnet
+                                        }
+                                        val flowApi = org.onflow.flow.FlowApi(chainId)
+                                        val createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
+                                        logd(TAG, "saveMnemonic() - Account created successfully at address: $createdAddress")
+                                        sendProgressEvent(sendEvent, 60, "Account created successfully")
+                                    } catch (e: Exception) {
+                                        logw(TAG, "saveMnemonic() - Warning: Error waiting for account creation: ${e.message}")
+                                        // Continue anyway, we'll fetch from backend
+                                    }
+                                } else {
+                                    logw(TAG, "saveMnemonic() - No txId received from backend, skipping blockchain confirmation wait")
+                                }
+
+                                // Fetch wallet list to get complete account information
+                                sendProgressEvent(sendEvent, 65, "Fetching account details")
+                                logd(TAG, "saveMnemonic() - Fetching wallet list from backend...")
                                 var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
                                 var retries = 0
-                                val maxRetries = 60 // 60 attempts (2 minutes total - dev server can be very slow)
-                                val delayMs = 2000L // 2 seconds between attempts
-                                
+                                val maxRetries = 30 // Reduced retries since we already waited for transaction
+                                val delayMs = 1000L // Reduced delay
+
                                 while (retries < maxRetries) {
                                     try {
-                                        // Update progress gradually during polling (40% -> 65%)
-                                        val pollingProgress = 40 + ((retries.toFloat() / maxRetries) * 25).toInt()
-                                        if (retries % 5 == 0) { // Update every 5 attempts to avoid spamming
-                                            sendProgressEvent(sendEvent, pollingProgress, "Indexing account on blockchain")
-                                        }
-                                        
                                         val fetchedData = service.getWalletList().data
-                                        
-                                        // Log detailed response structure
-                                        logd(TAG, "saveMnemonic() - getWalletList response (attempt ${retries + 1}/$maxRetries):")
-                                        logd(TAG, "  fetchedData is null: ${fetchedData == null}")
-                                        logd(TAG, "  wallets count: ${fetchedData?.wallets?.size ?: 0}")
-                                        
-                                        fetchedData?.wallets?.forEachIndexed { idx, wallet ->
-                                            logd(TAG, "  Wallet[$idx]:")
-                                            logd(TAG, "    name: ${wallet.name}")
-                                            logd(TAG, "    blockchain is null: ${wallet.blockchain == null}")
-                                            logd(TAG, "    blockchain count: ${wallet.blockchain?.size ?: 0}")
-                                            wallet.blockchain?.forEachIndexed { bIdx, blockchain ->
-                                                logd(TAG, "      Blockchain[$bIdx]:")
-                                                logd(TAG, "        chainId: '${blockchain.chainId}'")
-                                                logd(TAG, "        address: '${blockchain.address}'")
-                                                logd(TAG, "        address.isNotBlank(): ${blockchain.address.isNotBlank()}")
-                                            }
-                                        }
-                                        
+
                                         // Check if blockchain addresses are populated
                                         val hasAddress = fetchedData?.wallets?.any { wallet ->
-                                            val result = wallet.blockchain?.any { it.address.isNotBlank() } == true
-                                            logd(TAG, "  Wallet '${wallet.name}' has address: $result")
-                                            result
+                                            wallet.blockchain?.any { it.address.isNotBlank() } == true
                                         } == true
-                                        
-                                        logd(TAG, "  Overall hasAddress: $hasAddress")
-                                        
+
                                         if (hasAddress) {
                                             walletListData = fetchedData
-                                            sendProgressEvent(sendEvent, 65, "Account indexed successfully")
-                                            logd(TAG, "saveMnemonic() - Flow account address found after $retries retries (${retries * delayMs / 1000}s)")
+                                            logd(TAG, "saveMnemonic() - Wallet list fetched successfully after $retries retries")
                                             break
                                         } else {
-                                            logd(TAG, "saveMnemonic() - Waiting for blockchain addresses to populate...")
-                                            kotlinx.coroutines.delay(delayMs) // Wait before retry
-                                            retries++
+                                            if (retries < maxRetries - 1) {
+                                                kotlinx.coroutines.delay(delayMs)
+                                                retries++
+                                            } else {
+                                                throw IllegalStateException("Wallet addresses not populated after $maxRetries attempts")
+                                            }
                                         }
                                     } catch (e: Exception) {
                                         logd(TAG, "saveMnemonic() - Error fetching wallet list (attempt ${retries + 1}): ${e.message}")
-                                        e.printStackTrace()
-                                        kotlinx.coroutines.delay(delayMs)
-                                        retries++
+                                        if (retries < maxRetries - 1) {
+                                            kotlinx.coroutines.delay(delayMs)
+                                            retries++
+                                        } else {
+                                            throw e
+                                        }
                                     }
                                 }
 
                                 if (walletListData == null) {
-                                    throw IllegalStateException("Failed to fetch wallet list with addresses after $maxRetries attempts")
-                                }
-                                
-                                // Verify we have at least one address
-                                val hasValidAddress = walletListData.wallets?.any { wallet ->
-                                    wallet.blockchain?.any { it.address.isNotBlank() } == true
-                                } == true
-                                
-                                if (!hasValidAddress) {
-                                    throw IllegalStateException("Wallet data has no valid blockchain addresses after $maxRetries attempts")
+                                    throw IllegalStateException("Failed to fetch wallet list after $maxRetries attempts")
                                 }
 
                                 // Send progress: 70% - Discovered account

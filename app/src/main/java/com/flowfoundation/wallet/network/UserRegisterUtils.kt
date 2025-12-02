@@ -55,6 +55,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
+import org.onflow.flow.waitForCreatedAccountAddress
 import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 import java.security.MessageDigest
@@ -93,12 +94,50 @@ suspend fun registerOutblock(
             return@ioScope
           }
 
-          // Wait for wallet address to be populated by server (may take a few seconds after registration)
-          logd(TAG, "Waiting for server to index Flow account address...")
+          // Create Flow account on-chain via backend API (using v2 endpoint that returns txId)
+          logd(TAG, "Creating Flow account via /v2/user/address...")
+          val txIdFromBackend: String?
+          try {
+            val createWalletResponse = service.createWalletV2()
+            txIdFromBackend = createWalletResponse.data?.txid
+              ?: createWalletResponse.data?.transactionId
+            if (txIdFromBackend != null) {
+              logd(TAG, "Flow account creation initiated, txId: $txIdFromBackend")
+            } else {
+              logd(TAG, "Flow account creation initiated (no txId returned)")
+            }
+          } catch (e: Exception) {
+            loge(TAG, "Failed to create Flow account: ${e.message}")
+            continuation.resume(false)
+            return@ioScope
+          }
+
+          // Use flow-kmm helper to wait for account creation on-chain
+          if (txIdFromBackend != null) {
+            logd(TAG, "Using flow-kmm helper to wait for account creation (txId: $txIdFromBackend)")
+            try {
+              val chainId = when (chainNetWorkString()) {
+                "mainnet" -> ChainId.Mainnet
+                "testnet" -> ChainId.Testnet
+                else -> ChainId.Mainnet
+              }
+              val flowApi = org.onflow.flow.FlowApi(chainId)
+              val createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
+              logd(TAG, "Account created successfully at address: $createdAddress")
+            } catch (e: Exception) {
+              logd(TAG, "Warning: Error waiting for account creation: ${e.message}")
+              // Continue anyway, we'll fetch from backend
+            }
+          } else {
+            logd(TAG, "No txId received from backend, skipping blockchain confirmation wait")
+          }
+
+          // Fetch wallet list to get complete account information
+          logd(TAG, "Fetching wallet list from backend...")
           var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
           var retries = 0
-          val maxRetries = 15 // 15 seconds max wait
-          
+          val maxRetries = 10 // Reduced retries since we already waited for transaction
+
           while (retries < maxRetries) {
             try {
               val fetchedData = service.getWalletList().data
@@ -106,36 +145,35 @@ suspend fun registerOutblock(
               val hasAddress = fetchedData?.wallets?.any { wallet ->
                 wallet.blockchain?.any { it.address.isNotBlank() } == true
               } == true
-              
+
               if (hasAddress) {
                 walletListData = fetchedData
-                logd(TAG, "Flow account address found after $retries retries")
+                logd(TAG, "Wallet list fetched successfully after $retries retries")
                 break
               } else {
-                logd(TAG, "Blockchain addresses not yet populated (attempt ${retries + 1}/$maxRetries)")
-                delay(1000) // Wait 1 second before retry
-                retries++
+                if (retries < maxRetries - 1) {
+                  delay(1000)
+                  retries++
+                } else {
+                  logd(TAG, "Wallet addresses not populated after $maxRetries attempts")
+                  continuation.resume(false)
+                  return@ioScope
+                }
               }
             } catch (e: Exception) {
               logd(TAG, "Error fetching wallet list (attempt ${retries + 1}): ${e.message}")
-              delay(1000)
-              retries++
+              if (retries < maxRetries - 1) {
+                delay(1000)
+                retries++
+              } else {
+                continuation.resume(false)
+                return@ioScope
+              }
             }
           }
 
           if (walletListData == null) {
-            logd(TAG, "Failed to fetch wallet list with addresses after $maxRetries attempts")
-            continuation.resume(false)
-            return@ioScope
-          }
-          
-          // Verify we have at least one address
-          val hasValidAddress = walletListData.wallets?.any { wallet ->
-            wallet.blockchain?.any { it.address.isNotBlank() } == true
-          } == true
-          
-          if (!hasValidAddress) {
-            logd(TAG, "Wallet data has no valid blockchain addresses after $maxRetries attempts")
+            logd(TAG, "Failed to fetch wallet list after $maxRetries attempts")
             continuation.resume(false)
             return@ioScope
           }
