@@ -47,6 +47,7 @@ class WalletConnect {
     }
 
     private var pairingInProgress = false
+    private val recentPairingTopics = mutableSetOf<String>()
 
     private suspend fun waitForInitialization(timeoutMs: Long = 10000): Boolean {
         if (!isInitialized()) {
@@ -74,12 +75,37 @@ class WalletConnect {
             logd(TAG, "Invalid pairing URI: $uri")
             return
         }
+        
+        // Extract pairing topic from URI to check for duplicates
+        val pairingTopic = try {
+            uri.substringAfter("wc:").substringBefore("@")
+        } catch (e: Exception) {
+            logd(TAG, "Could not extract pairing topic from URI")
+            null
+        }
+        
+        // Check if we've recently processed this pairing topic
+        if (pairingTopic != null && recentPairingTopics.contains(pairingTopic)) {
+            logd(TAG, "Pairing topic already processed recently, ignoring duplicate request: $pairingTopic")
+            return
+        }
+        
         if (pairingInProgress) {
             logd(TAG, "Pairing already in progress, ignoring new pairing request")
             return
         }
         
         pairingInProgress = true
+        
+        // Add this pairing topic to recent topics
+        if (pairingTopic != null) {
+            recentPairingTopics.add(pairingTopic)
+            // Clean up old pairing topics after 5 minutes
+            ioScope {
+                delay(300000) // 5 minutes
+                recentPairingTopics.remove(pairingTopic)
+            }
+        }
         
         // Show connecting toast immediately when pairing starts
         val activity = BaseActivity.getCurrentActivity()
@@ -104,17 +130,9 @@ class WalletConnect {
                     return@ioScope
                 }
                 
-                // Clean up all active sessions before pairing
-                try {
-                    cleanupActiveSessions()
-                } catch (e: Exception) {
-                    loge(TAG, "Error cleaning up sessions before pairing: ${e.message}")
-                    loge(e)
-                    // Continue with pairing anyway
-                }
-
-                // Add a short delay to ensure cleanup has time to complete
-                delay(500)
+                // NOTE: We no longer disconnect all sessions before pairing.
+                // This was too aggressive and caused issues with reconnection.
+                // Each dapp should manage its own session lifecycle.
 
                 logd(TAG, "CoreClient.Relay isConnectionAvailable: ${isConnectionAvailable.value}")
                 
@@ -156,14 +174,23 @@ class WalletConnect {
                 try {
                     val pairingParams = Core.Params.Pair(uri)
                     CoreClient.Pairing.pair(pairingParams) { error ->
+                        val errorMessage = error.throwable.message ?: ""
                         loge(TAG, "Pairing error: ${error.throwable}")
-                        uiScope {
-                            try {
-                                toast(R.string.wallet_connect_pairing_error)
-                                logd(TAG, "Showed pairing error toast")
-                            } catch (e: Exception) {
-                                loge(TAG, "Failed to show pairing error toast: ${e.message}")
-                                loge(e)
+                        
+                        // Don't show error toast for already-used pairing topics
+                        // This is normal when a dapp tries to reconnect with a cached URI
+                        if (errorMessage.contains("No proposal", ignoreCase = true) ||
+                            errorMessage.contains("pairing topic", ignoreCase = true)) {
+                            logd(TAG, "Pairing topic already used or expired - this is normal for reconnection attempts")
+                        } else {
+                            uiScope {
+                                try {
+                                    toast(R.string.wallet_connect_pairing_error)
+                                    logd(TAG, "Showed pairing error toast")
+                                } catch (e: Exception) {
+                                    loge(TAG, "Failed to show pairing error toast: ${e.message}")
+                                    loge(e)
+                                }
                             }
                         }
                     }

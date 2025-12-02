@@ -49,20 +49,21 @@ class DeepLinkingActivity : BaseActivity() {
         
         ioScope {
             try {
-                // For WalletConnect URIs, we need a small delay to ensure MainActivity is ready
+                // For WalletConnect URIs, we need to ensure MainActivity and WalletConnect are fully ready
                 if (isWalletConnectUri) {
-                    logd(TAG, "Delaying WalletConnect processing to ensure MainActivity is ready")
-                    delay(1000)
+                    logd(TAG, "WalletConnect URI detected - ensuring proper initialization before processing")
+                    // Increased delay to ensure MainActivity is fully initialized
+                    delay(2000)
                 }
                 
                 // Use the new UriHandler to process the URI
                 dispatchDeepLinking(this@DeepLinkingActivity, uri)
                 logd(TAG, "DeepLinkingDispatch completed for uri: $uri")
                 
-                // For WalletConnect, wait a bit longer to ensure the connection dialog has time to show
+                // For WalletConnect, wait longer to ensure the connection dialog has time to show
                 if (isWalletConnectUri) {
                     logd(TAG, "Adding additional delay for WalletConnect to ensure dialog shows")
-                    delay(1500)
+                    delay(2000)
                 }
             } catch (e: Exception) {
                 logd(TAG, "Error in DeepLinkingDispatch: ${e.message}")

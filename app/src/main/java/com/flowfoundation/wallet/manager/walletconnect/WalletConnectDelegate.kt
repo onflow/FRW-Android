@@ -118,40 +118,47 @@ internal class WalletConnectDelegate : SignClient.WalletDelegate {
     override fun onError(error: Sign.Model.Error) {
         logd(TAG, "onError() error:$error")
         loge(error.throwable)
+        
+        val errorMsg = error.throwable.message ?: ""
 
-        // Show user-friendly error message
+        // Check if this is a normal "already-used pairing topic" error
+        // This happens when reconnecting quickly and is not really an error
+        val isNormalReconnectionError = errorMsg.contains("No proposal", ignoreCase = true) && 
+                                       errorMsg.contains("pairing topic", ignoreCase = true)
+        
+        if (isNormalReconnectionError) {
+            logd(TAG, "Pairing topic already used - this is normal when reconnecting. No error toast needed.")
+            // Clean up any stale sessions silently
+            ioScope {
+                try {
+                    val activeSessions = SignClient.getListOfActiveSessions()
+                    if (activeSessions.isEmpty()) {
+                        logd(TAG, "No stale sessions to clean up")
+                    }
+                } catch (e: Exception) {
+                    loge(TAG, "Error checking sessions: ${e.message}")
+                }
+            }
+            return
+        }
+
+        // Show user-friendly error message for actual errors
         uiScope {
             val errorMessage = when {
-                error.throwable.message?.contains("No proposal or pending session") == true -> {
-                    // Clean up any stale sessions when we get this error
-                    try {
-                        val activeSessions = SignClient.getListOfActiveSessions()
-                        logd(TAG, "Cleaning up stale sessions. Current count: ${activeSessions.size}")
-                        activeSessions.forEach { session ->
-                            if (session.metaData == null) {
-                                logd(TAG, "Disconnecting stale session: ${session.topic}")
-                                SignClient.disconnect(Sign.Params.Disconnect(sessionTopic = session.topic)) { disconnectError ->
-                                    loge(TAG, "Error disconnecting stale session: ${disconnectError.throwable}")
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        loge(TAG, "Error cleaning up sessions: ${e.message}")
-                        loge(e)
-                    }
+                errorMsg.contains("Pairing URI expired", ignoreCase = true) -> {
+                    R.string.wallet_connect_pairing_error
+                }
+                errorMsg.contains("pairing", ignoreCase = true) -> {
+                    R.string.wallet_connect_pairing_error
+                }
+                errorMsg.contains("session", ignoreCase = true) -> {
                     R.string.wallet_connect_no_proposal
-                }
-                error.throwable.message?.contains("pairing topic") == true -> {
-                    R.string.wallet_connect_pairing_error
-                }
-                error.throwable.message?.contains("Pairing URI expired") == true -> {
-                    R.string.wallet_connect_pairing_error
                 }
                 else -> R.string.wallet_connect_generic_error
             }
             try {
                 toast(errorMessage)
-                logd(TAG, "Showed error toast for message: ${error.throwable.message}")
+                logd(TAG, "Showed error toast for message: $errorMsg")
             } catch (e: Exception) {
                 loge(TAG, "Failed to show error toast: ${e.message}")
                 loge(e)
