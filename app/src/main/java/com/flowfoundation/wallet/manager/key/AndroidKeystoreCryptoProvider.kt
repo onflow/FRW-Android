@@ -128,32 +128,28 @@ class AndroidKeystoreCryptoProvider(
         return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
-            
-            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
+
+            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
                 val signatureAlgorithmName = getJavaSignatureAlgorithm(signingAlgorithm, hashingAlgorithm)
-                
+
                 val signature = Signature.getInstance(signatureAlgorithmName)
                 signature.initSign(privateKey)
                 signature.update(bytes)
                 val signatureBytes = signature.sign()
-                
+
                 return derToRaw(signatureBytes)
             }
 
-            override suspend fun sign(bytes: ByteArray): ByteArray {
-                return sign(null, bytes)
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+                return sign(domain + bytes, transaction)
             }
-            
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
-                return sign(domain + bytes)
-            }
-            
+
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
-                return signWithDomain(bytes, DomainTag.User.bytes)
+                return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
-            
-            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
-                return signWithDomain(bytes, DomainTag.Transaction.bytes)
+
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+                return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
         }
     }
