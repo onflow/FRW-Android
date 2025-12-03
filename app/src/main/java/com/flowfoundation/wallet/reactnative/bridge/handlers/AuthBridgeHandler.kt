@@ -248,9 +248,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
+    fun saveMnemonic(mnemonic: String, customToken: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
         logd(TAG, "saveMnemonic() called - EOA account initialization")
-        logd(TAG, "saveMnemonic() - txId: $txId, username: $username")
+        logd(TAG, "saveMnemonic() - username: $username (Flow address creation handled by React Native)")
 
         ioScope {
             try {
@@ -334,53 +334,14 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 val userInfoResponse = service.userInfo()
                                 val userInfo = userInfoResponse.data
 
-                                // Create Flow account on-chain via backend API (using v2 endpoint that returns txId)
-                                logd(TAG, "saveMnemonic() - Creating Flow account via /v2/user/address...")
+                                // Flow account creation is now handled by React Native layer
+                                // React Native calls profileService().createFlowAddressAndWait() before saveMnemonic()
+                                logd(TAG, "saveMnemonic() - Skipping Flow address creation (handled by React Native)")
 
-                                val txIdFromBackend: String?
-                                try {
-                                    val createWalletResponse = service.createWalletV2()
-                                    txIdFromBackend = createWalletResponse.data?.txid
-                                    if (txIdFromBackend != null) {
-                                        logd(TAG, "saveMnemonic() - Flow account creation initiated, txId: $txIdFromBackend")
-                                    } else {
-                                        logd(TAG, "saveMnemonic() - Flow account creation initiated (no txId returned)")
-                                    }
-                                } catch (e: Exception) {
-                                    logw(TAG, "saveMnemonic() - Warning: Flow account creation API call failed: ${e.message}")
-                                    throw IllegalStateException("Failed to create Flow account: ${e.message}", e)
-                                }
-
-                                // Use flow-kmm helper to wait for account creation on-chain
-                                var createdAddress: String? = null
-                                if (txIdFromBackend != null) {
-                                    logd(TAG, "saveMnemonic() - Using flow-kmm helper to wait for account creation (txId: $txIdFromBackend)")
-                                    try {
-                                        val chainId = when (com.flowfoundation.wallet.manager.app.chainNetWorkString()) {
-                                            "mainnet" -> org.onflow.flow.ChainId.Mainnet
-                                            "testnet" -> org.onflow.flow.ChainId.Testnet
-                                            else -> org.onflow.flow.ChainId.Mainnet
-                                        }
-                                        val flowApi = org.onflow.flow.FlowApi(chainId)
-                                        createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
-                                        logd(TAG, "saveMnemonic() - Account created successfully at address: $createdAddress")
-
-                                        // Send progress: 100% - Blockchain transaction confirmed
-                                        sendProgressEvent(sendEvent, 100, "Account created")
-                                    } catch (e: Exception) {
-                                        loge(TAG, "saveMnemonic() - Error waiting for account creation: ${e.message}")
-                                        throw e
-                                    }
-                                } else {
-                                    throw IllegalStateException("No txId received from backend, cannot proceed without blockchain confirmation")
-                                }
-
-                                if (createdAddress == null) {
-                                    throw IllegalStateException("Failed to get created address from blockchain")
-                                }
+                                // Send progress: 50% - Mnemonic saved, proceeding with account setup
+                                sendProgressEvent(sendEvent, 50, "Setting up account")
 
                                 // Fetch wallet list to get wallet metadata (username, etc.)
-                                // We already have the address from blockchain, but need wallet metadata from backend
                                 logd(TAG, "saveMnemonic() - Fetching wallet metadata from backend...")
                                 val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
                                 try {
@@ -406,8 +367,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 )
                                 logd(TAG, "saveMnemonic() - Preserved original username capitalization: $username (backend returned: ${userInfo.username})")
 
-                                // Step 11: Fast account discovery using txId
-                                discoverAccountFast(seedPhraseKey, txId, walletListData)
+                                // Account discovery is now handled by React Native layer
+                                // React Native will handle wallet initialization after Flow address is created
+                                logd(TAG, "saveMnemonic() - Skipping account discovery (handled by React Native)")
 
                                 // Cache EOA address immediately from seedPhraseKey (before wallet initialization)
                                 // This ensures the EOA address is available when getWalletAccounts() is called
