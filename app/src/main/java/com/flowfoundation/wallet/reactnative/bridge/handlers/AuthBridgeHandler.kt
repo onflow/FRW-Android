@@ -367,6 +367,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 // Use flow-kmm helper to wait for account creation on-chain
+                                var createdAddress: String? = null
                                 if (txIdFromBackend != null) {
                                     sendProgressEvent(sendEvent, 40, "Waiting for blockchain confirmation")
                                     logd(TAG, "saveMnemonic() - Using flow-kmm helper to wait for account creation (txId: $txIdFromBackend)")
@@ -377,59 +378,34 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                             else -> org.onflow.flow.ChainId.Mainnet
                                         }
                                         val flowApi = org.onflow.flow.FlowApi(chainId)
-                                        val createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
+                                        createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
                                         logd(TAG, "saveMnemonic() - Account created successfully at address: $createdAddress")
                                         sendProgressEvent(sendEvent, 60, "Account created successfully")
                                     } catch (e: Exception) {
-                                        logw(TAG, "saveMnemonic() - Warning: Error waiting for account creation: ${e.message}")
-                                        // Continue anyway, we'll fetch from backend
+                                        loge(TAG, "saveMnemonic() - Error waiting for account creation: ${e.message}")
+                                        throw e
                                     }
                                 } else {
-                                    logw(TAG, "saveMnemonic() - No txId received from backend, skipping blockchain confirmation wait")
+                                    throw IllegalStateException("No txId received from backend, cannot proceed without blockchain confirmation")
                                 }
 
-                                // Fetch wallet list to get complete account information
-                                sendProgressEvent(sendEvent, 65, "Fetching account details")
-                                logd(TAG, "saveMnemonic() - Fetching wallet list from backend...")
-                                var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
-                                var retries = 0
-                                val maxRetries = 30 // Reduced retries since we already waited for transaction
-                                val delayMs = 1000L // Reduced delay
+                                if (createdAddress == null) {
+                                    throw IllegalStateException("Failed to get created address from blockchain")
+                                }
 
-                                while (retries < maxRetries) {
-                                    try {
-                                        val fetchedData = service.getWalletList().data
-
-                                        // Check if blockchain addresses are populated
-                                        val hasAddress = fetchedData?.wallets?.any { wallet ->
-                                            wallet.blockchain?.any { it.address.isNotBlank() } == true
-                                        } == true
-
-                                        if (hasAddress) {
-                                            walletListData = fetchedData
-                                            logd(TAG, "saveMnemonic() - Wallet list fetched successfully after $retries retries")
-                                            break
-                                        } else {
-                                            if (retries < maxRetries - 1) {
-                                                kotlinx.coroutines.delay(delayMs)
-                                                retries++
-                                            } else {
-                                                throw IllegalStateException("Wallet addresses not populated after $maxRetries attempts")
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        logd(TAG, "saveMnemonic() - Error fetching wallet list (attempt ${retries + 1}): ${e.message}")
-                                        if (retries < maxRetries - 1) {
-                                            kotlinx.coroutines.delay(delayMs)
-                                            retries++
-                                        } else {
-                                            throw e
-                                        }
+                                // Fetch wallet list to get wallet metadata (username, etc.)
+                                // We already have the address from blockchain, but need wallet metadata from backend
+                                sendProgressEvent(sendEvent, 65, "Fetching wallet metadata")
+                                logd(TAG, "saveMnemonic() - Fetching wallet metadata from backend...")
+                                val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
+                                try {
+                                    walletListData = service.getWalletList().data
+                                    if (walletListData == null) {
+                                        throw IllegalStateException("Failed to fetch wallet list from backend")
                                     }
-                                }
-
-                                if (walletListData == null) {
-                                    throw IllegalStateException("Failed to fetch wallet list after $maxRetries attempts")
+                                } catch (e: Exception) {
+                                    loge(TAG, "saveMnemonic() - Error fetching wallet list: ${e.message}")
+                                    throw e
                                 }
 
                                 // Send progress: 70% - Discovered account

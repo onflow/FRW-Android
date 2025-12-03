@@ -112,6 +112,7 @@ suspend fun registerOutblock(
           }
 
           // Use flow-kmm helper to wait for account creation on-chain
+          var createdAddress: String? = null
           if (txIdFromBackend != null) {
             logd(TAG, "Using flow-kmm helper to wait for account creation (txId: $txIdFromBackend)")
             try {
@@ -121,64 +122,43 @@ suspend fun registerOutblock(
                 else -> ChainId.Mainnet
               }
               val flowApi = org.onflow.flow.FlowApi(chainId)
-              val createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
+              createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
               logd(TAG, "Account created successfully at address: $createdAddress")
             } catch (e: Exception) {
-              logd(TAG, "Warning: Error waiting for account creation: ${e.message}")
-              // Continue anyway, we'll fetch from backend
+              logd(TAG, "Error waiting for account creation: ${e.message}")
+              continuation.resume(false)
+              return@ioScope
             }
           } else {
-            logd(TAG, "No txId received from backend, skipping blockchain confirmation wait")
-          }
-
-          // Fetch wallet list to get complete account information
-          logd(TAG, "Fetching wallet list from backend...")
-          var walletListData: com.flowfoundation.wallet.network.model.WalletListData? = null
-          var retries = 0
-          val maxRetries = 10 // Reduced retries since we already waited for transaction
-
-          while (retries < maxRetries) {
-            try {
-              val fetchedData = service.getWalletList().data
-              // Check if blockchain addresses are populated
-              val hasAddress = fetchedData?.wallets?.any { wallet ->
-                wallet.blockchain?.any { it.address.isNotBlank() } == true
-              } == true
-
-              if (hasAddress) {
-                walletListData = fetchedData
-                logd(TAG, "Wallet list fetched successfully after $retries retries")
-                break
-              } else {
-                if (retries < maxRetries - 1) {
-                  delay(1000)
-                  retries++
-                } else {
-                  logd(TAG, "Wallet addresses not populated after $maxRetries attempts")
-                  continuation.resume(false)
-                  return@ioScope
-                }
-              }
-            } catch (e: Exception) {
-              logd(TAG, "Error fetching wallet list (attempt ${retries + 1}): ${e.message}")
-              if (retries < maxRetries - 1) {
-                delay(1000)
-                retries++
-              } else {
-                continuation.resume(false)
-                return@ioScope
-              }
-            }
-          }
-
-          if (walletListData == null) {
-            logd(TAG, "Failed to fetch wallet list after $maxRetries attempts")
+            logd(TAG, "No txId received from backend, cannot proceed without blockchain confirmation")
             continuation.resume(false)
             return@ioScope
           }
 
-          // Now that we have the wallet data with account address, use fetchAccountByAddress
-          // to populate the wallet SDK with the account details from Flow network
+          if (createdAddress == null) {
+            logd(TAG, "Failed to get created address from blockchain")
+            continuation.resume(false)
+            return@ioScope
+          }
+
+          // Fetch wallet list to get wallet metadata (username, etc.)
+          // We already have the address from blockchain, but need wallet metadata from backend
+          logd(TAG, "Fetching wallet metadata from backend...")
+          val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
+          try {
+            walletListData = service.getWalletList().data
+            if (walletListData == null) {
+              logd(TAG, "Failed to fetch wallet list from backend")
+              continuation.resume(false)
+              return@ioScope
+            }
+          } catch (e: Exception) {
+            logd(TAG, "Error fetching wallet list: ${e.message}")
+            continuation.resume(false)
+            return@ioScope
+          }
+
+          // Initialize wallet SDK with the blockchain-confirmed address
           val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
           val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
           if (keyForWalletSDK == null) {
@@ -193,32 +173,22 @@ suspend fun registerOutblock(
             storage
           )
 
-          when (chainNetWorkString()) {
+          val currentChainId = when (chainNetWorkString()) {
             "mainnet" -> ChainId.Mainnet
             "testnet" -> ChainId.Testnet
             else -> ChainId.Mainnet
           }
 
-          // Use fetchAccountByAddress to populate wallet SDK with account from Flow network
-          walletListData.wallets?.forEach { walletData ->
-            walletData.blockchain?.forEach { blockchain ->
-              try {
-                val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                  "mainnet" -> ChainId.Mainnet
-                  "testnet" -> ChainId.Testnet
-                  else -> null
-                }
-                if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                  val address = if (blockchain.address.startsWith("0x")) blockchain.address else "0x${blockchain.address}"
-                  logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with account $address")
-                  walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
-                  logd(TAG, "Successfully populated wallet SDK with account from Flow network")
-                }
-              } catch (e: Exception) {
-                logd(TAG, "Warning: Could not fetch account ${blockchain.address} into Wallet SDK: ${e.message}")
-                // Continue anyway, we have the wallet data from server
-              }
-            }
+          // Use the blockchain-confirmed address to populate wallet SDK
+          try {
+            val address = if (createdAddress.startsWith("0x")) createdAddress else "0x$createdAddress"
+            logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with blockchain-confirmed account: $address")
+            walletForSDK.fetchAccountByAddress(address, currentChainId)
+            logd(TAG, "Successfully populated wallet SDK with account from Flow network")
+          } catch (e: Exception) {
+            logd(TAG, "Error: Could not fetch account $createdAddress into Wallet SDK: ${e.message}")
+            continuation.resume(false)
+            return@ioScope
           }
 
           // Clear any cached EOA address from previous accounts FIRST
