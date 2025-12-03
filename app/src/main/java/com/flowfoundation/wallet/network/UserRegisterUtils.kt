@@ -55,7 +55,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
-import org.onflow.flow.waitForCreatedAccountAddress
 import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 import java.security.MessageDigest
@@ -111,21 +110,48 @@ suspend fun registerOutblock(
             return@ioScope
           }
 
-          // Use flow-kmm helper to wait for account creation on-chain
+          // Use fetchAccountByCreationTxId to directly fetch the created account
+          // This is faster than waiting for the key indexer to poll the address
           var createdAddress: String? = null
           if (txIdFromBackend != null) {
-            logd(TAG, "Using flow-kmm helper to wait for account creation (txId: $txIdFromBackend)")
+            logd(TAG, "Using fetchAccountByCreationTxId to fetch account (txId: $txIdFromBackend)")
             try {
               val chainId = when (chainNetWorkString()) {
                 "mainnet" -> ChainId.Mainnet
                 "testnet" -> ChainId.Testnet
                 else -> ChainId.Mainnet
               }
-              val flowApi = org.onflow.flow.FlowApi(chainId)
-              createdAddress = flowApi.waitForCreatedAccountAddress(txIdFromBackend)
-              logd(TAG, "Account created successfully at address: $createdAddress")
+
+              // Initialize wallet SDK early to use fetchAccountByCreationTxId
+              val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
+              val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
+              if (keyForWalletSDK == null) {
+                logd(TAG, "Failed to retrieve stored private key for Wallet SDK init from both new and old storage.")
+                continuation.resume(false)
+                return@ioScope
+              }
+
+              val walletForSDK = WalletFactory.createKeyWallet(
+                keyForWalletSDK,
+                setOf(ChainId.Mainnet, ChainId.Testnet),
+                storage
+              )
+
+              // Use fetchAccountByCreationTxId instead of waitForCreatedAccountAddress
+              // This directly fetches the account using the transaction ID
+              val account = walletForSDK.fetchAccountByCreationTxId(txIdFromBackend, chainId)
+              createdAddress = account?.address
+
+              if (createdAddress != null) {
+                logd(TAG, "Account fetched successfully at address: $createdAddress")
+              } else {
+                logd(TAG, "Failed to fetch account by creation txId")
+                continuation.resume(false)
+                return@ioScope
+              }
             } catch (e: Exception) {
-              logd(TAG, "Error waiting for account creation: ${e.message}")
+              logd(TAG, "Error fetching account by creation txId: ${e.message}")
+              e.printStackTrace()
               continuation.resume(false)
               return@ioScope
             }
@@ -135,14 +161,8 @@ suspend fun registerOutblock(
             return@ioScope
           }
 
-          if (createdAddress == null) {
-            logd(TAG, "Failed to get created address from blockchain")
-            continuation.resume(false)
-            return@ioScope
-          }
-
           // Fetch wallet list to get wallet metadata (username, etc.)
-          // We already have the address from blockchain, but need wallet metadata from backend
+          // We already have the address from blockchain via fetchAccountByCreationTxId
           logd(TAG, "Fetching wallet metadata from backend...")
           val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
           try {
@@ -158,38 +178,8 @@ suspend fun registerOutblock(
             return@ioScope
           }
 
-          // Initialize wallet SDK with the blockchain-confirmed address
-          val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-          val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-          if (keyForWalletSDK == null) {
-            logd(TAG, "Failed to retrieve stored private key for Wallet SDK init from both new and old storage.")
-            continuation.resume(false)
-            return@ioScope
-          }
-
-          val walletForSDK = WalletFactory.createKeyWallet(
-            keyForWalletSDK,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            storage
-          )
-
-          val currentChainId = when (chainNetWorkString()) {
-            "mainnet" -> ChainId.Mainnet
-            "testnet" -> ChainId.Testnet
-            else -> ChainId.Mainnet
-          }
-
-          // Use the blockchain-confirmed address to populate wallet SDK
-          try {
-            val address = if (createdAddress.startsWith("0x")) createdAddress else "0x$createdAddress"
-            logd(TAG, "Using fetchAccountByAddress to populate wallet SDK with blockchain-confirmed account: $address")
-            walletForSDK.fetchAccountByAddress(address, currentChainId)
-            logd(TAG, "Successfully populated wallet SDK with account from Flow network")
-          } catch (e: Exception) {
-            logd(TAG, "Error: Could not fetch account $createdAddress into Wallet SDK: ${e.message}")
-            continuation.resume(false)
-            return@ioScope
-          }
+          // Account is already fetched via fetchAccountByCreationTxId, no need to fetch again
+          logd(TAG, "Account already populated in wallet SDK via fetchAccountByCreationTxId")
 
           // Clear any cached EOA address from previous accounts FIRST
           // This must happen before AccountManager.add() to prevent drawer from reading stale cache

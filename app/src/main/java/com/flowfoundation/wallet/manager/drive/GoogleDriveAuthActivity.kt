@@ -157,7 +157,6 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
                             derivationPath = "m/44'/539'/0'/0/0",
-                            keyPair = null,
                             storage = storage
                         )
                         uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey))
@@ -171,7 +170,6 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
                             derivationPath = "m/44'/539'/0'/0/0",
-                            keyPair = null,
                             storage = storage
                         )
                         checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey))

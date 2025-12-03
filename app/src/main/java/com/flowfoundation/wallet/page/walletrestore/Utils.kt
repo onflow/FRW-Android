@@ -66,7 +66,6 @@ private fun createSeedPhraseKeyWithKeyPair(mnemonic: String, storage: FileSystem
             mnemonicString = mnemonic,
             passphrase = "",
             derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = dummyKeyPair,
             storage = storage
         )
 

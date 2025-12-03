@@ -83,7 +83,7 @@ android {
 
     defaultConfig {
         applicationId "com.flowfoundation.wallet"
-        minSdk 24
+        minSdk 28
         targetSdk 35
         versionCode vCode as Integer
         versionName vName

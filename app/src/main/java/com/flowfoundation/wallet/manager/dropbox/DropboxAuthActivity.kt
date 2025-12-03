@@ -99,7 +99,6 @@ class DropboxAuthActivity : AppCompatActivity() {
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
                             derivationPath = "m/44'/539'/0'/0/0",
-                            keyPair = null,
                             storage = storage
                         )
                         uploadDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey))
@@ -112,7 +111,6 @@ class DropboxAuthActivity : AppCompatActivity() {
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
                             derivationPath = "m/44'/539'/0'/0/0",
-                            keyPair = null,
                             storage = storage
                         )
                         checkDropboxBackup(dbxClient, BackupCryptoProvider(seedPhraseKey))

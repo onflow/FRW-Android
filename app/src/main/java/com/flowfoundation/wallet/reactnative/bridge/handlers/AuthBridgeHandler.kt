@@ -163,7 +163,6 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     mnemonicString = mnemonic,
                     passphrase = "",
                     derivationPath = derivationPath,
-                    keyPair = null,
                     storage = inMemoryStorage
                 )
 
@@ -607,7 +606,6 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
                                     mnemonicString = mnemonic,
                                     passphrase = "",
                                     derivationPath = "m/44'/539'/0'/0/0",
-                                    keyPair = null,
                                     storage = storage
                                 )
 

@@ -60,7 +60,6 @@ class BackupSeedPhraseViewModel: ViewModel(), OnTransactionStateChange {
                     mnemonicString = newMnemonic,
                     passphrase = "",
                     derivationPath = "m/44'/539'/0'/0/0",
-                    keyPair = null,
                     storage = FileSystemStorage(baseDir)
                 )
                 val provider = HDWalletCryptoProvider(seedPhraseKey)

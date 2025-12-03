@@ -50,7 +50,6 @@ class BackupRecoveryPhraseViewModel : ViewModel(), OnTransactionStateChange {
             mnemonicString = HDWallet(160, "").mnemonic(),
             passphrase = "",
             derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
             storage = FileSystemStorage(baseDir)
         )
         BackupCryptoProvider(seedPhraseKey)
