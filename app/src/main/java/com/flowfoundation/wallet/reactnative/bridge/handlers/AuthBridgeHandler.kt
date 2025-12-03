@@ -838,7 +838,7 @@ private fun setupAccountAndWallet(
             val params = WritableNativeMap()
             params.putInt("progress", progress)
             params.putString("status", status)
-            sendEvent("AccountCreationProgress", params)
+            sendEvent("accountCreationProgress", params)
             logd(TAG, "Successfully sent progress event: $progress%")
         } catch (e: Exception) {
             loge(TAG, "Failed to send progress event $progress%: ${e.message}")

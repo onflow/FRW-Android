@@ -25,8 +25,8 @@ class RNBridge {
     }
 
     enum class AccountTypeType {
-        @SerializedName("full") FULL,      // Mnemonic-based account with seed phrase
-        @SerializedName("hardware") HARDWARE,  // Secure enclave with hardware-backed keys
+        @SerializedName("full") FULL,
+        @SerializedName("hardware") HARDWARE,
         @SerializedName("null") NULL
     }
 
@@ -183,23 +183,6 @@ class RNBridge {
         val error: String
     )
 
-    data class CreateEOAAccountResponse(
-        @SerializedName("success")
-        val success: Boolean,
-        @SerializedName("address")
-        val address: String,
-        @SerializedName("username")
-        val username: String,
-        @SerializedName("mnemonic")
-        val mnemonic: String,
-        @SerializedName("phrase")
-        val phrase: String,
-        @SerializedName("accountType")
-        val accountType: AccountTypeType,
-        @SerializedName("error")
-        val error: String
-    )
-
     data class AccountKey(
         @SerializedName("publicKey")
         val publicKey: String,
@@ -287,6 +270,21 @@ class RNBridge {
         @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
         @SerializedName("backupOptions") BACKUP_OPTIONS,
         @SerializedName("walletRestore") WALLET_RESTORE
+    }
+
+    enum class ScreenName {
+        @SerializedName("GetStarted") GET_STARTED,
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
+        @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
+        @SerializedName("ConfirmRecoveryPhrase") CONFIRM_RECOVERY_PHRASE,
+        @SerializedName("SecureEnclave") SECURE_ENCLAVE,
+        @SerializedName("NotificationPreferences") NOTIFICATION_PREFERENCES,
+        @SerializedName("SelectTokens") SELECT_TOKENS,
+        @SerializedName("SendTo") SEND_TO,
+        @SerializedName("SendTokens") SEND_TOKENS,
+        @SerializedName("SendSummary") SEND_SUMMARY,
+        @SerializedName("NFTList") NFT_LIST,
+        @SerializedName("NFTDetail") NFT_DETAIL
     }
 
     data class NFTModel(
