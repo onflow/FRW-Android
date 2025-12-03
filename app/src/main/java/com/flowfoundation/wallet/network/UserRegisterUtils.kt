@@ -100,7 +100,6 @@ suspend fun registerOutblock(
           try {
             val createWalletResponse = service.createWalletV2()
             txIdFromBackend = createWalletResponse.data?.txid
-              ?: createWalletResponse.data?.transactionId
             if (txIdFromBackend != null) {
               logd(TAG, "Flow account creation initiated, txId: $txIdFromBackend")
             } else {

@@ -356,7 +356,6 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 try {
                                     val createWalletResponse = service.createWalletV2()
                                     txIdFromBackend = createWalletResponse.data?.txid
-                                        ?: createWalletResponse.data?.transactionId
                                     if (txIdFromBackend != null) {
                                         logd(TAG, "saveMnemonic() - Flow account creation initiated, txId: $txIdFromBackend")
                                     } else {
