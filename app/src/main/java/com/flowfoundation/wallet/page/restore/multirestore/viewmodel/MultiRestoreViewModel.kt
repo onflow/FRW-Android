@@ -694,18 +694,11 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
         try {
             // Create a simple dummy KeyPair to pass the null check in sign()
             // The actual signing uses hdWallet.getKeyByCurve() internally, not this keyPair
-            val keyGenerator = java.security.KeyPairGenerator.getInstance("EC")
-            keyGenerator.initialize(256)
-            val dummyKeyPair = keyGenerator.generateKeyPair()
-
-            logd("MultiRestore", "Created dummy KeyPair for null check")
-
-            // Create SeedPhraseKey with the dummy keyPair
+            // Create SeedPhraseKey
             val seedPhraseKey = SeedPhraseKey(
                 mnemonicString = mnemonic,
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
-                keyPair = dummyKeyPair,
                 storage = storage
             )
 
