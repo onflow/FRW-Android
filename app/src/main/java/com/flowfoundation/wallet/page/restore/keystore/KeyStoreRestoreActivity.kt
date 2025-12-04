@@ -123,12 +123,16 @@ class KeyStoreRestoreActivity : BaseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                finish()
+                handleBackNavigation()
             }
 
             else -> super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun handleBackNavigation() {
+        finish()
     }
 
     private fun setupToolbar() {

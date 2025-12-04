@@ -881,29 +881,39 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 return
             }
 
-            when (screenName) {
+            // Create intent with FROM_REACT_NATIVE flag
+            val intent = when (screenName) {
                 "deviceBackup" -> {
-                    com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity.launch(currentActivity)
+                    Intent(currentActivity, com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity::class.java)
                 }
                 "recoveryPhraseRestore" -> {
-                    com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity.launchSeedPhrase(currentActivity)
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
+                        putExtra("extra_restore_seed_phrase", true)
+                    }
                 }
                 "keyStoreRestore" -> {
-                    com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity.launchKeyStore(currentActivity)
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java)
                 }
                 "privateKeyRestore" -> {
-                    com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity.launchPrivateKey(currentActivity)
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
+                        putExtra("extra_restore_private_key", true)
+                    }
                 }
                 "googleDriveRestore" -> {
-                    com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(currentActivity)
+                    Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
                 }
                 "multiRestore" -> {
-                    com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity.launch(currentActivity)
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity::class.java)
                 }
                 else -> {
                     logw(TAG, "launchNativeScreen() - unknown screen name: $screenName")
+                    return
                 }
             }
+
+            // Add flag to indicate launched from React Native
+            intent.putExtra("from_react_native", true)
+            currentActivity.startActivity(intent)
         } catch (e: Exception) {
             loge(TAG, "launchNativeScreen() error: ${e.message}")
             e.printStackTrace()
