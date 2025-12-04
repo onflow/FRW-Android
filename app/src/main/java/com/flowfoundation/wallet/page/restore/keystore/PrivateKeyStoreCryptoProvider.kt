@@ -172,48 +172,35 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         return object : org.onflow.flow.models.Signer {
             override var address: String = keyInfo.get("address").asString
             override var keyIndex: Int = keyInfo.get("keyId").asInt
-            
-            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                logd(TAG, "*** KEYSTORE SIGNER: sign(transaction, bytes) called - TRUSTWALLET CORE ***")
+
+            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+                logd(TAG, "*** KEYSTORE SIGNER: sign() called - TRUSTWALLET CORE ***")
                 logd(TAG, "  Address: $address")
                 logd(TAG, "  KeyIndex: $keyIndex")
                 logd(TAG, "  HashingAlgorithm: $hashingAlgorithm")
                 logd(TAG, "  Input bytes length: ${bytes.size}")
                 logd(TAG, "  Input bytes (first 32): ${bytes.take(32).toHexString()}")
-                
+
                 val signature = this@PrivateKeyStoreCryptoProvider.sign(bytes)
                 logd(TAG, "  TrustWallet signature result: ${signature.toHexString()}")
                 return signature
             }
-            
-            override suspend fun sign(bytes: ByteArray): ByteArray {
-                logd(TAG, "*** KEYSTORE SIGNER: sign(bytes) called - TRUSTWALLET CORE ***")
-                logd(TAG, "  Address: $address")
-                logd(TAG, "  KeyIndex: $keyIndex") 
-                logd(TAG, "  HashingAlgorithm: $hashingAlgorithm")
-                logd(TAG, "  Input bytes length: ${bytes.size}")
-                logd(TAG, "  Input bytes (first 32): ${bytes.take(32).toHexString()}")
-                
-                val signature = this@PrivateKeyStoreCryptoProvider.sign(bytes)
-                logd(TAG, "  TrustWallet signature result: ${signature.toHexString()}")
-                return signature
-            }
-            
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
+
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: signWithDomain() called - TRUSTWALLET CORE ***")
                 logd(TAG, "  Domain: ${domain.toHexString()}")
                 logd(TAG, "  Bytes: ${bytes.take(32).toHexString()}")
-                return sign(domain + bytes)
+                return sign(domain + bytes, transaction)
             }
-            
+
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
-                logd(TAG, "*** KEYSTORE SIGNER: signAsUser() called - TRUSTWALLET CORE ***") 
-                return signWithDomain(bytes, DomainTag.User.bytes)
+                logd(TAG, "*** KEYSTORE SIGNER: signAsUser() called - TRUSTWALLET CORE ***")
+                return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
-            
-            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
+
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: signAsTransaction() called - TRUSTWALLET CORE ***")
-                return signWithDomain(bytes, DomainTag.Transaction.bytes)
+                return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
         }
     }

@@ -98,70 +98,43 @@ class BackupCryptoProvider(
         return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
-            
-            override suspend fun sign(transaction: org.onflow.flow.models.Transaction?, bytes: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "Transaction Signer.sign() called")
+
+            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+                logd("BackupCryptoProvider", "Signer.sign() called")
                 logd("BackupCryptoProvider", "  Address: $address")
                 logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
                 logd("BackupCryptoProvider", "  Transaction: ${transaction?.id ?: "null"}")
                 logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
                 logd("BackupCryptoProvider", "  Using effective hashing algorithm: $effectiveHashingAlgorithm")
-                
+
                 try {
                     val signature = seedPhraseKey.sign(bytes, signingAlgorithm, effectiveHashingAlgorithm)
                     logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
-                    
+
                     // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
                     val finalSignature = if (signature.size == 65) {
-                        logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature for transaction signing")
+                        logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature")
                         signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
                     } else {
-                        logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes) for transaction signing")
+                        logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes)")
                         signature
                     }
-                    
+
                     return finalSignature
                 } catch (e: Exception) {
                     throw e
                 }
             }
 
-            override suspend fun sign(bytes: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "KMM Signer.sign(bytes) called")
-                logd("BackupCryptoProvider", "  Address: $address")
-                logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
-                logd("BackupCryptoProvider", "  Bytes to sign (${bytes.size} bytes): ${bytes.take(50).joinToString("") { "%02x".format(it) }}...")
-                logd("BackupCryptoProvider", "  Using signing algorithm: $signingAlgorithm")
-                logd("BackupCryptoProvider", "  Using effective hashing algorithm: $effectiveHashingAlgorithm")
-                
-                try {
-                    val signature = seedPhraseKey.sign(bytes, signingAlgorithm, effectiveHashingAlgorithm)
-                    logd("BackupCryptoProvider", "  Generated signature (${signature.size} bytes): ${signature.take(32).joinToString("") { "%02x".format(it) }}...")
-                    
-                    // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
-                    val finalSignature = if (signature.size == 65) {
-                        logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature for KMM signing")
-                        signature.copyOfRange(0, 64) // Remove the last byte (recovery ID)
-                    } else {
-                        logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes) for KMM signing")
-                        signature
-                    }
-                    
-                    return finalSignature
-                } catch (e: Exception) {
-                    throw e
-                }
-            }
-            
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "KMM Signer.signWithDomain() called")
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+                logd("BackupCryptoProvider", "Signer.signWithDomain() called")
                 logd("BackupCryptoProvider", "  Domain: ${domain.take(32).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Bytes: ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
                 try {
                     // For domain signing, we need to combine domain + bytes and let the SDK handle hashing
                     val signature = seedPhraseKey.sign(domain + bytes, signingAlgorithm, effectiveHashingAlgorithm)
-                    
+
                     // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
                     val finalSignature = if (signature.size == 65) {
                         logd("BackupCryptoProvider", "  Trimming recovery ID from 65-byte signature for domain signing")
@@ -170,21 +143,21 @@ class BackupCryptoProvider(
                         logd("BackupCryptoProvider", "  Using signature as-is (${signature.size} bytes) for domain signing")
                         signature
                     }
-                    
+
                     return finalSignature
                 } catch (e: Exception) {
                     throw e
                 }
             }
-            
+
             override suspend fun signAsUser(bytes: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "KMM Signer.signAsUser() called")
-                return signWithDomain(bytes, DomainTag.User.bytes)
+                logd("BackupCryptoProvider", "Signer.signAsUser() called")
+                return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
-            
-            override suspend fun signAsTransaction(bytes: ByteArray): ByteArray {
-                logd("BackupCryptoProvider", "KMM Signer.signAsTransaction() called")
-                return signWithDomain(bytes, DomainTag.Transaction.bytes)
+
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+                logd("BackupCryptoProvider", "Signer.signAsTransaction() called")
+                return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
         }
     }

@@ -49,7 +49,6 @@ class WalletCreateMnemonicViewModel : ViewModel() {
                 mnemonicString = mnemonic,
                 passphrase = "",
                 derivationPath = "m/44'/539'/0'/0/0",
-                keyPair = null,
                 storage = getStorage()
             )
             

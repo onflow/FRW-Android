@@ -185,7 +185,6 @@ class BackupCompletedFragment : Fragment() {
             mnemonicString = item.mnemonic,
             passphrase = "",
             derivationPath = "m/44'/539'/0'/0/0",
-            keyPair = null,
             storage = FileSystemStorage(baseDir)
         )
         val backupProvider = createBackupCryptoProvider(seedPhraseKey)

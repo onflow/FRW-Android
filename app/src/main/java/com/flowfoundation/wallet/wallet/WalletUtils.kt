@@ -42,7 +42,6 @@ fun getKeyWallet(): KeyWallet {
             mnemonicString = Wallet.store().mnemonic(),
             passphrase = "",
             derivationPath = DERIVATION_PATH,
-            keyPair = null,
             storage = getStorage()
         )
         WalletFactory.createKeyWallet(
