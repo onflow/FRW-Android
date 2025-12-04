@@ -871,6 +871,45 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
         }
     }
 
+    override fun launchNativeScreen(screenName: String) {
+        try {
+            logd(TAG, "launchNativeScreen() called - screenName: $screenName")
+
+            val currentActivity = reactApplicationContext.currentActivity
+            if (currentActivity == null) {
+                loge(TAG, "launchNativeScreen() - no current activity available")
+                return
+            }
+
+            when (screenName) {
+                "deviceBackup" -> {
+                    com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity.launch(currentActivity)
+                }
+                "recoveryPhraseRestore" -> {
+                    com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity.launchSeedPhrase(currentActivity)
+                }
+                "keyStoreRestore" -> {
+                    com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity.launchKeyStore(currentActivity)
+                }
+                "privateKeyRestore" -> {
+                    com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity.launchPrivateKey(currentActivity)
+                }
+                "googleDriveRestore" -> {
+                    com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity.launch(currentActivity)
+                }
+                "multiRestore" -> {
+                    com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity.launch(currentActivity)
+                }
+                else -> {
+                    logw(TAG, "launchNativeScreen() - unknown screen name: $screenName")
+                }
+            }
+        } catch (e: Exception) {
+            loge(TAG, "launchNativeScreen() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
     companion object {
         const val NAME = "NativeFRWBridge"
     }
