@@ -83,7 +83,7 @@ android {
 
     defaultConfig {
         applicationId "com.flowfoundation.wallet"
-        minSdk 24
+        minSdk 28
         targetSdk 35
         versionCode vCode as Integer
         versionName vName
@@ -352,7 +352,7 @@ dependencies {
     api fileTree(dir: "libs", include: ["*.aar", "*.jar"], exclude: ["trustwalletcore.aar"])
 
     // Fetch Flow Wallet Kit from GitHub Packages
-    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.0'
+    implementation 'com.github.onflow.flow-wallet-kit:flow-wallet-android:0.2.1'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.22"
     /** Android Architecture **/
     implementation 'androidx.core:core-ktx:1.13.1'
@@ -500,7 +500,7 @@ dependencies {
     implementation ("com.github.Outblock:flow-jvm-sdk:v0.5.7") {
         exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
     }
-    implementation 'com.github.onflow.flow-kmm:flow:0.0.26'
+    implementation 'com.github.onflow.flow-kmm:flow:0.1.1'
     implementation 'io.grpc:grpc-okhttp:1.59.0'
 
      implementation "io.ktor:ktor-client-core:2.3.7"
