@@ -52,6 +52,29 @@ import org.onflow.flow.models.toHexString
 import org.web3j.utils.Numeric
 import java.util.Locale
 
+/**
+ * Enum representing native Android screens that can be launched from React Native
+ */
+enum class NativeScreen(val screenName: String) {
+    DEVICE_BACKUP("deviceBackup"),
+    RECOVERY_PHRASE_RESTORE("recoveryPhraseRestore"),
+    KEY_STORE_RESTORE("keyStoreRestore"),
+    PRIVATE_KEY_RESTORE("privateKeyRestore"),
+    GOOGLE_DRIVE_RESTORE("googleDriveRestore"),
+    MULTI_RESTORE("multiRestore");
+
+    companion object {
+        /**
+         * Convert string screen name to enum value
+         * @param screenName The screen name from React Native
+         * @return The corresponding NativeScreen enum value, or null if not found
+         */
+        fun fromString(screenName: String): NativeScreen? {
+            return values().find { it.screenName == screenName }
+        }
+    }
+}
+
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
     private val TAG = "NativeFRWBridge"
@@ -872,42 +895,43 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     }
 
     override fun launchNativeScreen(screenName: String) {
-        try {
-            logd(TAG, "launchNativeScreen() called - screenName: $screenName")
+        logd(TAG, "launchNativeScreen() called - screen: $screenName")
 
+        try {
             val currentActivity = reactApplicationContext.currentActivity
             if (currentActivity == null) {
-                loge(TAG, "launchNativeScreen() - no current activity available")
+                logw(TAG, "launchNativeScreen() - no current activity")
                 return
             }
 
-            // Create intent with FROM_REACT_NATIVE flag
-            val intent = when (screenName) {
-                "deviceBackup" -> {
+            val screen = NativeScreen.fromString(screenName)
+            if (screen == null) {
+                loge(TAG, "launchNativeScreen() - unknown screen: $screenName")
+                return
+            }
+
+            val intent = when (screen) {
+                NativeScreen.DEVICE_BACKUP -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity::class.java)
                 }
-                "recoveryPhraseRestore" -> {
+                NativeScreen.RECOVERY_PHRASE_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
                         putExtra("extra_restore_seed_phrase", true)
                     }
                 }
-                "keyStoreRestore" -> {
+                NativeScreen.KEY_STORE_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java)
                 }
-                "privateKeyRestore" -> {
+                NativeScreen.PRIVATE_KEY_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
                         putExtra("extra_restore_private_key", true)
                     }
                 }
-                "googleDriveRestore" -> {
+                NativeScreen.GOOGLE_DRIVE_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
                 }
-                "multiRestore" -> {
+                NativeScreen.MULTI_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity::class.java)
-                }
-                else -> {
-                    logw(TAG, "launchNativeScreen() - unknown screen name: $screenName")
-                    return
                 }
             }
 
