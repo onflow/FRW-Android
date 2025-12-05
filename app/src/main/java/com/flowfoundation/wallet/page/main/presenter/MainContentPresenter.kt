@@ -11,10 +11,12 @@ import com.flowfoundation.wallet.page.main.activeColor
 import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.setSvgDrawable
-import com.flowfoundation.wallet.page.wallet.fragment.WalletUnregisteredFragment
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isRegistered
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.wallet.toAddress
 
 class MainContentPresenter(
     private val activity: MainActivity,
@@ -48,10 +50,9 @@ class MainContentPresenter(
     }
 
     private fun showUnregisteredFragment() {
-        binding.flContainer.visible()
-        binding.clContent.gone()
-        activity.supportFragmentManager.beginTransaction()
-            .replace(R.id.fl_container, WalletUnregisteredFragment()).commitAllowingStateLoss()
+        val address = WalletManager.selectedWalletAddress().toAddress()
+        val network = chainNetWorkString()
+        ReactNativeActivity.launch(activity, null, address, network, "GetStarted")
     }
 
     private fun showMainContent() {
