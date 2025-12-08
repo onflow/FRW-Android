@@ -24,6 +24,15 @@ class RNBridge {
         @SerializedName("receive") RECEIVE
     }
 
+    enum class InitialRoute(val routeName: String) {
+        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
+        @SerializedName("SendTo") SEND_TO("SendTo"),
+        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
+        @SerializedName("Home") HOME("Home")
+    }
+
     enum class AccountTypeType {
         @SerializedName("eoa") EOA,
         @SerializedName("coa") COA,
