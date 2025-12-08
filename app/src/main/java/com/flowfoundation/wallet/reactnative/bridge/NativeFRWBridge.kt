@@ -53,25 +53,15 @@ import org.web3j.utils.Numeric
 import java.util.Locale
 
 /**
- * Enum representing native Android screens that can be launched from React Native
+ * Helper to convert string screen name to NativeScreenName enum.
+ * Uses Gson SerializedName annotations for mapping.
  */
-enum class NativeScreen(val screenName: String) {
-    DEVICE_BACKUP("deviceBackup"),
-    RECOVERY_PHRASE_RESTORE("recoveryPhraseRestore"),
-    KEY_STORE_RESTORE("keyStoreRestore"),
-    PRIVATE_KEY_RESTORE("privateKeyRestore"),
-    GOOGLE_DRIVE_RESTORE("googleDriveRestore"),
-    MULTI_RESTORE("multiRestore");
-
-    companion object {
-        /**
-         * Convert string screen name to enum value
-         * @param screenName The screen name from React Native
-         * @return The corresponding NativeScreen enum value, or null if not found
-         */
-        fun fromString(screenName: String): NativeScreen? {
-            return values().find { it.screenName == screenName }
-        }
+private fun nativeScreenFromString(screenName: String): RNBridge.NativeScreenName? {
+    return RNBridge.NativeScreenName.entries.find { enumValue ->
+        val serializedName = enumValue.javaClass.getField(enumValue.name)
+            .getAnnotation(com.google.gson.annotations.SerializedName::class.java)
+            ?.value
+        serializedName == screenName
     }
 }
 
@@ -904,34 +894,42 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
                 return
             }
 
-            val screen = NativeScreen.fromString(screenName)
+            val screen = nativeScreenFromString(screenName)
             if (screen == null) {
                 loge(TAG, "launchNativeScreen() - unknown screen: $screenName")
                 return
             }
 
             val intent = when (screen) {
-                NativeScreen.DEVICE_BACKUP -> {
+                RNBridge.NativeScreenName.DEVICE_BACKUP -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity::class.java)
                 }
-                NativeScreen.RECOVERY_PHRASE_RESTORE -> {
+                RNBridge.NativeScreenName.RECOVERY_PHRASE_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
                         putExtra("extra_restore_seed_phrase", true)
                     }
                 }
-                NativeScreen.KEY_STORE_RESTORE -> {
+                RNBridge.NativeScreenName.KEY_STORE_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java)
                 }
-                NativeScreen.PRIVATE_KEY_RESTORE -> {
+                RNBridge.NativeScreenName.PRIVATE_KEY_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
                         putExtra("extra_restore_private_key", true)
                     }
                 }
-                NativeScreen.GOOGLE_DRIVE_RESTORE -> {
+                RNBridge.NativeScreenName.GOOGLE_DRIVE_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
                 }
-                NativeScreen.MULTI_RESTORE -> {
+                RNBridge.NativeScreenName.MULTI_RESTORE -> {
                     Intent(currentActivity, com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity::class.java)
+                }
+                // Backup screens - not currently used for launching but defined in the enum
+                RNBridge.NativeScreenName.MULTI_BACKUP,
+                RNBridge.NativeScreenName.SEED_PHRASE_BACKUP,
+                RNBridge.NativeScreenName.BACKUP_OPTIONS,
+                RNBridge.NativeScreenName.WALLET_RESTORE -> {
+                    logw(TAG, "launchNativeScreen() - screen $screenName not yet implemented")
+                    return
                 }
             }
 
