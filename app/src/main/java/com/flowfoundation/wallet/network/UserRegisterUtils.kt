@@ -139,7 +139,14 @@ suspend fun registerOutblock(
 
               // Use fetchAccountByCreationTxId instead of waitForCreatedAccountAddress
               // This directly fetches the account using the transaction ID
-              logd(TAG, "Starting fetchAccountByCreationTxId call (this may take time while waiting for blockchain)...")
+              val networkName = chainNetWorkString()
+              logd(TAG, "=== NETWORK CHECK ===")
+              logd(TAG, "chainNetWorkString(): $networkName")
+              logd(TAG, "chainId being used: $chainId")
+              logd(TAG, "isMainnet(): ${com.flowfoundation.wallet.manager.app.isMainnet()}")
+              logd(TAG, "isTestnet(): ${com.flowfoundation.wallet.manager.app.isTestnet()}")
+              logd(TAG, "Starting fetchAccountByCreationTxId call on network: $networkName (chainId: $chainId)")
+              logd(TAG, "This may take time while waiting for blockchain to confirm transaction...")
               val startTime = System.currentTimeMillis()
               val account = walletForSDK.fetchAccountByCreationTxId(txIdFromBackend, chainId)
               val duration = System.currentTimeMillis() - startTime
