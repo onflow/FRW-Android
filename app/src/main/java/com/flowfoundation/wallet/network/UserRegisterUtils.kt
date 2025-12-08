@@ -139,18 +139,23 @@ suspend fun registerOutblock(
 
               // Use fetchAccountByCreationTxId instead of waitForCreatedAccountAddress
               // This directly fetches the account using the transaction ID
+              logd(TAG, "Starting fetchAccountByCreationTxId call (this may take time while waiting for blockchain)...")
+              val startTime = System.currentTimeMillis()
               val account = walletForSDK.fetchAccountByCreationTxId(txIdFromBackend, chainId)
+              val duration = System.currentTimeMillis() - startTime
+              logd(TAG, "fetchAccountByCreationTxId completed in ${duration}ms")
               createdAddress = account?.address
 
               if (createdAddress != null) {
                 logd(TAG, "Account fetched successfully at address: $createdAddress")
               } else {
-                logd(TAG, "Failed to fetch account by creation txId")
+                logd(TAG, "Failed to fetch account by creation txId - account was null")
                 continuation.resume(false)
                 return@ioScope
               }
             } catch (e: Exception) {
-              logd(TAG, "Error fetching account by creation txId: ${e.message}")
+              val errorType = e.javaClass.simpleName
+              logd(TAG, "Error fetching account by creation txId ($errorType): ${e.message}")
               e.printStackTrace()
               continuation.resume(false)
               return@ioScope
