@@ -7,6 +7,7 @@ import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.logd
+import org.onflow.flow.models.Transaction
 
 /**
  * A CryptoProvider implementation that wraps a PrivateKey and integrates with Flow-Wallet-Kit
@@ -18,7 +19,7 @@ class PrivateKeyCryptoProvider(
     private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_P256,
     private val hashingAlgorithm: HashingAlgorithm? = null // Dynamic hashing algorithm from on-chain key
 ) : CryptoProvider {
-    
+
     private val TAG = "PrivateKeyCryptoProvider"
 
     init {
@@ -50,14 +51,14 @@ class PrivateKeyCryptoProvider(
     override suspend fun signData(data: ByteArray): String {
         val effectiveHashingAlgorithm = hashingAlgorithm ?: getHashAlgorithm()
         val signatureBytes = privateKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm)
-        
+
         // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
         val finalSignature = if (signatureBytes.size == 65) {
             signatureBytes.copyOfRange(0, 64) // Remove the last byte (recovery ID)
         } else {
             signatureBytes
         }
-        
+
         return finalSignature.toHexString()
     }
 
@@ -71,7 +72,7 @@ class PrivateKeyCryptoProvider(
             override var address: String = ""
             override var keyIndex: Int = 0
 
-            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 val signatureBytes = privateKey.sign(bytes, signingAlgorithm, hashingAlgorithm)
 
                 // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
@@ -84,7 +85,7 @@ class PrivateKeyCryptoProvider(
                 return finalSignature
             }
 
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: Transaction?): ByteArray {
                 return sign(domain + bytes, transaction)
             }
 
@@ -92,7 +93,7 @@ class PrivateKeyCryptoProvider(
                 return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
 
-            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
         }
@@ -134,4 +135,4 @@ class PrivateKeyCryptoProvider(
     fun getPrivateKey(): PrivateKey {
         return privateKey
     }
-} 
+}
