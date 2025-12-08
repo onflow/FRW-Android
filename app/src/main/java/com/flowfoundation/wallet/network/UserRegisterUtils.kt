@@ -143,8 +143,11 @@ suspend fun registerOutblockEarlyReturn(
           return@ioScope
         }
 
+        // Store prefix for later use by initWalletWithTxId
+        pendingRegistrationPrefix = prefix
+        
         // Return early with txId - RN will monitor the tx and call initWalletWithTxId when sealed
-        logd(TAG, "[EarlyReturn] Returning early with txId: $txIdFromBackend")
+        logd(TAG, "[EarlyReturn] Returning early with txId: $txIdFromBackend, stored prefix: $prefix")
         continuation.resume(RegisterEarlyResult(
           success = true,
           txId = txIdFromBackend,
@@ -156,6 +159,9 @@ suspend fun registerOutblockEarlyReturn(
     }
   }
 }
+
+// Store prefix temporarily between early return and wallet init
+private var pendingRegistrationPrefix: String? = null
 
 /**
  * Initialize wallet after transaction has sealed
@@ -172,19 +178,19 @@ suspend fun initWalletWithTxId(
 
       // Get user info
       val userInfo = try { service.userInfo().data } catch (e: Exception) {
-        loge(TAG, "[InitWallet] Failed to fetch user info")
+        loge(TAG, "[InitWallet] Failed to fetch user info: ${e.message}")
         continuation.resume(Pair(false, null))
         return@ioScope
       }
 
-      // Get the prefix from the current account registration
-      val account = AccountManager.get()
-      val prefix = account?.prefix
+      // Get the prefix from the pending registration (stored during early return)
+      val prefix = pendingRegistrationPrefix
       if (prefix == null) {
-        loge(TAG, "[InitWallet] No prefix found in account")
+        loge(TAG, "[InitWallet] No pending registration prefix found")
         continuation.resume(Pair(false, null))
         return@ioScope
       }
+      logd(TAG, "[InitWallet] Using prefix from pending registration: $prefix")
 
       // Fetch account by txId using Wallet SDK
       val chainId = when (chainNetWorkString()) {
@@ -250,10 +256,16 @@ suspend fun initWalletWithTxId(
       )
 
       logd(TAG, "[InitWallet] Account added to AccountManager, address: $createdAddress")
+      
+      // Clear the pending prefix now that wallet init is complete
+      pendingRegistrationPrefix = null
+      
       continuation.resume(Pair(true, createdAddress))
     } catch (e: Exception) {
       loge(TAG, "[InitWallet] Error: ${e.message}")
       e.printStackTrace()
+      // Clear pending prefix on error too
+      pendingRegistrationPrefix = null
       continuation.resume(Pair(false, null))
     }
   }
