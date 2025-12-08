@@ -16,6 +16,10 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.app.isMainnet
+import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
+import com.flowfoundation.wallet.utils.NETWORK_MAINNET
+import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
@@ -68,6 +72,17 @@ suspend fun registerOutblock(
   username: String,
 ) = suspendCoroutine { continuation ->
   ioScope {
+    // Ensure we're on mainnet for account creation (backend creates accounts on mainnet)
+    if (!isMainnet()) {
+      logd(TAG, "Currently on testnet, switching to mainnet for account creation...")
+      updateChainNetworkPreference(NETWORK_MAINNET)
+      delay(100) // Small delay to ensure preference is saved
+      refreshChainNetworkSync()
+      logd(TAG, "Switched to mainnet: ${chainNetWorkString()}")
+    } else {
+      logd(TAG, "Already on mainnet, proceeding with account creation")
+    }
+
     // registerOutblockUserInternal will call registerServer, which creates and stores
     // the primary private key associated with the prefix, and performs the actual
     // server registration using that key's public key.
