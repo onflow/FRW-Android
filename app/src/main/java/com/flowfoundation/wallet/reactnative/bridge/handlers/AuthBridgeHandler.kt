@@ -94,7 +94,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", true)
                     response.putString("address", address)
                     response.putString("username", account?.userInfo?.username ?: username)
-                    response.putString("accountType", "coa") // Secure enclave uses hardware-backed COA keys
+                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                    response.putNull("txId") // txId not available after registration completes
                     response.putNull("error")
 
                     uiScope {
@@ -108,7 +109,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putString("accountType", "coa") // Secure enclave uses hardware-backed COA keys
+                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                    response.putNull("txId")
                     response.putString("error", "Failed to register secure type account. Check logs for details.")
 
                     uiScope {
@@ -124,6 +126,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 response.putNull("address")
                 response.putNull("username")
                 response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                response.putNull("txId")
                 response.putString("error", e.message ?: "Unknown error")
 
                 uiScope {
