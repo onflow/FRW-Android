@@ -54,64 +54,45 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
+    /**
+     * Register Secure Enclave account - returns early with txId
+     * RN will monitor the tx status and call initSecureEnclaveWallet when sealed
+     */
     fun registerSecureTypeAccount(username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
         logd(TAG, "registerSecureTypeAccount() called - Registering Secure Type Account (Secure Enclave)")
         logd(TAG, "registerSecureTypeAccount() - username: $username")
         ioScope {
             try {
-                // Send progress: 0% - Starting
-                sendProgressEvent(sendEvent, 0, "Creating account")
+                logd(TAG, "registerSecureTypeAccount() - starting early return registration...")
 
-                logd(TAG, "registerSecureTypeAccount() - starting account registration...")
+                // Use early return registration - returns with txId without waiting for tx to seal
+                // RN will monitor the tx and call initSecureEnclaveWallet when sealed
+                val result = com.flowfoundation.wallet.network.registerOutblockEarlyReturn(username)
 
-                // Use the existing registerOutblock function which creates a Secure Type/COA account:
-                // - Generates keys (secure enclave on supported devices)
-                // - Registers with backend server
-                // - Creates Flow blockchain account (with blockchain confirmation)
-                // - Sets up Firebase authentication
-                // - Creates local Account in AccountManager
+                if (result.success && result.txId != null) {
+                    logd(TAG, "registerSecureTypeAccount() - registration initiated, txId: ${result.txId}")
 
-                val success = com.flowfoundation.wallet.network.registerOutblock(username)
-
-                if (success) {
-                    logd(TAG, "registerSecureTypeAccount() - account created successfully")
-
-                    // Get the created account details
-                    val account = AccountManager.get()
-                    val address = WalletManager.selectedWalletAddress()
-
-                    // Note: Secure Type accounts use hardware-backed keys (Secure Enclave)
-                    // No mnemonic is generated or stored for these accounts
-
-                    // Send progress: 100% - Blockchain transaction confirmed
-                    sendProgressEvent(sendEvent, 100, "Account created")
-
-                    // Small delay to ensure progress events are delivered before promise resolves
-                    kotlinx.coroutines.delay(100)
-
-                    // Create success response using WritableMap
                     val response = WritableNativeMap()
                     response.putBoolean("success", true)
-                    response.putString("address", address)
-                    response.putString("username", account?.userInfo?.username ?: username)
-                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
-                    response.putNull("txId") // txId not available after registration completes
+                    response.putNull("address") // Address not yet available - tx not sealed
+                    response.putString("username", result.username ?: username)
+                    response.putString("accountType", "hardware")
+                    response.putString("txId", result.txId)
                     response.putNull("error")
 
                     uiScope {
                         promise.resolve(response)
                     }
                 } else {
-                    loge(TAG, "registerSecureTypeAccount() - account creation failed (registerOutblock returned false)")
-                    loge(TAG, "registerSecureTypeAccount() - Check UserRegisterUtils logs for detailed error information")
+                    loge(TAG, "registerSecureTypeAccount() - registration failed: ${result.error}")
 
                     val response = WritableNativeMap()
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                    response.putString("accountType", "hardware")
                     response.putNull("txId")
-                    response.putString("error", "Failed to register secure type account. Check logs for details.")
+                    response.putString("error", result.error ?: "Failed to register secure type account")
 
                     uiScope {
                         promise.resolve(response)
@@ -125,8 +106,42 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 response.putBoolean("success", false)
                 response.putNull("address")
                 response.putNull("username")
-                response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                response.putString("accountType", "hardware")
                 response.putNull("txId")
+                response.putString("error", e.message ?: "Unknown error")
+
+                uiScope {
+                    promise.resolve(response)
+                }
+            }
+        }
+    }
+
+    /**
+     * Initialize Secure Enclave wallet after transaction has sealed
+     * Called by RN after monitoring tx status confirms the transaction is sealed
+     */
+    fun initSecureEnclaveWallet(txId: String, promise: Promise) {
+        logd(TAG, "initSecureEnclaveWallet() called - txId: $txId")
+        ioScope {
+            try {
+                val (success, address) = com.flowfoundation.wallet.network.initWalletWithTxId(txId)
+
+                val response = WritableNativeMap()
+                response.putBoolean("success", success)
+                response.putString("address", address)
+                response.putString("error", if (!success) "Failed to initialize wallet" else null)
+
+                uiScope {
+                    promise.resolve(response)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "initSecureEnclaveWallet() - error: ${e.message}")
+                e.printStackTrace()
+
+                val response = WritableNativeMap()
+                response.putBoolean("success", false)
+                response.putNull("address")
                 response.putString("error", e.message ?: "Unknown error")
 
                 uiScope {

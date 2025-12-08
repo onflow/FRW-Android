@@ -67,6 +67,198 @@ import kotlin.coroutines.suspendCoroutine
 
 private const val TAG = "UserRegisterUtils"
 
+/**
+ * Result from early return registration
+ */
+data class RegisterEarlyResult(
+  val success: Boolean,
+  val txId: String?,
+  val prefix: String?,
+  val username: String?,
+  val error: String?
+)
+
+/**
+ * Register user and initiate account creation, returning early with txId
+ * Does NOT wait for transaction to seal - caller should monitor tx and then call initWalletWithTxId
+ */
+suspend fun registerOutblockEarlyReturn(
+  username: String
+): RegisterEarlyResult = suspendCoroutine { continuation ->
+  ioScope {
+    // Ensure we're on mainnet for account creation (backend creates accounts on mainnet)
+    if (!isMainnet()) {
+      logd(TAG, "[EarlyReturn] Switching to mainnet for account creation...")
+      updateChainNetworkPreference(NETWORK_MAINNET)
+      delay(100)
+      refreshChainNetworkSync()
+    }
+
+    registerOutblockUserInternal(username) { isSuccess, prefix ->
+      ioScope {
+        if (!isSuccess || prefix == null) {
+          continuation.resume(RegisterEarlyResult(
+            success = false,
+            txId = null,
+            prefix = null,
+            username = username,
+            error = "Failed to register with backend"
+          ))
+          return@ioScope
+        }
+
+        val service = retrofit().create(ApiService::class.java)
+
+        createWalletFromServer()
+        setRegistered()
+
+        // Create Flow account on-chain via backend API
+        logd(TAG, "[EarlyReturn] Creating Flow account via /v2/user/address...")
+        val txIdFromBackend: String?
+        try {
+          val createWalletResponse = service.createWalletV2()
+          txIdFromBackend = createWalletResponse.data?.txid
+          if (txIdFromBackend != null) {
+            logd(TAG, "[EarlyReturn] Flow account creation initiated, txId: $txIdFromBackend")
+          } else {
+            logd(TAG, "[EarlyReturn] Flow account creation initiated but no txId returned")
+            continuation.resume(RegisterEarlyResult(
+              success = false,
+              txId = null,
+              prefix = prefix,
+              username = username,
+              error = "No txId returned from backend"
+            ))
+            return@ioScope
+          }
+        } catch (e: Exception) {
+          loge(TAG, "[EarlyReturn] Failed to create Flow account: ${e.message}")
+          continuation.resume(RegisterEarlyResult(
+            success = false,
+            txId = null,
+            prefix = prefix,
+            username = username,
+            error = e.message ?: "Failed to create Flow account"
+          ))
+          return@ioScope
+        }
+
+        // Return early with txId - RN will monitor the tx and call initWalletWithTxId when sealed
+        logd(TAG, "[EarlyReturn] Returning early with txId: $txIdFromBackend")
+        continuation.resume(RegisterEarlyResult(
+          success = true,
+          txId = txIdFromBackend,
+          prefix = prefix,
+          username = username,
+          error = null
+        ))
+      }
+    }
+  }
+}
+
+/**
+ * Initialize wallet after transaction has sealed
+ * Called by RN after monitoring tx status confirms the transaction is sealed
+ */
+suspend fun initWalletWithTxId(
+  txId: String
+): Pair<Boolean, String?> = suspendCoroutine { continuation ->
+  ioScope {
+    try {
+      logd(TAG, "[InitWallet] Starting wallet initialization with txId: $txId")
+
+      val service = retrofit().create(ApiService::class.java)
+
+      // Get user info
+      val userInfo = try { service.userInfo().data } catch (e: Exception) {
+        loge(TAG, "[InitWallet] Failed to fetch user info")
+        continuation.resume(Pair(false, null))
+        return@ioScope
+      }
+
+      // Get the prefix from the current account registration
+      val account = AccountManager.get()
+      val prefix = account?.prefix
+      if (prefix == null) {
+        loge(TAG, "[InitWallet] No prefix found in account")
+        continuation.resume(Pair(false, null))
+        return@ioScope
+      }
+
+      // Fetch account by txId using Wallet SDK
+      val chainId = when (chainNetWorkString()) {
+        "mainnet" -> ChainId.Mainnet
+        "testnet" -> ChainId.Testnet
+        else -> ChainId.Mainnet
+      }
+
+      val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
+      val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
+      if (keyForWalletSDK == null) {
+        loge(TAG, "[InitWallet] Failed to retrieve stored private key")
+        continuation.resume(Pair(false, null))
+        return@ioScope
+      }
+
+      val walletForSDK = WalletFactory.createKeyWallet(
+        keyForWalletSDK,
+        setOf(ChainId.Mainnet, ChainId.Testnet),
+        storage
+      )
+
+      logd(TAG, "[InitWallet] Fetching account by txId: $txId")
+      val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
+      val createdAddress = fetchedAccount?.address
+
+      if (createdAddress == null) {
+        loge(TAG, "[InitWallet] Failed to fetch account by txId")
+        continuation.resume(Pair(false, null))
+        return@ioScope
+      }
+
+      logd(TAG, "[InitWallet] Account fetched successfully at address: $createdAddress")
+
+      // Fetch wallet list to get wallet metadata
+      val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
+      try {
+        walletListData = service.getWalletList().data
+        if (walletListData == null) {
+          loge(TAG, "[InitWallet] Failed to fetch wallet list")
+          continuation.resume(Pair(false, null))
+          return@ioScope
+        }
+      } catch (e: Exception) {
+        loge(TAG, "[InitWallet] Error fetching wallet list: ${e.message}")
+        continuation.resume(Pair(false, null))
+        return@ioScope
+      }
+
+      // Clear any cached EOA address
+      WalletManager.clearEOAAddressCache()
+      com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
+
+      // Add account to AccountManager
+      AccountManager.add(
+        Account(
+          userInfo = userInfo,
+          prefix = prefix,
+          wallet = walletListData,
+          evmAddressData = null
+        ),
+        firebaseUid()
+      )
+
+      logd(TAG, "[InitWallet] Account added to AccountManager, address: $createdAddress")
+      continuation.resume(Pair(true, createdAddress))
+    } catch (e: Exception) {
+      loge(TAG, "[InitWallet] Error: ${e.message}")
+      e.printStackTrace()
+      continuation.resume(Pair(false, null))
+    }
+  }
+}
+
 // register one step, create user & create wallet
 suspend fun registerOutblock(
   username: String,
