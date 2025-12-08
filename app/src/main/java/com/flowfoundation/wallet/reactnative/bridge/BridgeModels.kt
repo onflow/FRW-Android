@@ -393,34 +393,4 @@ class RNBridge {
         @SerializedName("evm") EVM
     }
 
-    /**
-     * Initial route for launching React Native screens
-     * Maps to specific screen names for navigation
-     */
-    enum class InitialRoute(val routeName: String) {
-        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
-        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
-        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
-        @SerializedName("SendTo") SEND_TO("SendTo"),
-        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
-        @SerializedName("Home") HOME("Home")
-    }
-
-    /**
-     * Native screen names for Android/iOS
-     * Used with launchNativeScreen bridge method
-     */
-    enum class NativeScreenName {
-        @SerializedName("multiBackup") MULTI_BACKUP,
-        @SerializedName("deviceBackup") DEVICE_BACKUP,
-        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
-        @SerializedName("backupOptions") BACKUP_OPTIONS,
-        @SerializedName("walletRestore") WALLET_RESTORE,
-        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
-        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
-        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
-        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE,
-        @SerializedName("multiRestore") MULTI_RESTORE
-    }
-
 }
