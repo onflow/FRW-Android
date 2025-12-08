@@ -12,6 +12,7 @@ import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.hexToBytes
 import com.flowfoundation.wallet.utils.logd
+import org.onflow.flow.models.Transaction
 
 // Add extension function for ByteArray to hex string conversion
 fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }
@@ -47,39 +48,39 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
         logd(TAG, "  Hash Algorithm: ${keyInfo.get("hashAlgo").asInt}")
         logd(TAG, "  Key ID: ${keyInfo.get("keyId").asInt}")
         logd(TAG, "  Weight: ${keyInfo.get("weight").asInt}")
-        
+
         // Verify keystore consistency: check if private key generates the same public key
         verifyKeystoreConsistency()
     }
-    
+
     private fun verifyKeystoreConsistency() {
         try {
             logd(TAG, "=== KEYSTORE CONSISTENCY VERIFICATION ===")
             val keystorePublicKey = keyInfo.get("publicKey").asString
             logd(TAG, "Keystore stored public key: $keystorePublicKey")
-            
+
             // Get the public key derived from the private key
             val derivedPublicKey = privateKey.publicKey(signingAlgorithm)?.toHexString()
             logd(TAG, "Public key derived from private key: $derivedPublicKey")
-            
+
             if (derivedPublicKey != null) {
                 val keystoreClean = keystorePublicKey.removePrefix("0x").lowercase()
                 val derivedClean = derivedPublicKey.removePrefix("0x").lowercase()
-                
+
                 // Handle potential "04" prefix for uncompressed keys
                 val derivedStripped = if (derivedClean.startsWith("04") && derivedClean.length == 130) {
                     derivedClean.substring(2)
                 } else {
                     derivedClean
                 }
-                
+
                 logd(TAG, "Keystore public key (clean): $keystoreClean")
-                logd(TAG, "Derived public key (clean): $derivedClean") 
+                logd(TAG, "Derived public key (clean): $derivedClean")
                 logd(TAG, "Derived public key (stripped): $derivedStripped")
-                
+
                 val match = keystoreClean == derivedClean || keystoreClean == derivedStripped
                 logd(TAG, "Public key consistency check: ${if (match) "PASS" else "FAIL"}")
-                
+
                 if (!match) {
                     logd(TAG, "ERROR: Private key does not generate the public key stored in keystore!")
                     logd(TAG, "This indicates corrupted keystore data or incorrect key derivation.")
@@ -87,7 +88,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             } else {
                 logd(TAG, "ERROR: Could not derive public key from private key")
             }
-            
+
             logd(TAG, "=== END KEYSTORE CONSISTENCY VERIFICATION ===")
         } catch (e: Exception) {
             logd(TAG, "Exception during keystore consistency verification: ${e.message}")
@@ -126,10 +127,10 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     override suspend fun signData(data: ByteArray): String {
         logd(TAG, "signData called. dataSize=${data.size} bytes, signAlgo=$signingAlgorithm, hashAlgo=${getHashAlgorithm()}")
         logd(TAG, "Data to sign (first 32 bytes): ${data.take(32).joinToString("") { "%02x".format(it) }}")
-        
+
         val signatureBytes = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
         logd(TAG, "Raw signature from privateKey.sign(): size=${signatureBytes.size} bytes")
-        
+
         // Recovery ID trimming - ensure consistency with account switching flow
         // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
         val finalSignature = if (signatureBytes.size == 65) {
@@ -139,7 +140,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             logd(TAG, "Using signature as-is (${signatureBytes.size} bytes)")
             signatureBytes
         }
-        
+
         val hexSignature = finalSignature.joinToString("") { String.format("%02x", it) }
         logd(TAG, "Final signature generated: $hexSignature")
         logd(TAG, "Final signature length: ${hexSignature.length} chars (${finalSignature.size} bytes)")
@@ -150,9 +151,9 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     private suspend fun sign(data: ByteArray): ByteArray {
         logd(TAG, "[KEYSTORE] sign() input data (${data.size} bytes): ${data.take(32).toHexString()}...")
         logd(TAG, "[KEYSTORE] Using signAlgo: $signingAlgorithm, hashAlgo: ${getHashAlgorithm()}")
-        
+
         val result = privateKey.sign(data, signingAlgorithm, getHashAlgorithm())
-        
+
         // Recovery ID trimming - ensure consistency with account switching flow
         // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
         val finalResult = if (result.size == 65) {
@@ -162,7 +163,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             logd(TAG, "[KEYSTORE] Using signature as-is (${result.size} bytes)")
             result
         }
-        
+
         logd(TAG, "[KEYSTORE] sign() result (${finalResult.size} bytes): ${finalResult.toHexString()}")
         return finalResult
     }
@@ -173,8 +174,8 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
             override var address: String = keyInfo.get("address").asString
             override var keyIndex: Int = keyInfo.get("keyId").asInt
 
-            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
-                logd(TAG, "*** KEYSTORE SIGNER: sign(bytes, transaction) called - TRUSTWALLET CORE ***")
+            override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
+                logd(TAG, "*** KEYSTORE SIGNER: sign() called - TRUSTWALLET CORE ***")
                 logd(TAG, "  Address: $address")
                 logd(TAG, "  KeyIndex: $keyIndex")
                 logd(TAG, "  HashingAlgorithm: $hashingAlgorithm")
@@ -186,7 +187,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
                 return signature
             }
 
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: Transaction?): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: signWithDomain() called - TRUSTWALLET CORE ***")
                 logd(TAG, "  Domain: ${domain.toHexString()}")
                 logd(TAG, "  Bytes: ${bytes.take(32).toHexString()}")
@@ -198,7 +199,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
                 return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
 
-            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: signAsTransaction() called - TRUSTWALLET CORE ***")
                 return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }

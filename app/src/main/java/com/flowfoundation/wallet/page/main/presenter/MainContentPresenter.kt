@@ -11,11 +11,12 @@ import com.flowfoundation.wallet.page.main.activeColor
 import com.flowfoundation.wallet.page.main.adapter.MainPageAdapter
 import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.setSvgDrawable
-import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isRegistered
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.wallet.toAddress
 
 class MainContentPresenter(
     private val activity: MainActivity,
@@ -44,12 +45,14 @@ class MainContentPresenter(
         if (isRegistered() && isUserSignIn()) {
             showMainContent()
         } else {
-            // Launch React Native onboarding flow directly instead of showing native "Let's get started" screen
-            ReactNativeActivity.launch(activity, RNBridge.ScreenType.ONBOARDING)
-            // Keep MainActivity in the background instead of finishing it
-            // This allows proper state management when user returns from onboarding
-            // MainActivity will only refresh when registration is completed
+            showUnregisteredFragment()
         }
+    }
+
+    private fun showUnregisteredFragment() {
+        val address = WalletManager.selectedWalletAddress().toAddress()
+        val network = chainNetWorkString()
+        ReactNativeActivity.launch(activity, null, address, network, "GetStarted")
     }
 
     private fun showMainContent() {

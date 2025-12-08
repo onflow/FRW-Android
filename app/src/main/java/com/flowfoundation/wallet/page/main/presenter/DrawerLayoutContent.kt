@@ -79,7 +79,7 @@ import com.flowfoundation.wallet.page.wallet.view.WalletAccountSection
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.reactnative.bridge.RNBridge
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ScreenUtils
 import com.flowfoundation.wallet.utils.clearCacheDir
@@ -204,12 +204,13 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
                 WalletRestoreActivity.launch(activity)
             },
             onAddProfileClick = {
-                // Use React Native onboarding flow
-                ReactNativeActivity.launchWithRoute(
-                    activity,
-                    RNBridge.ScreenType.ONBOARDING,
-                    RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
-                )
+                if (isTestnet()) {
+                    SwitchNetworkDialog(context, DialogType.CREATE).show()
+                } else {
+                    val address = WalletManager.selectedWalletAddress().toAddress()
+                    val network = chainNetWorkString()
+                    ReactNativeActivity.launch(context, null, address, network, "ProfileTypeSelection")
+                }
             }
         )
     }

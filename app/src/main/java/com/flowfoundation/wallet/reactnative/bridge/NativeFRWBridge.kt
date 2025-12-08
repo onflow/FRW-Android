@@ -17,6 +17,19 @@ import com.google.gson.Gson
 import org.json.JSONArray
 import org.json.JSONObject
 
+/**
+ * Helper to convert string screen name to NativeScreenName enum.
+ * Uses Gson SerializedName annotations for mapping.
+ */
+private fun nativeScreenFromString(screenName: String): RNBridge.NativeScreenName? {
+    return RNBridge.NativeScreenName.entries.find { enumValue ->
+        val serializedName = enumValue.javaClass.getField(enumValue.name)
+            .getAnnotation(com.google.gson.annotations.SerializedName::class.java)
+            ?.value
+        serializedName == screenName
+    }
+}
+
 class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSpec(reactContext) {
 
     private val TAG = "NativeFRWBridge"
@@ -191,6 +204,64 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun setScreenSecurityLevel(level: String) = utilsHandler.setScreenSecurityLevel(level)
 
     override fun launchNativeScreen(screenName: String, params: String?) = uiHandler.launchNativeScreen(screenName, params)
+
+    override fun launchNativeScreen(screenName: String) {
+        logd(TAG, "launchNativeScreen() called - screen: $screenName")
+
+        try {
+            val currentActivity = reactApplicationContext.currentActivity
+            if (currentActivity == null) {
+                logw(TAG, "launchNativeScreen() - no current activity")
+                return
+            }
+
+            val screen = nativeScreenFromString(screenName)
+            if (screen == null) {
+                loge(TAG, "launchNativeScreen() - unknown screen: $screenName")
+                return
+            }
+
+            val intent = when (screen) {
+                RNBridge.NativeScreenName.DEVICE_BACKUP -> {
+                    Intent(currentActivity, com.flowfoundation.wallet.page.wallet.sync.WalletSyncActivity::class.java)
+                }
+                RNBridge.NativeScreenName.RECOVERY_PHRASE_RESTORE -> {
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
+                        putExtra("extra_restore_seed_phrase", true)
+                    }
+                }
+                RNBridge.NativeScreenName.KEY_STORE_RESTORE -> {
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java)
+                }
+                RNBridge.NativeScreenName.PRIVATE_KEY_RESTORE -> {
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity::class.java).apply {
+                        putExtra("extra_restore_private_key", true)
+                    }
+                }
+                RNBridge.NativeScreenName.GOOGLE_DRIVE_RESTORE -> {
+                    Intent(currentActivity, com.flowfoundation.wallet.page.walletrestore.WalletRestoreActivity::class.java)
+                }
+                RNBridge.NativeScreenName.MULTI_RESTORE -> {
+                    Intent(currentActivity, com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity::class.java)
+                }
+                // Backup screens - not currently used for launching but defined in the enum
+                RNBridge.NativeScreenName.MULTI_BACKUP,
+                RNBridge.NativeScreenName.SEED_PHRASE_BACKUP,
+                RNBridge.NativeScreenName.BACKUP_OPTIONS,
+                RNBridge.NativeScreenName.WALLET_RESTORE -> {
+                    logw(TAG, "launchNativeScreen() - screen $screenName not yet implemented")
+                    return
+                }
+            }
+
+            // Add flag to indicate launched from React Native
+            intent.putExtra("from_react_native", true)
+            currentActivity.startActivity(intent)
+        } catch (e: Exception) {
+            loge(TAG, "launchNativeScreen() error: ${e.message}")
+            e.printStackTrace()
+        }
+    }
 
     companion object {
         const val NAME = "NativeFRWBridge"

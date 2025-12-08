@@ -36,10 +36,14 @@ class WalletRestoreActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> handleBackNavigation()
             else -> super.onOptionsItemSelected(item)
         }
         return true
+    }
+
+    private fun handleBackNavigation() {
+        finish()
     }
 
     private fun setupToolbar() {

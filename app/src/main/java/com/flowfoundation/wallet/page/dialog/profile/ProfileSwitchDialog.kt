@@ -48,15 +48,17 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.isTestnet
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
 import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.page.wallet.view.ProfileItemSection
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.getActivityFromContext
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.DialogType
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import com.flowfoundation.wallet.widgets.SwitchNetworkDialog
@@ -192,15 +194,13 @@ private fun ProfileSwitchContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        logd("ProfileSwitchDialog", "Create new profile clicked - launching RN onboarding")
+                        logd("ProfileSwitchDialog", "Create new profile clicked - launching RN ProfileTypeSelectionScreen")
                         if (isTestnet()) {
                             SwitchNetworkDialog(context, DialogType.CREATE).show()
                         } else {
-                            ReactNativeActivity.launchWithRoute(
-                                context,
-                                RNBridge.ScreenType.ONBOARDING,
-                                RNBridge.InitialRoute.PROFILE_TYPE_SELECTION
-                            )
+                            val address = WalletManager.selectedWalletAddress().toAddress()
+                            val network = chainNetWorkString()
+                            ReactNativeActivity.launch(context, null, address, network, "ProfileTypeSelection")
                             onDismiss()
                         }
                     }
