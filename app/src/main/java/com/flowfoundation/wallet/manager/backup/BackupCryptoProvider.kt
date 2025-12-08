@@ -7,6 +7,7 @@ import com.flowfoundation.wallet.utils.logd
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
+import org.onflow.flow.models.Transaction
 
 /**
  * A CryptoProvider implementation that wraps a SeedPhraseKey and integrates with Flow-Wallet-Kit
@@ -71,7 +72,7 @@ class BackupCryptoProvider(
         // otherwise fall back to the provider's default
         val effectiveHashingAlgorithm = hashingAlgorithm ?: getHashAlgorithm()
         val signatureBytes = seedPhraseKey.sign(data, signingAlgorithm, effectiveHashingAlgorithm)
-        
+
         // Recovery ID trimming - ensure consistency with other providers
         // Remove recovery ID if present (Flow expects 64-byte signatures, not 65-byte with recovery ID)
         val finalSignature = if (signatureBytes.size == 65) {
@@ -81,7 +82,7 @@ class BackupCryptoProvider(
             logd("BackupCryptoProvider", "Using signature as-is (${signatureBytes.size} bytes)")
             signatureBytes
         }
-        
+
         return finalSignature.toHexString()
     }
 
@@ -94,12 +95,12 @@ class BackupCryptoProvider(
         // Use the provided hashing algorithm, or fall back to our configured one, or use a default
         val effectiveHashingAlgorithm = hashingAlgorithm
         logd("BackupCryptoProvider", "Using effective hashing algorithm: $effectiveHashingAlgorithm")
-        
+
         return object : org.onflow.flow.models.Signer {
             override var address: String = ""
             override var keyIndex: Int = 0
 
-            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 logd("BackupCryptoProvider", "Signer.sign() called")
                 logd("BackupCryptoProvider", "  Address: $address")
                 logd("BackupCryptoProvider", "  KeyIndex: $keyIndex")
@@ -127,7 +128,7 @@ class BackupCryptoProvider(
                 }
             }
 
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: Transaction?): ByteArray {
                 logd("BackupCryptoProvider", "Signer.signWithDomain() called")
                 logd("BackupCryptoProvider", "  Domain: ${domain.take(32).joinToString("") { "%02x".format(it) }}...")
                 logd("BackupCryptoProvider", "  Bytes: ${bytes.take(32).joinToString("") { "%02x".format(it) }}...")
@@ -155,7 +156,7 @@ class BackupCryptoProvider(
                 return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
 
-            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 logd("BackupCryptoProvider", "Signer.signAsTransaction() called")
                 return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
