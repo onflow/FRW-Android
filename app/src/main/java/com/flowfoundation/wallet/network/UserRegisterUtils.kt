@@ -145,7 +145,7 @@ suspend fun registerOutblockEarlyReturn(
 
         // Store prefix for later use by initWalletWithTxId
         pendingRegistrationPrefix = prefix
-        
+
         // Return early with txId - RN will monitor the tx and call initWalletWithTxId when sealed
         logd(TAG, "[EarlyReturn] Returning early with txId: $txIdFromBackend, stored prefix: $prefix")
         continuation.resume(RegisterEarlyResult(
@@ -215,7 +215,7 @@ suspend fun initWalletWithTxId(
 
       logd(TAG, "[InitWallet] Fetching account by txId: $txId")
       val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
-      val createdAddress = fetchedAccount?.address
+      val createdAddress = fetchedAccount.address
 
       if (createdAddress == null) {
         loge(TAG, "[InitWallet] Failed to fetch account by txId")
@@ -256,10 +256,10 @@ suspend fun initWalletWithTxId(
       )
 
       logd(TAG, "[InitWallet] Account added to AccountManager, address: $createdAddress")
-      
+
       // Clear the pending prefix now that wallet init is complete
       pendingRegistrationPrefix = null
-      
+
       continuation.resume(Pair(true, createdAddress))
     } catch (e: Exception) {
       loge(TAG, "[InitWallet] Error: ${e.message}")
@@ -362,7 +362,7 @@ suspend fun registerOutblock(
               logd(TAG, "=== NETWORK CHECK ===")
               logd(TAG, "chainNetWorkString(): $networkName")
               logd(TAG, "chainId being used: $chainId")
-              logd(TAG, "isMainnet(): ${com.flowfoundation.wallet.manager.app.isMainnet()}")
+              logd(TAG, "isMainnet(): ${isMainnet()}")
               logd(TAG, "isTestnet(): ${com.flowfoundation.wallet.manager.app.isTestnet()}")
               logd(TAG, "Starting fetchAccountByCreationTxId call on network: $networkName (chainId: $chainId)")
               logd(TAG, "This may take time while waiting for blockchain to confirm transaction...")
@@ -370,7 +370,7 @@ suspend fun registerOutblock(
               val account = walletForSDK.fetchAccountByCreationTxId(txIdFromBackend, chainId)
               val duration = System.currentTimeMillis() - startTime
               logd(TAG, "fetchAccountByCreationTxId completed in ${duration}ms")
-              createdAddress = account?.address
+              createdAddress = account.address
 
               if (createdAddress != null) {
                 logd(TAG, "Account fetched successfully at address: $createdAddress")
@@ -416,10 +416,10 @@ suspend fun registerOutblock(
           // This must happen before AccountManager.add() to prevent drawer from reading stale cache
           // Secure enclave accounts don't have EOAs (hardware-backed keys only)
           WalletManager.clearEOAAddressCache()
-          
+
           // Also clear EVMWalletManager which may have persisted EOA data
           com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
-          
+
           logd(TAG, "Cleared EOA address cache and EVM data before adding new account")
 
           // Log wallet data structure for debugging
@@ -452,24 +452,24 @@ suspend fun registerOutblock(
 
           // Initialize WalletManager to pick up the new account/wallet state
           WalletManager.init()
-          
+
           // Wait for WalletManager to initialize, then select the Flow address
           WalletManager.onWalletReady {
             logd(TAG, "WalletManager ready callback triggered")
-            
+
             // Get the Flow address from AccountManager (should be populated now)
             val currentAccount = AccountManager.get()
-            
+
             // Find the first wallet that has a blockchain address (don't just use firstOrNull)
             val flowAddress = currentAccount?.wallet?.wallets
               ?.firstOrNull { wallet -> wallet.blockchain?.any { it.address.isNotBlank() } == true }
               ?.blockchain?.firstOrNull()?.address
-            
+
             if (!flowAddress.isNullOrBlank()) {
               val formattedAddress = if (flowAddress.startsWith("0x")) flowAddress else "0x$flowAddress"
               WalletManager.selectWalletAddress(formattedAddress)
               logd(TAG, "Wallet ready: Selected Flow address: $formattedAddress")
-              
+
               // Trigger UI update to refresh drawer with new account
               uiScope {
                 AccountManager.updateWalletInfo(currentAccount.wallet!!)
