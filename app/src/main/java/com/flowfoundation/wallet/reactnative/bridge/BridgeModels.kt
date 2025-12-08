@@ -272,6 +272,36 @@ class RNBridge {
         val currency: String?
     )
 
+    enum class NativeScreenName {
+        @SerializedName("multiBackup") MULTI_BACKUP,
+        @SerializedName("deviceBackup") DEVICE_BACKUP,
+        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
+        @SerializedName("backupOptions") BACKUP_OPTIONS,
+        @SerializedName("walletRestore") WALLET_RESTORE,
+        @SerializedName("multiRestore") MULTI_RESTORE,
+        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
+        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
+        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
+        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE
+    }
+
+    enum class ScreenName {
+        @SerializedName("GetStarted") GET_STARTED,
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
+        @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
+        @SerializedName("SecureEnclave") SECURE_ENCLAVE,
+        @SerializedName("ImportProfile") IMPORT_PROFILE,
+        @SerializedName("ImportOtherMethods") IMPORT_OTHER_METHODS,
+        @SerializedName("ConfirmImportProfile") CONFIRM_IMPORT_PROFILE,
+        @SerializedName("NotificationPreferences") NOTIFICATION_PREFERENCES,
+        @SerializedName("SelectTokens") SELECT_TOKENS,
+        @SerializedName("SendTo") SEND_TO,
+        @SerializedName("SendTokens") SEND_TOKENS,
+        @SerializedName("SendSummary") SEND_SUMMARY,
+        @SerializedName("NFTList") NFT_LIST,
+        @SerializedName("NFTDetail") NFT_DETAIL
+    }
+
     data class NFTModel(
         @SerializedName("id")
         val id: String?,

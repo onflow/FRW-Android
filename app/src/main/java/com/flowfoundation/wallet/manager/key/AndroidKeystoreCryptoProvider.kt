@@ -6,6 +6,7 @@ import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
+import org.onflow.flow.models.Transaction
 import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.PublicKey
@@ -14,7 +15,7 @@ import java.security.Signature
 /**
  * A CryptoProvider that works directly with hardware-backed Android Keystore keys
  * without attempting to extract the private key material.
- * 
+ *
  * This provider is used for legacy accounts that have hardware-backed keys
  * stored in Android Keystore that cannot be migrated.
  */
@@ -23,12 +24,12 @@ class AndroidKeystoreCryptoProvider(
     private val signingAlgorithm: SigningAlgorithm = SigningAlgorithm.ECDSA_P256,
     private val hashingAlgorithm: HashingAlgorithm? = null
 ) : CryptoProvider {
-    
+
     private val TAG = "AndroidKeystoreCryptoProvider"
     private val keyStore: KeyStore by lazy {
         KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
     }
-    
+
     private val privateKey: PrivateKey by lazy {
         try {
             val keyEntry = keyStore.getEntry(keystoreAlias, null) as? KeyStore.PrivateKeyEntry
@@ -37,7 +38,7 @@ class AndroidKeystoreCryptoProvider(
             throw IllegalStateException("Failed to load private key from Android Keystore: ${e.message}", e)
         }
     }
-    
+
     private val publicKey: PublicKey by lazy {
         try {
             val keyEntry = keyStore.getEntry(keystoreAlias, null) as? KeyStore.PrivateKeyEntry
@@ -50,7 +51,7 @@ class AndroidKeystoreCryptoProvider(
     init {
         logd(TAG, "Initialized AndroidKeystoreCryptoProvider")
         logd(TAG, "Using signAlgo=$signingAlgorithm, hashAlgo=${hashingAlgorithm ?: "default"}")
-        
+
         // Verify the key exists
         if (!keyStore.containsAlias(keystoreAlias)) {
             throw IllegalArgumentException("Keystore alias not found")
@@ -63,7 +64,7 @@ class AndroidKeystoreCryptoProvider(
             // Try to get the public key from the certificate first
             val pubKey = publicKey
             val encoded = pubKey.encoded
-            
+
             // For ECDSA keys, the public key is typically the last 65 bytes (04 + 32 + 32)
             // or last 64 bytes if uncompressed without the 04 prefix
             val publicKeyBytes = if (encoded.size >= 65) {
@@ -78,16 +79,16 @@ class AndroidKeystoreCryptoProvider(
             } else {
                 encoded
             }
-            
+
             val publicKeyHex = publicKeyBytes.toHexString()
-            
+
             // Remove "04" prefix to match expected format (same as PrivateKeyStoreCryptoProvider)
             val formattedPublicKey = if (publicKeyHex.startsWith("04")) {
                 publicKeyHex.substring(2)
             } else {
                 publicKeyHex
             }
-            
+
             logd(TAG, "Generated public key: ${formattedPublicKey.take(20)}...")
             formattedPublicKey
         } catch (e: Exception) {
@@ -105,17 +106,17 @@ class AndroidKeystoreCryptoProvider(
         return try {
             val effectiveHashingAlgorithm = hashingAlgorithm ?: getHashAlgorithm()
             val signatureAlgorithmName = getJavaSignatureAlgorithm(signingAlgorithm, effectiveHashingAlgorithm)
-            
+
             logd(TAG, "Signing with algorithm: $signatureAlgorithmName")
-            
+
             val signature = Signature.getInstance(signatureAlgorithmName)
             signature.initSign(privateKey)
             signature.update(data)
             val signatureBytes = signature.sign()
-            
+
             // Convert DER signature to raw format expected by Flow
             val rawSignature = derToRaw(signatureBytes)
-            
+
             logd(TAG, "Signature generated successfully: ${rawSignature.toHexString().take(20)}...")
             rawSignature.toHexString()
         } catch (e: Exception) {
@@ -129,7 +130,7 @@ class AndroidKeystoreCryptoProvider(
             override var address: String = ""
             override var keyIndex: Int = 0
 
-            override suspend fun sign(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 val signatureAlgorithmName = getJavaSignatureAlgorithm(signingAlgorithm, hashingAlgorithm)
 
                 val signature = Signature.getInstance(signatureAlgorithmName)
@@ -140,7 +141,7 @@ class AndroidKeystoreCryptoProvider(
                 return derToRaw(signatureBytes)
             }
 
-            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signWithDomain(bytes: ByteArray, domain: ByteArray, transaction: Transaction?): ByteArray {
                 return sign(domain + bytes, transaction)
             }
 
@@ -148,7 +149,7 @@ class AndroidKeystoreCryptoProvider(
                 return signWithDomain(bytes, DomainTag.User.bytes, null)
             }
 
-            override suspend fun signAsTransaction(bytes: ByteArray, transaction: org.onflow.flow.models.Transaction?): ByteArray {
+            override suspend fun signAsTransaction(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 return signWithDomain(bytes, DomainTag.Transaction.bytes, transaction)
             }
         }
@@ -165,20 +166,20 @@ class AndroidKeystoreCryptoProvider(
     override fun getKeyWeight(): Int {
         return 1000
     }
-    
+
     /**
      * Get the Java signature algorithm name for the given signing and hashing algorithms
      */
     private fun getJavaSignatureAlgorithm(signingAlgorithm: SigningAlgorithm, hashingAlgorithm: HashingAlgorithm): String {
         val hashName = "SHA256"
-        
+
         return when (signingAlgorithm) {
             SigningAlgorithm.ECDSA_P256 -> "${hashName}withECDSA"
-            SigningAlgorithm.ECDSA_secp256k1 -> "${hashName}withECDSA" 
+            SigningAlgorithm.ECDSA_secp256k1 -> "${hashName}withECDSA"
             else -> "${hashName}withECDSA"
         }
     }
-    
+
     /**
      * Convert DER-encoded signature to raw format (r || s)
      * Android Keystore returns signatures in DER format, but Flow expects 64-byte raw format
@@ -187,28 +188,28 @@ class AndroidKeystoreCryptoProvider(
     private fun derToRaw(derSignature: ByteArray): ByteArray {
         try {
             logd(TAG, "DER signature input: ${derSignature.size} bytes")
-            
+
             // If it's already 64 bytes, assume it's raw format
             if (derSignature.size == 64) {
                 logd(TAG, "Signature is already 64 bytes, assuming raw format")
                 return derSignature
             }
-            
+
             // If it's 65 bytes, remove recovery ID (like PrivateKeyStoreCryptoProvider does)
             if (derSignature.size == 65) {
                 logd(TAG, "Trimming recovery ID from 65-byte signature")
                 return derSignature.copyOfRange(0, 64)
             }
-            
+
             // Parse DER format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S]
             var offset = 0
-            
+
             // Skip sequence tag (0x30) and length
             if (derSignature[offset] != 0x30.toByte()) {
                 throw IllegalArgumentException("Invalid DER signature: missing sequence tag")
             }
             offset++ // Skip 0x30
-            
+
             // Skip length byte(s) - handle both short and long form
             val lengthByte = derSignature[offset].toInt() and 0xFF
             if (lengthByte and 0x80 == 0) {
@@ -217,7 +218,7 @@ class AndroidKeystoreCryptoProvider(
                 val lengthBytes = lengthByte and 0x7F
                 offset += 1 + lengthBytes // Long form: skip length indicator + length bytes
             }
-            
+
             // Read R
             if (derSignature[offset] != 0x02.toByte()) {
                 throw IllegalArgumentException("Invalid DER signature: missing R integer tag")
@@ -225,10 +226,10 @@ class AndroidKeystoreCryptoProvider(
             offset++ // Skip 0x02
             val rLength = derSignature[offset].toInt() and 0xFF
             offset++ // Skip length byte
-            
+
             val rBytes = derSignature.copyOfRange(offset, offset + rLength)
             offset += rLength
-            
+
             // Read S
             if (derSignature[offset] != 0x02.toByte()) {
                 throw IllegalArgumentException("Invalid DER signature: missing S integer tag")
@@ -236,20 +237,20 @@ class AndroidKeystoreCryptoProvider(
             offset++ // Skip 0x02
             val sLength = derSignature[offset].toInt() and 0xFF
             offset++ // Skip length byte
-            
+
             val sBytes = derSignature.copyOfRange(offset, offset + sLength)
-            
+
             // Normalize to 32 bytes each (remove leading zeros, pad if needed)
             val rNormalized = normalizeToSize(rBytes, 32)
             val sNormalized = normalizeToSize(sBytes, 32)
-            
+
             val result = rNormalized + sNormalized
             logd(TAG, "DER conversion successful: ${result.size} bytes")
             return result
-            
+
         } catch (e: Exception) {
             loge(TAG, "Failed to convert DER to raw signature: ${e.message}")
-            
+
             // Fallback: try to extract 64 bytes from the signature
             return when {
                 derSignature.size >= 64 -> {
@@ -266,7 +267,7 @@ class AndroidKeystoreCryptoProvider(
             }
         }
     }
-    
+
     /**
      * Normalize byte array to specific size by removing leading zeros or padding
      */
