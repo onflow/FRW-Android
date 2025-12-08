@@ -25,8 +25,8 @@ class RNBridge {
     }
 
     enum class AccountTypeType {
-        @SerializedName("full") FULL,
-        @SerializedName("hardware") HARDWARE,
+        @SerializedName("eoa") EOA,
+        @SerializedName("coa") COA,
         @SerializedName("null") NULL
     }
 
@@ -183,6 +183,23 @@ class RNBridge {
         val error: String
     )
 
+    data class CreateEOAAccountResponse(
+        @SerializedName("success")
+        val success: Boolean,
+        @SerializedName("address")
+        val address: String,
+        @SerializedName("username")
+        val username: String,
+        @SerializedName("mnemonic")
+        val mnemonic: String,
+        @SerializedName("phrase")
+        val phrase: String,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
+        @SerializedName("error")
+        val error: String
+    )
+
     data class AccountKey(
         @SerializedName("publicKey")
         val publicKey: String,
@@ -254,36 +271,6 @@ class RNBridge {
         @SerializedName("currency")
         val currency: String?
     )
-
-    enum class NativeScreenName {
-        @SerializedName("multiBackup") MULTI_BACKUP,
-        @SerializedName("deviceBackup") DEVICE_BACKUP,
-        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
-        @SerializedName("backupOptions") BACKUP_OPTIONS,
-        @SerializedName("walletRestore") WALLET_RESTORE,
-        @SerializedName("multiRestore") MULTI_RESTORE,
-        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
-        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
-        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
-        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE
-    }
-
-    enum class ScreenName {
-        @SerializedName("GetStarted") GET_STARTED,
-        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION,
-        @SerializedName("RecoveryPhrase") RECOVERY_PHRASE,
-        @SerializedName("SecureEnclave") SECURE_ENCLAVE,
-        @SerializedName("ImportProfile") IMPORT_PROFILE,
-        @SerializedName("ImportOtherMethods") IMPORT_OTHER_METHODS,
-        @SerializedName("ConfirmImportProfile") CONFIRM_IMPORT_PROFILE,
-        @SerializedName("NotificationPreferences") NOTIFICATION_PREFERENCES,
-        @SerializedName("SelectTokens") SELECT_TOKENS,
-        @SerializedName("SendTo") SEND_TO,
-        @SerializedName("SendTokens") SEND_TOKENS,
-        @SerializedName("SendSummary") SEND_SUMMARY,
-        @SerializedName("NFTList") NFT_LIST,
-        @SerializedName("NFTDetail") NFT_DETAIL
-    }
 
     data class NFTModel(
         @SerializedName("id")
@@ -404,6 +391,36 @@ class RNBridge {
     enum class WalletType {
         @SerializedName("flow") FLOW,
         @SerializedName("evm") EVM
+    }
+
+    /**
+     * Initial route for launching React Native screens
+     * Maps to specific screen names for navigation
+     */
+    enum class InitialRoute(val routeName: String) {
+        @SerializedName("GetStarted") GET_STARTED("GetStarted"),
+        @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
+        @SerializedName("SendTo") SEND_TO("SendTo"),
+        @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
+        @SerializedName("Home") HOME("Home")
+    }
+
+    /**
+     * Native screen names for Android/iOS
+     * Used with launchNativeScreen bridge method
+     */
+    enum class NativeScreenName {
+        @SerializedName("multiBackup") MULTI_BACKUP,
+        @SerializedName("deviceBackup") DEVICE_BACKUP,
+        @SerializedName("seedPhraseBackup") SEED_PHRASE_BACKUP,
+        @SerializedName("backupOptions") BACKUP_OPTIONS,
+        @SerializedName("walletRestore") WALLET_RESTORE,
+        @SerializedName("recoveryPhraseRestore") RECOVERY_PHRASE_RESTORE,
+        @SerializedName("keyStoreRestore") KEY_STORE_RESTORE,
+        @SerializedName("privateKeyRestore") PRIVATE_KEY_RESTORE,
+        @SerializedName("googleDriveRestore") GOOGLE_DRIVE_RESTORE,
+        @SerializedName("multiRestore") MULTI_RESTORE
     }
 
 }

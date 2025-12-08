@@ -15,8 +15,7 @@ import com.flowfoundation.wallet.utils.extensions.gone
 import com.flowfoundation.wallet.utils.extensions.visible
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
-import com.flowfoundation.wallet.manager.app.chainNetWorkString
-import com.flowfoundation.wallet.wallet.toAddress
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 
 class MainContentPresenter(
     private val activity: MainActivity,
@@ -50,9 +49,7 @@ class MainContentPresenter(
     }
 
     private fun showUnregisteredFragment() {
-        val address = WalletManager.selectedWalletAddress().toAddress()
-        val network = chainNetWorkString()
-        ReactNativeActivity.launch(activity, null, address, network, "GetStarted")
+        ReactNativeActivity.launchWithRoute(activity, RNBridge.ScreenType.ONBOARDING, RNBridge.InitialRoute.GET_STARTED)
     }
 
     private fun showMainContent() {
