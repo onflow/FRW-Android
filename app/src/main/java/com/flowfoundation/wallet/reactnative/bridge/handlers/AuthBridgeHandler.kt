@@ -94,7 +94,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", true)
                     response.putString("address", address)
                     response.putString("username", account?.userInfo?.username ?: username)
-                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                    response.putString("accountType", "coa") // Secure enclave uses hardware-backed COA keys
                     response.putNull("error")
 
                     uiScope {
@@ -108,7 +108,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putString("accountType", "hardware") // Secure enclave uses hardware-backed keys
+                    response.putString("accountType", "coa") // Secure enclave uses hardware-backed COA keys
                     response.putString("error", "Failed to register secure type account. Check logs for details.")
 
                     uiScope {
@@ -247,9 +247,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun saveMnemonic(mnemonic: String, customToken: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
+    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
         logd(TAG, "saveMnemonic() called - EOA account initialization")
-        logd(TAG, "saveMnemonic() - username: $username (Flow address creation handled by React Native)")
+        logd(TAG, "saveMnemonic() - username: $username, txId: $txId (Flow address creation handled by React Native)")
 
         ioScope {
             try {
