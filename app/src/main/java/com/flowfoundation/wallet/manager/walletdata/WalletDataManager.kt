@@ -9,6 +9,8 @@ import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.parseAccountMetas
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
@@ -248,8 +250,22 @@ object WalletDataManager {
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
             // EOA Wallet - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
-            // Legacy accounts (accountType = null) also get EOA for backward compatibility
-            val canDeriveEoa = account.accountType != AccountType.HARDWARE
+            // For legacy accounts (accountType = null), fall back to checking signature algorithm
+            val canDeriveEoa = when (account.accountType) {
+                AccountType.HARDWARE -> false  // Secure Enclave - no EOA
+                AccountType.FULL -> true       // Recovery Phrase - derive EOA
+                else -> {
+                    // Legacy account - check signature algorithm as fallback
+                    try {
+                        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+                        val isP256 = cryptoProvider?.getSignatureAlgorithm() == SigningAlgorithm.ECDSA_P256
+                        !isP256  // P256 = Secure Enclave = no EOA
+                    } catch (e: Exception) {
+                        logd(TAG, "Could not determine account type, assuming can derive EOA: ${e.message}")
+                        true  // Default to allowing EOA for legacy accounts
+                    }
+                }
+            }
             if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
                 val eoa = deriveEoaAddress(wallet)
                 if (eoa.isNotEmpty()) {
@@ -357,8 +373,22 @@ object WalletDataManager {
                 fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
                 
                 // EOA - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
-                // Legacy accounts (accountType = null) also get EOA for backward compatibility
-                val canDeriveEoa = account.accountType != AccountType.HARDWARE
+                // For legacy accounts (accountType = null), fall back to checking signature algorithm
+                val canDeriveEoa = when (account.accountType) {
+                    AccountType.HARDWARE -> false  // Secure Enclave - no EOA
+                    AccountType.FULL -> true       // Recovery Phrase - derive EOA
+                    else -> {
+                        // Legacy account - check signature algorithm as fallback
+                        try {
+                            val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+                            val isP256 = cryptoProvider?.getSignatureAlgorithm() == SigningAlgorithm.ECDSA_P256
+                            !isP256  // P256 = Secure Enclave = no EOA
+                        } catch (e: Exception) {
+                            logd(TAG, "Could not determine account type for ${account.userInfo.username}: ${e.message}")
+                            true  // Default to allowing EOA for legacy accounts
+                        }
+                    }
+                }
                 if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
                     val eoa = deriveEoaAddress(wallet)
                     if (eoa.isNotEmpty()) {
