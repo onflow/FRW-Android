@@ -14,8 +14,6 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.presenter.BasePresenter
 import com.flowfoundation.wallet.databinding.FragmentWalletCreateCloudPwdBinding
 import com.flowfoundation.wallet.page.profile.subpage.backup.BackupGoogleDriveActivity
-import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_PIN_GUIDE
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateViewModel
 import com.flowfoundation.wallet.utils.extensions.res2color
 import com.flowfoundation.wallet.utils.listeners.SimpleTextWatcher
 import com.flowfoundation.wallet.utils.setBackupGoogleDrive
@@ -27,7 +25,6 @@ class WalletCreateCloudPwdPresenter(
 ) : BasePresenter<WalletCreateCloudPwdModel> {
 
     private val viewModel by lazy { ViewModelProvider(fragment)[WalletCreateCloudPwdViewModel::class.java] }
-    private val pageViewModel by lazy { ViewModelProvider(fragment.requireActivity())[WalletCreateViewModel::class.java] }
     private val rootView by lazy { fragment.requireActivity().findViewById<View>(R.id.rootView) }
 
     private val keyboardObserver by lazy { keyboardObserver() }
@@ -64,11 +61,8 @@ class WalletCreateCloudPwdPresenter(
     private fun onBackupCallback(isSuccess: Boolean) {
         if (isSuccess) {
             setBackupGoogleDrive(true)
-            if (fragment.requireActivity() is BackupGoogleDriveActivity) {
-                fragment.requireActivity().finish()
-            } else {
-                pageViewModel.changeStep(WALLET_CREATE_STEP_PIN_GUIDE)
-            }
+            // Close the backup activity after successful backup
+            fragment.requireActivity().finish()
         } else {
             updateContentViewState(true)
             binding.nextButton.setProgressVisible(false)
