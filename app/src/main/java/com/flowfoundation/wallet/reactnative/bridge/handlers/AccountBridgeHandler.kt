@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddre
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.createEmojiInfo
 import com.flowfoundation.wallet.reactnative.bridge.isSelectedWalletAddress
@@ -22,7 +21,6 @@ import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.logw
 import com.flowfoundation.wallet.utils.uiScope
-import com.flowfoundation.wallet.wallet.Wallet
 import org.onflow.flow.models.FlowAddress
 
 /**
@@ -102,7 +100,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 // Get main wallet address - for hardware-backed keys, wallet() returns null,
                 // so we need to use selectedWalletAddress() as fallback
-                var mainAddress = WalletManager.wallet()?.walletAddress()
+                var mainAddress = WalletManager.getFlowWalletAddress()
                 if (mainAddress.isNullOrEmpty()) {
                     // Hardware-backed key fallback: use the selected address
                     mainAddress = WalletManager.selectedWalletAddress()
@@ -143,8 +141,8 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 // Get child accounts
                 try {
-                    val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
-                    childAccounts?.forEach { childAccount ->
+                    val childAccounts = WalletManager.childAccountList(mainAddress)
+                    childAccounts.forEach { childAccount ->
                         val childAccountBridge = RNBridge.WalletAccount(
                             id = "child_${childAccount.address}",
                             name = childAccount.name,
@@ -177,10 +175,10 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                     if (!evmAddress.isNullOrEmpty()) {
                         // Check if EVM address matches any child account address
                         // If it does, don't add a separate EVM account entry (it's already represented as a child account)
-                        val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
-                        val evmMatchesChildAccount = childAccounts?.any {
+                        val childAccounts = WalletManager.childAccountList(mainAddress)
+                        val evmMatchesChildAccount = childAccounts.any {
                             it.address.equals(evmAddress, ignoreCase = true)
-                        } ?: false
+                        }
 
                         // Only add EVM account entry if:
                         // 1. Not Secure Type (Recovery Phrase flow), OR
@@ -213,7 +211,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 // For Secure Type (COA) accounts, EOA and EVM addresses are the same,
                 // so we should only show the EVM account to avoid duplicate "EOA" chip
                 try {
-                    val eoaAddress = WalletManager.getEOAAddressCached()
+                    val eoaAddress = WalletManager.getEOAAddress()
                     if (!eoaAddress.isNullOrEmpty()) {
                         // Only add EOA account if it's different from EVM address
                         // Secure Type accounts have a prefix field, Recovery Phrase accounts don't
@@ -309,7 +307,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
-                val mainAddress = WalletManager.wallet()?.walletAddress()
+                val mainAddress = WalletManager.getFlowWalletAddress()
 
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
@@ -428,8 +426,8 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
             // Get child accounts
             try {
-                val childAccounts = WalletManager.childAccountList(mainAddress)?.get()
-                childAccounts?.forEach { childAccount ->
+                val childAccounts = WalletManager.childAccountList(mainAddress)
+                childAccounts.forEach { childAccount ->
                     val childAccountBridge = RNBridge.WalletAccount(
                         id = "child_${childAccount.address}",
                         name = childAccount.name,
@@ -454,18 +452,8 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 val evmAddress = if (isSelectedWalletAddress(mainAddress)) {
                     EVMWalletManager.getEVMAddress()
                 } else {
-                    val address = account.evmAddressData?.evmAddressMap?.get(mainAddress)
-                    if (address.isNullOrBlank() || address == "0x") {
-                        null
-                    } else {
-                      val checksumAddress = toChecksumEVMAddress(address)
-                      // Validate the address format - if it's corrupted, try to refresh it
-                      if (!isValidEVMAddress(checksumAddress)) {
-                        logd(TAG, "Detected corrupted EVM address: $checksumAddress, attempting to refresh")
-                        return null
-                      }
-                      checksumAddress
-                    }
+                    // For non-selected accounts, get EVM from walletNodes via EVMWalletManager
+                    EVMWalletManager.getEVMAddressByAddress(mainAddress)
                 }
                 if (!evmAddress.isNullOrEmpty()) {
                     val evmEmojiInfo = createEmojiInfo(evmAddress)
@@ -492,7 +480,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
             // (Receive screen only shows current account, no need for non-selected EOA addresses)
             if (isSelectedWalletAddress(mainAddress)) {
                 try {
-                    val eoaAddress = WalletManager.getEOAAddressCached()
+                    val eoaAddress = WalletManager.getEOAAddress()
                     if (!eoaAddress.isNullOrEmpty()) {
                         val eoaEmojiInfo = createEmojiInfo(eoaAddress)
                         val eoaAccount = RNBridge.WalletAccount(

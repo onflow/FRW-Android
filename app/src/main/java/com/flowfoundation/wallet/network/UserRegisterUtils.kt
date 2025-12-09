@@ -240,17 +240,12 @@ suspend fun initWalletWithTxId(
         return@ioScope
       }
 
-      // Clear any cached EOA address
-      WalletManager.clearEOAAddressCache()
-      com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
-
       // Add account to AccountManager
       AccountManager.add(
         Account(
           userInfo = userInfo,
           prefix = prefix,
-          wallet = walletListData,
-          evmAddressData = null
+          wallet = walletListData
         ),
         firebaseUid()
       )
@@ -412,16 +407,6 @@ suspend fun registerOutblock(
           // Account is already fetched via fetchAccountByCreationTxId, no need to fetch again
           logd(TAG, "Account already populated in wallet SDK via fetchAccountByCreationTxId")
 
-          // Clear any cached EOA address from previous accounts FIRST
-          // This must happen before AccountManager.add() to prevent drawer from reading stale cache
-          // Secure enclave accounts don't have EOAs (hardware-backed keys only)
-          WalletManager.clearEOAAddressCache()
-
-          // Also clear EVMWalletManager which may have persisted EOA data
-          com.flowfoundation.wallet.manager.evm.EVMWalletManager.clear()
-
-          logd(TAG, "Cleared EOA address cache and EVM data before adding new account")
-
           // Log wallet data structure for debugging
           logd(TAG, "WalletListData structure: wallets count=${walletListData.wallets?.size}, username=${walletListData.username}")
           walletListData.wallets?.forEachIndexed { idx, wallet ->
@@ -435,50 +420,21 @@ suspend fun registerOutblock(
             Account(
               userInfo = userInfo,
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
-              wallet = walletListData,
-              evmAddressData = null // Explicitly set to null for new account (no EOA for secure enclave)
+              wallet = walletListData
             ),
             firebaseUid()
           )
           logd(TAG, "Account added to AccountManager.")
 
-          // Reinitialize EVMWalletManager to load clean state from the new account
-          com.flowfoundation.wallet.manager.evm.EVMWalletManager.init()
-          logd(TAG, "EVMWalletManager reinitialized with clean state")
+          // Get the Flow address from wallet data
+          val flowAddress = walletListData.wallets
+            ?.firstOrNull { wallet -> wallet.blockchain?.any { it.address.isNotBlank() } == true }
+            ?.blockchain?.firstOrNull()?.address
 
-          // Initialize AccountEmojiManager to generate emoji list for the new account
-          com.flowfoundation.wallet.manager.emoji.AccountEmojiManager.init()
-          logd(TAG, "AccountEmojiManager initialized for new account")
-
-          // Initialize WalletManager to pick up the new account/wallet state
-          WalletManager.init()
-
-          // Wait for WalletManager to initialize, then select the Flow address
-          WalletManager.onWalletReady {
-            logd(TAG, "WalletManager ready callback triggered")
-
-            // Get the Flow address from AccountManager (should be populated now)
-            val currentAccount = AccountManager.get()
-
-            // Find the first wallet that has a blockchain address (don't just use firstOrNull)
-            val flowAddress = currentAccount?.wallet?.wallets
-              ?.firstOrNull { wallet -> wallet.blockchain?.any { it.address.isNotBlank() } == true }
-              ?.blockchain?.firstOrNull()?.address
-
-            if (!flowAddress.isNullOrBlank()) {
-              val formattedAddress = if (flowAddress.startsWith("0x")) flowAddress else "0x$flowAddress"
-              WalletManager.selectWalletAddress(formattedAddress)
-              logd(TAG, "Wallet ready: Selected Flow address: $formattedAddress")
-
-              // Trigger UI update to refresh drawer with new account
-              uiScope {
-                AccountManager.updateWalletInfo(currentAccount.wallet!!)
-                logd(TAG, "Wallet ready: Triggered UI refresh")
-              }
-            } else {
-              logd(TAG, "Wallet ready: Warning - Flow address still not available")
-              logd(TAG, "Wallet ready: Account wallet data: ${currentAccount?.wallet}")
-            }
+          if (!flowAddress.isNullOrBlank()) {
+            val formattedAddress = if (flowAddress.startsWith("0x")) flowAddress else "0x$flowAddress"
+            WalletManager.selectWalletAddress(formattedAddress)
+            logd(TAG, "Selected Flow address: $formattedAddress")
           }
 
           // Close the drawer immediately to prevent showing old account data
