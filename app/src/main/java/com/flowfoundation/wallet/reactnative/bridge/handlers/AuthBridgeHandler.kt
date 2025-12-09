@@ -438,6 +438,24 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     logw(TAG, "saveMnemonic() - Flow address not populated after waiting, but continuing anyway")
                                 } else {
                                     logd(TAG, "saveMnemonic() - Account ready with Flow address: $finalFlowAddress")
+                                    
+                                    // Update walletNodes with FlowWallet now that we have the address
+                                    // This is needed because walletListData.blockchain may be null during initial setup
+                                    val hasFlowWallet = finalAccount.walletNodes.any { it is FlowWallet }
+                                    if (!hasFlowWallet) {
+                                        logd(TAG, "saveMnemonic() - Adding FlowWallet to walletNodes")
+                                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(finalFlowAddress)
+                                        val flowWallet = FlowWallet(
+                                            address = finalFlowAddress,
+                                            name = emojiInfo.emojiName,
+                                            emojiId = emojiInfo.emojiId,
+                                            chainIdString = currentNetwork,
+                                            linkedWallets = emptyList()
+                                        )
+                                        val updatedNodes = finalAccount.walletNodes + flowWallet
+                                        AccountManager.updateCurrentAccount { it.copy(walletNodes = updatedNodes) }
+                                        logd(TAG, "saveMnemonic() - FlowWallet added to walletNodes: $finalFlowAddress")
+                                    }
                                 }
 
                                 // Step 12: Close React Native view (handled by caller)
