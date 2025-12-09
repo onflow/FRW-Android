@@ -126,8 +126,6 @@ class WalletBackupActivity: BaseActivity() {
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                 MainActivity.relaunch(this, clearTop = true)
             }, 500) // 500ms delay to allow registration status to update
-        } else {
-            MainActivity.relaunch(this, clearTop = true)
         }
         finish()
     }
