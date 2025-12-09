@@ -5,7 +5,7 @@ import com.flowfoundation.wallet.manager.app.EVM_MAINNET
 import com.flowfoundation.wallet.manager.app.EVM_TESTNET
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
+
 import com.flowfoundation.wallet.manager.walletconnect.model.WCRequest
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.utils.extensions.openInSystemBrowser
@@ -62,7 +62,7 @@ private fun pair(
             }
         }.toList()
     } else {
-        chains.map { "$it:${WalletManager.wallet()?.walletAddress().orEmpty()}" }.toList()
+        chains.map { "$it:${WalletManager.getFlowWalletAddress().orEmpty()}" }.toList()
     }
     val methods = if (caip2Namespace.lowercase() == ETHEREUM_NETWORK) {
         WalletConnectMethod.getSupportedEVMMethod()

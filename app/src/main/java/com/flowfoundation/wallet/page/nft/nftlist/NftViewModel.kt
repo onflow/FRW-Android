@@ -2,8 +2,9 @@ package com.flowfoundation.wallet.page.nft.nftlist
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.flowfoundation.wallet.manager.account.OnWalletDataUpdate
-import com.flowfoundation.wallet.manager.account.WalletFetcher
+import com.flowfoundation.wallet.manager.account.Account
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.OnAccountUpdate
 import com.flowfoundation.wallet.manager.config.NftCollection
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionState
@@ -11,7 +12,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.NftCollectionWrapper
-import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionItemModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.CollectionTitleModel
 import com.flowfoundation.wallet.page.nft.nftlist.model.NFTCountTitleModel
@@ -31,7 +31,7 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 
 private val TAG = NftViewModel::class.java.simpleName
 
-class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdate,
+class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnAccountUpdate,
     OnTransactionStateChange {
 
     val collectionsLiveData = MutableLiveData<List<CollectionItemModel>>()
@@ -126,7 +126,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
         viewModelIOScope(this) { NftFavoriteManager.request() }
     }
 
-    override fun onWalletDataUpdate(wallet: WalletListData) {
+    override fun onAccountUpdate(account: Account) {
         refresh()
     }
 
@@ -135,7 +135,7 @@ class NftViewModel : ViewModel(), OnNftFavoriteChangeListener, OnWalletDataUpdat
             // wallet not loaded yet
             if (nftWalletAddress().isEmpty()) {
                 logd(TAG, "wallet not loaded yet")
-                WalletFetcher.addListener(this)
+                AccountManager.addListener(this)
             }
         }
     }

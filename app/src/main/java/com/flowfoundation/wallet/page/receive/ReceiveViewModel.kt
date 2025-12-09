@@ -4,7 +4,6 @@ import android.graphics.drawable.Drawable
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.page.receive.model.ReceiveData
 import com.flowfoundation.wallet.utils.toQRDrawable
 import com.flowfoundation.wallet.utils.viewModelIOScope
@@ -21,8 +20,7 @@ class ReceiveViewModel : ViewModel() {
                 val account = WalletManager.childAccount(WalletManager.selectedWalletAddress())
                 account?.address.orEmpty() to account?.name.orEmpty()
             } else {
-                val wallet = WalletManager.wallet() ?: return@viewModelIOScope
-                wallet.walletAddress().orEmpty() to ""
+                WalletManager.getFlowWalletAddress().orEmpty() to ""
             }
             WalletManager.wallet() ?: return@viewModelIOScope
             walletLiveData.postValue(ReceiveData(walletName = name, address = address))

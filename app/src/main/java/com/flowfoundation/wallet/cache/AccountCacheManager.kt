@@ -120,6 +120,7 @@ object AccountCacheManager{
 
     fun cache(data: List<Account>) {
         logd(TAG, "cache() called with ${data.size} accounts")
+        logd(TAG, "cache() called with accounts: $data")
         if (data.isEmpty()) {
             logd(TAG, "Warning: Caching empty accounts list")
         } else {

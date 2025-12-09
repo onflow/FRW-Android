@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.cadence.CadenceApiManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.utils.error.BaseError
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isTesting
@@ -66,7 +65,7 @@ object MixpanelManager {
 
     fun identifyUserProfile() {
         identify(
-            firebaseUid() ?: WalletManager.wallet()?.walletAddress() ?: AccountManager.userInfo()?.username ?: ""
+            firebaseUid() ?: WalletManager.getFlowWalletAddress() ?: AccountManager.userInfo()?.username ?: ""
         )
     }
 
@@ -119,7 +118,7 @@ object MixpanelManager {
     fun coaCreation(txId: String, errorMsg: String? = null) {
         val properties = JSONObject().apply {
             put(KEY_TX_ID, txId)
-            put(KEY_FLOW_ADDRESS, WalletManager.wallet()?.walletAddress())
+            put(KEY_FLOW_ADDRESS, WalletManager.getFlowWalletAddress())
             put(KEY_ERROR_MESSAGE, errorMsg.orEmpty())
         }
         trackEvent(EVENT_COA_CREATION, properties)
@@ -264,7 +263,7 @@ object MixpanelManager {
 
     private fun trackMultiBackupEvent(eventName: String, provider: MixpanelBackupProvider?) {
         val properties = JSONObject().apply {
-            put(KEY_ADDRESS, WalletManager.wallet()?.walletAddress())
+            put(KEY_ADDRESS, WalletManager.getFlowWalletAddress())
             put(
                 KEY_PROVIDERS,
                 JSONArray(

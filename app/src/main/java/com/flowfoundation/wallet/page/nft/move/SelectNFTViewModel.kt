@@ -11,7 +11,6 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.TransferAccountType
 import com.flowfoundation.wallet.network.ApiService
@@ -166,7 +165,7 @@ class SelectNFTViewModel : ViewModel() {
                     collection, idList
                 )
                 MixpanelManager.transferNFT(
-                    fromAddress, WalletManager.wallet()?.walletAddress().orEmpty(),
+                    fromAddress, WalletManager.getFlowWalletAddress().orEmpty(),
                     nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
                     TransferAccountType.FLOW, true
                 )
@@ -213,7 +212,7 @@ class SelectNFTViewModel : ViewModel() {
                     childAddress, identifier.orEmpty(), collection, idList
                 )
                 MixpanelManager.transferNFT(
-                    WalletManager.wallet()?.walletAddress().orEmpty(), childAddress,
+                    WalletManager.getFlowWalletAddress().orEmpty(), childAddress,
                     nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.FLOW,
                     TransferAccountType.CHILD, true
                 )

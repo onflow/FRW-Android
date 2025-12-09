@@ -38,7 +38,9 @@ data class KeystoreAddress(
     @SerializedName("hashAlgo")
     val hashAlgo: Int,
     @SerializedName("signAlgo")
-    val signAlgo: Int
+    val signAlgo: Int,
+    @SerializedName("encryptedMnemonic")
+    val encryptedMnemonic: String? = null
 )
 
 enum class KeyStoreOption(val layoutId: Int) {

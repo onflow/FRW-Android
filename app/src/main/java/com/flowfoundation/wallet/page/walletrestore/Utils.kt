@@ -15,6 +15,7 @@ import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService
 import com.flowfoundation.wallet.network.clearUserCache
 import com.flowfoundation.wallet.network.model.AccountKey
+import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.network.model.LoginRequest
 import com.flowfoundation.wallet.network.retrofit
 import com.flowfoundation.wallet.utils.ioScope
@@ -90,22 +91,22 @@ fun requestWalletRestoreLogin(
                 callback.invoke(false, ERROR_NETWORK)
                 return@ioScope
             }
-            
+
             val words = mnemonic.trim().split("\\s+".toRegex())
             if (words.size != 12 && words.size != 15 && words.size != 24) {
                 loge(TAG, "Invalid mnemonic word count: ${words.size}")
                 callback.invoke(false, ERROR_NETWORK)
                 return@ioScope
             }
-            
+
             logd(TAG, "Creating crypto provider for Google Drive restore with ${words.size} word mnemonic")
-            
+
             val baseDir = File(Env.getApp().filesDir, "wallet")
-            
+
             // Use the same working pattern as multi-restore: create SeedPhraseKey with dummy keyPair
             // to pass the null check in the KMM layer's sign() method
             val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, FileSystemStorage(baseDir))
-            
+
             // Create HDWalletCryptoProvider (same as seed phrase restore, weight 1000)
             val cryptoProvider = try {
                 HDWalletCryptoProvider(seedPhraseKey)
@@ -114,7 +115,7 @@ fun requestWalletRestoreLogin(
                 callback.invoke(false, ERROR_NETWORK)
                 return@ioScope
             }
-            
+
             // Validate the crypto provider before attempting to use it
             val publicKey = try {
                 cryptoProvider.getPublicKey()
@@ -123,15 +124,15 @@ fun requestWalletRestoreLogin(
                 callback.invoke(false, ERROR_NETWORK)
                 return@ioScope
             }
-            
+
             if (publicKey.isBlank() || publicKey == "0x" || publicKey.length < 64) {
                 loge(TAG, "Invalid public key from crypto provider: $publicKey")
                 callback.invoke(false, ERROR_NETWORK)
                 return@ioScope
             }
-            
+
             logd(TAG, "HDWalletCryptoProvider created successfully with public key: ${publicKey.take(20)}...")
-            
+
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false, ERROR_UID)
@@ -141,7 +142,7 @@ fun requestWalletRestoreLogin(
                     val catching = runCatching {
                         val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
                         val service = retrofit().create(ApiService::class.java)
-                        
+
                         // Test signature creation before making the request
                         val testSignature = try {
                             val jwt = getFirebaseJwt()
@@ -150,13 +151,13 @@ fun requestWalletRestoreLogin(
                             loge(TAG, "Failed to create test signature: ${e.message}")
                             throw RuntimeException("Crypto provider signature creation failed: ${e.message}")
                         }
-                        
+
                         if (testSignature.isBlank()) {
                             throw RuntimeException("Crypto provider returned empty signature")
                         }
-                        
+
                         logd(TAG, "Test signature created successfully")
-                        
+
                         val resp = service.login(
                             LoginRequest(
                                 signature = testSignature,
@@ -181,8 +182,18 @@ fun requestWalletRestoreLogin(
                                     Wallet.store().reset(mnemonic)
                                     ioScope {
                                         val userInfo = service.userInfo().data
-                                        AccountManager.add(Account(userInfo = userInfo))
+                                        val walletData = WalletListData(
+                                            id = uid,
+                                            username = userInfo.username,
+                                            wallets = null
+                                        )
                                         clearUserCache()
+                                        AccountManager.add(
+                                            Account(
+                                                userInfo = userInfo,
+                                                wallet = walletData
+                                            )
+                                        )
                                         callback.invoke(true, null)
                                     }
                                 } else {

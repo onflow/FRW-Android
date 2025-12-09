@@ -1,962 +1,358 @@
 package com.flowfoundation.wallet.manager.wallet
 
-import com.flow.wallet.keys.KeyFormat
-import com.flow.wallet.keys.PrivateKey
-import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.wallet.Wallet
-import com.flow.wallet.wallet.WalletFactory
-import com.flowfoundation.wallet.cache.AccountCacheManager
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.Accounts
-import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
 import com.flowfoundation.wallet.manager.app.NETWORK_NAME_MAINNET
-import com.flowfoundation.wallet.manager.app.NETWORK_NAME_TESTNET
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
-import com.flowfoundation.wallet.manager.childaccount.ChildAccountList
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.network.model.BlockchainData
-import com.flowfoundation.wallet.network.model.WalletData
-import com.flowfoundation.wallet.network.model.WalletListData
-import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
-import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.manager.walletdata.ChildWallet
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.utils.getSelectedWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.updateSelectedWalletAddress
 import com.flowfoundation.wallet.wallet.toAddress
-import com.google.gson.Gson
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeout
-import org.onflow.flow.ChainId
-import org.onflow.flow.models.hexToBytes
 import java.util.concurrent.atomic.AtomicReference
-import com.flowfoundation.wallet.firebase.auth.firebaseUid
-import com.flowfoundation.wallet.manager.account.AccountWalletManager
-import com.flowfoundation.wallet.manager.account.KeyStoreMigrationManager
-import com.flowfoundation.wallet.manager.key.AndroidKeystoreCryptoProvider
-import kotlinx.coroutines.flow.firstOrNull
-import org.onflow.flow.models.SigningAlgorithm
 
 object WalletManager {
-  private val TAG = WalletManager::class.java.simpleName
-  private var childAccountMap = mutableMapOf<String, ChildAccountList>()
-  private val selectedWalletAddressRef = AtomicReference<String>("")
-  private var currentWallet: Wallet? = null
-  private var lastAddressCheck = 0L
-  private const val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
-  private var isInitializing = false
-  private val initializationLock = Object()
-  private var isInitialized = false
+    private val TAG = WalletManager::class.java.simpleName
+    private val selectedWalletAddressRef = AtomicReference(getSelectedWalletAddress())
+    private var currentWallet: Wallet? = null
+    private var lastAddressCheck = 0L
+    private const val ADDRESS_CACHE_DURATION = 100L // Cache duration in milliseconds
+    private val initializationLock = Object()
 
-  // Add a job reference and callback mechanism
-  private var initializationJob: kotlinx.coroutines.Job? = null
-  private val walletReadyCallbacks = mutableListOf<() -> Unit>()
+    private var _isEoaDisabled = false
 
-  // EOA address caching
-  private var cachedEOAAddress: String? = null
-  private var eoaAddressCacheTime = 0L
-  private const val EOA_CACHE_DURATION = 30000L // 30 seconds cache duration
+    fun isEoaDisabled() = _isEoaDisabled
+    fun setEoaDisabled(disabled: Boolean) { _isEoaDisabled = disabled }
 
-  /**
-   * Cache EOA address for non-suspend access
-   */
-  private fun cacheEOAAddress() {
-    ioScope {
-      try {
-        val walletInstance = currentWallet
-        if (walletInstance != null) {
-          // Generate EOA address and cache it
-          val eoaAddress = walletInstance.ethAddress(0)
-          synchronized(initializationLock) {
-            cachedEOAAddress = eoaAddress
-            eoaAddressCacheTime = System.currentTimeMillis()
-          }
-          logd(TAG, "Cached EOA address: $eoaAddress")
+    /**
+     * Get EOA address
+     */
+    fun getEOAAddress(): String? {
+        val eoaWallet = AccountManager.walletNodes()
+            ?.filterIsInstance<EOAWallet>()
+            ?.firstOrNull()
+
+        if (eoaWallet != null) {
+            logd(TAG, "getEOAAddress() - found EOA address in walletNodes: ${eoaWallet.address}")
+            return eoaWallet.address
+        }
+
+        return null
+    }
+
+
+    private fun initializeWallet(): Boolean {
+        logd(TAG, "initializeWallet() called")
+
+        val account = AccountManager.get() ?: run {
+            logd(TAG, "No current account available")
+            return false
+        }
+
+        // Use WalletCreationHelper to create wallet from account
+        val newWallet = runBlocking {
+            WalletCreationHelper.createWalletFromAccount(account)
+        } ?: run {
+            logd(TAG, "Failed to create wallet from account")
+            return false
+        }
+
+        currentWallet = newWallet
+        logd(TAG, "Wallet created successfully: ${getFlowWalletAddress()}")
+
+        val address = getFlowWalletAddress() ?: run {
+            // For hardware-backed keys, try to get address from account data
+            val walletData = account.wallet?.wallets?.firstOrNull()
+            val blockchainData = walletData?.blockchain?.firstOrNull()
+            blockchainData?.address
+        }
+
+        // Only set the address if no address is currently selected (avoid overriding user selections)
+        if (!address.isNullOrBlank() && selectedWalletAddressRef.get().isBlank()) {
+            selectWalletAddress(address)
+            logd(TAG, "Selected initial wallet address: $address")
+        } else if (!address.isNullOrBlank()) {
+            logd(TAG, "Skipping address selection - user has already selected: ${selectedWalletAddressRef.get()}")
         } else {
-          logd(TAG, "Cannot cache EOA address - wallet is null (hardware-backed key)")
+            logd(TAG, "No wallet address found to select (this may be normal for hardware-backed keys)")
         }
-      } catch (e: Exception) {
-        logd(TAG, "Error caching EOA address: ${e.message}")
-      }
+
+        return true
     }
-  }
 
-  /**
-   * Synchronously cache an EOA address (used during registration)
-   */
-  fun cacheEOAAddressSync(address: String?) {
-    synchronized(initializationLock) {
-      cachedEOAAddress = address
-      eoaAddressCacheTime = System.currentTimeMillis()
-      logd(TAG, "Synchronously cached EOA address: $address")
-    }
-  }
+    fun wallet(): Wallet? = synchronized(initializationLock) {
+        // Ensure wallet is initialized
+        if (currentWallet == null) {
+            logd(TAG, "wallet() called - attempting synchronous initialization")
+            initializeWallet() // This call will set currentWallet if successful
+        }
 
-  /**
-   * Get cached EOA address (non-suspend method)
-   */
-  fun getEOAAddressCached(): String? {
-    synchronized(initializationLock) {
-      val currentTime = System.currentTimeMillis()
-      if (cachedEOAAddress != null && (currentTime - eoaAddressCacheTime) < EOA_CACHE_DURATION) {
-        logd(TAG, "Returning cached EOA address: $cachedEOAAddress")
-        return cachedEOAAddress
-      }
+        val currentNetwork = chainNetWorkString()
 
-      // Cache is expired or empty, trigger refresh
-      if (currentWallet != null) {
-        logd(TAG, "EOA address cache expired or empty, refreshing...")
-        cacheEOAAddress()
-      }
+        // Get the account for the current network
+        currentWallet?.let { wallet ->
+            val walletNodes = AccountManager.walletNodes()
+            val currentNetworkFlowWallet = walletNodes
+                ?.filterIsInstance<FlowWallet>()
+                ?.firstOrNull { it.chainIdString == currentNetwork }
 
-      return cachedEOAAddress // Return current cached value even if expired
-    }
-  }
+            if (currentNetworkFlowWallet != null) {
+                val currentSelected = selectedWalletAddressRef.get()
 
-  /**
-   * Clear EOA address cache (public for account switching/creation)
-   */
-  fun clearEOAAddressCache() {
-    synchronized(initializationLock) {
-      cachedEOAAddress = null
-      eoaAddressCacheTime = 0L
-      logd(TAG, "EOA address cache cleared")
-    }
-  }
+                // Check if currentSelected exists in walletNodes
+                val isOverallValidSelection = walletNodes.any { mainNode ->
+                  mainNode.address.equals(currentSelected, ignoreCase = true) ||
+                    (mainNode is FlowWallet && mainNode.linkedWallets.any { it.address.equals(currentSelected, ignoreCase = true) })
+                }
 
-  private fun triggerWalletReadyCallbacks() {
-    walletReadyCallbacks.forEach { it.invoke() }
-    walletReadyCallbacks.clear()
-  }
+                if (!isOverallValidSelection) {
+                    logd(TAG, "No valid address selected or selection is of unknown type ($currentSelected), setting network account: ${currentNetworkFlowWallet.address}")
+                    selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
+                    updateSelectedWalletAddress(currentNetworkFlowWallet.address)
+                } else {
+                    // Check if currentSelected is a Flow Main account but NOT the one for the current network
+                    val isSelectedFlowMain = walletNodes.filterIsInstance<FlowWallet>()
+                        .any { it.address.equals(currentSelected, ignoreCase = true) }
 
-  fun onWalletReady(callback: () -> Unit) {
-    synchronized(initializationLock) {
-      if (isInitialized) {
-        callback.invoke()
-      } else {
-        walletReadyCallbacks.add(callback)
-      }
-    }
-  }
-
-  fun init() {
-    synchronized(initializationLock) {
-      if (isInitializing || isInitialized) return
-      isInitializing = true
-      try {
-        val initJob = ioScope {
-          if (initializeWallet()) {
-            synchronized(initializationLock) {
-              isInitialized = true
+                    if (isSelectedFlowMain) {
+                        if (!currentNetworkFlowWallet.address.equals(currentSelected, ignoreCase = true)) {
+                            selectedWalletAddressRef.set(currentNetworkFlowWallet.address)
+                            updateSelectedWalletAddress(currentNetworkFlowWallet.address)
+                        }
+                    }
+                }
             }
-            // Notify UI that wallet is ready
-            uiScope {
-              // Trigger a drawer refresh after successful initialization
-              triggerWalletReadyCallbacks()
+        }
+        currentWallet
+    }
+
+    fun isEVMAccountSelected(): Boolean {
+        return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true) || selectedWalletAddress().toAddress().equals(getEOAAddress(), ignoreCase = true)
+    }
+
+    fun isSelfFlowAddress(address: String): Boolean {
+        if (address.isBlank()) return false
+
+        val walletNodes = AccountManager.walletNodes() ?: return false
+
+        for (mainNode in walletNodes) {
+            if (mainNode is FlowWallet) {
+                // Check if it's the FlowWallet itself
+                if (mainNode.address.equals(address, ignoreCase = true)) {
+                    return true
+                }
             }
-          }
         }
-        // Store the job for potential waiting
-        initializationJob = initJob
-      } finally {
-        isInitializing = false
-      }
-    }
-  }
-
-  private fun initializeWallet(): Boolean {
-    logd(TAG, "initializeWallet() called")
-
-    val account = AccountManager.get() ?: run {
-      logd(TAG, "-- bail: AccountManager.get() == null")
-      return false
-    }
-
-    val storage = getStorage()
-
-    // Handle keystore-based accounts
-    if (!account.keyStoreInfo.isNullOrBlank()) {
-      logd(TAG, "Initializing keystore-based wallet")
-
-      /* 1. Build the key */
-      val ks      = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
-      val keyHex  = ks.privateKey.removePrefix("0x")
-        .also { require(it.length == 64) { "Private key must be 32-byte hex" } }
-
-      val key     = PrivateKey.create(storage).apply {
-        importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
-      }
-
-      /* 2. Create the wallet */
-      val newWallet = WalletFactory.createKeyWallet(
-        key,
-        setOf(ChainId.Mainnet, ChainId.Testnet),
-        storage
-      )
-      currentWallet = newWallet
-      logd(TAG, "Keystore wallet created, waiting for accounts to load...")
-    }
-
-    // Handle prefix-based accounts
-    else if (!account.prefix.isNullOrBlank()) {
-      logd(TAG, "Initializing prefix-based wallet")
-
-      // Load the stored private key using the prefix-based ID with backward compatibility
-      val keyId = "prefix_key_${account.prefix}"
-      logd(TAG, "Attempting to load private key (with fallback to old storage)")
-
-      try {
-        val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(account.prefix!!, storage)
-        if (privateKey == null) {
-          logd(TAG, "Private key not found in either storage system")
-          return false
-        }
-
-        logd(TAG, "Successfully loaded private key")
-
-        /* 2. Create the wallet */
-        val newWallet = WalletFactory.createKeyWallet(
-          privateKey,
-          setOf(ChainId.Mainnet, ChainId.Testnet),
-          storage
-        )
-        currentWallet = newWallet
-        logd(TAG, "Prefix wallet created, waiting for accounts to load...")
-
-      } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
-        logd(TAG, "Hardware-backed key detected")
-        logd(TAG, "Hardware-backed keys will be handled by CryptoProviderManager during signing operations")
-        logd(TAG, "Setting currentWallet = null for hardware-backed keys")
-
-        // For hardware-backed keys, we cannot create a wallet object because the key cannot be extracted
-        // The CryptoProviderManager will handle cryptographic operations using AndroidKeystoreCryptoProvider
-        // Transactions will get the address from account data instead of wallet object
-        if (e.alias == null) {
-          logd(TAG, "Hardware-backed key alias is null")
-          return false
-        }
-        val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256,null)
-        val newWallet = WalletFactory.createProxyWallet(
-          provider,
-          setOf(ChainId.Mainnet, ChainId.Testnet),
-          storage
-        )
-        currentWallet = newWallet
-        logd(TAG, "Hardware-backed key configuration complete")
-      }
-    }
-
-    else {
-      logd(TAG, "-- bail: account has neither keyStoreInfo nor prefix")
-      val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(account.wallet?.id ?: "")
-      if (mnemonic == null) {
-        logd(TAG, "HD wallet key not found for account")
         return false
-      }
-      val seedPhraseKey = SeedPhraseKey(
-        mnemonicString = mnemonic,
-        passphrase = "",
-        derivationPath = "m/44'/539'/0'/0/0",
-        storage = storage
-      )
-
-      // Create the wallet using the seed phrase key
-      val newWallet = WalletFactory.createKeyWallet(
-        seedPhraseKey,
-        setOf(ChainId.Mainnet, ChainId.Testnet),
-        storage
-      )
-      currentWallet = newWallet
-      logd(TAG, "HD wallet created, waiting for accounts to load...")
     }
 
-    // Wait for accounts to be loaded
-    currentWallet?.let { wallet ->
-      try {
-        logd(TAG, "Wallet created, checking for existing account addresses...")
-        logd(TAG, "Account wallet data: ${account.wallet}")
+    fun isChildAccountSelected(): Boolean {
+        return isChildAccount(selectedWalletAddress())
+    }
 
-        // Check if we already have account addresses from the server
-        if (account.wallet?.wallets?.isNotEmpty() == true) {
-          logd(TAG, "Found existing wallet addresses from server, using them:")
-          account.wallet!!.wallets?.forEach { walletData ->
-            walletData.blockchain?.forEach { blockchain ->
-              logd(TAG, "  - ${blockchain.chainId}: ${blockchain.address}")
+    fun haveChildAccount(): Boolean {
+        val firstParentAddress = getFlowWalletAddress()
+        return firstParentAddress != null && childAccountList(firstParentAddress).isNotEmpty()
+    }
+
+    fun childAccountList(walletAddress: String? = null): List<ChildAccount> {
+        val targetAddress = walletAddress ?: getFlowWalletAddress() ?: return emptyList()
+        val walletNodes = AccountManager.walletNodes() ?: return emptyList()
+
+        for (mainNode in walletNodes) {
+            if (mainNode is FlowWallet && mainNode.address.equals(targetAddress, ignoreCase = true)) {
+                return mainNode.linkedWallets
+                    .filterIsInstance<ChildWallet>()
+                    .map { childWallet ->
+                        ChildAccount(
+                            address = childWallet.address,
+                            name = childWallet.name,
+                            icon = childWallet.icon,
+                            pinTime = childWallet.pinTime
+                        )
+                    }
             }
-          }
-          logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
-        } else {
-          logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
+        }
+        return emptyList()
+    }
 
-          try {
-            runBlocking {
-              // Add timeout to prevent infinite hanging
-              withTimeout(5000) { // 5 second timeout
-                wallet.accountsFlow.first { accounts ->
-                  logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
-                  accounts.isNotEmpty()
+    fun childAccount(childAddress: String): ChildAccount? {
+        if (childAddress.isBlank()) return null
+
+        val walletNodes = AccountManager.walletNodes() ?: return null
+
+        for (mainNode in walletNodes) {
+            if (mainNode is FlowWallet) {
+                mainNode.linkedWallets.forEach { linkedWallet ->
+                    if (linkedWallet is ChildWallet && linkedWallet.address.equals(childAddress, ignoreCase = true)) {
+                        return ChildAccount(address = linkedWallet.address, name = linkedWallet.name, icon = linkedWallet.icon, pinTime = linkedWallet.pinTime)
+                    }
                 }
-              }
-              logd(TAG, "Accounts discovered successfully!")
-              logd(TAG, "Number of account chains: ${wallet.accounts.size}")
-              wallet.accounts.forEach { (chainId, accounts) ->
-                logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
-                accounts.forEach { account ->
-                  logd(TAG, "  - Account address: ${account.address}")
+            }
+        }
+        return null
+    }
+
+    fun isChildAccount(address: String): Boolean {
+        val result = childAccount(address) != null
+        return result
+    }
+
+    fun togglePin(childAccount: ChildAccount) {
+        ioScope {
+            AccountManager.updateCurrentAccount { currentAccount ->
+                var accountModified = false
+
+                val updatedWalletNodes = currentAccount.walletNodes.map { mainNode ->
+                    if (mainNode is FlowWallet) {
+                        val updatedLinkedWallets = mainNode.linkedWallets.map { linked ->
+                            if (linked is ChildWallet && linked.address == childAccount.address) {
+                                accountModified = true
+                                linked.copy(pinTime = if (linked.pinTime > 0) 0 else System.currentTimeMillis())
+                            } else {
+                                linked
+                            }
+                        }
+                        mainNode.copy(linkedWallets = updatedLinkedWallets)
+                    } else {
+                        mainNode
+                    }
                 }
-              }
-              logd(TAG, "Primary wallet address: ${wallet.walletAddress()}")
+
+                if (accountModified) {
+                    logd(TAG, "Toggled pin status for child account: ${childAccount.address}")
+                    currentAccount.copy(walletNodes = updatedWalletNodes)
+                } else {
+                    logd(TAG, "Child account ${childAccount.address} not found for toggling pin.")
+                    currentAccount
+                }
             }
-          } catch (e: TimeoutCancellationException) {
-            logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
-            logd(TAG, "Final wallet address: ${wallet.walletAddress()}")
-          } catch (e: Exception) {
-            logd(TAG, "ERROR during wallet initialization: ${e.message}")
-            logd(TAG, "Error type: ${e.javaClass.simpleName}")
-          }
         }
-      } catch (e: TimeoutCancellationException) {
-        logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
-        logd(TAG, "Final wallet address: ${wallet.walletAddress()}")
-      } catch (e: Exception) {
-        logd(TAG, "ERROR during wallet initialization: ${e.message}")
-        logd(TAG, "Error type: ${e.javaClass.simpleName}")
-      }
     }
 
-    /* 3. Persist the wallet info back into the Account (optional but handy) */
-    if (account.wallet == null) {
-      currentWallet?.let { newWallet ->
-        val wallets = newWallet.accounts.map { (chainId, accounts) ->
-          WalletData(
-            blockchain = accounts.map {
-              BlockchainData(address = it.address, chainId = chainId.toString())
-            },
-            name = chainId.toString()
-          )
+    fun changeNetwork() {
+        val currentNetwork = chainNetWorkString()
+        logd(TAG, "Changing network to: $currentNetwork")
+
+        val networkAddress = AccountManager.walletNodes()
+            ?.filterIsInstance<FlowWallet>()
+            ?.firstOrNull { it.chainIdString.equals(currentNetwork, ignoreCase = true) }
+            ?.address
+
+        networkAddress?.let { address ->
+            logd(TAG, "Selecting network account: $address")
+            selectWalletAddress(address)
         }
-        val firebaseUserId = firebaseUid()
-          ?: throw IllegalStateException("Firebase user ID is null - cannot create wallet data")
-
-        account.wallet = WalletListData(
-          id       = firebaseUserId,
-          username = account.userInfo.username,
-          wallets  = wallets
-        )
-        AccountCacheManager.cache(Accounts().apply { addAll(AccountManager.list()) })
-      }
     }
 
-    /* 4. Make sure WalletManager knows which address is selected */
-    val address = currentWallet?.walletAddress() ?: run {
-      // For hardware-backed keys, try to get address from account data
-      val walletData = account.wallet?.wallets?.firstOrNull()
-      val blockchainData = walletData?.blockchain?.firstOrNull()
-      blockchainData?.address
-    }
+    fun selectWalletAddress(address: String): String {
+        logd(TAG, "selectWalletAddress called with: '$address'")
 
-    // Only set the address if no address is currently selected (avoid overriding user selections)
-    if (!address.isNullOrBlank() && selectedWalletAddressRef.get().isBlank()) {
-      selectWalletAddress(address)
-      logd(TAG, "Selected initial wallet address: $address")
-    } else if (!address.isNullOrBlank()) {
-      logd(TAG, "Skipping address selection - user has already selected: ${selectedWalletAddressRef.get()}")
-    } else {
-      logd(TAG, "No wallet address found to select (this may be normal for hardware-backed keys)")
-    }
-
-    /* 5. Cache EOA address for non-suspend access */
-    if (currentWallet != null) {
-      logd(TAG, "Wallet initialized successfully, caching EOA address...")
-      cacheEOAAddress()
-    }
-
-    return true
-  }
-
-  fun walletUpdate() {
-    val currentWallet = wallet()
-    if (currentWallet != null) {
-      // Normal wallet - use existing logic
-      refreshChildAccount(currentWallet)
-    } else {
-      // Hardware-backed key - initialize child accounts using selected address
-      val selectedAddress = selectedWalletAddress()
-      if (selectedAddress.isNotEmpty()) {
-        logd(TAG, "Hardware-backed key detected in walletUpdate, initializing child accounts for: $selectedAddress")
-        refreshChildAccountForHardwareBackedKey(selectedAddress)
-      }
-    }
-  }
-
-  fun wallet(): Wallet? = synchronized(initializationLock) {
-    if (!isInitialized) init()           // first pass
-
-    if (currentWallet == null) {         // still null? retry once
-      if (initializeWallet()) isInitialized = true
-    }
-
-    val currentNetwork = chainNetWorkString()
-
-    // Get the account for the current network
-    currentWallet?.let { wallet ->
-      val networkAccount = wallet.accounts.entries.firstOrNull { (chainId, _) ->
-        when (currentNetwork) {
-          NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
-          NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
-          else -> false
+        if (address.isBlank()) {
+            logd(TAG, "WARNING: Attempting to select blank address")
         }
-      }?.value?.firstOrNull()
 
-      if (networkAccount != null) {
-        val currentSelected = selectedWalletAddressRef.get()
-        // Call isChildAccount for its logging side effect, and store the result.
-        val isSelectedActuallyChild = isChildAccount(currentSelected)
-        val isSelectedActuallyEvm = EVMWalletManager.isEVMWalletAddress(currentSelected)
-        // 'wallet' here is the non-null currentWallet from the outer let scope
-        val isSelectedActuallyParentFlow = wallet.accounts.values.flatten().any { it.address.equals(currentSelected, ignoreCase = true) }
-        val isSelectedActuallyEOA = EVMWalletManager.isEOAAddress(currentSelected)
+        if (selectedWalletAddressRef.get().equals(address, ignoreCase = true)) {
+            logd(TAG, "Address already selected, returning current network")
+            return chainNetWorkString()
+        }
 
-        val isOverallValidSelection = currentSelected.isNotBlank() && (isSelectedActuallyChild || isSelectedActuallyEvm || isSelectedActuallyParentFlow || isSelectedActuallyEOA)
+        logd(TAG, "Setting selected address to: '$address'")
+        selectedWalletAddressRef.set(address)
+        updateSelectedWalletAddress(address)
 
-        if (!isOverallValidSelection) {
-          logd(TAG, "No valid address selected or selection is of unknown type (${currentSelected}), setting network account: ${networkAccount.address}")
-          selectedWalletAddressRef.set(networkAccount.address)
-          updateSelectedWalletAddress(networkAccount.address)
-        } else {
-          // currentSelected is a valid type (Child, EVM, or ParentFlow)
-          if (isSelectedActuallyParentFlow && !isSelectedActuallyChild && !isSelectedActuallyEvm && !isSelectedActuallyEOA) {
-            // It's a Parent Flow account (and not simultaneously a child/EVM type).
-            // Check if it matches the current network's primary Flow account.
-            if (!networkAccount.address.equals(currentSelected, ignoreCase = true)) {
-              selectedWalletAddressRef.set(networkAccount.address)
-              updateSelectedWalletAddress(networkAccount.address)
+        val walletNodes = AccountManager.walletNodes() ?: return chainNetWorkString()
+
+        for (node in walletNodes) {
+            // Check if it's the MainWallet itself
+            if (node.address.equals(address, ignoreCase = true)) {
+                return when (node) {
+                    is FlowWallet -> node.chainIdString
+                    is EOAWallet -> NETWORK_NAME_MAINNET
+                }
             }
-          }
+
+            // Check if it's a LinkedWallet
+            if (node is FlowWallet) {
+                val isLinked = node.linkedWallets.any { it.address.equals(address, ignoreCase = true) }
+                if (isLinked) {
+                    return node.chainIdString
+                }
+            }
         }
-      }
-    }
-    currentWallet
-  }
 
-  fun getCurrentWallet(): Wallet? {
-    return currentWallet
-  }
-
-  fun isEVMAccountSelected(): Boolean {
-    return selectedWalletAddress().toAddress().equals(EVMWalletManager.getEVMAddress()?.toAddress(), ignoreCase = true) || selectedWalletAddress().toAddress().equals(getEOAAddressCached(), ignoreCase = true)
-  }
-
-  fun isSelfFlowAddress(address: String): Boolean {
-    return wallet()?.accounts?.values?.flatten()?.any { it.address == address } == true
-  }
-
-  fun isChildAccountSelected(): Boolean {
-    return isChildAccount(selectedWalletAddress())
-  }
-
-  fun haveChildAccount(): Boolean {
-    val accountList = childAccountList(wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address)
-    return accountList != null && accountList.get().isNotEmpty()
-  }
-
-  fun childAccountList(walletAddress: String? = null): ChildAccountList? {
-    val address = walletAddress ?: wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address ?: selectedWalletAddress()
-    if (address.isEmpty()) return null
-
-    // For hardware-backed keys, ensure child account list is initialized
-    if (!childAccountMap.contains(address)) {
-      logd(TAG, "Initializing child account list for address: $address")
-      childAccountMap[address] = ChildAccountList(address)
+        return chainNetWorkString()
     }
 
-    return childAccountMap[address]
-  }
-
-  fun childAccount(childAddress: String): ChildAccount? {
-    // Normalize the input address by removing 0x prefix for comparison
-    val normalizedInput = childAddress.removePrefix("0x")
-
-    return childAccountMap.toMap().values.flatMap { it.get() }.firstOrNull {
-      val normalizedStored = it.address.removePrefix("0x")
-      normalizedStored.equals(normalizedInput, ignoreCase = true)
-    }
-  }
-
-  fun isChildAccount(address: String): Boolean {
-    val result = childAccount(address) != null
-    return result
-  }
-
-  fun refreshChildAccount() {
-    childAccountMap.values.forEach { it.refresh() }
-  }
-
-  suspend fun getEOAAddress(): String? {
-    logd(TAG, "=== getEOAAddress() optimized START ===")
-
-    val walletInstance = wallet()
-    if (walletInstance == null) {
-      logd(TAG, "Wallet is null - likely hardware-backed key scenario")
-      return null
-    }
-
-    return try {
-      // Step 1: Check if EOA addresses are already cached
-      val cachedAddresses = walletInstance.eoaAddresses.value
-      logd(TAG, "Cached EOA addresses: $cachedAddresses (size: ${cachedAddresses.size})")
-
-      if (cachedAddresses.isNotEmpty()) {
-        val firstAddress = cachedAddresses.first()
-        logd(TAG, "EOA address from cache: $firstAddress")
-        return firstAddress
-      }
-
-      // Step 2: Generate EOA address (this will trigger updateEoaCache)
-      logd(TAG, "No cached EOA addresses, generating new one...")
-
-      // This call to ethAddress(0) will:
-      // 1. Generate the Ethereum address
-      // 2. Call updateEoaCache() which updates _eoaAddresses StateFlow
-      // 3. Return the generated address
-      val generatedAddress = walletInstance.ethAddress(0)
-      logd(TAG, "Generated EOA address: $generatedAddress")
-      generatedAddress
-
-    } catch (e: Exception) {
-      logd(TAG, "ERROR generating EOA address: ${e.message}")
-      logd(TAG, "Error type: ${e.javaClass.simpleName}")
-
-      // Fallback: Check if somehow an address exists in the StateFlow
-      val fallbackAddresses = walletInstance.eoaAddresses.value
-      val fallbackAddress = fallbackAddresses.firstOrNull()
-      logd(TAG, "Fallback EOA address: $fallbackAddress")
-      logd(TAG, "=== getEOAAddress() END (error fallback) ===")
-      fallbackAddress
-    }
-  }
-
-  fun changeNetwork() {
-    val currentNetwork = chainNetWorkString()
-    logd(TAG, "Changing network to: $currentNetwork")
-
-    // Get the first account for the current network
-    val networkAccount = wallet()?.accounts?.entries?.firstOrNull { (chainId, _) ->
-      when (currentNetwork) {
-        NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
-        NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
-        else -> false
-      }
-    }?.value?.firstOrNull()
-
-    networkAccount?.address?.let { address ->
-      logd(TAG, "Selecting network account: $address")
-      selectWalletAddress(address)
-    }
-  }
-
-  fun selectWalletAddress(address: String): String {
-    logd(TAG, "selectWalletAddress called with: '$address'")
-
-    if (address.isBlank()) {
-      logd(TAG, "WARNING: Attempting to select blank address")
-    }
-
-    if (selectedWalletAddressRef.get().equals(address, ignoreCase = true)) {
-      logd(TAG, "Address already selected, returning current network")
-      return chainNetWorkString()
-    }
-
-    logd(TAG, "Setting selected address to: '$address'")
-    selectedWalletAddressRef.set(address)
-    updateSelectedWalletAddress(address)
-
-    val account = wallet()?.accounts?.values?.flatten()?.firstOrNull {
-      it.address.equals(address, ignoreCase = true)
-    }
-
-    val networkStr = if (account == null) {
-      val walletAddress = childAccountMap.values
-        .firstOrNull { child -> child.get().any { it.address.equals(address, true) } }?.address
-
-
-      wallet()?.accounts?.values?.flatten()?.firstOrNull {
-        it.address.equals(walletAddress, ignoreCase = true)
-      }?.let { acc ->
-        when (acc.chainID) {
-          ChainId.Mainnet -> "mainnet"
-          ChainId.Testnet -> "testnet"
-          else -> chainNetWorkString()
+    fun selectedWalletAddress(): String {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastAddressCheck < ADDRESS_CACHE_DURATION) {
+            return selectedWalletAddressRef.get()
         }
-      }
-    } else {
-      when (account.chainID) {
-        ChainId.Mainnet -> "mainnet"
-        ChainId.Testnet -> "testnet"
-        else -> chainNetWorkString()
-      }
-    }
 
-    return networkStr ?: chainNetWorkString()
-  }
+        lastAddressCheck = currentTime
+        val pref = selectedWalletAddressRef.get().toAddress()
 
-  fun selectedWalletAddress(): String {
-    val currentTime = System.currentTimeMillis()
-    if (currentTime - lastAddressCheck < ADDRESS_CACHE_DURATION) {
-      logd(TAG, "selectedWalletAddress (cached): ${selectedWalletAddressRef.get()}")
-      return selectedWalletAddressRef.get()
-    }
+        if (pref.isBlank()) {
+            logd(TAG, "Selected address is blank")
+        }
 
-    lastAddressCheck = currentTime
-    val pref = selectedWalletAddressRef.get().toAddress()
-    logd(TAG, "selectedWalletAddress called, pref: '$pref'")
+        val walletNodes = AccountManager.walletNodes()
 
-    if (pref.isBlank()) {
-      logd(TAG, "WARNING: Selected address is blank")
-    }
+        // Check if 'pref' exists in walletNodes (either as a MainWallet address or a LinkedWallet address)
+        val isExistInNodes = walletNodes?.any { mainWallet ->
+            mainWallet.address.equals(pref, ignoreCase = true) ||
+            (mainWallet is FlowWallet && mainWallet.linkedWallets.any { linkedWallet ->
+                linkedWallet.address.equals(pref, ignoreCase = true)
+            })
+        } ?: false
 
-    val isChildAccount = childAccount(pref) != null
-    val isEVMAddress = EVMWalletManager.isEVMWalletAddress(pref)
-    val isInChildMap = childAccountMap.keys.contains(pref)
-    val isEOAAddress = EVMWalletManager.isEOAAddress(pref)
+        if (isExistInNodes) {
+            // If the preference exists in the new structure, return it
+            return pref
+        }
 
-    logd(TAG, "Address existence check - isChildAccount: $isChildAccount, isEVMAddress: $isEVMAddress, isInChildMap: $isInChildMap")
+        // Fallback to the first MainWallet address if the preferred address is not found
+        val defaultAddress = walletNodes?.firstOrNull()?.address.orEmpty()
+        if (defaultAddress.isNotBlank()) {
+            selectedWalletAddressRef.set(defaultAddress)
+            updateSelectedWalletAddress(defaultAddress)
+            logd(TAG, "Selected address not found in walletNodes. Falling back to default: $defaultAddress")
+            return defaultAddress
+        }
 
-    val isExist = isInChildMap || isChildAccount || isEVMAddress || isEOAAddress
-    if (isExist) {
-      logd(TAG, "Address exists in our maps, returning: '$pref'")
-      return pref
-    }
-
-    // For hardware-backed keys, be more permissive about preserving selected addresses
-    if (selectedWalletAddressRef.get().isNotBlank()) {
-      val currentWallet = wallet()
-      logd(TAG, "Current wallet: ${if (currentWallet == null) "null (hardware-backed)" else "not null"}")
-
-      if (currentWallet == null) {
-        // Hardware-backed key case: trust the selected address even if not in our maps
-        logd(TAG, "Hardware-backed key detected, preserving selected address: ${selectedWalletAddressRef.get()}")
+        // If no nodes exist or default is blank, return whatever is in selectedWalletAddressRef (might be blank)
+        logd(TAG, "No valid selected address or default address found. Returning current ref: ${selectedWalletAddressRef.get()}")
         return selectedWalletAddressRef.get()
-      } else {
-        // Regular wallet case: validate the address exists in wallet before using it
-        val selectedAddress = selectedWalletAddressRef.get()
-        val isValidInWallet = currentWallet.accounts.values.flatten().any { account ->
-          account.address.equals(selectedAddress, ignoreCase = true)
-        }
-        logd(TAG, "Regular wallet - selected address '$selectedAddress' valid in wallet: $isValidInWallet")
-        if (isValidInWallet) {
-          return selectedAddress
-        }
-        logd(TAG, "Selected address '$selectedAddress' not found in wallet accounts, will use default")
-      }
     }
 
-    // Only fall back to default address if no valid selection exists
-    val defaultAddress = wallet()?.accounts?.values?.flatten()?.firstOrNull()?.address.orEmpty().apply {
-      if (isNotBlank()) {
-        selectedWalletAddressRef.set(this)
-        updateSelectedWalletAddress(this)
-      } else {
-        logd(TAG, "WARNING: No default wallet address available")
-      }
-    }
-    return defaultAddress
-  }
+    fun getFlowWalletAddress(): String? {
+        val selectedAddress = selectedWalletAddress()
+        if (selectedAddress.isBlank()) return null
 
-  fun clear() {
-    synchronized(initializationLock) {
-      selectedWalletAddressRef.set("")
-      childAccountMap.clear()
-      currentWallet = null
-      lastAddressCheck = 0
-      isInitialized = false
-      clearEOAAddressCache()
-    }
-  }
+        val walletNodes = AccountManager.walletNodes() ?: return null
 
-  private fun refreshChildAccount(wallet: Wallet) {
-    wallet.accounts.values.flatten().firstOrNull()?.address?.let {
-      if (childAccountMap.contains(it)) {
-        childAccountMap[it]?.refresh()
-      } else {
-        childAccountMap[it] = ChildAccountList(it)
-      }
-    }
-  }
-
-  private fun refreshChildAccountForHardwareBackedKey(address: String) {
-    if (childAccountMap.contains(address)) {
-      childAccountMap[address]?.refresh()
-    } else {
-      childAccountMap[address] = ChildAccountList(address)
-    }
-  }
-
-  fun updateWallet(walletData: WalletListData) {
-    logd(TAG, "updateWallet called with address: ${walletData.walletAddress()}")
-    synchronized(initializationLock) {
-      try {
-        if (!isInitialized) {
-          logd(TAG, "WalletManager not initialized, calling init()")
-          init()
-        }
-
-        val account = AccountManager.get()
-        logd(TAG, "Account from AccountManager: ${account?.wallet?.walletAddress()}")
-
-        if (account == null) {
-          logd(TAG, "No account found in AccountManager")
-          return@synchronized
-        }
-
-        val storage = getStorage()
-        val newWallet: Wallet
-
-        // Handle keystore-based accounts
-        if (!account.keyStoreInfo.isNullOrBlank()) {
-          logd(TAG, "Updating keystore-based wallet")
-
-          // Parse the keystore info to get the private key
-          val keystoreAddress = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
-          logd(TAG, "Got private key from keystore info")
-
-          val keyHex = keystoreAddress.privateKey.removePrefix("0x")
-          require(keyHex.length == 64) { "Private key must be 32-byte hex" }
-
-          val keyBytes = keyHex.hexToBytes()
-          // Create a private key instance
-          val key = PrivateKey.create(storage).apply {
-            importPrivateKey(keyBytes, KeyFormat.RAW)
-          }
-          logd(TAG, "Created and imported private key")
-
-          // Create a new wallet using the private key
-          newWallet = WalletFactory.createKeyWallet(
-            key,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            storage
-          )
-        }
-
-        // Handle prefix-based accounts
-        else if (!account.prefix.isNullOrBlank()) {
-          logd(TAG, "Updating prefix-based wallet")
-
-          // Load the stored private key using the prefix-based ID
-          val keyId = "prefix_key_${account.prefix}"
-          val privateKey = try {
-            logd(TAG, "Attempting to load private key")
-            PrivateKey.get(keyId, account.prefix!!, storage)
-          } catch (e: Exception) {
-            logd(TAG, "CRITICAL ERROR: Failed to load stored private key: ${e.message}")
-            logd(TAG, "This could indicate a migration issue. Cannot proceed without the stored key.")
-
-            // Run diagnostic to help troubleshooting
-            try {
-              val androidKeystoreAliases = KeyStoreMigrationManager.diagnoseAndroidKeystore()
-              logd(TAG, "Available Android Keystore aliases for debugging: $androidKeystoreAliases")
-            } catch (diagE: Exception) {
-              logd(TAG, "Could not run Android Keystore diagnostic: ${diagE.message}")
-            }
-
-            return@synchronized
-          }
-          logd(TAG, "Successfully loaded private key")
-
-          // Create a new wallet using the private key
-          newWallet = WalletFactory.createKeyWallet(
-            privateKey,
-            setOf(ChainId.Mainnet, ChainId.Testnet),
-            storage
-          )
-        }
-
-        else {
-          logd(TAG, "Account has neither keystore info nor prefix, cannot update wallet")
-          return@synchronized
-        }
-
-        // Wait for accounts to be loaded - but handle server addresses like initializeWallet
-        logd(TAG, "Wallet created, checking for existing account addresses...")
-        logd(TAG, "Account wallet data: ${account.wallet}")
-
-        // Check if we already have account addresses from the server
-        if (account.wallet?.wallets?.isNotEmpty() == true) {
-          logd(TAG, "Found existing wallet addresses from server, using them:")
-          account.wallet!!.wallets?.forEach { walletData ->
-            walletData.blockchain?.forEach { blockchain ->
-              logd(TAG, "  - ${blockchain.chainId}: ${blockchain.address}")
-            }
-          }
-
-          // The wallet should work with these addresses - no need to wait for auto-discovery
-          logd(TAG, "Wallet properly initialized with known addresses")
-          logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
-        } else {
-          logd(TAG, "No existing wallet addresses found, attempting to wait for account discovery...")
-
-          try {
-            runBlocking {
-              // Add timeout to prevent infinite hanging
-              withTimeout(5000) { // 5 second timeout
-                newWallet.accountsFlow.first { accounts ->
-                  logd(TAG, "Checking accounts: $accounts (size: ${accounts.size})")
-                  accounts.isNotEmpty()
+        for (node in walletNodes) {
+            if (node is FlowWallet) {
+                if (node.address.equals(selectedAddress, ignoreCase = true) || node.linkedWallets.any { it.address.equals(selectedAddress, ignoreCase = true) }) {
+                  return node.address.toAddress()
                 }
-              }
-              logd(TAG, "Accounts discovered successfully!")
-              logd(TAG, "Number of account chains: ${newWallet.accounts.size}")
-              newWallet.accounts.forEach { (chainId, accounts) ->
-                logd(TAG, "Chain $chainId has ${accounts.size} accounts:")
-                accounts.forEach { account ->
-                  logd(TAG, "  - Account address: ${account.address}")
-                }
-              }
-              logd(TAG, "Primary wallet address: ${newWallet.walletAddress()}")
             }
-          } catch (e: TimeoutCancellationException) {
-            logd(TAG, "TIMEOUT: Account discovery failed, but wallet may still work with server addresses")
-            logd(TAG, "Final wallet address: ${newWallet.walletAddress()}")
-          } catch (e: Exception) {
-            logd(TAG, "ERROR during wallet update: ${e.message}")
-            logd(TAG, "Error type: ${e.javaClass.simpleName}")
-            logd(TAG, "Attempting to continue anyway...")
-          }
         }
-
-        logd(TAG, "Created new wallet with address: '${newWallet.walletAddress()}'")
-
-        // Update the current wallet reference
-        currentWallet = newWallet
-        logd(TAG, "Updated current wallet reference")
-
-        // Cache EOA address after wallet update
-        logd(TAG, "Wallet updated successfully, caching EOA address...")
-        cacheEOAAddress()
-
-        // Manually add accounts from server to the wallet (keep this async as it's not critical)
-        // This is needed because new accounts may not be indexed yet by the key indexer
-        account.wallet?.wallets?.forEach { walletData ->
-          walletData.blockchain?.forEach { blockchain ->
-            ioScope {
-              try {
-                val chainId = when (blockchain.chainId.lowercase()) {
-                  "mainnet" -> ChainId.Mainnet
-                  "testnet" -> ChainId.Testnet
-                  else -> null
-                }
-
-                if (chainId != null && blockchain.address.isNotBlank()) {
-                  logd(TAG, "Fetching account ${blockchain.address} from ${blockchain.chainId} using Flow API")
-
-                  // Use the wallet's fetchAccountByAddress method to get the account directly
-                  // from the Flow network, bypassing the key indexer
-                  newWallet.fetchAccountByAddress(blockchain.address, chainId)
-                  logd(TAG, "Successfully fetched and added account ${blockchain.address} to wallet")
-                }
-              } catch (e: Exception) {
-                logd(TAG, "Error fetching account ${blockchain.address}: ${e.message}")
-              }
-            }
-          }
-        }
-
-        // Refresh child accounts
-        refreshChildAccount(newWallet)
-        logd(TAG, "Refreshed child accounts for address $newWallet")
-
-        // Update selected address if needed
-        val walletAddress = newWallet.walletAddress()
-        if (walletAddress != null && selectedWalletAddressRef.get().isBlank()) {
-          logd(TAG, "Setting initial wallet address to: '$walletAddress'")
-          selectWalletAddress(walletAddress)
-        }
-
-        // Force a wallet update and notify listeners
-        walletUpdate()
-        logd(TAG, "Triggered wallet update")
-
-        uiScope {
-          triggerWalletReadyCallbacks()
-        }
-      } catch (e: Exception) {
-        logd(TAG, "Error updating wallet: ${e.message}")
-        logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
-      }
-    }
-  }
-
-}
-
-// Extension functions for backward compatibility
-fun Wallet?.walletAddress(): String? {
-  val currentNetwork = chainNetWorkString()
-  logd("WalletManager", "Getting wallet address for network: $currentNetwork")
-
-  // Handle case where wallet is null (hardware-backed keys)
-  if (this == null) {
-    logd("WalletManager", "Wallet is null (likely hardware-backed key), getting address from account data")
-
-    // Get address from account data for hardware-backed keys
-    val account = AccountManager.get()
-    val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
-      walletData.blockchain?.any { blockchain ->
-        blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
-      } == true
-    }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
-
-    if (!serverAddress.isNullOrBlank()) {
-      logd("WalletManager", "Using server wallet address for hardware-backed key: $serverAddress")
-      return serverAddress
+        return null
     }
 
-    logd("WalletManager", "No wallet address available for hardware-backed key")
-    return null
-  }
-
-  // First try to find account for current network
-  val networkAccount = this.accounts.entries.firstOrNull { (chainId, accounts) ->
-    val isNetworkMatch = when (currentNetwork) {
-      NETWORK_NAME_MAINNET -> chainId == ChainId.Mainnet
-      NETWORK_NAME_TESTNET -> chainId == ChainId.Testnet
-      else -> false
+    fun clear() {
+        synchronized(initializationLock) {
+            selectedWalletAddressRef.set("")
+            currentWallet = null
+            lastAddressCheck = 0
+        }
     }
-    logd("WalletManager", "Checking chainId: $chainId, isNetworkMatch: $isNetworkMatch, accounts: ${accounts.size}")
-    isNetworkMatch
-  }?.value?.firstOrNull()
-
-  if (networkAccount != null) {
-    logd("WalletManager", "Found network account: ${networkAccount.address}")
-    return networkAccount.address
-  }
-
-  // If no wallet accounts are loaded yet, fall back to server data
-  val account = AccountManager.get()
-  val serverAddress = account?.wallet?.wallets?.firstOrNull { walletData ->
-    walletData.blockchain?.any { blockchain ->
-      blockchain.chainId.equals(currentNetwork, true) && blockchain.address.isNotBlank()
-    } == true
-  }?.blockchain?.firstOrNull { it.chainId.equals(currentNetwork, true) }?.address
-
-  if (!serverAddress.isNullOrBlank()) {
-    logd("WalletManager", "Using server wallet address: $serverAddress")
-    return serverAddress
-  }
-
-  // Final fallback to any account available
-  val anyAccount = this.accounts.values.flatten().firstOrNull()
-  if (anyAccount != null) {
-    logd("WalletManager", "Using fallback account: ${anyAccount.address}")
-    return anyAccount.address
-  }
-
-  logd("WalletManager", "No wallet address available")
-  return null
-}
-
-fun WalletListData.walletAddress(): String? {
-  return wallet()?.address()?.toAddress()
 }

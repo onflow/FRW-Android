@@ -14,12 +14,10 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
-import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.wallet.removeAddressPrefix
 import com.flowfoundation.wallet.wallet.toAddress
 import com.flowfoundation.wallet.widgets.webview.evm.EvmInterface
@@ -70,7 +68,7 @@ suspend fun loadInitJS(): String {
             }
         }
 
-        WalletManager.getEOAAddressCached()?.let { eoaAddress ->
+        WalletManager.getEOAAddress()?.let { eoaAddress ->
             if (eoaAddress.isNotEmpty()) {
                 addressList.add(eoaAddress)
             }
@@ -79,10 +77,10 @@ suspend fun loadInitJS(): String {
 
     // Build addresses array string following Swift format
     val addressesArray = addressList.joinToString(", ") { "\"$it\"" }
-    
+
     // Get primary address (prefer COA, then EOA)
-    val primaryAddress = EVMWalletManager.getEVMAddress() ?: WalletManager.getEOAAddressCached() ?: ""
-    
+    val primaryAddress = EVMWalletManager.getEVMAddress() ?: WalletManager.getEOAAddress() ?: ""
+
     logd("EvmUtils", "loadInitJS addresses: $addressList")
     logd("EvmUtils", "loadInitJS primaryAddress: $primaryAddress")
     logd("EvmUtils", "loadInitJS addressesArray: $addressesArray")
@@ -360,7 +358,7 @@ fun sendCOATransaction(transaction: EvmTransaction, callback: (txHash: String) -
 private fun evmTransactionSigned(txId: String, isSuccess: Boolean) {
     MixpanelManager.evmTransactionSigned(
         txId = txId,
-        flowAddress = WalletManager.wallet()?.walletAddress().orEmpty(),
+        flowAddress = WalletManager.getFlowWalletAddress().orEmpty(),
         evmAddress = EVMWalletManager.getEVMAddress().orEmpty(),
         isSuccess = isSuccess
     )
@@ -385,7 +383,7 @@ fun refreshBalance(value: Float) {
 
 suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val address = WalletManager.getFlowWalletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
@@ -404,7 +402,7 @@ suspend fun signTypedData(data: ByteArray): String {
 
 suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val address = WalletManager.wallet()?.walletAddress() ?: return ""
+    val address = WalletManager.getFlowWalletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 

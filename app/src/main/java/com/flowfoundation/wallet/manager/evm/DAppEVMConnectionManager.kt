@@ -40,7 +40,7 @@ object DAppEVMConnectionManager {
         // Fallback to COA account if available
         return _availableAccounts.value.find { it.type == DAppEVMAccountType.COA }
     }
-    
+
     /**
      * Check if current selected account is EOA type
      */
@@ -84,7 +84,7 @@ object DAppEVMConnectionManager {
                 }
 
                 // Load EOA account
-                val eoaAddress = WalletManager.getEOAAddressCached()
+                val eoaAddress = WalletManager.getEOAAddress()
                 if (!eoaAddress.isNullOrEmpty()) {
                     logd(TAG, "Found EOA account: $eoaAddress")
                     // EOA balance is hidden as per requirements

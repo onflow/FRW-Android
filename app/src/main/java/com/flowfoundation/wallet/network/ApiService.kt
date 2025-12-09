@@ -234,4 +234,7 @@ interface ApiService {
     @POST("/api/v4/onramp/coinbase")
     suspend fun createCoinbaseOnRampSession(@Body params: CoinbaseOnRampRequest): CoinbaseOnRampResponse
 
+    @GET("/api/android/check")
+    suspend fun checkUserMnemonicStatus(): MnemonicCheckResponse
+
 }

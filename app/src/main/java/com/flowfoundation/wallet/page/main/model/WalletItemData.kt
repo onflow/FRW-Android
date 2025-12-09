@@ -32,18 +32,3 @@ data class LinkedAccountData(
     @SerializedName("isCOAAccount")
     val isCOAAccount: Boolean
 )
-
-data class WalletItemData(
-    @SerializedName("address")
-    val address: String,
-    @SerializedName("emojiId")
-    val emojiId: Int,
-    @SerializedName("emojiName")
-    val emojiName: String,
-    @SerializedName("isSelected")
-    val isSelected: Boolean = false,
-    @SerializedName("isEOAAccount")
-    val isEOAAccount: Boolean = false,
-    @SerializedName("isHidden")
-    val isHidden: Boolean = false
-)

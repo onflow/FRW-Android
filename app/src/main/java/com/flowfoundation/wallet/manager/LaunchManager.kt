@@ -41,12 +41,6 @@ object LaunchManager {
         application.startServiceSafe(Intent(application, MessagingService::class.java))
         PageLifecycleObserver.init(application)
         safeRun { System.loadLibrary("TrustWalletCore") }
-        ioScope {
-            safeRun {
-                AccountManager.init()
-                logd("LaunchManager", "AccountManager initialized successfully")
-            }
-        }
         refreshChainNetwork {
             safeRun { MixpanelManager.init(application) }
             safeRun { WalletConnect.init(application) }
@@ -71,7 +65,7 @@ object LaunchManager {
     }
 
     private fun readCache() {
-        safeRun { WalletManager.init() }
+        safeRun { AccountManager.init() }
         safeRun { CustomTokenManager.init() }
         safeRun { NftCollectionConfig.sync() }
         safeRun { FungibleTokenListManager.init() }

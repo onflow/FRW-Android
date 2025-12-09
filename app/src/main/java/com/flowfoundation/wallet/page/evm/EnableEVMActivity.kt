@@ -12,7 +12,6 @@ import android.text.style.ForegroundColorSpan
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityEnableEvmBinding
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
@@ -20,6 +19,7 @@ import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.transaction.isFailed
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
@@ -102,16 +102,14 @@ class EnableEVMActivity : BaseActivity() {
                 TransactionStateWatcher(txId).watch {
                     if (it.isExecuteFinished()) {
                         MixpanelManager.coaCreation(txId)
-                        EVMWalletManager.fetchEVMAddress { isSuccess ->
+                        WalletDataManager.refreshCurrentAccountEVMAddress { evmAddress ->
                             uiScope {
                                 hideLoading()
                             }
-                            if (isSuccess) {
+                            if (!evmAddress.isNullOrBlank()) {
                                 finish()
-                                EVMWalletManager.getEVMAddress()?.let { address ->
-                                    WalletManager.selectWalletAddress(address)
-                                    MainActivity.relaunch(Env.getApp())
-                                }
+                                WalletManager.selectWalletAddress(evmAddress)
+                                MainActivity.relaunch(Env.getApp())
                             }
                         }
                     } else if (it.isFailed()) {

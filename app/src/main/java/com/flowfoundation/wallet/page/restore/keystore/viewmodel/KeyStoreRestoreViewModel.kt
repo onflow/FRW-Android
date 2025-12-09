@@ -47,15 +47,17 @@ import retrofit2.HttpException
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.keys.PrivateKey
 import com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.utils.secret.EncryptedMnemonicUtils
 import wallet.core.jni.StoredKey
 import com.flowfoundation.wallet.utils.Env.getStorage
 import org.onflow.flow.models.DomainTag
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
+import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.wallet.createWalletFromServer
 import com.google.firebase.auth.ktx.auth
@@ -77,6 +79,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     private val addressList = mutableListOf<KeystoreAddress>()
     private var currentKeyStoreAddress: KeystoreAddress? = null
     private var restoreType: RestoreType = RestoreType.KEYSTORE
+    private var currentMnemonic: String? = null  // Store mnemonic temporarily for seed phrase imports
 
     val addressListLiveData = MutableLiveData<List<KeystoreAddress>>()
     val optionChangeLiveData = MutableLiveData<KeyStoreOption>()
@@ -217,6 +220,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     fun importSeedPhrase(mnemonic: String, passphrase: String, address: String) {
         loadingLiveData.postValue(true)
         restoreType = RestoreType.SEED_PHRASE
+        currentMnemonic = mnemonic // Store mnemonic for use in KeystoreAddress creation
         try {
             ioScope {
                 val storage = getStorage()
@@ -322,7 +326,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         publicKey: String
     ): Boolean {
         logd("KeyStoreRestoreViewModel", "Checking if key matches account: $account")
-        
+
         // Normalize the local public key for comparison
         val localPubKeyHex = publicKey.removePrefix("0x").lowercase()
         val localPubKeyStripped = if (localPubKeyHex.startsWith("04") && localPubKeyHex.length == 130) {
@@ -330,7 +334,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
         } else {
             localPubKeyHex
         }
-        
+
         val accountKey = account.keys?.lastOrNull { acctKey ->
             val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
             acctPubKeyHex == localPubKeyHex || acctPubKeyHex == localPubKeyStripped
@@ -339,14 +343,15 @@ class KeyStoreRestoreViewModel : ViewModel() {
             logd("KeyStoreRestoreViewModel", "Found matching key: $this")
             checkAndImportKeyStoreAddress(
                 this,
-                KeystoreAddress(
+                createKeystoreAddress(
                     address = account.address,
                     publicKey = publicKey,
                     privateKey = privateKey,
                     keyId = this.index.toInt(),
                     weight = weight.toInt(),
                     hashAlgo = this.hashingAlgorithm.cadenceIndex,
-                    signAlgo = this.signingAlgorithm.cadenceIndex
+                    signAlgo = this.signingAlgorithm.cadenceIndex,
+                    encryptedMnemonic = null // Don't encrypt mnemonic yet
                 )
             )
             true
@@ -370,18 +375,19 @@ class KeyStoreRestoreViewModel : ViewModel() {
         // Normalize public keys for comparison
         val k1ResponsePubKey = k1Response.publicKey.removePrefix("0x").lowercase()
         val k1LocalPubKey = k1PublicKey.removePrefix("0x").lowercase()
-        
+
         if (k1ResponsePubKey == k1LocalPubKey && k1Response.accounts.isNotEmpty()) {
             logd("KeyStoreRestoreViewModel", "Found K1 accounts: ${k1Response.accounts}")
             addressList.addAll(k1Response.accounts.map {
-                KeystoreAddress(
+                createKeystoreAddress(
                     address = it.address,
                     publicKey = k1PublicKey,
                     privateKey = k1PrivateKey,
                     keyId = it.keyId,
                     weight = it.weight,
                     hashAlgo = it.hashAlgo,
-                    signAlgo = it.signAlgo
+                    signAlgo = it.signAlgo,
+                    encryptedMnemonic = null
                 )
             }.toList())
         }
@@ -393,32 +399,34 @@ class KeyStoreRestoreViewModel : ViewModel() {
         // Normalize public keys for comparison
         val p1ResponsePubKey = p1Response.publicKey.removePrefix("0x").lowercase()
         val p1LocalPubKey = p1PublicKey.removePrefix("0x").lowercase()
-        
+
         if (p1ResponsePubKey == p1LocalPubKey && p1Response.accounts.isNotEmpty()) {
             logd("KeyStoreRestoreViewModel", "Found P256 accounts: ${p1Response.accounts}")
             addressList.addAll(p1Response.accounts.map {
-                KeystoreAddress(
+                createKeystoreAddress(
                     address = it.address,
                     publicKey = p1PublicKey,
                     privateKey = p1PrivateKey,
                     keyId = it.keyId,
                     weight = it.weight,
                     hashAlgo = it.hashAlgo,
-                    signAlgo = it.signAlgo
+                    signAlgo = it.signAlgo,
+                    encryptedMnemonic = null
                 )
             }.toList())
         }
 
         loadingLiveData.postValue(false)
         if (addressList.isEmpty()) {
-          currentKeyStoreAddress = KeystoreAddress(
+          currentKeyStoreAddress = createKeystoreAddress(
               address = "",
               publicKey = k1PublicKey,
               privateKey = k1PrivateKey,
               keyId = 0,
               weight = 1000,
               hashAlgo = HashingAlgorithm.SHA2_256.cadenceIndex,
-              signAlgo = SigningAlgorithm.ECDSA_secp256k1.cadenceIndex
+              signAlgo = SigningAlgorithm.ECDSA_secp256k1.cadenceIndex,
+              encryptedMnemonic = null
           )
         }
         addressListLiveData.postValue(addressList)
@@ -527,7 +535,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
             toast(msgRes = R.string.login_failure)
             return
         }
-        if (WalletManager.wallet()?.walletAddress() == currentKeyStoreAddress?.address) {
+        if (WalletManager.getFlowWalletAddress() == currentKeyStoreAddress?.address) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
             activity.finish()
@@ -555,7 +563,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 val currentKey = currentKeyStoreAddress?.run {
                     val flowAccount = FlowCadenceApi.getAccount(this.address)
                     logd("KeyStoreRestoreViewModel", "Got Flow account, keys count: ${flowAccount.keys?.size}")
-                    
+
                     // Normalize the local public key for comparison
                     val localPubKeyHex = publicKey.removePrefix("0x").lowercase()
                     val localPubKeyStripped = if (localPubKeyHex.startsWith("04") && localPubKeyHex.length == 130) {
@@ -563,10 +571,10 @@ class KeyStoreRestoreViewModel : ViewModel() {
                     } else {
                         localPubKeyHex
                     }
-                    
+
                     logd("KeyStoreRestoreViewModel", "Comparing keys - Local public key (normalized): $localPubKeyHex")
                     logd("KeyStoreRestoreViewModel", "Comparing keys - Local public key (stripped): $localPubKeyStripped")
-                    
+
                     flowAccount.keys?.find { acctKey ->
                         val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
                         val isMatch = acctPubKeyHex == localPubKeyHex || acctPubKeyHex == localPubKeyStripped
@@ -682,21 +690,25 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             val userInfo = service.userInfo().data
                                             logd("KeyStoreRestoreViewModel", "User info received: $userInfo")
 
+                                            val keyStoreInfo = Gson().toJson(currentKeyStoreAddress?.copy(
+                                              encryptedMnemonic = encryptedMnemonic(uid)
+                                            )) ?: cryptoProvider.getKeyStoreInfo()
+
                                             logd("KeyStoreRestoreViewModel", "Adding account to AccountManager")
+                                            val walletData = WalletListData(
+                                                id = uid,
+                                                username = userInfo.username,
+                                                wallets = null
+                                            )
+                                            clearUserCache()
                                             AccountManager.add(
                                                 Account(
                                                     userInfo = userInfo,
-                                                    keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                                    keyStoreInfo = keyStoreInfo,
+                                                    wallet = walletData
                                                 )
                                             )
                                             logd("KeyStoreRestoreViewModel", "Account added successfully")
-
-                                            logd("KeyStoreRestoreViewModel", "Initializing WalletManager")
-                                            WalletManager.init()
-                                            logd("KeyStoreRestoreViewModel", "WalletManager initialized")
-
-                                            CryptoProviderManager.clear()
-                                            clearUserCache()
                                             logd("KeyStoreRestoreViewModel", "Import process completed successfully")
                                             callback.invoke(true)
                                         } catch (e: Exception) {
@@ -768,7 +780,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         }
 
                         logd("KeyStoreRestoreViewModel", "Starting Firebase login with custom token")
-                        firebaseLogin(resp.data?.customToken!!) { isFirebaseSuccess ->
+                        firebaseLogin(resp.data.customToken) { isFirebaseSuccess ->
                             logd("KeyStoreRestoreViewModel", "Firebase login result: $isFirebaseSuccess")
                             if (isFirebaseSuccess) {
                                 logd("KeyStoreRestoreViewModel", "Setting registered and backup manually flags")
@@ -835,27 +847,32 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                             loge("KeyStoreRestoreViewModel", "Login: Error fetching on-chain details for $finalWalletAddress to refine key algorithms: ${e.message}. Using login-derived signAlgo ($determinedSignAlgo) and default hashAlgo ($determinedHashAlgo) for KeystoreAddress.")
                                         }
 
+
                                         logd("KeyStoreRestoreViewModel", "Creating KeystoreAddress with: address=$finalWalletAddress, keyId=$determinedKeyId, signAlgo=$determinedSignAlgo, hashAlgo=$determinedHashAlgo")
-                                        val keystoreAddress = KeystoreAddress(
+                                        val keystoreAddress = createKeystoreAddress(
                                             address = finalWalletAddress,
                                             publicKey = formattedPublicKey,
                                             privateKey = privateKey,
                                             keyId = determinedKeyId,
                                             weight = determinedWeight,
                                             hashAlgo = determinedHashAlgo,
-                                            signAlgo = determinedSignAlgo
+                                            signAlgo = determinedSignAlgo,
+                                            encryptedMnemonic = encryptedMnemonic(uid),
                                         )
                                         logd("KeyStoreRestoreViewModel", "Created KeystoreAddress: $keystoreAddress")
 
                                         val userAccount = Account(
                                             userInfo = userInfo,
-                                            keyStoreInfo = Gson().toJson(keystoreAddress)
+                                            keyStoreInfo = Gson().toJson(keystoreAddress),
+                                            wallet = WalletListData(
+                                                id = uid,
+                                                username = userInfo.username,
+                                                wallets = null
+                                            )
                                         )
-                                        AccountManager.add(userAccount)
-                                        WalletManager.init()
-                                        CryptoProviderManager.clear()
-                                        MixpanelManager.accountRestore(finalWalletAddress, restoreType)
                                         clearUserCache()
+                                        AccountManager.add(userAccount)
+                                        MixpanelManager.accountRestore(finalWalletAddress, restoreType)
                                         accountSuccessfullyAdded = true
                                         logd("KeyStoreRestoreViewModel", "Post-login process completed successfully.")
 
@@ -901,7 +918,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
     }
 
     private fun loginWithKeyStoreAddress(flowAccountKey: AccountPublicKey, keystoreAddress: KeystoreAddress) {
-        if (WalletManager.wallet()?.walletAddress() == keystoreAddress.address) {
+        if (WalletManager.getFlowWalletAddress() == keystoreAddress.address) {
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity() ?: return
             activity.finish()
@@ -978,19 +995,26 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                     setRegistered()
                                     setBackupManually()
                                     ioScope {
+                                        val userInfo = service.userInfo().data
+                                        val keyStoreInfo = Gson().toJson(currentKeyStoreAddress?.copy(
+                                            encryptedMnemonic = encryptedMnemonic(uid)
+                                        )) ?: cryptoProvider.getKeyStoreInfo()
+                                        clearUserCache()
                                         AccountManager.add(
                                             Account(
-                                                userInfo = service.userInfo().data,
-                                                keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                                userInfo = userInfo,
+                                                keyStoreInfo = keyStoreInfo,
+                                                wallet = WalletListData(
+                                                    id = uid,
+                                                    username = userInfo.username,
+                                                    wallets = null
+                                                )
                                             )
                                         )
-                                        WalletManager.init()
-                                        CryptoProviderManager.clear()
                                         MixpanelManager.accountRestore(
                                             cryptoProvider.getAddress(),
                                             restoreType
                                         )
-                                        clearUserCache()
                                         callback.invoke(true)
                                     }
                                 } else {
@@ -1122,25 +1146,32 @@ class KeyStoreRestoreViewModel : ViewModel() {
                         if (isSuccess) {
                             createWalletFromServer()
                             setRegistered()
-                            val userInfo = try {  } catch (e: Exception) {
+                            val userInfo = try { service.userInfo().data } catch (e: Exception) {
                                 logd("KeyStoreRestoreViewModel", "Failed to fetch user info after registration")
                                 callback.invoke(false)
                                 return@ioScope
                             }
+                            val keyStoreInfo = Gson().toJson(currentKeyStoreAddress?.copy(
+                                encryptedMnemonic = encryptedMnemonic(firebaseUid())
+                            )) ?: cryptoProvider.getKeyStoreInfo()
+                            clearUserCache()
                             AccountManager.add(
                                 Account(
-                                    userInfo = service.userInfo().data,
-                                    keyStoreInfo = cryptoProvider.getKeyStoreInfo()
+                                    userInfo = userInfo,
+                                    keyStoreInfo = keyStoreInfo,
+                                    wallet = WalletListData(
+                                        id = firebaseUid().orEmpty(),
+                                        username = userInfo.username,
+                                        wallets = null
+                                    )
                                 )
                             )
-                            WalletManager.init()
                             MixpanelManager.accountCreated(
                                 cryptoProvider.getPublicKey(),
                                 AccountCreateKeyType.RESTORE_KEYSTORE,
                                 cryptoProvider.getSignatureAlgorithm().value,
                                 cryptoProvider.getHashAlgorithm().algorithm
                             )
-                            clearUserCache()
                             callback.invoke(true)
                         } else {
                             callback.invoke(false)
@@ -1169,5 +1200,40 @@ class KeyStoreRestoreViewModel : ViewModel() {
                 }
             } else callback(false)
         }
+    }
+
+    private fun encryptedMnemonic(uid: String?): String? {
+        val mnemonic = currentMnemonic ?: return null
+        return if (!uid.isNullOrBlank()) {
+            EncryptedMnemonicUtils.encrypt(mnemonic, uid)
+        } else {
+            logd("KeyStoreRestoreViewModel", "Warning: Skipping mnemonic encryption: No valid UID available for encryption.")
+            null
+        }
+    }
+
+    /**
+     * Create a KeystoreAddress with encrypted mnemonic if available
+     */
+    private fun createKeystoreAddress(
+        address: String,
+        publicKey: String,
+        privateKey: String,
+        keyId: Int,
+        weight: Int,
+        hashAlgo: Int,
+        signAlgo: Int,
+        encryptedMnemonic: String? = null
+    ): KeystoreAddress {
+        return KeystoreAddress(
+            address = address,
+            publicKey = publicKey,
+            privateKey = privateKey,
+            keyId = keyId,
+            weight = weight,
+            hashAlgo = hashAlgo,
+            signAlgo = signAlgo,
+            encryptedMnemonic = encryptedMnemonic
+        )
     }
 }

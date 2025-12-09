@@ -13,7 +13,6 @@ import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.databinding.DialogSwapCoinListBinding
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.mixpanel.MixpanelRampSource
 import com.flowfoundation.wallet.network.ApiService
@@ -49,7 +48,7 @@ class SwapDialog : BottomSheetDialogFragment() {
                 openUrl(viewModel.moonPayUrl)
             }
             coinbaseButton.setOnClickListener {
-                val address = WalletManager.wallet().walletAddress() ?: return@setOnClickListener
+                val address = WalletManager.getFlowWalletAddress() ?: return@setOnClickListener
                 loadCoinbaseUrl(address)
             }
         }

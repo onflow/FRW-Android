@@ -31,8 +31,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import org.onflow.flow.infrastructure.getTypeName
 import org.onflow.flow.infrastructure.removeHexPrefix
 import com.flowfoundation.wallet.manager.key.MultiRestoreCryptoProvider
-import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 
 private const val TAG = "Transaction"
@@ -49,16 +47,8 @@ suspend fun sendTransaction(
     val walletAddress = transactionBuilder.walletAddress?.toAddress()
       ?: throw RuntimeException("No wallet address specified")
 
-    val currentNetworkName = chainNetWorkString()
-
-    // Find local account instance (same logic as in prepare function)
-    val localAccountInstance = AccountManager.list().find { acc ->
-      val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress()
-      accFlowAddress == walletAddress
-    } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
-
-    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
-      ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username}")
+    val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+      ?: throw RuntimeException("Could not get CryptoProvider for wallet $walletAddress")
 
     // Check if this is a multi-restore account that needs multi-signature
     if (cryptoProvider is MultiRestoreCryptoProvider) {
@@ -692,26 +682,15 @@ suspend fun prepare(builder: TransactionBuilder): Transaction {
   logd(TAG, "prepare target walletAddress (from builder.walletAddress): $walletAddress")
 
   val flowAccount = FlowCadenceApi.getAccount(walletAddress)
-  val currentNetworkName = chainNetWorkString()
-  logd(TAG, "Current network for account lookup: $currentNetworkName. Target transaction address: $walletAddress")
-
-  // Find local account instance
-  val localAccountInstance = AccountManager.list().find { acc ->
-    val accFlowAddress = acc.getFlowAddress(currentNetworkName, TAG)?.toAddress()
-    logd(TAG, "Iterating AccountManager.list(): Checking local account '${acc.userInfo.username}', its address for $currentNetworkName is '$accFlowAddress'")
-    accFlowAddress == walletAddress
-  } ?: throw RuntimeException("Could not find local Account instance for address $walletAddress on network $currentNetworkName.")
-
-  logd(TAG, "Successfully found local account ${localAccountInstance.userInfo.username} for address $walletAddress. Generating CryptoProvider.")
 
   // Get crypto provider
-  val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(localAccountInstance)
-    ?: throw RuntimeException("Could not generate CryptoProvider for local account ${localAccountInstance.userInfo.username} (address $walletAddress)")
+  val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+    ?: throw RuntimeException("Could not get CryptoProvider for wallet $walletAddress")
 
   // Get account keys and find matching key
   val accountKeys = flowAccount.keys?.toList() ?: throw InvalidKeyException("On-chain account $walletAddress has no keys")
   logd(TAG, "On-chain keys for $walletAddress: $accountKeys")
-  logd(TAG, "Provider public key from local account ${localAccountInstance.userInfo.username} (for $walletAddress): ${cryptoProvider.getPublicKey()}")
+  logd(TAG, "Provider public key from wallet $walletAddress): ${cryptoProvider.getPublicKey()}")
 
   val providerPublicKey = cryptoProvider.getPublicKey().ensureHexFormat()
   logd(TAG, "Normalized provider public key: $providerPublicKey")

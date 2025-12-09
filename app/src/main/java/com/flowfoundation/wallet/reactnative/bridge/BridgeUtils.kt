@@ -6,7 +6,6 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.token.model.FungibleTokenType
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.Nft
 
 /**
@@ -135,7 +134,7 @@ fun isSelectedWalletAddress(address: String?): Boolean {
  * Generate WalletAccount model from address, following the same logic as getSelectedAccount
  */
 fun createWalletAccountFromAddress(address: String): RNBridge.WalletAccount {
-    val mainAddress = WalletManager.wallet()?.walletAddress()
+    val mainAddress = WalletManager.getFlowWalletAddress()
 
     // Determine account type based on address using utility methods
     val accountType = when {

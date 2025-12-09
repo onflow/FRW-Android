@@ -117,7 +117,7 @@ fun DrawerLayoutCompose(drawer: DrawerLayout) {
     DisposableEffect(drawer) {
         val listener = object : DrawerLayout.DrawerListener {
             override fun onDrawerOpened(drawerView: View) {
-                viewModel.loadData()
+                viewModel.loadData(refreshBalance = true)
             }
             override fun onDrawerClosed(drawerView: View) {}
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {}

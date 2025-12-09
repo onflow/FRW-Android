@@ -13,6 +13,7 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.manager.walletconnect.model.WCWalletResponse
 import com.flowfoundation.wallet.manager.walletconnect.model.WalletConnectMethod
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -36,6 +37,7 @@ import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.uiScope
 import com.flow.wallet.storage.FileSystemStorage
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
+import com.flowfoundation.wallet.manager.walletconnect.network
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.onflow.flow.models.DomainTag
@@ -201,6 +203,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
             getFirebaseUid { uid ->
                 if (uid.isNullOrBlank()) {
                     callback.invoke(false)
+                    return@getFirebaseUid
                 }
                 runBlocking {
                     val catching = runCatching {
@@ -235,14 +238,21 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                 if (isSuccess) {
                                     setRegistered()
                                     ioScope {
-                                        AccountManager.add(
-                                            Account(
-                                                userInfo = service.userInfo().data,
-                                                prefix = prefix,
-                                            ),
-                                            firebaseUid()
+                                        val userInfo = service.userInfo().data
+                                        val walletData = WalletListData(
+                                            id = uid,
+                                            username = userInfo.username,
+                                            wallets = null
                                         )
                                         clearUserCache()
+                                        AccountManager.add(
+                                            Account(
+                                                userInfo = userInfo,
+                                                prefix = prefix,
+                                                wallet = walletData
+                                            ),
+                                            uid
+                                        )
                                         callback.invoke(true)
                                     }
                                 } else {

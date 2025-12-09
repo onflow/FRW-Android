@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.viewModelIOScope
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.retrofitApi
 
 private const val LIMIT = 30
@@ -42,38 +41,26 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
 
     private fun loadTransfer() {
         logd("TransactionRecordViewModel", "Starting loadTransfer(), checking wallet status")
-        // Check if WalletManager is initialized
-        if (WalletManager.wallet() == null) {
-            logd("TransactionRecordViewModel", "WalletManager.wallet() is null, attempting to initialize")
-            try {
-                // Try to initialize WalletManager if not already initialized
-                WalletManager.init()
-                logd("TransactionRecordViewModel", "WalletManager initialized. New wallet status: ${WalletManager.wallet() != null}")
-            } catch (e: Exception) {
-                loge("TransactionRecordViewModel", "Failed to initialize WalletManager: ${e.message}")
-                loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
-            }
-        }
-        
+
         // Get the selected wallet address first
         val walletAddress = WalletManager.selectedWalletAddress()
         logd("TransactionRecordViewModel", "Selected wallet address: '$walletAddress'")
-        
+
         // If we still don't have a wallet address, we can't proceed
         if (walletAddress.isEmpty()) {
             logd("TransactionRecordViewModel", "Could not find a valid wallet address from any source, aborting transaction fetch.")
             return
         }
-        
+
         // Process with the wallet address we found
         logd("TransactionRecordViewModel", "Final wallet address: '$walletAddress'")
         fetchTransactions(walletAddress)
     }
-    
+
     private fun fetchTransactions(walletAddress: String) {
         // Ensure address has 0x prefix
         val formattedAddress = if (walletAddress.startsWith("0x")) walletAddress else "0x$walletAddress"
-        
+
         // Additional debugging
         logd("TransactionRecordViewModel", "=== TRANSACTION FETCH DEBUG ===")
         logd("TransactionRecordViewModel", "Input walletAddress: '$walletAddress'")
@@ -81,8 +68,8 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         logd("TransactionRecordViewModel", "WalletManager.selectedWalletAddress(): '${WalletManager.selectedWalletAddress()}'")
         logd("TransactionRecordViewModel", "WalletManager.isEVMAccountSelected(): ${WalletManager.isEVMAccountSelected()}")
         logd("TransactionRecordViewModel", "WalletManager.isChildAccountSelected(): ${WalletManager.isChildAccountSelected()}")
-        logd("TransactionRecordViewModel", "WalletManager.wallet()?.walletAddress(): '${WalletManager.wallet()?.walletAddress()}'")
-        
+        logd("TransactionRecordViewModel", "WalletManager.getFlowWalletAddress(): '${WalletManager.getFlowWalletAddress()}'")
+
         // Check if this is a child account
         if (WalletManager.isChildAccountSelected()) {
             val childAccount = WalletManager.childAccount(walletAddress)
@@ -108,13 +95,13 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
                     }
                     logd("TransactionRecordViewModel", "Posting EVM transaction data to UI: ${data.size} items")
                     transferListLiveData.postValue(data)
-                    
+
                     // Update count regardless of empty list
                     transferCountLiveData.postValue(data.size)
                 } catch (e: Exception) {
                     loge("TransactionRecordViewModel", "Error fetching EVM transfer records: ${e.message}")
                     loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
-                    
+
                     // Ensure the UI shows something even on error
                     transferListLiveData.postValue(emptyList())
                     transferCountLiveData.postValue(0)
@@ -133,13 +120,13 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
                     val resp = service.getTransferRecord(formattedAddress, limit = LIMIT)
                     logd("TransactionRecordViewModel", "Transfer record response received. Status: ${resp.status}, Message: ${resp.message}")
                     logd("TransactionRecordViewModel", "Response data: Total=${resp.data?.total}, Next=${resp.data?.next}, Transactions=${resp.data?.transactions?.size ?: 0}")
-                    
+
                     val processing = TransactionStateManager.getProcessingTransaction().map { it.toTransactionRecord() }
                     logd("TransactionRecordViewModel", "Processing transactions: ${processing.size}")
-                    
+
                     val transfers = resp.data?.transactions.orEmpty()
                     logd("TransactionRecordViewModel", "Completed transfers: ${transfers.size}")
-                    
+
                     val data = mutableListOf<Any>().apply {
                         if (processing.isNotEmpty()) {
                             logd("TransactionRecordViewModel", "Adding ${processing.size} processing transactions")
@@ -150,21 +137,21 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
                             addAll(transfers)
                         }
                     }
-                    
+
                     if ((resp.data?.total ?: 0) > LIMIT) {
                         data.add(TransactionViewMoreModel(formattedAddress))
                         logd("TransactionRecordViewModel", "Added 'View More' option for Flow transfers")
                     }
-                    
+
                     logd("TransactionRecordViewModel", "Posting Flow transaction data to UI: ${data.size} items")
                     transferListLiveData.postValue(data)
-                    
+
                     // Also update the count
                     transferCountLiveData.postValue(data.size)
                 } catch (e: Exception) {
                     loge("TransactionRecordViewModel", "Error fetching Flow transfer records: ${e.message}")
                     loge("TransactionRecordViewModel", "Error stacktrace: ${e.stackTraceToString()}")
-                    
+
                     // Ensure the UI shows something even on error
                     transferListLiveData.postValue(emptyList())
                     transferCountLiveData.postValue(0)

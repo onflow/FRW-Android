@@ -18,7 +18,6 @@ import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.emoji.model.Emoji
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.model.AddressBookContact
 import com.flowfoundation.wallet.page.address.AddressBookActivity
 import com.flowfoundation.wallet.page.address.AddressBookViewModel
@@ -61,11 +60,11 @@ class AddressBookPersonPresenter(
                 avatarView.setVisible(!avatar.isNullOrEmpty(), invisible = true)
                 avatarView.loadAvatar(avatar.orEmpty())
                 namePrefixView.setVisible(avatar.isNullOrEmpty())
-            } else if (address == WalletManager.wallet()?.walletAddress() || EVMWalletManager
+            } else if (address == WalletManager.getFlowWalletAddress() || EVMWalletManager
                     .isEVMWalletAddress(address)
             ) {
                 val emojiInfo =
-                    AccountEmojiManager.getEmojiByAddress(WalletManager.wallet()?.walletAddress())
+                    AccountEmojiManager.getEmojiByAddress(WalletManager.getFlowWalletAddress())
                 namePrefixView.text = Emoji.getEmojiById(emojiInfo.emojiId)
                 namePrefixView.backgroundTintList =
                     ColorStateList.valueOf(Emoji.getEmojiColorRes(emojiInfo.emojiId))

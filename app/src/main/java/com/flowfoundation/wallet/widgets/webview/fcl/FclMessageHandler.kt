@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.manager.flowjvm.transaction.FeePayerSignRequest
 import com.flowfoundation.wallet.manager.flowjvm.transaction.SignPayerResponse
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.network.functions.FUNCTION_SIGN_AS_PAYER
 import com.flowfoundation.wallet.network.functions.executeHttpFunction
 import com.flowfoundation.wallet.page.browser.widgets.LilicoWebView
@@ -57,7 +56,7 @@ class FclMessageHandler(
 
     private fun wallet(): String {
         // Try getting from WalletManager first
-        val walletAddress = WalletManager.wallet()?.walletAddress().orEmpty()
+        val walletAddress = WalletManager.getFlowWalletAddress().orEmpty()
         if (walletAddress.isNotBlank()) {
             logd(TAG, "Got wallet address from WalletManager: '$walletAddress'")
             return walletAddress

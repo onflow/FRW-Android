@@ -3,6 +3,8 @@ package com.flowfoundation.wallet.page.main
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
@@ -10,6 +12,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.ViewModelProvider
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.zackratos.ultimatebarx.ultimatebarx.UltimateBarX
 import com.flowfoundation.wallet.databinding.ActivityMainBinding
@@ -21,6 +24,7 @@ import com.flowfoundation.wallet.page.main.model.MainContentModel
 import com.flowfoundation.wallet.page.main.presenter.MainContentPresenter
 import com.flowfoundation.wallet.page.main.presenter.setupDrawerLayoutCompose
 import com.flowfoundation.wallet.page.others.NotificationPermissionActivity
+import com.flowfoundation.wallet.page.restore.mnemonic.RestoreMnemonicActivity
 import com.flowfoundation.wallet.page.window.WindowFrame
 import com.flowfoundation.wallet.utils.debug.fragments.debugViewer.DebugViewerDataSource
 import com.flowfoundation.wallet.utils.isNewVersion
@@ -41,6 +45,12 @@ class MainActivity : BaseActivity() {
 
     private var isRegistered = false
     private val targetTabIndex by lazy { intent.getIntExtra(EXTRA_TARGET_TAB, -1) }
+
+    private val restoreMnemonicReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            RestoreMnemonicActivity.launch(this@MainActivity)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,6 +93,7 @@ class MainActivity : BaseActivity() {
             NotificationPermissionActivity.launch(this)
         }
         configurationInstabugBugReport()
+        LocalBroadcastManager.getInstance(this).registerReceiver(restoreMnemonicReceiver, IntentFilter("ACTION_RESTORE_MNEMONIC"))
     }
 
     private fun configurationInstabugBugReport() {
@@ -144,6 +155,7 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(restoreMnemonicReceiver)
         if (INSTANCE == this) {
             INSTANCE = null
         }

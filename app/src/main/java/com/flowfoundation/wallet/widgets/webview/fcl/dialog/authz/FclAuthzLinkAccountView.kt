@@ -9,7 +9,7 @@ import com.flowfoundation.wallet.databinding.DialogLinkAccountBinding
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.transaction.OnTransactionStateChange
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
-import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 import com.flowfoundation.wallet.page.browser.loadFavicon
 import com.flowfoundation.wallet.page.browser.toFavIcon
 import com.flowfoundation.wallet.utils.extensions.dp2px
@@ -82,7 +82,7 @@ class FclAuthzLinkAccountView : FrameLayout, OnTransactionStateChange {
             linkTipsWrapper.setVisible(false)
             successLayout.setVisible(true)
             successStartButton.setOnClickListener { FclAuthzDialog.dismiss(true) }
-            WalletManager.refreshChildAccount()
+            WalletDataManager.refreshCurrentAccountChildAccounts()
         }
     }
 

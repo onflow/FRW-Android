@@ -6,13 +6,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.flowfoundation.wallet.databinding.DialogEnableEvmBinding
-import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.flowjvm.cadenceCreateCOAAccount
 import com.flowfoundation.wallet.manager.transaction.TransactionState
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateWatcher
 import com.flowfoundation.wallet.manager.transaction.isExecuteFinished
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 import com.flowfoundation.wallet.page.main.MainActivity
 import com.flowfoundation.wallet.page.window.bubble.tools.pushBubbleStack
 import com.flowfoundation.wallet.utils.Env
@@ -69,16 +69,14 @@ class EnableEVMDialog : BottomSheetDialogFragment() {
                 uiScope { pushBubbleStack(transactionState) }
                 TransactionStateWatcher(txId).watch {
                     if (it.isExecuteFinished()) {
-                        EVMWalletManager.fetchEVMAddress { isSuccess ->
+                        WalletDataManager.refreshCurrentAccountEVMAddress { evmAddress ->
                             uiScope {
                                 hideLoading()
                             }
-                            if (isSuccess) {
+                            if (!evmAddress.isNullOrBlank()) {
                                 dismissAllowingStateLoss()
-                                EVMWalletManager.getEVMAddress()?.let { address ->
-                                    WalletManager.selectWalletAddress(address)
-                                    MainActivity.relaunch(Env.getApp())
-                                }
+                                WalletManager.selectWalletAddress(evmAddress)
+                                MainActivity.relaunch(Env.getApp())
                             }
                         }
                     }

@@ -69,7 +69,7 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
             val pendingEvmAddresses = mutableListOf<Pair<String, String>>() // EVM address to wallet address mapping
 
             // Add EOA account if exists
-            val eoaAddress = WalletManager.getEOAAddressCached()
+            val eoaAddress = WalletManager.getEOAAddress()
             if (eoaAddress != null) {
                 val emojiInfo = AccountEmojiManager.getEmojiByAddress(eoaAddress)
                 addressList.add(eoaAddress)
@@ -90,7 +90,7 @@ class AccountListViewModel : ViewModel(), OnEmojiUpdate {
                 val linkedAccounts = mutableListOf<LinkedAccountData>()
 
                 // Add child accounts
-                WalletManager.childAccountList(address)?.get()?.forEach { childAccount ->
+                WalletManager.childAccountList(address).forEach { childAccount ->
                     addressList.add(childAccount.address)
                     linkedAccounts.add(
                         LinkedAccountData(

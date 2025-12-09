@@ -12,7 +12,6 @@ import com.flowfoundation.wallet.manager.token.model.FungibleToken
 import com.flowfoundation.wallet.manager.transaction.SurgePricingManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
-import com.flowfoundation.wallet.manager.wallet.walletAddress
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.Nft
 import com.flowfoundation.wallet.network.model.TokenInfo
@@ -274,7 +273,7 @@ suspend fun cadenceClaimInboxNft(
 }
 
 suspend fun cadenceQueryMinFlowBalance(): BigDecimal? {
-    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    val walletAddress = WalletManager.getFlowWalletAddress() ?: return null
     logd(TAG, "cadenceQueryMinFlowBalance address:$walletAddress")
     val result = CadenceScript.CADENCE_QUERY_MIN_FLOW_BALANCE.executeCadence {
         arg { Cadence.address(walletAddress) }
@@ -309,15 +308,20 @@ suspend fun cadenceCOALink(): String? {
 suspend fun cadenceQueryEVMAddress(): String? {
     logd(TAG, "cadenceQueryEVMAddress()")
     val walletAddress = WalletManager.selectedWalletAddress()
+    return cadenceQueryEVMAddress(walletAddress)
+}
+
+suspend fun cadenceQueryEVMAddress(address: String): String? {
+    logd(TAG, "cadenceQueryEVMAddress(address=$address)")
     val result = CadenceScript.CADENCE_QUERY_COA_EVM_ADDRESS.executeCadence {
-        arg { Cadence.address(walletAddress) }
+        arg { Cadence.address(address) }
     }
     logd(TAG, "cadenceQueryEVMAddress response:${result?.encode()}")
     return result?.decode<String>()
 }
 
 suspend fun cadenceQueryCOATokenBalance(): BigDecimal? {
-    val walletAddress = WalletManager.wallet()?.walletAddress() ?: return null
+    val walletAddress = WalletManager.getFlowWalletAddress() ?: return null
     logd(TAG, "cadenceQueryCOATokenBalance address:$walletAddress")
     val result = CadenceScript.CADENCE_QUERY_COA_FLOW_BALANCE.executeCadence {
         arg { Cadence.address(walletAddress) }
@@ -711,14 +715,7 @@ suspend fun CadenceScript.transactionByMainWallet(arguments: CadenceArgumentsBui
 
 suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
-    val wallet = WalletManager.wallet()
-    val walletAddress = if (wallet != null) {
-        wallet.walletAddress()
-    } else {
-        // Handle hardware-backed keys where wallet() returns null
-        logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
-        wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
-    }
+    val walletAddress = WalletManager.getFlowWalletAddress()
 
     if (walletAddress == null) {
         logd(TAG, "transactionByMainWallet() failed: no wallet address available")
@@ -745,14 +742,7 @@ suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceA
 
 suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
-    val wallet = WalletManager.wallet()
-    val walletAddress = if (wallet != null) {
-        wallet.walletAddress()
-    } else {
-        // Handle hardware-backed keys where wallet() returns null
-        logd(TAG, "Wallet is null (likely hardware-backed key), getting address from walletAddress() extension")
-        wallet.walletAddress() // This will use the enhanced extension function that handles null wallets
-    }
+    val walletAddress = WalletManager.getFlowWalletAddress()
 
     if (walletAddress == null) {
         logd(TAG, "transactionWithBridgePayer() failed: no wallet address available")

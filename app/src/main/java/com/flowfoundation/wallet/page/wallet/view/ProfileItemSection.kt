@@ -96,16 +96,18 @@ fun ProfileItemSection(
         )
 
         // Balance
-        Text(
-            text = String.format("%.2f FLOW", totalBalance),
-            color = colorResource(id = R.color.text_2),
-            fontSize = 12.sp,
-            modifier = Modifier
-                .constrainAs(balance) {
-                    top.linkTo(name.bottom, 4.dp)
-                    start.linkTo(name.start)
-                }
-        )
+        if (balanceMap.isNotEmpty()) {
+            Text(
+                text = String.format("%.2f FLOW", totalBalance),
+                color = colorResource(id = R.color.text_2),
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .constrainAs(balance) {
+                        top.linkTo(name.bottom, 4.dp)
+                        start.linkTo(name.start)
+                    }
+            )
+        }
 
         // Account count
         Text(
@@ -114,7 +116,11 @@ fun ProfileItemSection(
             fontSize = 12.sp,
             modifier = Modifier
                 .constrainAs(accountCount) {
-                    top.linkTo(balance.bottom, 4.dp)
+                    if (balanceMap.isNotEmpty()) {
+                        top.linkTo(balance.bottom, 4.dp)
+                    } else {
+                        top.linkTo(name.bottom, 4.dp)
+                    }
                     start.linkTo(name.start)
                 }
         )

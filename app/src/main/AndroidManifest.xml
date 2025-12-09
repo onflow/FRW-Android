@@ -293,10 +293,6 @@
             android:screenOrientation="portrait"/>
 
         <activity
-            android:name=".page.profile.subpage.wallet.WalletListActivity"
-            android:screenOrientation="portrait"/>
-
-        <activity
             android:name=".page.account.AccountListActivity"
             android:screenOrientation="portrait"/>
 
@@ -430,6 +426,9 @@
 
         <activity
             android:name=".page.profile.subpage.wallet.device.detail.DeviceInfoActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".page.restore.mnemonic.RestoreMnemonicActivity"
             android:screenOrientation="portrait"/>
 
         <provider
