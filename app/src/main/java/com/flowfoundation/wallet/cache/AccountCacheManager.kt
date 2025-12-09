@@ -170,7 +170,7 @@ object AccountCacheManager{
                 loge(TAG, "First account structure: userInfo=${firstAccount.userInfo.javaClass.name}, " +
                     "wallet=${firstAccount.wallet?.javaClass?.name}, " +
                     "walletEmojiList=${firstAccount.walletEmojiList?.javaClass?.name}, " +
-                    "evmAddressData=${firstAccount.evmAddressData?.javaClass?.name}")
+                    "walletNodes=${firstAccount.walletNodes.javaClass.name}")
             }
             throw e
         }
