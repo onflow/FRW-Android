@@ -76,8 +76,6 @@ import com.flowfoundation.wallet.page.main.widget.CopyCOAAddressDialog
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
 import com.flowfoundation.wallet.page.wallet.view.LinkedAccountSection
 import com.flowfoundation.wallet.page.wallet.view.WalletAccountSection
-import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.manager.app.chainNetWorkString

@@ -15,8 +15,6 @@ import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.page.dialog.accounts.adapter.AccountListAdapter
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
-import com.flowfoundation.wallet.page.walletcreate.WALLET_CREATE_STEP_USERNAME
-import com.flowfoundation.wallet.page.walletcreate.WalletCreateActivity
 import com.flowfoundation.wallet.reactnative.ReactNativeActivity
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.utils.extensions.dp2px
