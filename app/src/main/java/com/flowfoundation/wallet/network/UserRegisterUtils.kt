@@ -16,13 +16,10 @@ import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
-import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
-import com.flowfoundation.wallet.utils.NETWORK_MAINNET
-import com.flowfoundation.wallet.utils.updateChainNetworkPreference
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.DAppEVMConnectionManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.key.KeyCompatibilityManager
@@ -31,6 +28,7 @@ import com.flowfoundation.wallet.manager.staking.StakingManager
 import com.flowfoundation.wallet.manager.token.FungibleTokenListManager
 import com.flowfoundation.wallet.manager.transaction.TransactionStateManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.mixpanel.AccountCreateKeyType
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.model.AccountKey
@@ -39,13 +37,13 @@ import com.flowfoundation.wallet.network.model.RegisterRequest
 import com.flowfoundation.wallet.network.model.RegisterResponse
 import com.flowfoundation.wallet.page.walletrestore.firebaseLogin
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.utils.NETWORK_MAINNET
 import com.flowfoundation.wallet.utils.cleanBackupMnemonicPreference
 import com.flowfoundation.wallet.utils.clearCacheDir
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
-import com.flowfoundation.wallet.utils.uiScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.readWalletPassword
@@ -53,6 +51,7 @@ import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
+import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.wallet.createWalletFromServer
 import com.google.firebase.auth.ktx.auth
@@ -99,7 +98,7 @@ suspend fun registerOutblockEarlyReturn(
 
     registerOutblockUserInternal(username) { isSuccess, prefix ->
       ioScope {
-        if (!isSuccess || prefix == null) {
+        if (!isSuccess) {
           continuation.resume(RegisterEarlyResult(
             success = false,
             txId = null,
@@ -219,12 +218,6 @@ suspend fun initWalletWithTxId(
       logd(TAG, "[InitWallet] Fetching account by txId: $txId")
       val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
       val createdAddress = fetchedAccount.address
-
-      if (createdAddress == null) {
-        loge(TAG, "[InitWallet] Failed to fetch account by txId")
-        continuation.resume(Pair(false, null))
-        return@ioScope
-      }
 
       logd(TAG, "[InitWallet] Account fetched successfully at address: $createdAddress")
 
@@ -346,7 +339,7 @@ suspend fun registerOutblock(
 
           // Use fetchAccountByCreationTxId to directly fetch the created account
           // This is faster than waiting for the key indexer to poll the address
-          var createdAddress: String? = null
+          val createdAddress: String?
           if (txIdFromBackend != null) {
             logd(TAG, "Using fetchAccountByCreationTxId to fetch account (txId: $txIdFromBackend)")
             try {
@@ -387,13 +380,7 @@ suspend fun registerOutblock(
               logd(TAG, "fetchAccountByCreationTxId completed in ${duration}ms")
               createdAddress = account.address
 
-              if (createdAddress != null) {
-                logd(TAG, "Account fetched successfully at address: $createdAddress")
-              } else {
-                logd(TAG, "Failed to fetch account by creation txId - account was null")
-                continuation.resume(false)
-                return@ioScope
-              }
+              logd(TAG, "Account fetched successfully at address: $createdAddress")
             } catch (e: Exception) {
               val errorType = e.javaClass.simpleName
               logd(TAG, "Error fetching account by creation txId ($errorType): ${e.message}")

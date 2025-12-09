@@ -20,22 +20,17 @@ data class UserInfoResponse(
 @Serializable
 @Parcelize
 data class UserInfoData(
-    @SerialName("nickname")
     @SerializedName("nickname")
     var nickname: String,
-    @SerialName("username")
     @SerializedName("username")
     val username: String,
-    @SerialName("avatar")
     @SerializedName("avatar")
     var avatar: String,
-    @SerialName("address")
     @SerializedName("address")
     var address: String? = null,
-    @SerialName("private")
+    @SerialName("private")  // Needed: property name "isPrivate" differs from JSON key "private"
     @SerializedName("private")
     var isPrivate: Int,
-    @SerialName("created")
     @SerializedName("created")
     var created: String,
 ) : Parcelable

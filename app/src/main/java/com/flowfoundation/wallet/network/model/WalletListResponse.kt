@@ -21,13 +21,10 @@ class WalletListResponse(
 
 @Serializable
 data class WalletListData(
-    @SerialName("id")
     @SerializedName("id")
     val id: String,
-    @SerialName("username")
     @SerializedName("username")
     val username: String,
-    @SerialName("wallets")
     @SerializedName("wallets")
     val wallets: List<WalletData>?
 ) {
@@ -44,10 +41,8 @@ data class WalletListData(
 
 @Serializable
 data class WalletData(
-    @SerialName("blockchain")
     @SerializedName("blockchain")
     val blockchain: List<BlockchainData>?,
-    @SerialName("name")
     @SerializedName("name")
     val name: String
 ) {
@@ -59,10 +54,9 @@ data class WalletData(
 @Serializable
 @Parcelize
 data class BlockchainData(
-    @SerialName("address")
     @SerializedName("address")
     val address: String,
-    @SerialName("chain_id")
+    @SerialName("chain_id")  // Needed: property name "chainId" differs from JSON key "chain_id"
     @SerializedName("chain_id")
     val chainId: String
 ) : Parcelable
