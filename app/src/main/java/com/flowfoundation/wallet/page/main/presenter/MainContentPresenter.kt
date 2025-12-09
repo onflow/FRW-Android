@@ -41,7 +41,14 @@ class MainContentPresenter(
     }
 
     suspend fun checkAndShowContent() {
-        if (isRegistered() && isUserSignIn()) {
+        // Check if user has existing accounts (in case KEY_REGISTERED was reset but accounts exist)
+        val hasExistingAccounts = com.flowfoundation.wallet.manager.account.AccountManager.list().isNotEmpty()
+        
+        if ((isRegistered() || hasExistingAccounts) && isUserSignIn()) {
+            // If user has accounts but KEY_REGISTERED is false, fix it
+            if (hasExistingAccounts && !isRegistered()) {
+                com.flowfoundation.wallet.utils.setRegistered()
+            }
             showMainContent()
         } else {
             showUnregisteredFragment()
