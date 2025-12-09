@@ -307,8 +307,23 @@ object WalletDataManager {
 
             logd(TAG, "Wallet nodes built: ${nodes.size}")
 
+            // Check if we found any FlowWallets from the key indexer
+            val newFlowWallets = nodes.filterIsInstance<FlowWallet>()
+            val existingFlowWallets = account.walletNodes.filterIsInstance<FlowWallet>()
+            
+            // If we didn't find any FlowWallets from key indexer but account already has some,
+            // preserve the existing ones (key indexer may not have indexed new accounts yet)
+            val finalNodes = if (newFlowWallets.isEmpty() && existingFlowWallets.isNotEmpty()) {
+                logd(TAG, "No FlowWallets found from key indexer, preserving ${existingFlowWallets.size} existing FlowWallets")
+                nodes + existingFlowWallets
+            } else {
+                nodes
+            }
+
+            logd(TAG, "Final wallet nodes: ${finalNodes.size} (${finalNodes.filterIsInstance<FlowWallet>().size} FlowWallets, ${finalNodes.filterIsInstance<EOAWallet>().size} EOAWallets)")
+
             // Persist changes to AccountManager (always use updateCurrentAccount as it's for current)
-            AccountManager.updateCurrentAccount { it.copy(walletNodes = nodes) }
+            AccountManager.updateCurrentAccount { it.copy(walletNodes = finalNodes) }
             logd(TAG, "Updated current account data for ${account.userInfo.username}")
 
         } catch (e: Exception) {
