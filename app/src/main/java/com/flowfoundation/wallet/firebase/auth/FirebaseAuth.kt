@@ -31,10 +31,13 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     val currentUser = auth.currentUser
     logd(TAG, "Current Firebase user: ${currentUser?.uid ?: "null"}")
 
+    // Always sign in with the new custom token, even if there's already a user
+    // This ensures we switch to the newly registered user
     if (currentUser != null) {
         logd(TAG, "User already signed in, UID: ${currentUser.uid}, isAnonymous: ${currentUser.isAnonymous}")
-        onComplete.invoke(true, null)
-        return
+        logd(TAG, "Signing out old user before signing in with new custom token...")
+        auth.signOut()
+        logd(TAG, "Old user signed out")
     }
 
     logd(TAG, "Attempting to sign in with custom token (length: ${token.length})")

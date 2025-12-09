@@ -247,9 +247,57 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
             try {
                 com.flowfoundation.wallet.firebase.auth.firebaseCustomLogin(customToken) { isSuccessful, exception ->
                     if (isSuccessful) {
-                        logd(TAG, "signInWithCustomToken() - Custom token authentication successful")
-                        uiScope {
-                            promise.resolve(null)
+                        logd(TAG, "signInWithCustomToken() - Custom token authentication successful, waiting for JWT...")
+                        // Wait for JWT to be available after sign-in
+                        // This prevents race conditions where API calls happen before token propagates
+                        ioScope {
+                            var tokenReady = false
+                            var backendValidated = false
+                            var attempts = 0
+                            val maxAttempts = 15
+                            
+                            while (!tokenReady && attempts < maxAttempts) {
+                                attempts++
+                                try {
+                                    val jwt = com.flowfoundation.wallet.firebase.auth.getFirebaseJwt(forceRefresh = true)
+                                    val firebaseUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
+                                    
+                                    if (!jwt.isNullOrBlank() && firebaseUid != null) {
+                                        logd(TAG, "signInWithCustomToken() - JWT ready after $attempts attempt(s), Firebase UID: $firebaseUid")
+                                        
+                                        // Validate with backend - make sure the user is recognized
+                                        try {
+                                            val service = com.flowfoundation.wallet.network.retrofit()
+                                                .create(com.flowfoundation.wallet.network.ApiService::class.java)
+                                            val userInfo = service.userInfo().data
+                                            logd(TAG, "signInWithCustomToken() - Backend validated, username: ${userInfo.username}")
+                                            tokenReady = true
+                                            backendValidated = true
+                                        } catch (apiError: Exception) {
+                                            logd(TAG, "signInWithCustomToken() - Backend validation failed on attempt $attempts: ${apiError.message}")
+                                            // Backend might not be ready yet, continue waiting
+                                            kotlinx.coroutines.delay(500)
+                                        }
+                                    } else {
+                                        logd(TAG, "signInWithCustomToken() - JWT not ready, attempt $attempts/$maxAttempts")
+                                        kotlinx.coroutines.delay(300)
+                                    }
+                                } catch (e: Exception) {
+                                    logd(TAG, "signInWithCustomToken() - JWT check error on attempt $attempts: ${e.message}")
+                                    kotlinx.coroutines.delay(300)
+                                }
+                            }
+                            
+                            if (tokenReady && backendValidated) {
+                                uiScope {
+                                    promise.resolve(null)
+                                }
+                            } else {
+                                loge(TAG, "signInWithCustomToken() - Auth not ready after $maxAttempts attempts (tokenReady=$tokenReady, backendValidated=$backendValidated)")
+                                uiScope {
+                                    promise.reject("CUSTOM_TOKEN_AUTH_ERROR", "Authentication succeeded but backend validation failed", null)
+                                }
+                            }
                         }
                     } else {
                         val errorMessage = exception?.message ?: "Custom token authentication failed"
