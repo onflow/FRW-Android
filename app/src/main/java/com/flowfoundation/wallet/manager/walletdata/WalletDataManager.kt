@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.manager.walletdata
 import com.flow.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.app.toNetworkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.parseAccountMetas
@@ -246,10 +247,13 @@ object WalletDataManager {
             logd(TAG, "Fetching data for ${allBlockchainData.size} BlockchainData entries for node construction")
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
-            // EOA Wallet
-            if (!WalletManager.isEoaDisabled()) {
+            // EOA Wallet - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
+            // Legacy accounts (accountType = null) also get EOA for backward compatibility
+            val canDeriveEoa = account.accountType != AccountType.HARDWARE
+            if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
                 val eoa = deriveEoaAddress(wallet)
                 if (eoa.isNotEmpty()) {
+                    logd(TAG, "Adding EOA for account (accountType=${account.accountType}): $eoa")
                     val eoaEmojiInfo = getEmojiInfo(eoa)
                     nodes.add(EOAWallet(
                         address = eoa,
@@ -257,6 +261,8 @@ object WalletDataManager {
                         emojiId = eoaEmojiInfo.emojiId
                     ))
                 }
+            } else {
+                logd(TAG, "Skipping EOA derivation (accountType=${account.accountType}, isEoaDisabled=${WalletManager.isEoaDisabled()})")
             }
 
             kotlinx.coroutines.supervisorScope {
@@ -349,15 +355,23 @@ object WalletDataManager {
                 // Build Wallet Nodes
                 val nodes = mutableListOf<MainWallet>()
                 fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
-                // EOA
-                val eoa = deriveEoaAddress(wallet)
-                if (eoa.isNotEmpty()) {
-                    val eoaEmojiInfo = getEmojiInfo(eoa)
-                    nodes.add(EOAWallet(
-                        address = eoa,
-                        name = eoaEmojiInfo.emojiName,
-                        emojiId = eoaEmojiInfo.emojiId
-                    ))
+                
+                // EOA - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
+                // Legacy accounts (accountType = null) also get EOA for backward compatibility
+                val canDeriveEoa = account.accountType != AccountType.HARDWARE
+                if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
+                    val eoa = deriveEoaAddress(wallet)
+                    if (eoa.isNotEmpty()) {
+                        logd(TAG, "Adding EOA for non-current account (accountType=${account.accountType}): $eoa")
+                        val eoaEmojiInfo = getEmojiInfo(eoa)
+                        nodes.add(EOAWallet(
+                            address = eoa,
+                            name = eoaEmojiInfo.emojiName,
+                            emojiId = eoaEmojiInfo.emojiId
+                        ))
+                    }
+                } else {
+                    logd(TAG, "Skipping EOA for non-current account (accountType=${account.accountType})")
                 }
 
                 kotlinx.coroutines.supervisorScope {

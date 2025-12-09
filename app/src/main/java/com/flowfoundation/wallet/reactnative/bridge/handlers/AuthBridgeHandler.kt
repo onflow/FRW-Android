@@ -7,6 +7,7 @@ import com.facebook.react.bridge.WritableNativeMap
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -714,16 +715,18 @@ private fun setupAccountAndWallet(
         logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
 
         // Add account to AccountManager with walletNodes populated
+        // accountType = "full" for Recovery Phrase accounts (can derive EOA)
         AccountManager.add(
             Account(
                 userInfo = userInfo,
                 prefix = prefix,
                 wallet = walletListData,
-                walletNodes = initialWalletNodes
+                walletNodes = initialWalletNodes,
+                accountType = AccountType.FULL
             ),
             com.flowfoundation.wallet.firebase.auth.firebaseUid()
         )
-        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes")
+        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes (accountType=full)")
 
         // Select Flow address from wallet data
         val flowAddr = walletListData.wallets

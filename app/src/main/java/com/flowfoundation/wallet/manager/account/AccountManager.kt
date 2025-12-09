@@ -753,6 +753,16 @@ object AccountManager {
 
 fun username() = AccountManager.get()!!.userInfo.username
 
+/**
+ * Account types for distinguishing how the account was created
+ * - "full": Recovery Phrase account (can derive EOA)
+ * - "hardware": Secure Enclave account (no EOA by default)
+ */
+object AccountType {
+    const val FULL = "full"        // Recovery Phrase
+    const val HARDWARE = "hardware" // Secure Enclave
+}
+
 @Serializable
 data class Account(
     @SerializedName("username")
@@ -768,7 +778,9 @@ data class Account(
     @SerializedName("keyStoreInfo")
     var keyStoreInfo: String? = null,
     @SerializedName("walletNodes")
-    var walletNodes: List<MainWallet> = emptyList()
+    var walletNodes: List<MainWallet> = emptyList(),
+    @SerializedName("accountType")
+    var accountType: String? = null  // "full" or "hardware", null for legacy accounts
 )
 
 @Serializable

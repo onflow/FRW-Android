@@ -14,6 +14,7 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
@@ -257,12 +258,14 @@ suspend fun initWalletWithTxId(
       logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
       // Add account to AccountManager with walletNodes populated
+      // accountType = "hardware" for Secure Enclave accounts (no EOA by default)
       AccountManager.add(
         Account(
           userInfo = userInfo,
           prefix = prefix,
           wallet = walletListData,
-          walletNodes = initialWalletNodes
+          walletNodes = initialWalletNodes,
+          accountType = AccountType.HARDWARE
         ),
         firebaseUid()
       )
@@ -448,16 +451,18 @@ suspend fun registerOutblock(
           )
           logd(TAG, "Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
+          // accountType = "hardware" for Secure Enclave accounts (no EOA by default)
           AccountManager.add(
             Account(
               userInfo = userInfo,
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
               wallet = walletListData,
-              walletNodes = initialWalletNodes
+              walletNodes = initialWalletNodes,
+              accountType = AccountType.HARDWARE
             ),
             firebaseUid()
           )
-          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes.")
+          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes (accountType=hardware).")
 
           // Get the Flow address from wallet data
           val flowAddress = walletListData.wallets
@@ -567,7 +572,7 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
   val storage = FileSystemStorage(baseDir)
 
   try {
-    // Generate and store mnemonic globally for seed phrase backup support
+    // Generate and store mnemonic globally for potential future EOA support
     val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
     logd(TAG, "Generated new 12-word mnemonic for backup support")
 
@@ -582,7 +587,7 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
       HashMap<String, String>()
     }
 
-    // Store mnemonic globally (this will make it accessible via Wallet.store().mnemonic())
+    // Store mnemonic globally (available for future EOA enablement if user chooses)
     storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
     logd(TAG, "Stored mnemonic globally for backup support")
 
