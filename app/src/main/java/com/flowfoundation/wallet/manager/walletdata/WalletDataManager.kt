@@ -8,6 +8,8 @@ import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.parseAccountMetas
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
@@ -246,8 +248,17 @@ object WalletDataManager {
             logd(TAG, "Fetching data for ${allBlockchainData.size} BlockchainData entries for node construction")
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
-            // EOA Wallet
-            if (!WalletManager.isEoaDisabled()) {
+            // EOA Wallet - only for recovery phrase accounts (secp256k1), not secure enclave (P256)
+            // Secure enclave accounts use P256 and should not have an EOA
+            val isSecureEnclaveAccount = try {
+                val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+                cryptoProvider?.getSignatureAlgorithm() == SigningAlgorithm.ECDSA_P256
+            } catch (e: Exception) {
+                logd(TAG, "Could not determine account type, assuming not secure enclave: ${e.message}")
+                false
+            }
+            
+            if (!WalletManager.isEoaDisabled() && !isSecureEnclaveAccount) {
                 val eoa = deriveEoaAddress(wallet)
                 if (eoa.isNotEmpty()) {
                     val eoaEmojiInfo = getEmojiInfo(eoa)
@@ -257,6 +268,8 @@ object WalletDataManager {
                         emojiId = eoaEmojiInfo.emojiId
                     ))
                 }
+            } else if (isSecureEnclaveAccount) {
+                logd(TAG, "Skipping EOA derivation for secure enclave (P256) account: ${account.userInfo.username}")
             }
 
             kotlinx.coroutines.supervisorScope {
@@ -349,15 +362,28 @@ object WalletDataManager {
                 // Build Wallet Nodes
                 val nodes = mutableListOf<MainWallet>()
                 fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
-                // EOA
-                val eoa = deriveEoaAddress(wallet)
-                if (eoa.isNotEmpty()) {
-                    val eoaEmojiInfo = getEmojiInfo(eoa)
-                    nodes.add(EOAWallet(
-                        address = eoa,
-                        name = eoaEmojiInfo.emojiName,
-                        emojiId = eoaEmojiInfo.emojiId
-                    ))
+                
+                // EOA - only for recovery phrase accounts (secp256k1), not secure enclave (P256)
+                val isSecureEnclaveAccount = try {
+                    val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+                    cryptoProvider?.getSignatureAlgorithm() == SigningAlgorithm.ECDSA_P256
+                } catch (e: Exception) {
+                    logd(TAG, "Could not determine account type for ${account.userInfo.username}: ${e.message}")
+                    false
+                }
+                
+                if (!isSecureEnclaveAccount) {
+                    val eoa = deriveEoaAddress(wallet)
+                    if (eoa.isNotEmpty()) {
+                        val eoaEmojiInfo = getEmojiInfo(eoa)
+                        nodes.add(EOAWallet(
+                            address = eoa,
+                            name = eoaEmojiInfo.emojiName,
+                            emojiId = eoaEmojiInfo.emojiId
+                        ))
+                    }
+                } else {
+                    logd(TAG, "Skipping EOA for secure enclave account: ${account.userInfo.username}")
                 }
 
                 kotlinx.coroutines.supervisorScope {
