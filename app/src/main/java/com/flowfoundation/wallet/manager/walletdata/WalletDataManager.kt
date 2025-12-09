@@ -335,9 +335,36 @@ object WalletDataManager {
             
             // If we didn't find any FlowWallets from key indexer but account already has some,
             // preserve the existing ones (key indexer may not have indexed new accounts yet)
+            // BUT also query for COA on preserved FlowWallets that don't have linkedWallets yet
             val finalNodes = if (newFlowWallets.isEmpty() && existingFlowWallets.isNotEmpty()) {
                 logd(TAG, "No FlowWallets found from key indexer, preserving ${existingFlowWallets.size} existing FlowWallets")
-                nodes + existingFlowWallets
+                
+                // Query COA for preserved FlowWallets that have empty linkedWallets
+                val updatedExistingWallets = existingFlowWallets.map { flowWallet ->
+                    if (flowWallet.linkedWallets.isEmpty()) {
+                        try {
+                            val coa = fetchEVMAddressForAddress(flowWallet.address)
+                            if (coa != null) {
+                                logd(TAG, "Found COA for preserved FlowWallet ${flowWallet.address}: $coa")
+                                val coaEmojiInfo = getEmojiInfo(coa)
+                                flowWallet.copy(linkedWallets = listOf(COAWallet(
+                                    address = coa,
+                                    name = coaEmojiInfo.emojiName,
+                                    emojiId = coaEmojiInfo.emojiId
+                                )))
+                            } else {
+                                logd(TAG, "No COA found for preserved FlowWallet ${flowWallet.address}")
+                                flowWallet
+                            }
+                        } catch (e: Exception) {
+                            logd(TAG, "Error querying COA for preserved FlowWallet ${flowWallet.address}: ${e.message}")
+                            flowWallet
+                        }
+                    } else {
+                        flowWallet
+                    }
+                }
+                nodes + updatedExistingWallets
             } else {
                 nodes
             }
