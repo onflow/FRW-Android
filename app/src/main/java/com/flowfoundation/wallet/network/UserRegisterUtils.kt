@@ -15,6 +15,8 @@ import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
 import com.flowfoundation.wallet.manager.app.refreshChainNetworkSync
@@ -240,17 +242,32 @@ suspend fun initWalletWithTxId(
         return@ioScope
       }
 
-      // Add account to AccountManager
+      // Build initial walletNodes with the FlowWallet we know about
+      val formattedCreatedAddress = if (createdAddress.startsWith("0x")) createdAddress else "0x$createdAddress"
+      val emojiInfo = AccountEmojiManager.getEmojiByAddress(formattedCreatedAddress)
+      val initialWalletNodes = listOf(
+        FlowWallet(
+          address = formattedCreatedAddress,
+          name = emojiInfo.emojiName,
+          emojiId = emojiInfo.emojiId,
+          chainIdString = chainNetWorkString(),
+          linkedWallets = emptyList()
+        )
+      )
+      logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
+
+      // Add account to AccountManager with walletNodes populated
       AccountManager.add(
         Account(
           userInfo = userInfo,
           prefix = prefix,
-          wallet = walletListData
+          wallet = walletListData,
+          walletNodes = initialWalletNodes
         ),
         firebaseUid()
       )
 
-      logd(TAG, "[InitWallet] Account added to AccountManager, address: $createdAddress")
+      logd(TAG, "[InitWallet] Account added to AccountManager with FlowWallet, address: $createdAddress")
 
       // Clear the pending prefix now that wallet init is complete
       pendingRegistrationPrefix = null
@@ -416,15 +433,31 @@ suspend fun registerOutblock(
             }
           }
 
+          // Build initial walletNodes with the FlowWallet we know about
+          // This ensures the account is usable immediately without waiting for async WalletDataManager
+          val formattedCreatedAddress = if (createdAddress.startsWith("0x")) createdAddress else "0x$createdAddress"
+          val emojiInfo = AccountEmojiManager.getEmojiByAddress(formattedCreatedAddress)
+          val initialWalletNodes = listOf(
+            FlowWallet(
+              address = formattedCreatedAddress,
+              name = emojiInfo.emojiName,
+              emojiId = emojiInfo.emojiId,
+              chainIdString = chainNetWorkString(),
+              linkedWallets = emptyList()
+            )
+          )
+          logd(TAG, "Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
+
           AccountManager.add(
             Account(
               userInfo = userInfo,
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
-              wallet = walletListData
+              wallet = walletListData,
+              walletNodes = initialWalletNodes
             ),
             firebaseUid()
           )
-          logd(TAG, "Account added to AccountManager.")
+          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes.")
 
           // Get the Flow address from wallet data
           val flowAddress = walletListData.wallets

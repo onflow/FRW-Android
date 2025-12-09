@@ -8,7 +8,10 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.getFlowAddress
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flow.wallet.CryptoProvider
 import com.flowfoundation.wallet.network.model.UserInfoData
@@ -667,16 +670,42 @@ private fun setupAccountAndWallet(
             }
         }
 
-        // Add account to AccountManager
+        // Build initial walletNodes with any FlowWallets we know about from the API
+        val currentNetwork = chainNetWorkString()
+        val initialWalletNodes = walletListData.wallets
+            ?.flatMap { walletData ->
+                walletData.blockchain
+                    ?.filter { it.address.isNotBlank() }
+                    ?.map { blockchain ->
+                        val formattedAddress = if (blockchain.address.startsWith("0x")) {
+                            blockchain.address
+                        } else {
+                            "0x${blockchain.address}"
+                        }
+                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(formattedAddress)
+                        FlowWallet(
+                            address = formattedAddress,
+                            name = emojiInfo.emojiName,
+                            emojiId = emojiInfo.emojiId,
+                            chainIdString = blockchain.chainId.ifBlank { currentNetwork },
+                            linkedWallets = emptyList()
+                        )
+                    }.orEmpty()
+            }.orEmpty()
+
+        logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
+
+        // Add account to AccountManager with walletNodes populated
         AccountManager.add(
             Account(
                 userInfo = userInfo,
                 prefix = prefix,
-                wallet = walletListData
+                wallet = walletListData,
+                walletNodes = initialWalletNodes
             ),
             com.flowfoundation.wallet.firebase.auth.firebaseUid()
         )
-        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager")
+        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes")
 
         // Select Flow address from wallet data
         val flowAddr = walletListData.wallets
