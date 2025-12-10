@@ -53,7 +53,7 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
-import com.flowfoundation.wallet.wallet.createWalletFromServer
+// Removed: import com.flowfoundation.wallet.wallet.createWalletFromServer - was causing duplicate account creation
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
@@ -111,7 +111,8 @@ suspend fun registerOutblockEarlyReturn(
 
         val service = retrofit().create(ApiService::class.java)
 
-        createWalletFromServer()
+        // Note: Don't call createWalletFromServer() here - it uses /v1/user/address
+        // which would create a SECOND Flow account. We only need createWalletV2().
         setRegistered()
 
         // Create Flow account on-chain via backend API
@@ -307,7 +308,8 @@ suspend fun registerOutblock(
           // Declare service here for fetching user and wallet info
           val service = retrofit().create(ApiService::class.java)
 
-          createWalletFromServer() // This should ideally ensure the WalletManager is aware of the new account
+          // Note: Don't call createWalletFromServer() here - it uses /v1/user/address
+          // which would create a SECOND Flow account. We only need createWalletV2().
           setRegistered()
 
           // Wallet and Account object creation should use data from the successful registration (via registerServer)
