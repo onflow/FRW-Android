@@ -12,6 +12,9 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddre
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.walletdata.COAWallet
+import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.createEmojiInfo
 import com.flowfoundation.wallet.reactnative.bridge.isSelectedWalletAddress
@@ -401,84 +404,84 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
             val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
 
-            // Get main wallet address from account
-            val mainAddress = account.wallet?.walletAddress()
-            if (mainAddress.isNullOrEmpty()) {
-                logw(TAG, "createWalletProfileFromAccount() - no main address found for account: ${account.userInfo.username}")
+            // Get FlowWallet for current network from walletNodes
+            val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
+            val flowWallets = account.walletNodes.filterIsInstance<FlowWallet>()
+                .filter { it.chainIdString == currentNetwork }
+
+            logd(TAG, "createWalletProfileFromAccount() - found ${flowWallets.size} FlowWallets for network $currentNetwork")
+
+            if (flowWallets.isEmpty()) {
+                logw(TAG, "createWalletProfileFromAccount() - no FlowWallet found for account: ${account.userInfo.username} on network $currentNetwork")
                 return null
             }
 
-            val mainEmojiInfo = createEmojiInfo(mainAddress)
-            val mainAccount = RNBridge.WalletAccount(
-                id = "main",
-                name = mainEmojiInfo?.name ?: "Main Account",
-                address = mainAddress,
-                emojiInfo = mainEmojiInfo,
-                parentEmoji = null,
-                parentAddress = null,
-                avatar = null,
-                isActive = isSelectedWalletAddress(mainAddress),
-                type = RNBridge.AccountType.MAIN,
-                balance = null,
-                nfts = null,
-            )
-            bridgeAccounts.add(mainAccount)
+            // Process each FlowWallet (typically one per network)
+            flowWallets.forEach { flowWallet ->
+                val mainAddress = flowWallet.address
+                val mainEmojiInfo = createEmojiInfo(mainAddress)
 
-            // Get child accounts
-            try {
-                val childAccounts = WalletManager.childAccountList(mainAddress)
-                childAccounts.forEach { childAccount ->
-                    val childAccountBridge = RNBridge.WalletAccount(
-                        id = "child_${childAccount.address}",
-                        name = childAccount.name,
-                        address = childAccount.address,
-                        emojiInfo = null,
-                        parentEmoji = mainEmojiInfo,
-                        parentAddress = mainAddress,
-                        avatar = childAccount.icon,
-                        isActive = isSelectedWalletAddress(childAccount.address),
-                        type = RNBridge.AccountType.CHILD,
-                        balance = null,
-                        nfts = null,
-                    )
-                    bridgeAccounts.add(childAccountBridge)
-                }
-            } catch (e: Exception) {
-                logw(TAG, "createWalletProfileFromAccount() - child accounts not available: ${e.message}")
-            }
+                // Add main account
+                val mainAccount = RNBridge.WalletAccount(
+                    id = "main_${mainAddress}",
+                    name = mainEmojiInfo?.name ?: flowWallet.name,
+                    address = mainAddress,
+                    emojiInfo = mainEmojiInfo,
+                    parentEmoji = null,
+                    parentAddress = null,
+                    avatar = null,
+                    isActive = isSelectedWalletAddress(mainAddress),
+                    type = RNBridge.AccountType.MAIN,
+                    balance = null,
+                    nfts = null,
+                )
+                bridgeAccounts.add(mainAccount)
 
-            // Get EVM address if available
-            try {
-                val evmAddress = if (isSelectedWalletAddress(mainAddress)) {
-                    EVMWalletManager.getEVMAddress()
-                } else {
-                    // For non-selected accounts, get EVM from walletNodes via EVMWalletManager
-                    EVMWalletManager.getEVMAddressByAddress(mainAddress)
+                // Process linked wallets from walletNodes (COAWallet, ChildWallet)
+                flowWallet.linkedWallets.forEach { linkedWallet ->
+                    when (linkedWallet) {
+                        is COAWallet -> {
+                            val evmEmojiInfo = createEmojiInfo(linkedWallet.address)
+                            val evmAccount = RNBridge.WalletAccount(
+                                id = "evm_${linkedWallet.address}",
+                                name = evmEmojiInfo?.name ?: linkedWallet.name,
+                                address = linkedWallet.address,
+                                parentAddress = mainAddress,
+                                emojiInfo = evmEmojiInfo,
+                                parentEmoji = mainEmojiInfo,
+                                avatar = null,
+                                isActive = isSelectedWalletAddress(linkedWallet.address),
+                                type = RNBridge.AccountType.EVM,
+                                balance = null,
+                                nfts = null,
+                            )
+                            bridgeAccounts.add(evmAccount)
+                            logd(TAG, "createWalletProfileFromAccount() - added COA/EVM: ${linkedWallet.address}")
+                        }
+                        is ChildWallet -> {
+                            val childAccountBridge = RNBridge.WalletAccount(
+                                id = "child_${linkedWallet.address}",
+                                name = linkedWallet.name,
+                                address = linkedWallet.address,
+                                emojiInfo = null,
+                                parentEmoji = mainEmojiInfo,
+                                parentAddress = mainAddress,
+                                avatar = linkedWallet.icon,
+                                isActive = isSelectedWalletAddress(linkedWallet.address),
+                                type = RNBridge.AccountType.CHILD,
+                                balance = null,
+                                nfts = null,
+                            )
+                            bridgeAccounts.add(childAccountBridge)
+                            logd(TAG, "createWalletProfileFromAccount() - added Child: ${linkedWallet.address}")
+                        }
+                    }
                 }
-                if (!evmAddress.isNullOrEmpty()) {
-                    val evmEmojiInfo = createEmojiInfo(evmAddress)
-                    val evmAccount = RNBridge.WalletAccount(
-                        id = "evm",
-                        name = evmEmojiInfo?.name ?: "EVM Account",
-                        address = evmAddress,
-                        parentAddress = mainAddress,
-                        emojiInfo = evmEmojiInfo,
-                        parentEmoji = mainEmojiInfo,
-                        avatar = null,
-                        isActive = isSelectedWalletAddress(evmAddress),
-                        type = RNBridge.AccountType.EVM,
-                        balance = null,
-                        nfts = null,
-                    )
-                    bridgeAccounts.add(evmAccount)
-                }
-            } catch (e: Exception) {
-                logw(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e.message}")
             }
 
             // Add EOA address only for currently selected wallet
-            // (Receive screen only shows current account, no need for non-selected EOA addresses)
-            if (isSelectedWalletAddress(mainAddress)) {
+            val mainAddress = flowWallets.firstOrNull()?.address
+            if (mainAddress != null && isSelectedWalletAddress(mainAddress)) {
                 try {
                     val eoaAddress = WalletManager.getEOAAddress()
                     if (!eoaAddress.isNullOrEmpty()) {
