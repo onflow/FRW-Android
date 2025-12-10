@@ -519,6 +519,68 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
+    /**
+     * Get profiles that are stored locally but not yet logged in (for recovery flow)
+     * These are LocalSwitchAccount entries - accounts known to the device but not fully authenticated
+     */
+    fun getRecoverableProfiles(promise: Promise, bridgeModelToWritableMap: (Any) -> WritableMap) {
+        logd(TAG, "getRecoverableProfiles() called")
+        ioScope {
+            try {
+                // Get the switch account list which includes LocalSwitchAccount entries
+                val switchList = AccountManager.getSwitchAccountList()
+                logd(TAG, "getRecoverableProfiles() - found ${switchList.size} items in switch list")
+
+                val profiles = mutableListOf<RNBridge.WalletProfile>()
+
+                // Filter for LocalSwitchAccount entries (profiles stored locally but not logged in)
+                switchList.filterIsInstance<com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount>().forEach { localAccount ->
+                    logd(TAG, "getRecoverableProfiles() - processing LocalSwitchAccount: ${localAccount.username}")
+                    
+                    val mainEmojiInfo = createEmojiInfo(localAccount.address)
+                    val mainAccount = RNBridge.WalletAccount(
+                        id = "main_${localAccount.address}",
+                        name = mainEmojiInfo?.name ?: localAccount.username,
+                        address = localAccount.address,
+                        emojiInfo = mainEmojiInfo,
+                        parentEmoji = null,
+                        parentAddress = null,
+                        avatar = null,
+                        isActive = false,
+                        type = RNBridge.AccountType.MAIN,
+                        balance = null,
+                        nfts = null,
+                    )
+
+                    val profile = RNBridge.WalletProfile(
+                        name = localAccount.username,
+                        avatar = null,
+                        uid = localAccount.userId ?: localAccount.address,
+                        accounts = listOf(mainAccount)
+                    )
+                    profiles.add(profile)
+                }
+
+                val response = RNBridge.WalletProfilesResponse(profiles = profiles)
+                val result = bridgeModelToWritableMap(response)
+
+                logd(TAG, "getRecoverableProfiles() - ${profiles.size} recoverable profiles found")
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "getRecoverableProfiles() - error: ${e.message}")
+                e.printStackTrace()
+
+                val emptyResponse = RNBridge.WalletProfilesResponse(profiles = emptyList())
+                val result = bridgeModelToWritableMap(emptyResponse)
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
+    }
+
     fun switchToProfile(userId: String, promise: Promise) {
         logd(TAG, "switchToProfile() called with userId: $userId")
         ioScope {
@@ -530,7 +592,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 if (targetAccount == null) {
                     logw(TAG, "switchToProfile() - account not found for userId: $userId")
                     uiScope {
-                        promise.resolve(false)
+                        promise.reject("PROFILE_NOT_FOUND", "Account not found for userId: $userId")
                     }
                     return@ioScope
                 }
@@ -541,14 +603,14 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 AccountManager.switch(targetAccount) {
                     logd(TAG, "switchToProfile() - switch completed for userId: $userId")
                     uiScope {
-                        promise.resolve(true)
+                        promise.resolve(null) // Success - resolve with no value
                     }
                 }
             } catch (e: Exception) {
                 loge(TAG, "switchToProfile() - error: ${e.message}")
                 e.printStackTrace()
                 uiScope {
-                    promise.resolve(false)
+                    promise.reject("SWITCH_FAILED", "Failed to switch profile: ${e.message}", e)
                 }
             }
         }
