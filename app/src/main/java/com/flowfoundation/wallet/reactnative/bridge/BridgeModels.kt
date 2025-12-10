@@ -27,6 +27,7 @@ class RNBridge {
     enum class InitialRoute(val routeName: String) {
         @SerializedName("GetStarted") GET_STARTED("GetStarted"),
         @SerializedName("ProfileTypeSelection") PROFILE_TYPE_SELECTION("ProfileTypeSelection"),
+        @SerializedName("ImportProfile") IMPORT_PROFILE("ImportProfile"),
         @SerializedName("SelectTokens") SELECT_TOKENS("SelectTokens"),
         @SerializedName("SendTo") SEND_TO("SendTo"),
         @SerializedName("SendTokens") SEND_TOKENS("SendTokens"),
@@ -117,7 +118,7 @@ class RNBridge {
         @SerializedName("name")
         val name: String,
         @SerializedName("avatar")
-        val avatar: String,
+        val avatar: String?,
         @SerializedName("uid")
         val uid: String,
         @SerializedName("accounts")
