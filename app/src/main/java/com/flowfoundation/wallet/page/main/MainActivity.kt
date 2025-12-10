@@ -33,8 +33,15 @@ import com.flowfoundation.wallet.utils.isNotificationPermissionChecked
 import com.flowfoundation.wallet.utils.isNotificationPermissionGrand
 import com.flowfoundation.wallet.utils.isRegistered
 import com.flowfoundation.wallet.utils.uiScope
+import com.flowfoundation.wallet.reactnative.ReactNativeActivity
+import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.instabug.bug.BugReporting
 import com.instabug.library.Instabug
+import android.widget.Button
+import android.view.Gravity
+import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.flowfoundation.wallet.BuildConfig
 
 class MainActivity : BaseActivity() {
 
@@ -94,6 +101,48 @@ class MainActivity : BaseActivity() {
         }
         configurationInstabugBugReport()
         LocalBroadcastManager.getInstance(this).registerReceiver(restoreMnemonicReceiver, IntentFilter("ACTION_RESTORE_MNEMONIC"))
+
+        // TEMPORARY DEBUG BUTTON - Remove after testing recovery flow
+        if (BuildConfig.DEBUG) {
+            addDebugRecoveryButton()
+        }
+    }
+
+    /**
+     * TEMPORARY: Adds a debug button to test the RN recovery screens
+     * Remove this after testing is complete
+     */
+    private fun addDebugRecoveryButton() {
+        val debugButton = Button(this).apply {
+            id = android.view.View.generateViewId()
+            text = "RN"
+            textSize = 10f
+            minimumWidth = 0
+            minimumHeight = 0
+            setPadding(24, 12, 24, 12)
+            alpha = 0.8f
+            setBackgroundColor(0xFF6200EE.toInt()) // Purple color
+            setTextColor(0xFFFFFFFF.toInt()) // White text
+            setOnClickListener {
+                ReactNativeActivity.launchWithRoute(
+                    this@MainActivity,
+                    RNBridge.ScreenType.ONBOARDING,
+                    RNBridge.InitialRoute.IMPORT_PROFILE
+                )
+            }
+        }
+
+        val params = ConstraintLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+            ConstraintLayout.LayoutParams.WRAP_CONTENT
+        ).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = 120
+            marginEnd = 16
+        }
+
+        binding.clContent.addView(debugButton, params)
     }
 
     private fun configurationInstabugBugReport() {
