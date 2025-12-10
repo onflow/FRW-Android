@@ -168,6 +168,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun getWalletProfiles(promise: Promise) = accountHandler.getWalletProfiles(promise, ::bridgeModelToWritableMap)
 
+    override fun switchToProfile(userId: String, promise: Promise) = accountHandler.switchToProfile(userId, promise)
+
     override fun showToast(title: String, message: String?, type: String?, duration: Double?) = uiHandler.showToast(title, message, type, duration)
 
     override fun hideToast(id: String) = uiHandler.hideToast(id)

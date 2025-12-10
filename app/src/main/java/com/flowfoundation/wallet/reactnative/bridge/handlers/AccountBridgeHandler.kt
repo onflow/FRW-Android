@@ -515,4 +515,39 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
             null
         }
     }
+
+    fun switchToProfile(userId: String, promise: Promise) {
+        logd(TAG, "switchToProfile() called with userId: $userId")
+        ioScope {
+            try {
+                // Find the account with the matching userId (wallet id)
+                val accounts = AccountManager.list()
+                val targetAccount = accounts.find { it.wallet?.id == userId }
+
+                if (targetAccount == null) {
+                    logw(TAG, "switchToProfile() - account not found for userId: $userId")
+                    uiScope {
+                        promise.resolve(false)
+                    }
+                    return@ioScope
+                }
+
+                logd(TAG, "switchToProfile() - found account: ${targetAccount.userInfo.username}")
+
+                // Switch to the account
+                AccountManager.switch(targetAccount) {
+                    logd(TAG, "switchToProfile() - switch completed for userId: $userId")
+                    uiScope {
+                        promise.resolve(true)
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "switchToProfile() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.resolve(false)
+                }
+            }
+        }
+    }
 }
