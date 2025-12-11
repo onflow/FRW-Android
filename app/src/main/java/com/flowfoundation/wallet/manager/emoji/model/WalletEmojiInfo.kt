@@ -1,14 +1,14 @@
 package com.flowfoundation.wallet.manager.emoji.model
 
-import kotlinx.serialization.SerialName
+import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class WalletEmojiInfo(
-    @SerialName("address")
-    val address: String,
-    @SerialName("emojiId")
-    val emojiId: Int,
-    @SerialName("emojiName")
-    val emojiName: String
+  @SerializedName("address")
+  val address: String,
+  @SerializedName("emojiId")
+  val emojiId: Int,
+  @SerializedName("emojiName")
+  val emojiName: String
 )
