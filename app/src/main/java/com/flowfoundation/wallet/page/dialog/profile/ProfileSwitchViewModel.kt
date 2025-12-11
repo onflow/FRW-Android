@@ -3,6 +3,7 @@ package com.flowfoundation.wallet.page.dialog.profile
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -101,7 +102,7 @@ class ProfileSwitchViewModel : ViewModel() {
         val avatars = mutableListOf<AvatarData>()
         
         // For secure enclave (hardware) accounts, always show COA immediately
-        val isSecureEnclaveAccount = profile.accountType == "hardware"
+        val isSecureEnclaveAccount = profile.accountType == AccountType.HARDWARE
 
         flowWallets.forEach { flowWallet ->
             // Main account
@@ -175,7 +176,7 @@ class ProfileSwitchViewModel : ViewModel() {
 
         // 3. Process COA avatars based on fetched balances and NFT status
         // For secure enclave (hardware) accounts, always show COA regardless of balance
-        val isSecureEnclaveAccount = profile.accountType == "hardware"
+        val isSecureEnclaveAccount = profile.accountType == AccountType.HARDWARE
         
         if (profileId !in verifiedCoaAvatarsMap) {
             verifiedCoaAvatarsMap[profileId] = mutableMapOf()
