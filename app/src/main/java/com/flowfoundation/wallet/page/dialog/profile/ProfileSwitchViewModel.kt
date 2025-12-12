@@ -102,7 +102,7 @@ class ProfileSwitchViewModel : ViewModel() {
         val avatars = mutableListOf<AvatarData>()
         
         // For secure enclave (hardware) accounts, always show COA immediately
-        val isSecureEnclaveAccount = profile.profileType == AccountType.HARDWARE
+        val isSecureEnclaveAccount = profile.profileType == ProfileType.HARDWARE
 
         flowWallets.forEach { flowWallet ->
             // Main account
@@ -176,7 +176,7 @@ class ProfileSwitchViewModel : ViewModel() {
 
         // 3. Process COA avatars based on fetched balances and NFT status
         // For secure enclave (hardware) accounts, always show COA regardless of balance
-        val isSecureEnclaveAccount = profile.profileType == AccountType.HARDWARE
+        val isSecureEnclaveAccount = profile.profileType == ProfileType.HARDWARE
         
         if (profileId !in verifiedCoaAvatarsMap) {
             verifiedCoaAvatarsMap[profileId] = mutableMapOf()

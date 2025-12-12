@@ -770,7 +770,7 @@ private fun setupAccountAndWallet(
                 prefix = prefix,
                 wallet = walletListData,
                 walletNodes = initialWalletNodes,
-                profileType = AccountType.FULL
+                profileType = ProfileType.FULL
             ),
             com.flowfoundation.wallet.firebase.auth.firebaseUid()
         )

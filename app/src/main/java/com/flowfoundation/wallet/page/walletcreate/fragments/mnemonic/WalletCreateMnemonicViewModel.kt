@@ -79,7 +79,7 @@ class WalletCreateMnemonicViewModel : ViewModel() {
             val account = com.flowfoundation.wallet.manager.account.Account(
                 userInfo = userInfo,
                 keyStoreInfo = com.google.gson.Gson().toJson(keystoreAddress),
-                profileType = com.flowfoundation.wallet.manager.account.AccountType.FULL
+                profileType = com.flowfoundation.wallet.manager.account.ProfileType.FULL
             )
 
             com.flowfoundation.wallet.manager.account.AccountManager.add(account)

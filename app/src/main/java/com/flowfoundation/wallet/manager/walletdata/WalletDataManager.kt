@@ -252,8 +252,8 @@ object WalletDataManager {
             // EOA Wallet - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
             // For legacy accounts (profileType = null), fall back to checking signature algorithm
             val canDeriveEoa = when (account.profileType) {
-                AccountType.HARDWARE -> false  // Secure Enclave - no EOA
-                AccountType.FULL -> true       // Recovery Phrase - derive EOA
+                ProfileType.HARDWARE -> false  // Secure Enclave - no EOA
+                ProfileType.FULL -> true       // Recovery Phrase - derive EOA
                 else -> {
                     // Legacy account - check signature algorithm as fallback
                     try {
@@ -402,8 +402,8 @@ object WalletDataManager {
                 // EOA - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
                 // For legacy accounts (profileType = null), fall back to checking signature algorithm
                 val canDeriveEoa = when (account.profileType) {
-                    AccountType.HARDWARE -> false  // Secure Enclave - no EOA
-                    AccountType.FULL -> true       // Recovery Phrase - derive EOA
+                    ProfileType.HARDWARE -> false  // Secure Enclave - no EOA
+                    ProfileType.FULL -> true       // Recovery Phrase - derive EOA
                     else -> {
                         // Legacy account - check signature algorithm as fallback
                         try {

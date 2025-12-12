@@ -706,7 +706,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                     userInfo = userInfo,
                                                     keyStoreInfo = keyStoreInfo,
                                                     wallet = walletData,
-                                                    profileType = AccountType.FULL
+                                                    profileType = ProfileType.FULL
                                                 )
                                             )
                                             logd("KeyStoreRestoreViewModel", "Account added successfully")
@@ -870,7 +870,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 username = userInfo.username,
                                                 wallets = null
                                             ),
-                                            profileType = AccountType.FULL
+                                            profileType = ProfileType.FULL
                                         )
                                         clearUserCache()
                                         AccountManager.add(userAccount)
@@ -1011,7 +1011,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                     username = userInfo.username,
                                                     wallets = null
                                                 ),
-                                                profileType = AccountType.FULL
+                                                profileType = ProfileType.FULL
                                             )
                                         )
                                         MixpanelManager.accountRestore(
@@ -1167,7 +1167,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                         username = userInfo.username,
                                         wallets = null
                                     ),
-                                    profileType = AccountType.FULL
+                                    profileType = ProfileType.FULL
                                 )
                             )
                             MixpanelManager.accountCreated(

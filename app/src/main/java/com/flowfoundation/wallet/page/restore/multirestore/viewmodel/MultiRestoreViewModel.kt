@@ -560,7 +560,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                                 userInfo = userInfo,
                                                 prefix = storedPrefix,
                                                 wallet = walletData,
-                                                profileType = AccountType.FULL
+                                                profileType = ProfileType.FULL
                                             ),
                                             userId
                                         )

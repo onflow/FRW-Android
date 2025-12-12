@@ -259,7 +259,7 @@ suspend fun initWalletWithTxId(
           prefix = prefix,
           wallet = walletListData,
           walletNodes = initialWalletNodes,
-          profileType = AccountType.HARDWARE
+          profileType = ProfileType.HARDWARE
         ),
         firebaseUid()
       )
@@ -447,7 +447,7 @@ suspend fun registerOutblock(
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
               wallet = walletListData,
               walletNodes = initialWalletNodes,
-              profileType = AccountType.HARDWARE
+              profileType = ProfileType.HARDWARE
             ),
             firebaseUid()
           )

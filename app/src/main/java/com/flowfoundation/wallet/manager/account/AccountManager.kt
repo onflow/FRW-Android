@@ -754,11 +754,11 @@ object AccountManager {
 fun username() = AccountManager.get()!!.userInfo.username
 
 /**
- * Account types for distinguishing how the account was created
+ * Profile types for distinguishing how the account was created
  * - "full": Recovery Phrase account (can derive EOA)
  * - "hardware": Secure Enclave account (no EOA by default)
  */
-object AccountType {
+object ProfileType {
     const val FULL = "full"        // Recovery Phrase
     const val HARDWARE = "hardware" // Secure Enclave
 }
