@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.key.HDWalletCryptoProvider
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
 import com.flowfoundation.wallet.network.ApiService

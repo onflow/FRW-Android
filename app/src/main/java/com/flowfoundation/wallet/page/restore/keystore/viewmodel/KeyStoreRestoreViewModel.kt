@@ -10,6 +10,7 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
+import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
