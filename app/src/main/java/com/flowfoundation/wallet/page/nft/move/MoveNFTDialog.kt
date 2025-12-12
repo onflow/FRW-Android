@@ -92,7 +92,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
 
             layoutFromAccount.setAccountInfo(fromAddress)
             if (isChildAccountSelected) {
-                val parentAddress = WalletManager.getFlowWalletAddress() ?: return@with
+                val parentAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@with
                 layoutToAccount.setAccountInfo(parentAddress)
 
                 nft?.let {
@@ -108,7 +108,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 }
                 needMoveFee = false
             } else if (isEVMAccountSelected) {
-                val walletAddress = WalletManager.getFlowWalletAddress().orEmpty()
+                val walletAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
                 layoutToAccount.setAccountInfo(walletAddress)
                 val addressList =
                     WalletManager.childAccountList(walletAddress).map { child ->
@@ -118,7 +118,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 configureToLayoutAction(addressList)
                 needMoveFee = true
             } else {
-                val walletAddress = WalletManager.getFlowWalletAddress()
+                val walletAddress = WalletManager.getCurrentFlowWalletAddress()
                 nft?.let {
                     val addressList =
                         WalletManager.childAccountList(walletAddress).map { child ->
@@ -211,7 +211,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             ioScope {
                 val toAddress = binding.layoutToAccount.getAccountAddress()
                 if (isChildAccountSelected) {
-                    if (toAddress == WalletManager.getFlowWalletAddress()) {
+                    if (toAddress == WalletManager.getCurrentFlowWalletAddress()) {
                         moveNFTFromChildToParent(fromAddress, it) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -246,7 +246,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                         }
                     }
                 } else if (isEVMAccountSelected) {
-                    if (toAddress == WalletManager.getFlowWalletAddress()) {
+                    if (toAddress == WalletManager.getCurrentFlowWalletAddress()) {
                         EVMWalletManager.moveNFT(it, false) { isSuccess ->
                             uiScope {
                                 binding.btnMove.setProgressVisible(false)
@@ -366,7 +366,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
             )
             trackMoveNFT(
                 childAddress,
-                WalletManager.getFlowWalletAddress().orEmpty(),
+                WalletManager.getCurrentFlowWalletAddress().orEmpty(),
                 nft.getNFTIdentifier(),
                 txId.orEmpty(),
                 TransferAccountType.CHILD,
@@ -398,7 +398,7 @@ class MoveNFTDialog : BottomSheetDialogFragment() {
                 nft
             )
             trackMoveNFT(
-                WalletManager.getFlowWalletAddress().orEmpty(),
+                WalletManager.getCurrentFlowWalletAddress().orEmpty(),
                 toAddress,
                 nft
                     .getNFTIdentifier(),

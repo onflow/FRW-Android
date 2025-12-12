@@ -35,6 +35,7 @@ import com.flow.wallet.storage.FileSystemStorage
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import org.onflow.flow.ChainId
 import java.io.File
 import java.util.*
@@ -156,7 +157,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                         val seedPhraseKey = SeedPhraseKey(
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
-                            derivationPath = "m/44'/539'/0'/0/0",
+                            derivationPath = DERIVATION_PATH,
                             storage = storage
                         )
                         uploadGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey))
@@ -169,7 +170,7 @@ class GoogleDriveAuthActivity : AppCompatActivity() {
                         val seedPhraseKey = SeedPhraseKey(
                             mnemonicString = mnemonic ?: "",
                             passphrase = "",
-                            derivationPath = "m/44'/539'/0'/0/0",
+                            derivationPath = DERIVATION_PATH,
                             storage = storage
                         )
                         checkGoogleDriveBackup(googleDriveService, BackupCryptoProvider(seedPhraseKey))

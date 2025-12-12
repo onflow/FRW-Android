@@ -30,7 +30,7 @@ object COALinkCheckManager {
     }
 
     suspend fun checkCOALink(): Boolean {
-        val walletAddress = WalletManager.getFlowWalletAddress() ?: return true
+        val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return true
         if (addressSet.contains(walletAddress)) {
             return true
         }

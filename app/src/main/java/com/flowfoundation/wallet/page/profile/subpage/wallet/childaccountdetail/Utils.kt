@@ -10,7 +10,7 @@ import org.json.JSONObject
 import org.onflow.flow.infrastructure.Cadence
 
 suspend fun queryChildAccountTokens(childAddress: String): List<TokenData> {
-    val walletAddress = WalletManager.getFlowWalletAddress() ?: return emptyList()
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return emptyList()
     val response = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_TOKENS.executeCadence {
         arg { Cadence.address(walletAddress) }
         arg { Cadence.address(childAddress) }
@@ -20,7 +20,7 @@ suspend fun queryChildAccountTokens(childAddress: String): List<TokenData> {
 }
 
 suspend fun queryChildAccountNFTCollectionID(childAddress: String): List<String> {
-    val walletAddress = WalletManager.getFlowWalletAddress() ?: return emptyList()
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return emptyList()
     val response = CadenceScript.CADENCE_QUERY_CHILD_ACCOUNT_NFT_COLLECTIONS.executeCadence {
         arg { Cadence.address(walletAddress) }
         arg { Cadence.address(childAddress) }

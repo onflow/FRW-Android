@@ -58,7 +58,7 @@ class DrawerLayoutViewModel : ViewModel(), OnAccountUpdate, OnEmojiUpdate {
     }
 
     private fun loadEvmStatus() {
-        _showEvmLayout.value = EVMWalletManager.showEVMEnablePage()
+        _showEvmLayout.value = WalletManager.isEVMAccountSelected().not() && EVMWalletManager.showEVMEnablePage()
     }
 
     fun refreshWalletList(refreshBalance: Boolean = false) {

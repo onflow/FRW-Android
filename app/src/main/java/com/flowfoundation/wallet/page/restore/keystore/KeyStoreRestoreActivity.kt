@@ -11,11 +11,9 @@ import androidx.transition.Transition
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.base.activity.BaseActivity
 import com.flowfoundation.wallet.databinding.ActivityRestoreKeyStoreBinding
-import com.flowfoundation.wallet.page.restore.keystore.fragment.KeyStoreNoAccountDialog
 import com.flowfoundation.wallet.page.restore.keystore.fragment.KeyStoreSelectAccountDialog
 import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyStoreInfoFragment
-import com.flowfoundation.wallet.page.restore.keystore.fragment.PrivateKeyStoreUsernameFragment
 import com.flowfoundation.wallet.page.restore.keystore.fragment.SeedPhraseInfoFragment
 import com.flowfoundation.wallet.page.restore.keystore.model.KeyStoreOption
 import com.flowfoundation.wallet.page.restore.keystore.viewmodel.KeyStoreRestoreViewModel
@@ -62,7 +60,8 @@ class KeyStoreRestoreActivity : BaseActivity() {
                     }
                 } else {
                     uiScope {
-                        KeyStoreNoAccountDialog(this@KeyStoreRestoreActivity).show()
+                        // If no existing accounts found, directly create a new one with random username
+                        restoreViewModel.createNewAccountFromKeystore()
                     }
                 }
             }
@@ -97,8 +96,7 @@ class KeyStoreRestoreActivity : BaseActivity() {
             KeyStoreOption.INPUT_KEYSTORE_INFO -> PrivateKeyStoreInfoFragment()
             KeyStoreOption.INPUT_PRIVATE_KEY_INFO -> PrivateKeyInfoFragment()
             KeyStoreOption.INPUT_SEED_PHRASE_INFO -> SeedPhraseInfoFragment()
-            KeyStoreOption.CREATE_USERNAME -> PrivateKeyStoreUsernameFragment()
-            KeyStoreOption.CREATE_ACCOUNT_WITH_USERNAME -> PrivateKeyStoreUsernameFragment(isCreateAccount = true)
+            else -> return
         }
         fragment.enterTransition = transition
         supportFragmentManager.beginTransaction()

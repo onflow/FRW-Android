@@ -273,7 +273,7 @@ suspend fun cadenceClaimInboxNft(
 }
 
 suspend fun cadenceQueryMinFlowBalance(): BigDecimal? {
-    val walletAddress = WalletManager.getFlowWalletAddress() ?: return null
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return null
     logd(TAG, "cadenceQueryMinFlowBalance address:$walletAddress")
     val result = CadenceScript.CADENCE_QUERY_MIN_FLOW_BALANCE.executeCadence {
         arg { Cadence.address(walletAddress) }
@@ -321,7 +321,7 @@ suspend fun cadenceQueryEVMAddress(address: String): String? {
 }
 
 suspend fun cadenceQueryCOATokenBalance(): BigDecimal? {
-    val walletAddress = WalletManager.getFlowWalletAddress() ?: return null
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return null
     logd(TAG, "cadenceQueryCOATokenBalance address:$walletAddress")
     val result = CadenceScript.CADENCE_QUERY_COA_FLOW_BALANCE.executeCadence {
         arg { Cadence.address(walletAddress) }
@@ -715,7 +715,7 @@ suspend fun CadenceScript.transactionByMainWallet(arguments: CadenceArgumentsBui
 
 suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
-    val walletAddress = WalletManager.getFlowWalletAddress()
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress()
 
     if (walletAddress == null) {
         logd(TAG, "transactionByMainWallet() failed: no wallet address available")
@@ -742,7 +742,7 @@ suspend fun String.transactionByMainWallet(scriptId: String, arguments: CadenceA
 
 suspend fun CadenceScript.transactionWithBridgePayer(arguments: CadenceArgumentsBuilder.() -> Unit): String? {
     // For hardware-backed keys, WalletManager.wallet() returns null, but we can still get the address
-    val walletAddress = WalletManager.getFlowWalletAddress()
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress()
 
     if (walletAddress == null) {
         logd(TAG, "transactionWithBridgePayer() failed: no wallet address available")

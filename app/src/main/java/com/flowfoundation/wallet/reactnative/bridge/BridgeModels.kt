@@ -1,6 +1,6 @@
 //
 //  BridgeModels.kt
-//  
+//
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
 //

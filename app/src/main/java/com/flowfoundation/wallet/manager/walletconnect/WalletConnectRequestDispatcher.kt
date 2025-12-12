@@ -234,7 +234,7 @@ private suspend fun WCRequest.evmSendTransaction() {
                             }
                         }
                     } else {
-                        sendEOATransaction(chainId, transaction) { txHash ->
+                        sendEOATransaction(transaction) { txHash ->
                             if (txHash.isEmpty()) {
                                 reject()
                             } else {
@@ -346,7 +346,7 @@ private fun WCRequest.respondAccountInfo() {
 
 private suspend fun WCRequest.respondAuthn() {
     logd(TAG, "Starting respondAuthn with params: $params")
-    val address = WalletManager.getFlowWalletAddress() ?: run {
+    val address = WalletManager.getCurrentFlowWalletAddress() ?: run {
         loge(TAG, "No wallet address found")
         reject()
         return
@@ -479,7 +479,7 @@ private suspend fun WCRequest.respondAuthz() {
     val json = gson().fromJson<List<Signable>>(params, object : TypeToken<List<Signable>>() {}.type)
     val signable = json.firstOrNull() ?: return
     val message = signable.message ?: return
-    val address = WalletManager.getFlowWalletAddress() ?: return
+    val address = WalletManager.getCurrentFlowWalletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
 
     // Clean address for Flow-KMM (remove "0x" prefix)
@@ -531,7 +531,7 @@ private suspend fun WCRequest.respondAuthz() {
 }
 
 private suspend fun WCRequest.respondPreAuthz() {
-    val walletAddress = WalletManager.getFlowWalletAddress() ?: return
+    val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return
     val payerInfo = SurgePricingManager.getFeePayer()
     val payerAddress = if (isGasFree() && payerInfo != null) {
         payerInfo.address()
@@ -592,7 +592,7 @@ private suspend fun WCRequest.respondPreAuthz() {
 
 private suspend fun WCRequest.respondUserSign() {
     val activity = topActivity() ?: return
-    val address = WalletManager.getFlowWalletAddress() ?: return
+    val address = WalletManager.getCurrentFlowWalletAddress() ?: return
     val param = gson().fromJson<List<SignableMessage>>(params, object : TypeToken<List<SignableMessage>>() {}.type)?.firstOrNull()
     val message = param?.message ?: return
 
@@ -691,7 +691,7 @@ private suspend fun WCRequest.respondSignProposer() {
 
     logd(TAG, "respondSignProposer param:${params}")
     val signable = params.toSignables(gson())
-    val address = WalletManager.getFlowWalletAddress() ?: return
+    val address = WalletManager.getCurrentFlowWalletAddress() ?: return
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return
 
     // Clean address for Flow-KMM (remove "0x" prefix)

@@ -1,9 +1,11 @@
 package com.flowfoundation.wallet.manager.evm
 
+import com.flow.wallet.wallet.ethSignTransactionAndSendByCadence
 import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
+import com.flowfoundation.wallet.manager.config.AppConfig
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNonce
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMV2Transaction
@@ -27,6 +29,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
+import org.onflow.flow.infrastructure.addHexPrefix
 import org.onflow.flow.infrastructure.toJsonElement
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.FlowAddress
@@ -130,13 +133,12 @@ fun loadProviderJS(): String {
         .use { it.readText() }
 }
 
-fun sendEOATransaction(chain: String?, transaction: EvmTransaction, callback: (txHash: String) ->
+fun sendEOATransaction(transaction: EvmTransaction, callback: (txHash: String) ->
 Unit) {
     ioScope {
         try {
             // Log all incoming parameters
             logd("EOATransaction", "=== EOA Transaction Parameters ===")
-            logd("EOATransaction", "chain: $chain")
             logd("EOATransaction", "transaction.to: ${transaction.to}")
             logd("EOATransaction", "transaction.value: ${transaction.value}")
             logd("EOATransaction", "transaction.gas: ${transaction.gas}")
@@ -160,35 +162,47 @@ Unit) {
             val nonce = ethGetTransactionCount.transactionCount
             logd("EOATransaction", "Got nonce: $nonce")
 
-            // Get gas price from network
-            logd("EOATransaction", "Getting gas price from network")
-            val gasPrice = web3j.ethGasPrice().sendAsync().get().gasPrice
-            logd("EOATransaction", "Got gas price: $gasPrice")
-
             // Parse transaction parameters
-            val chainId = if (chain.isNullOrBlank()) {
-                val networkChainId = networkChainId()
-                logd("EOATransaction", "using network chainId: $networkChainId")
-                networkChainId.toBigInteger()
-            } else {
-                // Handle EIP-155 format: "eip155:747" -> "747"
-                val actualChainId = if (chain.startsWith("eip155:")) {
-                    chain.substringAfter("eip155:")
-                } else {
-                    chain
-                }
-                val parsedChainId = actualChainId.toBigInteger()
-                logd("EOATransaction", "parsed chainId: $parsedChainId from: $chain")
-                parsedChainId
-            }
-
+            val chainId = networkChainId().toBigInteger()
             val valueAmount = Numeric.decodeQuantity(transaction.value ?: "0x0")
-            val gasLimit = Numeric.decodeQuantity(transaction.gas ?: "0x5208") // Default 21000 gas for simple transfer
+            val gasLimit = Numeric.decodeQuantity(transaction.gas ?: "0x5208")
+
+            // Check for EIP-1559 parameters
+            val maxFeePerGasStr = transaction.maxFeePerGas
+            val maxPriorityFeePerGasStr = transaction.maxPriorityFeePerGas
+
+            val isEIP1559 = !maxFeePerGasStr.isNullOrBlank() && !maxPriorityFeePerGasStr.isNullOrBlank()
+
+            var maxFeePerGas: BigInteger? = null
+            var maxPriorityFeePerGas: BigInteger? = null
+            var gasPrice: BigInteger? = null
+
+            if (isEIP1559) {
+                try {
+                    maxFeePerGas = Numeric.decodeQuantity(maxFeePerGasStr)
+                    maxPriorityFeePerGas = Numeric.decodeQuantity(maxPriorityFeePerGasStr)
+
+                    if (maxFeePerGas < maxPriorityFeePerGas) {
+                         logd("EOATransaction", "ERROR: maxFeePerGas must be >= maxPriorityFeePerGas")
+                         callback.invoke("")
+                         return@ioScope
+                    }
+                    logd("EOATransaction", "EIP-1559 Transaction - maxFee: $maxFeePerGas, maxPriority: $maxPriorityFeePerGas")
+                } catch (e: Exception) {
+                    logd("EOATransaction", "ERROR parsing EIP-1559 fees: ${e.message}")
+                    callback.invoke("")
+                    return@ioScope
+                }
+            } else {
+                // Get gas price from network for Legacy
+                logd("EOATransaction", "Getting gas price from network (Legacy)")
+                gasPrice = web3j.ethGasPrice().sendAsync().get().gasPrice
+                logd("EOATransaction", "Got gas price: $gasPrice")
+            }
 
             logd("EOATransaction", "=== Final Transaction Parameters ===")
             logd("EOATransaction", "chainId: $chainId")
             logd("EOATransaction", "nonce: $nonce")
-            logd("EOATransaction", "gasPrice: $gasPrice")
             logd("EOATransaction", "gasLimit: $gasLimit")
             logd("EOATransaction", "valueAmount: $valueAmount")
             logd("EOATransaction", "toAddress: ${transaction.to}")
@@ -197,11 +211,19 @@ Unit) {
             val input = Ethereum.SigningInput.newBuilder().apply {
                 setChainId(ByteString.copyFrom(chainId.toByteArray()))
                 setNonce(ByteString.copyFrom(nonce.toByteArray()))
-                setGasPrice(ByteString.copyFrom(gasPrice.toByteArray()))
                 setGasLimit(ByteString.copyFrom(gasLimit.toByteArray()))
                 toAddress = transaction.to ?: ""
 
-                // Handle both transfer and contract call transactions (like iOS logic)
+                if (isEIP1559) {
+                    setTxMode(Ethereum.TransactionMode.Enveloped)
+                    setMaxFeePerGas(ByteString.copyFrom(maxFeePerGas!!.toByteArray()))
+                    setMaxInclusionFeePerGas(ByteString.copyFrom(maxPriorityFeePerGas!!.toByteArray()))
+                } else {
+                    setTxMode(Ethereum.TransactionMode.Legacy)
+                    setGasPrice(ByteString.copyFrom(gasPrice!!.toByteArray()))
+                }
+
+                // Handle both transfer and contract call transactions
                 val dataString = transaction.data
                 if (!dataString.isNullOrEmpty() && dataString != "0x") {
                     // Contract call transaction
@@ -225,43 +247,70 @@ Unit) {
             }.build()
 
             logd("EOATransaction", "=== Transaction Signing ===")
-            // Sign the transaction (similar to iOS walletEntity?.ethSignTransaction)
-            val output = WalletManager.wallet()?.ethSignTransaction(input)
+            // Sign the transaction
+            if (AppConfig.wrapEOATransaction()) {
+                val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+                if (cryptoProvider == null) {
+                    logd("EOATransaction", "ERROR: No current crypto provider found")
+                    callback.invoke("")
+                    return@ioScope
+                }
+                val singer = cryptoProvider.getSigner(HashingAlgorithm.SHA2_256)
+                val result = WalletManager.wallet()?.ethSignTransactionAndSendByCadence(
+                    input = input,
+                    fromAddress = address,
+                    signers = listOf(singer),
+                    flowAddress = FlowAddress(WalletManager.getCurrentFlowWalletAddress().orEmpty())
+                )
+                if (result == null) {
+                    logd("EOATransaction", "ERROR: Failed to sign transaction")
+                    callback.invoke("")
+                    return@ioScope
+                }
+                logd("EOATransaction", "Transaction signed successfully with evmTxId: ${result.evmTxId}")
+                // Send raw transaction to the network
+                logd("EOATransaction", "Sending raw transaction to network...")
+                val txHash = result.evmTxId.addHexPrefix()
+                callback.invoke(txHash)
 
-            if (output == null) {
-                logd("EOATransaction", "ERROR: Failed to sign transaction")
-                callback.invoke("")
-                return@ioScope
-            }
-
-            logd("EOATransaction", "Transaction signed successfully")
-            val signedTxHex = Numeric.toHexString(output.encoded.toByteArray())
-            logd("EOATransaction", "Signed transaction hex: $signedTxHex")
-
-            logd("EOATransaction", "=== Sending Transaction ===")
-            // Send raw transaction to the network (similar to iOS web3.eth.send(raw:))
-            logd("EOATransaction", "Sending raw transaction to network...")
-            val ethSendTransaction = web3j.ethSendRawTransaction(signedTxHex).sendAsync().get()
-            logd("EOATransaction", "Raw transaction sent, processing response...")
-
-            if (ethSendTransaction.hasError()) {
-                logd("EOATransaction", "Send transaction error: ${ethSendTransaction.error?.message}")
-                callback.invoke("")
             } else {
-                val txHash = ethSendTransaction.transactionHash
-                logd("EOATransaction", "Transaction sent successfully with hash: $txHash")
+                val output = WalletManager.wallet()?.ethSignTransaction(input)
 
-                // Optionally get transaction receipt (similar to iOS)
-                try {
-                    val receipt = web3j.ethGetTransactionReceipt(txHash).sendAsync().get()
-                    if (receipt.transactionReceipt.isPresent) {
-                        logd("EOATransaction", "Transaction receipt status: ${receipt.transactionReceipt.get().status}")
-                    }
-                } catch (e: Exception) {
-                    logd("EOATransaction", "Failed to get receipt: ${e.message}")
+                if (output == null) {
+                    logd("EOATransaction", "ERROR: Failed to sign transaction")
+                    callback.invoke("")
+                    return@ioScope
                 }
 
-                callback.invoke(txHash)
+                logd("EOATransaction", "Transaction signed successfully")
+                val signedTxHex = Numeric.toHexString(output.encoded.toByteArray())
+                logd("EOATransaction", "Signed transaction hex: $signedTxHex")
+
+                logd("EOATransaction", "=== Sending Transaction ===")
+                // Send raw transaction to the network
+                logd("EOATransaction", "Sending raw transaction to network...")
+                val ethSendTransaction = web3j.ethSendRawTransaction(signedTxHex).sendAsync().get()
+                logd("EOATransaction", "Raw transaction sent, processing response...")
+
+                if (ethSendTransaction.hasError()) {
+                    logd("EOATransaction", "Send transaction error: ${ethSendTransaction.error?.message}")
+                    callback.invoke("")
+                } else {
+                    val txHash = ethSendTransaction.transactionHash
+                    logd("EOATransaction", "Transaction sent successfully with hash: $txHash")
+
+                    // Optionally get transaction receipt
+                    try {
+                        val receipt = web3j.ethGetTransactionReceipt(txHash).sendAsync().get()
+                        if (receipt.transactionReceipt.isPresent) {
+                          logd("EOATransaction", "Transaction receipt status: ${receipt.transactionReceipt.get().status}")
+                        }
+                    } catch (e: Exception) {
+                        logd("EOATransaction", "Failed to get receipt: ${e.message}")
+                    }
+
+                    callback.invoke(txHash)
+                }
             }
 
         } catch (e: Exception) {
@@ -358,7 +407,7 @@ fun sendCOATransaction(transaction: EvmTransaction, callback: (txHash: String) -
 private fun evmTransactionSigned(txId: String, isSuccess: Boolean) {
     MixpanelManager.evmTransactionSigned(
         txId = txId,
-        flowAddress = WalletManager.getFlowWalletAddress().orEmpty(),
+        flowAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty(),
         evmAddress = EVMWalletManager.getEVMAddress().orEmpty(),
         isSuccess = isSuccess
     )
@@ -383,7 +432,7 @@ fun refreshBalance(value: Float) {
 
 suspend fun signTypedData(data: ByteArray): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val address = WalletManager.getFlowWalletAddress() ?: return ""
+    val address = WalletManager.getCurrentFlowWalletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 
@@ -402,7 +451,7 @@ suspend fun signTypedData(data: ByteArray): String {
 
 suspend fun signEthereumMessage(message: String): String {
     val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider() ?: return ""
-    val address = WalletManager.getFlowWalletAddress() ?: return ""
+    val address = WalletManager.getCurrentFlowWalletAddress() ?: return ""
     val flowAddress = FlowAddress(address)
     val keyIndex = flowAddress.currentKeyId(cryptoProvider.getPublicKey())
 

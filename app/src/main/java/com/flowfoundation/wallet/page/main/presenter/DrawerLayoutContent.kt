@@ -562,7 +562,6 @@ fun ActiveAccountSection(
                             color = colorResource(R.color.evm),
                             shape = RoundedCornerShape(16.dp)
                         )
-                        .padding(horizontal = 4.dp, vertical = 1.dp)
                 ) {
                     val (evmLabel, flowLabel) = createRefs()
                     Text(
@@ -572,7 +571,7 @@ fun ActiveAccountSection(
                         modifier = Modifier.constrainAs(evmLabel) {
                             top.linkTo(parent.top)
                             bottom.linkTo(parent.bottom)
-                            start.linkTo(parent.start)
+                            start.linkTo(parent.start, margin = 4.dp)
                             end.linkTo(flowLabel.start)
                         }
                     )

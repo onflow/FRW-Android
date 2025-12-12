@@ -57,7 +57,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private var isFlowCoin = false
     private var moveFromAddress: String = WalletManager.selectedWalletAddress()
     private var moveToAddress: String = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-        WalletManager.getFlowWalletAddress().orEmpty()
+        WalletManager.getCurrentFlowWalletAddress().orEmpty()
     } else {
         EVMWalletManager.getEVMAddress().orEmpty()
     }
@@ -131,7 +131,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     }
 
     private fun getEligibleAccounts(): List<String> {
-        val flowAddress = WalletManager.getFlowWalletAddress().orEmpty()
+        val flowAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
         val childAccounts = WalletManager.childAccountList(flowAddress).map { it.address }
         val evmAddress = EVMWalletManager.getEVMAddress().orEmpty()
         return listOf(flowAddress) + childAccounts + listOf(evmAddress)
@@ -152,7 +152,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
     private fun setupViews() {
         // Initialize addresses based on whether EVM is selected
         moveToAddress = if (EVMWalletManager.isEVMWalletAddress(moveFromAddress)) {
-            WalletManager.getFlowWalletAddress().orEmpty()
+            WalletManager.getCurrentFlowWalletAddress().orEmpty()
         } else {
             EVMWalletManager.getEVMAddress().orEmpty()
         }
@@ -210,7 +210,7 @@ class MoveTokenDialog : BottomSheetDialogFragment() {
                         moveFromAddress = selected
                         // Update to address based on new from address
                         moveToAddress = if (EVMWalletManager.isEVMWalletAddress(selected)) {
-                            WalletManager.getFlowWalletAddress().orEmpty()
+                            WalletManager.getCurrentFlowWalletAddress().orEmpty()
                         } else {
                             EVMWalletManager.getEVMAddress().orEmpty()
                         }

@@ -18,6 +18,7 @@ import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.flowfoundation.wallet.utils.Env.getStorage
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.secret.EncryptedMnemonicUtils
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import com.google.gson.Gson
 import org.onflow.flow.ChainId
 import org.onflow.flow.models.SigningAlgorithm
@@ -86,12 +87,13 @@ object WalletCreationHelper {
             val uid = firebaseUid()
             if (!uid.isNullOrBlank()) {
                 val decryptedMnemonic = EncryptedMnemonicUtils.decrypt(ks.encryptedMnemonic, uid)
+                logd(TAG, "Decrypted mnemonic: $decryptedMnemonic")
                 if (!decryptedMnemonic.isNullOrBlank()) {
                     // Create HD Wallet using the decrypted mnemonic
                     val seedPhraseKey = SeedPhraseKey(
                         mnemonicString = decryptedMnemonic,
                         passphrase = "",
-                        derivationPath = "m/44'/539'/0'/0/0",
+                        derivationPath = DERIVATION_PATH,
                         storage = storage
                     )
                     WalletManager.setEoaDisabled(false)
@@ -168,7 +170,7 @@ object WalletCreationHelper {
             val seedPhraseKey = SeedPhraseKey(
                 mnemonicString = mnemonic,
                 passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
+                derivationPath = DERIVATION_PATH,
                 storage = storage
             )
             return WalletFactory.createKeyWallet(

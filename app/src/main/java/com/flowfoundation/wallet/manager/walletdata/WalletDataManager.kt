@@ -56,7 +56,7 @@ object WalletDataManager {
         logd(TAG, "Refreshing child accounts for current selected address")
 
         ioScope {
-            val selectedAddress = WalletManager.getFlowWalletAddress()
+            val selectedAddress = WalletManager.getCurrentFlowWalletAddress()
 
             if (selectedAddress.isNullOrBlank()) return@ioScope
 
@@ -98,7 +98,7 @@ object WalletDataManager {
         logd(TAG, "Refreshing EVM address for current selected address")
 
         ioScope {
-            val selectedAddress = WalletManager.getFlowWalletAddress()
+            val selectedAddress = WalletManager.getCurrentFlowWalletAddress()
 
             if (selectedAddress.isNullOrBlank()) {
                 callback(null)
@@ -154,7 +154,7 @@ object WalletDataManager {
             logd(TAG, "WalletManager.wallet() is null, attempting to create temporary instance")
             wallet = WalletCreationHelper.createWalletFromAccount(currentAccount)
         } else {
-            logd(TAG, "Reusing WalletManager instance: ${WalletManager.getFlowWalletAddress()}")
+            logd(TAG, "Reusing WalletManager instance: ${WalletManager.getCurrentFlowWalletAddress()}")
         }
 
         if (wallet != null) {
@@ -268,6 +268,8 @@ object WalletDataManager {
             }
             if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
                 val eoa = deriveEoaAddress(wallet)
+                logd(TAG, "Generated EOA address: $eoa")
+                logd(TAG, msg = "EOA Addresses: ${wallet.eoaAddresses.value}")
                 if (eoa.isNotEmpty()) {
                     logd(TAG, "Adding EOA for account (profileType=${account.profileType}): $eoa")
                     val eoaEmojiInfo = getEmojiInfo(eoa)

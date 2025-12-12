@@ -76,7 +76,11 @@ fun firebaseCustomLogin(token: String, onComplete: FirebaseAuthCallback) {
     }
 }
 
-fun firebaseUid() = Firebase.auth.currentUser?.uid
+fun firebaseUid(): String? {
+    val uid = Firebase.auth.currentUser?.uid
+    logd(TAG, "firebaseUid: $uid")
+    return uid
+}
 
 suspend fun getFirebaseJwt(forceRefresh: Boolean = false) = suspendCoroutine { continuation ->
     ioScope {

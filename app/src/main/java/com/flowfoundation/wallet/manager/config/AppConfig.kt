@@ -7,7 +7,6 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.flowfoundation.wallet.manager.app.isTestnet
 import com.flowfoundation.wallet.manager.notification.WalletNotificationManager
-import com.flowfoundation.wallet.page.explore.model.DAppModel
 import com.flowfoundation.wallet.utils.NETWORK_TESTNET
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
@@ -15,7 +14,6 @@ import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
 import com.flowfoundation.wallet.utils.isTesting
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
-import com.google.firebase.remoteconfig.get
 import com.google.gson.reflect.TypeToken
 
 suspend fun isGasFree() = AppConfig.isFreeGas() && isFreeGasPreferenceEnable()
@@ -46,6 +44,8 @@ object AppConfig {
     fun showTXWarning() = isDev() || isTesting() || (config().getFeatures().txWarning ?: false)
 
     fun coverBridgeFee() = config().getFeatures().coverBridgeFee ?: false
+
+    fun wrapEOATransaction() = config().getFeatures().wrapEOATxWithCadence ?: false
 
     fun bridgeFeePayer() = if (isTestnet()) config().getBridgeFeePayer().testnet else config().getBridgeFeePayer().mainnet
 
@@ -91,6 +91,7 @@ object AppConfig {
 
     private fun reloadConfig(): Config {
         val text = Firebase.remoteConfig.getString("a_config")
+        logd("AppConfig", "reloadConfig: $text")
         safeRun {
             config = Gson().fromJson(text, Config::class.java)
         }
@@ -217,6 +218,8 @@ private data class Features(
     val txWarning: Boolean?,
     @SerializedName("cover_bridge_fee")
     val coverBridgeFee: Boolean?,
+    @SerializedName("wrap_eoa_transaction_with_cadence")
+    val wrapEOATxWithCadence: Boolean?,
 )
 
 private data class Payer(

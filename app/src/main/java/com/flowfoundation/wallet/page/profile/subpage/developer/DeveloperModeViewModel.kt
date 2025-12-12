@@ -15,7 +15,7 @@ class DeveloperModeViewModel : ViewModel() {
     fun changeNetwork() {
         viewModelIOScope(this) {
             FlowCadenceApi.refreshConfig()
-            val cacheExist = WalletManager.wallet() != null && !WalletManager.getFlowWalletAddress().isNullOrBlank()
+            val cacheExist = WalletManager.wallet() != null && !WalletManager.getCurrentFlowWalletAddress().isNullOrBlank()
             if (!cacheExist && isRegistered()) {
                 progressVisibleLiveData.postValue(true)
                 resultLiveData.postValue(true)

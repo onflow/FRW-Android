@@ -74,7 +74,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 }
 
                 val account = FlowAddress(
-                    WalletManager.getFlowWalletAddress().orEmpty()
+                    WalletManager.getCurrentFlowWalletAddress().orEmpty()
                 ).lastBlockAccount()
                 val currentKey = CryptoProviderManager.getCurrentCryptoProvider()?.getPublicKey()
                 val keys = account.keys ?: emptyList()
@@ -154,7 +154,7 @@ class WalletBackupViewModel : ViewModel(), OnTransactionStateChange {
                 } ?: emptyList()
 
                 val account = FlowAddress(
-                    WalletManager.getFlowWalletAddress().orEmpty()
+                    WalletManager.getCurrentFlowWalletAddress().orEmpty()
                 ).lastBlockAccount()
                 val keys = account.keys ?: emptyList()
                 val deviceList = mutableListOf<DeviceKeyModel>()

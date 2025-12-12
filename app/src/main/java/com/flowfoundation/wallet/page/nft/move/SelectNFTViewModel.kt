@@ -165,7 +165,7 @@ class SelectNFTViewModel : ViewModel() {
                     collection, idList
                 )
                 MixpanelManager.transferNFT(
-                    fromAddress, WalletManager.getFlowWalletAddress().orEmpty(),
+                    fromAddress, WalletManager.getCurrentFlowWalletAddress().orEmpty(),
                     nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.CHILD,
                     TransferAccountType.FLOW, true
                 )
@@ -212,7 +212,7 @@ class SelectNFTViewModel : ViewModel() {
                     childAddress, identifier.orEmpty(), collection, idList
                 )
                 MixpanelManager.transferNFT(
-                    WalletManager.getFlowWalletAddress().orEmpty(), childAddress,
+                    WalletManager.getCurrentFlowWalletAddress().orEmpty(), childAddress,
                     nftIdentifier.orEmpty(), txId.orEmpty(), TransferAccountType.FLOW,
                     TransferAccountType.CHILD, true
                 )

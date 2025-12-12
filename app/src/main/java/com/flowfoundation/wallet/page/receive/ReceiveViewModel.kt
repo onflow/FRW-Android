@@ -20,7 +20,7 @@ class ReceiveViewModel : ViewModel() {
                 val account = WalletManager.childAccount(WalletManager.selectedWalletAddress())
                 account?.address.orEmpty() to account?.name.orEmpty()
             } else {
-                WalletManager.getFlowWalletAddress().orEmpty() to ""
+                WalletManager.getCurrentFlowWalletAddress().orEmpty() to ""
             }
             WalletManager.wallet() ?: return@viewModelIOScope
             walletLiveData.postValue(ReceiveData(walletName = name, address = address))

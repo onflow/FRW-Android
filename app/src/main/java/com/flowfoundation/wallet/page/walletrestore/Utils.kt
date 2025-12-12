@@ -26,7 +26,9 @@ import com.flowfoundation.wallet.utils.setRegistered
 import com.flowfoundation.wallet.wallet.Wallet
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flow.wallet.storage.FileSystemStorage
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
 import com.flowfoundation.wallet.utils.Env
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -59,7 +61,7 @@ private fun createSeedPhraseKeyWithKeyPair(mnemonic: String, storage: FileSystem
         val seedPhraseKey = SeedPhraseKey(
             mnemonicString = mnemonic,
             passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
+            derivationPath = DERIVATION_PATH,
             storage = storage
         )
 
@@ -177,14 +179,15 @@ fun requestWalletRestoreLogin(
                                 callback.invoke(false, ERROR_CUSTOM_TOKEN)
                             }
                         } else {
-                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                            firebaseLogin(resp.data.customToken) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     Wallet.store().reset(mnemonic)
                                     ioScope {
                                         val userInfo = service.userInfo().data
+                                        val userId = firebaseUid() ?: ""
                                         val walletData = WalletListData(
-                                            id = uid,
+                                            id = userId,
                                             username = userInfo.username,
                                             wallets = null
                                         )
