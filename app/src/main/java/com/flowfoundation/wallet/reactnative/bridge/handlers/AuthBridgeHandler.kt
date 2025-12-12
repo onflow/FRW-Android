@@ -7,7 +7,7 @@ import com.facebook.react.bridge.WritableNativeMap
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.AccountType
+import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager

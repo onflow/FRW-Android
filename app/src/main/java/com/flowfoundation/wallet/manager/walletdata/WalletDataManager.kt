@@ -3,7 +3,7 @@ package com.flowfoundation.wallet.manager.walletdata
 import com.flow.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.AccountType
+import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.app.toNetworkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.parseAccountMetas
