@@ -705,7 +705,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 Account(
                                                     userInfo = userInfo,
                                                     keyStoreInfo = keyStoreInfo,
-                                                    wallet = walletData
+                                                    wallet = walletData,
+                                                    profileType = AccountType.FULL
                                                 )
                                             )
                                             logd("KeyStoreRestoreViewModel", "Account added successfully")
@@ -868,7 +869,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 id = uid,
                                                 username = userInfo.username,
                                                 wallets = null
-                                            )
+                                            ),
+                                            profileType = AccountType.FULL
                                         )
                                         clearUserCache()
                                         AccountManager.add(userAccount)
@@ -1008,7 +1010,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                     id = uid,
                                                     username = userInfo.username,
                                                     wallets = null
-                                                )
+                                                ),
+                                                profileType = AccountType.FULL
                                             )
                                         )
                                         MixpanelManager.accountRestore(
@@ -1163,7 +1166,8 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                         id = firebaseUid().orEmpty(),
                                         username = userInfo.username,
                                         wallets = null
-                                    )
+                                    ),
+                                    profileType = AccountType.FULL
                                 )
                             )
                             MixpanelManager.accountCreated(

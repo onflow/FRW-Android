@@ -191,7 +191,8 @@ fun requestWalletRestoreLogin(
                                         AccountManager.add(
                                             Account(
                                                 userInfo = userInfo,
-                                                wallet = walletData
+                                                wallet = walletData,
+                                                profileType = AccountType.FULL
                                             )
                                         )
                                         callback.invoke(true, null)

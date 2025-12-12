@@ -78,7 +78,8 @@ class WalletCreateMnemonicViewModel : ViewModel() {
             // Create and add account to AccountManager with keystore info
             val account = com.flowfoundation.wallet.manager.account.Account(
                 userInfo = userInfo,
-                keyStoreInfo = com.google.gson.Gson().toJson(keystoreAddress)
+                keyStoreInfo = com.google.gson.Gson().toJson(keystoreAddress),
+                profileType = com.flowfoundation.wallet.manager.account.AccountType.FULL
             )
 
             com.flowfoundation.wallet.manager.account.AccountManager.add(account)
