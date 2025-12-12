@@ -252,14 +252,14 @@ suspend fun initWalletWithTxId(
       logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
       // Add account to AccountManager with walletNodes populated
-      // accountType = "hardware" for Secure Enclave accounts (no EOA by default)
+      // profileType = "hardware" for Secure Enclave accounts (no EOA by default)
       AccountManager.add(
         Account(
           userInfo = userInfo,
           prefix = prefix,
           wallet = walletListData,
           walletNodes = initialWalletNodes,
-          accountType = AccountType.HARDWARE
+          profileType = AccountType.HARDWARE
         ),
         firebaseUid()
       )
@@ -440,18 +440,18 @@ suspend fun registerOutblock(
           )
           logd(TAG, "Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
-          // accountType = "hardware" for Secure Enclave accounts (no EOA by default)
+          // profileType = "hardware" for Secure Enclave accounts (no EOA by default)
           AccountManager.add(
             Account(
               userInfo = userInfo,
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
               wallet = walletListData,
               walletNodes = initialWalletNodes,
-              accountType = AccountType.HARDWARE
+              profileType = AccountType.HARDWARE
             ),
             firebaseUid()
           )
-          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes (accountType=hardware).")
+          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes (profileType=hardware).")
 
           // Get the Flow address from wallet data
           val flowAddress = walletListData.wallets

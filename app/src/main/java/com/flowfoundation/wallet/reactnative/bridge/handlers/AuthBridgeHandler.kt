@@ -80,7 +80,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", true)
                     response.putNull("address") // Address not yet available - tx not sealed
                     response.putString("username", result.username ?: username)
-                    response.putString("accountType", "hardware")
+                    response.putString("profileType", "hardware")
                     response.putString("txId", result.txId)
                     response.putNull("error")
 
@@ -94,7 +94,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putString("accountType", "hardware")
+                    response.putString("profileType", "hardware")
                     response.putNull("txId")
                     response.putString("error", result.error ?: "Failed to register secure type account")
 
@@ -110,7 +110,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 response.putBoolean("success", false)
                 response.putNull("address")
                 response.putNull("username")
-                response.putString("accountType", "hardware")
+                response.putString("profileType", "hardware")
                 response.putNull("txId")
                 response.putString("error", e.message ?: "Unknown error")
 
@@ -763,18 +763,18 @@ private fun setupAccountAndWallet(
         logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
 
         // Add account to AccountManager with walletNodes populated
-        // accountType = "full" for Recovery Phrase accounts (can derive EOA)
+        // profileType = "full" for Recovery Phrase accounts (can derive EOA)
         AccountManager.add(
             Account(
                 userInfo = userInfo,
                 prefix = prefix,
                 wallet = walletListData,
                 walletNodes = initialWalletNodes,
-                accountType = AccountType.FULL
+                profileType = AccountType.FULL
             ),
             com.flowfoundation.wallet.firebase.auth.firebaseUid()
         )
-        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes (accountType=full)")
+        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes (profileType=full)")
 
         // Select Flow address from wallet data
         val flowAddr = walletListData.wallets

@@ -250,8 +250,8 @@ object WalletDataManager {
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
             // EOA Wallet - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
-            // For legacy accounts (accountType = null), fall back to checking signature algorithm
-            val canDeriveEoa = when (account.accountType) {
+            // For legacy accounts (profileType = null), fall back to checking signature algorithm
+            val canDeriveEoa = when (account.profileType) {
                 AccountType.HARDWARE -> false  // Secure Enclave - no EOA
                 AccountType.FULL -> true       // Recovery Phrase - derive EOA
                 else -> {
@@ -269,7 +269,7 @@ object WalletDataManager {
             if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
                 val eoa = deriveEoaAddress(wallet)
                 if (eoa.isNotEmpty()) {
-                    logd(TAG, "Adding EOA for account (accountType=${account.accountType}): $eoa")
+                    logd(TAG, "Adding EOA for account (profileType=${account.profileType}): $eoa")
                     val eoaEmojiInfo = getEmojiInfo(eoa)
                     nodes.add(EOAWallet(
                         address = eoa,
@@ -278,7 +278,7 @@ object WalletDataManager {
                     ))
                 }
             } else {
-                logd(TAG, "Skipping EOA derivation (accountType=${account.accountType}, isEoaDisabled=${WalletManager.isEoaDisabled()})")
+                logd(TAG, "Skipping EOA derivation (profileType=${account.profileType}, isEoaDisabled=${WalletManager.isEoaDisabled()})")
             }
 
             kotlinx.coroutines.supervisorScope {
@@ -400,8 +400,8 @@ object WalletDataManager {
                 fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
                 
                 // EOA - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
-                // For legacy accounts (accountType = null), fall back to checking signature algorithm
-                val canDeriveEoa = when (account.accountType) {
+                // For legacy accounts (profileType = null), fall back to checking signature algorithm
+                val canDeriveEoa = when (account.profileType) {
                     AccountType.HARDWARE -> false  // Secure Enclave - no EOA
                     AccountType.FULL -> true       // Recovery Phrase - derive EOA
                     else -> {
@@ -419,7 +419,7 @@ object WalletDataManager {
                 if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
                     val eoa = deriveEoaAddress(wallet)
                     if (eoa.isNotEmpty()) {
-                        logd(TAG, "Adding EOA for non-current account (accountType=${account.accountType}): $eoa")
+                        logd(TAG, "Adding EOA for non-current account (profileType=${account.profileType}): $eoa")
                         val eoaEmojiInfo = getEmojiInfo(eoa)
                         nodes.add(EOAWallet(
                             address = eoa,
@@ -428,7 +428,7 @@ object WalletDataManager {
                         ))
                     }
                 } else {
-                    logd(TAG, "Skipping EOA for non-current account (accountType=${account.accountType})")
+                    logd(TAG, "Skipping EOA for non-current account (profileType=${account.profileType})")
                 }
 
                 kotlinx.coroutines.supervisorScope {

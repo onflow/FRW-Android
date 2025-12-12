@@ -779,8 +779,8 @@ data class Account(
     var keyStoreInfo: String? = null,
     @SerializedName("walletNodes")
     var walletNodes: List<MainWallet> = emptyList(),
-    @SerializedName("accountType")
-    var accountType: String? = null  // "full" or "hardware", null for legacy accounts
+    @SerializedName("profileType")
+    var profileType: String? = null  // "full" or "hardware", null for legacy accounts
 )
 
 @Serializable
