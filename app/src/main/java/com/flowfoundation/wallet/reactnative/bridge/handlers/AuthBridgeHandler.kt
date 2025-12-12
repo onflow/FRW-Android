@@ -241,6 +241,31 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
+    /**
+     * Get registration signature for v4 API
+     * Signs in anonymously to Firebase, gets JWT, and signs it with the key derived from mnemonic
+     * @param mnemonic The recovery phrase to derive the signing key from
+     * @param promise Promise resolving with signature (hex string)
+     */
+    fun getRegistrationSignature(mnemonic: String, promise: Promise) {
+        logd(TAG, "getRegistrationSignature() called - placeholder implementation")
+        ioScope {
+            try {
+                // TODO: Implement registration signature logic
+                // User has implementation on different branch
+                loge(TAG, "getRegistrationSignature() - not yet implemented")
+                uiScope {
+                    promise.reject("NOT_IMPLEMENTED", "getRegistrationSignature not yet implemented")
+                }
+            } catch (e: Exception) {
+                loge(TAG, "getRegistrationSignature() - error: ${e.message}")
+                uiScope {
+                    promise.reject("ERROR", "Failed to get registration signature: ${e.message}", e)
+                }
+            }
+        }
+    }
+
     fun signInWithCustomToken(customToken: String, promise: Promise) {
         logd(TAG, "signInWithCustomToken() called")
         ioScope {
