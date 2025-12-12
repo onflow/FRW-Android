@@ -113,9 +113,6 @@ object AccountManager {
                 logd(TAG, "Found ${accountList.size} cached accounts")
                 accounts.addAll(accountList)
 
-                // Migrate legacy accounts to have ProfileType set
-                migrateProfileTypes()
-
                 // Find the active account or use the first one
                 val activeAccount = accountList.firstOrNull { it.isActive } ?: accountList.first()
                 logd(TAG, "Setting active account: ${activeAccount.userInfo.username}")

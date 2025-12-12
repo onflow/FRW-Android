@@ -131,11 +131,18 @@ object WalletCreationHelper {
 
     /**
      * Create wallet from prefix-based key
+     * 
+     * For Secure Enclave (hardware-backed) keys, EOA is disabled since we can't derive
+     * an EOA address from a hardware key.
+     * For regular prefix-based keys (e.g., SeedPhrase stored with prefix), EOA is enabled.
      */
     private suspend fun createWalletFromPrefix(prefix: String, storage: StorageProtocol): Wallet? {
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
+                // Regular prefix-based key (e.g., SeedPhrase) - can derive EOA
+                WalletManager.setEoaDisabled(false)
+                logd(TAG, "Regular prefix-based key - EOA enabled")
                 WalletFactory.createKeyWallet(
                     privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -146,7 +153,9 @@ object WalletCreationHelper {
                 null
             }
         } catch (e: com.flowfoundation.wallet.manager.account.HardwareBackedKeyException) {
-            logd(TAG, "Hardware-backed key detected for prefix: $prefix")
+            // Secure Enclave (hardware-backed) key - cannot derive EOA
+            logd(TAG, "Hardware-backed key detected for prefix: $prefix - EOA disabled")
+            WalletManager.setEoaDisabled(true)
             if (e.alias != null) {
                 val provider = AndroidKeystoreCryptoProvider(e.alias, SigningAlgorithm.ECDSA_P256, null)
                 WalletFactory.createProxyWallet(
@@ -163,6 +172,7 @@ object WalletCreationHelper {
 
     /**
      * Create wallet from HD wallet mnemonic
+     * HD wallets can derive EOA addresses.
      */
     private suspend fun createWalletFromHDMnemonic(accountId: String, storage: StorageProtocol): Wallet? {
         val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(accountId)
@@ -173,6 +183,9 @@ object WalletCreationHelper {
                 derivationPath = DERIVATION_PATH,
                 storage = storage
             )
+            // HD wallet (mnemonic-based) - can derive EOA
+            WalletManager.setEoaDisabled(false)
+            logd(TAG, "HD wallet from mnemonic - EOA enabled")
             return WalletFactory.createKeyWallet(
                 seedPhraseKey,
                 setOf(ChainId.Mainnet, ChainId.Testnet),
@@ -186,6 +199,7 @@ object WalletCreationHelper {
 
     /**
      * Create wallet from keystore private key
+     * Private key imports can derive EOA addresses.
      */
     private fun createWalletFromKeystorePrivateKey(ks: KeystoreAddress, storage: StorageProtocol): Wallet {
         val keyHex = ks.privateKey.removePrefix("0x")
@@ -194,6 +208,10 @@ object WalletCreationHelper {
         val key = PrivateKey.create(storage).apply {
             importPrivateKey(keyHex.hexToBytes(), KeyFormat.RAW)
         }
+
+        // Keystore private key import - can derive EOA
+        WalletManager.setEoaDisabled(false)
+        logd(TAG, "Keystore private key import - EOA enabled")
 
         return WalletFactory.createKeyWallet(
             key,
