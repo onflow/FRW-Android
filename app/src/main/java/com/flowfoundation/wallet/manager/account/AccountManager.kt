@@ -113,6 +113,9 @@ object AccountManager {
                 logd(TAG, "Found ${accountList.size} cached accounts")
                 accounts.addAll(accountList)
 
+                // Migrate legacy accounts to have ProfileType set
+                migrateProfileTypes()
+
                 // Find the active account or use the first one
                 val activeAccount = accountList.firstOrNull { it.isActive } ?: accountList.first()
                 logd(TAG, "Setting active account: ${activeAccount.userInfo.username}")
@@ -747,6 +750,62 @@ object AccountManager {
             loge(tag = "SWITCH_ACCOUNT", msg = "Exception during LocalSwitchAccount switch: ${e.message}")
             logd(TAG, "LocalSwitchAccount switch exception: ${e.stackTraceToString()}")
             callback.invoke(false)
+        }
+    }
+
+    /**
+     * Migrate legacy accounts to have ProfileType set.
+     * This handles overlay installations where cached accounts don't have ProfileType.
+     * 
+     * Logic to determine ProfileType:
+     * - ECDSA_P256 signature algorithm = Secure Enclave = HARDWARE
+     * - ECDSA_secp256k1 or other = Recovery Phrase/Keystore = FULL
+     */
+    private fun migrateProfileTypes() {
+        var migrated = false
+        accounts.forEach { account ->
+            if (account.profileType == null) {
+                logd(TAG, "Migrating profileType for account: ${account.userInfo.username}")
+                val determinedType = determineProfileType(account)
+                account.profileType = determinedType
+                logd(TAG, "Account ${account.userInfo.username} migrated to profileType: $determinedType")
+                migrated = true
+            }
+        }
+        
+        if (migrated) {
+            // Save the updated accounts to cache
+            AccountCacheManager.cache(Accounts().apply { addAll(accounts) })
+            logd(TAG, "ProfileType migration completed and accounts saved to cache")
+        }
+    }
+    
+    /**
+     * Determine the ProfileType for a legacy account based on its signature algorithm.
+     * 
+     * - ECDSA_P256 = Secure Enclave = HARDWARE
+     * - Otherwise = Recovery Phrase or Keystore = FULL
+     */
+    private fun determineProfileType(account: Account): String {
+        return try {
+            val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
+            if (cryptoProvider == null) {
+                logd(TAG, "Could not get crypto provider for ${account.userInfo.username}, defaulting to FULL")
+                ProfileType.FULL
+            } else {
+                val sigAlgo = cryptoProvider.getSignatureAlgorithm()
+                val isP256 = sigAlgo == org.onflow.flow.models.SigningAlgorithm.ECDSA_P256
+                if (isP256) {
+                    logd(TAG, "Account ${account.userInfo.username} uses P256 (Secure Enclave)")
+                    ProfileType.HARDWARE
+                } else {
+                    logd(TAG, "Account ${account.userInfo.username} uses ${sigAlgo.value} (Recovery Phrase/Keystore)")
+                    ProfileType.FULL
+                }
+            }
+        } catch (e: Exception) {
+            logd(TAG, "Error determining profile type for ${account.userInfo.username}: ${e.message}, defaulting to FULL")
+            ProfileType.FULL
         }
     }
 }
