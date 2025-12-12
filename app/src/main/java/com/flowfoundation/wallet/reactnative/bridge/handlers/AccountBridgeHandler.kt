@@ -103,7 +103,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 // Get main wallet address - for hardware-backed keys, wallet() returns null,
                 // so we need to use selectedWalletAddress() as fallback
-                var mainAddress = WalletManager.getFlowWalletAddress()
+                var mainAddress = WalletManager.getCurrentFlowWalletAddress()
                 if (mainAddress.isNullOrEmpty()) {
                     // Hardware-backed key fallback: use the selected address
                     mainAddress = WalletManager.selectedWalletAddress()
@@ -310,7 +310,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
-                val mainAddress = WalletManager.getFlowWalletAddress()
+                val mainAddress = WalletManager.getCurrentFlowWalletAddress()
 
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
