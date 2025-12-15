@@ -184,7 +184,8 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun generateSeedPhrase(strength: Double?, promise: Promise) = authHandler.generateSeedPhrase(strength, promise, ::bridgeModelToWritableMap)
 
-    override fun getRegistrationSignature(mnemonic: String, promise: Promise) = authHandler.getRegistrationSignature(mnemonic, promise)
+    // TODO: Add getRegistrationSignature to TypeScript spec and regenerate codegen to make this a bridge method
+    fun getRegistrationSignature(mnemonic: String, promise: Promise) = authHandler.getRegistrationSignature(mnemonic, promise)
 
     override fun signInWithCustomToken(customToken: String, promise: Promise) = authHandler.signInWithCustomToken(customToken, promise)
 
