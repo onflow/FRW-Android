@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
@@ -252,14 +251,12 @@ suspend fun initWalletWithTxId(
       logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
       // Add account to AccountManager with walletNodes populated
-      // profileType = "hardware" for Secure Enclave accounts (no EOA by default)
       AccountManager.add(
         Account(
           userInfo = userInfo,
           prefix = prefix,
           wallet = walletListData,
-          walletNodes = initialWalletNodes,
-          profileType = ProfileType.HARDWARE
+          walletNodes = initialWalletNodes
         ),
         firebaseUid()
       )
@@ -440,18 +437,16 @@ suspend fun registerOutblock(
           )
           logd(TAG, "Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
-          // profileType = "hardware" for Secure Enclave accounts (no EOA by default)
           AccountManager.add(
             Account(
               userInfo = userInfo,
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
               wallet = walletListData,
-              walletNodes = initialWalletNodes,
-              profileType = ProfileType.HARDWARE
+              walletNodes = initialWalletNodes
             ),
             firebaseUid()
           )
-          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes (profileType=hardware).")
+          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes.")
 
           // Get the Flow address from wallet data
           val flowAddress = walletListData.wallets

@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.backup.BackupCryptoProvider
 import com.flowfoundation.wallet.manager.flowjvm.CadenceArgumentsBuilder
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
@@ -561,8 +560,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                                             Account(
                                                 userInfo = userInfo,
                                                 prefix = storedPrefix,
-                                                wallet = walletData,
-                                                profileType = ProfileType.FULL
+                                                wallet = walletData
                                             ),
                                             userId
                                         )

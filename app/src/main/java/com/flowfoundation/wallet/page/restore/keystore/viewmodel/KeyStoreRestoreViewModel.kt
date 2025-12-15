@@ -10,7 +10,6 @@ import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
-import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.mixpanel.MixpanelManager
@@ -681,8 +680,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 Account(
                                                     userInfo = userInfo,
                                                     keyStoreInfo = keyStoreInfo,
-                                                    wallet = walletData,
-                                                    profileType = ProfileType.FULL
+                                                    wallet = walletData
                                                 )
                                             )
                                             logd("KeyStoreRestoreViewModel", "Account added successfully")
@@ -845,8 +843,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                 id = userId,
                                                 username = userInfo.username,
                                                 wallets = null
-                                            ),
-                                            profileType = ProfileType.FULL
+                                            )
                                         )
                                         clearUserCache()
                                         AccountManager.add(userAccount)
@@ -987,8 +984,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                                     id = userId,
                                                     username = userInfo.username,
                                                     wallets = null
-                                                ),
-                                                profileType = ProfileType.FULL
+                                                )
                                             )
                                         )
                                         MixpanelManager.accountRestore(
@@ -1146,8 +1142,7 @@ class KeyStoreRestoreViewModel : ViewModel() {
                                         id = firebaseUid().orEmpty(),
                                         username = userInfo.username,
                                         wallets = null
-                                    ),
-                                    profileType = ProfileType.FULL
+                                    )
                                 )
                             )
                             MixpanelManager.accountCreated(

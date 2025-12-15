@@ -3,7 +3,6 @@ package com.flowfoundation.wallet.page.dialog.profile
 import androidx.lifecycle.ViewModel
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -100,9 +99,6 @@ class ProfileSwitchViewModel : ViewModel() {
         val flowWallets = getFlowWalletsForCurrentNetwork(profile)
         val profileId = profile.wallet?.id
         val avatars = mutableListOf<AvatarData>()
-        
-        // For secure enclave (hardware) accounts, always show COA immediately
-        val isSecureEnclaveAccount = profile.profileType == ProfileType.HARDWARE
 
         flowWallets.forEach { flowWallet ->
             // Main account
@@ -121,12 +117,8 @@ class ProfileSwitchViewModel : ViewModel() {
                     }
                     is COAWallet -> {
                         val coaAddress = linked.address
-                        // For secure enclave accounts, always show COA immediately
-                        // For other accounts, only show if already verified/cached
-                        if (isSecureEnclaveAccount) {
-                            val coaEmojiInfo = AccountEmojiManager.getEmojiByAddress(coaAddress)
-                            avatars.add(AvatarData.Emoji(coaEmojiInfo.emojiId))
-                        } else if (profileId != null && profileId in verifiedCoaAvatarsMap && coaAddress in verifiedCoaAvatarsMap[profileId]!!) {
+                        // Only show COA if already verified/cached (has balance or NFTs)
+                        if (profileId != null && profileId in verifiedCoaAvatarsMap && coaAddress in verifiedCoaAvatarsMap[profileId]!!) {
                             avatars.add(verifiedCoaAvatarsMap[profileId]!![coaAddress]!!)
                         }
                     }
@@ -175,9 +167,7 @@ class ProfileSwitchViewModel : ViewModel() {
         }
 
         // 3. Process COA avatars based on fetched balances and NFT status
-        // For secure enclave (hardware) accounts, always show COA regardless of balance
-        val isSecureEnclaveAccount = profile.profileType == ProfileType.HARDWARE
-        
+        // Only show COA if it has balance or NFTs
         if (profileId !in verifiedCoaAvatarsMap) {
             verifiedCoaAvatarsMap[profileId] = mutableMapOf()
         }
@@ -187,26 +177,21 @@ class ProfileSwitchViewModel : ViewModel() {
             flowWallet.linkedWallets.filterIsInstance<COAWallet>().forEach { coaWallet ->
                 val coaAddress = coaWallet.address
 
-                // For secure enclave accounts, always show COA
-                // For other accounts, only show if has balance or NFTs
-                val shouldShowCoa = if (isSecureEnclaveAccount) {
-                    true
-                } else {
-                    val coaBalance = balanceMap[coaAddress]
-                    val hasBalance = coaBalance != null && coaBalance > BigDecimal.ZERO
-                    var hasNFTs = false
+                // Only show COA if it has balance or NFTs
+                val coaBalance = balanceMap[coaAddress]
+                val hasBalance = coaBalance != null && coaBalance > BigDecimal.ZERO
+                var hasNFTs = false
 
-                    if (!hasBalance) {
-                        try {
-                            val nftResponse = service.getEVMNFTCollections(coaAddress)
-                            val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
-                            hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
-                        } catch (e: Exception) {
-                            // Ignore NFT API errors
-                        }
+                if (!hasBalance) {
+                    try {
+                        val nftResponse = service.getEVMNFTCollections(coaAddress)
+                        val totalNftCount = nftResponse.data?.sumOf { it.count ?: 0 } ?: 0
+                        hasNFTs = nftResponse.data?.isNotEmpty() == true && totalNftCount > 0
+                    } catch (e: Exception) {
+                        // Ignore NFT API errors
                     }
-                    hasBalance || hasNFTs
                 }
+                val shouldShowCoa = hasBalance || hasNFTs
 
                 if (shouldShowCoa) {
                     // Add if not present

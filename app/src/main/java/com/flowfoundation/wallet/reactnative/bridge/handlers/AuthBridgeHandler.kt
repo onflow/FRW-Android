@@ -9,7 +9,6 @@ import com.flow.wallet.crypto.BIP39
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.ProfileType
 import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
@@ -732,18 +731,16 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
         logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
 
         // Add account to AccountManager with walletNodes populated
-        // profileType = "full" for Recovery Phrase accounts (can derive EOA)
         AccountManager.add(
             Account(
                 userInfo = userInfo,
                 prefix = prefix,
                 wallet = walletListData,
-                walletNodes = initialWalletNodes,
-                profileType = ProfileType.FULL
+                walletNodes = initialWalletNodes
             ),
             com.flowfoundation.wallet.firebase.auth.firebaseUid()
         )
-        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes (profileType=full)")
+        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes")
 
         // Select Flow address from wallet data
         val flowAddr = walletListData.wallets
