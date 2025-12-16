@@ -144,7 +144,11 @@ object WalletCreationHelper {
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
-                logd(TAG, "Regular prefix-based key found for prefix: $prefix")
+                // Regular prefix-based key - cannot derive EOA (no mnemonic available)
+                logd(TAG, "Regular prefix-based key found for prefix: $prefix - EOA disabled")
+                if (isCurrentAccount) {
+                    WalletManager.setEoaDisabled(true)
+                }
                 WalletFactory.createKeyWallet(
                     privateKey,
                     setOf(ChainId.Mainnet, ChainId.Testnet),
