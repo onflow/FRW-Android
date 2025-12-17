@@ -4,8 +4,6 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.webkit.WebStorage
 import android.widget.Toast
-import com.flow.wallet.crypto.BIP39
-import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.R
@@ -47,10 +45,8 @@ import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.setRegistered
-import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
@@ -61,11 +57,9 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
-import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
 import java.security.KeyPair
 import java.security.KeyPairGenerator
-import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.spec.ECGenParameterSpec
 import kotlin.coroutines.resume
