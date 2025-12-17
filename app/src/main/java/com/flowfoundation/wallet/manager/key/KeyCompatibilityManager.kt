@@ -2,6 +2,7 @@ package com.flowfoundation.wallet.manager.key
 
 import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.StorageProtocol
+import com.flowfoundation.wallet.network.getKeystoreAliasForPrefix
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
 import java.security.KeyStore
@@ -14,8 +15,9 @@ import com.flowfoundation.wallet.manager.account.HardwareBackedKeyException
 /**
  * Handles backward compatibility between old Android Keystore pattern and new Flow-Wallet-Kit storage.
  *
- * Old pattern: user_keystore_{prefix} -> Android Keystore
- * New pattern: prefix_key_{prefix} -> Flow-Wallet-Kit storage
+ * Old pattern: user_keystore_{prefix} -> Android Keystore (legacy)
+ * New pattern: prefix_key_{prefix} -> Flow-Wallet-Kit storage (mnemonic-based)
+ * Secure Enclave pattern: secure_enclave_{prefix} -> Android Keystore (hardware-backed, managed via getKeystoreAliasForPrefix)
  */
 object KeyCompatibilityManager {
     private const val TAG = "KeyCompatibility"
@@ -24,16 +26,37 @@ object KeyCompatibilityManager {
 
     /**
      * Attempts to get a private key with backward compatibility support.
-     * First tries the new storage pattern, then falls back to old Android Keystore pattern.
+     * First checks for Secure Enclave (hardware-backed) keys, then tries new storage,
+     * then falls back to old Android Keystore pattern.
      *
      * @param prefix The account prefix/password
      * @param storage The Flow-Wallet-Kit storage instance
      * @return PrivateKey instance or null if not found in either storage
+     * @throws HardwareBackedKeyException if the key is hardware-backed (Secure Enclave)
      */
     fun getPrivateKeyWithFallback(prefix: String, storage: StorageProtocol): PrivateKey? {
-        logd(TAG, "Attempting to get private key")
+        logd(TAG, "Attempting to get private key for prefix: $prefix")
 
-        // First try the new storage pattern
+        // First check if this is a Secure Enclave (hardware-backed) key
+        val secureEnclaveAlias = getKeystoreAliasForPrefix(prefix)
+        if (secureEnclaveAlias != null) {
+            logd(TAG, "Found Secure Enclave alias mapping: $secureEnclaveAlias")
+            // Verify the key exists in Android Keystore
+            val keyStore = KeyStore.getInstance("AndroidKeyStore")
+            keyStore.load(null)
+            if (keyStore.containsAlias(secureEnclaveAlias)) {
+                logd(TAG, "Secure Enclave key exists in Android Keystore")
+                throw HardwareBackedKeyException(
+                    secureEnclaveAlias, 
+                    "Secure Enclave hardware-backed key requires AndroidKeystoreCryptoProvider", 
+                    prefix
+                )
+            } else {
+                loge(TAG, "Secure Enclave alias exists but key not found in Keystore!")
+            }
+        }
+
+        // Try the new Flow-Wallet-Kit storage pattern (for mnemonic-based accounts)
         val newKeyId = "$NEW_STORAGE_KEY_PREFIX$prefix"
         val newStorageKey = tryGetFromNewStorage(newKeyId, prefix, storage)
         if (newStorageKey != null) {
@@ -43,7 +66,7 @@ object KeyCompatibilityManager {
 
         logd(TAG, "Key not found in new storage, trying old Android Keystore pattern")
 
-        // Fallback to old Android Keystore pattern
+        // Fallback to old Android Keystore pattern (legacy accounts)
         val oldStorageKey = tryGetFromOldKeystore(prefix, storage)
         if (oldStorageKey != null) {
             logd(TAG, "Successfully retrieved key from old Android Keystore")
@@ -51,7 +74,7 @@ object KeyCompatibilityManager {
             return oldStorageKey
         }
 
-        loge(TAG, "Private key not found in either new storage or old Android Keystore")
+        loge(TAG, "Private key not found in any storage: new storage, Secure Enclave, or old Android Keystore")
         return null
     }
 
