@@ -238,13 +238,6 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                     logd(TAG, "launchNativeScreen() - launched GoogleDriveRestoreActivity (Google Drive)")
                 }
 
-                NativeScreen.ICLOUD_RESTORE -> {
-                    // iCloud restore not supported on Android, launch MultiRestoreActivity instead
-                    // which provides Google Drive and other cloud options
-                    MultiRestoreActivity.launch(currentActivity)
-                    logd(TAG, "launchNativeScreen() - iCloud requested on Android, launched MultiRestoreActivity instead")
-                }
-
                 NativeScreen.MULTI_RESTORE -> {
                     // Launch MultiRestoreActivity (Multi-restore with all cloud backup options)
                     MultiRestoreActivity.launch(currentActivity)

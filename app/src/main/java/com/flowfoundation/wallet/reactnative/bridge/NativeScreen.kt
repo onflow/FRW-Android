@@ -16,7 +16,6 @@ enum class NativeScreen(val screenName: String) {
     KEY_STORE_RESTORE("keyStoreRestore"),
     PRIVATE_KEY_RESTORE("privateKeyRestore"),
     GOOGLE_DRIVE_RESTORE("googleDriveRestore"),
-    ICLOUD_RESTORE("icloudRestore"),
     MULTI_RESTORE("multiRestore");
 
     companion object {
