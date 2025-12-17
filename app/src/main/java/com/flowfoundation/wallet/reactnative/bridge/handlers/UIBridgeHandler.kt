@@ -9,6 +9,9 @@ import com.flowfoundation.wallet.page.backup.WalletBackupActivity
 import com.flowfoundation.wallet.page.backup.device.CreateDeviceBackupActivity
 import com.flowfoundation.wallet.page.backup.multibackup.MultiBackupActivity
 import com.flowfoundation.wallet.page.restore.WalletRestoreActivity
+import com.flowfoundation.wallet.page.restore.keystore.KeyStoreRestoreActivity
+import com.flowfoundation.wallet.page.restore.mnemonic.RestoreMnemonicActivity
+import com.flowfoundation.wallet.page.restore.multirestore.MultiRestoreActivity
 import com.flowfoundation.wallet.page.scan.ScanBarcodeActivity
 import com.flowfoundation.wallet.reactnative.bridge.QRCodeScanManager
 import com.flowfoundation.wallet.reactnative.bridge.NativeScreen
@@ -209,6 +212,43 @@ class UIBridgeHandler(private val reactContext: ReactApplicationContext) {
                     intent.putExtra("launchedFromRN", true)
                     currentActivity.startActivity(intent)
                     logd(TAG, "launchNativeScreen() - launched WalletRestoreActivity with restore options from RN")
+                }
+
+                NativeScreen.RECOVERY_PHRASE_RESTORE -> {
+                    // Launch RestoreMnemonicActivity (Restore from 12-word recovery phrase)
+                    RestoreMnemonicActivity.launch(currentActivity)
+                    logd(TAG, "launchNativeScreen() - launched RestoreMnemonicActivity")
+                }
+
+                NativeScreen.KEY_STORE_RESTORE -> {
+                    // Launch KeyStoreRestoreActivity (Restore from key store file)
+                    KeyStoreRestoreActivity.launchKeyStore(currentActivity)
+                    logd(TAG, "launchNativeScreen() - launched KeyStoreRestoreActivity (key store mode)")
+                }
+
+                NativeScreen.PRIVATE_KEY_RESTORE -> {
+                    // Launch KeyStoreRestoreActivity in private key mode
+                    KeyStoreRestoreActivity.launchPrivateKey(currentActivity)
+                    logd(TAG, "launchNativeScreen() - launched KeyStoreRestoreActivity (private key mode)")
+                }
+
+                NativeScreen.GOOGLE_DRIVE_RESTORE -> {
+                    // Launch MultiRestoreActivity (Cloud restore: Google Drive, Dropbox, etc.)
+                    MultiRestoreActivity.launch(currentActivity)
+                    logd(TAG, "launchNativeScreen() - launched MultiRestoreActivity (Google Drive)")
+                }
+
+                NativeScreen.ICLOUD_RESTORE -> {
+                    // iCloud restore not supported on Android, launch MultiRestoreActivity instead
+                    // which provides Google Drive and other cloud options
+                    MultiRestoreActivity.launch(currentActivity)
+                    logd(TAG, "launchNativeScreen() - iCloud requested on Android, launched MultiRestoreActivity instead")
+                }
+
+                NativeScreen.MULTI_RESTORE -> {
+                    // Launch MultiRestoreActivity (Multi-restore with all cloud backup options)
+                    MultiRestoreActivity.launch(currentActivity)
+                    logd(TAG, "launchNativeScreen() - launched MultiRestoreActivity")
                 }
             }
         } catch (e: Exception) {
