@@ -16,7 +16,9 @@ import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.walletdata.MainWallet
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
@@ -481,7 +483,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                                 // Setup AccountManager and WalletManager
                                 // Use userInfoWithOriginalUsername to preserve proper capitalization
-                                val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
+                                // Pass evmAddress to create EOA wallet immediately
+                                val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData, evmAddress)
 
                                 // Close the drawer to show the updated account in the main view
                                 com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
@@ -707,7 +710,8 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
   private fun setupAccountAndWallet(
         prefix: String,
         userInfo: UserInfoData,
-        walletListData: WalletListData
+        walletListData: WalletListData,
+        evmAddress: String? = null
     ): CryptoProvider {
         logd(TAG, "setupAccountAndWallet() - Setting up AccountManager and WalletManager...")
 
@@ -726,7 +730,7 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
 
         // Build initial walletNodes with any FlowWallets we know about from the API
         val currentNetwork = chainNetWorkString()
-        val initialWalletNodes = walletListData.wallets
+        val flowWalletNodes = walletListData.wallets
             ?.flatMap { walletData ->
                 walletData.blockchain
                     ?.filter { it.address.isNotBlank() }
@@ -747,7 +751,23 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
                     }.orEmpty()
             }.orEmpty()
 
-        logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
+        // Build wallet nodes list starting with Flow wallets
+        val initialWalletNodes = flowWalletNodes.toMutableList<MainWallet>()
+
+        // Add EOA wallet if evmAddress is provided (pre-derived from seed phrase)
+        if (!evmAddress.isNullOrBlank()) {
+            val formattedEvmAddress = if (evmAddress.startsWith("0x")) evmAddress else "0x$evmAddress"
+            val eoaEmojiInfo = AccountEmojiManager.getEmojiByAddress(formattedEvmAddress)
+            val eoaWallet = EOAWallet(
+                address = formattedEvmAddress,
+                name = eoaEmojiInfo.emojiName,
+                emojiId = eoaEmojiInfo.emojiId
+            )
+            initialWalletNodes.add(eoaWallet)
+            logd(TAG, "setupAccountAndWallet() - Added pre-derived EOA wallet: $formattedEvmAddress")
+        }
+
+        logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial wallet nodes (${flowWalletNodes.size} Flow + ${if (evmAddress != null) 1 else 0} EOA)")
 
         // Add account to AccountManager with walletNodes populated
         AccountManager.add(

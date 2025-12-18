@@ -1,6 +1,6 @@
 //
 //  BridgeModels.kt
-//
+//  
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
 //
@@ -24,7 +24,7 @@ class RNBridge {
         @SerializedName("receive") RECEIVE
     }
 
-    enum class ProfileType {
+    enum class AccountTypeType {
         @SerializedName("full") FULL,
         @SerializedName("hardware") HARDWARE,
         @SerializedName("null") NULL
@@ -175,8 +175,8 @@ class RNBridge {
         val address: String,
         @SerializedName("username")
         val username: String,
-        @SerializedName("profileType")
-        val profileType: ProfileType,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
         @SerializedName("txId")
         val txId: String,
         @SerializedName("error")
@@ -194,8 +194,8 @@ class RNBridge {
         val mnemonic: String,
         @SerializedName("phrase")
         val phrase: String,
-        @SerializedName("profileType")
-        val profileType: ProfileType,
+        @SerializedName("accountType")
+        val accountType: AccountTypeType,
         @SerializedName("error")
         val error: String
     )
@@ -221,7 +221,9 @@ class RNBridge {
         @SerializedName("accountKey")
         val accountKey: AccountKey,
         @SerializedName("drivepath")
-        val drivepath: String
+        val drivepath: String,
+        @SerializedName("evmAddress")
+        val evmAddress: String?
     )
 
     data class SPResponse(
@@ -230,7 +232,9 @@ class RNBridge {
         @SerializedName("accountKey")
         val accountKey: AccountKey,
         @SerializedName("drivepath")
-        val drivepath: String
+        val drivepath: String,
+        @SerializedName("evmAddress")
+        val evmAddress: String?
     )
 
     data class DeviceInfo(
