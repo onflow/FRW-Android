@@ -165,7 +165,22 @@ object CryptoProviderManager {
                 logd(TAG, "  Keystore-based: Provider initialized with actual signAlgo: ${provider.getSignatureAlgorithm()}, actual hashAlgo: ${provider.getHashAlgorithm()} (from keystore info)")
                 return provider
             }
-            // Handle prefix-based accounts
+            // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
+            // Check this BEFORE prefix to properly handle new RN seed phrase accounts
+            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() && 
+                     AccountWalletManager.hasHDWalletKeystore(account.wallet?.id ?: "")) {
+                logd(TAG, "  Branch: Mnemonic-only account (cleaner architecture)")
+                val userId = account.wallet?.id ?: ""
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(userId)
+                if (mnemonic == null) {
+                    loge(TAG, "  Mnemonic-only: Failed to get mnemonic by UID: $userId")
+                    ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
+                    return null
+                }
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                return HDWalletCryptoProvider(seedPhraseKey)
+            }
+            // Handle prefix-based accounts (legacy or hardware-backed)
             else if (!account.prefix.isNullOrBlank()) {
                 logd(TAG, "  Branch: Prefix-based account")
 
@@ -558,7 +573,23 @@ object CryptoProviderManager {
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
             }
 
-            // Handle prefix-based accounts
+            // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
+            // Check this BEFORE prefix to properly handle new RN seed phrase accounts
+            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() && 
+                     AccountWalletManager.hasHDWalletKeystore(account.wallet?.id ?: "")) {
+                logd("CryptoProviderManager", "Switch account: Mnemonic-only account (cleaner architecture)")
+                val userId = account.wallet?.id ?: ""
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(userId)
+                if (mnemonic == null) {
+                    loge("CryptoProviderManager", "Switch account: Failed to get mnemonic by UID: $userId")
+                    ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
+                    return null
+                }
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                HDWalletCryptoProvider(seedPhraseKey)
+            }
+
+            // Handle prefix-based accounts (legacy or hardware-backed)
             else if (account.prefix.isNullOrBlank().not()) {
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"

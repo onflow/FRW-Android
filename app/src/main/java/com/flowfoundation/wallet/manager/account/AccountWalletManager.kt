@@ -3,11 +3,16 @@ package com.flowfoundation.wallet.manager.account
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.flowfoundation.wallet.utils.readWalletPassword
+import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.DATA_PATH
 import com.flowfoundation.wallet.utils.getWalletStoreNameAesKey
 import com.flowfoundation.wallet.utils.saveWalletStoreNameAesKey
+import com.flowfoundation.wallet.utils.logd
+import com.flowfoundation.wallet.utils.loge
 import com.flowfoundation.wallet.utils.secret.aesEncrypt
 import com.nftco.flow.sdk.hexToBytes
+import com.nftco.flow.sdk.bytesToHex
+import wallet.core.jni.CoinType
 import wallet.core.jni.HDWallet
 import wallet.core.jni.StoredKey
 import java.io.File
@@ -18,12 +23,65 @@ import java.util.UUID
  */
 object AccountWalletManager {
 
+    private const val TAG = "AccountWalletManager"
+
     private fun passwordMap(): HashMap<String, String> {
         val pref = runCatching { readWalletPassword() }.getOrNull()
         return if (pref.isNullOrBlank()) {
             HashMap()
         } else {
             Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+        }
+    }
+
+    private fun savePasswordMap(map: HashMap<String, String>) {
+        storeWalletPassword(Gson().toJson(map))
+    }
+
+    /**
+     * Stores a mnemonic for a given user ID.
+     * This is the proper way to store mnemonics for RN seed phrase accounts.
+     * 
+     * @param uid The user ID (wallet.id from the backend)
+     * @param mnemonic The mnemonic phrase to store
+     * @return true if successfully stored, false otherwise
+     */
+    fun storeHDWalletMnemonic(uid: String, mnemonic: String): Boolean {
+        return try {
+            logd(TAG, "storeHDWalletMnemonic() - Storing mnemonic for UID: $uid")
+            
+            // Generate a random password for encryption
+            val password = UUID.randomUUID().toString().replace("-", "").take(32)
+            val passwordBytes = password.toByteArray().bytesToHex()
+            
+            // Store password in the password map
+            val map = passwordMap()
+            map[uid] = passwordBytes
+            savePasswordMap(map)
+            
+            // Create StoredKey with the existing mnemonic
+            val storeName = aesEncrypt(key = getOrCreateStoreNameAesKey(), message = uid)
+            val storePath = File(DATA_PATH, storeName).absolutePath
+            
+            // Use StoredKey.importHDWallet to store an existing mnemonic
+            // Note: wallet.core.jni uses CoinType.ETHEREUM for Flow-compatible mnemonics
+            val storedKey = StoredKey.importHDWallet(
+                mnemonic,
+                storeName,
+                passwordBytes.hexToBytes(),
+                CoinType.ETHEREUM
+            )
+            
+            // Export and save to disk
+            val exportedData = storedKey.exportJSON()
+            File(storePath).writeBytes(exportedData)
+            
+            logd(TAG, "storeHDWalletMnemonic() - Successfully stored mnemonic for UID: $uid")
+            true
+        } catch (e: Exception) {
+            loge(TAG, "storeHDWalletMnemonic() - Failed to store mnemonic: ${e.message}")
+            e.printStackTrace()
+            false
         }
     }
 
