@@ -74,7 +74,14 @@ class WalletSettingActivity : BaseActivity(), OnEmojiUpdate {
                     securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
                 }
             } else if (CryptoProviderManager.getCurrentCryptoProvider() is PrivateKeyStoreCryptoProvider) {
-                llRecoveryLayout.gone()
+                if (AccountManager.encryptedMnemonic().isNullOrBlank()) {
+                    llRecoveryLayout.gone()
+                } else {
+                    llRecoveryLayout.visible()
+                    recoveryPreference.setOnClickListener {
+                        securityOpen(SecurityRecoveryActivity.launchIntent(this@WalletSettingActivity))
+                    }
+                }
                 privatePreference.setOnClickListener {
                     securityOpen(SecurityPrivateKeyActivity.launchIntent(this@WalletSettingActivity))
                 }

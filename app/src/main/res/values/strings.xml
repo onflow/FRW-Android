@@ -650,6 +650,7 @@
     <string name="restore_failed">Restore Failed</string>
     <string name="restore_failed_desc">Please try again later.</string>
     <string name="debug_view">Debug View</string>
+    <string name="wrap_eoa_tx_with_cadence">Wrap EOA TX with Cadence</string>
     <string name="export_log">Export Log</string>
     <string name="view_recovery_phrase">View Recovery Phrase</string>
     <string name="clear">Clear</string>

@@ -12,11 +12,14 @@ import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.isDev
 import com.flowfoundation.wallet.utils.isFreeGasPreferenceEnable
 import com.flowfoundation.wallet.utils.isTesting
+import com.flowfoundation.wallet.utils.isWrapEOATxWithCadenceEnable
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.safeRun
 import com.google.gson.reflect.TypeToken
 
 suspend fun isGasFree() = AppConfig.isFreeGas() && isFreeGasPreferenceEnable()
+
+suspend fun isWrapEOATxWithCadence() = AppConfig.wrapEOATransaction() && isWrapEOATxWithCadenceEnable()
 
 object AppConfig {
 
@@ -218,7 +221,7 @@ private data class Features(
     val txWarning: Boolean?,
     @SerializedName("cover_bridge_fee")
     val coverBridgeFee: Boolean?,
-    @SerializedName("wrap_eoa_transaction_with_cadence")
+    @SerializedName("wrap_eoa_tx_with_cadence")
     val wrapEOATxWithCadence: Boolean?,
 )
 

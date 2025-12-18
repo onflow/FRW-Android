@@ -52,6 +52,7 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 
 import com.flowfoundation.wallet.manager.walletdata.MainWallet
+import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import kotlin.text.isNullOrEmpty
 
 object AccountManager {
@@ -224,6 +225,16 @@ object AccountManager {
 
     fun walletNodes(): List<MainWallet>? {
         return get()?.walletNodes
+    }
+
+    fun encryptedMnemonic(): String? {
+        val account = currentAccount
+        if (account == null) {
+            logd(TAG, "No active account found")
+            return null
+        }
+        val keyStoreAddress = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
+        return keyStoreAddress?.encryptedMnemonic
     }
 
     fun removeCurrentAccount() {

@@ -30,251 +30,275 @@
             android:orientation="vertical"
             android:paddingBottom="16dp">
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/group1"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="18dp"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="@color/deep_bg"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/group1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
 
-        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
-            android:id="@+id/developer_mode_preference"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:iconEnable="false"
-            app:titleId="@string/developer_mode"/>
-    </com.google.android.material.card.MaterialCardView>
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/group2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="18dp"
-            android:layout_marginVertical="16dp"
-            android:fontFamily="@font/montsettat"
-            android:text="@string/network"
-            android:textColor="@color/text"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="18dp"
-            app:cardBackgroundColor="@color/deep_bg"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp">
+                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
+                    android:id="@+id/developer_mode_preference"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:iconEnable="false"
+                    app:titleId="@string/developer_mode"/>
+            </com.google.android.material.card.MaterialCardView>
 
             <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/group2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
-                    android:id="@+id/mainnet_preference"
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:descId="@string/selected"
-                    app:iconEnable="false"
-                    app:titleId="@string/mainnet"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginHorizontal="8dp"
-                    android:background="@color/background"/>
-
-                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
-                    android:id="@+id/testnet_preference"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:descId="@string/selected"
-                    app:iconEnable="false"
-                    app:titleId="@string/testnet"/>
-
-            </androidx.appcompat.widget.LinearLayoutCompat>
-        </com.google.android.material.card.MaterialCardView>
-
-    </androidx.appcompat.widget.LinearLayoutCompat>
-
-    <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/group3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="18dp"
-            android:layout_marginVertical="16dp"
-            android:fontFamily="@font/montsettat"
-            android:text="Watch Collectible Address"
-            android:textColor="@color/text"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="18dp"
-            app:cardBackgroundColor="@color/deep_bg"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp">
-
-            <androidx.appcompat.widget.LinearLayoutCompat
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
-                    android:id="@+id/my_own_address_preference"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:descId="@string/selected"
-                    app:iconEnable="false"
-                    app:titleId="@string/my_own_address"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginHorizontal="8dp"
-                    android:background="@color/background"/>
-
-                <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
-                    android:id="@+id/custom_address_preference"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:descId="@string/selected"
-                    app:iconEnable="false"
-                    app:titleId="@string/custom_address"/>
-
-                <EditText
-                    android:id="@+id/et_custom_address"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="26dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@color/transparent"
-                    android:fontFamily="@font/inter_medium"
-                    android:hint="@string/enter_custom_address"
+                    android:layout_marginHorizontal="18dp"
+                    android:layout_marginVertical="16dp"
+                    android:fontFamily="@font/montsettat"
+                    android:text="@string/network"
                     android:textColor="@color/text"
-                    android:textColorHint="@color/text_sub"
-                    android:textSize="14sp"
-                    android:visibility="gone"/>
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="18dp"
+                    app:cardBackgroundColor="@color/deep_bg"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
+                            android:id="@+id/mainnet_preference"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:descId="@string/selected"
+                            app:iconEnable="false"
+                            app:titleId="@string/mainnet"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:background="@color/background"/>
+
+                        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
+                            android:id="@+id/testnet_preference"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:descId="@string/selected"
+                            app:iconEnable="false"
+                            app:titleId="@string/testnet"/>
+
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </com.google.android.material.card.MaterialCardView>
 
             </androidx.appcompat.widget.LinearLayoutCompat>
-        </com.google.android.material.card.MaterialCardView>
 
-    </androidx.appcompat.widget.LinearLayoutCompat>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cv_debug"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="18dp"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="@color/deep_bg"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
-
-        <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
-                android:id="@+id/debug_view_preference"
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/group3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:iconEnable="false"
-                app:titleId="@string/debug_view"/>
+                android:orientation="vertical">
 
-            <View
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="18dp"
+                    android:layout_marginVertical="16dp"
+                    android:fontFamily="@font/montsettat"
+                    android:text="Watch Collectible Address"
+                    android:textColor="@color/text"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="18dp"
+                    app:cardBackgroundColor="@color/deep_bg"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp">
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
+                            android:id="@+id/my_own_address_preference"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:descId="@string/selected"
+                            app:iconEnable="false"
+                            app:titleId="@string/my_own_address"/>
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:background="@color/background"/>
+
+                        <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceCheckbox
+                            android:id="@+id/custom_address_preference"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:descId="@string/selected"
+                            app:iconEnable="false"
+                            app:titleId="@string/custom_address"/>
+
+                        <EditText
+                            android:id="@+id/et_custom_address"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="26dp"
+                            android:layout_marginBottom="16dp"
+                            android:background="@color/transparent"
+                            android:fontFamily="@font/inter_medium"
+                            android:hint="@string/enter_custom_address"
+                            android:textColor="@color/text"
+                            android:textColorHint="@color/text_sub"
+                            android:textSize="14sp"
+                            android:visibility="gone"/>
+
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_warp_eoa_tx"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginHorizontal="8dp"
-                android:background="@color/background"/>
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
+                        android:id="@+id/wrap_eoa_tx"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:iconEnable="false"
+                        app:titleId="@string/debug_view"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_debug"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <com.flowfoundation.wallet.page.profile.widget.ProfilePreferenceSwitch
+                        android:id="@+id/debug_view_preference"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:iconEnable="false"
+                        app:titleId="@string/debug_view"/>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="8dp"
+                        android:background="@color/background"/>
+
+                    <TextView
+                        android:id="@+id/tv_export_log"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginVertical="20dp"
+                        android:fontFamily="@font/inter_medium"
+                        android:paddingHorizontal="26dp"
+                        android:text="@string/export_log"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_reload_config"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="20dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:paddingHorizontal="26dp"
+                    android:text="@string/reload_config"
+                    android:textColor="@color/text"
+                    android:textSize="16sp"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_account_key"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/deep_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="20dp"
+                    android:fontFamily="@font/inter_medium"
+                    android:paddingHorizontal="26dp"
+                    android:text="@string/local_account_keys"
+                    android:textColor="@color/text"
+                    android:textSize="16sp"/>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
-                android:id="@+id/tv_export_log"
+                android:id="@+id/tv_cadence_script_version"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="20dp"
                 android:fontFamily="@font/inter_medium"
-                android:paddingHorizontal="26dp"
-                android:text="@string/export_log"
+                android:paddingHorizontal="18dp"
+                android:layout_marginTop="16dp"
+                android:gravity="center_horizontal"
                 android:textColor="@color/text"
                 android:textSize="16sp"/>
-        </androidx.appcompat.widget.LinearLayoutCompat>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cv_reload_config"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="18dp"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
-        app:cardBackgroundColor="@color/deep_bg"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="20dp"
-            android:fontFamily="@font/inter_medium"
-            android:paddingHorizontal="26dp"
-            android:text="@string/reload_config"
-            android:textColor="@color/text"
-            android:textSize="16sp"/>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cv_account_key"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="18dp"
-        android:layout_marginTop="16dp"
-        android:visibility="gone"
-        app:cardBackgroundColor="@color/deep_bg"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="20dp"
-            android:fontFamily="@font/inter_medium"
-            android:paddingHorizontal="26dp"
-            android:text="@string/local_account_keys"
-            android:textColor="@color/text"
-            android:textSize="16sp"/>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <TextView
-        android:id="@+id/tv_cadence_script_version"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_medium"
-        android:paddingHorizontal="18dp"
-        android:layout_marginTop="16dp"
-        android:gravity="center_horizontal"
-        android:textColor="@color/text"
-        android:textSize="16sp"/>
-
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.core.widget.NestedScrollView>
 

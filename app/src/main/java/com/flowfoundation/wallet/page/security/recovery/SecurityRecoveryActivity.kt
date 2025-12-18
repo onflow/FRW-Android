@@ -20,8 +20,18 @@ import com.flowfoundation.wallet.wallet.Wallet
 import com.flowfoundation.wallet.widgets.itemdecoration.GridSpaceItemDecoration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
+import com.flowfoundation.wallet.page.restore.keystore.PrivateKeyStoreCryptoProvider
+import com.flowfoundation.wallet.manager.account.AccountManager
+import com.google.gson.Gson
+import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
+import com.flowfoundation.wallet.utils.secret.EncryptedMnemonicUtils
+import com.flowfoundation.wallet.firebase.auth.firebaseUid
+import com.flowfoundation.wallet.utils.logd
 
 class SecurityRecoveryActivity : BaseActivity() {
+
+    private val TAG = "SecurityRecoveryActivity"
 
     private lateinit var binding: ActivitySecurityRecoveryBinding
 
@@ -52,21 +62,59 @@ class SecurityRecoveryActivity : BaseActivity() {
             Instabug.addPrivateViews(this)
         }
         loadMnemonic()
-        binding.stringContainer.setVisible(false)
-        binding.copyButton.setOnClickListener { copyToClipboard(Wallet.store().mnemonic()) }
     }
 
     private fun loadMnemonic() {
         ioScope {
-            val str = Wallet.store().mnemonic()
+            val str = getMnemonicFromProvider()
             withContext(Dispatchers.Main) {
-                val list = str.split(" ").mapIndexed { index, s -> MnemonicModel(index + 1, s) }
-                val result = mutableListOf<MnemonicModel>()
-                (0 until list.size / 2).forEach { i ->
-                    result.add(list[i])
-                    result.add(list[i + list.size / 2])
+                if (str.isNotBlank()) {
+                    val list = str.split(" ").mapIndexed { index, s -> MnemonicModel(index + 1, s) }
+                    val result = mutableListOf<MnemonicModel>()
+                    // Retain existing list formatting logic
+                    (0 until list.size / 2).forEach { i ->
+                        result.add(list[i])
+                        result.add(list[i + list.size / 2])
+                    }
+                    adapter.setNewDiffData(result)
+                    binding.mnemonicContainer.setVisible(true)
+                    binding.copyButton.setOnClickListener { copyToClipboard(str) } // Update listener
+                } else {
+                    // Handle case where mnemonic is not found or decryption failed
+                    finish()
                 }
-                adapter.setNewDiffData(result)
+            }
+        }
+    }
+
+    private fun getMnemonicFromProvider(): String {
+        val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
+        return when (cryptoProvider) {
+            is PrivateKeyStoreCryptoProvider -> {
+                try {
+                    val encrypted = AccountManager.encryptedMnemonic()
+                    if (!encrypted.isNullOrBlank()) {
+                        val uid = firebaseUid()
+                        if (!uid.isNullOrBlank()) {
+                            EncryptedMnemonicUtils.decrypt(encrypted, uid) ?: ""
+                        } else {
+                            logd(TAG, "getMnemonicFromProvider: No Firebase UID available for decryption.")
+                            ""
+                        }
+                    } else {
+                        logd(TAG, "getMnemonicFromProvider: No encrypted mnemonic found in keystoreInfo.")
+                        ""
+                    }
+                } catch (e: Exception) {
+                    logd(TAG, "getMnemonicFromProvider: Error parsing or decrypting keystoreInfo: ${e.message}")
+                    ""
+                }
+            }
+            else -> {
+                // Fallback to Wallet.store() for HDWalletCryptoProvider and others
+                val mnemonic = Wallet.store().mnemonic()
+                logd(TAG, "getMnemonicFromProvider: Falling back to Wallet.store().mnemonic(). Is blank: ${mnemonic.isBlank()}")
+                mnemonic
             }
         }
     }

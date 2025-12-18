@@ -6,6 +6,7 @@ import com.flowfoundation.wallet.R
 import com.flowfoundation.wallet.manager.app.networkChainId
 import com.flowfoundation.wallet.manager.app.networkRPCUrl
 import com.flowfoundation.wallet.manager.config.AppConfig
+import com.flowfoundation.wallet.manager.config.isWrapEOATxWithCadence
 import com.flowfoundation.wallet.manager.flowjvm.EVM_GAS_LIMIT
 import com.flowfoundation.wallet.manager.flowjvm.cadenceGetNonce
 import com.flowfoundation.wallet.manager.flowjvm.cadenceSendEVMV2Transaction
@@ -248,7 +249,7 @@ Unit) {
 
             logd("EOATransaction", "=== Transaction Signing ===")
             // Sign the transaction
-            if (AppConfig.wrapEOATransaction()) {
+            if (isWrapEOATxWithCadence()) {
                 val cryptoProvider = CryptoProviderManager.getCurrentCryptoProvider()
                 if (cryptoProvider == null) {
                     logd("EOATransaction", "ERROR: No current crypto provider found")
