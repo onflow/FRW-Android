@@ -6,7 +6,9 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.crypto.BIP39
+import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
@@ -215,11 +217,28 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     signAlgo = 2  // ECDSA_secp256k1
                 )
 
+                // Derive EVM address from the seed phrase for faster display in UI
+                // Uses BIP44 path m/44'/60'/0'/0/0 (Ethereum standard)
+                val evmAddress: String? = try {
+                    val wallet = WalletFactory.createKeyWallet(
+                        seedPhraseKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        inMemoryStorage
+                    )
+                    val address = wallet.ethAddress(0)
+                    logd(TAG, "generateSeedPhrase() - Derived EVM address: ${address.take(10)}...")
+                    address
+                } catch (e: Exception) {
+                    logw(TAG, "generateSeedPhrase() - Failed to derive EVM address: ${e.message}")
+                    null
+                }
+
                 // Create SPResponse
                 val response = RNBridge.SPResponse(
                     mnemonic = mnemonic,
                     accountKey = accountKey,
-                    drivepath = derivationPath
+                    drivepath = derivationPath,
+                    evmAddress = evmAddress
                 )
 
                 // Convert to WritableMap for React Native
@@ -340,9 +359,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
+    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, evmAddress: String?, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
         logd(TAG, "saveMnemonic() called - EOA account initialization")
-        logd(TAG, "saveMnemonic() - username: $username, txId: $txId (Flow address creation handled by React Native)")
+        logd(TAG, "saveMnemonic() - username: $username, txId: $txId, evmAddress: ${evmAddress?.take(10) ?: "null"} (Flow address creation handled by React Native)")
 
         ioScope {
             try {
