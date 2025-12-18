@@ -52,7 +52,7 @@ object WalletCreationHelper {
                 // Handle prefix-based accounts
                 !account.prefix.isNullOrBlank() -> {
                     logd(TAG, "Creating prefix-based wallet for account: ${account.userInfo.username}")
-                    createWalletFromPrefix(account.prefix!!, isCurrentAccount)
+                    createWalletFromPrefix(account.prefix!!, account.wallet?.id, isCurrentAccount)
                 }
 
                 // Handle HD wallet (fallback case)
@@ -138,14 +138,45 @@ object WalletCreationHelper {
      * 
      * For Secure Enclave (hardware-backed) keys, EOA is disabled since we can't derive
      * an EOA address from a hardware key.
+     * 
+     * For prefix-based keys that also have a mnemonic stored (e.g., RN seed phrase accounts),
+     * we enable EOA derivation.
      */
-    private fun createWalletFromPrefix(prefix: String, isCurrentAccount: Boolean): Wallet? {
+    private fun createWalletFromPrefix(prefix: String, userId: String?, isCurrentAccount: Boolean): Wallet? {
         val storage = getStorage()
+        
+        // Check if this account has a mnemonic available (RN seed phrase accounts)
+        // Using hasHDWalletKeystore which safely checks file existence without creating new keystores
+        if (!userId.isNullOrBlank() && AccountWalletManager.hasHDWalletKeystore(userId)) {
+            try {
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(userId)
+                if (mnemonic != null) {
+                    logd(TAG, "Prefix-based account has mnemonic available - EOA enabled")
+                    val seedPhraseKey = SeedPhraseKey(
+                        mnemonicString = mnemonic,
+                        passphrase = "",
+                        derivationPath = DERIVATION_PATH,
+                        storage = storage
+                    )
+                    if (isCurrentAccount) {
+                        WalletManager.setEoaDisabled(false)
+                    }
+                    return WalletFactory.createKeyWallet(
+                        seedPhraseKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        storage
+                    )
+                }
+            } catch (e: Exception) {
+                logd(TAG, "Error loading mnemonic for prefix-based account: ${e.message}, falling back to private key")
+            }
+        }
+        
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
-                // Regular prefix-based key - cannot derive EOA (no mnemonic available)
-                logd(TAG, "Regular prefix-based key found for prefix: $prefix - EOA disabled")
+                // Regular prefix-based key without mnemonic - cannot derive EOA
+                logd(TAG, "Regular prefix-based key found for prefix: $prefix - EOA disabled (no mnemonic)")
                 if (isCurrentAccount) {
                     WalletManager.setEoaDisabled(true)
                 }

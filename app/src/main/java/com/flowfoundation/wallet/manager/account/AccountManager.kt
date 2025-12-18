@@ -545,8 +545,10 @@ object AccountManager {
                     deviceInfo = deviceInfoRequest
                 )
             )
+
             if (resp.data?.customToken.isNullOrBlank()) {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
+                loge(tag = "SWITCH_ACCOUNT", msg = "Response status: ${resp.status}, message: ${resp.message}")
                 callback.invoke(false)
             } else {
                 firebaseLogin(resp.data.customToken) { isSuccess ->

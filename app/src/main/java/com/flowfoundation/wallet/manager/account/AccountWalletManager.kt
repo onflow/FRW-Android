@@ -40,6 +40,36 @@ object AccountWalletManager {
         return !passwordMap()[uid].isNullOrBlank()
     }
 
+    /**
+     * Safely checks if an HD wallet keystore file exists for the given UID.
+     * This method does NOT create a new keystore if one doesn't exist.
+     * 
+     * @return true if both the password exists in the map AND the keystore file exists on disk
+     */
+    fun hasHDWalletKeystore(uid: String): Boolean {
+        val password = passwordMap()[uid]
+        if (password.isNullOrBlank()) {
+            return false
+        }
+        // Compute the store path without creating a WalletStoreWithUid (which would create the file)
+        val storeName = aesEncrypt(key = getOrCreateStoreNameAesKey(), message = uid)
+        val storePath = File(DATA_PATH, storeName).absolutePath
+        return File(storePath).exists()
+    }
+
+    /**
+     * Get the AES key for store name encryption, creating one if it doesn't exist.
+     * This is extracted from WalletStoreWithUid to allow safe file existence checks.
+     */
+    private fun getOrCreateStoreNameAesKey(): String {
+        var local = getWalletStoreNameAesKey()
+        if (local.isBlank()) {
+            local = UUID.randomUUID().toString().take(16)
+            saveWalletStoreNameAesKey(local)
+        }
+        return local
+    }
+
 
     class WalletStoreWithUid(private val uid: String, private val password: String) {
         private var keyStore: StoredKey
