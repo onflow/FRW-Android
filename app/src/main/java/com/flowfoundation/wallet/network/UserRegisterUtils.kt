@@ -1,9 +1,9 @@
 package com.flowfoundation.wallet.network
 
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.webkit.WebStorage
 import android.widget.Toast
-import com.flow.wallet.crypto.BIP39
-import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.storage.FileSystemStorage
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.R
@@ -45,14 +45,11 @@ import com.flowfoundation.wallet.utils.error.WalletError
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
 import com.flowfoundation.wallet.utils.loge
-import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.setMeowDomainClaimed
 import com.flowfoundation.wallet.utils.setRegistered
-import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
-// Removed: import com.flowfoundation.wallet.wallet.createWalletFromServer - was causing duplicate account creation
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
@@ -60,9 +57,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.delay
 import org.onflow.flow.ChainId
-import org.onflow.flow.models.SigningAlgorithm
 import java.io.File
+import java.security.KeyPair
+import java.security.KeyPairGenerator
 import java.security.MessageDigest
+import java.security.spec.ECGenParameterSpec
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -194,6 +193,11 @@ suspend fun initWalletWithTxId(
       }
       logd(TAG, "[InitWallet] Using prefix from pending registration: $prefix")
 
+      // Check if this is a hardware-backed key (Secure Enclave)
+      val keystoreAlias = getKeystoreAliasForPrefix(prefix)
+      val isHardwareBackedKey = keystoreAlias != null
+      logd(TAG, "[InitWallet] Is hardware-backed key: $isHardwareBackedKey, alias: $keystoreAlias")
+
       // Fetch account by txId using Wallet SDK
       val chainId = when (chainNetWorkString()) {
         "mainnet" -> ChainId.Mainnet
@@ -201,23 +205,35 @@ suspend fun initWalletWithTxId(
         else -> ChainId.Mainnet
       }
 
-      val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
-      val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
-      if (keyForWalletSDK == null) {
-        loge(TAG, "[InitWallet] Failed to retrieve stored private key")
-        continuation.resume(Pair(false, null))
-        return@ioScope
+      // For hardware-backed keys, we use a different approach since we can't extract the private key
+      // We need to fetch the account info directly from the blockchain using the txId
+      val createdAddress: String
+      if (isHardwareBackedKey) {
+        logd(TAG, "[InitWallet] Using hardware-backed key - fetching account via transaction result")
+        // For hardware-backed keys, we fetch the account address from the transaction result
+        // The account was already created on-chain, we just need to get the address
+        createdAddress = fetchAddressFromTransaction(txId, chainId)
+        logd(TAG, "[InitWallet] Fetched address from transaction: $createdAddress")
+      } else {
+        // For software keys, use the existing Flow-Wallet-Kit approach
+        val storage = FileSystemStorage(File(Env.getApp().filesDir, "wallet"))
+        val keyForWalletSDK = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
+        if (keyForWalletSDK == null) {
+          loge(TAG, "[InitWallet] Failed to retrieve stored private key")
+          continuation.resume(Pair(false, null))
+          return@ioScope
+        }
+
+        val walletForSDK = WalletFactory.createKeyWallet(
+          keyForWalletSDK,
+          setOf(ChainId.Mainnet, ChainId.Testnet),
+          storage
+        )
+
+        logd(TAG, "[InitWallet] Fetching account by txId: $txId")
+        val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
+        createdAddress = fetchedAccount.address
       }
-
-      val walletForSDK = WalletFactory.createKeyWallet(
-        keyForWalletSDK,
-        setOf(ChainId.Mainnet, ChainId.Testnet),
-        storage
-      )
-
-      logd(TAG, "[InitWallet] Fetching account by txId: $txId")
-      val fetchedAccount = walletForSDK.fetchAccountByCreationTxId(txId, chainId)
-      val createdAddress = fetchedAccount.address
 
       logd(TAG, "[InitWallet] Account fetched successfully at address: $createdAddress")
 
@@ -549,47 +565,26 @@ private fun registerFirebase(user: RegisterResponse, callback: (isSuccess: Boole
 }
 
 private suspend fun registerServer(username: String, prefix: String): RegisterResponse {
-  logd(TAG, "Starting server registration for username: $username")
+  logd(TAG, "Starting server registration for username: $username (Secure Enclave / Hardware-backed)")
   val deviceInfoRequest = DeviceInfoManager.getDeviceInfoRequest()
   val service = retrofit().create(ApiService::class.java)
-  val baseDir = File(Env.getApp().filesDir, "wallet")
-  val storage = FileSystemStorage(baseDir)
 
   try {
-    // Generate and store mnemonic globally for potential future EOA support
-    val mnemonic = BIP39.generate(BIP39.SeedPhraseLength.TWELVE)
-    logd(TAG, "Generated new 12-word mnemonic for backup support")
+    // For Secure Enclave / Hardware-backed accounts:
+    // - Generate key directly in Android Keystore (hardware-backed, non-extractable)
+    // - Do NOT generate a mnemonic (hardware keys cannot be derived from seed phrases)
+    // - The key stays in hardware and can only be used for signing, never exported
 
-    val passwordMap = try {
-      val pref = readWalletPassword()
-      if (pref.isBlank()) {
-        HashMap<String, String>()
-      } else {
-        Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
-      }
-    } catch (e: Exception) {
-      HashMap<String, String>()
-    }
+    val keystoreAlias = "secure_enclave_$prefix"
+    logd(TAG, "Generating hardware-backed key in Android Keystore with alias: $keystoreAlias")
 
-    // Store mnemonic globally (available for future EOA enablement if user chooses)
-    storeWalletPassword(Gson().toJson(passwordMap.apply { put("global", mnemonic) }))
-    logd(TAG, "Stored mnemonic globally for backup support")
+    // Generate EC key pair directly in Android Keystore
+    val keyPair = generateHardwareBackedKeyPair(keystoreAlias)
+    logd(TAG, "Successfully generated hardware-backed key pair")
 
-    // Create a new private key
-    val privateKey = PrivateKey.create(storage)
-    logd(TAG, "Created new private key for registration")
-
-    // Store the private key with prefix as ID for later retrieval
-    val keyId = "prefix_key_$prefix"
-    privateKey.store(keyId, prefix) // Use prefix as password for simplicity
-    logd(TAG, "Stored private key with ID: $keyId")
-
-    // Get the uncompressed public key using the fixed Flow-Wallet-Kit method
-    val publicKeyBytes = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)
-    if (publicKeyBytes == null) {
-      logd(TAG, "Failed to get public key from private key")
-      throw IllegalStateException("Failed to get public key from private key")
-    }
+    // Extract public key from the generated key pair
+    val publicKey = keyPair.public
+    val publicKeyBytes = extractECPublicKeyBytes(publicKey)
 
     logd(TAG, "Public key size: ${publicKeyBytes.size} bytes")
 
@@ -602,6 +597,10 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
       publicKeyBytes.joinToString("") { "%02x".format(it) }
     }
     logd(TAG, "Formatted public key: $hexPublicKey (${hexPublicKey.length} chars)")
+
+    // Store the keystore alias in preferences so CryptoProviderManager can find it
+    storeKeystoreAlias(prefix, keystoreAlias)
+    logd(TAG, "Stored keystore alias mapping: prefix=$prefix -> alias=$keystoreAlias")
 
     // Create registration request with correct algorithm parameters
     val request = RegisterRequest(
@@ -634,6 +633,102 @@ private suspend fun registerServer(username: String, prefix: String): RegisterRe
     logd(TAG, "Error stack trace: ${e.stackTraceToString()}")
     throw e
   }
+}
+
+/**
+ * Generate a hardware-backed EC key pair in Android Keystore.
+ * The private key never leaves the secure hardware (TEE/SE).
+ */
+private fun generateHardwareBackedKeyPair(keystoreAlias: String): KeyPair {
+  val keyPairGenerator = KeyPairGenerator.getInstance(
+    KeyProperties.KEY_ALGORITHM_EC,
+    "AndroidKeyStore"
+  )
+
+  val parameterSpec = KeyGenParameterSpec.Builder(
+    keystoreAlias,
+    KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
+  )
+    .setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1")) // P-256 curve
+    .setDigests(KeyProperties.DIGEST_SHA256)
+    .setUserAuthenticationRequired(false) // Can be set to true for biometric protection
+    .build()
+
+  keyPairGenerator.initialize(parameterSpec)
+  return keyPairGenerator.generateKeyPair()
+}
+
+/**
+ * Extract the raw EC public key bytes from a Java PublicKey.
+ * Returns uncompressed format (04 || x || y) for 65 bytes total.
+ */
+private fun extractECPublicKeyBytes(publicKey: java.security.PublicKey): ByteArray {
+  val encoded = publicKey.encoded
+
+  // The encoded form is X.509 SubjectPublicKeyInfo format
+  // For EC keys, we need to extract the actual point data
+  // The last 65 bytes contain: 04 (uncompressed indicator) + 32 bytes X + 32 bytes Y
+
+  return if (encoded.size >= 65) {
+    // Look for the uncompressed point marker (0x04)
+    val startIndex = encoded.indexOfFirst { it == 0x04.toByte() }
+    if (startIndex != -1 && startIndex + 65 <= encoded.size) {
+      encoded.copyOfRange(startIndex, startIndex + 65)
+    } else {
+      // Fallback: take last 65 bytes
+      encoded.takeLast(65).toByteArray()
+    }
+  } else {
+    encoded
+  }
+}
+
+/**
+ * Store the mapping from prefix to keystore alias.
+ * This allows CryptoProviderManager to find the hardware-backed key later.
+ */
+private fun storeKeystoreAlias(prefix: String, keystoreAlias: String) {
+  val aliasMap = try {
+    val pref = readKeystoreAliasPreference()
+    if (pref.isBlank()) {
+      HashMap<String, String>()
+    } else {
+      Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+    }
+  } catch (e: Exception) {
+    HashMap<String, String>()
+  }
+
+  aliasMap[prefix] = keystoreAlias
+  saveKeystoreAliasPreference(Gson().toJson(aliasMap))
+}
+
+/**
+ * Get the keystore alias for a given prefix.
+ * Returns null if not found (account may use software key instead).
+ */
+fun getKeystoreAliasForPrefix(prefix: String): String? {
+  return try {
+    val pref = readKeystoreAliasPreference()
+    if (pref.isBlank()) {
+      null
+    } else {
+      val aliasMap: HashMap<String, String> = Gson().fromJson(pref, object : TypeToken<HashMap<String, String>>() {}.type)
+      aliasMap[prefix]
+    }
+  } catch (e: Exception) {
+    null
+  }
+}
+
+private fun readKeystoreAliasPreference(): String {
+  val prefs = Env.getApp().getSharedPreferences("keystore_aliases", android.content.Context.MODE_PRIVATE)
+  return prefs.getString("alias_map", "") ?: ""
+}
+
+private fun saveKeystoreAliasPreference(json: String) {
+  val prefs = Env.getApp().getSharedPreferences("keystore_aliases", android.content.Context.MODE_PRIVATE)
+  prefs.edit().putString("alias_map", json).apply()
 }
 
 fun generatePrefix(text: String): String {
@@ -710,4 +805,78 @@ suspend fun clearUserCache() {
 
 fun clearWebViewCache() {
   WebStorage.getInstance().deleteAllData()
+}
+
+/**
+ * Fetch the created account address from a transaction result.
+ * This is used for hardware-backed keys where we can't use the Wallet SDK's fetchAccountByCreationTxId.
+ *
+ * For hardware-backed keys, we can't use the Wallet SDK approach because:
+ * 1. The Wallet SDK requires a PrivateKey to create a wallet instance
+ * 2. Hardware-backed keys cannot be extracted from Android Keystore
+ *
+ * Instead, we wait for the transaction to seal and then fetch the address from the backend.
+ */
+private suspend fun fetchAddressFromTransaction(txId: String, chainId: ChainId): String {
+  logd(TAG, "[fetchAddressFromTransaction] Fetching transaction result for txId: $txId on chainId: $chainId")
+
+  try {
+    // Wait for transaction to seal using FlowCadenceApi
+    logd(TAG, "[fetchAddressFromTransaction] Waiting for transaction to seal...")
+    val txResult = com.flowfoundation.wallet.manager.flow.FlowCadenceApi.waitForSeal(txId)
+    logd(TAG, "[fetchAddressFromTransaction] Transaction sealed, status: ${txResult.status}")
+
+    // Try to extract address from transaction events
+    txResult.events.forEach { event ->
+      logd(TAG, "[fetchAddressFromTransaction] Event type: ${event.type}")
+      if (event.type.contains("AccountCreated") || event.type.contains("flow.AccountCreated")) {
+        // Parse the address from the event payload
+        val eventPayload = event.payload.toString()
+        logd(TAG, "[fetchAddressFromTransaction] Found AccountCreated event: $eventPayload")
+
+        // Extract address from the event (format varies, but typically contains the address)
+        val addressMatch = Regex("0x[a-fA-F0-9]{16}").find(eventPayload)
+        if (addressMatch != null) {
+          val address = addressMatch.value
+          logd(TAG, "[fetchAddressFromTransaction] Extracted address from event: $address")
+          return address
+        }
+      }
+    }
+
+    logd(TAG, "[fetchAddressFromTransaction] Could not extract address from events, falling back to API")
+  } catch (e: Exception) {
+    loge(TAG, "[fetchAddressFromTransaction] Error waiting for transaction: ${e.message}")
+  }
+
+  // Fallback: fetch from backend API
+  // The backend should have the wallet address by the time the transaction is sealed
+  logd(TAG, "[fetchAddressFromTransaction] Falling back to backend API to get address")
+
+  // Poll backend a few times to allow for propagation delay
+  var attempts = 0
+  val maxAttempts = 10
+  while (attempts < maxAttempts) {
+    try {
+      val service = retrofit().create(ApiService::class.java)
+      val walletList = service.getWalletList().data
+      val address = walletList?.wallets?.firstOrNull()?.blockchain?.firstOrNull()?.address
+
+      if (!address.isNullOrBlank()) {
+        val formattedAddress = if (address.startsWith("0x")) address else "0x$address"
+        logd(TAG, "[fetchAddressFromTransaction] Got address from backend: $formattedAddress")
+        return formattedAddress
+      }
+
+      logd(TAG, "[fetchAddressFromTransaction] Backend returned empty address, retrying... (${attempts + 1}/$maxAttempts)")
+      attempts++
+      delay(1000)
+    } catch (e: Exception) {
+      loge(TAG, "[fetchAddressFromTransaction] Backend API error: ${e.message}, retrying... (${attempts + 1}/$maxAttempts)")
+      attempts++
+      delay(1000)
+    }
+  }
+
+  throw IllegalStateException("Could not determine created account address after $maxAttempts attempts")
 }
