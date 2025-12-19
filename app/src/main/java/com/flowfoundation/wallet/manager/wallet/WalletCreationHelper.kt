@@ -38,8 +38,8 @@ object WalletCreationHelper {
      * 
      * Account types and their key storage:
      * 1. Keystore-based: Has keyStoreInfo (may have encrypted mnemonic or private key)
-     * 2. Mnemonic-only (cleaner architecture): Has no prefix, no keyStoreInfo, mnemonic in AccountWalletManager
-     * 3. Prefix-based (legacy/hardware): Has prefix for hardware-backed or legacy keys
+     * 2. Prefix-based (legacy/hardware): Has prefix for hardware-backed or legacy keys
+     * 3. Mnemonic-based: Fallback to HD wallet mnemonic via AccountWalletManager
      */
     suspend fun createWalletFromAccount(account: Account, isCurrentAccount: Boolean = true):
       Wallet? {
@@ -55,22 +55,15 @@ object WalletCreationHelper {
                     createWalletFromKeystore(account.keyStoreInfo!!, userId = userId, isCurrentAccount)
                 }
 
-                // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
-                // Check this BEFORE prefix to properly handle new RN seed phrase accounts
-                account.prefix.isNullOrBlank() && !userId.isNullOrBlank() && AccountWalletManager.hasHDWalletKeystore(userId) -> {
-                    logd(TAG, "Creating mnemonic-only wallet for account: ${account.userInfo.username} (cleaner architecture)")
-                    createWalletFromHDMnemonic(userId, isCurrentAccount)
-                }
-
                 // Handle prefix-based accounts (hardware-backed or legacy)
                 !account.prefix.isNullOrBlank() -> {
                     logd(TAG, "Creating prefix-based wallet for account: ${account.userInfo.username}")
                     createWalletFromPrefix(account.prefix!!, isCurrentAccount)
                 }
 
-                // Handle HD wallet (fallback case for legacy accounts)
+                // Handle mnemonic-based accounts (including cleaner architecture RN seed phrase accounts)
                 else -> {
-                    logd(TAG, "Creating HD wallet (fallback) for account: ${account.userInfo.username}")
+                    logd(TAG, "Creating HD wallet from mnemonic for account: ${account.userInfo.username}")
                     createWalletFromHDMnemonic(userId ?: "", isCurrentAccount)
                 }
             }
