@@ -2,7 +2,10 @@ package com.flowfoundation.wallet.cache
 
 import androidx.annotation.WorkerThread
 import com.flowfoundation.wallet.manager.account.Account
+import com.flowfoundation.wallet.manager.account.AccountManager.walletNodes
 import com.flowfoundation.wallet.manager.account.AccountWalletManager
+import com.flowfoundation.wallet.manager.app.chainNetWorkString
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
 import com.flowfoundation.wallet.utils.*
 import com.flowfoundation.wallet.utils.error.AccountError
 import com.flowfoundation.wallet.utils.error.ErrorReporter
@@ -101,7 +104,9 @@ object AccountCacheManager{
             if (validAccounts.isNotEmpty()) {
                 logd(TAG, "Returning ${validAccounts.size} valid accounts")
                 logd(TAG, "First account username: ${validAccounts.firstOrNull()?.userInfo?.username}")
-                logd(TAG, "First account wallet address: ${validAccounts.firstOrNull()?.wallet?.walletAddress()}")
+                logd(TAG, "First account wallet address: ${validAccounts.firstOrNull()?.walletNodes?.
+                filterIsInstance<FlowWallet>()?.firstOrNull { it.chainIdString.equals(
+                  chainNetWorkString(), ignoreCase = true) }}")
                 logd(TAG, "First account keystore info present: ${!validAccounts.firstOrNull()?.keyStoreInfo.isNullOrBlank()}")
             }
 

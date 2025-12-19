@@ -228,7 +228,7 @@ class EvmInterface(
                         webView.sendResult(network, txHash, id)
                     }
                 } else {
-                    sendEOATransaction(network, transaction) { txHash ->
+                    sendEOATransaction(transaction) { txHash ->
                         webView.sendResult(network, txHash, id)
                     }
                 }

@@ -7,6 +7,7 @@ import com.flow.wallet.crypto.BIP39
 import com.flow.wallet.keys.SeedPhraseKey
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -45,14 +46,14 @@ class WalletCreateMnemonicViewModel : ViewModel() {
             val seedPhraseKey = SeedPhraseKey(
                 mnemonicString = mnemonic,
                 passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
+                derivationPath = DERIVATION_PATH,
                 storage = getStorage()
             )
 
             // Create keystore info for the account
             val privateKeyHex = seedPhraseKey.privateKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_P256)?.toHexString() ?: ""
             val publicKeyHex = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_P256)?.toHexString()?.removePrefix("04") ?: ""
-            val walletAddress = WalletManager.getFlowWalletAddress() ?: ""
+            val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: ""
 
             // Create keystore address info
             val keystoreAddress = com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress(

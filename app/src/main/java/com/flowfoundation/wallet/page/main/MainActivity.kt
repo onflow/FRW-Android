@@ -131,7 +131,7 @@ class MainActivity : BaseActivity() {
                     contentPresenter.checkAndShowContent()
                 }
                 // If still not registered, don't re-launch onboarding
-                // The existing ReactNativeActivity will handle it
+                // The existing onboarding flow will handle it
             }
         }
     }

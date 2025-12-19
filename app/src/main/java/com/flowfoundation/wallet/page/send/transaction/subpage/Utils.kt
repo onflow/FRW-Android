@@ -36,7 +36,7 @@ fun DialogSendConfirmBinding.bindUserInfo(fromAddress: String, contact: AddressB
         val childAccount = WalletManager.childAccount(toAddress)
         toAvatarView.setAvatarInfo(iconUrl = childAccount?.icon)
         namePrefixView.gone()
-    } else if (toAddress == WalletManager.getFlowWalletAddress() || EVMWalletManager.isEVMWalletAddress(toAddress)) {
+    } else if (toAddress == WalletManager.getCurrentFlowWalletAddress() || EVMWalletManager.isEVMWalletAddress(toAddress)) {
         val emojiInfo = AccountEmojiManager.getEmojiByAddress(toAddress)
         toAvatarView.setAvatarInfo(emojiInfo = emojiInfo)
         namePrefixView.gone()

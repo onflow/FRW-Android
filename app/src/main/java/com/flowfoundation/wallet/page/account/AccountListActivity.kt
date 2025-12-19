@@ -133,7 +133,7 @@ fun AccountListScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
-                            tint = colorResource(id = R.color.icon)
+                            tint = colorResource(id = R.color.text)
                         )
                     }
                 },
@@ -142,15 +142,15 @@ fun AccountListScreen(
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Add Profile",
-                            tint = colorResource(id = R.color.icon)
+                            tint = colorResource(id = R.color.text)
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = colorResource(id = R.color.background),
                     titleContentColor = colorResource(id = R.color.text),
-                    navigationIconContentColor = colorResource(id = R.color.icon),
-                    actionIconContentColor = colorResource(id = R.color.icon)
+                    navigationIconContentColor = colorResource(id = R.color.text),
+                    actionIconContentColor = colorResource(id = R.color.text)
                 )
             )
         }

@@ -234,13 +234,14 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                 callback.invoke(false)
                             }
                         } else {
-                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                            firebaseLogin(resp.data.customToken) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     ioScope {
+                                        val userId = firebaseUid() ?: ""
                                         val userInfo = service.userInfo().data
                                         val walletData = WalletListData(
-                                            id = uid,
+                                            id = userId,
                                             username = userInfo.username,
                                             wallets = null
                                         )
@@ -251,7 +252,7 @@ internal class WalletDappDelegate : SignClient.DappDelegate {
                                                 prefix = prefix,
                                                 wallet = walletData
                                             ),
-                                            uid
+                                            userId
                                         )
                                         callback.invoke(true)
                                     }

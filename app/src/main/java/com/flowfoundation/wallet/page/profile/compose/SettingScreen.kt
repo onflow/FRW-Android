@@ -59,7 +59,6 @@ fun SettingScreen(
 
     // Observe user info
     val userInfo by viewModel.profileLiveData.observeAsState()
-    val inboxCount by viewModel.inboxCountLiveData.observeAsState(0)
 
     // State variables
     var isSignedIn by remember { mutableStateOf(false) }

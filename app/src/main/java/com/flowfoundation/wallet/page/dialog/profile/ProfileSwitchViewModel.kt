@@ -116,10 +116,10 @@ class ProfileSwitchViewModel : ViewModel() {
                         }
                     }
                     is COAWallet -> {
-                         // Check cached COA
                         val coaAddress = linked.address
+                        // Only show COA if already verified/cached (has balance or NFTs)
                         if (profileId != null && profileId in verifiedCoaAvatarsMap && coaAddress in verifiedCoaAvatarsMap[profileId]!!) {
-                             avatars.add(verifiedCoaAvatarsMap[profileId]!![coaAddress]!!)
+                            avatars.add(verifiedCoaAvatarsMap[profileId]!![coaAddress]!!)
                         }
                     }
                 }
@@ -167,6 +167,7 @@ class ProfileSwitchViewModel : ViewModel() {
         }
 
         // 3. Process COA avatars based on fetched balances and NFT status
+        // Only show COA if it has balance or NFTs
         if (profileId !in verifiedCoaAvatarsMap) {
             verifiedCoaAvatarsMap[profileId] = mutableMapOf()
         }
@@ -176,6 +177,7 @@ class ProfileSwitchViewModel : ViewModel() {
             flowWallet.linkedWallets.filterIsInstance<COAWallet>().forEach { coaWallet ->
                 val coaAddress = coaWallet.address
 
+                // Only show COA if it has balance or NFTs
                 val coaBalance = balanceMap[coaAddress]
                 val hasBalance = coaBalance != null && coaBalance > BigDecimal.ZERO
                 var hasNFTs = false
@@ -189,8 +191,9 @@ class ProfileSwitchViewModel : ViewModel() {
                         // Ignore NFT API errors
                     }
                 }
+                val shouldShowCoa = hasBalance || hasNFTs
 
-                if (hasBalance || hasNFTs) {
+                if (shouldShowCoa) {
                     // Add if not present
                     if (!verifiedCoaAvatars.containsKey(coaAddress)) {
                         val emojiInfo = AccountEmojiManager.getEmojiByAddress(coaAddress)

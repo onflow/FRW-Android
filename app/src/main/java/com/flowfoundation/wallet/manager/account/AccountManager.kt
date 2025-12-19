@@ -52,6 +52,7 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.manager.walletdata.WalletDataManager
 
 import com.flowfoundation.wallet.manager.walletdata.MainWallet
+import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import kotlin.text.isNullOrEmpty
 
 object AccountManager {
@@ -224,6 +225,16 @@ object AccountManager {
 
     fun walletNodes(): List<MainWallet>? {
         return get()?.walletNodes
+    }
+
+    fun encryptedMnemonic(): String? {
+        val account = currentAccount
+        if (account == null) {
+            logd(TAG, "No active account found")
+            return null
+        }
+        val keyStoreAddress = Gson().fromJson(account.keyStoreInfo, KeystoreAddress::class.java)
+        return keyStoreAddress?.encryptedMnemonic
     }
 
     fun removeCurrentAccount() {
@@ -549,7 +560,7 @@ object AccountManager {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
                 callback.invoke(false)
             } else {
-                firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                firebaseLogin(resp.data.customToken) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
                         if (account.prefix == null && account.keyStoreInfo == null) {
@@ -702,7 +713,7 @@ object AccountManager {
                 loge(tag = "SWITCH_ACCOUNT", msg = "get customToken failed :: ${resp.data?.customToken}")
                 callback.invoke(false)
             } else {
-                firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                firebaseLogin(resp.data.customToken) { isSuccess ->
                     if (isSuccess) {
                         setRegistered()
                         if (switchAccount.prefix == null) {
@@ -782,6 +793,14 @@ data class Account(
     @SerializedName("accountType")
     var accountType: String? = null  // "full" or "hardware", null for legacy accounts
 )
+
+fun Account.firstFlowWalletAddress(): String? {
+    return this.walletNodes.filterIsInstance<FlowWallet>().firstOrNull{ it.chainIdString.equals(chainNetWorkString(), ignoreCase = true) }?.address
+}
+
+fun Account.containsFlowWalletAddress(address: String): Boolean {
+    return this.walletNodes.filterIsInstance<FlowWallet>().any { it.address == address }
+}
 
 @Serializable
 data class UserPrefix(

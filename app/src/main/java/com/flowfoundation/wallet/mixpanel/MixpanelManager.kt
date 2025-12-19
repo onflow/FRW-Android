@@ -65,7 +65,7 @@ object MixpanelManager {
 
     fun identifyUserProfile() {
         identify(
-            firebaseUid() ?: WalletManager.getFlowWalletAddress() ?: AccountManager.userInfo()?.username ?: ""
+            firebaseUid() ?: WalletManager.getCurrentFlowWalletAddress() ?: AccountManager.userInfo()?.username ?: ""
         )
     }
 
@@ -118,7 +118,7 @@ object MixpanelManager {
     fun coaCreation(txId: String, errorMsg: String? = null) {
         val properties = JSONObject().apply {
             put(KEY_TX_ID, txId)
-            put(KEY_FLOW_ADDRESS, WalletManager.getFlowWalletAddress())
+            put(KEY_FLOW_ADDRESS, WalletManager.getCurrentFlowWalletAddress())
             put(KEY_ERROR_MESSAGE, errorMsg.orEmpty())
         }
         trackEvent(EVENT_COA_CREATION, properties)
@@ -263,7 +263,7 @@ object MixpanelManager {
 
     private fun trackMultiBackupEvent(eventName: String, provider: MixpanelBackupProvider?) {
         val properties = JSONObject().apply {
-            put(KEY_ADDRESS, WalletManager.getFlowWalletAddress())
+            put(KEY_ADDRESS, WalletManager.getCurrentFlowWalletAddress())
             put(
                 KEY_PROVIDERS,
                 JSONArray(

@@ -1,20 +1,23 @@
 package com.flowfoundation.wallet.network.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class CreateWalletV2Response(
 
-    @SerializedName("data")
+    @SerialName("data")
     val data: CreateWalletV2ResponseData?,
 
-    @SerializedName("message")
+    @SerialName("message")
     val message: String,
 
-    @SerializedName("status")
+    @SerialName("status")
     val status: Int,
 )
 
+@Serializable
 data class CreateWalletV2ResponseData(
-    @SerializedName("txid")
+    @SerialName("txid")
     val txid: String?,
 )

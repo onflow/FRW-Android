@@ -14,7 +14,6 @@ import com.flowfoundation.wallet.firebase.auth.isAnonymousSignIn
 import com.flowfoundation.wallet.firebase.auth.signInAnonymously
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.account.DeviceInfoManager
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.app.isMainnet
@@ -53,7 +52,7 @@ import com.flowfoundation.wallet.utils.storeWalletPassword
 import com.flowfoundation.wallet.utils.toast
 import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.wallet.Wallet
-import com.flowfoundation.wallet.wallet.createWalletFromServer
+// Removed: import com.flowfoundation.wallet.wallet.createWalletFromServer - was causing duplicate account creation
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
@@ -111,7 +110,8 @@ suspend fun registerOutblockEarlyReturn(
 
         val service = retrofit().create(ApiService::class.java)
 
-        createWalletFromServer()
+        // Note: Don't call createWalletFromServer() here - it uses /v1/user/address
+        // which would create a SECOND Flow account. We only need createWalletV2().
         setRegistered()
 
         // Create Flow account on-chain via backend API
@@ -251,14 +251,12 @@ suspend fun initWalletWithTxId(
       logd(TAG, "[InitWallet] Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
       // Add account to AccountManager with walletNodes populated
-      // accountType = "hardware" for Secure Enclave accounts (no EOA by default)
       AccountManager.add(
         Account(
           userInfo = userInfo,
           prefix = prefix,
           wallet = walletListData,
-          walletNodes = initialWalletNodes,
-          accountType = AccountType.HARDWARE
+          walletNodes = initialWalletNodes
         ),
         firebaseUid()
       )
@@ -307,7 +305,8 @@ suspend fun registerOutblock(
           // Declare service here for fetching user and wallet info
           val service = retrofit().create(ApiService::class.java)
 
-          createWalletFromServer() // This should ideally ensure the WalletManager is aware of the new account
+          // Note: Don't call createWalletFromServer() here - it uses /v1/user/address
+          // which would create a SECOND Flow account. We only need createWalletV2().
           setRegistered()
 
           // Wallet and Account object creation should use data from the successful registration (via registerServer)
@@ -438,18 +437,16 @@ suspend fun registerOutblock(
           )
           logd(TAG, "Created initial FlowWallet node: address=$formattedCreatedAddress, network=${chainNetWorkString()}")
 
-          // accountType = "hardware" for Secure Enclave accounts (no EOA by default)
           AccountManager.add(
             Account(
               userInfo = userInfo,
               prefix = prefix, // This prefix matches the one used to store the key in registerServer
               wallet = walletListData,
-              walletNodes = initialWalletNodes,
-              accountType = AccountType.HARDWARE
+              walletNodes = initialWalletNodes
             ),
             firebaseUid()
           )
-          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes (accountType=hardware).")
+          logd(TAG, "Account added to AccountManager with FlowWallet in walletNodes.")
 
           // Get the Flow address from wallet data
           val flowAddress = walletListData.wallets

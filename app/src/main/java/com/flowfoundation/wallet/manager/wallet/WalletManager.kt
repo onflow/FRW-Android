@@ -9,6 +9,7 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager
 import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.walletdata.MainWallet
 import com.flowfoundation.wallet.utils.getSelectedWalletAddress
 import com.flowfoundation.wallet.utils.ioScope
 import com.flowfoundation.wallet.utils.logd
@@ -64,9 +65,9 @@ object WalletManager {
         }
 
         currentWallet = newWallet
-        logd(TAG, "Wallet created successfully: ${getFlowWalletAddress()}")
+        logd(TAG, "Wallet created successfully: ${getCurrentFlowWalletAddress()}")
 
-        val address = getFlowWalletAddress() ?: run {
+        val address = getCurrentFlowWalletAddress() ?: run {
             // For hardware-backed keys, try to get address from account data
             val walletData = account.wallet?.wallets?.firstOrNull()
             val blockchainData = walletData?.blockchain?.firstOrNull()
@@ -157,12 +158,12 @@ object WalletManager {
     }
 
     fun haveChildAccount(): Boolean {
-        val firstParentAddress = getFlowWalletAddress()
+        val firstParentAddress = getCurrentFlowWalletAddress()
         return firstParentAddress != null && childAccountList(firstParentAddress).isNotEmpty()
     }
 
     fun childAccountList(walletAddress: String? = null): List<ChildAccount> {
-        val targetAddress = walletAddress ?: getFlowWalletAddress() ?: return emptyList()
+        val targetAddress = walletAddress ?: getCurrentFlowWalletAddress() ?: return emptyList()
         val walletNodes = AccountManager.walletNodes() ?: return emptyList()
 
         for (mainNode in walletNodes) {
@@ -332,20 +333,48 @@ object WalletManager {
         return selectedWalletAddressRef.get()
     }
 
-    fun getFlowWalletAddress(): String? {
+    fun getCurrentFlowWalletAddress(): String? {
         val selectedAddress = selectedWalletAddress()
-        if (selectedAddress.isBlank()) return null
+        val walletNodes = AccountManager.walletNodes() ?: return null // Handle null walletNodes early
 
-        val walletNodes = AccountManager.walletNodes() ?: return null
+        if (selectedAddress.isBlank()) {
+            logd(TAG, "Selected address is blank. Falling back to first FlowWallet for current network.")
+            return findFirstFlowWalletAddressForCurrentNetwork(walletNodes)
+        }
 
+        // First, check if selectedAddress is an EOA address
+        val isSelectedEOA = walletNodes.filterIsInstance<EOAWallet>().any { it.address.equals(selectedAddress, ignoreCase = true) }
+
+        if (isSelectedEOA) {
+            logd(TAG, "Selected address is EOA. Falling back to first FlowWallet for current network.")
+            return findFirstFlowWalletAddressForCurrentNetwork(walletNodes)
+        }
+
+        // If not EOA, proceed with existing logic to find associated FlowWallet
         for (node in walletNodes) {
             if (node is FlowWallet) {
                 if (node.address.equals(selectedAddress, ignoreCase = true) || node.linkedWallets.any { it.address.equals(selectedAddress, ignoreCase = true) }) {
+                  logd(TAG, "Selected address is FlowWallet or its linked wallet, returning FlowWallet address: ${node.address}")
                   return node.address.toAddress()
                 }
             }
         }
-        return null
+        logd(TAG, "Selected address is not EOA, FlowWallet, or its linked wallet. Falling back to first FlowWallet for current network.")
+        return findFirstFlowWalletAddressForCurrentNetwork(walletNodes)
+    }
+
+    private fun findFirstFlowWalletAddressForCurrentNetwork(walletNodes: List<MainWallet>): String? {
+        val currentNetwork = chainNetWorkString()
+        val firstCurrentNetworkFlowWallet = walletNodes.filterIsInstance<FlowWallet>()
+            .firstOrNull { it.chainIdString.equals(currentNetwork, ignoreCase = true) }
+
+        if (firstCurrentNetworkFlowWallet != null) {
+            logd(TAG, "Falling back to first FlowWallet address for current network: ${firstCurrentNetworkFlowWallet.address}")
+            return firstCurrentNetworkFlowWallet.address.toAddress()
+        } else {
+            logd(TAG, "No FlowWallet found for current network. Returning null.")
+            return null
+        }
     }
 
     fun clear() {

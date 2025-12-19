@@ -13,12 +13,10 @@ import com.flowfoundation.wallet.utils.viewModelIOScope
 class ProfileFragmentViewModel : ViewModel() {
 
     val profileLiveData = MutableLiveData<UserInfoData>()
-    val inboxCountLiveData = MutableLiveData<Int>()
 
     fun load() {
         viewModelIOScope(this) {
             requestUserInfo()
-//            requestInboxCount()
         }
     }
 

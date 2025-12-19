@@ -3,14 +3,11 @@ package com.flowfoundation.wallet.manager.walletdata
 import com.flow.wallet.wallet.Wallet
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.AccountType
 import com.flowfoundation.wallet.manager.app.toNetworkString
 import com.flowfoundation.wallet.manager.childaccount.ChildAccount
 import com.flowfoundation.wallet.manager.childaccount.parseAccountMetas
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.evm.EVMWalletManager
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import org.onflow.flow.models.SigningAlgorithm
 import com.flowfoundation.wallet.manager.flowjvm.CadenceScript
 import com.flowfoundation.wallet.manager.flowjvm.cadenceQueryEVMAddress
 import com.flowfoundation.wallet.manager.flowjvm.executeCadence
@@ -56,7 +53,7 @@ object WalletDataManager {
         logd(TAG, "Refreshing child accounts for current selected address")
 
         ioScope {
-            val selectedAddress = WalletManager.getFlowWalletAddress()
+            val selectedAddress = WalletManager.getCurrentFlowWalletAddress()
 
             if (selectedAddress.isNullOrBlank()) return@ioScope
 
@@ -98,7 +95,7 @@ object WalletDataManager {
         logd(TAG, "Refreshing EVM address for current selected address")
 
         ioScope {
-            val selectedAddress = WalletManager.getFlowWalletAddress()
+            val selectedAddress = WalletManager.getCurrentFlowWalletAddress()
 
             if (selectedAddress.isNullOrBlank()) {
                 callback(null)
@@ -154,7 +151,7 @@ object WalletDataManager {
             logd(TAG, "WalletManager.wallet() is null, attempting to create temporary instance")
             wallet = WalletCreationHelper.createWalletFromAccount(currentAccount)
         } else {
-            logd(TAG, "Reusing WalletManager instance: ${WalletManager.getFlowWalletAddress()}")
+            logd(TAG, "Reusing WalletManager instance: ${WalletManager.getCurrentFlowWalletAddress()}")
         }
 
         if (wallet != null) {
@@ -249,27 +246,14 @@ object WalletDataManager {
             logd(TAG, "Fetching data for ${allBlockchainData.size} BlockchainData entries for node construction")
             fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
 
-            // EOA Wallet - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
-            // For legacy accounts (accountType = null), fall back to checking signature algorithm
-            val canDeriveEoa = when (account.accountType) {
-                AccountType.HARDWARE -> false  // Secure Enclave - no EOA
-                AccountType.FULL -> true       // Recovery Phrase - derive EOA
-                else -> {
-                    // Legacy account - check signature algorithm as fallback
-                    try {
-                        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
-                        val isP256 = cryptoProvider?.getSignatureAlgorithm() == SigningAlgorithm.ECDSA_P256
-                        !isP256  // P256 = Secure Enclave = no EOA
-                    } catch (e: Exception) {
-                        logd(TAG, "Could not determine account type, assuming can derive EOA: ${e.message}")
-                        true  // Default to allowing EOA for legacy accounts
-                    }
-                }
-            }
-            if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
+            // EOA Wallet - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
+            // based on key type (Secure Enclave = disabled, others = enabled)
+            if (!WalletManager.isEoaDisabled()) {
                 val eoa = deriveEoaAddress(wallet)
+                logd(TAG, "Generated EOA address: $eoa")
+                logd(TAG, msg = "EOA Addresses: ${wallet.eoaAddresses.value}")
                 if (eoa.isNotEmpty()) {
-                    logd(TAG, "Adding EOA for account (accountType=${account.accountType}): $eoa")
+                    logd(TAG, "Adding EOA for account: $eoa")
                     val eoaEmojiInfo = getEmojiInfo(eoa)
                     nodes.add(EOAWallet(
                         address = eoa,
@@ -278,7 +262,7 @@ object WalletDataManager {
                     ))
                 }
             } else {
-                logd(TAG, "Skipping EOA derivation (accountType=${account.accountType}, isEoaDisabled=${WalletManager.isEoaDisabled()})")
+                logd(TAG, "Skipping EOA derivation (isEoaDisabled=${WalletManager.isEoaDisabled()})")
             }
 
             kotlinx.coroutines.supervisorScope {
@@ -388,7 +372,7 @@ object WalletDataManager {
         return try {
             logd(TAG, "Updating non-current account: ${account.userInfo.username}")
 
-            val wallet = WalletCreationHelper.createWalletFromAccount(account)
+            val wallet = WalletCreationHelper.createWalletFromAccount(account, false)
             if (wallet != null) {
                 logd(TAG, "Refreshing wallet accounts for non-current account ${account.userInfo.username}...")
                 wallet.refreshAccounts()
@@ -399,27 +383,12 @@ object WalletDataManager {
                 val nodes = mutableListOf<MainWallet>()
                 fun getEmojiInfo(address: String) = AccountEmojiManager.getEmojiByAddress(address)
                 
-                // EOA - only for "full" (Recovery Phrase) accounts, not "hardware" (Secure Enclave)
-                // For legacy accounts (accountType = null), fall back to checking signature algorithm
-                val canDeriveEoa = when (account.accountType) {
-                    AccountType.HARDWARE -> false  // Secure Enclave - no EOA
-                    AccountType.FULL -> true       // Recovery Phrase - derive EOA
-                    else -> {
-                        // Legacy account - check signature algorithm as fallback
-                        try {
-                            val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(account)
-                            val isP256 = cryptoProvider?.getSignatureAlgorithm() == SigningAlgorithm.ECDSA_P256
-                            !isP256  // P256 = Secure Enclave = no EOA
-                        } catch (e: Exception) {
-                            logd(TAG, "Could not determine account type for ${account.userInfo.username}: ${e.message}")
-                            true  // Default to allowing EOA for legacy accounts
-                        }
-                    }
-                }
-                if (!WalletManager.isEoaDisabled() && canDeriveEoa) {
+                // EOA - WalletCreationHelper.createWalletFromAccount() sets isEoaDisabled
+                // based on key type (Secure Enclave = disabled, others = enabled)
+                if (!WalletManager.isEoaDisabled()) {
                     val eoa = deriveEoaAddress(wallet)
                     if (eoa.isNotEmpty()) {
-                        logd(TAG, "Adding EOA for non-current account (accountType=${account.accountType}): $eoa")
+                        logd(TAG, "Adding EOA for non-current account: $eoa")
                         val eoaEmojiInfo = getEmojiInfo(eoa)
                         nodes.add(EOAWallet(
                             address = eoa,
@@ -428,7 +397,7 @@ object WalletDataManager {
                         ))
                     }
                 } else {
-                    logd(TAG, "Skipping EOA for non-current account (accountType=${account.accountType})")
+                    logd(TAG, "Skipping EOA for non-current account (isEoaDisabled=${WalletManager.isEoaDisabled()})")
                 }
 
                 kotlinx.coroutines.supervisorScope {

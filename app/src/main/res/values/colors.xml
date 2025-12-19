@@ -13,7 +13,8 @@
     <color name="card_bg">#f0f0f0</color>
     <color name="explore_chip_bg">#F0F0F0</color>
 
-    <color name="error">#E54040</color>
+    <color name="error">#F04438</color>
+    <color name="error_15">#26F04438</color>
 
     <color name="disable">#d9d9d9</color>
 

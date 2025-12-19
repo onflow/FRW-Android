@@ -68,7 +68,7 @@ class TransactionRecordViewModel : ViewModel(), OnTransactionStateChange {
         logd("TransactionRecordViewModel", "WalletManager.selectedWalletAddress(): '${WalletManager.selectedWalletAddress()}'")
         logd("TransactionRecordViewModel", "WalletManager.isEVMAccountSelected(): ${WalletManager.isEVMAccountSelected()}")
         logd("TransactionRecordViewModel", "WalletManager.isChildAccountSelected(): ${WalletManager.isChildAccountSelected()}")
-        logd("TransactionRecordViewModel", "WalletManager.getFlowWalletAddress(): '${WalletManager.getFlowWalletAddress()}'")
+        logd("TransactionRecordViewModel", "WalletManager.getFlowWalletAddress(): '${WalletManager.getCurrentFlowWalletAddress()}'")
 
         // Check if this is a child account
         if (WalletManager.isChildAccountSelected()) {

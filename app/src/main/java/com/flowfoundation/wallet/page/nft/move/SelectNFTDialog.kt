@@ -258,12 +258,12 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
 
 
     private val initialFromAddress = WalletManager.selectedWalletAddress()
-    private var moveToAddress: String = WalletManager.getFlowWalletAddress().orEmpty()
+    private var moveToAddress: String = WalletManager.getCurrentFlowWalletAddress().orEmpty()
 
 
     private fun configureFromAccount() {
         with(binding) {
-            val walletAddress = WalletManager.getFlowWalletAddress() ?: return@with
+            val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@with
             val allAccounts = mutableSetOf<String>().apply {
                 add(walletAddress)
                 WalletManager.childAccountList(walletAddress).forEach { add(it.address) }
@@ -314,7 +314,7 @@ class SelectNFTDialog: BottomSheetDialogFragment() {
         with(binding) {
             // Build eligible list of To accounts based on current wallet state.
             val eligibleList = mutableListOf<String>()
-            val walletAddress = WalletManager.getFlowWalletAddress() ?: return@with
+            val walletAddress = WalletManager.getCurrentFlowWalletAddress() ?: return@with
 
             // Only add the parent's address if it's not the current From.
             if (walletAddress != moveFromAddress) {

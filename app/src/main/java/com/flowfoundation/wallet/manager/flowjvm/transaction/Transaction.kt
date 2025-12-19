@@ -23,8 +23,6 @@ import com.flowfoundation.wallet.wallet.toAddress
 import com.instabug.library.Instabug
 import com.flowfoundation.wallet.manager.flow.FlowCadenceApi
 import org.onflow.flow.models.*
-import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.getFlowAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.ionspin.kotlin.bignum.integer.BigInteger
 import kotlinx.serialization.ExperimentalSerializationApi

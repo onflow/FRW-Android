@@ -10,8 +10,6 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-//todo 加密解密使用的 uid 要确定，考虑放在 Account 中 例如 restoreviewmodel 中如果 import 时，createKeystoreAddress 使用的
-// uid 就不对
 object EncryptedMnemonicUtils {
     private const val TAG = "EncryptedMnemonicUtils"
     private const val KEY_ALIAS_PREFIX = "mnemonic_key_"

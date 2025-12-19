@@ -12,6 +12,9 @@ import com.flowfoundation.wallet.manager.evm.EVMWalletManager.toChecksumEVMAddre
 import com.flowfoundation.wallet.manager.flowjvm.currentKeyId
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.walletdata.COAWallet
+import com.flowfoundation.wallet.manager.walletdata.ChildWallet
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
 import com.flowfoundation.wallet.reactnative.bridge.createEmojiInfo
 import com.flowfoundation.wallet.reactnative.bridge.isSelectedWalletAddress
@@ -100,7 +103,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                 // Get main wallet address - for hardware-backed keys, wallet() returns null,
                 // so we need to use selectedWalletAddress() as fallback
-                var mainAddress = WalletManager.getFlowWalletAddress()
+                var mainAddress = WalletManager.getCurrentFlowWalletAddress()
                 if (mainAddress.isNullOrEmpty()) {
                     // Hardware-backed key fallback: use the selected address
                     mainAddress = WalletManager.selectedWalletAddress()
@@ -307,7 +310,7 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
                 logd(TAG, "getSelectedAccount() - selected address: $selectedAddress")
 
                 // Determine account type based on address using utility methods
-                val mainAddress = WalletManager.getFlowWalletAddress()
+                val mainAddress = WalletManager.getCurrentFlowWalletAddress()
 
                 val accountType = when {
                     EVMWalletManager.isEVMWalletAddress(selectedAddress) -> RNBridge.AccountType.EVM
@@ -401,84 +404,84 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
 
             val bridgeAccounts = mutableListOf<RNBridge.WalletAccount>()
 
-            // Get main wallet address from account
-            val mainAddress = account.wallet?.walletAddress()
-            if (mainAddress.isNullOrEmpty()) {
-                logw(TAG, "createWalletProfileFromAccount() - no main address found for account: ${account.userInfo.username}")
+            // Get FlowWallet for current network from walletNodes
+            val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
+            val flowWallets = account.walletNodes.filterIsInstance<FlowWallet>()
+                .filter { it.chainIdString == currentNetwork }
+
+            logd(TAG, "createWalletProfileFromAccount() - found ${flowWallets.size} FlowWallets for network $currentNetwork")
+
+            if (flowWallets.isEmpty()) {
+                logw(TAG, "createWalletProfileFromAccount() - no FlowWallet found for account: ${account.userInfo.username} on network $currentNetwork")
                 return null
             }
 
-            val mainEmojiInfo = createEmojiInfo(mainAddress)
-            val mainAccount = RNBridge.WalletAccount(
-                id = "main",
-                name = mainEmojiInfo?.name ?: "Main Account",
-                address = mainAddress,
-                emojiInfo = mainEmojiInfo,
-                parentEmoji = null,
-                parentAddress = null,
-                avatar = null,
-                isActive = isSelectedWalletAddress(mainAddress),
-                type = RNBridge.AccountType.MAIN,
-                balance = null,
-                nfts = null,
-            )
-            bridgeAccounts.add(mainAccount)
+            // Process each FlowWallet (typically one per network)
+            flowWallets.forEach { flowWallet ->
+                val mainAddress = flowWallet.address
+                val mainEmojiInfo = createEmojiInfo(mainAddress)
 
-            // Get child accounts
-            try {
-                val childAccounts = WalletManager.childAccountList(mainAddress)
-                childAccounts.forEach { childAccount ->
-                    val childAccountBridge = RNBridge.WalletAccount(
-                        id = "child_${childAccount.address}",
-                        name = childAccount.name,
-                        address = childAccount.address,
-                        emojiInfo = null,
-                        parentEmoji = mainEmojiInfo,
-                        parentAddress = mainAddress,
-                        avatar = childAccount.icon,
-                        isActive = isSelectedWalletAddress(childAccount.address),
-                        type = RNBridge.AccountType.CHILD,
-                        balance = null,
-                        nfts = null,
-                    )
-                    bridgeAccounts.add(childAccountBridge)
-                }
-            } catch (e: Exception) {
-                logw(TAG, "createWalletProfileFromAccount() - child accounts not available: ${e.message}")
-            }
+                // Add main account
+                val mainAccount = RNBridge.WalletAccount(
+                    id = "main_${mainAddress}",
+                    name = mainEmojiInfo?.name ?: flowWallet.name,
+                    address = mainAddress,
+                    emojiInfo = mainEmojiInfo,
+                    parentEmoji = null,
+                    parentAddress = null,
+                    avatar = null,
+                    isActive = isSelectedWalletAddress(mainAddress),
+                    type = RNBridge.AccountType.MAIN,
+                    balance = null,
+                    nfts = null,
+                )
+                bridgeAccounts.add(mainAccount)
 
-            // Get EVM address if available
-            try {
-                val evmAddress = if (isSelectedWalletAddress(mainAddress)) {
-                    EVMWalletManager.getEVMAddress()
-                } else {
-                    // For non-selected accounts, get EVM from walletNodes via EVMWalletManager
-                    EVMWalletManager.getEVMAddressByAddress(mainAddress)
+                // Process linked wallets from walletNodes (COAWallet, ChildWallet)
+                flowWallet.linkedWallets.forEach { linkedWallet ->
+                    when (linkedWallet) {
+                        is COAWallet -> {
+                            val evmEmojiInfo = createEmojiInfo(linkedWallet.address)
+                            val evmAccount = RNBridge.WalletAccount(
+                                id = "evm_${linkedWallet.address}",
+                                name = evmEmojiInfo?.name ?: linkedWallet.name,
+                                address = linkedWallet.address,
+                                parentAddress = mainAddress,
+                                emojiInfo = evmEmojiInfo,
+                                parentEmoji = mainEmojiInfo,
+                                avatar = null,
+                                isActive = isSelectedWalletAddress(linkedWallet.address),
+                                type = RNBridge.AccountType.EVM,
+                                balance = null,
+                                nfts = null,
+                            )
+                            bridgeAccounts.add(evmAccount)
+                            logd(TAG, "createWalletProfileFromAccount() - added COA/EVM: ${linkedWallet.address}")
+                        }
+                        is ChildWallet -> {
+                            val childAccountBridge = RNBridge.WalletAccount(
+                                id = "child_${linkedWallet.address}",
+                                name = linkedWallet.name,
+                                address = linkedWallet.address,
+                                emojiInfo = null,
+                                parentEmoji = mainEmojiInfo,
+                                parentAddress = mainAddress,
+                                avatar = linkedWallet.icon,
+                                isActive = isSelectedWalletAddress(linkedWallet.address),
+                                type = RNBridge.AccountType.CHILD,
+                                balance = null,
+                                nfts = null,
+                            )
+                            bridgeAccounts.add(childAccountBridge)
+                            logd(TAG, "createWalletProfileFromAccount() - added Child: ${linkedWallet.address}")
+                        }
+                    }
                 }
-                if (!evmAddress.isNullOrEmpty()) {
-                    val evmEmojiInfo = createEmojiInfo(evmAddress)
-                    val evmAccount = RNBridge.WalletAccount(
-                        id = "evm",
-                        name = evmEmojiInfo?.name ?: "EVM Account",
-                        address = evmAddress,
-                        parentAddress = mainAddress,
-                        emojiInfo = evmEmojiInfo,
-                        parentEmoji = mainEmojiInfo,
-                        avatar = null,
-                        isActive = isSelectedWalletAddress(evmAddress),
-                        type = RNBridge.AccountType.EVM,
-                        balance = null,
-                        nfts = null,
-                    )
-                    bridgeAccounts.add(evmAccount)
-                }
-            } catch (e: Exception) {
-                logw(TAG, "createWalletProfileFromAccount() - EVM account not available: ${e.message}")
             }
 
             // Add EOA address only for currently selected wallet
-            // (Receive screen only shows current account, no need for non-selected EOA addresses)
-            if (isSelectedWalletAddress(mainAddress)) {
+            val mainAddress = flowWallets.firstOrNull()?.address
+            if (mainAddress != null && isSelectedWalletAddress(mainAddress)) {
                 try {
                     val eoaAddress = WalletManager.getEOAAddress()
                     if (!eoaAddress.isNullOrEmpty()) {
@@ -513,6 +516,103 @@ class AccountBridgeHandler(private val reactContext: ReactApplicationContext) {
         } catch (e: Exception) {
             loge(TAG, "createWalletProfileFromAccount() - error creating profile for account: ${account.userInfo.username}, error: ${e.message}")
             null
+        }
+    }
+
+    /**
+     * Get profiles that are stored locally but not yet logged in (for recovery flow)
+     * These are LocalSwitchAccount entries - accounts known to the device but not fully authenticated
+     */
+    fun getRecoverableProfiles(promise: Promise, bridgeModelToWritableMap: (Any) -> WritableMap) {
+        logd(TAG, "getRecoverableProfiles() called")
+        ioScope {
+            try {
+                // Get the switch account list which includes LocalSwitchAccount entries
+                val switchList = AccountManager.getSwitchAccountList()
+                logd(TAG, "getRecoverableProfiles() - found ${switchList.size} items in switch list")
+
+                val profiles = mutableListOf<RNBridge.WalletProfile>()
+
+                // Filter for LocalSwitchAccount entries (profiles stored locally but not logged in)
+                switchList.filterIsInstance<com.flowfoundation.wallet.manager.account.model.LocalSwitchAccount>().forEach { localAccount ->
+                    logd(TAG, "getRecoverableProfiles() - processing LocalSwitchAccount: ${localAccount.username}")
+                    
+                    val mainEmojiInfo = createEmojiInfo(localAccount.address)
+                    val mainAccount = RNBridge.WalletAccount(
+                        id = "main_${localAccount.address}",
+                        name = mainEmojiInfo?.name ?: localAccount.username,
+                        address = localAccount.address,
+                        emojiInfo = mainEmojiInfo,
+                        parentEmoji = null,
+                        parentAddress = null,
+                        avatar = null,
+                        isActive = false,
+                        type = RNBridge.AccountType.MAIN,
+                        balance = null,
+                        nfts = null,
+                    )
+
+                    val profile = RNBridge.WalletProfile(
+                        name = localAccount.username,
+                        avatar = null,
+                        uid = localAccount.userId ?: localAccount.address,
+                        accounts = listOf(mainAccount)
+                    )
+                    profiles.add(profile)
+                }
+
+                val response = RNBridge.WalletProfilesResponse(profiles = profiles)
+                val result = bridgeModelToWritableMap(response)
+
+                logd(TAG, "getRecoverableProfiles() - ${profiles.size} recoverable profiles found")
+                uiScope {
+                    promise.resolve(result)
+                }
+            } catch (e: Exception) {
+                loge(TAG, "getRecoverableProfiles() - error: ${e.message}")
+                e.printStackTrace()
+
+                val emptyResponse = RNBridge.WalletProfilesResponse(profiles = emptyList())
+                val result = bridgeModelToWritableMap(emptyResponse)
+                uiScope {
+                    promise.resolve(result)
+                }
+            }
+        }
+    }
+
+    fun switchToProfile(userId: String, promise: Promise) {
+        logd(TAG, "switchToProfile() called with userId: $userId")
+        ioScope {
+            try {
+                // Find the account with the matching userId (wallet id)
+                val accounts = AccountManager.list()
+                val targetAccount = accounts.find { it.wallet?.id == userId }
+
+                if (targetAccount == null) {
+                    logw(TAG, "switchToProfile() - account not found for userId: $userId")
+                    uiScope {
+                        promise.reject("PROFILE_NOT_FOUND", "Account not found for userId: $userId")
+                    }
+                    return@ioScope
+                }
+
+                logd(TAG, "switchToProfile() - found account: ${targetAccount.userInfo.username}")
+
+                // Switch to the account
+                AccountManager.switch(targetAccount) {
+                    logd(TAG, "switchToProfile() - switch completed for userId: $userId")
+                    uiScope {
+                        promise.resolve(null) // Success - resolve with no value
+                    }
+                }
+            } catch (e: Exception) {
+                loge(TAG, "switchToProfile() - error: ${e.message}")
+                e.printStackTrace()
+                uiScope {
+                    promise.reject("SWITCH_FAILED", "Failed to switch profile: ${e.message}", e)
+                }
+            }
         }
     }
 }

@@ -15,7 +15,11 @@ data class EvmTransaction(
     @SerializedName("data")
     val data: String?,
     @SerializedName("from")
-    val from: String?
+    val from: String?,
+    @SerializedName("maxFeePerGas")
+    val maxFeePerGas: String?,
+    @SerializedName("maxPriorityFeePerGas")
+    val maxPriorityFeePerGas: String?
 )
 
 data class EVMTypedMessage(

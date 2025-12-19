@@ -39,6 +39,7 @@ import wallet.core.jni.HDWallet
 import com.flow.wallet.wallet.KeyWallet
 import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.utils.Env.getStorage
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 import org.onflow.flow.ChainId
 import org.onflow.flow.infrastructure.Cadence.Companion.uint8
 
@@ -96,7 +97,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
         val seedPhraseKey = SeedPhraseKey(
             mnemonicString = HDWallet(160, "").mnemonic(),
             passphrase = "",
-            derivationPath = "m/44'/539'/0'/0/0",
+            derivationPath = DERIVATION_PATH,
             storage = FileSystemStorage(baseDir)
         )
         createBackupCryptoProvider(seedPhraseKey)
@@ -119,7 +120,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
                     val txId = CadenceScript.CADENCE_ADD_PUBLIC_KEY.transactionByMainWallet {
                         val pubKeyWithPrefix = it.getPublicKey() // e.g., "04..."
                         val pubKeyHexRaw = pubKeyWithPrefix.removePrefix("0x")
-                        
+
                         // Flow's Cadence addKey script expects the publicKey string argument to be the
                         // 64-byte hex representation (128 chars) WITHOUT the "04" uncompressed prefix.
                         val pubKeyForCadence = if (pubKeyHexRaw.startsWith("04") && pubKeyHexRaw.length == 130) {
@@ -127,7 +128,7 @@ class BackupGoogleDriveViewModel : ViewModel(), OnTransactionStateChange {
                         } else {
                             pubKeyHexRaw
                         }
-                        
+
                         arg { string(pubKeyForCadence) }
                         arg { uint8(it.getSignatureAlgorithm().cadenceIndex.toUByte()) }
                         arg { uint8(it.getHashAlgorithm().cadenceIndex.toUByte()) }

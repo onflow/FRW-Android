@@ -11,6 +11,7 @@ import com.flowfoundation.wallet.BuildConfig
 import com.flowfoundation.wallet.manager.account.AccountManager
 import com.flowfoundation.wallet.manager.drive.DriveServerHelper
 import com.flowfoundation.wallet.manager.flowjvm.lastBlockAccount
+import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.utils.Env
 import com.flowfoundation.wallet.utils.error.ErrorReporter
 import com.flowfoundation.wallet.utils.error.GoogleBackupError
@@ -79,16 +80,17 @@ suspend fun checkGoogleDriveBackup(
     val data = existingData(driveService).toMutableList()
     val wallet = AccountManager.get()?.wallet
     val exist = data.firstOrNull { it.userId == wallet?.id } != null
-    val blockAccount = FlowAddress(wallet?.walletAddress().orEmpty()).lastBlockAccount()
-    
+    val flowWalletAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
+    val blockAccount = FlowAddress(flowWalletAddress).lastBlockAccount()
+
     // Normalize public keys for comparison - remove prefixes and convert to lowercase
     val providerPubKey = provider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
-    
+
     val keyExist = blockAccount.keys?.firstOrNull { key ->
         val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
         providerPubKey == onChainPubKey
     } != null
-    
+
     LocalBroadcastManager.getInstance(Env.getApp())
         .sendBroadcast(Intent(ACTION_GOOGLE_DRIVE_CHECK_FINISH).apply {
             putExtra(EXTRA_SUCCESS, exist && keyExist)
@@ -123,16 +125,17 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
     val account = AccountManager.get() ?: throw RuntimeException("Account cannot be null")
     val wallet = account.wallet ?: throw RuntimeException("Wallet cannot be null")
     val exist = data.firstOrNull { it.userId == wallet.id }
-    val blockAccount = FlowAddress(wallet.walletAddress().orEmpty()).lastBlockAccount()
-    
+    val flowWalletAddress = WalletManager.getCurrentFlowWalletAddress().orEmpty()
+    val blockAccount = FlowAddress(flowWalletAddress).lastBlockAccount()
+
     // Normalize public keys for comparison - remove prefixes and convert to lowercase
     val providerPubKey = provider.getPublicKey().removePrefix("0x").removePrefix("04").lowercase()
-    
+
     val keyIndex = blockAccount.keys?.findLast { key ->
         val onChainPubKey = key.publicKey.removePrefix("0x").removePrefix("04").lowercase()
         providerPubKey == onChainPubKey
     }?.index
-    
+
     val aesKey = sha256(getPinCode().toByteArray())
     val aesIv = sha256(aesKey.toByteArray().copyOf(16).take(16).toByteArray())
     if (exist == null) {
@@ -140,7 +143,7 @@ private suspend fun addData(data: MutableList<BackupItem>, provider: BackupCrypt
             data.add(
                 0,
                 BackupItem(
-                    address = wallet.walletAddress() ?: "",
+                    address = flowWalletAddress,
                     userId = wallet.id,
                     userName = account.userInfo.username,
                     publicKey = provider.getPublicKey(),

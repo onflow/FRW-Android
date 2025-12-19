@@ -35,6 +35,9 @@ private val KEY_WALLPAPER_ID = intPreferencesKey("KEY_WALLPAPER_ID")
 private val KEY_QUOTE_MARKET = stringPreferencesKey("KEY_QUOTE_MARKET")
 private val KEY_HIDE_WALLET_BALANCE = booleanPreferencesKey("KEY_HIDE_WALLET_BALANCE")
 private val KEY_FREE_GAS_ENABLE = booleanPreferencesKey("KEY_FREE_GAS_ENABLE")
+
+private val KEY_WRAP_EOA_TX_WITH_CADENCE = booleanPreferencesKey("KEY_WRAP_EOA_TX_WITH_CADENCE")
+
 private const val KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED = "KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED"
 private val KEY_IS_MEOW_DOMAIN_CLAIMED = booleanPreferencesKey("KEY_IS_MEOW_DOMAIN_CLAIMED")
 private val KEY_INBOX_READ_LIST = stringPreferencesKey("KEY_INBOX_READ_LIST")
@@ -154,6 +157,13 @@ suspend fun isFreeGasPreferenceEnable(): Boolean = dataStore.data.map { it[KEY_F
 suspend fun setFreeGasPreferenceEnable(isEnable: Boolean) {
     dataStore.edit { it[KEY_FREE_GAS_ENABLE] = isEnable }
 }
+
+suspend fun isWrapEOATxWithCadenceEnable(): Boolean = dataStore.data.map { it[KEY_WRAP_EOA_TX_WITH_CADENCE] ?: true }.first()
+
+fun setWrapEOATxWithCadenceEnable(isWrap: Boolean) { edit { dataStore.edit { it[KEY_WRAP_EOA_TX_WITH_CADENCE] = isWrap } }
+}
+
+
 
 fun isStakingGuideDisplayed(): Boolean {
     return sharedPreferencesTraditional.getBoolean(KEY_IS_STAKING_GUIDE_PAGE_DISPLAYED, false)

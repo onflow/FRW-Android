@@ -4,17 +4,17 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
+import com.flow.wallet.CryptoProvider
+import com.flow.wallet.crypto.BIP39
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
-import com.flowfoundation.wallet.manager.account.AccountType
-import com.flowfoundation.wallet.manager.account.getFlowAddress
+import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
+import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
-import com.flowfoundation.wallet.manager.key.CryptoProviderManager
-import com.flow.wallet.CryptoProvider
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
@@ -26,8 +26,6 @@ import com.flowfoundation.wallet.utils.uiScope
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import com.flow.wallet.crypto.BIP39
-import org.onflow.flow.waitForCreatedAccountAddress
 import org.onflow.flow.models.toHexString
 
 /**
@@ -80,7 +78,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", true)
                     response.putNull("address") // Address not yet available - tx not sealed
                     response.putString("username", result.username ?: username)
-                    response.putString("accountType", "hardware")
+                    response.putString("profileType", "hardware")
                     response.putString("txId", result.txId)
                     response.putNull("error")
 
@@ -94,7 +92,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     response.putBoolean("success", false)
                     response.putNull("address")
                     response.putNull("username")
-                    response.putString("accountType", "hardware")
+                    response.putString("profileType", "hardware")
                     response.putNull("txId")
                     response.putString("error", result.error ?: "Failed to register secure type account")
 
@@ -110,7 +108,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 response.putBoolean("success", false)
                 response.putNull("address")
                 response.putNull("username")
-                response.putString("accountType", "hardware")
+                response.putString("profileType", "hardware")
                 response.putNull("txId")
                 response.putString("error", e.message ?: "Unknown error")
 
@@ -241,6 +239,31 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
+    /**
+     * Get registration signature for v4 API
+     * Signs in anonymously to Firebase, gets JWT, and signs it with the key derived from mnemonic
+     * @param mnemonic The recovery phrase to derive the signing key from
+     * @param promise Promise resolving with signature (hex string)
+     */
+    fun getRegistrationSignature(mnemonic: String, promise: Promise) {
+        logd(TAG, "getRegistrationSignature() called - placeholder implementation")
+        ioScope {
+            try {
+                // TODO: Implement registration signature logic
+                // User has implementation on different branch
+                loge(TAG, "getRegistrationSignature() - not yet implemented")
+                uiScope {
+                    promise.reject("NOT_IMPLEMENTED", "getRegistrationSignature not yet implemented")
+                }
+            } catch (e: Exception) {
+                loge(TAG, "getRegistrationSignature() - error: ${e.message}")
+                uiScope {
+                    promise.reject("ERROR", "Failed to get registration signature: ${e.message}", e)
+                }
+            }
+        }
+    }
+
     fun signInWithCustomToken(customToken: String, promise: Promise) {
         logd(TAG, "signInWithCustomToken() called")
         ioScope {
@@ -255,16 +278,16 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                             var backendValidated = false
                             var attempts = 0
                             val maxAttempts = 15
-                            
+
                             while (!tokenReady && attempts < maxAttempts) {
                                 attempts++
                                 try {
-                                    val jwt = com.flowfoundation.wallet.firebase.auth.getFirebaseJwt(forceRefresh = true)
+                                    val jwt = getFirebaseJwt(forceRefresh = true)
                                     val firebaseUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
-                                    
+
                                     if (!jwt.isNullOrBlank() && firebaseUid != null) {
                                         logd(TAG, "signInWithCustomToken() - JWT ready after $attempts attempt(s), Firebase UID: $firebaseUid")
-                                        
+
                                         // Validate with backend - make sure the user is recognized
                                         try {
                                             val service = com.flowfoundation.wallet.network.retrofit()
@@ -287,7 +310,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     kotlinx.coroutines.delay(300)
                                 }
                             }
-                            
+
                             if (tokenReady && backendValidated) {
                                 uiScope {
                                     promise.resolve(null)
@@ -345,31 +368,31 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 var tokenRefreshed = false
                                 var refreshAttempts = 0
                                 val maxRefreshAttempts = 10
-                                
+
                                 while (!tokenRefreshed && refreshAttempts < maxRefreshAttempts) {
                                     kotlinx.coroutines.delay(500) // Wait 500ms between checks
                                     refreshAttempts++
                                     try {
                                         // Force refresh the token
-                                        val jwt = com.flowfoundation.wallet.firebase.auth.getFirebaseJwt(forceRefresh = true)
+                                        val jwt = getFirebaseJwt(forceRefresh = true)
                                         val currentUid = com.flowfoundation.wallet.firebase.auth.firebaseUid()
-                                        
+
                                         if (!jwt.isNullOrBlank() && currentUid != null) {
                                             tokenRefreshed = true
                                             logd(TAG, "saveMnemonic() - Firebase ID token refreshed after $refreshAttempts attempt(s), UID: $currentUid")
-                                            
+
                                             // Verify the username matches by making a test API call
                                             try {
                                                 val testService = com.flowfoundation.wallet.network.retrofit()
                                                     .create(com.flowfoundation.wallet.network.ApiService::class.java)
                                                 val testUserInfo = testService.userInfo().data
                                                 logd(TAG, "saveMnemonic() - Token validated, backend returned username: ${testUserInfo.username}")
-                                                
+
                                                 // Check if username matches (case-insensitive, ignoring numeric suffix)
                                                 // Backend normalizes to lowercase and adds suffix: "FancyRiverVolcano" -> "fancyrivervolcano_476"
                                                 val backendUsernameBase = testUserInfo.username.substringBefore("_").lowercase()
                                                 val expectedUsernameBase = username.lowercase()
-                                                
+
                                                 if (backendUsernameBase != expectedUsernameBase) {
                                                     logw(TAG, "saveMnemonic() - Username mismatch! Expected: $expectedUsernameBase, Got: $backendUsernameBase. Retrying...")
                                                     tokenRefreshed = false // Retry
@@ -386,7 +409,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         logd(TAG, "saveMnemonic() - Error during token refresh (attempt $refreshAttempts): ${e.message}")
                                     }
                                 }
-                                
+
                                 if (!tokenRefreshed) {
                                     logw(TAG, "saveMnemonic() - Warning: Token may not be for correct user, proceeding anyway")
                                 }
@@ -409,7 +432,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
 
                                 // Fetch wallet list to get wallet metadata (username, etc.)
                                 logd(TAG, "saveMnemonic() - Fetching wallet metadata from backend...")
-                                val walletListData: com.flowfoundation.wallet.network.model.WalletListData?
+                                val walletListData: WalletListData?
                                 try {
                                     walletListData = service.getWalletList().data
                                     if (walletListData == null) {
@@ -459,11 +482,11 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 logd(TAG, "saveMnemonic() - Waiting for wallet info to be populated...")
                                 var waitRetries = 0
                                 val maxWaitRetries = 30 // 15 seconds max
-                                val currentNetwork = com.flowfoundation.wallet.manager.app.chainNetWorkString()
+                                val currentNetwork = chainNetWorkString()
 
                                 while (waitRetries < maxWaitRetries) {
                                     val currentAccount = AccountManager.get()
-                                    val flowAddress = currentAccount?.getFlowAddress(currentNetwork, TAG)
+                                    val flowAddress = currentAccount?.firstFlowWalletAddress()
 
                                     if (!flowAddress.isNullOrBlank()) {
                                         logd(TAG, "saveMnemonic() - Flow address populated: $flowAddress")
@@ -482,20 +505,21 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 }
 
                                 val finalAccount = AccountManager.get()
-                                val finalFlowAddress = finalAccount?.getFlowAddress(currentNetwork, TAG)
+                                val finalFlowAddress: String? = finalAccount?.firstFlowWalletAddress()
                                 if (finalFlowAddress.isNullOrBlank()) {
                                     logw(TAG, "saveMnemonic() - Flow address not populated after waiting, but continuing anyway")
                                 } else {
                                     logd(TAG, "saveMnemonic() - Account ready with Flow address: $finalFlowAddress")
-                                    
+
                                     // Update walletNodes with FlowWallet now that we have the address
                                     // This is needed because walletListData.blockchain may be null during initial setup
                                     val hasFlowWallet = finalAccount.walletNodes.any { it is FlowWallet }
                                     if (!hasFlowWallet) {
                                         logd(TAG, "saveMnemonic() - Adding FlowWallet to walletNodes")
-                                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(finalFlowAddress)
+                                        val address: String = finalFlowAddress
+                                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(address)
                                         val flowWallet = FlowWallet(
-                                            address = finalFlowAddress,
+                                            address = address,
                                             name = emojiInfo.emojiName,
                                             emojiId = emojiInfo.emojiId,
                                             chainIdString = currentNetwork,
@@ -503,7 +527,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                         )
                                         val updatedNodes = finalAccount.walletNodes + flowWallet
                                         AccountManager.updateCurrentAccount { it.copy(walletNodes = updatedNodes) }
-                                        logd(TAG, "saveMnemonic() - FlowWallet added to walletNodes: $finalFlowAddress")
+                                        logd(TAG, "saveMnemonic() - FlowWallet added to walletNodes: $address")
                                     }
                                 }
 
@@ -589,11 +613,11 @@ private fun authenticateWithFirebase(
         // to switch to the new account. Firebase won't switch users without signing out.
         if (currentUser != null && !isAnonymous) {
             logd(TAG, "authenticateWithFirebase() - Signing out current user to switch accounts...")
-            
+
             // Sign out the current user
             Firebase.auth.signOut()
             logd(TAG, "authenticateWithFirebase() - User signed out successfully")
-            
+
             // Delete Firebase messaging token for the old user
             com.google.firebase.messaging.FirebaseMessaging.getInstance().deleteToken()
         } else if (isAnonymous) {
@@ -661,63 +685,7 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
         return seedPhraseKey
     }
 
-private suspend fun discoverAccountFast(
-        seedPhraseKey: com.flow.wallet.keys.SeedPhraseKey,
-        txId: String,
-        walletListData: WalletListData
-    ) {
-        logd(TAG, "discoverAccountFast() - Discovering account using txId: $txId")
-
-        val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
-        val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
-
-        // Initialize Wallet SDK with account from Flow network
-        val walletForSDK = com.flow.wallet.wallet.WalletFactory.createKeyWallet(
-            seedPhraseKey,
-            setOf(org.onflow.flow.ChainId.Mainnet, org.onflow.flow.ChainId.Testnet),
-            storage
-        )
-
-        // Use txId to fetch account from Flow network for fast discovery
-        // Note: walletListData might not have addresses yet if transaction hasn't finalized
-        // In that case, the wallet will discover accounts automatically after transaction finalizes
-        walletListData.wallets?.forEach { walletData ->
-            walletData.blockchain?.forEach { blockchain ->
-                try {
-                    val chainIdForBlockchain = when (blockchain.chainId.lowercase()) {
-                        "mainnet" -> org.onflow.flow.ChainId.Mainnet
-                        "testnet" -> org.onflow.flow.ChainId.Testnet
-                        else -> null
-                    }
-                    if (chainIdForBlockchain != null && blockchain.address.isNotBlank()) {
-                        val address = if (blockchain.address.startsWith("0x")) {
-                            blockchain.address
-                        } else {
-                            "0x${blockchain.address}"
-                        }
-                        logd(TAG, "discoverAccountFast() - Fetching account $address using txId: $txId")
-                        walletForSDK.fetchAccountByAddress(address, chainIdForBlockchain)
-                        logd(TAG, "discoverAccountFast() - Account fetched successfully")
-                    } else if (chainIdForBlockchain != null) {
-                        logd(TAG, "discoverAccountFast() - Address not available yet for ${blockchain.chainId}, wallet will discover after transaction finalizes")
-                    }
-                } catch (e: Exception) {
-                    logd(TAG, "discoverAccountFast() - Warning: Could not fetch account: ${e.message}")
-                }
-            }
-        }
-
-        // If no addresses were found in walletListData, log that wallet will discover automatically
-        val hasAddresses = walletListData.wallets?.any { walletData ->
-            walletData.blockchain?.any { blockchain -> blockchain.address.isNotBlank() } == true
-        } == true
-
-        if (!hasAddresses) {
-            logd(TAG, "discoverAccountFast() - No addresses in walletListData yet (transaction may not be finalized). Wallet will discover accounts automatically.")
-        }
-    }
-
-private fun setupAccountAndWallet(
+  private fun setupAccountAndWallet(
         prefix: String,
         userInfo: UserInfoData,
         walletListData: WalletListData
@@ -763,18 +731,16 @@ private fun setupAccountAndWallet(
         logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
 
         // Add account to AccountManager with walletNodes populated
-        // accountType = "full" for Recovery Phrase accounts (can derive EOA)
         AccountManager.add(
             Account(
                 userInfo = userInfo,
                 prefix = prefix,
                 wallet = walletListData,
-                walletNodes = initialWalletNodes,
-                accountType = AccountType.FULL
+                walletNodes = initialWalletNodes
             ),
             com.flowfoundation.wallet.firebase.auth.firebaseUid()
         )
-        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes (accountType=full)")
+        logd(TAG, "setupAccountAndWallet() - Account added to AccountManager with FlowWallets in walletNodes")
 
         // Select Flow address from wallet data
         val flowAddr = walletListData.wallets
@@ -789,9 +755,9 @@ private fun setupAccountAndWallet(
 
         // Relaunch MainActivity to ensure all state is completely fresh
         // This recreates all ViewModels and managers with the new account
-        com.flowfoundation.wallet.utils.uiScope {
+        uiScope {
             com.flowfoundation.wallet.page.main.MainActivity.relaunch(
-                com.flowfoundation.wallet.utils.Env.getApp(), 
+                com.flowfoundation.wallet.utils.Env.getApp(),
                 clearTop = true
                                     )
                                 }

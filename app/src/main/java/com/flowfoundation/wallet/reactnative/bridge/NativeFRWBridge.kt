@@ -168,6 +168,10 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun getWalletProfiles(promise: Promise) = accountHandler.getWalletProfiles(promise, ::bridgeModelToWritableMap)
 
+    override fun getRecoverableProfiles(promise: Promise) = accountHandler.getRecoverableProfiles(promise, ::bridgeModelToWritableMap)
+
+    override fun switchToProfile(userId: String, promise: Promise) = accountHandler.switchToProfile(userId, promise)
+
     override fun showToast(title: String, message: String?, type: String?, duration: Double?) = uiHandler.showToast(title, message, type, duration)
 
     override fun hideToast(id: String) = uiHandler.hideToast(id)
@@ -179,6 +183,9 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
     override fun initSecureEnclaveWallet(txId: String, promise: Promise) = authHandler.initSecureEnclaveWallet(txId, promise)
 
     override fun generateSeedPhrase(strength: Double?, promise: Promise) = authHandler.generateSeedPhrase(strength, promise, ::bridgeModelToWritableMap)
+
+    // TODO: Add getRegistrationSignature to TypeScript spec and regenerate codegen to make this a bridge method
+    fun getRegistrationSignature(mnemonic: String, promise: Promise) = authHandler.getRegistrationSignature(mnemonic, promise)
 
     override fun signInWithCustomToken(customToken: String, promise: Promise) = authHandler.signInWithCustomToken(customToken, promise)
 

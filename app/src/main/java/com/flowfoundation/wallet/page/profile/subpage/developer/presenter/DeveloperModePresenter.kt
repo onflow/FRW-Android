@@ -31,6 +31,8 @@ import com.flowfoundation.wallet.utils.updateChainNetworkPreference
 import com.flowfoundation.wallet.utils.getWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.setWatchCollectibleAddress
 import com.flowfoundation.wallet.utils.clearWatchCollectibleAddress
+import com.flowfoundation.wallet.utils.isWrapEOATxWithCadenceEnable
+import com.flowfoundation.wallet.utils.setWrapEOATxWithCadenceEnable
 import com.flowfoundation.wallet.widgets.ProgressDialog
 import kotlinx.coroutines.delay
 
@@ -76,6 +78,7 @@ class DeveloperModePresenter(
 
                 // Initialize Watch Collectible Address
                 setupWatchCollectibleAddress()
+                setupWrapEOATxWithCadence()
 
                 developerModePreference.setOnCheckedChangeListener {
                     setDevelopContentVisible(it)
@@ -154,6 +157,18 @@ class DeveloperModePresenter(
                     viewModel.changeNetwork()
                     binding.mainnetPreference.setChecked(isMainnet())
                     binding.testnetPreference.setChecked(isTestnet())
+                }
+            }
+        }
+    }
+
+    private fun setupWrapEOATxWithCadence() {
+        ioScope {
+            val isWrap = isWrapEOATxWithCadenceEnable()
+            uiScope {
+                binding.wrapEoaTx.setChecked(isWrap)
+                binding.wrapEoaTx.setOnCheckedChangeListener {
+                    setWrapEOATxWithCadenceEnable(it)
                 }
             }
         }

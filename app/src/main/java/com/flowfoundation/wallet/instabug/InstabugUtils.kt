@@ -59,7 +59,7 @@ fun instabugInitialize(application: Application) {
             report.setUserAttribute("uid", it)
         }
         report.setUserAttribute("username", AccountManager.userInfo()?.username.orEmpty())
-        report.setUserAttribute("FlowAccount", WalletManager.getFlowWalletAddress().orEmpty())
+        report.setUserAttribute("FlowAccount", WalletManager.getCurrentFlowWalletAddress().orEmpty())
         report.setUserAttribute("SelectedAccount", WalletManager.selectedWalletAddress())
         val childAccounts = WalletManager.childAccountList().map { it.address }
         if (childAccounts.isNotEmpty())
@@ -68,6 +68,7 @@ fun instabugInitialize(application: Application) {
                 childAccounts.toString()
             )
         report.setUserAttribute("COA", EVMWalletManager.getEVMAddress().orEmpty())
+        report.setUserAttribute("EOA", WalletManager.getEOAAddress().orEmpty())
         report.setUserAttribute("Network", chainNetWorkString())
     }
     val configuration = ProactiveReportingConfigs.Builder()

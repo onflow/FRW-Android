@@ -13,7 +13,7 @@ import org.onflow.flow.infrastructure.Cadence
 
 fun queryStorageInfo() {
     ioScope {
-        val address = WalletManager.getFlowWalletAddress()
+        val address = WalletManager.getCurrentFlowWalletAddress()
         if (address.isNullOrEmpty()) {
             return@ioScope
         }

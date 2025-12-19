@@ -48,7 +48,7 @@ class SwapDialog : BottomSheetDialogFragment() {
                 openUrl(viewModel.moonPayUrl)
             }
             coinbaseButton.setOnClickListener {
-                val address = WalletManager.getFlowWalletAddress() ?: return@setOnClickListener
+                val address = WalletManager.getCurrentFlowWalletAddress() ?: return@setOnClickListener
                 loadCoinbaseUrl(address)
             }
         }

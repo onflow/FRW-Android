@@ -70,6 +70,7 @@ import com.google.gson.reflect.TypeToken
 import java.util.HashMap
 import com.flowfoundation.wallet.utils.readWalletPassword
 import com.flowfoundation.wallet.utils.storeWalletPassword
+import com.flowfoundation.wallet.wallet.DERIVATION_PATH
 
 class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
@@ -198,7 +199,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
 
     @OptIn(ExperimentalStdlibApi::class)
     fun restoreWallet() {
-        if (WalletManager.getFlowWalletAddress() == restoreAddress) {
+        if (WalletManager.getCurrentFlowWalletAddress() == restoreAddress) {
             logd("MultiRestore", "Wallet already logged in for address: $restoreAddress")
             toast(msgRes = R.string.wallet_already_logged_in, duration = Toast.LENGTH_LONG)
             val activity = BaseActivity.getCurrentActivity()
@@ -517,7 +518,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
                         if (resp.data?.customToken.isNullOrBlank()) {
                             callback.invoke(false)
                         } else {
-                            firebaseLogin(resp.data?.customToken!!) { isSuccess ->
+                            firebaseLogin(resp.data.customToken) { isSuccess ->
                                 if (isSuccess) {
                                     setRegistered()
                                     setMultiBackupCreated()
@@ -706,7 +707,7 @@ class MultiRestoreViewModel : ViewModel(), OnTransactionStateChange {
             val seedPhraseKey = SeedPhraseKey(
                 mnemonicString = mnemonic,
                 passphrase = "",
-                derivationPath = "m/44'/539'/0'/0/0",
+                derivationPath = DERIVATION_PATH,
                 storage = storage
             )
 

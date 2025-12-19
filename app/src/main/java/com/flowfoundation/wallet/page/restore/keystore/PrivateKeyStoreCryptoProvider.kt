@@ -5,7 +5,6 @@ import com.flow.wallet.keys.PrivateKey
 import com.flow.wallet.keys.KeyFormat
 import com.flowfoundation.wallet.page.restore.keystore.model.KeystoreAddress
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import org.onflow.flow.models.DomainTag
 import org.onflow.flow.models.HashingAlgorithm
 import org.onflow.flow.models.SigningAlgorithm
@@ -20,8 +19,8 @@ fun List<Byte>.toHexString(): String = joinToString("") { "%02x".format(it) }
 
 class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoProvider {
     private val TAG = "PrivateKeyStoreCryptoProvider"
-    private val keyInfo: JsonObject = Gson().fromJson(keystoreInfo, JsonObject::class.java)
-    private val signingAlgorithm = when (keyInfo.get("signAlgo").asInt) {
+    private val keyInfo: KeystoreAddress = Gson().fromJson(keystoreInfo, KeystoreAddress::class.java)
+    private val signingAlgorithm = when (keyInfo.signAlgo) {
         1 -> SigningAlgorithm.ECDSA_P256
         2 -> SigningAlgorithm.ECDSA_secp256k1
         else -> SigningAlgorithm.ECDSA_P256
@@ -39,15 +38,15 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     init {
-        logd(TAG, "Init keystore provider. signAlgo=${keyInfo.get("signAlgo").asInt}, hashAlgo=${keyInfo.get("hashAlgo").asInt}, address=${keyInfo.get("address").asString}")
+        logd(TAG, "Init keystore provider. signAlgo=${keyInfo.signAlgo}, hashAlgo=${keyInfo.hashAlgo}, address=${keyInfo.address}")
         logd(TAG, "KeyStore info details:")
-        logd(TAG, "  Address: ${keyInfo.get("address").asString}")
-        logd(TAG, "  Public Key (from keystore): ${keyInfo.get("publicKey").asString}")
+        logd(TAG, "  Address: ${keyInfo.address}")
+        logd(TAG, "  Public Key (from keystore): ${keyInfo.publicKey}")
         logd(TAG, "  Private Key loaded successfully")
-        logd(TAG, "  Sign Algorithm: ${keyInfo.get("signAlgo").asInt} -> $signingAlgorithm")
-        logd(TAG, "  Hash Algorithm: ${keyInfo.get("hashAlgo").asInt}")
-        logd(TAG, "  Key ID: ${keyInfo.get("keyId").asInt}")
-        logd(TAG, "  Weight: ${keyInfo.get("weight").asInt}")
+        logd(TAG, "  Sign Algorithm: ${keyInfo.signAlgo} -> $signingAlgorithm")
+        logd(TAG, "  Hash Algorithm: ${keyInfo.hashAlgo}")
+        logd(TAG, "  Key ID: ${keyInfo.keyId}")
+        logd(TAG, "  Weight: ${keyInfo.weight}")
 
         // Verify keystore consistency: check if private key generates the same public key
         verifyKeystoreConsistency()
@@ -56,7 +55,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     private fun verifyKeystoreConsistency() {
         try {
             logd(TAG, "=== KEYSTORE CONSISTENCY VERIFICATION ===")
-            val keystorePublicKey = keyInfo.get("publicKey").asString
+            val keystorePublicKey = keyInfo.publicKey
             logd(TAG, "Keystore stored public key: $keystorePublicKey")
 
             // Get the public key derived from the private key
@@ -108,7 +107,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override fun getPublicKey(): String {
-        val rawPublicKey = keyInfo.get("publicKey").asString
+        val rawPublicKey = keyInfo.publicKey
         // Match the format used in keystore restore: remove "04" prefix if present, no "0x" prefix for server
         val formattedPublicKey = if (rawPublicKey.startsWith("04")) {
             rawPublicKey.substring(2)
@@ -171,8 +170,8 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     override fun getSigner(hashingAlgorithm: HashingAlgorithm): org.onflow.flow.models.Signer {
         logd(TAG, "getSigner() called with hashingAlgorithm: $hashingAlgorithm")
         return object : org.onflow.flow.models.Signer {
-            override var address: String = keyInfo.get("address").asString
-            override var keyIndex: Int = keyInfo.get("keyId").asInt
+            override var address: String = keyInfo.address
+            override var keyIndex: Int = keyInfo.keyId
 
             override suspend fun sign(bytes: ByteArray, transaction: Transaction?): ByteArray {
                 logd(TAG, "*** KEYSTORE SIGNER: sign() called - TRUSTWALLET CORE ***")
@@ -207,7 +206,7 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override fun getHashAlgorithm(): HashingAlgorithm {
-        val code = keyInfo.get("hashAlgo").asInt
+        val code = keyInfo.hashAlgo
         val algo = when (code) {
             1 -> HashingAlgorithm.SHA2_256  // SHA2-256
             2 -> HashingAlgorithm.SHA2_256  // Legacy value for SHA2-256
@@ -223,6 +222,6 @@ class PrivateKeyStoreCryptoProvider(private val keystoreInfo: String) : CryptoPr
     }
 
     override fun getKeyWeight(): Int {
-        return keyInfo.get("weight").asInt
+        return keyInfo.weight
     }
 }
