@@ -1,6 +1,6 @@
 //
 //  BridgeModels.kt
-//
+//  
 //  Auto-generated from TypeScript bridge types
 //  Do not edit manually
 //
@@ -221,7 +221,9 @@ class RNBridge {
         @SerializedName("accountKey")
         val accountKey: AccountKey,
         @SerializedName("drivepath")
-        val drivepath: String
+        val drivepath: String,
+        @SerializedName("evmAddress")
+        val evmAddress: String?
     )
 
     data class SPResponse(
@@ -230,7 +232,9 @@ class RNBridge {
         @SerializedName("accountKey")
         val accountKey: AccountKey,
         @SerializedName("drivepath")
-        val drivepath: String
+        val drivepath: String,
+        @SerializedName("evmAddress")
+        val evmAddress: String?
     )
 
     data class DeviceInfo(

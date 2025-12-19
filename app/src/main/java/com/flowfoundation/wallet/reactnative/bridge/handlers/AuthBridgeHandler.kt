@@ -6,15 +6,20 @@ import com.facebook.react.bridge.WritableMap
 import com.facebook.react.bridge.WritableNativeMap
 import com.flow.wallet.CryptoProvider
 import com.flow.wallet.crypto.BIP39
+import com.flow.wallet.wallet.WalletFactory
 import com.flowfoundation.wallet.firebase.auth.getFirebaseJwt
+import org.onflow.flow.ChainId
 import com.flowfoundation.wallet.manager.account.Account
 import com.flowfoundation.wallet.manager.account.AccountManager
+import com.flowfoundation.wallet.manager.account.AccountWalletManager
 import com.flowfoundation.wallet.manager.account.firstFlowWalletAddress
 import com.flowfoundation.wallet.manager.app.chainNetWorkString
 import com.flowfoundation.wallet.manager.emoji.AccountEmojiManager
 import com.flowfoundation.wallet.manager.key.CryptoProviderManager
 import com.flowfoundation.wallet.manager.wallet.WalletManager
+import com.flowfoundation.wallet.manager.walletdata.EOAWallet
 import com.flowfoundation.wallet.manager.walletdata.FlowWallet
+import com.flowfoundation.wallet.manager.walletdata.MainWallet
 import com.flowfoundation.wallet.network.model.UserInfoData
 import com.flowfoundation.wallet.network.model.WalletListData
 import com.flowfoundation.wallet.reactnative.bridge.RNBridge
@@ -215,11 +220,28 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                     signAlgo = 2  // ECDSA_secp256k1
                 )
 
+                // Derive EVM address from the seed phrase for faster display in UI
+                // Uses BIP44 path m/44'/60'/0'/0/0 (Ethereum standard)
+                val evmAddress: String? = try {
+                    val wallet = WalletFactory.createKeyWallet(
+                        seedPhraseKey,
+                        setOf(ChainId.Mainnet, ChainId.Testnet),
+                        inMemoryStorage
+                    )
+                    val address = wallet.ethAddress(0)
+                    logd(TAG, "generateSeedPhrase() - Derived EVM address: ${address.take(10)}...")
+                    address
+                } catch (e: Exception) {
+                    logw(TAG, "generateSeedPhrase() - Failed to derive EVM address: ${e.message}")
+                    null
+                }
+
                 // Create SPResponse
                 val response = RNBridge.SPResponse(
                     mnemonic = mnemonic,
                     accountKey = accountKey,
-                    drivepath = derivationPath
+                    drivepath = derivationPath,
+                    evmAddress = evmAddress
                 )
 
                 // Convert to WritableMap for React Native
@@ -340,9 +362,9 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
-        logd(TAG, "saveMnemonic() called - EOA account initialization")
-        logd(TAG, "saveMnemonic() - username: $username, txId: $txId (Flow address creation handled by React Native)")
+    fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, evmAddress: String?, promise: Promise, sendEvent: (String, WritableMap?) -> Unit) {
+        logd(TAG, "saveMnemonic() called - Seed phrase account initialization (cleaner architecture)")
+        logd(TAG, "saveMnemonic() - username: $username, txId: $txId, evmAddress: ${evmAddress?.take(10) ?: "null"} (Flow address creation handled by React Native)")
 
         ioScope {
             try {
@@ -353,8 +375,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                 WalletManager.clear()
                 logd(TAG, "saveMnemonic() - Cleared WalletManager state before adding new account")
 
-                // Step 8: Securely store the mnemonic
-                val prefix = storeMnemonicSecurely(mnemonic)
+                // Note: Mnemonic will be stored AFTER we get the userId from the backend
+                // This is the cleaner architecture - mnemonic-only, no prefix-based key duplication
 
                 // Step 9: Authenticate with Firebase
                 authenticateWithFirebase(
@@ -414,9 +436,6 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                     logw(TAG, "saveMnemonic() - Warning: Token may not be for correct user, proceeding anyway")
                                 }
 
-                                // Step 10: Initialize Wallet-Kit
-                                val seedPhraseKey = initializeWalletKit(mnemonic, prefix)
-
                                 // Fetch user info from backend
                                 val service = com.flowfoundation.wallet.network.retrofit()
                                     .create(com.flowfoundation.wallet.network.ApiService::class.java)
@@ -456,13 +475,28 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 )
                                 logd(TAG, "saveMnemonic() - Preserved original username capitalization: $username (backend returned: ${userInfo.username})")
 
+                                // Get userId from wallet data for mnemonic storage
+                                val userId = walletListData.id
+                                if (userId.isNullOrBlank()) {
+                                    throw IllegalStateException("Wallet ID is null or blank - cannot store mnemonic")
+                                }
+                                logd(TAG, "saveMnemonic() - Got userId for mnemonic storage: $userId")
+
+                                // Store mnemonic using AccountWalletManager (cleaner architecture - no prefix duplication)
+                                val mnemonicStored = AccountWalletManager.storeHDWalletMnemonic(userId, mnemonic)
+                                if (!mnemonicStored) {
+                                    throw IllegalStateException("Failed to store mnemonic for userId: $userId")
+                                }
+                                logd(TAG, "saveMnemonic() - Mnemonic stored successfully via AccountWalletManager")
+
                                 // Account discovery is now handled by React Native layer
                                 // React Native will handle wallet initialization after Flow address is created
                                 logd(TAG, "saveMnemonic() - Skipping account discovery (handled by React Native)")
 
-                                // Setup AccountManager and WalletManager
+                                // Setup AccountManager and WalletManager (no prefix - mnemonic only)
                                 // Use userInfoWithOriginalUsername to preserve proper capitalization
-                                val cryptoProvider = setupAccountAndWallet(prefix, userInfoWithOriginalUsername, walletListData)
+                                // Pass evmAddress to create EOA wallet immediately
+                                val cryptoProvider = setupAccountAndWalletMnemonicOnly(userId, userInfoWithOriginalUsername, walletListData, evmAddress)
 
                                 // Close the drawer to show the updated account in the main view
                                 com.flowfoundation.wallet.page.main.MainActivity.getInstance()?.closeDrawer()
@@ -475,7 +509,7 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
                                 // Track account creation
                                 trackAccountCreation(cryptoProvider)
 
-                                logd(TAG, "saveMnemonic() - EOA account initialization complete!")
+                                logd(TAG, "saveMnemonic() - Seed phrase account initialization complete!")
 
                                 // Wait for wallet info to be populated with Flow address
                                 // This ensures the account is ready for COA creation
@@ -567,31 +601,8 @@ class AuthBridgeHandler(private val reactContext: ReactApplicationContext) {
         }
     }
 
-    private fun storeMnemonicSecurely(mnemonic: String): String {
-        logd(TAG, "storeMnemonicSecurely() - Storing mnemonic securely...")
-
-                val passwordMap = try {
-                    val pref = com.flowfoundation.wallet.utils.readWalletPassword()
-                    if (pref.isBlank()) {
-                        HashMap<String, String>()
-                    } else {
-                        Gson().fromJson(pref, object : com.google.gson.reflect.TypeToken<HashMap<String, String>>() {}.type)
-                    }
-                } catch (e: Exception) {
-                    HashMap<String, String>()
-                }
-
-                // Generate a unique prefix for this EOA account
-                val prefix = com.flowfoundation.wallet.network.generatePrefix("eoa")
-
-                // Store mnemonic globally for backup support
-                com.flowfoundation.wallet.utils.storeWalletPassword(
-                    Gson().toJson(passwordMap.apply { put("global", mnemonic) })
-                )
-        logd(TAG, "storeMnemonicSecurely() - Mnemonic stored securely")
-
-        return prefix
-    }
+    // Note: storeMnemonicSecurely has been removed in favor of AccountWalletManager.storeHDWalletMnemonic()
+    // This is the cleaner architecture - mnemonic-only storage, no prefix-based key duplication
 
 
 private fun authenticateWithFirebase(
@@ -644,70 +655,45 @@ private fun authenticateWithFirebase(
         }
     }
 
-private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.flow.wallet.keys.SeedPhraseKey {
-        logd(TAG, "initializeWalletKit() - Creating SeedPhraseKey from mnemonic...")
+    // Note: initializeWalletKit has been removed in favor of the cleaner architecture
+    // RN seed phrase accounts now only store the mnemonic (via AccountWalletManager)
+    // and don't store a duplicate prefix-based private key
 
-                                val baseDir = java.io.File(com.flowfoundation.wallet.utils.Env.getApp().filesDir, "wallet")
-                                val storage = com.flow.wallet.storage.FileSystemStorage(baseDir)
-
-                                // Create SeedPhraseKey from mnemonic (same pattern as other restore flows)
-                                val seedPhraseKey = com.flow.wallet.keys.SeedPhraseKey(
-                                    mnemonicString = mnemonic,
-                                    passphrase = "",
-                                    derivationPath = "m/44'/539'/0'/0/0",
-                                    storage = storage
-                                )
-
-        logd(TAG, "initializeWalletKit() - SeedPhraseKey created")
-
-        // Validate public key can be extracted (using ECDSA_secp256k1 as that's what we registered with)
-        val publicKeyBytes = seedPhraseKey.publicKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
-          ?: throw IllegalStateException("Failed to get public key from seed phrase key")
-
-  logd(TAG, "initializeWalletKit() - Public key validated successfully")
-
-        // Derive private key bytes from SeedPhraseKey and store as PrivateKey for CryptoProviderManager
-        // CryptoProviderManager expects a PrivateKey stored with ID "prefix_key_${prefix}"
-        val privateKeyBytes = seedPhraseKey.privateKey(org.onflow.flow.models.SigningAlgorithm.ECDSA_secp256k1)
-          ?: throw IllegalStateException("Failed to get private key from seed phrase key")
-
-  logd(TAG, "initializeWalletKit() - Derived private key bytes, creating PrivateKey...")
-
-        // Create PrivateKey from the derived bytes
-        val privateKey = com.flow.wallet.keys.PrivateKey.create(storage)
-        privateKey.importPrivateKey(privateKeyBytes, com.flow.wallet.keys.KeyFormat.RAW)
-
-        // Store the PrivateKey with prefix so CryptoProviderManager can find it
-        val keyId = "prefix_key_$prefix"
-        privateKey.store(keyId, prefix)
-        logd(TAG, "initializeWalletKit() - PrivateKey stored successfully")
-
-        return seedPhraseKey
-    }
-
-  private fun setupAccountAndWallet(
-        prefix: String,
+    /**
+     * Setup account and wallet for mnemonic-only accounts (cleaner architecture).
+     * 
+     * This is used for RN seed phrase accounts that only store the mnemonic,
+     * without a prefix-based private key duplication. The account will have:
+     * - No prefix field set (null)
+     * - Mnemonic stored via AccountWalletManager (keyed by userId)
+     * 
+     * CryptoProviderManager and WalletCreationHelper will detect this as a mnemonic-only
+     * account and use AccountWalletManager.getHDWalletMnemonicByUID() to access the key.
+     */
+    private fun setupAccountAndWalletMnemonicOnly(
+        userId: String,
         userInfo: UserInfoData,
-        walletListData: WalletListData
+        walletListData: WalletListData,
+        evmAddress: String? = null
     ): CryptoProvider {
-        logd(TAG, "setupAccountAndWallet() - Setting up AccountManager and WalletManager...")
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - Setting up mnemonic-only account...")
 
         // Clear WalletManager state before adding new account
         WalletManager.clear()
-        logd(TAG, "setupAccountAndWallet() - Cleared WalletManager state")
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - Cleared WalletManager state")
 
         // Log wallet data structure for debugging
-        logd(TAG, "setupAccountAndWallet() - WalletListData: wallets count=${walletListData.wallets?.size}")
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - WalletListData: wallets count=${walletListData.wallets?.size}")
         walletListData.wallets?.forEachIndexed { idx, wallet ->
-            logd(TAG, "setupAccountAndWallet() -   Wallet $idx: name=${wallet.name}, blockchain count=${wallet.blockchain?.size}")
+            logd(TAG, "setupAccountAndWalletMnemonicOnly() -   Wallet $idx: name=${wallet.name}, blockchain count=${wallet.blockchain?.size}")
             wallet.blockchain?.forEach { blockchain ->
-                logd(TAG, "setupAccountAndWallet() -     Blockchain: chainId=${blockchain.chainId}, address=${blockchain.address}")
+                logd(TAG, "setupAccountAndWalletMnemonicOnly() -     Blockchain: chainId=${blockchain.chainId}, address=${blockchain.address}")
             }
         }
 
         // Build initial walletNodes with any FlowWallets we know about from the API
         val currentNetwork = chainNetWorkString()
-        val initialWalletNodes = walletListData.wallets
+        val flowWalletNodes = walletListData.wallets
             ?.flatMap { walletData ->
                 walletData.blockchain
                     ?.filter { it.address.isNotBlank() }
@@ -728,7 +714,131 @@ private suspend fun initializeWalletKit(mnemonic: String, prefix: String): com.f
                     }.orEmpty()
             }.orEmpty()
 
-        logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial FlowWallet nodes")
+        // Build wallet nodes list starting with Flow wallets
+        val initialWalletNodes = flowWalletNodes.toMutableList<MainWallet>()
+
+        // Add EOA wallet if evmAddress is provided (pre-derived from seed phrase)
+        if (!evmAddress.isNullOrBlank()) {
+            val formattedEvmAddress = if (evmAddress.startsWith("0x")) evmAddress else "0x$evmAddress"
+            val eoaEmojiInfo = AccountEmojiManager.getEmojiByAddress(formattedEvmAddress)
+            val eoaWallet = EOAWallet(
+                address = formattedEvmAddress,
+                name = eoaEmojiInfo.emojiName,
+                emojiId = eoaEmojiInfo.emojiId
+            )
+            initialWalletNodes.add(eoaWallet)
+            logd(TAG, "setupAccountAndWalletMnemonicOnly() - Added pre-derived EOA wallet: $formattedEvmAddress")
+        }
+
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - Created ${initialWalletNodes.size} initial wallet nodes (${flowWalletNodes.size} Flow + ${if (evmAddress != null) 1 else 0} EOA)")
+
+        // Add account to AccountManager WITHOUT prefix (mnemonic-only architecture)
+        // The account.wallet.id will be used to look up the mnemonic via AccountWalletManager
+        AccountManager.add(
+            Account(
+                userInfo = userInfo,
+                prefix = null, // No prefix - mnemonic-only account
+                wallet = walletListData,
+                walletNodes = initialWalletNodes
+            ),
+            com.flowfoundation.wallet.firebase.auth.firebaseUid()
+        )
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - Account added to AccountManager (mnemonic-only, no prefix)")
+
+        // Select Flow address from wallet data
+        val flowAddr = walletListData.wallets
+            ?.firstOrNull { wallet -> wallet.blockchain?.any { it.address.isNotBlank() } == true }
+            ?.blockchain?.firstOrNull()?.address
+
+        if (!flowAddr.isNullOrBlank()) {
+            val formattedAddr = if (flowAddr.startsWith("0x")) flowAddr else "0x$flowAddr"
+            WalletManager.selectWalletAddress(formattedAddr)
+            logd(TAG, "setupAccountAndWalletMnemonicOnly() - Selected Flow address: $formattedAddr")
+        }
+
+        // Relaunch MainActivity to ensure all state is completely fresh
+        uiScope {
+            com.flowfoundation.wallet.page.main.MainActivity.relaunch(
+                com.flowfoundation.wallet.utils.Env.getApp(),
+                clearTop = true
+            )
+        }
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - Scheduled MainActivity relaunch for fresh state")
+
+        // Get crypto provider for the current account (mnemonic-based)
+        val currentAccount = AccountManager.get()
+            ?: throw IllegalStateException("Account not found after adding to AccountManager")
+
+        val cryptoProvider = CryptoProviderManager.generateAccountCryptoProvider(currentAccount)
+            ?: throw IllegalStateException("Failed to generate crypto provider")
+
+        logd(TAG, "setupAccountAndWalletMnemonicOnly() - Crypto provider generated successfully")
+
+        return cryptoProvider
+    }
+
+    // Legacy function for prefix-based accounts (kept for backward compatibility)
+    private fun setupAccountAndWallet(
+        prefix: String,
+        userInfo: UserInfoData,
+        walletListData: WalletListData,
+        evmAddress: String? = null
+    ): CryptoProvider {
+        logd(TAG, "setupAccountAndWallet() - Setting up AccountManager and WalletManager...")
+
+        // Clear WalletManager state before adding new account
+        WalletManager.clear()
+        logd(TAG, "setupAccountAndWallet() - Cleared WalletManager state")
+
+        // Log wallet data structure for debugging
+        logd(TAG, "setupAccountAndWallet() - WalletListData: wallets count=${walletListData.wallets?.size}")
+        walletListData.wallets?.forEachIndexed { idx, wallet ->
+            logd(TAG, "setupAccountAndWallet() -   Wallet $idx: name=${wallet.name}, blockchain count=${wallet.blockchain?.size}")
+            wallet.blockchain?.forEach { blockchain ->
+                logd(TAG, "setupAccountAndWallet() -     Blockchain: chainId=${blockchain.chainId}, address=${blockchain.address}")
+            }
+        }
+
+        // Build initial walletNodes with any FlowWallets we know about from the API
+        val currentNetwork = chainNetWorkString()
+        val flowWalletNodes = walletListData.wallets
+            ?.flatMap { walletData ->
+                walletData.blockchain
+                    ?.filter { it.address.isNotBlank() }
+                    ?.map { blockchain ->
+                        val formattedAddress = if (blockchain.address.startsWith("0x")) {
+                            blockchain.address
+                        } else {
+                            "0x${blockchain.address}"
+                        }
+                        val emojiInfo = AccountEmojiManager.getEmojiByAddress(formattedAddress)
+                        FlowWallet(
+                            address = formattedAddress,
+                            name = emojiInfo.emojiName,
+                            emojiId = emojiInfo.emojiId,
+                            chainIdString = blockchain.chainId.ifBlank { currentNetwork },
+                            linkedWallets = emptyList()
+                        )
+                    }.orEmpty()
+            }.orEmpty()
+
+        // Build wallet nodes list starting with Flow wallets
+        val initialWalletNodes = flowWalletNodes.toMutableList<MainWallet>()
+
+        // Add EOA wallet if evmAddress is provided (pre-derived from seed phrase)
+        if (!evmAddress.isNullOrBlank()) {
+            val formattedEvmAddress = if (evmAddress.startsWith("0x")) evmAddress else "0x$evmAddress"
+            val eoaEmojiInfo = AccountEmojiManager.getEmojiByAddress(formattedEvmAddress)
+            val eoaWallet = EOAWallet(
+                address = formattedEvmAddress,
+                name = eoaEmojiInfo.emojiName,
+                emojiId = eoaEmojiInfo.emojiId
+            )
+            initialWalletNodes.add(eoaWallet)
+            logd(TAG, "setupAccountAndWallet() - Added pre-derived EOA wallet: $formattedEvmAddress")
+        }
+
+        logd(TAG, "setupAccountAndWallet() - Created ${initialWalletNodes.size} initial wallet nodes (${flowWalletNodes.size} Flow + ${if (evmAddress != null) 1 else 0} EOA)")
 
         // Add account to AccountManager with walletNodes populated
         AccountManager.add(

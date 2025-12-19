@@ -189,7 +189,7 @@ class NativeFRWBridge(reactContext: ReactApplicationContext) : NativeFRWBridgeSp
 
     override fun signInWithCustomToken(customToken: String, promise: Promise) = authHandler.signInWithCustomToken(customToken, promise)
 
-    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, promise: Promise) = authHandler.saveMnemonic(mnemonic, customToken, txId, username, promise, ::sendEvent)
+    override fun saveMnemonic(mnemonic: String, customToken: String, txId: String, username: String, evmAddress: String?, promise: Promise) = authHandler.saveMnemonic(mnemonic, customToken, txId, username, evmAddress, promise, ::sendEvent)
 
     override fun requestNotificationPermission(promise: Promise) = utilsHandler.requestNotificationPermission(promise)
 

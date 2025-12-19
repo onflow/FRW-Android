@@ -165,7 +165,22 @@ object CryptoProviderManager {
                 logd(TAG, "  Keystore-based: Provider initialized with actual signAlgo: ${provider.getSignatureAlgorithm()}, actual hashAlgo: ${provider.getHashAlgorithm()} (from keystore info)")
                 return provider
             }
-            // Handle prefix-based accounts
+            // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
+            // Check this BEFORE prefix to properly handle new RN seed phrase accounts
+            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() && 
+                     AccountWalletManager.hasHDWalletKeystore(account.wallet?.id ?: "")) {
+                logd(TAG, "  Branch: Mnemonic-only account (cleaner architecture)")
+                val userId = account.wallet?.id ?: ""
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(userId)
+                if (mnemonic == null) {
+                    loge(TAG, "  Mnemonic-only: Failed to get mnemonic by UID: $userId")
+                    ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
+                    return null
+                }
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                return HDWalletCryptoProvider(seedPhraseKey)
+            }
+            // Handle prefix-based accounts (legacy or hardware-backed)
             else if (!account.prefix.isNullOrBlank()) {
                 logd(TAG, "  Branch: Prefix-based account")
 
@@ -558,7 +573,23 @@ object CryptoProviderManager {
                 PrivateKeyStoreCryptoProvider(account.keyStoreInfo!!)
             }
 
-            // Handle prefix-based accounts
+            // Handle mnemonic-only accounts (cleaner architecture - no prefix, just mnemonic)
+            // Check this BEFORE prefix to properly handle new RN seed phrase accounts
+            else if (account.prefix.isNullOrBlank() && !account.wallet?.id.isNullOrBlank() && 
+                     AccountWalletManager.hasHDWalletKeystore(account.wallet?.id ?: "")) {
+                logd("CryptoProviderManager", "Switch account: Mnemonic-only account (cleaner architecture)")
+                val userId = account.wallet?.id ?: ""
+                val mnemonic = AccountWalletManager.getHDWalletMnemonicByUID(userId)
+                if (mnemonic == null) {
+                    loge("CryptoProviderManager", "Switch account: Failed to get mnemonic by UID: $userId")
+                    ErrorReporter.reportWithMixpanel(AccountError.GET_WALLET_FAILED)
+                    return null
+                }
+                val seedPhraseKey = createSeedPhraseKeyWithKeyPair(mnemonic, getStorage())
+                HDWalletCryptoProvider(seedPhraseKey)
+            }
+
+            // Handle prefix-based accounts (legacy or hardware-backed)
             else if (account.prefix.isNullOrBlank().not()) {
                 // Load the stored private key using the prefix-based ID with backward compatibility
                 val keyId = "prefix_key_${account.prefix}"
@@ -631,29 +662,50 @@ object CryptoProviderManager {
                 ) as KeyWallet
 
                 // Determine the correct signing algorithm for this private key from on-chain data
-                val currentProviderPublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
-                    ?: privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
+                // Try BOTH P256 and secp256k1 public keys to match against on-chain keys
+                val p256PublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_P256)?.toHexString()
+                val secp256k1PublicKey = privateKey.publicKey(SigningAlgorithm.ECDSA_secp256k1)?.toHexString()
                 var determinedSigningAlgorithm = SigningAlgorithm.ECDSA_P256 // Default
                 var determinedHashingAlgorithm: HashingAlgorithm? = null
                 val flowWalletAddress = account.firstFlowWalletAddress() ?: ""
-                if (currentProviderPublicKey != null && flowWalletAddress.isNotEmpty()) {
+
+                if (flowWalletAddress.isNotEmpty()) {
                     try {
                         val onChainAccount = runBlocking { FlowCadenceApi.getAccount(flowWalletAddress) }
-                        logd("CryptoProviderManager", "Fetched on-chain account for $flowWalletAddress")
-                        val onChainKey = onChainAccount.keys?.find { acctKey ->
-                            val acctPubKeyHex = acctKey.publicKey.removePrefix("0x").lowercase()
-                            val providerPubKeyHex = currentProviderPublicKey.removePrefix("0x").lowercase()
+                        logd("CryptoProviderManager", "Fetched on-chain account for $flowWalletAddress with ${onChainAccount.keys?.size ?: 0} keys")
+
+                        // Helper function to check if public keys match
+                        fun publicKeysMatch(providerPubKey: String?, onChainPubKey: String): Boolean {
+                            if (providerPubKey == null) return false
+                            val acctPubKeyHex = onChainPubKey.removePrefix("0x").lowercase()
+                            val providerPubKeyHex = providerPubKey.removePrefix("0x").lowercase()
                             val providerPubKeyStripped = if (providerPubKeyHex.startsWith("04") && providerPubKeyHex.length == 130) providerPubKeyHex.substring(2) else providerPubKeyHex
-                            val isMatch = acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
-                            if (isMatch) logd("CryptoProviderManager", "Matched on-chain key: index=${acctKey.index}, signAlgo=${acctKey.signingAlgorithm}, hashAlgo=${acctKey.hashingAlgorithm}")
+                            return acctPubKeyHex == providerPubKeyHex || acctPubKeyHex == providerPubKeyStripped
+                        }
+
+                        // Try to find matching on-chain key with P256 first
+                        var matchedKey = onChainAccount.keys?.find { acctKey ->
+                            val isMatch = publicKeysMatch(p256PublicKey, acctKey.publicKey) && !acctKey.revoked
+                            if (isMatch) logd("CryptoProviderManager", "Matched on-chain key with P256: index=${acctKey.index}, signAlgo=${acctKey.signingAlgorithm}, hashAlgo=${acctKey.hashingAlgorithm}")
                             isMatch
                         }
-                        if (onChainKey != null) {
-                            determinedSigningAlgorithm = onChainKey.signingAlgorithm
-                            determinedHashingAlgorithm = onChainKey.hashingAlgorithm
+
+                        // If P256 didn't match, try secp256k1
+                        if (matchedKey == null) {
+                            logd("CryptoProviderManager", "No P256 match found, trying secp256k1...")
+                            matchedKey = onChainAccount.keys?.find { acctKey ->
+                                val isMatch = publicKeysMatch(secp256k1PublicKey, acctKey.publicKey) && !acctKey.revoked
+                                if (isMatch) logd("CryptoProviderManager", "Matched on-chain key with secp256k1: index=${acctKey.index}, signAlgo=${acctKey.signingAlgorithm}, hashAlgo=${acctKey.hashingAlgorithm}")
+                                isMatch
+                            }
+                        }
+
+                        if (matchedKey != null) {
+                            determinedSigningAlgorithm = matchedKey.signingAlgorithm
+                            determinedHashingAlgorithm = matchedKey.hashingAlgorithm
                             logd("CryptoProviderManager", "Successfully determined on-chain algorithms: signing=$determinedSigningAlgorithm, hashing=$determinedHashingAlgorithm")
                         } else {
-                            logd("CryptoProviderManager", "Could NOT find matching on-chain key. Using defaults.")
+                            logd("CryptoProviderManager", "Could NOT find matching on-chain key with either P256 or secp256k1. Using defaults.")
                         }
                     } catch (e: Exception) {
                         loge("CryptoProviderManager", "Error fetching on-chain key details: ${e.message}. Using defaults.")
@@ -860,3 +912,4 @@ object CryptoProviderManager {
         return matches.toDouble() / maxLength
     }
 }
+

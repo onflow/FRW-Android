@@ -35,30 +35,36 @@ object WalletCreationHelper {
     /**
      * Create Wallet object from Account using only key-related information
      * This method focuses solely on cryptographic key data and ignores wallet/address info
+     * 
+     * Account types and their key storage:
+     * 1. Keystore-based: Has keyStoreInfo (may have encrypted mnemonic or private key)
+     * 2. Prefix-based (legacy/hardware): Has prefix for hardware-backed or legacy keys
+     * 3. Mnemonic-based: Fallback to HD wallet mnemonic via AccountWalletManager
      */
     suspend fun createWalletFromAccount(account: Account, isCurrentAccount: Boolean = true):
       Wallet? {
         return try {
             logd(TAG, "Creating wallet from account: ${account.userInfo.username}")
+            val userId = account.wallet?.id
 
             // Create wallet based on account's key information only
             val wallet = when {
                 // Handle keystore-based accounts
                 !account.keyStoreInfo.isNullOrBlank() -> {
                     logd(TAG, "Creating keystore-based wallet for account: ${account.userInfo.username}")
-                    createWalletFromKeystore(account.keyStoreInfo!!, userId = account.wallet?.id, isCurrentAccount)
+                    createWalletFromKeystore(account.keyStoreInfo!!, userId = userId, isCurrentAccount)
                 }
 
-                // Handle prefix-based accounts
+                // Handle prefix-based accounts (hardware-backed or legacy)
                 !account.prefix.isNullOrBlank() -> {
                     logd(TAG, "Creating prefix-based wallet for account: ${account.userInfo.username}")
                     createWalletFromPrefix(account.prefix!!, isCurrentAccount)
                 }
 
-                // Handle HD wallet (fallback case)
+                // Handle mnemonic-based accounts (including cleaner architecture RN seed phrase accounts)
                 else -> {
-                    logd(TAG, "Creating HD wallet for account: ${account.userInfo.username}")
-                    createWalletFromHDMnemonic(account.wallet?.id ?: "", isCurrentAccount)
+                    logd(TAG, "Creating HD wallet from mnemonic for account: ${account.userInfo.username}")
+                    createWalletFromHDMnemonic(userId ?: "", isCurrentAccount)
                 }
             }
 
@@ -136,16 +142,21 @@ object WalletCreationHelper {
     /**
      * Create wallet from prefix-based key
      * 
-     * For Secure Enclave (hardware-backed) keys, EOA is disabled since we can't derive
-     * an EOA address from a hardware key.
+     * This handles:
+     * - Secure Enclave (hardware-backed) keys: EOA is disabled since we can't derive EOA from hardware keys
+     * - Legacy prefix-based keys: EOA is disabled (no mnemonic available)
+     * 
+     * Note: Mnemonic-only accounts (cleaner architecture) are handled separately by createWalletFromHDMnemonic
+     * and should not reach this function.
      */
     private fun createWalletFromPrefix(prefix: String, isCurrentAccount: Boolean): Wallet? {
         val storage = getStorage()
+        
         return try {
             val privateKey = KeyCompatibilityManager.getPrivateKeyWithFallback(prefix, storage)
             if (privateKey != null) {
-                // Regular prefix-based key - cannot derive EOA (no mnemonic available)
-                logd(TAG, "Regular prefix-based key found for prefix: $prefix - EOA disabled")
+                // Prefix-based key - cannot derive EOA (no mnemonic)
+                logd(TAG, "Prefix-based key found for prefix: $prefix - EOA disabled")
                 if (isCurrentAccount) {
                     WalletManager.setEoaDisabled(true)
                 }
